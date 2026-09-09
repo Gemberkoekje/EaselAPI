@@ -132,8 +132,17 @@ class Palette:
         return "#" + "".join(f"{int(round(float(v) * 255)):02x}" for v in linear_to_srgb(lin))
 
     def value_of(self, color) -> float:
-        """Relative luminance 0..1 -- how light the colour reads when squinting."""
-        return float(luminance(parse_color(self._resolve(color))))
+        """How light the colour reads, 0..1 -- the same number ``look(values=True)`` shows.
+
+        This is the sRGB-encoded luminance, not the linear one. Linear luminance is
+        the wrong instrument for planning values: it puts every pigment but white and
+        the yellows below 0.31 and reports *every* mixed dark as 0.04, so a painter
+        cannot tell a coat-black from a burnt sienna with it, though the greyscale
+        view shows them a clear step apart. Matching the values view is the point --
+        the number and the picture have to agree or neither can be trusted.
+        """
+        lin = float(luminance(parse_color(self._resolve(color))))
+        return float(linear_to_srgb(np.float32(lin)))
 
     def _resolve(self, color):
         if isinstance(color, str) and not color.startswith("#"):

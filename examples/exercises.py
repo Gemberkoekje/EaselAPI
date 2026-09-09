@@ -31,12 +31,20 @@ def value_scale() -> None:
 
 
 def pressure_profiles() -> None:
-    """The same gesture under each pressure profile."""
+    """The same gesture under each pressure profile.
+
+    The low opacity and the flat load are what make this legible. Pressure scales
+    how heavily paint lands, not how wide the mark is, so at full strength the
+    overlapping dabs saturate and all six profiles come out identical -- and paint
+    running out along the stroke hides the profile behind its own fade.
+    """
     s = Session(900, 500, ground="toned_grey", seed=2, out_dir=OUT)
     for i, p in enumerate(["taper", "press_in", "lift_off", "even", "swell", "dab"]):
-        y = 0.1 + i * 0.15
-        s.stroke([(0.08, y), (0.5, y - 0.03), (0.92, y)], "bristle", "titanium_white",
-                 pressure=p, size=0.06, note=p)
+        y = 0.12 + i * 0.15
+        s.stroke([(0.10, y), (0.50, y)], "round_soft", "titanium_white", pressure=p,
+                 size=0.05, opacity=0.35, load=1.0, load_falloff=0.0, note=p)
+        s.stroke([(0.55, y), (0.92, y)], "bristle", "titanium_white", pressure=p,
+                 size=0.05, opacity=0.35, load=1.0, load_falloff=0.0, note=p)
     s.export(OUT / "ex_pressure.png")
 
 
@@ -52,14 +60,23 @@ def paint_running_out() -> None:
 
 
 def wet_versus_dry() -> None:
-    """The same yellow over blue: into wet paint above, onto dry paint below."""
+    """The same yellow over blue: into wet paint above, onto dry paint below.
+
+    One stroke per band, deliberately. A block-in is ten to thirty strokes and
+    wetness fades with every mark made anywhere, so blocking these bands in leaves
+    the "wet" one already dry by the time the yellow lands -- and the exercise then
+    demonstrates the exact opposite of what it is for.
+    """
     s = Session(800, 400, ground="white", seed=4, out_dir=OUT)
-    top, bottom = Region(0, 0, 1, 0.5), Region(0, 0.5, 1, 1)
-    s.block_in(top, "flat", "ultramarine", density=1.0, size=0.12)
-    s.block_in(bottom, "flat", "ultramarine", density=1.0, size=0.12)
-    s.dry(1.0, region=bottom)
-    s.stroke([(0.15, 0.25), (0.85, 0.25)], "flat", "cadmium_yellow", size=0.1, note="wet")
-    s.stroke([(0.15, 0.75), (0.85, 0.75)], "flat", "cadmium_yellow", size=0.1, note="dry")
+    s.stroke([(0.10, 0.27), (0.90, 0.27)], "flat", "ultramarine",
+             size=0.22, pressure="even")
+    s.stroke([(0.15, 0.27), (0.85, 0.27)], "flat", "cadmium_yellow",
+             size=0.10, pressure="even", note="into wet blue")
+    s.stroke([(0.10, 0.73), (0.90, 0.73)], "flat", "ultramarine",
+             size=0.22, pressure="even")
+    s.dry()
+    s.stroke([(0.15, 0.73), (0.85, 0.73)], "flat", "cadmium_yellow",
+             size=0.10, pressure="even", note="onto dry blue")
     s.export(OUT / "ex_wet_dry.png")
 
 

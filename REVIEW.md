@@ -147,10 +147,13 @@ supposed to be unprompted, and a region called "sky" is a prompt.
 - **Angle quantisation (10°) faceting curved flat strokes.** Suspected, then tested
   by rendering curved strokes at 10°, 5° and 2°. The results are indistinguishable,
   so the coarse step stays and the mask cache stays small.
-- **`rough` texture passing more paint than `smooth` at low load.** Expected: a wider
-  spread of peaks means more peaks clear the threshold. The dry-brush property is
-  *brokenness*, not total coverage, and rough measures ~1.75× smooth on band
-  variance. The test that asserted coverage was wrong and was rewritten.
+- **`rough` texture passing more paint than `smooth` at low load.** Right about the
+  ordering, wrong to stop there — see finding 11 in the M4 pass below. A wider spread
+  of peaks does mean more peaks clear the threshold, and the dry-brush property is
+  brokenness rather than coverage. But asking only which of two numbers was larger
+  meant never asking what happened at the far end of the range, where the threshold
+  left the narrow-toothed surfaces entirely and a starved stroke deposited nothing at
+  all. The rewritten test asserted the wrong property and has been rewritten again.
 
 ---
 
@@ -160,9 +163,10 @@ supposed to be unprompted, and a region called "sky" is a prompt.
   reduced, and at this level it reads as ridging from a loaded brush rather than as
   machine stripes. Worth another pass if it ever reads as mechanical in a real
   painting.
-- **`block_in` passes can read as parallel hatching.** Mitigated by per-pass wander
-  and by `direction="cross"`, and `PAINTER.md` tells the painter to vary direction
-  between passes. A future version should probably vary it automatically.
+- **`block_in` passes can read as parallel hatching.** Mitigated by per-pass wander,
+  by alternating the travel direction of successive passes (M4 finding 12), and by
+  `direction="cross"`; `PAINTER.md` tells the painter to vary direction between
+  passes. Varying the *pass axis* automatically is still worth trying.
 - **~200 ms per stroke** on a 1024×768 canvas — about a minute for a 300-stroke
   painting. Acceptable, not fast. The hot path is the per-dab window blend.
 - **`.easel` files are large** (megabytes) because the full float32 canvas is stored.
@@ -175,8 +179,267 @@ supposed to be unprompted, and a region called "sky" is a prompt.
 
 ---
 
+# Adversarial review — M4, the CLI and the guide
+
+Same stance as above: a hostile painter, looking for the reasons a fresh session
+will produce something that looks like clip-art or, worse, will quietly produce
+nothing at all. This pass drove every CLI verb from a clean directory, ran every
+runnable code block in `PAINTER.md` verbatim, and measured what the engine actually
+deposited rather than what it reported.
+
+## Fixed
+
+### 11. A starved brush stopped dead instead of breaking up
+**Symptom.** `s.stroke(..., load=0.2)` with the default `bristle` brush on the
+default `linen` canvas changed **zero pixels**, and returned a record reporting 278
+dabs. On `smooth` the same stroke died at `load=0.35`. On `rough` it kept marking
+down to `0.1`. Nothing distinguished this from a stroke that worked.
+
+This is the move `PAINTER.md` recommends — "low load plus rough canvas gives you dry
+brush … one of the best tools you have" — so a fresh session following the guide, on
+the surface the guide itself opens with, would have got nothing and no way to find
+out why.
+
+**Cause.** The tooth gate compares surface height against a threshold that rises as
+the brush empties: `need = (1 - load) * texture_sensitivity`. Nothing bounded it.
+Every texture is centred near 0.5 but they occupy very different spans — the gating
+field's 2nd-to-98th percentile range is 0.27 on `smooth`, 0.39 on `linen` and 0.50 on
+`rough` — so as the threshold rose it climbed clean past the highest peak of a
+narrow-toothed surface. No peak left above the threshold means no paint anywhere.
+The M2 review saw the *ordering* this produced (rough passing more paint than smooth
+at low load), accepted it as physics, and never asked what happened at the far end of
+the range.
+
+**Fix.** One line: the threshold is capped at the surface's own tooth ceiling, its
+95th percentile, measured once per canvas (`tooth_ceiling` in `easel/canvas.py`).
+A brush therefore always has some peaks left to catch on, whatever it is painting on.
+The cap engages *only* where the old code was producing nothing — at every other
+load `need` is below it and the arithmetic is unchanged — so `samples/brushes.png`
+regenerates byte-for-byte identical.
+
+**Rejected, and why it is worth knowing.** The first fix was more ambitious: express
+the threshold as a position *inside* each surface's own tooth range, so all three
+textures starve at the same rate and differ only in the character of the breakup. It
+worked, and it made the dry-brush window far wider on every surface. It also made the
+gate bite into the tooth at every load, and painting a test abstract with it showed
+why that is fatal: linen's weave is near-periodic, so a gate that reaches into it
+prints the weave across every mass as a regular halftone screen — the exact failure
+`build_surface` already warns about in its docstring. Rebalancing the aperiodic grain
+against the height map cleared the lattice, but by then a one-line bug fix had turned
+into a re-tuning of every stroke in the engine, by eye, immediately before the M5
+rehearsal that is supposed to judge it. The narrow fix ships; the range-relative gate
+is a reasonable thing to try again *after* M5, with the sampler and a real painting
+as the evidence.
+
+**Left as tuning, not a defect.** With the cap in place a `bristle` dry-brush pass on
+linen is usable from about `load=0.5` down to `0.4`, faint by `0.35` and barely there
+by `0.3`. `PAINTER.md` now gives that window and those numbers rather than the `0.15`
+it used to suggest. Whether the window should be wider is a question for a rehearsal
+with a real painting, not for a reviewer with a synthetic band.
+
+**Guarded by** `test_a_starved_stroke_still_marks_every_surface`,
+`test_canvas_tooth_gates_deposition`, `test_surfaces_break_up_at_their_own_scale`.
+
+### 12. Every block-in pass ran the same way, so every mass faded
+**Symptom.** `block_in("all", direction="horizontal")` left the right third of the
+canvas **0.21 lighter in linear luminance** than the left third — close to a full
+value step, on every mass the painter blocks in, always in the same direction.
+`direction="cross"` halved it and left +0.08 on both axes.
+
+**Cause.** Paint runs out along a stroke, and every pass started at the same edge, so
+a dozen passes stacked their run-out on top of each other. Nothing in the painting
+caused that gradient; the loop did.
+
+**Fix.** Successive passes now alternate direction (`_block_paths` in
+`easel/session.py`), the way a hand comes back across the canvas. The gradient falls
+to +0.04, the same order as the incidental variation on the other axis.
+
+**Guarded by** `test_block_in_passes_alternate_direction`,
+`test_block_in_does_not_leave_a_run_out_gradient`.
+
+### 13. `easel` is often not on `PATH`, and `python -m easel` did not work
+**Symptom.** Installs where the scripts directory is not on `PATH` are the norm on
+Windows — pip says so itself while installing: *"The script easel.exe is installed
+in … which is not on PATH."* The whole shell section of `PAINTER.md` then fails at
+its first line, and the obvious fallback answered *"'easel' is a package and cannot
+be directly executed"*.
+
+**Cause.** No `__main__.py`.
+
+**Fix.** `src/easel/__main__.py`, four lines. `PAINTER.md` and `README.md` now give
+`python -m easel` as the same command by another name, and tell the painter not to
+spend any time fixing their `PATH`.
+
+**Guarded by** `test_the_cli_runs_as_a_module`.
+
+### 14. Dabs were reported; paint was not
+**Symptom.** A mark's log line read `#015 stroke bristle #3a4a6b 212 dabs` whether it
+covered half the canvas or did nothing at all. Dabs are *attempts*. This is what made
+finding 11 invisible, and it would hide any future version of it.
+
+**Fix.** `Canvas.stamp` returns the alpha it actually deposited, `paint_stroke` totals
+it into `StrokeResult.paint`, and every record carries it. `s.log()` prints it as
+`8.4k paint`, or `NO PAINT LANDED` for a mark that changed nothing. A painter reads
+the log precisely when the canvas does not look the way they expected — which is
+exactly when this is the number they need.
+
+**Guarded by** `test_a_stroke_reports_how_much_paint_landed`,
+`test_the_log_says_when_a_mark_laid_no_paint`, `test_paint_survives_a_save_and_reload`.
+
+## Investigated and *not* a defect
+
+- **`easel look --diff` across separate shell invocations.** Suspected dead: the
+  previous look is a numpy array on the session, and each CLI command loads, acts and
+  exits. It is in fact persisted in the `.easel` file as `last_look` and restored on
+  load, so the diff spans invocations correctly. An empty diff between two looks with
+  no painting in between is the right answer, not a broken feature.
+- **Every code block in `PAINTER.md`.** Twenty-one of the twenty-three execute
+  verbatim against a fresh session, reference images and all. The two that do not are
+  the API-signature listings, which are deliberately elided pseudo-code and read as
+  such.
+- **CLI error paths.** A missing session, an unknown region, a missing script, a
+  malformed `--size`, an `undo` larger than the history: each exits non-zero with a
+  message that names the problem and, where there is one, the fix. None of them threw
+  a traceback at the painter.
+- **`easel run` on a script that raises.** Saves the session before reporting the
+  error, so a half-finished pass survives. Verified deliberately.
+
+## Method, for the next reviewer
+
+Two of these four came from measuring what the canvas *did*, rather than from reading
+the code or trusting a return value. The stroke reported 278 dabs and the canvas had
+not changed. If you take one habit from this pass, take that one: after any change to
+deposition, diff the canvas array either side of a stroke and assert on the pixels,
+not on what the function said it did.
+
+The second habit is the one this repo already prescribes, and it caught the first
+attempt at finding 11: **paint something and look at it**, not just the sampler
+sheet. The sampler shows isolated strokes at full load and it was perfectly happy
+with a gate that silkscreened the canvas weave across every accumulated mass. One
+throwaway abstract — block-ins, a dry-brush pass, a couple of accents — showed it
+immediately. Keep one such script around and run it after any change to deposition.
+
+---
+
+# M5 rehearsal review
+
+Painting a reference photograph from `PAINTER.md` alone. Findings 15-18 are engine
+defects the rehearsal surfaced; the guide gaps it surfaced are in `REHEARSAL.md`
+and were fixed in `PAINTER.md`. Three of the four below turned up in the first
+forty minutes of painting, which is the case for the rehearsal in one line.
+
+### 15. `block_in(direction="diagonal")` painted outside its region
+**Symptom.** A block-in aimed at the middle of the canvas smeared across all of it.
+Measured: a region spanning x 0.40-0.70 received paint from x 0.20 to x 0.89, and
+the overspill was *identical* at brush size 0.20 and 0.08 - so it was not the brush
+being wide, it was the geometry being wrong.
+
+**Cause.** The `horizontal` and `vertical` branches of `_block_paths` clamp each
+pass to the region's edges. The `diagonal` branch built the whole 45-degree line
+through the region and never clipped it, so every pass ran out sideways by the
+region's own height at each end.
+
+**Fix.** Clip each diagonal pass to the region, along the line, then extend by the
+overhang like the other directions (`session.py`). Diagonal was also the only
+direction with no wander, though `_block_paths` documents wander for all of them;
+it now gets the same wobble as the others.
+
+**Guarded by** `test_block_in_stays_inside_its_region`, parametrised over all four
+directions and two brush sizes. It fails on the old code at x 0.20 against a bound
+of 0.30.
+
+### 16. `value_of()` disagreed with `look(values=True)`
+**Symptom.** Planning a first pass by the numbers produced a canvas with no value
+structure at all. `value_of` called a colour that reads as a light mid-tone `0.26`,
+and reported *every* mixed dark as `0.04` - ultramarine, burnt umber, either of
+them shaded or desaturated, all identical. There was no way to tell a coat-black
+from a burnt sienna with it, though the greyscale view shows them a clear step
+apart.
+
+**Cause.** `Palette.value_of` returned linear luminance. `Canvas.values`, which is
+what `look(values=True)` renders, returns `linear_to_srgb(luminance(...))`. The two
+value instruments the guide offers disagreed by the whole transfer curve, and the
+docstring - "how light the colour reads" - described the one it was not returning.
+Measured against flat swatches: ochre 0.30 vs 0.58, umber 0.04 vs 0.23, cadmium
+yellow 0.59 vs 0.79.
+
+**Fix.** `value_of` encodes to sRGB, so the number and the picture agree exactly
+(`palette.py`). `test_white_actually_lightens` asserted `tinted > base * 2.0`, a
+ratio that only meant "substantially" in linear units; it now asserts a difference
+of 0.15, which is more than one step of a nine-step value scale.
+
+**Guarded by** `test_value_of_agrees_with_the_values_view`,
+`test_value_of_separates_the_darks`.
+
+### 17. The tooth gate printed the linen weave as a halftone screen
+**Symptom.** A broad scumble at `load=0.55` - inside the window `PAINTER.md` calls
+usable, on the default surface - laid an even lattice of dots across the whole
+canvas. It reads as silkscreen, and every stroke afterwards sits on top of it.
+
+**Cause.** This is finding 11's rejected fix arriving on its own. The gating field
+is `height * 0.72 + grain * 0.28`; the weave is coherent and periodic and the grain
+is not, and at that weighting the weave won. Finding 11 predicted exactly this and
+deferred it to M5 "with the sampler and a real painting as the evidence". The
+rehearsal produced both.
+
+**Fix.** Two changes, in `canvas.py`. The gate weighting goes to 0.52/0.48. On its
+own that homogenised the surfaces - the grain was one fixed ~3px cell for every
+texture, so with more weight all three broke up at the *grain's* scale instead of
+their own, and `test_surfaces_break_up_at_their_own_scale` caught it (rough/linen
+fell from 3.23 to 1.40). So the grain's scale now follows the surface: rough coarse,
+linen fine, smooth between. Rough/linen is 3.32 after, slightly better than before,
+and the three surfaces read as themselves on the regenerated sampler.
+
+**Rejected first, and why it is worth knowing.** The initial attempt added
+thread-to-thread variation to the linen weave itself in `texture.py`. It measurably
+reduced the weave's local periodicity - row autocorrelation at the thread lag fell
+from 0.63 to 0.45 - and did *not* remove the visible screen, because the screen
+comes from the gate thresholding the weave, not from the weave's own amplitude. It
+was reverted. The lesson: the autocorrelation of the height map is the wrong
+instrument here. Look at deposited paint.
+
+**Guarded by** `test_surfaces_break_up_at_their_own_scale`, unchanged - and it is
+what caught the bad first weighting.
+
+### 18. The reference panel got neither the grid nor the greyscale
+**Symptom.** `look(reference=..., grid=True)` labelled the painting with A-H/1-8 and
+left the reference bare. `look(reference=..., values=True)` - a call `PAINTER.md`
+prints, commented "compare value structure, not colour" - put a greyscale painting
+beside a full-colour photograph.
+
+**Why it matters more than it looks.** The grid is the guide's entire answer to "you
+cannot reason in pixels", and copying a reference is the one task where you need to
+name a place on *something else* and hit it on your own canvas. Without it there is
+no shared vocabulary with the thing being copied, and every coordinate comes out of
+the painter's head - precisely the faculty the brief says is unreliable. Half the
+rehearsal painting was made before this was fixed and half after; the difference was
+not subtle.
+
+**Fix.** `render_look` passes `grid` through to `_side_by_side`, which draws it on
+the reference *after* the resize so the cells divide both frames identically; and
+`values=True` converts the reference through the same luminance-then-sRGB path the
+canvas uses, rather than PIL's `grayscale`, which weights the encoded channels and
+would put the two panels on different scales (`look.py`).
+
+**Guarded by** `test_the_reference_gets_the_same_grid_and_the_same_greyscale`.
+
+## Open, with evidence
+
+- **Pressure changes opacity, not width.** A stroke at `pressure=0.1` and one at
+  `1.0` cover an identical bounding box - 58px tall in both - and differ only in how
+  much paint lands (mean delta 0.013 against 0.089). Because dabs overlap and
+  accumulate, an opaque colour saturates and the six named profiles become visually
+  indistinguishable: guide exercise 2 as written demonstrated nothing, and the three
+  pressure columns of `samples/brushes.png` look alike for every brush. Making
+  pressure modulate dab radius would fix that *and* attack "everything the same
+  width", which is on the brief's clip-art list. It would also change every stroke
+  in the engine, which is the thing finding 11 warns against doing by eye late in a
+  milestone. Not taken. `PAINTER.md` now states what pressure does and does not do,
+  fixes the exercise so it demonstrates its lesson, and tells the painter that
+  varying width is their own job.
+
+---
+
 ## Not yet reviewed
 
-The M4 review (after the CLI and guide are exercised in anger) has not been done.
-The rehearsal in M5 — painting from `PAINTER.md` alone and treating every reach for
-the source as a guide bug — has not been done either. Both are still open.
+M6, the MCP server, which does not exist yet.

@@ -29,3 +29,13 @@ samples/*.gif
 .idea/
 .DS_Store
 Thumbs.db
+
+# M5 rehearsal. The two finished paintings and their time-lapses are the evidence
+# the brief's definition of done asks for; the intermediate looks and probe sheets
+# beside them regenerate from the scripts in the same directory.
+rehearsal/*.png
+rehearsal/*.gif
+!rehearsal/copy_final.png
+!rehearsal/own_final.png
+!rehearsal/copy_timelapse.gif
+!rehearsal/own_timelapse.gif

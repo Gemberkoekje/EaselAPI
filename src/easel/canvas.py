@@ -25,7 +25,20 @@ import numpy as np
 from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_to_linear
 from easel.texture import make_texture, value_noise
 
-__all__ = ["Canvas", "GROUNDS", "build_surface"]
+__all__ = ["Canvas", "GROUNDS", "build_surface", "tooth_ceiling"]
+
+# How the surface height and its finer grain combine into the field that gates
+# deposition. Kept here rather than inline in `stamp` so that `tooth_ceiling` below
+# measures exactly the field the gate will see.
+# The weave is coherent and periodic; the grain is not. Weighted 0.72/0.28 the
+# weave still won, and a broad scumble at load 0.55 -- inside the window PAINTER.md
+# calls usable, on the default surface -- printed the linen as an even dot screen
+# across the whole canvas. REVIEW.md finding 11 predicted exactly this and deferred
+# it to M5 "with the sampler and a real painting as the evidence"; the M5 rehearsal
+# produced both. At 0.52/0.48 the weave still organises the breakup but no longer
+# prints as a lattice. See REVIEW.md finding 15.
+_TOOTH_HEIGHT_W = 0.52
+_TOOTH_GRAIN_W = 0.48
 
 
 def build_surface(
@@ -43,8 +56,32 @@ def build_surface(
     """
     rng = np.random.default_rng(seed)
     height_map = make_texture(texture, height, width, rng, texture_strength)
-    grain = value_noise((height, width), max(48, max(width, height) // 3), rng).astype(np.float32)
+    # The grain carries real weight in the gate, so its scale has to belong to the
+    # surface. One fixed fine grain for every texture made all three break up at the
+    # grain's scale instead of their own -- cold-press paper stopped leaving chunky
+    # islands and started speckling like cloth.
+    divisor = {"rough": 11, "linen": 3, "smooth": 4}.get(texture.lower(), 4)
+    cells = max(24, max(width, height) // divisor)
+    grain = value_noise((height, width), cells, rng).astype(np.float32)
     return height_map, grain
+
+
+def tooth_ceiling(height_map: np.ndarray, grain: np.ndarray, stride: int = 4) -> float:
+    """The highest tooth a starving brush can still reach: the 95th percentile.
+
+    Deposition is gated by a threshold that rises as the brush empties. Left
+    unbounded that threshold climbs clean off the top of a surface whose tooth
+    occupies a narrow range -- every texture is centred near 0.5, but the gating
+    field spans 0.27 on smooth against 0.50 on rough -- and the stroke stops dead
+    instead of breaking up. Capping the threshold here means a brush always has some
+    peaks left to catch on, whatever it is painting on. See REVIEW.md finding 11.
+
+    Sampled on a stride: a texture's percentiles do not need every pixel, and this
+    runs once per canvas.
+    """
+    sample = (height_map[::stride, ::stride] * _TOOTH_HEIGHT_W
+              + grain[::stride, ::stride] * _TOOTH_GRAIN_W)
+    return float(np.percentile(sample, 95.0))
 
 #: Ground colours the canvas can be primed with, as sRGB hex.
 GROUNDS: dict[str, str] = {
@@ -101,6 +138,7 @@ class Canvas:
         self.height_map, self.grain = build_surface(
             texture, self.height, self.width, seed, texture_strength
         )
+        self.tooth_ceiling = tooth_ceiling(self.height_map, self.grain)
 
         ground_lin = self._resolve_ground(ground)
         self.rgb = np.empty((self.height, self.width, 3), dtype=np.float32)
@@ -148,11 +186,16 @@ class Canvas:
         thickness_gain: float,
         texture_sensitivity: float,
         glaze: bool = False,
-    ) -> None:
+    ) -> float:
         """Deposit one dab. Centre is in pixel coordinates and may be fractional.
 
         Everything outside the canvas is clipped away, so a stroke can safely run
         off the edge -- which is what a painter does at the border of a canvas.
+
+        Returns:
+            How much paint actually landed, as the sum of the deposited alpha --
+            roughly "how many pixels' worth of opaque paint". Zero means the dab
+            made no mark at all, which the painter otherwise has no way to see.
         """
         n = mask.shape[0]
         r = n // 2
@@ -167,11 +210,12 @@ class Canvas:
         cx0, cy0 = max(0, x0), max(0, y0)
         cx1, cy1 = min(self.width, x1), min(self.height, y1)
         if cx1 <= cx0 or cy1 <= cy0:
-            return
+            return 0.0
         sub = mask[sy0 : sy0 + (cy1 - cy0), sx0 : sx0 + (cx1 - cx0)]
 
         # Gating tooth: the surface height, roughened by the aperiodic grain.
-        tooth = self.height_map[cy0:cy1, cx0:cx1] * 0.72 + self.grain[cy0:cy1, cx0:cx1] * 0.28
+        tooth = (self.height_map[cy0:cy1, cx0:cx1] * _TOOTH_HEIGHT_W
+                 + self.grain[cy0:cy1, cx0:cx1] * _TOOTH_GRAIN_W)
         wet = self.wetness[cy0:cy1, cx0:cx1]
         thick = self.thickness[cy0:cy1, cx0:cx1]
         dst = self.rgb[cy0:cy1, cx0:cx1]
@@ -180,9 +224,15 @@ class Canvas:
 
         # Canvas tooth gating. A full brush fills the valleys too; as the load runs
         # out, only the peaks still receive paint. This is where dry brush comes from.
+        #
+        # The threshold is capped at the surface's own tooth ceiling. Without that cap
+        # it climbs past the highest peak on a narrow-toothed surface and the stroke
+        # stops dead: a bristle brush below about a third of its load deposited
+        # literally nothing on smooth or linen while still marking rough. Broken is
+        # the point; stopping dead is not.
         ts = float(np.clip(texture_sensitivity, 0.0, 1.0))
         if ts > 0.0:
-            need = (1.0 - float(np.clip(load, 0.0, 1.0))) * ts
+            need = min((1.0 - float(np.clip(load, 0.0, 1.0))) * ts, self.tooth_ceiling)
             band = 0.18
             gate = np.clip((tooth - need) / band, 0.0, 1.0)
             gate = gate * gate * (3.0 - 2.0 * gate)
@@ -197,7 +247,7 @@ class Canvas:
         effective = alpha * (1.0 - 0.55 * wet)
         np.clip(effective, 0.0, 1.0, out=effective)
         if not np.any(effective > 1e-4):
-            return
+            return 0.0
 
         self.rgb[cy0:cy1, cx0:cx1] = blend_wet(dst, color, effective)
 
@@ -207,6 +257,7 @@ class Canvas:
             np.clip(thick, 0.0, _MAX_THICKNESS, out=thick)
 
         np.maximum(wet, alpha * float(wetness_gain), out=wet)
+        return float(effective.sum())
 
     def sample(self, cx: float, cy: float, mask: np.ndarray) -> np.ndarray:
         """Average canvas colour under a stamp. Used by smudge and knife drag."""

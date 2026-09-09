@@ -18,6 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from easel.canvas import Canvas
+from easel.color import linear_to_srgb, luminance, srgb_to_linear
 from easel.regions import GRID_COLS, GRID_ROWS, as_region
 
 __all__ = ["render_look", "save_look", "load_reference", "DEFAULT_LOOK_SIZE"]
@@ -79,8 +80,30 @@ def render_look(
     if grid:
         img = _draw_grid(img)
     if reference is not None:
-        img = _side_by_side(img, reference)
+        # The reference gets the same treatment as the canvas, or the comparison is
+        # not a comparison: greyscale beside greyscale when values are being judged,
+        # and the *same* grid over both, so a place named on one names it on the
+        # other. A grid that stops at the edge of your own painting is no use for
+        # the one job it has when there is a reference -- getting what you can see
+        # over there into the right cell over here.
+        ref = reference.convert("RGB")
+        if values:
+            ref = _as_values(ref)
+        img = _side_by_side(img, ref, grid=grid)
     return img
+
+
+def _as_values(img: Image.Image) -> Image.Image:
+    """An image as the greyscale the canvas would show: luminance, sRGB-encoded.
+
+    Not PIL's `grayscale`, which takes a weighted sum of the *encoded* channels.
+    That is a different number, and the point of putting these two panels side by
+    side is that the same value reads the same in both.
+    """
+    arr = np.asarray(img, dtype=np.float32) / 255.0
+    lum = luminance(srgb_to_linear(arr))
+    grey = (linear_to_srgb(lum) * 255.0 + 0.5).astype(np.uint8)
+    return Image.fromarray(np.repeat(grey[:, :, None], 3, axis=2), mode="RGB")
 
 
 def _downsample(img: Image.Image, long_side: int) -> Image.Image:
@@ -118,12 +141,18 @@ def _draw_grid(img: Image.Image) -> Image.Image:
     return out
 
 
-def _side_by_side(img: Image.Image, reference: Image.Image, gap: int = 12) -> Image.Image:
+def _side_by_side(
+    img: Image.Image, reference: Image.Image, gap: int = 12, grid: bool = False
+) -> Image.Image:
     """Reference on the left, painting on the right, matched in height."""
     ref = reference.convert("RGB")
     target_h = img.size[1]
     ref_w = max(1, int(round(ref.size[0] * target_h / ref.size[1])))
     ref = ref.resize((ref_w, target_h), Image.LANCZOS)
+    if grid:
+        # Drawn after the resize, so the cells divide the reference's own frame the
+        # way they divide the canvas: D4 is D4 in both panels.
+        ref = _draw_grid(ref)
 
     out = Image.new("RGB", (ref_w + gap + img.size[0], target_h), (24, 24, 24))
     out.paste(ref, (0, 0))

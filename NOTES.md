@@ -1,13 +1,17 @@
-# Phase notes — scaffolding
+# Phase notes — scaffolding, M4, then the M5 rehearsal
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
+`REHEARSAL.md` (what the M5 rehearsal found, and the honest verdict on it), then
 `PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the object
 everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
-Status: the scaffold is complete and working end to end. Against the brief's build
-order that is **M1 and M2 done, M3 done, M4 mostly done**; M5 (rehearsal) and M6
-(MCP) are untouched.
+Status: **M1–M5 done.** M6 (MCP) is untouched and correctly last.
+
+The M5 rehearsal was run as the brief describes and is written up in `REHEARSAL.md`.
+Read the verdict there before trusting anything: the unprompted painting went well,
+the **copy did not reach a likeness**, and the guide has been substantially rewritten
+as a result. Four engine defects came out of it (`REVIEW.md` 15–18).
 
 ---
 
@@ -18,8 +22,8 @@ order that is **M1 and M2 done, M3 done, M4 mostly done**; M5 (rehearsal) and M6
 | M1 Foundation | Done. Canvas, round brushes, curved strokes, `look()`, PNG export, seed, sampler sheet. |
 | M2 Painterly | Done. Flat/bristle/knife with direction following, paint load and run-out, texture modulation, wet blending, `dry()`, pigment mixing, palette. |
 | M3 Composition | Done. Regions, grid, relative placement, stroke-based block-in, values view, side-by-side, diff, history, time-lapse. |
-| M4 CLI and guide | CLI done, `PAINTER.md` written, `pip install -e .` works. Not yet exercised by a fresh session. |
-| M5 Rehearsal | **Not started.** This is the next thing to do. |
+| M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
+| M5 Rehearsal | Done. Protocol run on a real photograph; copy fell short of a likeness, unprompted painting did not. Ten gaps fixed in `PAINTER.md`, four engine defects in `REVIEW.md` 15–18. See `REHEARSAL.md`. |
 | M6 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -41,15 +45,25 @@ src/easel/
   history.py   stroke log, undo snapshots, GIF and contact-sheet time-lapse.
   session.py   the one object a painter holds. Also save/load and replay.
   cli.py       easel new / run / look / undo / export / timelapse / log / brushes.
+  __main__.py  so `python -m easel ...` works when `easel` is not on PATH, which
+               on Windows is most of the time.
 
-tests/test_engine.py      66 tests: bounds, determinism, undo, replay, colour,
+tests/test_engine.py      78 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
 scripts/make_brush_sampler.py   regenerates samples/brushes.png — the primary
                           test artefact. Look at it after every engine change.
-examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable.
+examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
+                          step with the printed ones -- two were rewritten in M5.
+rehearsal/                the M5 rehearsal: both paintings, their pass scripts,
+                          the probes behind REVIEW 15-18, and a script that
+                          executes every python block in PAINTER.md.
 PAINTER.md                the guide a fresh agent is given. The deliverable.
-REVIEW.md                 adversarial review: ten defects found and fixed, four
-                          things investigated and found *not* to be defects.
+REHEARSAL.md              the M5 rehearsal write-up. Read it before believing the
+                          guide works -- it says plainly where it did not.
+REVIEW.md                 three adversarial reviews. M1/M2: ten defects fixed. M4:
+                          four more (findings 11–14), plus four things investigated
+                          and found *not* to be defects. Read the M4 "Method" note
+                          before reviewing anything else here.
 ```
 
 ## Key decisions, and why
@@ -70,37 +84,78 @@ REVIEW.md                 adversarial review: ten defects found and fixed, four
   persisting snapshots.
 - **The canvas tooth and grain are derived from the seed**, so a saved session does
   not store them.
+- **The tooth gate's threshold is capped at the surface's own tooth ceiling.**
+  Textures are all centred near 0.5 but span very different ranges, and an uncapped
+  threshold climbs past the highest peak of the narrow ones — which is how a starved
+  brush came to deposit *nothing* on linen and smooth while still marking rough.
+  `tooth_ceiling()` in `canvas.py`. The cap engages only where the old code produced
+  nothing, so the sampler sheet regenerates byte-identical. REVIEW.md finding 11 also
+  records the more ambitious fix that was tried and rejected, and why — read it
+  before reaching for the same idea.
+- **Every mark records how much paint actually landed**, not just how many dabs were
+  stamped. Dabs are attempts. A stroke can stamp 278 dabs and change nothing, and
+  before this there was no way — from the API or the log — to tell that apart from a
+  stroke that worked.
 - **Region names are deliberately neutral** (`upper-band`, not `sky-band`). The
   experiment's second stage is meant to be unprompted.
 
 ## Gotchas for the next session
 
-1. **Look at `samples/brushes.png` after any engine change.** Every defect in
-   REVIEW.md was found by looking, and none of them by the test suite. Numbers will
-   not tell you a stroke has gone mechanical.
-2. **Anything linear in per-dab alpha cannot produce a persistent mixture.** If you
+0. **The measurement can be right and the instrument still wrong.** Two M5 findings
+   were tools that lied: `value_of` returned linear luminance while the greyscale
+   view showed sRGB, and the first attempt at the halftone screen measured the height
+   map's autocorrelation rather than the paint that landed. Before trusting a number,
+   check it against the picture the painter actually sees.
+
+
+1. **Look at `samples/brushes.png` after any engine change — and then paint
+   something.** Every defect in the M1/M2 review was found by looking, and none by
+   the test suite. But the sampler shows *isolated strokes at full load*: it was
+   perfectly happy with a gate that silkscreened the canvas weave across every
+   accumulated mass. Block-ins on top of block-ins are a different test. Keep a
+   throwaway abstract script around for it.
+2. **Assert on the canvas, not on the return value.** Both of the M4 engine findings
+   were invisible from the API: a stroke reported 278 dabs and had changed nothing.
+   Diff `canvas.rgb` either side of a stroke when you touch deposition.
+3. **Anything linear in per-dab alpha cannot produce a persistent mixture.** If you
    find yourself tuning a wet-blending coefficient and seeing no effect, re-read
    REVIEW.md finding 7 before spending an hour on it.
-3. **`np.savez_compressed` appends `.npz`** to a path without it. Save through an
+4. **`np.savez_compressed` appends `.npz`** to a path without it. Save through an
    open file handle. There is a test guarding this.
-4. **`import easel.brush as b` gets the function, not the module**, because
+5. **`import easel.brush as b` gets the function, not the module**, because
    `easel/__init__.py` rebinds the name. Use `from easel.brush import ...`, or
    `importlib.import_module("easel.brush")`.
-5. **`sin(pi)` is slightly negative in float32**, and a negative base with a
+6. **`sin(pi)` is slightly negative in float32**, and a negative base with a
    fractional exponent is NaN. This bit the `taper` pressure profile.
-6. **Windows heredocs**: several multi-KB Python files could not be written through
+7. **Windows heredocs**: several multi-KB Python files could not be written through
    `bash` heredocs in this environment. Use the file-writing tool for anything large.
+8. **Check what `import easel` actually resolves to** before trusting a measurement.
+   A previous session left an editable install pointing at a copy of the repo under
+   its own scratch directory, so everything imported that copy rather than
+   `C:\git\EaselAPI\src`. `python -c "import easel; print(easel.__file__)"`, and
+   `pip install -e .` from the repo root if it is wrong.
+9. **The repo is LF** (`.gitattributes`: `* text=auto eol=lf`), even though a Windows
+   checkout may hand you CRLF files. Write LF, or git will warn on every commit.
 
 ## What to do next, in order
 
-1. **M5 rehearsal.** Paint a reference photo using only `PAINTER.md`, as if a fresh
-   session. Every time you reach for the source or for internal knowledge, that is a
-   gap in the guide — fix the guide, not the painting. This is the highest-value
-   remaining work by a distance, because it is what the whole thing is judged on.
+1. **Re-run the protocol with a genuinely fresh session.** The M5 rehearsal fixed ten
+   guide gaps and four engine defects, but it was run by someone who ended up reading
+   the source to fix them — so it cannot measure the thing the brief actually asks
+   about. Hand the revised `PAINTER.md` and a reference to a session that has never
+   seen this repo, and treat *that* as the measurement. Watch in particular whether
+   the new *Working from a reference* section is enough to get a likeness; the
+   rehearsal's own copy was not one.
 2. **Golden-image tests.** A fixed set of strokes, hashed, so brush-engine
-   regressions fail loudly. The property tests catch behaviour, not appearance.
-3. **The M4 adversarial review** of the CLI and the guide (REVIEW.md covers M2 only).
-4. Consider varying `block_in` direction automatically between passes.
+   regressions fail loudly. The property tests catch behaviour, not appearance, and
+   this milestone changed deposition — `samples/brushes.png` has been regenerated and
+   is no longer byte-comparable with anything before it.
+3. **Decide the pressure question.** Pressure scales opacity and not width; the
+   measurements and the argument either way are in `REVIEW.md` under *Open, with
+   evidence*. If it is taken, take it early in a milestone and re-look at the sampler
+   and a real painting, not at the sampler alone.
+4. Consider varying `block_in`'s pass *axis* automatically between passes. The travel
+   direction alternates on its own (REVIEW finding 12); the axis still does not.
 5. Only then, M6 MCP server — one tool per CLI verb, plus `look` returning the image
    inline.
 
@@ -108,8 +163,9 @@ REVIEW.md                 adversarial review: ten defects found and fixed, four
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 66 tests
+pytest -q                              # 78 tests
 ruff check src tests scripts examples
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png
 python examples/exercises.py           # writes out/ex_*.png
+python -m easel brushes                # the CLI, without needing it on PATH
 ```

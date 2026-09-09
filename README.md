@@ -38,6 +38,10 @@ build on Windows.
 pip install -e .
 ```
 
+That installs an `easel` command. Pip puts it in the interpreter's scripts
+directory, which is often not on `PATH` (it warns when it is not), so
+`python -m easel ...` is always available as the same command by another name.
+
 ## If you are an LLM agent, read PAINTER.md
 
 [`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
@@ -77,6 +81,9 @@ easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif
 easel brushes
 ```
+
+Every one of these also works as `python -m easel ...`, for when the `easel`
+executable is not on `PATH`.
 
 A script run by `easel run` gets the session pre-bound as `s`, with the whole public
 API already in scope — it needs no imports.

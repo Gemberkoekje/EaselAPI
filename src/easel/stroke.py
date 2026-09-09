@@ -38,9 +38,14 @@ class StrokeResult:
     length_px: float
     end_load: float
     bounds: tuple[float, float, float, float]  # normalised x0, y0, x1, y1
+    #: How much paint landed, as pixels' worth of opaque paint. A stroke can be
+    #: stamped in full and still deposit nothing -- too little load for the tooth,
+    #: or a glaze onto soaking-wet paint -- and this is how the painter can tell.
+    paint: float = 0.0
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
-        return f"StrokeResult(dabs={self.dabs}, length={self.length_px:.0f}px, end_load={self.end_load:.2f})"
+        return (f"StrokeResult(dabs={self.dabs}, length={self.length_px:.0f}px, "
+                f"end_load={self.end_load:.2f}, paint={self.paint:.0f}px)")
 
 
 # --------------------------------------------------------------------------------------
@@ -260,6 +265,7 @@ def paint_stroke(
     min_x = min_y = 1.0
     max_x = max_y = 0.0
     stamped = 0
+    deposited = 0.0
 
     for i in range(n):
         cx = float(pos[i, 0] + jitter_xy[i, 0])
@@ -309,7 +315,7 @@ def paint_stroke(
         # As the paint runs out the mark gets thinner as well as more broken.
         strength = brush.opacity * float(press[i]) * (0.35 + 0.65 * ld)
 
-        canvas.stamp(
+        deposited += canvas.stamp(
             float(ix),
             float(iy),
             mask,
@@ -342,6 +348,7 @@ def paint_stroke(
             float(np.clip(max_x, 0.0, 1.0)),
             float(np.clip(max_y, 0.0, 1.0)),
         ),
+        paint=float(deposited),
     )
 
 

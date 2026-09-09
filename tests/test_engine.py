@@ -11,6 +11,9 @@ Everything else here guards a specific bug that was actually hit while building.
 
 from __future__ import annotations
 
+import subprocess
+import sys
+
 import numpy as np
 import pytest
 
@@ -143,7 +146,32 @@ def test_white_actually_lightens():
     p = Palette()
     base = p.value_of("ultramarine")
     tinted = p.value_of(p.mix("ultramarine", "titanium_white", 0.5))
-    assert tinted > base * 2.0, "50/50 with white should lighten substantially"
+    # `value_of` reports perceptual value, so "substantially" is a number of value
+    # steps, not a ratio. A nine-step scale puts about 0.12 between neighbours; half
+    # a canvas of white has to move the colour further than one such step.
+    assert tinted - base > 0.15, "50/50 with white should lighten substantially"
+
+
+def test_value_of_agrees_with_the_values_view():
+    """The number and the greyscale picture are the painter's two value instruments.
+
+    They have to give the same reading. `value_of` used to return *linear*
+    luminance while `look(values=True)` showed sRGB lightness, so the two
+    disagreed by the whole transfer curve: burnt umber read 0.04 as a number and
+    0.23 in the view, and every mixed dark reported an identical 0.04.
+    """
+    p = Palette()
+    for name in ["titanium_white", "cadmium_yellow", "yellow_ochre",
+                 "burnt_sienna", "burnt_umber", "ultramarine"]:
+        s = Session(64, 64, ground=p.hex(name), seed=1, timelapse=False)
+        shown = float(s.canvas.values().mean()) / 255.0
+        assert p.value_of(name) == pytest.approx(shown, abs=0.01), name
+
+
+def test_value_of_separates_the_darks():
+    """Darks have to be distinguishable, or the instrument is useless where it matters."""
+    p = Palette()
+    assert p.value_of("burnt_sienna") - p.value_of("burnt_umber") > 0.05
 
 
 def test_mix_endpoints_are_exact():
@@ -277,23 +305,60 @@ def test_glaze_does_not_build_thickness():
     assert float(s.canvas.thickness.max()) == 0.0
 
 
-def test_rough_texture_breaks_a_stroke_more_than_smooth():
-    """Canvas tooth must actually gate deposition, or dry brush is a lie.
+def _starved_band(texture: str, load: float) -> np.ndarray:
+    """The painted band left by one starved stroke, as luminance."""
+    c = Canvas(400, 80, texture=texture, ground="white", seed=2)
+    b = brush("bristle", size=0.16, load=load, load_falloff=0.0)
+    paint_stroke(c, [(0.05, 0.5), (0.95, 0.5)], b, "#101010", "even",
+                 np.random.default_rng(1))
+    return c.rgb.mean(axis=2)[30:50, 40:360]
 
-    The property is *brokenness*, not coverage. A rough surface has a wider spread
-    of peaks and valleys, so a starved brush skips across it -- leaving more paint
-    on the peaks than a smooth surface does, but in a far patchier band. Total ink
-    is the wrong measure; spatial variance within the band is the right one.
+
+def _mean_run(band: np.ndarray) -> float:
+    """Mean length of an unbroken covered run along a row: how chunky the marks are."""
+    runs, n = [], 0
+    for row in band < 0.6:
+        for covered in row:
+            if covered:
+                n += 1
+            elif n:
+                runs.append(n)
+                n = 0
+        if n:
+            runs.append(n)
+            n = 0
+    return float(np.mean(runs)) if runs else 0.0
+
+
+@pytest.mark.parametrize("texture", TEXTURES)
+def test_canvas_tooth_gates_deposition(texture):
+    """Tooth must gate the paint: a starved brush leaves far less than a full one."""
+    full = float((1.0 - _starved_band(texture, 1.0)).sum())
+    starved = float((1.0 - _starved_band(texture, 0.35)).sum())
+    assert starved < full * 0.6
+
+
+@pytest.mark.parametrize("texture", TEXTURES)
+def test_a_starved_stroke_still_marks_every_surface(texture):
+    """A low load must break a stroke up, never stop it dead.
+
+    The gate threshold used to be an absolute height while each texture occupies a
+    different span, so on the narrow-toothed surfaces the threshold climbed clean
+    off the top of the tooth: a bristle brush below about a third of its load
+    deposited *nothing at all* on smooth and linen, while rough still marked. The
+    painter got a full dab count back and an unchanged canvas. See REVIEW.md
+    finding 11.
     """
+    band = _starved_band(texture, 0.15)
+    assert float((1.0 - band).sum()) > 100.0, "a starved stroke laid no paint at all"
+    assert float((band > 0.9).mean()) > 0.15, "a starved stroke was not broken up"
 
-    def brokenness(texture: str) -> float:
-        c = Canvas(400, 80, texture=texture, ground="white", seed=2)
-        b = brush("bristle", size=0.16, load=0.35, load_falloff=0.0)
-        paint_stroke(c, [(0.05, 0.5), (0.95, 0.5)], b, "#101010", "even",
-                     np.random.default_rng(1))
-        return float(c.rgb.mean(axis=2)[30:50, 40:360].std())
 
-    assert brokenness("rough") > brokenness("smooth") * 1.3
+def test_surfaces_break_up_at_their_own_scale():
+    """Rough leaves chunky islands; linen's fine weave leaves fine speckle."""
+    rough = _mean_run(_starved_band("rough", 0.35))
+    linen = _mean_run(_starved_band("linen", 0.35))
+    assert rough > linen * 1.5
 
 
 @pytest.mark.parametrize("texture", TEXTURES)
@@ -352,6 +417,30 @@ def test_block_in_leaves_visible_brushwork():
     s.block_in("all", brush="bristle", color="burnt_umber", density=0.8, size=0.2)
     painted = s.canvas.rgb.mean(axis=2)
     assert float(painted.std()) > 0.01, "block-in produced a flat, unpainterly fill"
+
+
+def test_block_in_passes_alternate_direction():
+    """Consecutive passes must run opposite ways, the way a hand comes back.
+
+    Paint runs out along a stroke. Passes that all start at the same edge stack
+    their run-out and leave the whole mass lighter on the side they end at -- a
+    machine's signature. See REVIEW.md finding 12.
+    """
+    s = Session(120, 120, ground="white", seed=6, timelapse=False)
+    records = s.block_in("all", brush="bristle", color="burnt_umber",
+                         direction="horizontal", density=1.0, size=0.12)
+    starts = [r.points[0][0] for r in records]
+    assert len(set(round(x) for x in starts)) == 2, "every pass started at the same edge"
+
+
+def test_block_in_does_not_leave_a_run_out_gradient():
+    """The blocked-in mass must not fade across the canvas as the passes run out."""
+    s = Session(300, 300, ground="white", seed=12, timelapse=False)
+    s.block_in("all", brush="bristle", color="ultramarine",
+               direction="horizontal", density=1.0)
+    lum = s.canvas.rgb.mean(axis=2)
+    left, right = float(lum[:, :100].mean()), float(lum[:, 200:].mean())
+    assert abs(right - left) < 0.08, f"block-in fades across the canvas: {left:.3f} to {right:.3f}"
 
 
 # --------------------------------------------------------------------------------------
@@ -458,3 +547,96 @@ def test_unknown_texture_and_ground_explain_themselves():
 def test_tiny_canvas_is_rejected():
     with pytest.raises(ValueError, match="at least 8x8"):
         Canvas(4, 4)
+
+
+# --------------------------------------------------------------------------------------
+# Telling the painter what actually happened
+# --------------------------------------------------------------------------------------
+def test_a_stroke_reports_how_much_paint_landed():
+    """Dabs are attempts; paint is what stuck. The painter needs the second number."""
+    s = Session(200, 150, ground="white", seed=4, timelapse=False)
+    full = s.stroke([(0.1, 0.5), (0.9, 0.5)], "bristle", "ultramarine", pressure="even")
+    starved = s.stroke([(0.1, 0.8), (0.9, 0.8)], "bristle", "ultramarine",
+                       pressure="even", load=0.08, load_falloff=0.0)
+    assert full.dabs == starved.dabs, "the two strokes should stamp the same dabs"
+    assert full.paint > starved.paint * 3.0, "a starved stroke should lay far less paint"
+    assert starved.paint > 0.0, "a starved stroke should still lay something"
+
+
+def test_the_log_says_when_a_mark_laid_no_paint():
+    """A mark that changed nothing must say so, not read like any other stroke."""
+    s = Session(120, 90, ground="white", seed=4, timelapse=False)
+    s.stroke([(0.1, 0.5), (0.9, 0.5)], "bristle", "ultramarine", opacity=0.0)
+    assert "NO PAINT LANDED" in s.log(1)
+
+
+def test_paint_survives_a_save_and_reload(tmp_path):
+    s = Session(100, 80, ground="white", seed=4, timelapse=False)
+    s.stroke([(0.1, 0.5), (0.9, 0.5)], "bristle", "ultramarine")
+    reloaded = Session.load(s.save(tmp_path / "p.easel"))
+    assert reloaded.history.records[0].paint == pytest.approx(s.history.records[0].paint)
+
+
+def test_the_cli_runs_as_a_module():
+    """`easel` is not always on PATH, so `python -m easel` has to work."""
+    result = subprocess.run(
+        [sys.executable, "-m", "easel", "brushes"],
+        capture_output=True, text=True, timeout=120,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "bristle" in result.stdout
+
+
+
+@pytest.mark.parametrize("direction", ["horizontal", "vertical", "diagonal", "cross"])
+@pytest.mark.parametrize("size", [0.20, 0.08])
+def test_block_in_stays_inside_its_region(direction, size):
+    """A mass must land where it was asked for, give or take a brush width.
+
+    `diagonal` used to draw each pass as the whole 45-degree line through the
+    region without clipping it, so every pass ran out sideways by the region's own
+    height -- a block-in aimed at the middle of the canvas smeared across all of
+    it, and the overspill did not shrink when you took a smaller brush.
+    """
+    r = Region(0.40, 0.42, 0.70, 0.62)
+    s = Session(1000, 600, ground="toned_grey", seed=5, timelapse=False)
+    before = s.canvas.rgb.copy()
+    s.block_in(r, "bristle", "titanium_white", density=0.9, size=size,
+               direction=direction)
+
+    touched = np.abs(s.canvas.rgb - before).max(axis=2) > 1e-3
+    ys, xs = np.nonzero(touched)
+    assert xs.size, "the block-in laid no paint at all"
+
+    slack = size + 0.02          # half a brush either side, plus the overhang
+    assert xs.min() / 1000 >= r.x0 - slack
+    assert xs.max() / 1000 <= r.x1 + slack
+    assert ys.min() / 600 >= r.y0 - slack
+    assert ys.max() / 600 <= r.y1 + slack
+
+
+def test_the_reference_gets_the_same_grid_and_the_same_greyscale():
+    """Side by side is for comparing, so both panels must be treated alike.
+
+    The grid used to stop at the edge of the painting, which is the one place it
+    is least needed -- a painter copying a reference needs to name a place on the
+    reference and hit the same place on the canvas. And `values=True` converted
+    only the canvas, so the guide's own "compare value structure, not colour" call
+    put a greyscale painting beside a full-colour photograph.
+    """
+    from PIL import Image
+
+    from easel.look import render_look
+
+    s = Session(200, 200, ground="toned_grey", seed=1, timelapse=False)
+    ref = Image.new("RGB", (300, 200), (200, 40, 40))
+
+    plain = np.asarray(render_look(s.canvas, reference=ref))
+    gridded = np.asarray(render_look(s.canvas, reference=ref, grid=True))
+    left = slice(0, plain.shape[1] // 3)
+    assert not np.array_equal(plain[:, left], gridded[:, left]), \
+        "the grid never reached the reference panel"
+
+    grey = np.asarray(render_look(s.canvas, reference=ref, values=True))[:, left]
+    spread = np.abs(grey[:, :, 0].astype(int) - grey[:, :, 2].astype(int)).max()
+    assert spread <= 1, "the reference was left in colour beside a greyscale canvas"

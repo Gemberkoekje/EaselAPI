@@ -41,6 +41,9 @@ class StrokeRecord:
     points: list = field(default_factory=list)
     pressure: object = "taper"
     dabs: int = 0
+    #: Pixels' worth of opaque paint this mark actually deposited. A stroke can be
+    #: stamped in full and deposit nothing, and this is what says so.
+    paint: float = 0.0
     note: str = ""
     params: dict = field(default_factory=dict)
 
@@ -50,6 +53,15 @@ class StrokeRecord:
         if isinstance(d["pressure"], np.ndarray):  # pragma: no cover - defensive
             d["pressure"] = [float(v) for v in d["pressure"]]
         return d
+
+
+def _short(value: float) -> str:
+    """A paint quantity at a glance: 940, 4.2k, 1.1M."""
+    if value >= 1e6:
+        return f"{value / 1e6:.1f}M"
+    if value >= 1e3:
+        return f"{value / 1e3:.1f}k"
+    return f"{value:.0f}"
 
 
 class History:
@@ -83,6 +95,10 @@ class History:
                 bits.append(r.color_hex)
             if r.dabs:
                 bits.append(f"{r.dabs} dabs")
+            if r.kind not in ("dry", "look") and r.dabs:
+                # Say it plainly when a mark laid no paint: the painter is looking
+                # at the log precisely because the canvas did not change.
+                bits.append("NO PAINT LANDED" if r.paint < 1.0 else f"{_short(r.paint)} paint")
             if r.note:
                 bits.append(f"-- {r.note}")
             lines.append(" ".join(bits))

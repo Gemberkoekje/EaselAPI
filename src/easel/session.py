@@ -21,7 +21,7 @@ from PIL import Image
 
 from easel.brush import Brush
 from easel.brush import brush as get_brush
-from easel.canvas import Canvas, build_surface
+from easel.canvas import Canvas, build_surface, tooth_ceiling
 from easel.color import parse_color
 from easel.history import History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
@@ -150,6 +150,7 @@ class Session:
                 points=[[float(x), float(y)] for x, y in pts],
                 pressure=pressure if isinstance(pressure, str) else _plain(pressure),
                 dabs=result.dabs,
+                paint=result.paint,
                 note=note,
                 params=_brush_params(b, col, glaze=glaze, smooth=smooth),
             )
@@ -230,45 +231,67 @@ class Session:
         return records
 
     def _block_paths(self, r: Region, direction: str, band: float, over: float):
-        """Stroke paths that sweep a region, with a little wander so they are not rules."""
+        """Stroke paths that sweep a region, with a little wander so they are not rules.
+
+        Consecutive passes run in opposite directions, the way a hand comes back
+        across the canvas. Paint runs out along a stroke, so passes that all start
+        at the same edge stack their run-out on top of each other and leave the
+        whole mass a full value lighter on the side they end at. See REVIEW.md
+        finding 12.
+        """
         rng = self.rng
         if direction == "horizontal":
             n = max(1, int(round(r.height / band)))
             for i in range(n):
                 y = r.y0 + (i + 0.5) * r.height / n
                 wob = rng.normal(0.0, band * 0.3, size=3)
-                yield [
+                path = [
                     (max(r.x0 - over, 0.0), float(np.clip(y + wob[0], 0.0, 1.0))),
                     ((r.x0 + r.x1) * 0.5, float(np.clip(y + wob[1], 0.0, 1.0))),
                     (min(r.x1 + over, 1.0), float(np.clip(y + wob[2], 0.0, 1.0))),
                 ]
+                yield path if i % 2 == 0 else path[::-1]
         elif direction == "vertical":
             n = max(1, int(round(r.width / band)))
             for i in range(n):
                 x = r.x0 + (i + 0.5) * r.width / n
                 wob = rng.normal(0.0, band * 0.3, size=3)
-                yield [
+                path = [
                     (float(np.clip(x + wob[0], 0.0, 1.0)), max(r.y0 - over, 0.0)),
                     (float(np.clip(x + wob[1], 0.0, 1.0)), (r.y0 + r.y1) * 0.5),
                     (float(np.clip(x + wob[2], 0.0, 1.0)), min(r.y1 + over, 1.0)),
                 ]
+                yield path if i % 2 == 0 else path[::-1]
         elif direction == "diagonal":
-            span = r.width + r.height
+            h = r.height
+            span = r.width + h
             n = max(1, int(round(span / (band * 1.42))))
             for i in range(n):
                 t = (i + 0.5) / n
-                sx = r.x0 + t * span - r.height
-                yield [
-                    (float(np.clip(sx, 0.0, 1.0)), float(np.clip(r.y1 + over, 0.0, 1.0))),
+                sx = r.x0 + t * span - h
+                # The pass is the 45-degree line from (sx, y1) up to (sx + h, y0),
+                # clipped to the region. Without the clip each pass keeps running to
+                # the full extent of that line, which puts paint a whole region-height
+                # to either side of the mass -- a block-in that smears off across the
+                # canvas. The horizontal and vertical branches have always clamped to
+                # the region edges; this is the same clamp, along the line instead.
+                lo, hi = 0.0, 1.0
+                if h > 1e-9:
+                    lo = max(lo, (r.x0 - sx) / h)
+                    hi = min(hi, (r.x1 - sx) / h)
+                if hi - lo <= 1e-6:
+                    continue                       # this line only clips the corner
+                over_u = over / (h * 1.42) if h > 1e-9 else 0.0
+                lo, hi = lo - over_u, hi + over_u
+                wob = rng.normal(0.0, band * 0.3, size=3)
+                path = [
                     (
-                        float(np.clip(sx + r.height * 0.5, 0.0, 1.0)),
-                        float(np.clip((r.y0 + r.y1) * 0.5, 0.0, 1.0)),
-                    ),
-                    (
-                        float(np.clip(sx + r.height, 0.0, 1.0)),
-                        float(np.clip(r.y0 - over, 0.0, 1.0)),
-                    ),
+                        float(np.clip(sx + u * h + w, 0.0, 1.0)),
+                        float(np.clip(r.y1 - u * h, 0.0, 1.0)),
+                    )
+                    for u, w in zip((lo, (lo + hi) * 0.5, hi), wob, strict=True)
                 ]
+                yield path if i % 2 == 0 else path[::-1]
         else:
             raise ValueError(
                 f"Unknown direction {direction!r}. "
@@ -483,6 +506,7 @@ class Session:
                 s.seed,
                 canvas.texture_strength,
             )
+            canvas.tooth_ceiling = tooth_ceiling(canvas.height_map, canvas.grain)
             canvas.stroke_count = int(meta["stroke_count"])
             s.canvas = canvas
 
