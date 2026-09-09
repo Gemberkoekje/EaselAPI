@@ -534,6 +534,45 @@ def _label_point(ys: np.ndarray, xs: np.ndarray, w: int, h: int) -> tuple[float,
 _MOORE = ((-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
 
 
+def _largest_component(mask: np.ndarray) -> np.ndarray:
+    """The mask's largest 8-connected run of ``True`` pixels, alone.
+
+    An area fresh out of :func:`prepare_reference` is always one connected run,
+    but :meth:`Preparation.merge` can join two that do not touch at all (its own
+    docstring's example is hair split by an ear), and :meth:`Preparation.split`
+    partitions by colour with no regard for where the pieces sit. A Moore-neighbour
+    trace only ever follows one run's boundary, so it needs to be handed the one
+    the caller means -- the biggest -- rather than whichever run happens to
+    contain the mask's topmost-then-leftmost pixel.
+    """
+    h, w = mask.shape
+    visited = np.zeros_like(mask, dtype=bool)
+    best: list[tuple[int, int]] = []
+    ys_all, xs_all = np.nonzero(mask)
+    for sy, sx in zip(ys_all.tolist(), xs_all.tolist(), strict=True):
+        if visited[sy, sx]:
+            continue
+        stack = [(sy, sx)]
+        visited[sy, sx] = True
+        component = [(sy, sx)]
+        while stack:
+            y, x = stack.pop()
+            for dy, dx in _MOORE:
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not visited[ny, nx]:
+                    visited[ny, nx] = True
+                    stack.append((ny, nx))
+                    component.append((ny, nx))
+        if len(component) > len(best):
+            best = component
+
+    out = np.zeros_like(mask)
+    if best:
+        rows, cols = zip(*best, strict=True)
+        out[rows, cols] = True
+    return out
+
+
 def _trace_outline(mask: np.ndarray, tolerance: float = 0.9) -> list[tuple[float, float]]:
     """The area's boundary as normalised points, by Moore-neighbour tracing.
 
@@ -541,9 +580,10 @@ def _trace_outline(mask: np.ndarray, tolerance: float = 0.9) -> list[tuple[float
     one shape to draw, and a painter drawing a mass draws its silhouette.
     """
     h, w = mask.shape
-    ys, xs = np.nonzero(mask)
-    if not len(ys):
+    if not np.any(mask):
         return []
+    mask = _largest_component(mask)
+    ys, xs = np.nonzero(mask)
 
     # Start at the topmost-leftmost pixel: the boundary is guaranteed to pass through
     # it, and its left neighbour is guaranteed to be outside.

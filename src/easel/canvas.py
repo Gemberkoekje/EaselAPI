@@ -387,14 +387,21 @@ class Canvas:
         self.stroke_count += 1
 
     def region_px(self, region) -> tuple[int, int, int, int]:
-        """Normalised region bounds to integer pixel bounds, clipped to the canvas."""
+        """Normalised region bounds to integer pixel bounds, clipped to the canvas.
+
+        Always at least one pixel wide and tall, and always inside the canvas: x0
+        is clamped to leave room for it *before* x1 is computed, so a region that
+        touches or runs past the far edge does not push x1 one column past the
+        array (a silently empty slice, not an error) the way clamping x0 and x1
+        independently to the same [0, width] range would.
+        """
         bounds = getattr(region, "bounds", region)
         rx0, ry0, rx1, ry1 = (float(v) for v in bounds)
-        x0 = int(np.clip(round(rx0 * self.width), 0, self.width))
-        x1 = int(np.clip(round(rx1 * self.width), 0, self.width))
-        y0 = int(np.clip(round(ry0 * self.height), 0, self.height))
-        y1 = int(np.clip(round(ry1 * self.height), 0, self.height))
-        return x0, y0, max(x1, x0 + 1), max(y1, y0 + 1)
+        x0 = int(np.clip(round(rx0 * self.width), 0, max(self.width - 1, 0)))
+        y0 = int(np.clip(round(ry0 * self.height), 0, max(self.height - 1, 0)))
+        x1 = int(np.clip(round(rx1 * self.width), x0 + 1, self.width))
+        y1 = int(np.clip(round(ry1 * self.height), y0 + 1, self.height))
+        return x0, y0, x1, y1
 
     # -- export ----------------------------------------------------------------------
     def composite(self, impasto: bool = True, sketch: bool = True) -> np.ndarray:

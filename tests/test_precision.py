@@ -21,7 +21,7 @@ from PIL import Image, ImageDraw
 from easel import Session
 from easel.brush import _MASK_CACHE, brush, tip_mask
 from easel.look import MIN_CROP_SIZE, render_look
-from easel.prepare import prepare_reference
+from easel.prepare import _trace_outline, prepare_reference
 from easel.regions import Region, as_region, cell, span
 
 
@@ -261,6 +261,18 @@ def test_landmarks_are_named_points_usable_in_a_path(tmp_path):
     s.unmark("eye_l")
     with pytest.raises(KeyError, match="eye_r"):
         s.pt("eye_l")          # the message lists what *is* marked
+
+
+def test_marking_a_non_finite_point_explains_itself(tmp_path):
+    """np.clip does not sanitise NaN, so a non-finite mark used to be silently
+    accepted and written into the session's JSON metadata as a bare NaN/Infinity
+    token -- valid to this codebase's own json.loads, but not standard JSON.
+    """
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match="real position"):
+        s.mark("bad", float("nan"), 0.5)
+    with pytest.raises(ValueError, match="real position"):
+        s.mark("bad", 0.5, float("inf"))
 
 
 def test_landmarks_are_drawn_on_both_panels(tmp_path, reference):
@@ -524,6 +536,21 @@ def test_the_painter_can_correct_the_map(reference):
     assert parts[0] == kept, "splitting renumbered the area the painter had named"
     assert len(prep) == before
     assert all(p in prep.numbers for p in parts)
+
+
+def test_outline_traces_the_largest_run_when_merge_joins_two_that_do_not_touch():
+    """merge()'s own docstring example is hair split by an ear -- two pieces that
+    do not touch. A Moore-neighbour trace can only follow one boundary, and it
+    used to follow whichever run happened to contain the mask's topmost-then-
+    leftmost pixel rather than the larger one its own docstring promises.
+    """
+    mask = np.zeros((20, 20), dtype=bool)
+    mask[1:4, 1:4] = True       # 9 px, earlier in raster order
+    mask[10:18, 10:18] = True   # 64 px, the run an outline should mean
+    outline = _trace_outline(mask)
+    xs = [p[0] * 20 for p in outline]
+    ys = [p[1] * 20 for p in outline]
+    assert min(xs) >= 9 and min(ys) >= 9, "traced the small run instead of the largest"
 
 
 def test_prepared_areas_can_be_looked_at_and_painted(tmp_path, reference):

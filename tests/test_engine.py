@@ -66,6 +66,19 @@ def test_single_point_makes_a_dab():
     assert not np.array_equal(before, s.canvas.rgb)
 
 
+def test_nan_or_inf_point_is_rejected_not_a_cryptic_numpy_crash():
+    """A NaN/Inf coordinate used to reach ``np.arange`` inside path resampling and
+    fail there with an opaque numpy error, rather than a clear message naming the
+    bad input -- plausible for an agent whose own coordinate math momentarily
+    divides by zero.
+    """
+    s = Session(64, 64, seed=1, timelapse=False)
+    with pytest.raises(ValueError, match="finite"):
+        s.stroke([(0.5, 0.5), (float("nan"), 0.5)], "round_hard", "cadmium_red")
+    with pytest.raises(ValueError, match="finite"):
+        s.pencil([(0.1, 0.1), (float("inf"), 0.9)])
+
+
 # --------------------------------------------------------------------------------------
 # Determinism, undo and replay
 # --------------------------------------------------------------------------------------
@@ -103,6 +116,44 @@ def test_undo_restores_exact_state():
 def test_undo_more_than_history_is_safe():
     s = Session(48, 48, seed=1, timelapse=False)
     assert s.undo(5) == 0
+
+
+def test_undo_after_dry_lands_on_the_state_before_dry_not_before_the_stroke():
+    """dry() mutates the canvas and must snapshot first, like every other mark.
+
+    It used to add a log record without pushing a snapshot, so undo(1) right
+    after a dry() popped the *previous* mark's snapshot -- restoring state from
+    before the stroke that came before the dry, while only dropping the dry
+    record from the log. That desyncs the canvas from what the log still claims
+    happened, and replaying the (still-intact) log then disagrees with what is
+    on screen.
+    """
+    s = Session(64, 64, seed=1, timelapse=False)
+    s.stroke([(0.1, 0.1), (0.6, 0.6)], "bristle", "cadmium_red")
+    after_stroke = s.canvas.rgb.copy()
+    s.dry(1.0)
+    assert s.undo(1) == 1
+    assert [r.kind for r in s.history.records] == ["stroke"]
+    assert np.array_equal(s.canvas.rgb, after_stroke)
+    assert np.array_equal(s.canvas.rgb, s.replay().canvas.rgb)
+
+
+def test_undo_beyond_cached_snapshots_matches_a_fresh_reload():
+    """undo(n) must answer the same way regardless of how many snapshots happen
+    to be cached in this process -- only :data:`MAX_SNAPSHOTS` are kept, so a
+    long-running script asking to undo further than that used to silently undo
+    fewer strokes than requested instead of falling back to exact log replay,
+    the way the identical session reloaded from disk already correctly does.
+    """
+    from easel.history import MAX_SNAPSHOTS
+
+    n = MAX_SNAPSHOTS + 6
+    s = Session(48, 48, seed=2, timelapse=False)
+    for i in range(n):
+        s.stroke([(0.1, 0.1), (0.15 + 0.01 * i, 0.5)], "bristle", "burnt_umber")
+    expected = s.replay(upto=len(s.history.records) - n).canvas.to_srgb8()
+    assert s.undo(n) == n
+    assert np.array_equal(s.canvas.to_srgb8(), expected)
 
 
 def test_replay_reproduces_the_export_byte_for_byte():
@@ -258,6 +309,11 @@ def test_unknown_pressure_profile_explains_itself():
         pressure_curve("fortissimo", 10)
 
 
+def test_empty_pressure_list_explains_itself():
+    with pytest.raises(ValueError, match="pressure list"):
+        pressure_curve([], 10)
+
+
 def test_catmull_rom_passes_through_its_endpoints():
     pts = np.array([[0.1, 0.1], [0.5, 0.9], [0.9, 0.2]], dtype=np.float32)
     curve = catmull_rom(pts)
@@ -393,6 +449,16 @@ def test_bad_cell_label_explains_itself():
         cell("Z9")
 
 
+@pytest.mark.parametrize("label", ["A12", "D67", "B23"])
+def test_two_digit_row_typo_is_rejected_not_silently_truncated(label):
+    """``text[1:] not in GRID_ROWS`` checked substring membership, not a single
+    valid row character -- "12" in "12345678" is True, so "A12" silently
+    resolved to cell A1 instead of raising.
+    """
+    with pytest.raises(ValueError, match="Bad cell"):
+        cell(label)
+
+
 def test_relative_placement():
     from easel.regions import below, between, right_of
 
@@ -522,6 +588,68 @@ def test_undo_after_reload_uses_replay(tmp_path):
     loaded = Session.load(path)
     assert loaded.undo(1) == 1
     assert np.array_equal(loaded.canvas.to_srgb8(), expected)
+
+
+def test_save_replaces_the_file_atomically_and_leaves_no_temp_behind(tmp_path):
+    """The `.easel` file is the only copy of the painting: a crash partway through
+    an in-place write must not be able to leave it truncated.
+    """
+    path = tmp_path / "p.easel"
+    _paint(1).save(path)
+    assert [f.name for f in tmp_path.iterdir()] == ["p.easel"]
+
+
+def test_a_corrupted_session_file_raises_a_clear_error(tmp_path):
+    """A truncated `.easel` file -- exactly what a crash partway through a
+    non-atomic save used to risk leaving behind -- surfaced as a raw
+    ``zipfile.BadZipFile`` traceback instead of the same clear message every
+    other session-file problem gets.
+    """
+    path = tmp_path / "p.easel"
+    _paint(1).save(path)
+    path.write_bytes(path.read_bytes()[:100])
+    with pytest.raises(ValueError, match="not a valid Easel session file"):
+        Session.load(path)
+
+
+# --------------------------------------------------------------------------------------
+# The `easel` CLI
+# --------------------------------------------------------------------------------------
+def test_new_refuses_to_clobber_an_existing_session_without_force(tmp_path):
+    from easel.cli import main
+
+    path = tmp_path / "p.easel"
+    assert main(["new", str(path), "--size", "32x32"]) == 0
+    s = Session.load(path)
+    s.stroke([(0.1, 0.1), (0.5, 0.5)], "bristle", "cadmium_red")
+    s.save(path)
+
+    assert main(["new", str(path), "--size", "16x16"]) == 1
+    assert Session.load(path).stroke_count == 1, "the refused `new` must not touch the file"
+
+    assert main(["new", str(path), "--size", "16x16", "--force"]) == 0
+    assert Session.load(path).stroke_count == 0
+
+
+def test_a_corrupted_session_file_fails_the_cli_cleanly(tmp_path, capsys):
+    from easel.cli import main
+
+    path = tmp_path / "p.easel"
+    _paint(1).save(path)
+    path.write_bytes(path.read_bytes()[:100])
+    assert main(["look", str(path)]) == 1
+    assert "easel:" in capsys.readouterr().err
+
+
+def test_run_reports_a_syntax_error_without_touching_the_session(tmp_path):
+    from easel.cli import main
+
+    session = tmp_path / "p.easel"
+    script = tmp_path / "bad.py"
+    assert main(["new", str(session), "--size", "32x32"]) == 0
+    script.write_text('print "not valid python 3"\n', encoding="utf-8")
+    assert main(["run", str(session), str(script)]) == 1
+    assert Session.load(session).stroke_count == 0
 
 
 # --------------------------------------------------------------------------------------
