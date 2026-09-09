@@ -45,9 +45,9 @@ at 50/50 reads `0.226` — a hair under umber alone. Eight dried passes of the d
 mix measure `0.231`, four rounds of glazing `0.234`, all five darks mixed together
 `0.228` (`rehearsal3/probe_value_floor.py`). The pigment swatches are simply lighter
 than real tube masstones; real ultramarine and burnt umber mixed go close to black,
-and these do not. That is an engine limit and is on the list to fix (`NOTES.md`,
-*What to do next*). Until it is fixed, `compare()` marks cells below reach with `~`
-and leaves them out of `fixable`.
+and these do not. That is an engine limit, and phase M6b in `painting-api-brief.md` darkens
+the pigments to fix it. Until it lands, `compare()` marks cells below reach with
+`~` and leaves them out of `fixable`.
 
 ### If you want to map a reference's range onto the palette's
 
@@ -174,8 +174,8 @@ marks and at the ends of long ones, not along their length.
 `block_in` fills a rectangle. A mass with a silhouette is laid by sweeping passes
 along its boundary and stepping into the mass one part-brush at a time — passes
 that follow the edge, not columns that hang off it. This is a recipe rather than
-an API call for now (`NOTES.md`, *What to do next*, wants it to be one); the
-knots below are an arbitrary boundary, not a subject.
+an API call for now (phase M6c in `painting-api-brief.md` makes it `s.sweep()`);
+the knots below are an arbitrary boundary, not a subject.
 
 ```python
 def edge(knots):                       # a boundary given as (x, y) corners

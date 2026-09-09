@@ -49,6 +49,8 @@ additions (`span()`, enlarged crops) came out of that.
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
+| M6b Darks | **New**, decided by the human after the guide critique. The `0.23` value floor is the pigment swatches, not the mixing model (`REVIEW.md` 33); darken the masstones so ultramarine + umber reaches the model's own floor. Moves every golden, and that is accepted. Before REHEARSAL4. |
+| M6c Sweep | **New.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, replacing the fifteen-line recipe in `CALIBRATION.md` (`REVIEW.md` 34). Additive; one golden added. Before REHEARSAL4. |
 | M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
 | M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
 | M9 MCP server | Not started, and correctly last. |
@@ -366,14 +368,15 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    is to have the human name a subject with no reference image, which measures
    invention instead of the model's prior at the same cost. Until that is decided,
    do not read anything into what an unprompted painting is *of*.
-4. **Two engine changes the guide critique asked for, both the human's call.**
-   A review of `PAINTER.md` before REHEARSAL4 (`REVIEW.md`, *Guide critique*)
-   found five things; three were guide edits and are made (no subjects, the
-   calibration numbers split out into `CALIBRATION.md`, the measuring section cut
-   back from an optimiser loop to two `compare()` calls, the drawing order
-   reconciled in one sentence). The other two are engine work and are **not**
-   made, because each changes what paintings look like and the brief reserves that
-   judgement for a human looking at the sampler and a real painting:
+4. **Two engine changes the guide critique asked for — now phases M6b and M6c in
+   the brief, and they go before REHEARSAL4.** A review of `PAINTER.md` before
+   REHEARSAL4 (`REVIEW.md`, *Guide critique*) found five things; three were guide
+   edits and are made (no subjects, the calibration numbers split out into
+   `CALIBRATION.md`, the measuring section cut back from an optimiser loop to two
+   `compare()` calls, the drawing order reconciled in one sentence). The other two
+   are engine work. The human has decided the first: **darken the masstones**,
+   goldens included. The brief's build order has the specifics; the evidence is
+   here:
    - **The `0.23` value floor is the pigments, not the mixing model.** Mixing here
      never takes a channel below the darker of its two ingredients, so nothing is
      darker than the darkest pigment, and `burnt_umber` (`#4A3728`) reads `0.23` on
@@ -382,7 +385,8 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
      burnt sienna) so ultramarine + umber reaches near-black the way real paint
      does -- the honest fix, and it moves every golden image and every rehearsal's
      colours; or add one genuinely dark pigment, which is additive and leaves the
-     goldens alone but does not make the classic mixture work. Either way the
+     goldens alone but does not make the classic mixture work. **The first is
+     taken (M6b).** Either way the
      Kubelka-Munk reflectance floor (`0.01` linear, value about `0.10`) is the new
      bottom, and the *Reachable* paragraph in the brief, `compare()`'s `~` split and
      step 3 of the guide all get shorter or go. Until it is decided the guide says,
@@ -393,7 +397,7 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
      holds the recipe for now. The call is M8's polygon `block_in`, or a smaller
      `sweep(edge_points, ...)` that steps a stroke inward from a hand-given
      boundary; the second is not the traced-copy question, because the boundary is
-     the painter's own, and could land before M8 proper.
+     the painter's own, and could land before M8 proper. **That is M6c.**
 5. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
    streaks with the
    brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the

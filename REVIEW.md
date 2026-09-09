@@ -832,10 +832,11 @@ around it; this finding says the floor itself is the defect.
 
 **Not fixed here**, on purpose: darkening the masstones changes every golden
 image and every rehearsal's colours, and the brief reserves changes of that kind
-for a human looking at the sampler and a real painting. The two options and their
-costs are in `NOTES.md`, *What to do next*, item 4. Until one is taken, the guide
-carries one short paragraph saying the floor is an engine limit, `CALIBRATION.md`
-carries the numbers, and `compare()` keeps its `~` split.
+for a human looking at the sampler and a real painting. **Decided by the human:
+darken the masstones, goldens included.** It is phase M6b in the brief's build
+order, before REHEARSAL4. Until it lands, the guide carries one short paragraph
+saying the floor is an engine limit, `CALIBRATION.md` carries the numbers, and
+`compare()` keeps its `~` split.
 
 ### 34. Sweeping a shaped mass is a recipe the painter has to retype
 
@@ -843,5 +844,5 @@ carries the numbers, and `compare()` keeps its `~` split.
 
 The guide argues, correctly, that a mass with a silhouette is laid as passes swept
 along its edge and stepped inward, not as a box and not as columns. It then handed
-the painter fifteen lines of code to do it. That is an API call — `NOTES.md`
-item 4 has the shape — and the recipe sits in `CALIBRATION.md` until it is one.
+the painter fifteen lines of code to do it. That is an API call — phase M6c in
+the brief has the shape — and the recipe sits in `CALIBRATION.md` until it is one.
