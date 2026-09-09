@@ -1,0 +1,48 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Python dependencies declared in pyproject.toml: numpy, pillow, the dev
+  # extra (pytest, ruff) and the optional mixbox extra. The "pip" ecosystem
+  # covers PEP 621 pyproject.toml projects like this one, not just
+  # requirements.txt.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "deps"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # The actions .github/workflows/ci.yml runs (actions/checkout,
+  # actions/setup-python, actions/upload-artifact). Left unmanaged these drift
+  # quietly rather than failing loudly -- CI's own logs already warn that
+  # actions/checkout@v4 and actions/setup-python@v5 are pinned to a Node
+  # version GitHub is deprecating.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
