@@ -773,3 +773,76 @@ only the largest, matching what it already claimed to do
 ## Not yet reviewed
 
 The MCP server (now M8 in the brief), which does not exist yet.
+
+---
+
+# Guide critique — before REHEARSAL4
+
+A reading of `PAINTER.md` as a whole, by a reviewer, after the M6 final pass and
+before the next run. Not an engine review: the finding is that the guide had
+become a lab notebook, and two of its passages were teaching the painter to work
+around engine defects rather than reporting them here. What follows is what the
+critique said, what changed in the guide, and the two items it leaves open.
+
+## Fixed in the guide
+
+- **It leaked subjects.** The brief says the guide must not contain example
+  subjects, and it named sky, water, a post, a wall, a table, a mug, a spoon, hair,
+  a coat, a face, an eye and the lip of a cup — and its back-to-front example was
+  the estuary REHEARSAL2 painted. Every example is now an abstract mass, the
+  landmark names are `top_l` / `top_r` / `base`, and the engine's own painter-facing
+  strings (`easel brushes`, the `mark()` docstring and error, `prepare()`'s
+  docstring) were neutralised the same way. NOTES gotcha 15 records why the nouns
+  matter as much as the code blocks.
+- **It had turned into a curve-fitting manual.** "Work down `fixable`, largest
+  first, and stop when it is empty" is an optimiser loop, two paragraphs above the
+  sentence saying that matching cell by cell is tracing. `compare()` is now asked
+  for twice — once on the empty canvas to read the reference's range, once after
+  the block-in to check the three masses — and *When to stop measuring* sits
+  directly under it. Every calibration number (graphite survival by opacity,
+  wetness decay per stroke, the load window, run-out per texture, `block_in`
+  overhang, the 35%-versus-20% axis table) moved to `CALIBRATION.md`. The guide
+  went from about 8,500 words to about 6,900, a fifth of which is the seven
+  exercises.
+- **The drawing order contradicted itself.** Section 2 said draw after the far
+  masses; the reference section was headed *The drawing, before the masses*. One
+  sentence now reconciles them in both places: landmarks before anything, pencil
+  after the far masses, near masses on top.
+- **The pressure section.** Cut to what pressure does today, with a note in
+  `CALIBRATION.md` that M7 rewrites it rather than patching it.
+
+## Open, with evidence
+
+### 33. The `0.23` value floor is the pigment swatches, not a painting lesson
+
+**Found by**: the guide critique, which called the compression formula, the `~`
+marker and two paragraphs on not fighting the floor "an engine defect dressed up as
+a painting lesson".
+
+**Evidence.** `Palette.value_of` per pigment, one flat pass on toned grey:
+`burnt_umber` 0.23, `ultramarine` 0.26, `alizarin` 0.30, `burnt_sienna` 0.33,
+`viridian` 0.39. `mix("ultramarine", "burnt_umber", 0.5)` reads `0.226`, a hair
+under umber alone. The mixing model (a power mean of Kubelka-Munk K/S, per
+channel) cannot take any channel below the darker ingredient's, so no mixture is
+darker than the darkest pigment in the box — and the darkest pigment is a swatch
+at `#4A3728`, far lighter than a tube masstone. Real ultramarine and burnt umber
+mixed go close to black; that is the whole point of the mixture, and here it
+cannot happen. Finding 21 reported the floor correctly and then built a tool
+around it; this finding says the floor itself is the defect.
+
+**Not fixed here**, on purpose: darkening the masstones changes every golden
+image and every rehearsal's colours, and the brief reserves changes of that kind
+for a human looking at the sampler and a real painting. **Decided by the human:
+darken the masstones, goldens included.** It is phase M6b in the brief's build
+order, before REHEARSAL4. Until it lands, the guide carries one short paragraph
+saying the floor is an engine limit, `CALIBRATION.md` carries the numbers, and
+`compare()` keeps its `~` split.
+
+### 34. Sweeping a shaped mass is a recipe the painter has to retype
+
+**Found by**: the guide critique.
+
+The guide argues, correctly, that a mass with a silhouette is laid as passes swept
+along its edge and stepped inward, not as a box and not as columns. It then handed
+the painter fifteen lines of code to do it. That is an API call — phase M6c in
+the brief has the shape — and the recipe sits in `CALIBRATION.md` until it is one.

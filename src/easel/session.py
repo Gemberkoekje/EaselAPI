@@ -473,12 +473,12 @@ class Session:
     def mark(self, name: str, x: float, y: float) -> tuple[float, float]:
         """Record a named point, and show it on every look from now on.
 
-        This is the unit of a drawing. Six or seven verified points -- the corner of
-        an eye, the base of a nose, where a handle meets a body -- and the masses
-        get hung on them. Verify each one against the reference at feature scale
-        before trusting it::
+        This is the unit of a drawing. Six or seven verified points -- where a
+        silhouette turns, where two masses meet, the top and base of a shape -- and
+        the masses get hung on them. Verify each one against the reference at
+        feature scale before trusting it::
 
-            s.mark("eye_l", *cell("D4").point(0.3, 0.6))
+            s.mark("top_l", *cell("D4").point(0.3, 0.6))
             s.look(region=cell("D4"), reference=ref, grid="fine")
 
         Args:
@@ -490,7 +490,7 @@ class Session:
         """
         key = str(name).strip()
         if not key:
-            raise ValueError("A landmark needs a name: mark('eye_l', 0.42, 0.31)")
+            raise ValueError("A landmark needs a name: mark('top_l', 0.42, 0.31)")
         if not (math.isfinite(x) and math.isfinite(y)):
             raise ValueError(f"A landmark needs a real position, got ({x!r}, {y!r}).")
         pt = (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
@@ -498,7 +498,7 @@ class Session:
         return pt
 
     def pt(self, name: str) -> tuple[float, float]:
-        """A landmark, for use in a path: ``s.stroke([s.pt("brow"), s.pt("eye_l")])``."""
+        """A landmark, for use in a path: ``s.stroke([s.pt("top_l"), s.pt("base")])``."""
         key = str(name).strip()
         if key not in self.marks:
             known = ", ".join(sorted(self.marks)) or "(none yet)"
@@ -659,8 +659,8 @@ class Session:
 
         Example::
 
-            plan = [{"points": [s.pt("brow"), (0.44, 0.30)], "brush": "liner",
-                     "size": 0.004, "label": "brow"}]
+            plan = [{"points": [s.pt("top_l"), (0.44, 0.30)], "brush": "liner",
+                     "size": 0.004, "label": "edge"}]
             s.preview(plan, reference=ref, region=cell("D4"), grid="fine")
         """
         specs = self._stroke_specs(strokes)
@@ -873,10 +873,10 @@ class Session:
 
         No model and no learned segmentation: the photograph is quantised in a
         perceptual colour space and its connected areas are labelled and numbered.
-        The map will be wrong in places -- it joins hair to a wall of the same brown
-        and cuts a coat along its folds -- so read it, then correct it with
+        The map will be wrong in places -- it joins two things of the same colour
+        and cuts one thing along its shading -- so read it, then correct it with
         ``prep.merge(...)`` and ``prep.split(...)``. The useful sentence is "area 5
-        is the hair, less the strip that is really wall".
+        is one thing, less the strip that belongs to its neighbour".
 
         Args:
             reference: a path or a PIL image.
