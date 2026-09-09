@@ -63,7 +63,45 @@ s.block_in("lower-half", brush="bristle", color="dark", density=0.7, size=0.2)
 Resist detail here. If you can already name what you are painting, you have gone
 too far too early.
 
-### 2. Check your values before you check anything else
+### 2. Paint from back to front
+
+**Lay the furthest thing first and let each nearer thing be painted over it.** Sky
+before headland, headland before water, water before the post standing in it. Wall
+before table, table before mug, mug before the spoon in it. Background, middle
+distance, foreground, in that order, every time.
+
+This is not tidiness. It is the only cheap way to get an edge:
+
+```python
+s.palette["sky"] = s.palette.tint("cerulean", 0.55)
+s.palette["water"] = s.palette.desaturate(s.palette["sky"], 0.4)
+
+s.block_in("upper-half", "flat", "sky", size=0.18)          # furthest
+s.block_in(span("A4", "H6"), "flat", "water", size=0.16)    # nearer
+s.stroke([(0.3, 0.42), (0.3, 0.78)], "bristle", "dark", size=0.03)   # the post
+```
+
+The post's edges are now real edges — the place where the post's paint stops and
+the water's paint is still showing — and you drew none of them. Paint the post
+first and the only way to get the same edges is to cut the water carefully around
+it, which is painting *up to* a line, which is the one thing this guide will tell
+you four more times not to do.
+
+Three things follow from it, and they are where the order earns its keep:
+
+- **Draw after the background is down, not before.** An underdrawing laid on the
+  ground and then blocked over is gone — paint buries graphite in proportion to
+  how much lands, and a full-strength block-in lands all of it. Lay the far masses,
+  *then* draw the near things on top of them, then paint those.
+- **Let the near mass overlap.** Run it a little into the far one. A silhouette
+  that stops exactly on a boundary was measured; one that overlaps was painted.
+- **A mistake in the background is cheap while the foreground is not there yet.**
+  It stops being cheap the moment something is standing in front of it.
+
+The exception is the ground itself, which is behind everything and goes on first by
+definition. Everything after that is in depth order.
+
+### 3. Check your values before you check anything else
 
 ```python
 s.look(values=True)
@@ -98,18 +136,39 @@ colours are.
 **Know the range you actually have. It is about `0.23` to `0.96`, not 0 to 1.**
 There is no black on this palette, and no combination of pigments gets below
 roughly `0.23` — ultramarine and burnt umber, shaded and desaturated as far as they
-go, all land there. So you cannot make a near-black shadow, and trying is a waste
-of strokes. **You build contrast by pushing the lights up, not the darks down.** If
-a dark mass is not reading as dark, the fix is almost always that everything around
-it is too dark, not that it is too light.
+go, all land there. Piling on more passes does not help and neither does glazing:
+eight dried coats of the darkest mix measure within a hundredth of one. So you
+cannot make a near-black shadow, and trying is a waste of strokes. **You build
+contrast by pushing the lights up, not the darks down.** If a dark mass is not
+reading as dark, the fix is almost always that everything around it is too dark,
+not that it is too light.
 
-### 3. Refine the mid-tones
+**So do not match a photograph's values. Compress them.** A lamp-lit photograph
+runs from about `0.04` to `0.90`; you have `0.23` to `0.96`. Matching the numbers
+one for one is impossible at the bottom and it flattens everything above it,
+because you spend the range you *do* have trying to reach a floor you cannot. Map
+the reference's range onto yours instead — decide what its darkest passage will be
+on your canvas, decide what its lightest will be, and place everything else
+proportionally between them:
+
+```python
+lo, hi = 0.23, 0.94                                  # what you can actually reach
+ref_lo, ref_hi = 0.06, 0.59                          # what the reference runs
+def mine(v):                                         # where a reference value goes
+    return lo + (hi - lo) * (v - ref_lo) / (ref_hi - ref_lo)
+```
+
+Take `ref_lo` and `ref_hi` from `compare()` on the empty canvas — see *Put a number
+on it*, which also tells you which cells are out of reach so you can stop spending
+strokes on them. Relationships are what read; absolute values are not.
+
+### 4. Refine the mid-tones
 
 Now the middle values, with a medium brush (`size≈0.08–0.12`). Work across the
 whole canvas rather than finishing one corner — a painting should come up all at
 once, like a photograph developing. Look every ten strokes or so.
 
-### 4. Edges: lost and found
+### 5. Edges: lost and found
 
 This is the step that separates a painting from a diagram, and the one you will be
 most tempted to skip.
@@ -126,7 +185,7 @@ s.stroke([(0.6, 0.3), (0.62, 0.5)], "round_hard", "dark", size=0.02)  # sharpen 
 An image where every edge is equally sharp looks like clip-art. That is the single
 most common way this goes wrong.
 
-### 5. Highlights last, smallest brush, fewest strokes
+### 6. Highlights last, smallest brush, fewest strokes
 
 The lightest lights and the sharpest accents go on at the end, and there should be
 very few of them. Ten deliberate marks, not a hundred. Every highlight you add makes
@@ -217,8 +276,18 @@ s.look(reference="ref.jpg")             # is the drawing right, before any paint
 
 `pencil()` puts graphite into the canvas — no paint, no wetness, and **it does not
 count as a stroke**, so the drawing is free. Paint covers it in proportion to how
-much actually lands: it survives under a scumble and in the ground and disappears
-under an opaque mass. Making it disappear is the painting.
+much actually lands, so it survives thin paint and disappears under solid paint.
+Making it disappear is the painting.
+
+**Thin means `opacity`, not `density`.** One pass over a line leaves 79% of the
+graphite at `opacity=0.04`, 55% at `0.10`, 34% at `0.18` and 19% at `0.30`. A
+`block_in` at `density=0.3` is *not* thin paint — density only spaces the passes out;
+each one still lands at full strength, and a seven-stroke scumble at `density=0.3`
+takes the drawing off completely. If you want to work over a drawing and keep it,
+drop the opacity.
+
+This is the other reason for painting back to front: draw *after* the far masses are
+down, and nothing has to be scumbled over the drawing at all.
 
 Four things about drawing that are easy to get wrong:
 
@@ -299,6 +368,13 @@ the last twenty strokes that is the only question left.
 print(s.compare("ref.jpg"))
 ```
 
+**Run it once before your first stroke.** On the empty canvas the difference column
+is meaningless but the reference column is the photograph's entire value map, free,
+in numbers, before you have committed anything — the lightest cell, the darkest
+cell, and where every mass sits between them. That is what you need to plan the
+three values and to set `ref_lo` and `ref_hi` for the compression above. Your eye
+will guess the range of a dim photograph two stops too light; this will not.
+
 Per cell: the reference's mean value, yours, and the difference, as a table and as
 a heat map beside the two greyscales. **The number that matters is `0.10`** — two
 masses closer than a tenth of the value range read as one, so a cell further out
@@ -324,7 +400,24 @@ Inside a region, `compare` measures its tenths and labels them the way
 print(s.compare("ref.jpg", region=cell("D4")))     # the tenths of one cell
 ```
 
-Work down the list of cells that are out, largest first, and stop when nothing is.
+**Some cells are out because you were wrong, and some because no paint in the box
+goes that dark.** A cell whose *reference* is below about `0.13` cannot be brought
+within `0.10` of it by any stroke — the palette floors at `0.23`. Those are marked
+`~` instead of `*` and listed separately, and they are not work:
+
+```
+17 of those (~) ask for a value below the palette's 0.23 floor and cannot be
+painted. 43 are worth strokes.
+```
+
+```python
+for c in s.compare("ref.jpg").fixable:      # off, minus what cannot be painted
+    print(c.label, c.delta)
+```
+
+Work down `fixable`, largest first, and stop when it is empty. Chasing a `~` cell
+is the most expensive mistake this table can lead you into: the mark lands, the
+number does not move, and you do it again.
 
 ### When to stop measuring
 
@@ -417,19 +510,31 @@ def edge(knots):                       # a boundary given as (x, y) corners
     return at
 
 top = edge([(0.33, 1.02), (0.46, 0.66), (0.58, 0.43), (0.74, 0.50), (1.02, 0.68)])
-x = 0.345
-while x < 1.0:
-    s.stroke([(x, top(x)), (x, 1.02)], "bristle", "dark",
-             size=0.13, load=0.9, pressure="lift_off")   # heavy where the edge is
-    x += 0.033                                           # about a brush width
+for k in range(9):                                  # passes, not columns
+    off = 0.035 * k                                 # step down into the mass
+    xs = [0.345 + 0.65 * i / 8 for i in range(9)]
+    band = [(x, min(top(x) + off, 1.02)) for x in xs]
+    s.stroke(band if k % 2 == 0 else band[::-1], "bristle", "dark",
+             size=0.13, load=0.9, pressure="even")
 ```
 
-That is fifteen or twenty strokes and it gives you a real silhouette, which is what
-you wanted from the block-in and could not have got. One sweep leaves the boundary
-stringy — a bristle brush run *away* from an edge combs it out into threads. Cross
-it with a second pass running along the edge instead of away from it, and the mass
-closes up. Some raggedness left over is a good thing on the outside of a mass and a
-bad thing in the middle of one.
+**Each pass follows the edge; it does not hang off it.** The obvious way to write
+this is a column at every x — walk across, drop a vertical stroke from the boundary
+to the bottom — and it is wrong for the reason the section above gives: nine passes
+that run *along* the silhouette describe the form, and thirty columns that run
+*down* from it comb the mass into vertical strands and print the canvas's axis over
+the whole thing. Same silhouette, half the strokes, and it looks like a hill instead
+of a fence.
+
+That is nine or ten strokes and it gives you a real silhouette, which is what you
+wanted from the block-in and could not have got. One sweep leaves the boundary
+stringy — a bristle brush covers about three-quarters of its width. Cross it with a
+second set of passes at an angle to the first and the mass closes up. Some
+raggedness left over is a good thing on the outside of a mass and a bad thing in the
+middle of one.
+
+If the mass is close enough to a box that this feels like overkill, `block_in` at
+the angle the mass runs at is the cheaper version of the same idea.
 
 **When something is wrong, paint over it.** Your instinct will be to reach for
 `undo`. Resist it. Real repairs happen with paint: let the area dry, then work over
@@ -584,6 +689,46 @@ strokes for marks that have a direction.
 
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
 one. **Use a bigger brush than feels comfortable**, especially early.
+
+### The angle of the mark
+
+**Do not let the canvas choose your stroke direction.** This is the loudest tell in
+every painting made with this engine so far, and it is the easiest to fix. Left
+alone, everything here runs horizontally or vertically: `block_in`'s named
+directions are horizontal, vertical and a 45° diagonal; every named region is an
+axis-aligned rectangle; and an oriented tip is held square to its travel, so a
+horizontal stroke necessarily ends on a vertical edge. Paint a hillside with
+horizontal passes and you get a stack of bars with flat ends, which is what a
+hillside is not.
+
+**Sweep a mass along its own axis.** `block_in` takes a number of degrees, clockwise
+from horizontal, as well as the four names:
+
+```python
+s.block_in(span("A4", "F7"), "flat", "shadow", direction=28, size=0.12)
+s.block_in(span("A4", "F7"), "flat", "shadow", direction=(28, 118), size=0.12)  # crossed
+```
+
+Measured on the same hillside: laid with the canvas's own axes it is 35% axis-aligned
+edges, swept at its own angle 20% — and it took twenty *fewer* strokes, because
+passes that run along the form cover it instead of stepping down it.
+
+**Turn the blade.** Any oriented tip can be pinned instead of following its travel,
+which is what turning a knife to cut a slope does:
+
+```python
+s.stroke(path, "knife", "light", size=0.09, angle_follow=False, angle=45)
+```
+
+At 45° the knife lays a parallelogram; at 90° it is edge-on and draws a ribbon
+instead of a slab. This matters most at the *ends* of marks and on short ones — on a
+long sweep the path direction does nearly all the work, so fix the path first and
+reach for the angle for a mark whose termination you can see.
+
+**A round tip is the tip that declares no axis.** `round_hard` has no orientation at
+all, so it cannot print the canvas's grain into a mass however you drive it. When a
+passage keeps coming out square and you have already fixed the direction, that is
+the brush to change to — not `round_soft`, which airbrushes above `size=0.05`.
 
 Anything about a brush can be overridden per stroke:
 
@@ -748,11 +893,12 @@ s.timelapse_gif("painting.gif")
 s.log()                                            # what you have done so far
 ```
 
-`block_in` takes `direction=` of `"horizontal"`, `"vertical"`, `"diagonal"` or
-`"cross"`. **Vary it between passes.** Two passes of parallel strokes look like
-hatching; crossed passes look like paint. Successive passes already run in opposite
-directions on their own, so a mass does not fade towards the side the brush ran out
-on.
+`block_in` takes `direction=` of `"horizontal"`, `"vertical"`, `"diagonal"`,
+`"cross"`, **a number of degrees**, or a sequence of any of those for one pass each.
+**Vary it between passes, and prefer the angle the subject runs at** — see *The angle
+of the mark*. Two passes of parallel strokes look like hatching; crossed passes look
+like paint. Successive passes already run in opposite directions on their own, so a
+mass does not fade towards the side the brush ran out on.
 
 One `block_in` is not one stroke: it lays a pass for every brush-width of the
 region, so a big region with a small brush can be twenty or thirty of them. Check
@@ -765,9 +911,10 @@ quarter of a brush outside it, so a region blocked in at `size=0.1` comes out
 roughly `0.05` wider than you asked on the sides and `0.025` taller. That is fine
 for a wall and wrong for anything that meets something else: a shirt blocked in
 beside a face lands on the face, a band of water blocked in under a headland buries
-its foot. Pass `overhang=0` to keep the ends within a fifth of a brush, inset the
-region by half the brush size, or block in the big thing first and let the small
-thing be painted over it afterwards.
+its foot. Painting back to front is the real answer — the far mass spilling into
+where the near one is going does no harm, because the near one goes on over it next.
+When two masses are at the *same* depth, pass `overhang=0` to keep the ends within a
+fifth of a brush, or inset the region by half the brush size.
 
 Places:
 
@@ -930,8 +1077,12 @@ an underdrawing is for, and why making it disappear is the painting.
   strokes, a perfectly straight line?
 - If you had a reference, look at the painting once *without* it beside you. A
   shape that only makes sense with the photograph next to it is not painted yet.
-- If you had a reference, does `s.compare("ref.jpg")` leave any cell more than
-  `0.10` out? Those are the last strokes worth spending.
+- If you had a reference, does `s.compare("ref.jpg")` leave anything in
+  `fixable`? Those are the last strokes worth spending. The `~` cells are not.
+- Is every mass laid along its own axis, or are the big shapes stacks of horizontal
+  and vertical bars? Turn the picture on its side if you cannot tell.
+- Was it painted back to front? An edge you had to cut carefully around something
+  is a mass that went on in the wrong order.
 - Is there pencil still showing where you did not mean it to? `s.erase()` takes
   it out; `s.export(path, sketch=False)` hides all of it at once, but a drawing
   showing through thin paint is a good thing and worth keeping.

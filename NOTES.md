@@ -1,22 +1,31 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, then M6's tools
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools, and M6's final pass
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
-`REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals and their verdicts), then
-`PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the object
-everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
+`REHEARSAL3.md` (the M6 final pass — the most recent measurement, and it says what
+is still wrong), then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
+then `PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the
+object everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
-Status: **M1–M5 done and measured. M6's tools are built; M6's rehearsal is not
-run.** Everything the milestone asks the engine and the guide for exists, is
-tested, and has been looked at. The one thing outstanding is the part that cannot
-be done here: *"then run the M5 protocol again, fresh session, same reference"*.
-The engine's author has now seen every one of these tools work, so a run by this
-session would measure the author and not the guide — the human is running it as a
-separate session, deliberately. **That run is the measurement, and until it happens
-M6 is not done.** See *What to do next*.
+Status: **M1–M5 done. M6's tools are built and its protocol has now been run —
+three fresh sessions, `REHEARSAL3.md`. M6 is not done: the copy passes on
+recognition, stroke budget and rejected marks, and fails the `0.10` number.** Five
+of the seven failing cells were the painter's own, all in the same direction, and
+the fixes they point at are now in the guide. A guide fix is a hypothesis until a
+fresh session paints against it, which is what `REHEARSAL.md` → `REHEARSAL2.md`
+established, so **M6 wants one more run on the mug and one narrow question: does the
+value error go away?** See *What to do next*.
+
+The final pass also produced three engine changes (`REVIEW.md` 20–22, all additive —
+no golden image moved) and two findings from the human that account for more of
+what is wrong with these paintings than anything the three sessions reported: every
+mass is laid along the canvas's axes, and nothing ever said to paint back to front.
+Both are written up in `rehearsal3/HUMAN_NOTES.md` with their probes.
 
 M7 (marks at detail scale) is specified and not started; the golden images it needs
-as its gate now exist. M8 (MCP) is untouched and correctly last.
+as its gate now exist. **M8 is new** — non-rectangular masses, added to the brief
+after this pass, and it takes the slot before the server for the same reason M6 did:
+it changes the API. M9 (MCP) is untouched and correctly last.
 
 The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
 author: the unprompted painting went well, the **copy did not reach a likeness**,
@@ -38,9 +47,10 @@ additions (`span()`, enlarged crops) came out of that.
 | M3 Composition | Done. Regions, grid, relative placement, stroke-based block-in, values view, side-by-side, diff, history, time-lapse. |
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
-| M6 Precision | **Tools done, rehearsal outstanding.** Golden images first (and they found REVIEW 19 on their first run). Then: the `sketch` graphite channel with `pencil`/`erase`/`sketch_lines`, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, and the guide's drawing step. The fresh-session run of the M5 protocol is the measurement and has not happened. |
+| M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
 | M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
-| M8 MCP server | Not started, and correctly last. |
+| M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
+| M9 MCP server | Not started, and correctly last. |
 
 ## File map
 
@@ -75,9 +85,9 @@ src/easel/
   __main__.py  so `python -m easel ...` works when `easel` is not on PATH, which
                on Windows is most of the time.
 
-tests/test_engine.py      94 tests: bounds, determinism, undo, replay, colour,
+tests/test_engine.py      95 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
-tests/test_precision.py   42 tests for M6: the graphite channel and what buries it,
+tests/test_precision.py   48 tests for M6: the graphite channel and what buries it,
                           landmarks, matching crops, and mostly what the planning
                           tools must *not* do -- preview paints nothing, rehearse
                           commits nothing, neither disturbs the painting after it.
@@ -97,6 +107,20 @@ rehearsal2/               the second M5 rehearsal, by a fresh session: the copy 
                           reached the bar, the unprompted estuary, every look, the
                           probes behind the overshoot and run-out numbers, and a
                           sheet comparing the two copies against the reference.
+rehearsal3/unprompted/    the adversarial check on "how unprompted is unprompted":
+                          PREREGISTERED.md (buckets and thresholds fixed first),
+                          samples.md (32 fresh sessions naming a subject across four
+                          conditions), and the two guide variants they were given.
+                          Read PREREGISTERED.md before samples.md.
+rehearsal3/               M6's final pass: three fresh sessions (pass/ the headline
+                          mug and its unprompted painting, sitter/ the same
+                          photograph REHEARSAL2 painted, assisted/ the machine-laid
+                          sketch), HUMAN_NOTES.md with the two notes from the human,
+                          and the probes behind every number in REHEARSAL3.md --
+                          the palette's value floor, the axis-alignment metric, the
+                          tip-angle sheet, and verify_pass.py, which checks the
+                          brief's pass criterion from the exported PNGs rather than
+                          from what the painters said.
 PAINTER.md                the guide a fresh agent is given. The deliverable.
 REHEARSAL.md              the first M5 rehearsal write-up. Read it before believing
                           the guide works -- it says plainly where it did not.
@@ -172,6 +196,24 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
   list of `stroke()` kwargs, so what was checked is what gets painted without being
   retyped. A plan that has to be rewritten between checking it and painting it is a
   plan that will drift.
+- **`block_in` takes an angle, and the four names are frozen.** `direction=` accepts
+  a number of degrees or a sequence of them, but the horizontal / vertical /
+  diagonal / cross branches are byte-for-byte what they were and dispatch happens
+  before them. That is what let this land in the middle of a milestone with golden
+  images already stored: every existing painting replays identically, so no golden
+  had to be regenerated and nobody had to decide by eye whether a mark had got
+  better. Add capability beside the old path, never through it.
+- **`sketch_lines()` is derived from the log, not stored.** Pencil records
+  accumulate, erase records clip. Undo and replay are then right for free, because
+  there is no second copy of the drawing to keep in step. REVIEW 20 was exactly the
+  bug you get from the other design.
+- **`compare()` separates *wrong* from *impossible*.** The palette has no black and
+  floors at `0.235`; photographs do not. Cells whose reference is below the floor
+  are reported as `unreachable` rather than as work. `off` is unchanged, so nothing
+  that used to be reported stopped being reported — the split is additional
+  information, not a quieter threshold. A measuring stick that reports an unmeetable
+  target costs strokes: two fresh sessions spent about twenty-five each finding this
+  out for themselves.
 - **Drawing does not count as a stroke.** `History.UNPAINTED_KINDS`. The brief's
   definition of done counts strokes, and a painter charged for the underdrawing is
   a painter who skips it.
@@ -230,49 +272,96 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
     a quarter of a million squared distances comfortably does. `_kmeans` renormalises
     in float64.
 
+14. **The tool shapes how a picture is built, not what gets picked — and the first
+    version of this note got that wrong.** `REHEARSAL3.md` asserted, from two
+    paintings and a reading of the guide, that a painter given it "will paint a
+    horizontal landscape". Thirty-two fresh sessions later
+    (`rehearsal3/unprompted/`): six of eight given the real guide named a street or
+    an interior, and the claim is corrected in place. What did survive is smaller and
+    more useful — no estuary appeared in any of the sixteen samples without the
+    guide's landscape words, and a painter told what the engine is *bad* at justifies
+    its choice by horizontal bands and rectangles six times in eight. Before
+    concluding anything about what a painter chose, ask what it was offered — and
+    then go and measure it, because a plausible story about a tool's influence is
+    worth about as much as a plausible story about a bug.
+15. **A worked example in the guide is an instruction, whatever the prose beside it
+    says.** The `edge()` silhouette recipe laid a vertical column at every step and
+    was followed exactly, three rehearsals running, producing exactly the combing the
+    same guide warns about elsewhere. Read the code blocks as if they were the whole
+    document, because to a fresh session they nearly are.
+16. **Never change the engine while a measurement is running.** The three sessions of
+    the M6 pass painted against one engine and every fix landed after the last of
+    them exported. Otherwise the run measures a moving target and none of the numbers
+    can be compared with each other.
+17. **Check the painters' numbers.** Every figure in `REHEARSAL3.md` was re-measured
+    from the exported PNGs (`rehearsal3/verify_pass.py`). They were mostly right and
+    not entirely — a painter reporting on its own painting is not a measurement.
+
 ## What to do next, in order
 
-1. **Finish M6: run the protocol.** Everything else in the milestone is built. What
-   remains is the measurement, and it has to be a **fresh session** — new context,
-   `PAINTER.md` only, no source, no access to this write-up. The brief says two
-   references and they answer different questions:
-   - **An ordinary object (a mug on a table will do). This one is the pass.** The
-     human recognises the object; `s.compare(ref)` reports no cell *on the object*
-     more than `0.10` out; and the painter can point at strokes it rejected in
-     `preview()` or `rehearse()` before painting them. Under 300 strokes — drawing
-     and rehearsals do not count against that.
-   - **Then the sitter. That one is the measure of reach**, not a pass/fail:
-     recognisable as the person or not, and the write-up says *which features got
-     there*. This is the question the second rehearsal could not answer.
-   - **The headline run gets no `s.sketch(reference)`.** The pencil must be the
-     painter's own: sketch, look, adjust, paint. A run started from the machine-laid
-     outlines is an assisted mode — worth running as a second data point, reported
-     separately, and never the number that says M6 is done, or the criterion is
-     measuring the segmenter. The unprompted stage never receives a sketch it did
-     not draw itself.
-   - Write it up as `REHEARSAL3.md`, in the shape of `REHEARSAL2.md`: what it got,
-     what it cost, and a measurement behind every guide fix. Every time the fresh
-     session reaches for the source to get unstuck, that is a guide gap — fix the
-     guide.
-   - Then fix what it finds, and only then call M6 done.
-2. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
+1. **Finish M6: one more run, one narrow question.** The protocol has been run —
+   three fresh sessions, `REHEARSAL3.md`. Read that first; it says what passed and
+   what did not. The copy stage failed only on value, and failed it in a single
+   direction: every wrong cell on the mug was too *light*, straight down the
+   shadow side. Everything that failure points at is now in `PAINTER.md` — value
+   compression, `compare()` on the empty canvas, `fixable` versus the cells no paint
+   can reach, and painting back to front — **and a guide fix is a hypothesis until a
+   fresh session paints against it.** That is the whole lesson of
+   `REHEARSAL.md` → `REHEARSAL2.md`.
+   - **Same reference, `Level1.jpg`, fresh session, `PAINTER.md` only, own pencil.**
+     The question is narrow: does the value error go away? If no cell on the mug is
+     more than `0.10` out except the two that cannot be painted, M6 is done.
+   - Do not re-run the sitter or the assisted mode to decide this. The sitter
+     answered its question — the tools do reach below a cell — and the assisted run
+     answered its own: the machine sketch is a wash and slightly worse.
+   - Write it up as `REHEARSAL4.md`, short. It only has one thing to report.
+2. **The vocabulary is all rectangles** (`REHEARSAL3.md`, *How unprompted is
+   unprompted?*). Twenty-two named regions, every one axis-aligned, and one helper
+   named after a thing in the world: `horizon()`. **This is the one thing the
+   unprompted experiment says to fix.** Thirty-two fresh sessions
+   (`rehearsal3/unprompted/`) showed the guide's *words* barely steer the subject —
+   but a painter told only what the engine is mechanically bad at justifies its
+   choice by horizontal bands and rectangles six times in eight, in as many words:
+   *"the rectangular regions are working for me instead of against me."* Painters are
+   not accidentally laying bands, they are reasoning their way to band-shaped
+   pictures because a band is the only mass this tool fills honestly. No amount of
+   guide prose fixes that; the fix is to make a non-rectangular mass as cheap as a
+   rectangular one. A polygon region — `ref_outline(n)` already returns one — is the
+   largest open item in the repo, and it is partly the traced-copy question the brief
+   reserves for the human. It changes what gets painted, so it wants a milestone and
+   a real painting as evidence, not a rehearsal.
+   - **No guide change is owed here.** The angle, back-to-front and `edge()` edits
+     already made are the guide-side answer. Stripping the landscape nouns out of the
+     examples would be acting on p ≈ 0.10 from a post-hoc pooling, and this repo's
+     own history says a guide change is a hypothesis that costs a full run to test.
+     Do not spend one on that.
+3. **Decide what the unprompted stage is for** (`REHEARSAL3.md`, *Still open*).
+   It is a question about the brief, so it is the human's to answer, and it is cheap
+   either way. 63% of thirty-two fresh sessions named the same subject before reading
+   anything, so the *choice* of subject carries almost no signal — the recommendation
+   is to have the human name a subject with no reference image, which measures
+   invention instead of the model's prior at the same cost. Until that is decided,
+   do not read anything into what an unprompted painting is *of*.
+4. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
    streaks with the
    brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the
    eye test in `REHEARSAL2.md` says width, for tapering marks), and give `dab()` a
    `press` count so a catchlight can land at full strength.
    Both change every stroke, so both want the sampler *and* a real painting as
    the evidence, and a milestone of their own.
-3. Consider varying `block_in`'s pass *axis* automatically between passes. The
-   travel direction alternates on its own (REVIEW finding 12); the axis still does
-   not.
-4. Only then, M8 — the MCP server: one tool per CLI verb, plus `look`, `preview`
+5. Consider varying `block_in`'s pass *axis* automatically between passes. The
+   travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
+   the painter can *choose* the axis — but a mass still gets one axis per call unless
+   the painter passes a sequence.
+6. Then M8 — non-rectangular masses (item 2 above is the argument for it), and only
+   then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview`
    and `compare` returning their images inline.
 
 ## Verify the scaffold
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 143 tests, about 35s (the goldens repaint)
+pytest -q                              # 149 tests, about 35s (the goldens repaint)
 python -m ruff check src tests scripts examples   # ruff is not on PATH here either
 python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png

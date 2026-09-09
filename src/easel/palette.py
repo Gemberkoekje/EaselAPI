@@ -144,6 +144,20 @@ class Palette:
         lin = float(luminance(parse_color(self._resolve(color))))
         return float(linear_to_srgb(np.float32(lin)))
 
+    @property
+    def darkest_value(self) -> float:
+        """The lowest value anything in this box reaches.
+
+        There is no black pigment here, by the brief's rule, so the palette bottoms
+        out well above zero -- and a photograph does not. Mixing does not rescue it:
+        every dark mixed together, piled up in eight dried passes and glazed over
+        itself, measures within a hundredth of the darkest single pigment. A cell of
+        a reference darker than this cannot be matched by any stroke, which is why
+        :meth:`~easel.session.Session.compare` reports those cells separately
+        instead of asking the painter to keep spending on them.
+        """
+        return min(self.value_of(name) for name in set(self.pigment_names))
+
     def _resolve(self, color):
         if isinstance(color, str) and not color.startswith("#"):
             return self[color]

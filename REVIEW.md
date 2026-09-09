@@ -472,6 +472,81 @@ two renders of the same script made under different conditions. That is the clas
 of defect visual regression exists for, and it was sitting in the engine for five
 milestones because the tests the brief asked for had been deferred five times.
 
+## Round five: the M6 final pass (`REHEARSAL3.md`)
+
+Three fresh sessions painting from `PAINTER.md` alone, plus two notes from the
+human. One engine defect, and two engine gaps that were tools telling the painter
+something untrue.
+
+### 20. `erase()` cleared the graphite and left the line in `sketch_lines()`
+
+**Found by**: the assisted fresh session, with a reproducer, now
+`rehearsal3/assisted/t2_erase_sketchlines.py`.
+
+`erase(region)` rubbed the drawing off the canvas correctly. `sketch_lines()`,
+though, was a filter over the log -- every record of kind `pencil`, whole -- so it
+handed back lines that were no longer drawn, including ones wholly inside the
+erased region. The guide documents `sketch_lines()` as the way to re-lay a drawing a
+block-in has buried, so the two calls compose into a trap: rub out the line you
+decided was wrong, recover the drawing, and the wrong line is back, silently.
+
+Nothing on the canvas was wrong, which is why no test caught it. The canvas and the
+API simply disagreed about what had been drawn.
+
+**Fixed** by deriving `sketch_lines()` from the log in order rather than filtering
+it: pencil records accumulate, erase records clip. A line that only crosses the
+erased region comes back as the pieces outside it, cut at the boundary
+(Liang-Barsky, written out in `_segment_inside`). Because it is derived and not
+stored, it is automatically right through undo and replay -- there is a test for
+both. `tests/test_precision.py::test_erase_takes_the_line_out_of_sketch_lines_too`
+and `::test_erase_cuts_a_line_that_only_crosses_the_region`.
+
+### 21. `compare()` asked for values the palette cannot reach
+
+**Found by**: two fresh sessions independently, each mid-painting, each reporting
+about twenty-five strokes spent on it.
+
+There is no black pigment, by the brief's rule, so the palette floors at `0.235`:
+`burnt_umber`, unmoved by eight dried passes (`0.231`), unmoved by four rounds of
+glazing (`0.234`), `0.228` with all five darks mixed. A lamp-lit photograph does not
+floor anywhere near there -- `Level3.jpg` has eighteen of its sixty-four cells below
+what any stroke can reach. `compare()` reported those cells as out, marked `*`,
+indistinguishable from a cell that was out because the painting was wrong.
+
+`PAINTER.md` did state the range. It did not matter: a painter trusts the tool in
+front of it over a paragraph four sections back, which is the same lesson as gotcha
+0 in `NOTES.md` from the other direction. A measuring stick that reports an
+unmeetable target is worse than one that reports nothing, because the painter spends
+strokes on it.
+
+**Fixed** with `Palette.darkest_value` and `Comparison.unreachable` / `.fixable`.
+Unreachable cells print `~` instead of `*` and are counted separately, and the guide
+now says what to do instead -- compress the reference's range onto the palette's
+rather than matching it. Note this does *not* change what counts as out: `off` is
+unchanged, so nothing that was reported stops being reported.
+
+### 22. Nothing could sweep a mass along its own axis
+
+**Found by**: the human, looking at the paintings.
+
+`block_in(direction=)` took four names -- horizontal, vertical, a 45-degree
+diagonal, and cross. Every named region is an axis-aligned rectangle. An oriented
+tip is held square to its travel. So every mass in every painting this engine has
+produced was laid along the canvas's axes, and measured that way: every copy came
+out squarer than the photograph it was copied from, and both unprompted paintings
+came out squarer than anything else in the repo (`rehearsal3/probe_axis_alignment.py`).
+
+Not strictly a defect -- nothing lied. It is a capability that was never there, and
+one that was there and undocumented: `angle_follow=False, angle=45` has turned any
+oriented tip since M2, and `PAINTER.md` never mentioned it.
+
+**Fixed** by accepting a number of degrees, or a sequence of them, in
+`direction=`. Additive: the four named branches are byte-for-byte what they were,
+with a test asserting `"cross"` still means a horizontal pass then a vertical one,
+and every golden image regenerated identical. The guide gained *The angle of the
+mark*, and its own silhouette recipe -- which laid a vertical column at every step,
+and scored worst of four in the probe -- was rewritten to run passes along the form.
+
 ## Open, with evidence
 
 - **Pressure changes opacity, not width.** A stroke at `pressure=0.1` and one at

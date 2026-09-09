@@ -54,3 +54,15 @@ rehearsal2/*.gif
 # Golden images: the stored ones are committed (they are what a human looks at
 # when a case fails). The `.actual.png` a failing test writes beside them is not.
 tests/golden/*.actual.png
+
+# M6 final pass (rehearsal3): three fresh sessions — the headline copy plus its
+# unprompted painting, the sitter, and the assisted run. Same rule as before: the
+# finished paintings, their time-lapses and the comparison sheets are evidence; the
+# intermediate looks and probe sheets regenerate from the scripts beside them.
+rehearsal3/**/*.png
+rehearsal3/**/*.gif
+!rehearsal3/**/copy_final.png
+!rehearsal3/**/own_final.png
+!rehearsal3/**/copy_timelapse.gif
+!rehearsal3/**/own_timelapse.gif
+!rehearsal3/*.png

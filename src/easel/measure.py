@@ -79,6 +79,9 @@ class Comparison:
     region: Region | None
     path: Path | None = None
     threshold: float = VALUE_THRESHOLD
+    #: The darkest value the palette can reach. Cells whose *reference* is more than
+    #: a threshold below it are out of reach of any stroke; zero disables the split.
+    floor: float = 0.0
 
     def __post_init__(self) -> None:
         self._by_label = {c.label: c for c in self.cells}
@@ -96,6 +99,25 @@ class Comparison:
         return sorted((c for c in self.cells if abs(c.delta) > self.threshold),
                       key=lambda c: -abs(c.delta))
 
+    @property
+    def unreachable(self) -> list[CellCompare]:
+        """Cells asking for a value darker than any paint in the box, worst first.
+
+        Not a failure of the painting. The palette has no black and bottoms out
+        around ``0.23``; a lamp-lit photograph has cells at ``0.04``. Chasing these
+        spends strokes that cannot land, which is exactly what two rehearsals did
+        before this existed.
+        """
+        if self.floor <= 0.0:
+            return []
+        return [c for c in self.off if c.ref < self.floor - self.threshold]
+
+    @property
+    def fixable(self) -> list[CellCompare]:
+        """The cells that are out *and* within reach, worst first. The work list."""
+        out_of_reach = {id(c) for c in self.unreachable}
+        return [c for c in self.off if id(c) not in out_of_reach]
+
     def worst(self, n: int = 6) -> list[CellCompare]:
         """The ``n`` cells furthest from the reference."""
         return sorted(self.cells, key=lambda c: -abs(c.delta))[:n]
@@ -112,20 +134,28 @@ class Comparison:
             f"compare: value 0..1, delta = canvas - reference, threshold {self.threshold:.2f}",
             head,
         ]
+        out_of_reach = {id(c) for c in self.unreachable}
         for r, row in enumerate(self.rows):
             cells = self.cells[r * ncol:(r + 1) * ncol]
             marks = "".join(
-                f"{c.delta:+7.2f}" if abs(c.delta) <= self.threshold else f"{c.delta:+6.2f}*"
+                f"{c.delta:+7.2f}" if abs(c.delta) <= self.threshold
+                else f"{c.delta:+6.2f}" + ("~" if id(c) in out_of_reach else "*")
                 for c in cells
             )
             lines.append(f"{row:>4s} {marks}")
 
-        bad = self.off
+        bad, beyond = self.off, self.unreachable
         lines.append(
             f"{len(bad)} of {len(self.cells)} cells more than {self.threshold:.2f} out"
             f" (* above); largest {self.max_delta:.2f}."
         )
-        for c in bad[:6]:
+        if beyond:
+            lines.append(
+                f"{len(beyond)} of those (~) ask for a value below the palette's "
+                f"{self.floor:.2f} floor and cannot be painted. "
+                f"{len(self.fixable)} are worth strokes."
+            )
+        for c in self.fixable[:6]:
             lines.append(f"    {c}")
         if self.path is not None:
             lines.append(f"    heat map: {self.path}")
@@ -170,6 +200,7 @@ def compare_images(
     reference_rgb: np.ndarray,
     region: Region | None = None,
     threshold: float = VALUE_THRESHOLD,
+    floor: float = 0.0,
 ) -> Comparison:
     """Compare two 8-bit RGB arrays cell by cell.
 
@@ -178,6 +209,10 @@ def compare_images(
     one it is the tenths of that region, labelled the way ``look(grid="fine")``
     labels them, so a cell that is out has a name that goes straight back into
     ``region.point(u, v)``.
+
+    ``floor`` is the darkest value the palette can reach; pass it and the result
+    separates the cells that are out because the painting is wrong from the ones
+    that are out because no paint in the box goes that dark.
     """
     if region is None:
         cols, rows = list(GRID_COLS), list(GRID_ROWS)
@@ -204,7 +239,7 @@ def compare_images(
                 )
             )
     return Comparison(cells=cells, columns=cols, rows=rows, region=region,
-                      threshold=threshold)
+                      threshold=threshold, floor=floor)
 
 
 def heat_sheet(

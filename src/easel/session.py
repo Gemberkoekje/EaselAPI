@@ -12,6 +12,7 @@ jittered dab in every stroke is drawn from this one stream in the same order.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
 from pathlib import Path
@@ -211,7 +212,13 @@ class Session:
             brush: preset name or brush.
             color: the colour to lay in.
             direction: ``"horizontal"``, ``"vertical"``, ``"diagonal"`` or
-                ``"cross"``. Vary this between passes so the marks are not parallel.
+                ``"cross"``; a number of degrees, clockwise from the horizontal, to
+                sweep the mass along its own form rather than along the canvas; or a
+                sequence of any of those for one pass each. Vary this between passes
+                so the marks are not parallel -- and prefer the angle the *subject*
+                runs at. A hillside swept at its own angle stops being a stack of
+                horizontal bars, which is the single loudest tell that nobody chose
+                the direction.
             density: 1.0 covers the region; below 1 leaves the ground showing
                 through, which is usually what you want for a first pass.
             pressure: pressure profile for each pass.
@@ -229,10 +236,7 @@ class Session:
         band = max(b.size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
         records: list[StrokeRecord] = []
 
-        passes: list[str] = (
-            ["horizontal", "vertical"] if direction == "cross" else [direction]
-        )
-        for pass_dir in passes:
+        for pass_dir in _pass_directions(direction):
             for path in self._block_paths(r, pass_dir, band, b.size * overhang):
                 records.append(
                     self.stroke(
@@ -245,7 +249,57 @@ class Session:
                 )
         return records
 
-    def _block_paths(self, r: Region, direction: str, band: float, over: float):
+    def _angled_paths(self, r: Region, degrees: float, band: float, over: float):
+        """Sweep a region at an arbitrary angle, stepping along the sweep's normal.
+
+        The four named directions each have their own branch below, kept exactly as
+        they were so that every painting made before angles existed still replays
+        byte-for-byte. This is the general case: the pass runs along ``d``, the
+        passes are stacked along ``n``, and each one is clipped to the region the
+        same way the diagonal branch clips to it -- without the clip a pass keeps
+        running to the full extent of its line and smears the mass across the canvas.
+        """
+        rng = self.rng
+        theta = math.radians(float(degrees))
+        dx, dy = math.cos(theta), math.sin(theta)
+        nx, ny = -dy, dx
+        cx, cy = (r.x0 + r.x1) * 0.5, (r.y0 + r.y1) * 0.5
+
+        corners = [(r.x0, r.y0), (r.x0, r.y1), (r.x1, r.y0), (r.x1, r.y1)]
+        offs = [(x - cx) * nx + (y - cy) * ny for x, y in corners]
+        lo_n, hi_n = min(offs), max(offs)
+        n_passes = max(1, int(round((hi_n - lo_n) / band)))
+
+        for i in range(n_passes):
+            off = lo_n + (i + 0.5) * (hi_n - lo_n) / n_passes
+            ox, oy = cx + nx * off, cy + ny * off
+            # How far along d the line stays inside the region, as a parameter
+            # interval; the region is a rectangle, so clip against its two slabs.
+            span = _segment_inside(
+                (ox - dx * 2.0, oy - dy * 2.0), (ox + dx * 2.0, oy + dy * 2.0),
+                r.bounds,
+            )
+            if span is None:
+                continue
+            t0, t1 = (s * 4.0 - 2.0 for s in span)     # back to distance along d
+            if t1 - t0 <= 1e-6:
+                continue                                # this line only clips a corner
+            t0, t1 = t0 - over, t1 + over
+            wob = rng.normal(0.0, band * 0.3, size=3)
+            path = [
+                _canvas_point(ox + dx * t0 + nx * wob[0], oy + dy * t0 + ny * wob[0]),
+                _canvas_point(
+                    ox + dx * (t0 + t1) * 0.5 + nx * wob[1],
+                    oy + dy * (t0 + t1) * 0.5 + ny * wob[1],
+                ),
+                _canvas_point(ox + dx * t1 + nx * wob[2], oy + dy * t1 + ny * wob[2]),
+            ]
+            yield path if i % 2 == 0 else path[::-1]
+
+    def _block_paths(self, r: Region, direction, band: float, over: float):
+        if not isinstance(direction, str):
+            yield from self._angled_paths(r, float(direction), band, over)
+            return
         """Stroke paths that sweep a region, with a little wander so they are not rules.
 
         Consecutive passes run in opposite directions, the way a hand comes back
@@ -391,15 +445,26 @@ class Session:
         )
 
     def sketch_lines(self) -> list[list[tuple[float, float]]]:
-        """Every pencil line drawn so far, as normalised points.
+        """Every pencil line still drawn, as normalised points.
 
         So a stroke can be aimed at a line, swept along it, or ignore it::
 
             for line in s.sketch_lines():
                 s.stroke(line, "bristle", "shadow", size=0.05)
+
+        What :meth:`erase` rubbed out is gone from here too, cut at the region's
+        edge, so a line that only crosses the erased area comes back as the pieces
+        outside it. This is derived from the log rather than stored, which is what
+        keeps it right through undo and replay.
         """
-        return [[(float(x), float(y)) for x, y in r.points]
-                for r in self.history.records if r.kind == "pencil"]
+        lines: list[list[tuple[float, float]]] = []
+        for r in self.history.records:
+            if r.kind == "pencil":
+                lines.append([(float(x), float(y)) for x, y in r.points])
+            elif r.kind == "erase":
+                bounds = r.params.get("region")
+                lines = [] if bounds is None else _erase_from_lines(lines, bounds)
+        return lines
 
     # -- landmarks --------------------------------------------------------------
     def mark(self, name: str, x: float, y: float) -> tuple[float, float]:
@@ -745,8 +810,13 @@ class Session:
         Example::
 
             print(s.compare("mug.jpg"))
-            for c in s.compare("mug.jpg").off:
+            for c in s.compare("mug.jpg").fixable:   # off, minus what cannot be painted
                 print(c.label, c.delta)
+
+        Cells whose reference is darker than the palette's own floor are reported
+        as ``unreachable`` rather than as work: the box has no black in it, and a
+        lamp-lit photograph has cells no mixture here can reach. Read ``fixable``
+        for the list worth strokes.
         """
         ref_img = load_reference(reference)
         r = as_region(region) if region is not None else None
@@ -764,7 +834,8 @@ class Session:
             ))
         ref_rgb = np.asarray(ref_img, dtype=np.uint8)
 
-        result = compare_images(canvas_rgb, ref_rgb, region=r, threshold=threshold)
+        result = compare_images(canvas_rgb, ref_rgb, region=r, threshold=threshold,
+                                floor=self.palette.darkest_value)
         sheet = heat_sheet(
             result,
             canvas_grey=_grey(canvas_rgb),
@@ -1148,6 +1219,95 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+def _pass_directions(direction) -> list:
+    """One entry per pass: the names as before, plus angles and sequences of either.
+
+    ``"cross"`` stays two named passes. A number is one pass at that angle, and a
+    sequence is one pass each -- so a cross at an angle is ``(30, 120)``, which is
+    what a mass wants when its own axis is not the canvas's.
+    """
+    if isinstance(direction, str):
+        return ["horizontal", "vertical"] if direction == "cross" else [direction]
+    if isinstance(direction, (int, float)):
+        return [float(direction)]
+    passes: list = []
+    for item in direction:
+        passes.extend(_pass_directions(item))
+    if not passes:
+        raise ValueError("block_in(direction=...) was given an empty sequence")
+    return passes
+
+
+def _canvas_point(x: float, y: float) -> tuple[float, float]:
+    """A point clamped to the canvas, the way the named block-in branches clamp."""
+    return (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
+
+
+def _segment_inside(p, q, bounds) -> tuple[float, float] | None:
+    """The stretch of the segment ``p``-``q`` that lies inside ``bounds``.
+
+    Returned as the parameter interval ``(t0, t1)`` along the segment, or ``None``
+    when no part of it is inside. Liang-Barsky, written out: the segment is clipped
+    against each slab in turn and the surviving interval is their intersection.
+    """
+    x0, y0, x1, y1 = bounds
+    t0, t1 = 0.0, 1.0
+    for delta, lo, hi, start in (
+        (q[0] - p[0], x0, x1, p[0]),
+        (q[1] - p[1], y0, y1, p[1]),
+    ):
+        if abs(delta) < 1e-12:
+            if start < lo or start > hi:
+                return None                    # parallel to the slab and outside it
+            continue
+        a, b = (lo - start) / delta, (hi - start) / delta
+        if a > b:
+            a, b = b, a
+        t0, t1 = max(t0, a), min(t1, b)
+        if t0 > t1:
+            return None
+    return (t0, t1)
+
+
+def _erase_from_lines(lines, bounds) -> list[list[tuple[float, float]]]:
+    """Every part of every line that is *outside* ``bounds``.
+
+    A line wholly inside disappears, a line wholly outside is untouched, and a line
+    that crosses comes back as the one or two pieces left over. Anything reduced to
+    a single point is dropped: a stroke cannot be aimed along it.
+    """
+    kept: list[list[tuple[float, float]]] = []
+    x0, y0, x1, y1 = bounds
+    for line in lines:
+        if len(line) < 2:
+            if line and not (x0 <= line[0][0] <= x1 and y0 <= line[0][1] <= y1):
+                kept.append(list(line))
+            continue
+        run: list[tuple[float, float]] = []
+        for p, q in zip(line, line[1:], strict=False):
+            inside = _segment_inside(p, q, bounds)
+            if inside is None:
+                if not run:
+                    run.append(p)
+                run.append(q)
+                continue
+            t0, t1 = inside
+            if t0 > 1e-9:                      # the piece before the region survives
+                if not run:
+                    run.append(p)
+                run.append(_lerp(p, q, t0))
+            if len(run) >= 2:
+                kept.append(run)
+            run = [_lerp(p, q, t1), q] if t1 < 1.0 - 1e-9 else []
+        if len(run) >= 2:
+            kept.append(run)
+    return kept
+
+
+def _lerp(p, q, t: float) -> tuple[float, float]:
+    return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+
+
 def _is_path(value) -> bool:
     """True when ``value`` is a single list of points rather than a list of strokes.
 

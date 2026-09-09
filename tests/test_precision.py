@@ -632,3 +632,101 @@ def test_undo_takes_back_the_first_line_too(tmp_path):
     s.undo(1)
     assert not s.canvas.has_sketch, "undo left the first pencil line on the canvas"
     assert float(s.canvas.sketch.max()) == 0.0
+
+
+# --------------------------------------------------------------------------------------
+# What the M6 final pass found: three fresh sessions, in rehearsal3/
+# --------------------------------------------------------------------------------------
+def test_erase_takes_the_line_out_of_sketch_lines_too(tmp_path):
+    """REHEARSAL3, assisted run: erase cleared the graphite and left the record.
+
+    So a painter who rubbed a line out and then re-laid the drawing from
+    ``sketch_lines()`` -- the documented way to recover a drawing a block-in has
+    buried -- silently resurrected exactly the lines it had decided were wrong.
+    """
+    s = make(tmp_path)
+    s.pencil([(0.05, 0.5), (0.45, 0.5)])
+    s.pencil([(0.55, 0.5), (0.95, 0.5)])
+    s.erase(Region(0.0, 0.0, 0.5, 1.0))
+
+    lines = s.sketch_lines()
+    assert len(lines) == 1, "sketch_lines still hands back a line that was erased"
+    assert min(x for x, _ in lines[0]) > 0.5
+
+
+def test_erase_cuts_a_line_that_only_crosses_the_region(tmp_path):
+    """The pieces outside survive, cut at the region's edge, and undo restores them."""
+    s = make(tmp_path)
+    s.pencil([(0.05, 0.5), (0.95, 0.5)])
+    s.erase(Region(0.4, 0.0, 0.6, 1.0))
+
+    pieces = s.sketch_lines()
+    assert len(pieces) == 2, "a line crossing the erased band came back whole"
+    assert pieces[0][-1][0] == pytest.approx(0.4, abs=1e-4)
+    assert pieces[1][0][0] == pytest.approx(0.6, abs=1e-4)
+
+    s.undo(1)
+    assert len(s.sketch_lines()) == 1, "undo did not put the erased line back"
+
+
+def test_block_in_sweeps_at_an_angle_the_named_directions_cannot_reach(tmp_path):
+    """The human's note on the M6 pass: every mass came out of a horizontal or
+    vertical sweep, so every mass had the canvas's own edges. A hillside wants its
+    own axis, and 28 degrees is not one of the four names."""
+    def paint(direction):
+        s = make(tmp_path)
+        s.block_in(Region(0.2, 0.2, 0.8, 0.8, "mass"), "flat", "burnt_umber",
+                   direction=direction, size=0.13)
+        return s.canvas.to_srgb8(impasto=False), s.stroke_count
+
+    flat_rgb, flat_n = paint("horizontal")
+    angled_rgb, angled_n = paint(28)
+    assert angled_n > 0
+    assert not np.array_equal(flat_rgb, angled_rgb), \
+        "block_in(direction=28) laid the same marks as the horizontal sweep"
+
+    crossed_rgb, crossed_n = paint((28, 118))
+    assert crossed_n > angled_n, "a sequence of angles did not lay one pass each"
+    assert not np.array_equal(crossed_rgb, angled_rgb)
+
+
+def test_the_named_block_in_directions_still_paint_exactly_what_they_did(tmp_path):
+    """Angles are additive. Every painting made before them has to replay unchanged,
+    which is also what keeps the golden images honest."""
+    def paint(direction):
+        s = make(tmp_path)
+        s.block_in("center", "bristle", "burnt_umber", direction=direction, size=0.12)
+        return s.canvas.to_srgb8(impasto=False)
+
+    assert np.array_equal(paint("cross"), paint(["horizontal", "vertical"])), \
+        "'cross' stopped meaning a horizontal pass and then a vertical one"
+
+
+def test_compare_separates_cells_no_paint_can_reach(tmp_path, reference):
+    """Both fresh sessions of the M6 pass spent strokes chasing cells below the
+    palette's floor, and neither could find out that was what they were doing."""
+    s = make(tmp_path)
+    dark = Image.new("RGB", (480, 360), (10, 10, 10))
+    dark_path = tmp_path / "dark.png"
+    dark.save(dark_path)
+
+    c = s.compare(dark_path)
+    assert c.floor == pytest.approx(s.palette.darkest_value)
+    assert c.unreachable, "a near-black reference reported nothing out of reach"
+    assert len(c.fixable) + len(c.unreachable) == len(c.off)
+    assert all(cell.ref < c.floor - c.threshold for cell in c.unreachable)
+    assert "cannot be painted" in c.table()
+
+    # And a reference the palette can reach must not be written off as impossible.
+    assert not s.compare(reference).unreachable
+
+
+def test_the_palette_floor_is_the_darkest_thing_in_the_box(tmp_path):
+    """No black pigment, by the brief's rule -- so the floor is well above zero and
+    the painter has to be told, because the reference will not be."""
+    s = make(tmp_path)
+    floor = s.palette.darkest_value
+    assert 0.15 < floor < 0.30
+    assert floor == pytest.approx(
+        min(s.palette.value_of(n) for n in set(s.palette.pigment_names))
+    )
