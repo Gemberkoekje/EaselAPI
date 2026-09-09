@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.eggs/
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Easel session state and output
+*.easel
+out/
+output/
+samples/*.png
+samples/*.gif
+!samples/.gitkeep
+# The brush sampler is the project's primary test artefact and its best
+# at-a-glance description, so it is committed even though it is generated.
+!samples/brushes.png
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

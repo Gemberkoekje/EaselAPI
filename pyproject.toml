@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "easel-paint"
+version = "0.1.0"
+description = "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+authors = [{ name = "Arie Hofland" }]
+keywords = ["painting", "brush", "raster", "agent", "llm", "headless"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Graphics",
+]
+dependencies = [
+    "numpy>=1.26",
+    "pillow>=10.0",
+]
+
+[project.optional-dependencies]
+mixbox = ["pymixbox>=2.0"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+easel = "easel.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ariehofland/EaselAPI"
+Issues = "https://github.com/ariehofland/EaselAPI/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/easel"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
