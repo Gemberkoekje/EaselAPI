@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from PIL import Image
 
 _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO / "src") not in sys.path:  # pragma: no cover - import plumbing
@@ -206,3 +207,65 @@ def digest(arr: np.ndarray) -> str:
     h.update(f"{a.shape}".encode())
     h.update(a.tobytes())
     return h.hexdigest()
+
+
+# --------------------------------------------------------------------------------------
+# Numeric tolerance fallback
+# --------------------------------------------------------------------------------------
+# A same-source numpy release can still round a pixel +-1 of 255 differently: the
+# cp312 and cp313 wheels of numpy==2.5.3 vectorise `**` (used in the sRGB gamma
+# curve, color.py) through different compiled SIMD paths, which disagree in the
+# last bit on a handful of values straddling a rounding boundary. Observed first
+# when CI's Python 3.13 jobs failed every golden case at "max channel delta 1" on
+# well under 0.1% of pixels while the 3.12 jobs on the same commit, same package
+# versions, passed exactly. That is not a repaint changing -- finding 19 (this
+# file's docstring) moved 20% of pixels by up to 49 levels, and is exactly the
+# kind of thing these bounds must still catch.
+TOLERANCE = 1
+TOLERANCE_FRACTION = 0.02
+
+#: Block size (rows, cols) to average-pool before comparing, for a case too big to
+#: keep a second full-resolution reference image in the repo for. Averaging a
+#: block dilutes an isolated +-1 pixel into a fraction of a level, so it survives
+#: the same noise a raw per-pixel comparison does not.
+POOL_BLOCK: dict[str, tuple[int, int]] = {"sampler": (12, 5)}
+
+
+def pool_average(arr: np.ndarray, block: tuple[int, int]) -> np.ndarray:
+    """Block-average ``arr`` by (rows, cols). Dimensions must divide evenly."""
+    bh, bw = block
+    h, w = arr.shape[:2]
+    pooled = (
+        arr[: (h // bh) * bh, : (w // bw) * bw]
+        .astype(np.float64)
+        .reshape(h // bh, bh, w // bw, bw, -1)
+        .mean(axis=(1, 3))
+    )
+    return np.round(pooled).astype(np.uint8)
+
+
+def tolerance_reference_path(name: str) -> Path:
+    """Where the reference image for :func:`close_enough` lives, for ``name``."""
+    if name in POOL_BLOCK:
+        return GOLDEN_DIR / f"{name}.pooled.png"
+    return GOLDEN_DIR / f"{name}.png"
+
+
+def close_enough(arr: np.ndarray, name: str) -> bool:
+    """True if ``arr`` is within :data:`TOLERANCE` of the stored reference.
+
+    Call this only after an exact :func:`digest` comparison has already failed --
+    it exists to absorb build noise (see :data:`TOLERANCE`'s docstring), not to
+    replace the exact check as the primary signal.
+    """
+    ref_path = tolerance_reference_path(name)
+    if not ref_path.exists():
+        return False
+    candidate = pool_average(arr, POOL_BLOCK[name]) if name in POOL_BLOCK else arr
+    ref = np.asarray(Image.open(ref_path).convert("RGB"), dtype=np.int16)
+    if ref.shape != candidate.shape:
+        return False
+    delta = np.abs(ref - candidate.astype(np.int16))
+    if delta.max() > TOLERANCE:
+        return False
+    return bool((delta.max(axis=2) > 0).mean() <= TOLERANCE_FRACTION)
