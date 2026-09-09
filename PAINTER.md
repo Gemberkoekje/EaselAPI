@@ -173,6 +173,105 @@ s.block_in(span("E5", "H8"), "bristle", "dark", density=1.0, size=0.14)
 s.look(region=span("D2", "E4"))                # the head, close up
 ```
 
+### The drawing, before the masses
+
+A cell is a large place. On a 1200-wide canvas one cell is 150 pixels, and an eye,
+a knuckle, the lip of a cup, the gap between two fingers are all *smaller than
+that*. Named by cell alone they land somewhere in the right neighbourhood, which is
+how a painting comes out a recognisable scene made of unrecognisable things.
+
+So before the masses: six or seven points, each one verified. That is a drawing,
+and everything else hangs on it.
+
+```python
+s.mark("rim_l", 0.335, 0.315)          # a named point, shown on every look after
+s.mark("rim_r", 0.630, 0.315)
+s.mark("foot",  0.480, 0.715)
+```
+
+Marks are drawn on **both** panels, so one look tells you whether the point you
+chose is the point you meant. Check each one at the size of the feature, not at the
+size of the canvas:
+
+```python
+s.look(region=cell("D4"), reference="ref.jpg", grid="fine")
+```
+
+`grid="fine"` divides what is on screen into tenths and labels them, and the crop is
+enlarged so a single cell fills the panel. **Read the two digits off the label; do
+not estimate a fraction.** A label pair `(3, 6)` is `cell("D4").point(0.3, 0.6)` —
+the near corner of that little square — and its middle is `point(0.35, 0.65)`.
+Reading a label is something you do reliably. Estimating "about a third across" is
+not, and that gap is the whole reason this view exists.
+
+```python
+s.mark("eye_l", *cell("D4").point(0.35, 0.55))     # read off the fine grid
+```
+
+Then draw, with the pencil, through the points:
+
+```python
+s.pencil([s.pt("rim_l"), (0.36, 0.68), s.pt("foot"), (0.60, 0.68), s.pt("rim_r")])
+s.look(reference="ref.jpg")             # is the drawing right, before any paint?
+```
+
+`pencil()` puts graphite into the canvas — no paint, no wetness, and **it does not
+count as a stroke**, so the drawing is free. Paint covers it in proportion to how
+much actually lands: it survives under a scumble and in the ground and disappears
+under an opaque mass. Making it disappear is the painting.
+
+Four things about drawing that are easy to get wrong:
+
+- **Draw through the shapes, not around them.** A line you painted *up to* is an
+  outline filled in, and that is the clearest possible sign nobody was looking at
+  masses. Paint across your own lines.
+- **Erase rather than argue.** If a line is wrong, `s.erase(region)` and redraw.
+  Arguing with a wrong line while painting costs strokes and loses every time.
+- **Hair drawn along a line still has to go every which way.** The drawing says
+  where the mass is. It does not say what the marks inside it do.
+- **Fix the drawing before you paint it.** A look at the pencil alone is the
+  cheapest correction available to you — it costs nothing and no paint has been
+  spent yet.
+
+`s.sketch_lines()` gives every line back as points, so a stroke can be swept along
+one, aimed at one, or ignore it:
+
+```python
+for line in s.sketch_lines():
+    s.stroke(line, "bristle", "dark", size=0.05)
+```
+
+### Try the mark before you spend it
+
+Two tools sit between deciding on a mark and paying for it. Neither touches the
+canvas and neither writes to the log.
+
+```python
+plan = [{"points": [s.pt("rim_l"), (0.40, 0.62)], "brush": "liner",
+         "size": 0.006, "color": "light", "label": "rim"}]
+
+s.preview(plan,  reference="ref.jpg", region=span("C3", "F6"), grid="fine")
+s.rehearse(plan, reference="ref.jpg", region=span("C3", "F6"))
+```
+
+`preview` draws your intended points and the brush's *width* over both panels —
+where the mark will go, checked against the photograph. `rehearse` paints it on a
+copy of the canvas and shows you the result — what it will look like, with its
+tooth and its edge and how it mixes with what is already there. A feature the size
+of an eye can be tried three ways and judged before a stroke is spent.
+
+The plan is a list of the same arguments `s.stroke()` takes, so what you checked is
+what you paint, without rewriting it:
+
+```python
+for spec in plan:
+    s.stroke(**{k: v for k, v in spec.items() if k != "label"})
+```
+
+The rehearsal is seeded as if these were the next strokes of the real painting, so
+what you rehearsed is what lands. This is what the scrap of canvas beside a real
+easel is for, and it is the last reason to reach for `undo`.
+
 **Compare values, not colours, at least as often.**
 
 ```python
@@ -191,9 +290,83 @@ drawing and flat values reads as nothing. If your greyscale comparison shows the
 reference has a dark corner where you have a bright one, fix that before you touch
 a feature.
 
-**Then stop measuring and paint.** The grid gets the masses into the right cells.
-It will not draw a face for you, and chasing small features cell by cell is how you
-spend three hundred strokes and arrive at a diagram.
+### Put a number on it
+
+Squinting says something is off. It does not say which mass or by how much, and by
+the last twenty strokes that is the only question left.
+
+```python
+print(s.compare("ref.jpg"))
+```
+
+Per cell: the reference's mean value, yours, and the difference, as a table and as
+a heat map beside the two greyscales. **The number that matters is `0.10`** — two
+masses closer than a tenth of the value range read as one, so a cell further out
+than that is a separation your painting has lost.
+
+```
+       A      B      C      D      E      F      G      H
+  1  +0.04  +0.04  +0.04  +0.04  +0.03  +0.04  +0.04  +0.04
+  4  +0.04  +0.04  -0.06 -0.34* -0.32* -0.12*  +0.04  +0.04
+6 of 64 cells more than 0.10 out (* above); largest 0.34.
+    D4 ref 0.87 canvas 0.53 -0.34 (#E2DED6 vs #8C8880)
+```
+
+Negative means your canvas is *darker* than the reference there. The mean colour is
+in the table too, coarse on purpose: it is there to catch "that whole passage is too
+warm", not to be sampled and matched. Matching sampled colour cell by cell is
+tracing, and it produces a painting nobody would look at twice.
+
+Inside a region, `compare` measures its tenths and labels them the way
+`grid="fine"` does, so a cell that is out names the place to fix:
+
+```python
+print(s.compare("ref.jpg", region=cell("D4")))     # the tenths of one cell
+```
+
+Work down the list of cells that are out, largest first, and stop when nothing is.
+
+### When to stop measuring
+
+Measuring is not painting, and every tool in this section can be used to avoid
+making a mark. Stop when:
+
+- **no cell is more than `0.10` out** — the value structure is right, and value is
+  what carries a copy;
+- **the landmarks are verified** — six or seven, checked at feature scale. A dozen
+  is not twice as good; it is a session spent on arithmetic;
+- **you can see the subject in your own painting with the reference covered up.**
+
+Past that point, more measuring makes the painting worse, not better: it turns
+marks into corrections and corrections into mud. The grid gets the masses into the
+right cells and the landmarks get the features into the right places. Neither will
+draw a face for you, and chasing small features cell by cell is how you spend three
+hundred strokes and arrive at a diagram.
+
+### Letting the reference be cut up for you (optional)
+
+`s.prepare("ref.jpg")` quantises the photograph and hands back its masses,
+numbered, with an overlay to look at and a table of each one's share, value,
+colour, the cells it covers, and how hard its edge is against each neighbour.
+
+```python
+prep = s.prepare("ref.jpg")            # "coarse": five to eight masses
+print(prep)
+prep.merge(3, 7)                       # both of those are one thing
+s.look_areas()                         # the corrected map, over both panels
+s.look(region=prep.region(4), reference="ref.jpg", grid="fine")
+```
+
+**The map is not the truth.** It joins hair to a wall of the same brown and cuts a
+coat along its folds, because it knows about colours and a painting is made of
+things. `merge` and `split` are how you say so. The useful sentence is "area 5 is
+the hair, less the strip that is really wall" — not "the computer says eleven".
+
+`s.sketch()` lays those outlines as pencil in one call. **That is an assisted mode.**
+The drawing is meant to be yours: sketch, look, adjust, then paint. A painting that
+starts from the machine's outlines is measuring the segmenter and not you, and any
+write-up has to say it was used. Prefer `prepare` for *reading* the reference and
+your own `pencil()` for drawing it.
 
 ---
 
@@ -388,6 +561,7 @@ quiet masses.
 | `bristle` | **The workhorse** for any mark with a direction. Broken, streaky, alive — and never solid: one pass covers about three-quarters of its width. |
 | `flat` | Block-in, chisel edges, flat planes. Turns to follow the stroke. |
 | `round_hard` | Deliberate marks, accents, small shapes, final highlights. |
+| `liner` | Fine lines at the scale of a feature: a lid, a brow, the lip of a cup, a mast. `round_hard` at `size=0.005` with no jitter at all, and it holds its load. |
 | `round_soft` | Blending and soft edges. The least painterly — use it sparingly, and never for a mass: above about `size=0.05` it airbrushes. |
 | `knife` | Thick slabs with a hard edge. Drags what it crosses. Use rarely, for punctuation. |
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
@@ -483,6 +657,18 @@ consequences worth knowing before you go looking for a bug:
   a different `size` — that is the single most effective thing you can do to stop a
   painting looking mechanical, and no pressure setting will do it for you.
 
+**At the scale of a feature.** A `round_hard` line keeps its width down to about
+three pixels of the long side (`size=0.003` on a 1200-wide canvas), at full
+strength, so the brushes go as small as anything you will paint. What changes at
+that scale is not the brush. A single dab lands at about a third of its colour's
+strength, so a highlight the size of a catchlight is two or three dabs on the same
+spot, not one. A fine line runs dry over the same *distance* as a fat one, which
+is far more brush-lengths, so it lasts. And pressure does not thin a line at its
+ends, so a mark that tapers is two strokes of different sizes. Anything the size
+of a cell or smaller is three marks at most — the dark, the light, and the edge
+between them — laid dark first and looked at through a `region=` crop before the
+light goes on.
+
 ---
 
 ## Looking
@@ -496,11 +682,21 @@ s.look(region=cell("D6"))
 s.look(diff=True)                         # tint what changed since the last look
 s.look(reference="ref.jpg")               # reference beside your painting
 s.look(scale=None)                        # full resolution
+s.look(region=cell("D4"), reference="ref.jpg", grid="fine")   # both panels, tenths
+s.look(sketch=False)                      # hide the pencil underdrawing
 ```
 
 A `region=` crop is at full resolution, and a small one — a single cell — is
-enlarged so it can be read. `region=span("D2", "E4")` is the usual size for
-inspecting a passage.
+enlarged to at least 800 px, which shows a cell at five times or more. That is
+the scale at which a feature can actually be judged. `region=span("D2", "E4")` is
+the usual size for inspecting a passage, and a single cell is the size for a
+feature. Regions can be written as strings anywhere: `region="D4"`,
+`region="C3:F6"`, `region="upper-band"`.
+
+With a reference, a `region=` crop crops **both** panels to the same place, so
+you are always comparing like with like. `grid="fine"` then labels the tenths of
+that crop on both — see *The drawing, before the masses* above, which is where
+this view earns its keep.
 
 Each look writes a numbered PNG under `out/` — `out/look_001.png`, `out/look_002.png`
 and so on — and returns the path. Print it and open that file. The numbering belongs
@@ -537,6 +733,16 @@ s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
 s.undo(n)                                          # scraping, not free
 s.look(...)
+
+s.pencil(points, pressure=0.55)                    # graphite; not a stroke
+s.erase(region=None)                               # rub the drawing out
+s.sketch_lines()                                   # every line drawn, as points
+s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
+s.preview(strokes, reference=, region=, grid=)     # where a mark would go
+s.rehearse(strokes, reference=, region=)           # what it would look like
+s.compare(reference, region=None)                  # per-cell value numbers
+s.prepare(reference, level="coarse")               # the reference, cut up
+s.look_areas()                                     # the map again, after merging
 s.export("painting.png")
 s.timelapse_gif("painting.gif")
 s.log()                                            # what you have done so far
@@ -582,7 +788,7 @@ below, above, left_of, right_of, between`.
 
 ---
 
-## Six small exercises
+## Seven small exercises
 
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
@@ -684,6 +890,33 @@ for a, b in [("cadmium_yellow", "ultramarine"), ("cadmium_red", "ultramarine"),
     print(a, "+", b, "->", p.hex(p.mix(a, b, 0.5)))
 ```
 
+**7. Draw, try, paint.** The whole precision loop on an abstract shape. Do this one
+before any copy: it is four calls, and it is how a feature gets painted.
+
+```python
+from easel import Session, cell
+
+s = Session(900, 600, ground="toned_grey", seed=7)
+s.mark("a", *cell("C3").point(0.5, 0.5))       # three verified points
+s.mark("b", *cell("F3").point(0.5, 0.5))
+s.mark("c", *cell("D6").point(0.5, 0.5))
+s.pencil([s.pt("a"), s.pt("b"), s.pt("c"), s.pt("a")], pressure=0.7)
+s.look()                                        # the drawing, before any paint
+
+plan = [{"points": [s.pt("a"), s.pt("c")], "brush": "bristle", "size": 0.09,
+         "color": "titanium_white"}]
+s.rehearse(plan, region="C3:F6")                # what would that mark look like?
+s.rehearse([dict(plan[0], size=0.03, brush="liner")], region="C3:F6")   # or this?
+
+s.stroke(**plan[0])                             # spend the stroke on the better one
+s.look(region="C3:F6")     # the pencil is gone under the paint and still there beside it
+```
+
+Three things to notice. The two rehearsals cost nothing and neither appears in
+`s.log()`. The drawing did not count against `s.stroke_count`. And the graphite has
+vanished exactly where the paint landed and survived everywhere else — which is what
+an underdrawing is for, and why making it disappear is the painting.
+
 ---
 
 ## A checklist before you call it finished
@@ -697,6 +930,11 @@ for a, b in [("cadmium_yellow", "ultramarine"), ("cadmium_red", "ultramarine"),
   strokes, a perfectly straight line?
 - If you had a reference, look at the painting once *without* it beside you. A
   shape that only makes sense with the photograph next to it is not painted yet.
+- If you had a reference, does `s.compare("ref.jpg")` leave any cell more than
+  `0.10` out? Those are the last strokes worth spending.
+- Is there pencil still showing where you did not mean it to? `s.erase()` takes
+  it out; `s.export(path, sketch=False)` hides all of it at once, but a drawing
+  showing through thin paint is a good thing and worth keeping.
 
 If you have a reference, look at them side by side one last time:
 
@@ -729,6 +967,10 @@ easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --s
 easel run painting.easel pass1.py     # your script; `s` is already defined in it
 easel look painting.easel --grid
 easel look painting.easel --values
+easel look painting.easel --region D4 --fine --reference ref.jpg
+easel mark painting.easel rim_l 0.335 0.315    # and `easel mark p.easel` to list
+easel compare painting.easel ref.jpg           # per-cell value numbers
+easel prepare painting.easel ref.jpg --level coarse --merge 3,7
 easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif

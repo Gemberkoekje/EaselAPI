@@ -55,11 +55,14 @@ last — rather than listing functions. The engine is designed around one habit:
 | Piece | What it does |
 |---|---|
 | `Session` | The one object you hold. Canvas, palette, seed, history, `look()`. |
-| `Canvas` | Linear-light RGB plus `wetness`, `thickness` and canvas `height` (tooth). |
-| Brushes | `round_soft`, `round_hard`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
+| `Canvas` | Linear-light RGB plus `wetness`, `thickness`, `sketch` (graphite) and canvas `height` (tooth). |
+| Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
-| `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff. |
+| `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
+| Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
+| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like. Neither touches the canvas. |
+| Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `prepare(reference)` cuts the photograph into numbered masses. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
 
 Coordinates are always normalised `0.0–1.0` with the origin top-left. Raw pixels are
@@ -76,6 +79,10 @@ easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --s
 easel run painting.easel first_pass.py
 easel look painting.easel --grid
 easel look painting.easel --values
+easel look painting.easel --region D4 --fine --reference ref.jpg
+easel mark painting.easel rim_l 0.335 0.315
+easel compare painting.easel ref.jpg
+easel prepare painting.easel ref.jpg --level coarse
 easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif
@@ -106,6 +113,11 @@ s.replay(upto=40)   # the state after the first 40 records
 It is also how `easel undo` works across separate shell invocations: session files
 carry the log, not undo snapshots.
 
+Golden-image tests hold this honest. `tests/golden/` stores a hash and a PNG for a
+fixed script of marks on each texture, plus the whole brush sampler; a change to
+what a mark looks like fails the suite, and the failure hands you both images to
+compare. They caught a real one on their first run — see `REVIEW.md` finding 19.
+
 ## Design notes
 
 A few decisions worth knowing about, because they are the ones that make output look
@@ -126,7 +138,8 @@ painted rather than generated:
 
 ## Status
 
-Early. The engine, palette, composition helpers, `look()`, history and CLI are
+Early. The engine, palette, composition helpers, `look()`, history, CLI and the
+precision tools (drawing, landmarks, preview, rehearse, compare, prepare) are
 working; see [`NOTES.md`](NOTES.md) for what is done, what is stubbed, and what is
 next. An MCP server is deliberately last.
 

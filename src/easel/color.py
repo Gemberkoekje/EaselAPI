@@ -29,6 +29,7 @@ __all__ = [
     "mix",
     "mix_many",
     "luminance",
+    "linear_to_oklab",
     "MIXBOX_AVAILABLE",
 ]
 
@@ -72,6 +73,32 @@ def luminance(linear_rgb: np.ndarray) -> np.ndarray:
     """Rec. 709 relative luminance of linear RGB. Accepts (...,3)."""
     rgb = np.asarray(linear_rgb, dtype=np.float32)
     return (0.2126 * rgb[..., 0] + 0.7152 * rgb[..., 1] + 0.0722 * rgb[..., 2]).astype(np.float32)
+
+
+#: Linear sRGB to the LMS cone space Oklab is built on, and the cube-root stage
+#: after it. Constants from Bjorn Ottosson's derivation.
+_OKLAB_M1 = np.array(
+    [[0.4122214708, 0.5363325363, 0.0514459929],
+     [0.2119034982, 0.6806995451, 0.1073969566],
+     [0.0883024619, 0.2817188376, 0.6299787005]], dtype=np.float32)
+_OKLAB_M2 = np.array(
+    [[0.2104542553, 0.7936177850, -0.0040720468],
+     [1.9779984951, -2.4285922050, 0.4505937099],
+     [0.0259040371, 0.7827717662, -0.8086757660]], dtype=np.float32)
+
+
+def linear_to_oklab(linear_rgb: np.ndarray) -> np.ndarray:
+    """Linear RGB to Oklab. Accepts (..., 3).
+
+    A perceptual space, so that "these two areas are the same colour" means what a
+    painter means by it. Euclidean distance in sRGB does not: it puts two dark
+    browns further apart than a dark brown and a mid grey, which is how an
+    automatic segmentation ends up cutting a coat along its folds.
+    """
+    rgb = np.asarray(linear_rgb, dtype=np.float32)
+    lms = rgb @ _OKLAB_M1.T
+    lms = np.cbrt(np.maximum(lms, 0.0), dtype=np.float32)
+    return (lms @ _OKLAB_M2.T).astype(np.float32)
 
 
 # --------------------------------------------------------------------------------------

@@ -121,7 +121,7 @@ runnable copies do not drift from the printed ones.
   then read the source.
 - Golden-image tests still do not exist; the property tests catch behaviour, not
   appearance.
-- M6, the MCP server.
+- The MCP server, now M8 in the brief.
 
 ## File map
 

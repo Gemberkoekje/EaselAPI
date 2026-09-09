@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from easel import Region, Session, region
+from easel import Region, Session, cell, region
 
 OUT = Path("out")
 
@@ -108,10 +108,38 @@ def mixing() -> None:
         print(f"  {a:16s} + {b:16s} -> {p.hex(p.mix(a, b, 0.5))}")
 
 
+def draw_try_paint() -> None:
+    """The precision loop, on a shape that is not a picture of anything.
+
+    Three verified points, a drawing hung on them, two rehearsals that cost nothing,
+    and one stroke spent on the better of them. Afterwards the graphite is gone
+    exactly where the paint landed and still there beside it, which is what an
+    underdrawing is for.
+    """
+    s = Session(900, 600, ground="toned_grey", seed=7, timelapse=False, out_dir=OUT)
+    s.mark("a", *cell("C3").point(0.5, 0.5))
+    s.mark("b", *cell("F3").point(0.5, 0.5))
+    s.mark("c", *cell("D6").point(0.5, 0.5))
+    s.pencil([s.pt("a"), s.pt("b"), s.pt("c"), s.pt("a")], pressure=0.7)
+    s.look(path=OUT / "ex7_drawing.png")
+
+    plan = [{"points": [s.pt("a"), s.pt("c")], "brush": "bristle", "size": 0.09,
+             "color": "titanium_white"}]
+    s.rehearse(plan, region="C3:F6", path=OUT / "ex7_rehearse_wide.png")
+    s.rehearse([dict(plan[0], size=0.03, brush="liner")], region="C3:F6",
+               path=OUT / "ex7_rehearse_fine.png")
+
+    strokes_before, records_before = s.stroke_count, len(s.history.records)
+    s.stroke(**plan[0])
+    print(f"  drawing + two rehearsals cost {strokes_before} strokes and "
+          f"{records_before - 1} log entries beyond the pencil line")
+    s.look(region="C3:F6", path=OUT / "ex7_painted.png")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for fn in (value_scale, pressure_profiles, paint_running_out,
-               wet_versus_dry, edge_study):
+               wet_versus_dry, edge_study, draw_try_paint):
         print(f"{fn.__name__} ...")
         fn()
     print("mixing:")

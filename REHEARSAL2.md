@@ -85,6 +85,12 @@ All through the public API and exported PNGs, in `rehearsal2/probe_*.py`.
   0.72–0.76 throughout. A `flat` stroke stays at 0.99–1.00 on every texture. The
   block-in itself does not speckle (`probe_blockin_speckle.py`): the speckle in the
   sky came from the single long strokes laid over it.
+- **Small marks** (`probe_small_marks.py`, `probe_line_weight.py`): a `round_hard`
+  line renders at its nominal width down to `size=0.003` (3 px) at full strength;
+  a single dab lands at about 0.37 of its colour's strength; run-out is in distance,
+  not brush-lengths, so over 800 px a 36 px line thins to 32 and a 2.4 px line to
+  1.3. The first measurement of this sat in the dried tail of the stroke and said
+  the small sizes were broken. They are not — gotcha 0 in `NOTES.md`, again.
 - **Bristle solidity**: the same probe shows a fully loaded bristle stroke never
   exceeds about three-quarters coverage of its own width. That is the comb, and it
   is why a single bristle pass cannot make a solid mass.
@@ -130,8 +136,9 @@ All through the public API and exported PNGs, in `rehearsal2/probe_*.py`.
   sampler and a real painting as the evidence.
 - The `flat` brush's edge scallops at large sizes (the sky bands show it). Mild,
   and possibly a feature.
-- Pressure does not modulate width; golden-image tests do not exist; M6 is
-  untouched. All as before.
+- Pressure does not modulate width; golden-image tests do not exist; the MCP
+  server is untouched. All as before — and all three, with the tools listed
+  above, are now milestones M6–M8 of the brief.
 
 ## File map
 

@@ -50,3 +50,7 @@ rehearsal2/*.gif
 !rehearsal2/copies_compared.png
 !rehearsal2/copy_timelapse.gif
 !rehearsal2/own_timelapse.gif
+
+# Golden images: the stored ones are committed (they are what a human looks at
+# when a case fails). The `.actual.png` a failing test writes beside them is not.
+tests/golden/*.actual.png

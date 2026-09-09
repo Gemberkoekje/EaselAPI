@@ -26,11 +26,20 @@ function list.
 from __future__ import annotations
 
 from easel.brush import BRUSHES, TIPS, Brush, brush
-from easel.canvas import GROUNDS, Canvas
-from easel.color import linear_to_srgb, mix, mix_many, parse_color, srgb_to_linear
+from easel.canvas import GRAPHITE, GROUNDS, Canvas
+from easel.color import (
+    linear_to_oklab,
+    linear_to_srgb,
+    mix,
+    mix_many,
+    parse_color,
+    srgb_to_linear,
+)
 from easel.history import History, StrokeRecord
 from easel.look import load_reference, render_look
+from easel.measure import CellCompare, Comparison, compare_images
 from easel.palette import PIGMENTS, Palette
+from easel.prepare import LEVELS, Area, Preparation, prepare_reference
 from easel.regions import (
     GRID_COLS,
     GRID_ROWS,
@@ -49,7 +58,13 @@ from easel.regions import (
     thirds,
 )
 from easel.session import Session
-from easel.stroke import PRESSURE_PROFILES, catmull_rom, paint_stroke, pressure_curve
+from easel.stroke import (
+    PRESSURE_PROFILES,
+    catmull_rom,
+    draw_pencil,
+    paint_stroke,
+    pressure_curve,
+)
 from easel.texture import TEXTURES, make_texture
 
 __version__ = "0.1.0"
@@ -60,6 +75,7 @@ __all__ = [
     # surfaces
     "Canvas",
     "GROUNDS",
+    "GRAPHITE",
     "TEXTURES",
     "make_texture",
     # marks
@@ -68,6 +84,7 @@ __all__ = [
     "brush",
     "TIPS",
     "paint_stroke",
+    "draw_pencil",
     "PRESSURE_PROFILES",
     "pressure_curve",
     "catmull_rom",
@@ -77,6 +94,7 @@ __all__ = [
     "mix",
     "mix_many",
     "parse_color",
+    "linear_to_oklab",
     "srgb_to_linear",
     "linear_to_srgb",
     # composition
@@ -95,9 +113,16 @@ __all__ = [
     "left_of",
     "right_of",
     "between",
-    # looking and history
+    # looking, measuring and reading the reference
     "render_look",
     "load_reference",
+    "Comparison",
+    "CellCompare",
+    "compare_images",
+    "Preparation",
+    "Area",
+    "prepare_reference",
+    "LEVELS",
     "History",
     "StrokeRecord",
     "__version__",

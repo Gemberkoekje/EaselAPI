@@ -35,7 +35,7 @@ class StrokeRecord:
     """One entry in the painting log. Enough to replay the stroke exactly."""
 
     index: int
-    kind: str  # "stroke", "dry", "glaze", "smudge", "block_in"
+    kind: str  # "stroke", "dry", "glaze", "smudge", "pencil", "erase"
     brush: str = ""
     color_hex: str = ""
     points: list = field(default_factory=list)
@@ -77,10 +77,16 @@ class History:
         self.records.append(record)
         return record
 
+    #: Log entries that are not marks of paint. The stroke budget in the brief's
+    #: definition of done counts paint, so drawing, erasing, drying and looking are
+    #: all free -- a painter who has to spend strokes on the underdrawing will skip
+    #: the underdrawing, which is the opposite of what M6 is for.
+    UNPAINTED_KINDS = ("dry", "look", "pencil", "erase")
+
     @property
     def stroke_count(self) -> int:
-        """How many marks have been made. Drying and looking do not count."""
-        return sum(1 for r in self.records if r.kind not in ("dry", "look"))
+        """How many marks of paint have been made. Drawing and drying do not count."""
+        return sum(1 for r in self.records if r.kind not in History.UNPAINTED_KINDS)
 
     def summary(self, last: int = 10) -> str:
         """A short text log of recent actions, for the painter to re-read."""
@@ -95,10 +101,12 @@ class History:
                 bits.append(r.color_hex)
             if r.dabs:
                 bits.append(f"{r.dabs} dabs")
-            if r.kind not in ("dry", "look") and r.dabs:
+            if r.kind not in History.UNPAINTED_KINDS and r.dabs:
                 # Say it plainly when a mark laid no paint: the painter is looking
                 # at the log precisely because the canvas did not change.
                 bits.append("NO PAINT LANDED" if r.paint < 1.0 else f"{_short(r.paint)} paint")
+            elif r.kind == "pencil":
+                bits.append("NOTHING DREW" if r.paint < 1.0 else f"{_short(r.paint)} graphite")
             if r.note:
                 bits.append(f"-- {r.note}")
             lines.append(" ".join(bits))

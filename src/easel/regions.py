@@ -258,10 +258,34 @@ def between(a: Region, b: Region) -> Region:
 
 
 def as_region(value) -> Region:
-    """Coerce a name, a 4-tuple or a :class:`Region` into a :class:`Region`."""
+    """Coerce a name, a cell, a span, a 4-tuple or a :class:`Region` into a Region.
+
+    Strings are tried as a named region, then as a grid cell, then as a span::
+
+        as_region("upper-band")     # a named region
+        as_region("D4")             # one grid cell
+        as_region("C3:F6")          # a run of cells
+
+    So anything that takes a region -- ``look``, ``block_in``, ``compare`` -- takes
+    a cell label straight off a gridded look, which is where the painter read it.
+    """
     if isinstance(value, Region):
         return value
     if isinstance(value, str):
-        return region(value)
+        text = value.strip()
+        if ":" in text:
+            first, last = text.split(":", 1)
+            return span(first.strip(), last.strip())
+        key = text.lower().replace("_", "-").replace(" ", "-")
+        if key in _NAMED:
+            return region(key)
+        try:
+            return cell(text)
+        except ValueError:
+            pass
+        raise KeyError(
+            f"Unknown region {value!r}. Use a name ({', '.join(REGION_NAMES)}), "
+            f"a grid cell like 'D4', a span like 'C3:F6', or Region(x0, y0, x1, y1)."
+        )
     x0, y0, x1, y1 = (float(v) for v in value)
     return Region(x0, y0, x1, y1)

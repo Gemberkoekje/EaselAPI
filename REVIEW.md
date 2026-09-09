@@ -423,6 +423,55 @@ would put the two panels on different scales (`look.py`).
 
 **Guarded by** `test_the_reference_gets_the_same_grid_and_the_same_greyscale`.
 
+---
+
+# M6 review: found by the golden images, on their first run
+
+The brief has asked for golden-image tests since M2 and they never existed. They
+were built first in M6, before anything else in the milestone, and they failed on
+the first full run of the suite — not because M6 had broken anything, but because
+they were the first thing to compare two renders that had been produced in
+different orders.
+
+### 19. The same script painted different pixels depending on what ran before it
+**Symptom.** `pytest tests/test_golden.py` passed on its own and failed as part of
+the suite: 20% of pixels differed, max channel delta 49. Running the same golden
+case twice in one process gave identical output; running it after a few unrelated
+`tip_mask` calls did not.
+
+**Cause.** The tip-mask cache was keyed on `ceil(radius)` while the mask was
+*computed* from the exact radius. So a brush asking for r=5.9 got whatever mask
+r=5.1 had built earlier in the process, and which one that was depended on the
+order of everything that had run before it (`brush.py`).
+
+**Why it matters.** This is the determinism promise, which the brief states in its
+"decisions already made" and which everything downstream leans on: `replay()`,
+CLI `undo` (which rebuilds from the log rather than from snapshots), and the
+reproducibility of any painting a session hands back. Every CLI command is a fresh
+process with its own cache history, so a painting built up over ten `easel run`
+calls could not be reproduced by replaying its own log — and nothing in the API or
+the test suite could have shown that. Size jitter means a real painting requests
+hundreds of distinct radii per stroke, so this was firing constantly, not in a
+corner case.
+
+**Fix.** Quantise the radius to quarter-pixel steps *before* anything is computed
+from it, and key the cache on the quantised value, so a mask is a pure function of
+its cache key. A quarter pixel is finer than the existing sub-pixel phase step, so
+nothing visible is given up. Every mask shifts by up to a quarter pixel: the
+goldens moved on stroke edges only (max channel delta 59, mean 0.58, nothing
+structural), which was looked at side by side before regenerating.
+
+**Guarded by** `test_a_tip_mask_is_a_pure_function_of_its_arguments` and
+`test_the_same_script_paints_the_same_pixels_in_a_dirtied_process`, plus every
+golden case.
+
+**What this says about the review loop.** Three adversarial reading passes over
+this code did not find it, and no amount of looking at `samples/brushes.png` would
+have: the sheet is regenerated in one process and looks correct every time. It took
+two renders of the same script made under different conditions. That is the class
+of defect visual regression exists for, and it was sitting in the engine for five
+milestones because the tests the brief asked for had been deferred five times.
+
 ## Open, with evidence
 
 - **Pressure changes opacity, not width.** A stroke at `pressure=0.1` and one at
@@ -442,4 +491,4 @@ would put the two panels on different scales (`look.py`).
 
 ## Not yet reviewed
 
-M6, the MCP server, which does not exist yet.
+The MCP server (now M8 in the brief), which does not exist yet.

@@ -29,6 +29,13 @@ _MASK_CACHE: dict[tuple, np.ndarray] = {}
 _MASK_CACHE_LIMIT = 16384
 # Sub-pixel phases per axis. Dab centres are placed to this fraction of a pixel.
 _SUBPIXEL_STEPS = 4
+#: Radius quantisation, in steps per pixel. Every quantity a mask is built from has
+#: to be in its cache key, or the cache hands back a mask built for a different
+#: brush. This one was keyed on ``ceil(radius)`` while the mask was computed from
+#: the exact radius, so a tip at r=5.9 got whatever r=5.1 had built earlier in the
+#: process -- and the painting a script produced depended on what had run before it
+#: in the same interpreter. See REVIEW.md finding 19.
+_RADIUS_STEPS = 4
 
 
 @dataclass(frozen=True)
@@ -143,7 +150,11 @@ def tip_mask(
     pixels and the dab spacing beats against the pixel grid, striping every stroke
     made with a thin tip.
     """
-    r = max(1.0, float(radius_px))
+    # Quantise the radius *before* anything is computed from it, so that the mask is
+    # a pure function of the cache key. A quarter of a pixel is finer than the
+    # sub-pixel phase, so nothing visible is given up.
+    r_steps = max(_RADIUS_STEPS, int(round(float(radius_px) * _RADIUS_STEPS)))
+    r = r_steps / _RADIUS_STEPS
     ri = int(math.ceil(r))
     is_round = tip in ("round_soft", "round_hard")
     # Round tips are rotation-invariant, so collapse their angle to one cache entry.
@@ -158,7 +169,7 @@ def tip_mask(
 
     key = (
         tip,
-        ri,
+        r_steps,
         angle_bucket,
         px_phase,
         py_phase,
@@ -281,6 +292,27 @@ BRUSHES: dict[str, Brush] = {
         wetness=0.8,
         thickness_gain=0.55,
         texture_sensitivity=0.5,
+    ),
+    # Liner: fine lines at feature scale -- a lid, a brow, the lip of a cup, a mast.
+    # Nothing new in the engine: lines render at their nominal width down to about
+    # three pixels (REHEARSAL2.md, the eye test), so this is one word for what
+    # otherwise takes four overrides on round_hard. No jitter of any kind, because
+    # at this size a jitter of two per cent of the canvas *is* the line.
+    "liner": Brush(
+        name="liner",
+        tip="round_hard",
+        size=0.005,
+        hardness=1.0,
+        opacity=0.95,
+        spacing=0.05,
+        jitter=0.0,
+        size_jitter=0.0,
+        load=1.0,
+        load_falloff=0.18,
+        angle_follow=False,
+        wetness=0.6,
+        thickness_gain=0.35,
+        texture_sensitivity=0.35,
     ),
     # Flat: block-in, clean chisel edges, planes. Rotates to follow the stroke.
     "flat": Brush(

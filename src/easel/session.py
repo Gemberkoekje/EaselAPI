@@ -25,13 +25,20 @@ from easel.canvas import Canvas, build_surface, tooth_ceiling
 from easel.color import parse_color
 from easel.history import History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
+from easel.measure import Comparison, compare_images, heat_sheet
 from easel.palette import Palette
+from easel.prepare import Preparation, prepare_reference
 from easel.regions import Region, as_region
-from easel.stroke import paint_stroke
+from easel.stroke import draw_pencil, paint_stroke
 
 __all__ = ["Session"]
 
-_EASEL_FORMAT = 1
+#: Bumped to 2 by M6: sessions now carry a graphite channel and named landmarks.
+#: Format 1 files still load -- they simply have neither.
+_EASEL_FORMAT = 2
+_READABLE_FORMATS = (1, 2)
+#: Stream label for a rehearsal's generator, so it cannot collide with the real one.
+_REHEARSAL_STREAM = 918273645
 
 
 class Session:
@@ -76,6 +83,14 @@ class Session:
         self.timelapse = bool(timelapse)
         self._look_counter = 0
         self._last_look: np.ndarray | None = None
+        #: Named landmarks: ``{name: (x, y)}``. Six or seven verified points are a
+        #: drawing, and the masses get hung on them. See :meth:`mark`.
+        self.marks: dict[str, tuple[float, float]] = {}
+        self._preparation: Preparation | None = None
+        # Where this session's per-stroke seeds start. Zero for a real painting; a
+        # rehearsal continues from the real session's count, so what is tried on the
+        # scrap of canvas is the mark that lands when it is painted for real.
+        self._index_base = 0
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
 
@@ -128,7 +143,7 @@ class Session:
         # Snapshot before the mark, so undo lands on the state before this stroke.
         self.history.push_snapshot(self.canvas.snapshot())
 
-        index = len(self.history.records)
+        index = self._index_base + len(self.history.records)
         pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
         result = paint_stroke(
             self.canvas,
@@ -298,6 +313,132 @@ class Session:
                 f"Use 'horizontal', 'vertical', 'diagonal' or 'cross'."
             )
 
+    # -- drawing ----------------------------------------------------------------
+    def pencil(
+        self,
+        points,
+        pressure: float = 0.55,
+        width: float = 0.0026,
+        smooth: bool = True,
+        note: str = "",
+    ) -> StrokeRecord:
+        """Draw a graphite line under the paint. Not a stroke, and not counted as one.
+
+        A painter does not start on a blank canvas. The sketch is the first pass and
+        making it disappear is the painting, so this puts a line into the canvas's
+        ``sketch`` channel: no paint, no wetness, no paint height, broken by the
+        canvas tooth the way a real pencil is. Paint covers it in proportion to how
+        much actually lands, so it survives under thin paint and in the ground and
+        goes under an opaque mass.
+
+        Draw *through* the shapes, not around them. Lines drawn as outlines get
+        painted up to instead of through, and a painting made of filled outlines is
+        the single clearest tell that nobody was looking at masses.
+
+        Args:
+            points: normalised (x, y) points. One point makes a tick.
+            pressure: 0..1. Darkens the line and pushes it further into the tooth.
+            width: line width as a fraction of the canvas long side.
+            smooth: fit a spline through the points.
+            note: recorded in the log.
+
+        Example::
+
+            s.pencil([s.pt("chin"), s.pt("jaw"), s.pt("ear")])
+            s.look()                       # is the drawing right before any paint?
+        """
+        self.history.push_snapshot(self.canvas.snapshot())
+        index = self._index_base + len(self.history.records)
+        pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+        result = draw_pencil(
+            self.canvas, pts, width=width, pressure=pressure,
+            rng=self._stroke_rng(index), smooth=smooth,
+        )
+        record = self.history.add(
+            StrokeRecord(
+                index=index,
+                kind="pencil",
+                brush="pencil",
+                points=[[float(x), float(y)] for x, y in pts],
+                pressure=float(pressure),
+                dabs=result.dabs,
+                paint=result.paint,
+                note=note,
+                params={"width": float(width), "smooth": bool(smooth)},
+            )
+        )
+        if self.timelapse:
+            self.history.add_frame(self.canvas.thumbnail_srgb8())
+        return record
+
+    def erase(self, region=None, note: str = "") -> StrokeRecord:
+        """Rub out the drawing, all of it or inside one region.
+
+        Erase before painting rather than arguing with a line while painting. A line
+        the painter has decided is wrong costs nothing to remove and costs a great
+        deal to paint around.
+        """
+        r = as_region(region) if region is not None else None
+        self.history.push_snapshot(self.canvas.snapshot())
+        self.canvas.erase_sketch(r)
+        return self.history.add(
+            StrokeRecord(
+                index=self._index_base + len(self.history.records),
+                kind="erase",
+                note=note or ("erase" + (f" {r}" if r is not None else " all")),
+                params={"region": list(r.bounds) if r is not None else None},
+            )
+        )
+
+    def sketch_lines(self) -> list[list[tuple[float, float]]]:
+        """Every pencil line drawn so far, as normalised points.
+
+        So a stroke can be aimed at a line, swept along it, or ignore it::
+
+            for line in s.sketch_lines():
+                s.stroke(line, "bristle", "shadow", size=0.05)
+        """
+        return [[(float(x), float(y)) for x, y in r.points]
+                for r in self.history.records if r.kind == "pencil"]
+
+    # -- landmarks --------------------------------------------------------------
+    def mark(self, name: str, x: float, y: float) -> tuple[float, float]:
+        """Record a named point, and show it on every look from now on.
+
+        This is the unit of a drawing. Six or seven verified points -- the corner of
+        an eye, the base of a nose, where a handle meets a body -- and the masses
+        get hung on them. Verify each one against the reference at feature scale
+        before trusting it::
+
+            s.mark("eye_l", *cell("D4").point(0.3, 0.6))
+            s.look(region=cell("D4"), reference=ref, grid="fine")
+
+        Args:
+            name: what to call it. Re-using a name moves the mark.
+            x, y: normalised position.
+
+        Returns:
+            The point, so it can be used inline.
+        """
+        key = str(name).strip()
+        if not key:
+            raise ValueError("A landmark needs a name: mark('eye_l', 0.42, 0.31)")
+        pt = (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
+        self.marks[key] = pt
+        return pt
+
+    def pt(self, name: str) -> tuple[float, float]:
+        """A landmark, for use in a path: ``s.stroke([s.pt("brow"), s.pt("eye_l")])``."""
+        key = str(name).strip()
+        if key not in self.marks:
+            known = ", ".join(sorted(self.marks)) or "(none yet)"
+            raise KeyError(f"No landmark {name!r}. Marked so far: {known}.")
+        return self.marks[key]
+
+    def unmark(self, name: str) -> None:
+        """Forget a landmark. Marking over it with the same name also moves it."""
+        self.marks.pop(str(name).strip(), None)
+
     # -- canvas state -----------------------------------------------------------
     def dry(self, amount: float = 1.0, region=None) -> StrokeRecord:
         """Dry the canvas so the next paint covers instead of mixing."""
@@ -338,13 +479,15 @@ class Session:
     def look(
         self,
         scale: int | None = DEFAULT_LOOK_SIZE,
-        grid: bool = False,
+        grid: bool | str = False,
         values: bool = False,
         region=None,
         reference: str | Path | Image.Image | None = None,
         diff: bool = False,
         path: str | Path | None = None,
         impasto: bool = True,
+        sketch: bool = True,
+        marks: bool = True,
     ) -> Path:
         """Look at the canvas. Returns the path to a PNG.
 
@@ -352,17 +495,24 @@ class Session:
 
         Args:
             scale: long-side pixel limit; ``None`` for full resolution.
-            grid: overlay the labelled A-H by 1-8 grid.
+            grid: ``True`` overlays the labelled A-H by 1-8 grid; ``"fine"`` divides
+                what is on screen into labelled tenths instead, which is how a place
+                *inside* a cell gets named.
             values: greyscale, for judging the value structure.
-            region: crop to a region, at full resolution.
+            region: crop to a region, enlarged so a small crop is readable. With
+                ``reference``, **both** panels are cropped to the same place.
             reference: place a reference image alongside for comparison.
             diff: tint what changed since the previous ``look()``.
             path: where to write. Defaults to ``out_dir/look_NNN.png``.
             impasto: shade paint height as relief.
+            sketch: show the pencil underdrawing the paint has not covered.
+            marks: draw the landmarks, on both panels.
+
+        Example::
+
+            s.look(region=cell("D4"), reference=ref, grid="fine")
         """
-        ref_img = None
-        if reference is not None:
-            ref_img = reference if isinstance(reference, Image.Image) else load_reference(reference)
+        ref_img = None if reference is None else load_reference(reference)
 
         current = self.canvas.to_srgb8(impasto=impasto)
         img = render_look(
@@ -374,34 +524,397 @@ class Session:
             reference=ref_img,
             diff_against=self._last_look if diff else None,
             impasto=impasto,
+            sketch=sketch,
+            marks=self.marks if marks else None,
         )
         self._last_look = current
-
-        if path is None:
-            self._look_counter += 1
-            path = self.out_dir / f"look_{self._look_counter:03d}.png"
-        return save_look(img, path)
+        return save_look(img, self._look_path(path))
 
     def look_image(self, **kwargs) -> Image.Image:
         """The same view as :meth:`look`, returned as a PIL image instead of a path."""
         ref = kwargs.pop("reference", None)
-        ref_img = None
-        if ref is not None:
-            ref_img = ref if isinstance(ref, Image.Image) else load_reference(ref)
+        ref_img = None if ref is None else load_reference(ref)
         diff = kwargs.pop("diff", False)
+        show_marks = kwargs.pop("marks", True)
         img = render_look(
             self.canvas, reference=ref_img,
-            diff_against=self._last_look if diff else None, **kwargs
+            diff_against=self._last_look if diff else None,
+            marks=self.marks if show_marks else None, **kwargs
         )
         self._last_look = self.canvas.to_srgb8(impasto=kwargs.get("impasto", True))
         return img
 
+    def _look_path(self, path: str | Path | None, prefix: str = "look") -> Path:
+        if path is not None:
+            return Path(path)
+        self._look_counter += 1
+        return self.out_dir / f"{prefix}_{self._look_counter:03d}.png"
+
+    # -- planning ---------------------------------------------------------------
+    def preview(
+        self,
+        strokes,
+        reference: str | Path | Image.Image | None = None,
+        region=None,
+        grid: bool | str = False,
+        values: bool = False,
+        path: str | Path | None = None,
+        scale: int | None = DEFAULT_LOOK_SIZE,
+    ) -> Path:
+        """Draw intended strokes over the canvas -- and the reference -- without painting.
+
+        Nothing is painted and nothing is logged. The points and the brush's width
+        are drawn as an overlay on both panels, so a guess about where a mark goes
+        is checked against the photograph *before* it is paid for in paint. The loop
+        stops being paint-look-repair and becomes plan-check-paint.
+
+        Args:
+            strokes: what to preview. Each entry is either a list of points or a
+                dict of arguments for :meth:`stroke` (``points`` plus any of
+                ``brush``, ``size``, ``note``...). A single path is also accepted.
+            reference: shown alongside, with the same overlay.
+            region: crop both panels to a place, enlarged.
+            grid: as :meth:`look`. ``"fine"`` for tenths.
+            values: greyscale.
+            path: where to write. Defaults to ``out_dir/preview_NNN.png``.
+            scale: long-side pixel limit.
+
+        Example::
+
+            plan = [{"points": [s.pt("brow"), (0.44, 0.30)], "brush": "liner",
+                     "size": 0.004, "label": "brow"}]
+            s.preview(plan, reference=ref, region=cell("D4"), grid="fine")
+        """
+        specs = self._stroke_specs(strokes)
+        ref_img = None if reference is None else load_reference(reference)
+        img = render_look(
+            self.canvas,
+            scale=scale,
+            grid=grid,
+            values=values,
+            region=region,
+            reference=ref_img,
+            marks=self.marks or None,
+            strokes=[self._preview_shape(spec, i) for i, spec in enumerate(specs)],
+        )
+        return save_look(img, self._look_path(path, "preview"))
+
+    def rehearse(
+        self,
+        strokes,
+        reference: str | Path | Image.Image | None = None,
+        region=None,
+        grid: bool | str = False,
+        values: bool = False,
+        path: str | Path | None = None,
+        scale: int | None = DEFAULT_LOOK_SIZE,
+    ) -> Path:
+        """Paint the strokes on a *copy* of the canvas and look at the result.
+
+        Nothing is committed and nothing is logged. The preview shows where a mark
+        will go; the rehearsal shows what it will look like -- the brush's tooth
+        breakup, how it mixes with what is already wet, whether it reads at all at
+        this size. A feature the size of an eye can be tried three ways and judged
+        before a stroke is spent, which is what a painter's scrap of canvas is for.
+
+        The trial strokes are seeded as if they were the next strokes of the real
+        painting, so what is rehearsed is what lands when it is painted for real.
+
+        Args:
+            strokes: as :meth:`preview`.
+            reference: shown alongside, cropped to the same place.
+            region: crop both panels, enlarged. Use one -- the point is feature scale.
+            grid: as :meth:`look`.
+            values: greyscale.
+            path: where to write. Defaults to ``out_dir/rehearse_NNN.png``.
+            scale: long-side pixel limit.
+        """
+        trial = self._trial_session()
+        for spec in self._stroke_specs(strokes):
+            kwargs = {k: v for k, v in spec.items() if k != "label"}
+            trial.stroke(**kwargs)
+
+        ref_img = None if reference is None else load_reference(reference)
+        img = render_look(
+            trial.canvas,
+            scale=scale,
+            grid=grid,
+            values=values,
+            region=region,
+            reference=ref_img,
+            marks=self.marks or None,
+        )
+        return save_look(img, self._look_path(path, "rehearse"))
+
+    def _trial_session(self) -> Session:
+        """A throwaway session sharing this one's surface, palette and seeding.
+
+        The canvas channels are copied and the tooth is shared, so a rehearsal costs
+        a few small arrays rather than a whole canvas. It gets its *own* generator,
+        seeded from this session's current state, because a rehearsal that consumed
+        the real session's random stream would change the painting that follows it.
+        """
+        trial = Session.__new__(Session)
+        trial.seed = self.seed
+        # Its own stream, derived from the seed and how far along the painting is.
+        # Only block_in draws from this one, and a rehearsal that consumed the real
+        # session's stream would quietly change every stroke painted after it.
+        trial.rng = np.random.default_rng([self.seed, _REHEARSAL_STREAM,
+                                           len(self.history.records)])
+        trial.canvas = self.canvas.trial_copy()
+        trial.palette = self.palette
+        trial.history = History()
+        trial.out_dir = self.out_dir
+        trial.timelapse = False
+        trial._look_counter = 0
+        trial._last_look = None
+        trial.marks = self.marks
+        trial._preparation = self._preparation
+        trial._index_base = self._index_base + len(self.history.records)
+        return trial
+
+    def _stroke_specs(self, strokes) -> list[dict]:
+        """Normalise what ``preview`` and ``rehearse`` accept into stroke kwargs.
+
+        One place, so that a plan handed to ``preview`` can be handed unchanged to
+        ``rehearse`` and then to ``stroke``. A plan that has to be rewritten between
+        checking it and painting it is a plan that will drift.
+        """
+        if isinstance(strokes, dict):
+            strokes = [strokes]
+        elif _is_path(strokes):
+            strokes = [strokes]
+        out: list[dict] = []
+        for entry in strokes:
+            if isinstance(entry, dict):
+                spec = dict(entry)
+                if "points" not in spec:
+                    raise ValueError(
+                        f"A stroke spec needs 'points': {spec!r}. Give a list of "
+                        f"(x, y) points, or a dict like "
+                        f"{{'points': [...], 'brush': 'liner', 'size': 0.004}}."
+                    )
+            else:
+                spec = {"points": entry}
+            pts = np.atleast_2d(np.asarray(spec["points"], dtype=np.float32))
+            if pts.ndim != 2 or pts.shape[1] != 2:
+                raise ValueError(
+                    f"Stroke points must be (x, y) pairs, got shape {pts.shape}."
+                )
+            spec["points"] = [(float(x), float(y)) for x, y in pts]
+            out.append(spec)
+        return out
+
+    def _preview_shape(self, spec: dict, index: int) -> dict:
+        """What the overlay needs: the path, the brush's width, and a label."""
+        b = self._resolve_brush(
+            spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
+            {k: v for k, v in spec.items()
+             if k not in ("points", "brush", "size", "opacity", "color", "pressure",
+                          "glaze", "smooth", "note", "label")},
+        )
+        return {"points": spec["points"], "width": b.size,
+                "label": str(spec.get("label", spec.get("note", "") or index + 1))}
+
+    # -- measuring --------------------------------------------------------------
+    def compare(
+        self,
+        reference: str | Path | Image.Image,
+        region=None,
+        path: str | Path | None = None,
+        threshold: float = 0.10,
+    ) -> Comparison:
+        """Per-cell value of the reference, of the canvas, and the difference.
+
+        Squinting says something is off; this says which mass and by how much. The
+        threshold that matters is ``0.10`` -- two masses closer than that read as
+        one, so a cell further out than that is a separation the painting has lost.
+
+        Args:
+            reference: the image to measure against.
+            region: measure inside a region, in its own tenths, instead of over the
+                whole canvas in A-H by 1-8 cells. The labels are the ones
+                ``look(grid="fine")`` shows, so a cell that is out names the place
+                to fix: ``region.point(0.3, 0.6)``.
+            path: where to write the heat map. Defaults to ``out_dir/compare_NNN.png``.
+            threshold: what counts as out.
+
+        Returns:
+            A :class:`~easel.measure.Comparison`. Print it.
+
+        Example::
+
+            print(s.compare("mug.jpg"))
+            for c in s.compare("mug.jpg").off:
+                print(c.label, c.delta)
+        """
+        ref_img = load_reference(reference)
+        r = as_region(region) if region is not None else None
+
+        canvas_rgb = self.canvas.to_srgb8(impasto=False)
+        if r is not None:
+            x0, y0, x1, y1 = self.canvas.region_px(r)
+            canvas_rgb = canvas_rgb[y0:y1, x0:x1]
+            rw, rh = ref_img.size
+            ref_img = ref_img.crop((
+                int(np.clip(round(r.x0 * rw), 0, rw - 1)),
+                int(np.clip(round(r.y0 * rh), 0, rh - 1)),
+                int(np.clip(round(r.x1 * rw), 1, rw)),
+                int(np.clip(round(r.y1 * rh), 1, rh)),
+            ))
+        ref_rgb = np.asarray(ref_img, dtype=np.uint8)
+
+        result = compare_images(canvas_rgb, ref_rgb, region=r, threshold=threshold)
+        sheet = heat_sheet(
+            result,
+            canvas_grey=_grey(canvas_rgb),
+            reference_grey=_grey(ref_rgb),
+        )
+        result.path = save_look(sheet, self._look_path(path, "compare"))
+        return result
+
+    # -- reading the reference --------------------------------------------------
+    def prepare(
+        self,
+        reference: str | Path | Image.Image,
+        level: str = "coarse",
+        path: str | Path | None = None,
+        min_share: float = 0.004,
+    ) -> Preparation:
+        """Cut the reference into numbered masses, and write the overlay to look at.
+
+        No model and no learned segmentation: the photograph is quantised in a
+        perceptual colour space and its connected areas are labelled and numbered.
+        The map will be wrong in places -- it joins hair to a wall of the same brown
+        and cuts a coat along its folds -- so read it, then correct it with
+        ``prep.merge(...)`` and ``prep.split(...)``. The useful sentence is "area 5
+        is the hair, less the strip that is really wall".
+
+        Args:
+            reference: a path or a PIL image.
+            level: ``"coarse"`` (five to eight masses -- start here), ``"medium"``
+                (about twenty), or ``"fine"``.
+            path: where to write the overlay. Defaults to ``out_dir/prepare_NNN.png``.
+            min_share: fragments smaller than this share of the picture are merged.
+
+        Returns:
+            A :class:`~easel.prepare.Preparation`. Print it for the table.
+
+        Example::
+
+            prep = s.prepare("mug.jpg")
+            print(prep)
+            prep.merge(3, 7)                      # both halves are one mug
+            s.look(region=prep.region(3), reference="mug.jpg", grid="fine")
+        """
+        ref_img = load_reference(reference)
+        prep = prepare_reference(ref_img, level=level, min_share=min_share, seed=self.seed)
+        if isinstance(reference, (str, Path)):
+            prep.source = Path(reference)
+        self._preparation = prep
+        self.look_areas(ref_img, path=path)
+        return prep
+
+    def look_areas(
+        self,
+        reference: str | Path | Image.Image | None = None,
+        path: str | Path | None = None,
+    ) -> Path:
+        """Re-draw the prepared outlines and numbers over both panels.
+
+        Call this after correcting the map. ``prep.merge(3, 7)`` changes the areas
+        and their numbers, and reading a table without seeing the new outlines is
+        how the painter ends up blocking in an area that no longer means what the
+        note about it said.
+
+        Args:
+            reference: the photograph to draw on. Defaults to the one prepared.
+            path: where to write. Defaults to ``out_dir/prepare_NNN.png``.
+        """
+        prep = self.preparation
+        source = reference if reference is not None else prep.source
+        if source is None:
+            raise ValueError(
+                "This preparation did not come from a file, so it does not know "
+                "which image to draw on. Pass reference=..."
+            )
+        ref_img = load_reference(source)
+        sheet = prep.overlay(ref_img, Image.fromarray(self.canvas.to_srgb8(), mode="RGB"))
+        prep.overlay_path = save_look(sheet, self._look_path(path, "prepare"))
+        return prep.overlay_path
+
+    @property
+    def preparation(self) -> Preparation:
+        """The most recent :meth:`prepare`. Raises if there has not been one."""
+        if self._preparation is None:
+            raise RuntimeError(
+                "No prepared reference yet. Call s.prepare('reference.jpg') first."
+            )
+        return self._preparation
+
+    def ref_region(self, number: int) -> Region:
+        """The bounds of one prepared area, for ``look(region=...)`` or a block-in."""
+        return self.preparation.region(number)
+
+    def ref_outline(self, number: int) -> list[tuple[float, float]]:
+        """One prepared area's boundary as normalised points."""
+        return self.preparation.outline(number)
+
+    def sketch(
+        self,
+        reference: str | Path | Image.Image | None = None,
+        level: str = "coarse",
+        pressure: float = 0.5,
+        areas: list[int] | None = None,
+    ) -> list[StrokeRecord]:
+        """Lay the prepared outlines as pencil, in one call. **An assisted mode.**
+
+        This is not the headline way to work and the definition of done says so: a
+        run that starts from a machine-laid sketch measures the segmenter, not the
+        painter. Use it deliberately, report it separately, and never for the
+        unprompted stage -- there the pencil is the painter's own.
+
+        The painter's own way is :meth:`pencil`: sketch the masses, look, adjust,
+        then block in.
+
+        Args:
+            reference: what to prepare. Omit to use the most recent :meth:`prepare`.
+            level: granularity, when preparing here.
+            pressure: how dark the laid lines are.
+            areas: only these area numbers. Default is all of them.
+
+        Returns:
+            One record per line drawn.
+        """
+        prep = self.preparation if reference is None else self.prepare(reference, level=level)
+        wanted = prep.numbers if areas is None else [int(a) for a in areas]
+        records = []
+        for number in wanted:
+            outline = prep.outline(number)
+            if len(outline) < 2:
+                continue
+            records.append(
+                self.pencil(outline + outline[:1], pressure=pressure, smooth=False,
+                            note=f"sketch area {number}")
+            )
+        return records
+
     # -- output -----------------------------------------------------------------
-    def export(self, path: str | Path, impasto: bool = True) -> Path:
-        """Write the finished painting as a PNG at full resolution."""
+    def export(self, path: str | Path, impasto: bool = True, sketch: bool = True) -> Path:
+        """Write the finished painting as a PNG at full resolution.
+
+        Args:
+            path: where to write.
+            impasto: shade paint height as relief.
+            sketch: keep whatever graphite the paint has not covered. This is on by
+                default because it is what is on the canvas -- an underdrawing that
+                still shows is a fact about the painting, not a rendering option.
+                ``sketch=False`` shows the paint alone.
+        """
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        Image.fromarray(self.canvas.to_srgb8(impasto=impasto), mode="RGB").save(p)
+        Image.fromarray(self.canvas.to_srgb8(impasto=impasto, sketch=sketch),
+                        mode="RGB").save(p)
         return p
 
     def timelapse_gif(self, path: str | Path, fps: float = 8.0) -> Path:
@@ -444,6 +957,8 @@ class Session:
             "texture_strength": self.canvas.texture_strength,
             "rng_state": _encode_rng(self.rng),
             "palette_slots": {k: [float(c) for c in v] for k, v in self.palette.slots.items()},
+            "marks": {k: [float(v[0]), float(v[1])] for k, v in self.marks.items()},
+            "has_sketch": bool(self.canvas.has_sketch),
         }
         frames = self.history._frames
         # Written through an open handle: np.savez_compressed appends ".npz" to a
@@ -460,6 +975,10 @@ class Session:
                 rgb=self.canvas.rgb,
                 wetness=self.canvas.wetness,
                 thickness=self.canvas.thickness,
+                # Only when there is one: a graphite channel is the same size as a
+                # colour plane and a painting that never drew should not carry it.
+                sketch=(self.canvas.sketch if self.canvas.has_sketch
+                        else np.zeros((0, 0), dtype=np.float32)),
                 frames=np.stack(frames) if frames else np.zeros((0, 1, 1, 3), dtype=np.uint8),
                 last_look=self._last_look if self._last_look is not None
                 else np.zeros((0, 0, 3), dtype=np.uint8),
@@ -476,10 +995,11 @@ class Session:
             )
         with np.load(p, allow_pickle=False) as data:
             meta = json.loads(str(data["meta"]))
-            if meta.get("format") != _EASEL_FORMAT:
+            if meta.get("format") not in _READABLE_FORMATS:
                 raise ValueError(
                     f"Session file {p} has format {meta.get('format')}, "
-                    f"this build of Easel writes format {_EASEL_FORMAT}."
+                    f"this build of Easel reads {_READABLE_FORMATS} and writes "
+                    f"format {_EASEL_FORMAT}."
                 )
             s = cls.__new__(cls)
             s.seed = int(meta["seed"])
@@ -487,6 +1007,9 @@ class Session:
             s.out_dir = Path(meta["out_dir"])
             s.timelapse = bool(meta["timelapse"])
             s._look_counter = int(meta["look_counter"])
+            s.marks = {k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()}
+            s._preparation = None
+            s._index_base = 0
 
             canvas = Canvas.__new__(Canvas)
             canvas.width = int(meta["width"])
@@ -508,6 +1031,15 @@ class Session:
             )
             canvas.tooth_ceiling = tooth_ceiling(canvas.height_map, canvas.grain)
             canvas.stroke_count = int(meta["stroke_count"])
+            # Format 1 has no sketch array at all; format 2 stores one only when
+            # something was drawn.
+            stored = data["sketch"] if "sketch" in data.files else None
+            if stored is not None and stored.size:
+                canvas.sketch = stored.astype(np.float32)
+                canvas.has_sketch = True
+            else:
+                canvas.sketch = np.zeros((canvas.height, canvas.width), dtype=np.float32)
+                canvas.has_sketch = False
             s.canvas = canvas
 
             s.palette = Palette()
@@ -553,10 +1085,23 @@ class Session:
         )
         for name, rgb in self.palette.slots.items():
             fresh.palette[name] = rgb
+        fresh.marks = dict(self.marks)
 
         for record in records:
             if record.kind == "dry":
                 fresh.dry(record.params.get("amount", 1.0), record.params.get("region"))
+                continue
+            if record.kind == "pencil":
+                fresh.pencil(
+                    record.points,
+                    pressure=float(record.pressure),
+                    width=float(record.params.get("width", 0.0026)),
+                    smooth=bool(record.params.get("smooth", True)),
+                    note=record.note,
+                )
+                continue
+            if record.kind == "erase":
+                fresh.erase(record.params.get("region"), note=record.note)
                 continue
             params = dict(record.params)
             color = params.pop("color", record.color_hex or "#000000")
@@ -603,6 +1148,40 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+def _is_path(value) -> bool:
+    """True when ``value`` is a single list of points rather than a list of strokes.
+
+    ``preview([(0.1, 0.2), (0.4, 0.5)])`` means one stroke, and
+    ``preview([[(0.1, 0.2), (0.4, 0.5)]])`` means a list holding one. Both are
+    natural to write, so both are accepted, and this is what tells them apart.
+    """
+    try:
+        entries = list(value)
+    except TypeError:
+        return False
+    if not entries or isinstance(entries[0], dict):
+        return False
+    for entry in entries:
+        try:
+            pair = list(entry)
+        except TypeError:
+            return False
+        if len(pair) != 2 or not all(isinstance(v, (int, float, np.floating, np.integer))
+                                     for v in pair):
+            return False
+    return True
+
+
+def _grey(rgb8: np.ndarray) -> Image.Image:
+    """An 8-bit RGB array as the greyscale the painter sees, for the comparison sheet."""
+    from easel.color import linear_to_srgb, luminance, srgb_to_linear
+
+    srgb = np.asarray(rgb8, dtype=np.float32) / 255.0
+    lum = linear_to_srgb(luminance(srgb_to_linear(srgb)))
+    grey = (lum * 255.0 + 0.5).astype(np.uint8)
+    return Image.fromarray(np.repeat(grey[:, :, None], 3, axis=2), mode="RGB")
+
+
 def _plain(value):
     if isinstance(value, np.ndarray):
         return [float(v) for v in value]

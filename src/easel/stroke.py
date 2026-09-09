@@ -17,11 +17,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from easel.brush import Brush
+from easel.brush import Brush, tip_mask
 from easel.canvas import Canvas
 from easel.color import mix_many, parse_color
 
-__all__ = ["PRESSURE_PROFILES", "StrokeResult", "paint_stroke", "catmull_rom", "pressure_curve"]
+__all__ = ["PRESSURE_PROFILES", "StrokeResult", "paint_stroke", "draw_pencil", "catmull_rom",
+           "pressure_curve"]
 
 #: Named pressure profiles. Anything else can be given as a scalar or a list.
 PRESSURE_PROFILES = ("taper", "press_in", "lift_off", "even", "swell", "dab")
@@ -358,3 +359,89 @@ def stroke_angle(points) -> float:
     if len(p) < 2:
         return 0.0
     return float(math.atan2(p[-1, 1] - p[0, 1], p[-1, 0] - p[0, 0]))
+
+
+# --------------------------------------------------------------------------------------
+# The pencil
+# --------------------------------------------------------------------------------------
+def draw_pencil(
+    canvas: Canvas,
+    points,
+    width: float = 0.0026,
+    pressure: float = 0.55,
+    rng: np.random.Generator | None = None,
+    smooth: bool = True,
+) -> StrokeResult:
+    """Rub a graphite line into the canvas's ``sketch`` channel.
+
+    No paint, no wetness, no paint height, and not a stroke: this is the drawing
+    that goes under the painting. It is broken by the canvas tooth the way a real
+    pencil is, so a line on rough paper is a chain of grains and one on a smooth
+    panel is nearly continuous.
+
+    Args:
+        canvas: the surface to draw on.
+        points: normalised (x, y) points. One point makes a tick.
+        width: line width as a fraction of the canvas long side.
+        pressure: 0..1. Darkens the line and pushes the point further into the
+            tooth, which is what leaning on a pencil does.
+        rng: seeded generator, for the small wander that keeps a hand-drawn line
+            from being a ruled one.
+        smooth: fit a spline through the points.
+
+    Returns:
+        A :class:`StrokeResult` whose ``paint`` is how much graphite landed.
+    """
+    rng = rng if rng is not None else np.random.default_rng(0)
+    pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+    if pts.shape[1] != 2:
+        raise ValueError(f"Points must be (n, 2) normalised coordinates, got shape {pts.shape}")
+
+    path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
+    px = np.empty_like(path)
+    px[:, 0] = path[:, 0] * (canvas.width - 1)
+    px[:, 1] = path[:, 1] * (canvas.height - 1)
+
+    diameter = max(float(width) * canvas.long_side, 1.2)
+    radius = diameter * 0.5
+    # Dense: a pencil line is continuous, and a gap here would read as a dashed
+    # line rather than as tooth.
+    pos, _angles, dists = _resample(px, max(radius * 0.5, 0.6))
+    n = len(pos)
+
+    press = float(np.clip(pressure, 0.05, 1.0))
+    # A hand does not hold one pressure along a line. This is small on purpose:
+    # enough that the line lives, not so much that it reads as a different line.
+    wander = 1.0 + _wander(rng, n, 1)[:, 0] * 0.22
+    strength = np.clip(press * wander, 0.05, 1.0)
+    drift = _wander(rng, n, 2) * (radius * 0.35)
+
+    landed = 0.0
+    min_x = min_y = 1.0
+    max_x = max_y = 0.0
+    for i in range(n):
+        cx = float(pos[i, 0] + drift[i, 0])
+        cy = float(pos[i, 1] + drift[i, 1])
+        mask = tip_mask(
+            "round_hard", radius, 0.0, hardness=0.75,
+            frac_x=cx - math.floor(cx), frac_y=cy - math.floor(cy),
+        )
+        landed += canvas.rub(cx, cy, mask, float(strength[i]), press)
+        nx, ny = cx / max(canvas.width - 1, 1), cy / max(canvas.height - 1, 1)
+        min_x, max_x = min(min_x, nx), max(max_x, nx)
+        min_y, max_y = min(min_y, ny), max(max_y, ny)
+
+    if n == 0:  # pragma: no cover - _resample always returns at least one point
+        return StrokeResult(0, 0.0, 1.0, (0.0, 0.0, 0.0, 0.0))
+    return StrokeResult(
+        dabs=n,
+        length_px=float(dists[-1]) if len(dists) else 0.0,
+        end_load=1.0,
+        bounds=(
+            float(np.clip(min_x, 0.0, 1.0)),
+            float(np.clip(min_y, 0.0, 1.0)),
+            float(np.clip(max_x, 0.0, 1.0)),
+            float(np.clip(max_y, 0.0, 1.0)),
+        ),
+        paint=float(landed),
+    )

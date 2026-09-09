@@ -16,6 +16,12 @@ Three channels beyond colour:
 ``height``
     The canvas tooth (see :mod:`easel.texture`). Read-only after creation. This is
     what turns a low paint load into a dry-brush stroke without any special case.
+``sketch``
+    Graphite, 0..1. A channel, not a layer: it sits *under* the paint and paint
+    covers it in proportion to how much actually landed, so it shows through thin
+    paint and where the ground shows and is gone under an opaque mass. A painter
+    does not start on a blank canvas, and making the underdrawing disappear is a
+    large part of what painting is.
 """
 
 from __future__ import annotations
@@ -25,7 +31,7 @@ import numpy as np
 from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_to_linear
 from easel.texture import make_texture, value_noise
 
-__all__ = ["Canvas", "GROUNDS", "build_surface", "tooth_ceiling"]
+__all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
 
 # How the surface height and its finer grain combine into the field that gates
 # deposition. Kept here rather than inline in `stamp` so that `tooth_ceiling` below
@@ -99,6 +105,14 @@ GROUNDS: dict[str, str] = {
 _WET_DECAY_PER_STROKE = 0.94
 _MAX_THICKNESS = 4.0
 
+#: Graphite at full density, as sRGB. Dark and slightly cool, not black -- a pencil
+#: line on a toned ground reads as a grey, and an underdrawing that reads as black
+#: is one the painter will chase instead of paint through.
+GRAPHITE = "#3A3A40"
+# Width of the tooth band a pencil crosses as pressure rises. Narrow: the point of
+# a pencil is small enough that it skips whole valleys rather than half-filling them.
+_GRAPHITE_BAND = 0.13
+
 
 class Canvas:
     """A paintable surface.
@@ -150,6 +164,10 @@ class Canvas:
 
         self.wetness = np.zeros((self.height, self.width), dtype=np.float32)
         self.thickness = np.zeros((self.height, self.width), dtype=np.float32)
+        # Graphite. `has_sketch` keeps the cost of the channel at zero for a painting
+        # that never draws: `stamp` is the hot loop and it is called millions of times.
+        self.sketch = np.zeros((self.height, self.width), dtype=np.float32)
+        self.has_sketch = False
         self.stroke_count = 0
 
     # -- coordinates -----------------------------------------------------------------
@@ -251,6 +269,14 @@ class Canvas:
 
         self.rgb[cy0:cy1, cx0:cx1] = blend_wet(dst, color, effective)
 
+        if self.has_sketch:
+            # Paint buries the underdrawing in proportion to what actually landed.
+            # Not to what was aimed at: a dab the tooth refused leaves the graphite
+            # untouched, which is why the drawing survives in the broken places and
+            # in the ground, exactly where a painter still wants to see it.
+            sk = self.sketch[cy0:cy1, cx0:cx1]
+            np.multiply(sk, 1.0 - effective, out=sk)
+
         if not glaze:
             # A glaze is a thin film: it colours, but it does not build height.
             np.add(thick, alpha * float(thickness_gain), out=thick)
@@ -276,6 +302,64 @@ class Canvas:
             return np.zeros(3, dtype=np.float32)
         window = self.rgb[cy0:cy1, cx0:cx1]
         return (np.tensordot(sub, window, axes=([0, 1], [0, 1])) / total).astype(np.float32)
+
+    # -- drawing ---------------------------------------------------------------------
+    def rub(self, cx: float, cy: float, mask: np.ndarray, strength: float, bite: float) -> float:
+        """Rub graphite onto the surface at one point. No paint, no wetness, no height.
+
+        Args:
+            cx, cy: centre in pixel coordinates.
+            mask: the pencil tip stamp.
+            strength: darkness of the graphite, 0..1.
+            bite: how much of the tooth the point reaches into, 0..1. A light hand
+                catches only the peaks and leaves a broken line; a hard one fills
+                the valleys too.
+
+        Graphite accumulates as a maximum, not a sum. Consecutive dabs along a line
+        overlap almost completely, and any additive rule turns a pencil line into a
+        solid bar within a few dabs. Density is chosen with ``strength``, which is
+        what the pressure of a real pencil does.
+
+        Returns:
+            How much graphite landed, as the sum of the deposited density.
+        """
+        n = mask.shape[0]
+        r = n // 2
+        ix, iy = int(round(cx)), int(round(cy))
+        x0, y0 = ix - r, iy - r
+        sx0, sy0 = max(0, -x0), max(0, -y0)
+        cx0, cy0 = max(0, x0), max(0, y0)
+        cx1, cy1 = min(self.width, x0 + n), min(self.height, y0 + n)
+        if cx1 <= cx0 or cy1 <= cy0:
+            return 0.0
+        sub = mask[sy0 : sy0 + (cy1 - cy0), sx0 : sx0 + (cx1 - cx0)]
+
+        tooth = (self.height_map[cy0:cy1, cx0:cx1] * _TOOTH_HEIGHT_W
+                 + self.grain[cy0:cy1, cx0:cx1] * _TOOTH_GRAIN_W)
+        # Same shape as the paint gate, and capped the same way, so a pencil on
+        # smooth panel is a near-continuous line and one on rough paper is a chain
+        # of grains -- which is the whole reason the tooth is modelled at all.
+        need = min((1.0 - float(np.clip(bite, 0.0, 1.0))) * 0.62, self.tooth_ceiling)
+        gate = np.clip((tooth - need) / _GRAPHITE_BAND, 0.0, 1.0)
+        gate = gate * gate * (3.0 - 2.0 * gate)
+
+        ink = sub * gate * float(np.clip(strength, 0.0, 1.0))
+        before = self.sketch[cy0:cy1, cx0:cx1]
+        landed = float(np.maximum(ink - before, 0.0).sum())
+        np.maximum(before, ink, out=before)
+        if landed > 0.0:
+            self.has_sketch = True
+        return landed
+
+    def erase_sketch(self, region=None) -> None:
+        """Clear the graphite, all of it or inside one region."""
+        if region is None:
+            self.sketch[:] = 0.0
+            self.has_sketch = False
+            return
+        x0, y0, x1, y1 = self.region_px(region)
+        self.sketch[y0:y1, x0:x1] = 0.0
+        self.has_sketch = bool(self.sketch.any())
 
     def wetness_at(self, cx: float, cy: float) -> float:
         """Wetness at one point, in pixel coordinates. Cheap: no window average."""
@@ -313,12 +397,12 @@ class Canvas:
         return x0, y0, max(x1, x0 + 1), max(y1, y0 + 1)
 
     # -- export ----------------------------------------------------------------------
-    def to_srgb8(self, impasto: bool = True) -> np.ndarray:
-        """Render to an 8-bit sRGB array (h, w, 3), ready for PNG encoding.
+    def composite(self, impasto: bool = True, sketch: bool = True) -> np.ndarray:
+        """The surface as it would be seen, in linear light: paint, relief, graphite.
 
-        Args:
-            impasto: shade the paint height as low relief, lit from the top-left.
-                Subtle by design -- it should read as texture, not as embossing.
+        One place, so that the export, the greyscale view and the time-lapse
+        thumbnails all agree about what is on the canvas. A value read off one of
+        them and acted on in another is the failure mode this guards against.
         """
         rgb = self.rgb
         if impasto and float(self.thickness.max()) > 1e-3:
@@ -327,7 +411,22 @@ class Canvas:
             gy, gx = np.gradient(t)
             relief = np.clip((gx + gy) * 0.35, -0.5, 0.5)
             rgb = np.clip(rgb * (1.0 + relief[..., None] * 0.30), 0.0, 1.0)
-        return (linear_to_srgb(rgb) * 255.0 + 0.5).astype(np.uint8)
+        if sketch and self.has_sketch:
+            # Whatever graphite the paint has not buried, over the top. Applied
+            # after the relief: pencil adds no height, so it must not be embossed.
+            g = self.sketch[..., None]
+            rgb = rgb * (1.0 - g) + _graphite_linear() * g
+        return rgb
+
+    def to_srgb8(self, impasto: bool = True, sketch: bool = True) -> np.ndarray:
+        """Render to an 8-bit sRGB array (h, w, 3), ready for PNG encoding.
+
+        Args:
+            impasto: shade the paint height as low relief, lit from the top-left.
+                Subtle by design -- it should read as texture, not as embossing.
+            sketch: show the graphite the paint has not covered.
+        """
+        return (linear_to_srgb(self.composite(impasto, sketch)) * 255.0 + 0.5).astype(np.uint8)
 
     def thumbnail_srgb8(self, max_side: int = 360) -> np.ndarray:
         """A small 8-bit sRGB view, for time-lapse frames.
@@ -338,19 +437,20 @@ class Canvas:
         """
         longest = max(self.width, self.height)
         step = max(1, int(np.ceil(longest / float(max(max_side, 1)))))
+        full = self.composite(impasto=False, sketch=True)
         if step == 1:
-            return self.to_srgb8(impasto=False)
+            return (linear_to_srgb(full) * 255.0 + 0.5).astype(np.uint8)
         # Box-average each block rather than point-sampling, so the thumbnail does
         # not alias the canvas weave into moire.
         h = (self.height // step) * step
         w = (self.width // step) * step
-        blocks = self.rgb[:h, :w].reshape(h // step, step, w // step, step, 3)
+        blocks = full[:h, :w].reshape(h // step, step, w // step, step, 3)
         small = blocks.mean(axis=(1, 3))
         return (linear_to_srgb(small) * 255.0 + 0.5).astype(np.uint8)
 
-    def values(self) -> np.ndarray:
+    def values(self, sketch: bool = True) -> np.ndarray:
         """The canvas as 8-bit greyscale: the value structure, the way a painter squints."""
-        lum = luminance(self.rgb)
+        lum = luminance(self.composite(impasto=False, sketch=sketch))
         return (linear_to_srgb(lum) * 255.0 + 0.5).astype(np.uint8)
 
     # -- state -----------------------------------------------------------------------
@@ -360,6 +460,12 @@ class Canvas:
             "rgb": self.rgb.copy(),
             "wetness": self.wetness.copy(),
             "thickness": self.thickness.copy(),
+            # Paint buries graphite destructively, so undoing a stroke has to bring
+            # back the drawing it covered. ``None`` records "there was no drawing
+            # here yet", which is not the same as "leave the drawing alone" -- and
+            # it keeps a painting that never draws from carrying twenty-four spare
+            # colour planes around in its undo stack.
+            "sketch": self.sketch.copy() if self.has_sketch else None,
             "stroke_count": np.int64(self.stroke_count),
         }
 
@@ -368,13 +474,49 @@ class Canvas:
         self.rgb = np.array(snap["rgb"], dtype=np.float32, copy=True)
         self.wetness = np.array(snap["wetness"], dtype=np.float32, copy=True)
         self.thickness = np.array(snap["thickness"], dtype=np.float32, copy=True)
+        if "sketch" in snap:
+            stored = snap["sketch"]
+            if stored is None:
+                self.sketch[:] = 0.0
+                self.has_sketch = False
+            else:
+                self.sketch = np.array(stored, dtype=np.float32, copy=True)
+                self.has_sketch = True
         self.stroke_count = int(snap["stroke_count"])
+
+    def trial_copy(self) -> Canvas:
+        """A canvas that can be painted on and thrown away.
+
+        The mutable channels are copied; the tooth, its grain and the ceiling
+        derived from them are *shared*, because they never change and they are the
+        expensive part. This is what :meth:`easel.session.Session.rehearse` paints
+        on, so that trying a mark three ways costs three small copies rather than
+        three canvases.
+        """
+        c = Canvas.__new__(Canvas)
+        c.__dict__.update(self.__dict__)
+        c.rgb = self.rgb.copy()
+        c.wetness = self.wetness.copy()
+        c.thickness = self.thickness.copy()
+        c.sketch = self.sketch.copy()
+        return c
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return (
             f"Canvas({self.width}x{self.height}, texture={self.texture_name!r}, "
             f"ground={self.ground_name!r}, strokes={self.stroke_count})"
         )
+
+
+_GRAPHITE_LINEAR: np.ndarray | None = None
+
+
+def _graphite_linear() -> np.ndarray:
+    """The graphite colour in linear light. Parsed once."""
+    global _GRAPHITE_LINEAR
+    if _GRAPHITE_LINEAR is None:
+        _GRAPHITE_LINEAR = parse_color(GRAPHITE)
+    return _GRAPHITE_LINEAR
 
 
 def from_srgb_array(arr: np.ndarray) -> np.ndarray:

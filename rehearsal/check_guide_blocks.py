@@ -1,8 +1,44 @@
-"""Execute every python block in PAINTER.md, the way a fresh reader would."""
-import io, re, sys, traceback
+"""Execute every python block in PAINTER.md, the way a fresh reader would.
+
+The guide is the deliverable, and a code block in it that does not run is worse
+than no code block: the fresh session copies it, gets a traceback, and spends its
+first ten minutes debugging the manual instead of painting.
+
+Self-contained. It writes its own reference photograph, so it runs anywhere rather
+than only on the machine of whoever wrote the guide.
+"""
+import re
+import sys
 from pathlib import Path
 
-text = io.open("PAINTER.md", encoding="utf-8").read()
+from PIL import Image, ImageDraw
+
+OUT = Path("out/_check")
+OUT.mkdir(parents=True, exist_ok=True)
+
+
+def make_reference(path: Path) -> Path:
+    """A stand-in photograph: a few masses, real edges, a real value range."""
+    w, h = 480, 360
+    img = Image.new("RGB", (w, h), (176, 168, 152))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, w, int(h * 0.52)], fill=(120, 126, 134))
+    d.rectangle([0, int(h * 0.52), w, h], fill=(158, 128, 96))
+    d.ellipse([int(w * 0.33), int(h * 0.30), int(w * 0.63), int(h * 0.72)],
+              fill=(226, 222, 214))
+    d.ellipse([int(w * 0.33), int(h * 0.27), int(w * 0.63), int(h * 0.35)],
+              fill=(198, 194, 188))
+    d.ellipse([int(w * 0.60), int(h * 0.40), int(w * 0.74), int(h * 0.58)],
+              fill=(226, 222, 214))
+    d.ellipse([int(w * 0.31), int(h * 0.66), int(w * 0.70), int(h * 0.76)],
+              fill=(112, 92, 70))
+    img.save(path)
+    return path
+
+
+REFERENCE = make_reference(OUT / "ref.png")
+
+text = Path("PAINTER.md").read_text(encoding="utf-8")
 blocks = re.findall(r"```python\n(.*?)```", text, re.S)
 print(f"{len(blocks)} python blocks\n")
 
@@ -18,17 +54,26 @@ PREAMBLE = (
     "s.palette['pale'] = s.palette['light']\n"
     "s.palette['cool'] = s.palette['dark']\n"
     "path = [(0.2,0.3),(0.5,0.4),(0.8,0.3)]\n"
+    # The guide's landmark blocks assume marks already exist by the time a later
+    # block uses s.pt(...), which is true when the guide is read in order.
+    "s.mark('rim_l', 0.335, 0.315)\n"
+    "s.mark('rim_r', 0.630, 0.315)\n"
+    "s.mark('foot', 0.480, 0.715)\n"
+    "s.pencil([(0.30, 0.40), (0.50, 0.55)])\n"
+    # ...and the same for the plan that preview, rehearse and the paint block share.
+    "plan = [{'points': [(0.335, 0.315), (0.40, 0.62)], 'brush': 'liner',\n"
+    "         'size': 0.006, 'color': 'light', 'label': 'rim'}]\n"
 )
 ok = bad = skipped = 0
 for i, b in enumerate(blocks, 1):
     head = b.strip().splitlines()[0][:60]
-    if re.search(r"^\s*s\.\w+\(.*[=,]\s*(brush|color|points|region)\b", b, re.M) or \
-       re.search(r"\.\.\.", b):
+    if re.search(r"^\s*s\.\w+\(.*[=,]\s*(brush|color|points|region|reference|strokes)\b", b, re.M) \
+       or re.search(r"\.\.\.", b):
         # signature listings and elided pseudo-code
         skipped += 1
         print(f"  {i:>2} SKIP (pseudo-code)  {head}")
         continue
-    src = b.replace('"ref.jpg"', repr(r"C:\temp\AntonConspiracy.jpg"))
+    src = b.replace('"ref.jpg"', repr(str(REFERENCE)))
     for name in ("painting.png", "painting.gif"):          # the guide's export block
         src = src.replace(f'"{name}"', repr(f"out/_check/{name}"))
     try:
