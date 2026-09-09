@@ -39,3 +39,14 @@ rehearsal/*.gif
 !rehearsal/own_final.png
 !rehearsal/copy_timelapse.gif
 !rehearsal/own_timelapse.gif
+
+# M5, second rehearsal (a fresh session with the revised guide). Same rule: the two
+# paintings, their time-lapses and the comparison sheet are evidence; the looks and
+# probe sheets regenerate from the scripts beside them.
+rehearsal2/**/*.png
+rehearsal2/*.gif
+!rehearsal2/copy_final.png
+!rehearsal2/own_final.png
+!rehearsal2/copies_compared.png
+!rehearsal2/copy_timelapse.gif
+!rehearsal2/own_timelapse.gif

@@ -1,17 +1,21 @@
-# Phase notes — scaffolding, M4, then the M5 rehearsal
+# Phase notes — scaffolding, M4, then the M5 rehearsal, twice
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
-`REHEARSAL.md` (what the M5 rehearsal found, and the honest verdict on it), then
+`REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals and their verdicts), then
 `PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the object
 everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
-Status: **M1–M5 done.** M6 (MCP) is untouched and correctly last.
+Status: **M1–M5 done, and M5 measured.** M6 (MCP) is untouched and correctly last.
 
-The M5 rehearsal was run as the brief describes and is written up in `REHEARSAL.md`.
-Read the verdict there before trusting anything: the unprompted painting went well,
-the **copy did not reach a likeness**, and the guide has been substantially rewritten
-as a result. Four engine defects came out of it (`REVIEW.md` 15–18).
+The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
+author: the unprompted painting went well, the **copy did not reach a likeness**,
+and the guide was substantially rewritten; four engine defects came out of it
+(`REVIEW.md` 15–18). The second (`REHEARSAL2.md`) was the measurement the first
+could not be — a fresh session with the revised guide, the same reference and no
+source — and its **copy reached the bar**: a recognisable copy of the scene in 253
+strokes, though not a portrait likeness. Nine more guide gaps and two small engine
+additions (`span()`, enlarged crops) came out of that.
 
 ---
 
@@ -23,7 +27,7 @@ as a result. Four engine defects came out of it (`REVIEW.md` 15–18).
 | M2 Painterly | Done. Flat/bristle/knife with direction following, paint load and run-out, texture modulation, wet blending, `dry()`, pigment mixing, palette. |
 | M3 Composition | Done. Regions, grid, relative placement, stroke-based block-in, values view, side-by-side, diff, history, time-lapse. |
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
-| M5 Rehearsal | Done. Protocol run on a real photograph; copy fell short of a likeness, unprompted painting did not. Ten gaps fixed in `PAINTER.md`, four engine defects in `REVIEW.md` 15–18. See `REHEARSAL.md`. |
+| M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -48,18 +52,24 @@ src/easel/
   __main__.py  so `python -m easel ...` works when `easel` is not on PATH, which
                on Windows is most of the time.
 
-tests/test_engine.py      78 tests: bounds, determinism, undo, replay, colour,
+tests/test_engine.py      92 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
 scripts/make_brush_sampler.py   regenerates samples/brushes.png — the primary
                           test artefact. Look at it after every engine change.
 examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
                           step with the printed ones -- two were rewritten in M5.
-rehearsal/                the M5 rehearsal: both paintings, their pass scripts,
+rehearsal/                the first M5 rehearsal: both paintings, their pass scripts,
                           the probes behind REVIEW 15-18, and a script that
                           executes every python block in PAINTER.md.
+rehearsal2/               the second M5 rehearsal, by a fresh session: the copy that
+                          reached the bar, the unprompted estuary, every look, the
+                          probes behind the overshoot and run-out numbers, and a
+                          sheet comparing the two copies against the reference.
 PAINTER.md                the guide a fresh agent is given. The deliverable.
-REHEARSAL.md              the M5 rehearsal write-up. Read it before believing the
-                          guide works -- it says plainly where it did not.
+REHEARSAL.md              the first M5 rehearsal write-up. Read it before believing
+                          the guide works -- it says plainly where it did not.
+REHEARSAL2.md             the second: what the fresh session got, what it cost, and
+                          the measurements behind each guide fix.
 REVIEW.md                 three adversarial reviews. M1/M2: ten defects fixed. M4:
                           four more (findings 11–14), plus four things investigated
                           and found *not* to be defects. Read the M4 "Method" note
@@ -139,13 +149,13 @@ REVIEW.md                 three adversarial reviews. M1/M2: ten defects fixed. M
 
 ## What to do next, in order
 
-1. **Re-run the protocol with a genuinely fresh session.** The M5 rehearsal fixed ten
-   guide gaps and four engine defects, but it was run by someone who ended up reading
-   the source to fix them — so it cannot measure the thing the brief actually asks
-   about. Hand the revised `PAINTER.md` and a reference to a session that has never
-   seen this repo, and treat *that* as the measurement. Watch in particular whether
-   the new *Working from a reference* section is enough to get a likeness; the
-   rehearsal's own copy was not one.
+1. **Vary the bristle comb per stroke.** Every wide bristle mark prints the same set
+   of streaks, so any large mass laid with it goes to corduroy — the second
+   rehearsal's copy shows it in the background and the hair, and the guide now
+   steers painters to `flat` for quiet masses as a workaround. Spacing, phase and a
+   few missing bristles varied per stroke would fix the cause. It changes every
+   stroke: do it at the start of a milestone, with the sampler *and* a real
+   painting as the evidence, per the M2 and M5 precedents.
 2. **Golden-image tests.** A fixed set of strokes, hashed, so brush-engine
    regressions fail loudly. The property tests catch behaviour, not appearance, and
    this milestone changed deposition — `samples/brushes.png` has been regenerated and
@@ -163,8 +173,9 @@ REVIEW.md                 three adversarial reviews. M1/M2: ten defects fixed. M
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 78 tests
-ruff check src tests scripts examples
+pytest -q                              # 92 tests
+python -m ruff check src tests scripts examples   # ruff is not on PATH here either
+python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png
 python examples/exercises.py           # writes out/ex_*.png
 python -m easel brushes                # the CLI, without needing it on PATH

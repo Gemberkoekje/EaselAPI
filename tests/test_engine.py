@@ -640,3 +640,38 @@ def test_the_reference_gets_the_same_grid_and_the_same_greyscale():
     grey = np.asarray(render_look(s.canvas, reference=ref, values=True))[:, left]
     spread = np.abs(grey[:, :, 0].astype(int) - grey[:, :, 2].astype(int)).max()
     assert spread <= 1, "the reference was left in colour beside a greyscale canvas"
+
+
+# --------------------------------------------------------------------------------------
+# M5, second rehearsal: naming a run of cells, and crops you can actually read.
+
+
+def test_span_covers_both_cells_in_either_order():
+    from easel.regions import span
+
+    a = span("E5", "H8")
+    assert a.bounds == (0.5, 0.5, 1.0, 1.0)
+    assert span("H8", "E5").bounds == a.bounds
+    assert span("B2", "B2").bounds == cell("B2").bounds
+    assert a.name == "E5:H8"
+
+
+def test_span_is_in_scope_for_easel_run(tmp_path):
+    from easel.regions import span
+
+    assert span("A1", "B2").bounds == (0.0, 0.0, 0.25, 0.25)
+    import easel
+
+    assert "span" in easel.__all__
+
+
+def test_look_enlarges_a_small_crop(tmp_path):
+    from easel.look import MIN_CROP_SIZE, render_look
+
+    s = Session(1200, 800, seed=1, out_dir=tmp_path, timelapse=False)
+    crop = render_look(s.canvas, region=cell("D6"))          # 150 x 100 px of canvas
+    assert max(crop.size) >= MIN_CROP_SIZE
+    assert abs(crop.width / crop.height - 1.5) < 0.05        # the cell's own aspect
+    # a crop that is already big enough is left at its own size
+    big = render_look(s.canvas, region=region("all"), scale=None)
+    assert big.size == (1200, 800)

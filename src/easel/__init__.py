@@ -45,6 +45,7 @@ from easel.regions import (
     left_of,
     region,
     right_of,
+    span,
     thirds,
 )
 from easel.session import Session
@@ -83,6 +84,7 @@ __all__ = [
     "region",
     "REGION_NAMES",
     "cell",
+    "span",
     "GRID_COLS",
     "GRID_ROWS",
     "thirds",

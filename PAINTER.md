@@ -164,6 +164,15 @@ reference has a name you can *paint* into. That is the whole trick. Work like th
    looking at your own painting alone, because it looks internally consistent. They
    only show up against the grid.
 
+A mass is rarely one cell. `span("E5", "H8")` is the rectangle from one cell to
+another, both included, so what you said out loud is what you block in — and it is
+the right size of crop for inspecting a passage:
+
+```python
+s.block_in(span("E5", "H8"), "bristle", "dark", density=1.0, size=0.14)
+s.look(region=span("D2", "E4"))                # the head, close up
+```
+
 **Compare values, not colours, at least as often.**
 
 ```python
@@ -210,6 +219,14 @@ paint into `cell("D5")`. You are reliable at *relationships* and unreliable at
 colouring books. Paint the mass directly with a brush wide enough to cover it in a
 few strokes, and let the *edge of the mass* be the drawing. There is no outline in
 a painting — there is a place where one mass stops.
+
+**Finding an edge is the same mistake in disguise.** When a profile or a silhouette
+is not crisp enough, the reflex is to run a thin dark stroke along it. That stroke
+is an outline, and it reads as one the moment you look — a drawn line around a
+painted shape. Sharpen an edge by painting the mass on the *other side* of it: a
+brush at least `0.03` wide, running along the boundary with its centre outside the
+shape, laying the background's own colour up to where the shape stops. The edge is
+then where two masses meet, which is the only kind of edge a painting has.
 
 **A region is a rectangle. Almost nothing you want to paint is.** `block_in` fills
 a box, which is right for a wall, a band of ground, a field of sky — and wrong for
@@ -308,6 +325,14 @@ Two things about the mixing that will surprise you:
   lively greys. This is subtractive pigment mixing, not RGB averaging.
 - **White is a weaker lightener than you expect.** If you want a really pale colour,
   use a higher white ratio than feels right — `0.7`, not `0.4`.
+- **A yellow and a blue make green even when you were after a grey**, and tinting
+  does not undo it: `tint(mix("yellow_ochre", "cerulean", 0.3), 0.5)` is `#98ae69`,
+  a pale green that sits in a warm painting like a traffic light. Neutral greys
+  come from complements or from earth and white: `tint(mix("ultramarine",
+  "burnt_sienna", 0.5), 0.7)` is a cool grey (`#9c8d8d`), `mix("burnt_umber",
+  "titanium_white", 0.6)` a warm one (`#8b725b`), and `desaturate(c, 0.5)` pulls
+  any mixture toward grey at the same value. Print `hex()` of a mixture before you
+  paint a field of it.
 
 ---
 
@@ -355,14 +380,15 @@ s.glaze([(0.2, 0.6), (0.8, 0.6)], "alizarin", opacity=0.15)
 
 ## The brushes
 
-One line each. Reach for `bristle` first and most.
+One line each. Reach for `bristle` for marks that have a direction and `flat` for
+quiet masses.
 
 | Brush | What it is for |
 |---|---|
-| `bristle` | **The workhorse.** Broken, streaky, alive. Use it for almost everything. |
+| `bristle` | **The workhorse** for any mark with a direction. Broken, streaky, alive — and never solid: one pass covers about three-quarters of its width. |
 | `flat` | Block-in, chisel edges, flat planes. Turns to follow the stroke. |
 | `round_hard` | Deliberate marks, accents, small shapes, final highlights. |
-| `round_soft` | Blending and soft edges. The least painterly — use it sparingly. |
+| `round_soft` | Blending and soft edges. The least painterly — use it sparingly, and never for a mass: above about `size=0.05` it airbrushes. |
 | `knife` | Thick slabs with a hard edge. Drags what it crosses. Use rarely, for punctuation. |
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
 
@@ -373,6 +399,15 @@ keep it close in value to what it lands on and let a later stroke or a `smudge`
 break one of its ends. Three knife marks two values lighter than the mass under
 them will each look like a strip of tape.
 
+A `bristle` stroke is never solid. Fully loaded it covers about three-quarters of
+its own width, in a comb of parallel streaks. That comb is what makes it alive on
+a mark whose direction you mean — hair, a fold, the sweep of an edge — and it is
+what makes corduroy of a big quiet mass laid with single passes: above about
+`size=0.12` the streaks print wider than anything in the picture, and every stroke
+prints the same ones. Lay large quiet masses — a wall, a sky, a tabletop, a coat —
+with `flat`, or with two `bristle` passes crossed, and keep single bristle
+strokes for marks that have a direction.
+
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
 one. **Use a bigger brush than feels comfortable**, especially early.
 
@@ -381,6 +416,7 @@ Anything about a brush can be overridden per stroke:
 ```python
 s.stroke(path, "bristle", "shadow", size=0.14, opacity=0.5)
 s.stroke(path, "flat", "light", hardness=0.9, jitter=0.05, load=0.4)
+s.stroke(path, "bristle", "shadow", size=0.12, load_falloff=0.25)   # runs dry slower
 ```
 
 `load` is how much paint the brush carries, and dropping it is how you get dry
@@ -404,6 +440,16 @@ if a stroke seems to have vanished, `s.log()` will tell you how much paint it la
 
 The canvas decides what the breakup looks like: `rough` skips in chunky islands,
 `linen` speckles at the scale of the weave, `smooth` leaves broader open gaps.
+
+**A loaded brush runs dry along a stroke, and a long stroke shows it.** A bristle
+stroke the full width of the canvas at `size=0.12` is about three-quarters solid
+where it starts and, on `rough`, under half by its last quarter; on `linen` and
+`smooth` it loses about a fifth. Where a long stroke ends is where its texture is
+loudest, and if every stroke in a field runs the same way, one side of the field
+speckles. `load_falloff` sets how fast the brush empties: the default is right for
+marks a brush-length or three long, `load_falloff=0.25` keeps a canvas-wide stroke
+even from end to end, and `0.0` never runs dry. For a big even field either pass
+it, or run the next stroke the other way so the two dry ends do not coincide.
 
 **Do not lay one broken pass across the whole canvas.** A single load, one brush,
 edge to edge, prints the surface's own texture as an even field over everything —
@@ -451,6 +497,10 @@ s.look(diff=True)                         # tint what changed since the last loo
 s.look(reference="ref.jpg")               # reference beside your painting
 s.look(scale=None)                        # full resolution
 ```
+
+A `region=` crop is at full resolution, and a small one — a single cell — is
+enlarged so it can be read. `region=span("D2", "E4")` is the usual size for
+inspecting a passage.
 
 Each look writes a numbered PNG under `out/` — `out/look_001.png`, `out/look_002.png`
 and so on — and returns the path. Print it and open that file. The numbering belongs
@@ -503,17 +553,32 @@ region, so a big region with a small brush can be twenty or thirty of them. Chec
 `s.stroke_count` if you are keeping a budget — a whole painting is usually a few
 hundred marks, not a few thousand.
 
+**`block_in` paints past its region.** Each pass runs about a third of a brush
+beyond the region's ends (`overhang=0.35`), and the first and last rows sit a
+quarter of a brush outside it, so a region blocked in at `size=0.1` comes out
+roughly `0.05` wider than you asked on the sides and `0.025` taller. That is fine
+for a wall and wrong for anything that meets something else: a shirt blocked in
+beside a face lands on the face, a band of water blocked in under a headland buries
+its foot. Pass `overhang=0` to keep the ends within a fifth of a brush, inset the
+region by half the brush size, or block in the big thing first and let the small
+thing be painted over it afterwards.
+
 Places:
 
 ```python
 region("top-left")   # also: top, center, upper-half, lower-half, left-half,
                      # inner, middle-band, upper-band, lower-band, all, ...
 cell("D6")           # a grid cell, matching look(grid=True)
+span("E5", "H8")     # the rectangle from one cell to another, both included
 horizon(0.42)        # a thin band at that height
 below(r, 0.15)  above(r, ...)  left_of(r, ...)  right_of(r, ...)  between(a, b)
 r.point(0.5, 0.5)    # a point inside a region, in the region's own 0–1 space
 r.inset(0.05)  r.scaled(0.8)  r.split_h(3)  r.split_v(2)
 ```
+
+Under `easel run` all of these are already in scope. In a plain Python script,
+import them: `from easel import Session, Region, region, cell, span, horizon,
+below, above, left_of, right_of, between`.
 
 ---
 
@@ -630,6 +695,8 @@ for a, b in [("cadmium_yellow", "ultramarine"), ("cadmium_red", "ultramarine"),
 - Are the highlights few and deliberate?
 - Is anything mechanically repeated — evenly spaced marks, identical parallel
   strokes, a perfectly straight line?
+- If you had a reference, look at the painting once *without* it beside you. A
+  shape that only makes sense with the photograph next to it is not painted yet.
 
 If you have a reference, look at them side by side one last time:
 

@@ -189,6 +189,20 @@ def cell(label: str) -> Region:
     return Region(col * cw, row * ch, (col + 1) * cw, (row + 1) * ch, name=text)
 
 
+def span(first: str, last: str) -> Region:
+    """The rectangle covering a run of grid cells, e.g. ``span("E5", "H8")``.
+
+    A mass seen on a gridded reference is rarely one cell -- it "fills E5 to H8" --
+    and this is how to say so to :meth:`Session.block_in` or ``look(region=...)``.
+    Both corner cells are included, and may be given in either order.
+    """
+    a, b = cell(first), cell(last)
+    return Region(
+        min(a.x0, b.x0), min(a.y0, b.y0), max(a.x1, b.x1), max(a.y1, b.y1),
+        name=f"{a.name}:{b.name}",
+    )
+
+
 def thirds() -> tuple[list[float], list[float]]:
     """The rule-of-thirds lines as ``(vertical_xs, horizontal_ys)``."""
     return ([_THIRD, 2 * _THIRD], [_THIRD, 2 * _THIRD])

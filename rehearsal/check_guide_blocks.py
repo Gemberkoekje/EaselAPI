@@ -7,8 +7,8 @@ blocks = re.findall(r"```python\n(.*?)```", text, re.S)
 print(f"{len(blocks)} python blocks\n")
 
 PREAMBLE = (
-    "from easel import Session, Region, region, cell, horizon, below, above\n"
-    "s = Session(400, 300, ground='toned_grey', seed=1, timelapse=False, out_dir='out/_check')\n"
+    "from easel import Session, Region, region, cell, span, horizon, below, above\n"
+    "s = Session(400, 300, ground='toned_grey', seed=1, timelapse=True, out_dir='out/_check')\n"
     "p = s.palette\n"
     "s.palette['dark'] = s.palette.mix('ultramarine','burnt_umber',0.45)\n"
     "s.palette['corrected_colour'] = s.palette['dark']\n"
@@ -29,6 +29,8 @@ for i, b in enumerate(blocks, 1):
         print(f"  {i:>2} SKIP (pseudo-code)  {head}")
         continue
     src = b.replace('"ref.jpg"', repr(r"C:\temp\AntonConspiracy.jpg"))
+    for name in ("painting.png", "painting.gif"):          # the guide's export block
+        src = src.replace(f'"{name}"', repr(f"out/_check/{name}"))
     try:
         exec(compile(PREAMBLE + src, f"<block {i}>", "exec"), {})
         ok += 1

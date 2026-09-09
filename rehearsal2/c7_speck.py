@@ -1,0 +1,6 @@
+s.stroke([(0.395, 0.09), (0.40, 0.20)], "round_hard", "wall_mid2", size=0.03, pressure="even")
+s.stroke([(0.415, 0.115), (0.43, 0.22)], "round_hard", "hair", size=0.03, pressure="even")
+print("strokes:", s.stroke_count)
+s.export("copy_final.png")
+s.timelapse_gif("copy_timelapse.gif")
+print(s.look(region=cell("D2")))

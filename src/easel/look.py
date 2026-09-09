@@ -27,6 +27,9 @@ __all__ = ["render_look", "save_look", "load_reference", "DEFAULT_LOOK_SIZE"]
 DEFAULT_LOOK_SIZE = 1024
 
 _GRID_LINE = (255, 64, 64)
+#: A region crop smaller than this on its long side is enlarged to it.
+MIN_CROP_SIZE = 480
+
 _GRID_LABEL = (255, 255, 255)
 _GRID_LABEL_BG = (200, 32, 32)
 
@@ -75,6 +78,13 @@ def render_look(
 
     img = Image.fromarray(arr, mode="RGB")
 
+    if region is not None and max(img.size) < MIN_CROP_SIZE:
+        # A single grid cell of a 1200-wide canvas is 150 px across, which is too
+        # small to inspect anything in. Enlarge small crops; the pixels are the same.
+        f = MIN_CROP_SIZE / max(img.size)
+        img = img.resize(
+            (max(1, round(img.width * f)), max(1, round(img.height * f))), Image.LANCZOS
+        )
     if scale is not None:
         img = _downsample(img, scale)
     if grid:
