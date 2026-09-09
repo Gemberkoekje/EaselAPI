@@ -3,8 +3,9 @@
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
 `REHEARSAL3.md` (the M6 final pass — the most recent measurement, and it says what
 is still wrong), then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
-then `PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the
-object everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
+then `PAINTER.md` (what a fresh agent is given) and `CALIBRATION.md` (the measured
+numbers the guide no longer carries), then `src/easel/session.py` (the object
+everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
 Status: **M1–M5 done. M6's tools are built and its protocol has now been run —
@@ -121,7 +122,15 @@ rehearsal3/               M6's final pass: three fresh sessions (pass/ the headl
                           tip-angle sheet, and verify_pass.py, which checks the
                           brief's pass criterion from the exported PNGs rather than
                           from what the painters said.
-PAINTER.md                the guide a fresh agent is given. The deliverable.
+PAINTER.md                the guide a fresh agent is given. The deliverable. No
+                          subjects in it, by the brief's rule -- check with a grep
+                          before committing a change to it.
+CALIBRATION.md            the engine's measured numbers (graphite survival, wetness
+                          decay, the value floor, load windows, block_in overhang,
+                          the axis-alignment table, the shaped-mass sweep recipe).
+                          Split out of the guide after the critique that preceded
+                          REHEARSAL4, so the guide states rules and this states
+                          measurements. Update it when the engine changes.
 REHEARSAL.md              the first M5 rehearsal write-up. Read it before believing
                           the guide works -- it says plainly where it did not.
 REHEARSAL2.md             the second: what the fresh session got, what it cost, and
@@ -288,7 +297,11 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
     says.** The `edge()` silhouette recipe laid a vertical column at every step and
     was followed exactly, three rehearsals running, producing exactly the combing the
     same guide warns about elsewhere. Read the code blocks as if they were the whole
-    document, because to a fresh session they nearly are.
+    document, because to a fresh session they nearly are. The same applies to
+    nouns: the back-to-front example was, word for word, the estuary REHEARSAL2
+    painted, and a painter told "paint something of your own" after reading it has
+    been handed a subject. The recipe now lives in `CALIBRATION.md` with abstract
+    knots, and the guide carries no subjects at all.
 16. **Never change the engine while a measurement is running.** The three sessions of
     the M6 pass painted against one engine and every fix landed after the last of
     them exported. Otherwise the run measures a moving target and none of the numbers
@@ -340,11 +353,12 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    largest open item in the repo, and it is partly the traced-copy question the brief
    reserves for the human. It changes what gets painted, so it wants a milestone and
    a real painting as evidence, not a rehearsal.
-   - **No guide change is owed here.** The angle, back-to-front and `edge()` edits
-     already made are the guide-side answer. Stripping the landscape nouns out of the
-     examples would be acting on p ≈ 0.10 from a post-hoc pooling, and this repo's
-     own history says a guide change is a hypothesis that costs a full run to test.
-     Do not spend one on that.
+   - **The guide side is done.** The angle, back-to-front and `edge()` edits, and
+     then the critique pass (below) that took every subject noun out of the guide --
+     not on the strength of the p ≈ 0.10 pooling, which an earlier version of this
+     note rightly refused to act on, but because the brief says in as many words
+     that the guide must not contain example subjects, and it did. The engine side
+     is item 4.
 3. **Decide what the unprompted stage is for** (`REHEARSAL3.md`, *Still open*).
    It is a question about the brief, so it is the human's to answer, and it is cheap
    either way. 63% of thirty-two fresh sessions named the same subject before reading
@@ -352,18 +366,46 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    is to have the human name a subject with no reference image, which measures
    invention instead of the model's prior at the same cost. Until that is decided,
    do not read anything into what an unprompted painting is *of*.
-4. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
+4. **Two engine changes the guide critique asked for, both the human's call.**
+   A review of `PAINTER.md` before REHEARSAL4 (`REVIEW.md`, *Guide critique*)
+   found five things; three were guide edits and are made (no subjects, the
+   calibration numbers split out into `CALIBRATION.md`, the measuring section cut
+   back from an optimiser loop to two `compare()` calls, the drawing order
+   reconciled in one sentence). The other two are engine work and are **not**
+   made, because each changes what paintings look like and the brief reserves that
+   judgement for a human looking at the sampler and a real painting:
+   - **The `0.23` value floor is the pigments, not the mixing model.** Mixing here
+     never takes a channel below the darker of its two ingredients, so nothing is
+     darker than the darkest pigment, and `burnt_umber` (`#4A3728`) reads `0.23` on
+     its own. The swatches are lighter than tube masstones. Two fixes: darken the
+     masstones of the dark pigments (ultramarine, burnt umber, alizarin, viridian,
+     burnt sienna) so ultramarine + umber reaches near-black the way real paint
+     does -- the honest fix, and it moves every golden image and every rehearsal's
+     colours; or add one genuinely dark pigment, which is additive and leaves the
+     goldens alone but does not make the classic mixture work. Either way the
+     Kubelka-Munk reflectance floor (`0.01` linear, value about `0.10`) is the new
+     bottom, and the *Reachable* paragraph in the brief, `compare()`'s `~` split and
+     step 3 of the guide all get shorter or go. Until it is decided the guide says,
+     in one paragraph, that the floor is an engine limit and not a lesson.
+   - **Sweeping a shaped mass should be an API call, not a recipe.** The guide
+     argues for laying a silhouetted mass as passes swept along its edge, and the
+     painter is then expected to retype fifteen lines to do it. `CALIBRATION.md`
+     holds the recipe for now. The call is M8's polygon `block_in`, or a smaller
+     `sweep(edge_points, ...)` that steps a stroke inward from a hand-given
+     boundary; the second is not the traced-copy question, because the boundary is
+     the painter's own, and could land before M8 proper.
+5. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
    streaks with the
    brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the
    eye test in `REHEARSAL2.md` says width, for tapering marks), and give `dab()` a
    `press` count so a catchlight can land at full strength.
    Both change every stroke, so both want the sampler *and* a real painting as
    the evidence, and a milestone of their own.
-5. Consider varying `block_in`'s pass *axis* automatically between passes. The
+6. Consider varying `block_in`'s pass *axis* automatically between passes. The
    travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
    the painter can *choose* the axis — but a mass still gets one axis per call unless
    the painter passes a sequence.
-6. Then M8 — non-rectangular masses (item 2 above is the argument for it), and only
+7. Then M8 — non-rectangular masses (item 2 above is the argument for it), and only
    then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview`
    and `compare` returning their images inline.
 

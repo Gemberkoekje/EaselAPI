@@ -257,7 +257,7 @@ def _cmd_mark(session: Session, args) -> int:
     """Record, list or forget a landmark."""
     if args.name is None:
         if not session.marks:
-            print("No landmarks yet. easel mark painting.easel eye_l 0.42 0.31")
+            print("No landmarks yet. easel mark painting.easel top_l 0.42 0.31")
             return 0
         for name, (x, y) in sorted(session.marks.items()):
             print(f"{name:16s} {x:.3f} {y:.3f}")
@@ -331,7 +331,7 @@ def _cmd_reference() -> int:
 _BLURBS = {
     "round_soft": "blending and soft edges; the least painterly, use sparingly",
     "round_hard": "deliberate marks, accents, small deliberate shapes",
-    "liner": "fine lines at feature scale: a lid, a brow, the lip of a cup",
+    "liner": "fine lines at feature scale; holds its load, no jitter",
     "flat": "block-in, chisel edges, planes; follows the stroke direction",
     "bristle": "the workhorse: broken, streaky, alive. Reach for this first",
     "knife": "thick slabs with a hard edge; drags what it crosses",

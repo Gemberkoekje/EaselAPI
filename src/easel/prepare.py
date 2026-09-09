@@ -8,9 +8,9 @@ plus a table -- share of the picture, cells covered, mean value and colour, whic
 areas touch which, and how hard each shared edge is.
 
 **The map is not the truth and the painter's job is to say so.** The automation
-will join hair to a wall of the same brown and cut a coat along its folds. That is
+will join two things of the same colour and cut one thing along its shading. That is
 why :meth:`Preparation.merge` and :meth:`Preparation.split` exist: the useful
-sentence is "area 5 is the hair, less the strip that is really wall", not "the
+sentence is "area 5 is one thing, less the strip that belongs to its neighbour", not "the
 computer says there are eleven areas".
 
 The outlines are for looking and naming. Painting them is a separate decision --
@@ -159,7 +159,7 @@ class Preparation:
     def split(self, number: int, into: int = 2, seed: int = 0) -> list[int]:
         """Cut one area into ``into`` parts by colour. New parts get new numbers.
 
-        For when the automation has joined the hair to the wall behind it. Split,
+        For when the automation has joined one thing to the thing behind it. Split,
         look at the overlay, and merge back whatever it got wrong.
         """
         n = int(number)
@@ -539,7 +539,7 @@ def _largest_component(mask: np.ndarray) -> np.ndarray:
 
     An area fresh out of :func:`prepare_reference` is always one connected run,
     but :meth:`Preparation.merge` can join two that do not touch at all (its own
-    docstring's example is hair split by an ear), and :meth:`Preparation.split`
+    docstring's example is one thing cut in two by another), and :meth:`Preparation.split`
     partitions by colour with no regard for where the pieces sit. A Moore-neighbour
     trace only ever follows one run's boundary, so it needs to be handed the one
     the caller means -- the biggest -- rather than whichever run happens to

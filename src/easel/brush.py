@@ -293,7 +293,7 @@ BRUSHES: dict[str, Brush] = {
         thickness_gain=0.55,
         texture_sensitivity=0.5,
     ),
-    # Liner: fine lines at feature scale -- a lid, a brow, the lip of a cup, a mast.
+    # Liner: fine lines at feature scale -- the sharpest, thinnest mark in a picture.
     # Nothing new in the engine: lines render at their nominal width down to about
     # three pixels (REHEARSAL2.md, the eye test), so this is one word for what
     # otherwise takes four overrides on round_hard. No jitter of any kind, because
