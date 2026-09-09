@@ -178,13 +178,16 @@ def cell(label: str) -> Region:
     to turn something seen in a grid overlay into somewhere to paint.
     """
     text = str(label).strip().upper()
-    if len(text) < 2 or text[0] not in GRID_COLS or text[1:] not in GRID_ROWS:
+    # Both checks below are single-character membership, not "in", deliberately:
+    # "12" in "12345678" is True (a substring match), which let a two-digit typo
+    # like "A12" silently resolve to row "1" instead of being rejected.
+    if len(text) != 2 or text[0] not in GRID_COLS or text[1] not in GRID_ROWS:
         raise ValueError(
             f"Bad cell {label!r}. Use a column {GRID_COLS[0]}-{GRID_COLS[-1]} followed by a "
             f"row {GRID_ROWS[0]}-{GRID_ROWS[-1]}, for example 'D6'."
         )
     col = GRID_COLS.index(text[0])
-    row = GRID_ROWS.index(text[1:])
+    row = GRID_ROWS.index(text[1])
     cw, ch = 1.0 / len(GRID_COLS), 1.0 / len(GRID_ROWS)
     return Region(col * cw, row * ch, (col + 1) * cw, (row + 1) * ch, name=text)
 

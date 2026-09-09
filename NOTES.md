@@ -296,6 +296,16 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
 17. **Check the painters' numbers.** Every figure in `REHEARSAL3.md` was re-measured
     from the exported PNGs (`rehearsal3/verify_pass.py`). They were mostly right and
     not entirely — a painter reporting on its own painting is not a measurement.
+18. **A canvas-mutating `Session` method must push an undo snapshot immediately
+    before it touches the canvas, in the same method.** `undo()` pairs the top of
+    the snapshot stack with the last log record on the assumption that the two
+    always move together. REVIEW 23: `dry()` mutated the canvas and logged a
+    record without snapshotting first, so `undo(1)` right after a `dry()` popped
+    the *previous* action's snapshot while only dropping the `dry` record —
+    correct-looking return value, canvas silently two steps back instead of one,
+    and `replay()` from the still-intact log then disagreed with what was on
+    screen. If you add a new kind of mark, grep for `push_snapshot` in
+    `session.py` and add the call before you add the record, not after.
 
 ## What to do next, in order
 

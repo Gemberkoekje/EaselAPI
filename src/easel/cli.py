@@ -65,6 +65,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("--seed", type=int, default=0)
     p_new.add_argument("--out-dir", type=Path, default=Path("out"))
     p_new.add_argument("--no-timelapse", action="store_true")
+    p_new.add_argument("--force", action="store_true",
+                       help="overwrite an existing session file")
 
     p_run = sub.add_parser("run", help="run a painting script against a session")
     p_run.add_argument("session", type=Path)
@@ -139,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return _dispatch(args)
-    except (FileNotFoundError, ValueError, KeyError) as exc:
+    except (OSError, ValueError, KeyError, SyntaxError) as exc:
         print(f"easel: {exc}", file=sys.stderr)
         return 1
 
@@ -149,6 +151,11 @@ def _dispatch(args) -> int:
         return _cmd_reference()
 
     if args.command == "new":
+        if args.session.exists() and not args.force:
+            raise FileExistsError(
+                f"{args.session} already exists. Use --force to overwrite it, "
+                f"or `easel undo` / paint into it directly if you meant to keep it."
+            )
         w, h = args.size if isinstance(args.size, tuple) else _parse_size(args.size)
         s = Session(
             w, h,
@@ -282,7 +289,13 @@ def _cmd_run(session: Session, args) -> int:
         {"s": session, "session": session, "palette": session.palette,
          "__name__": "__easel_script__", "__file__": str(script)}
     )
-    code = compile(script.read_text(encoding="utf-8"), str(script), "exec")
+    try:
+        code = compile(script.read_text(encoding="utf-8"), str(script), "exec")
+    except SyntaxError:
+        print(f"easel: {script} does not parse\n", file=sys.stderr)
+        traceback.print_exc()
+        return 1
+
     try:
         exec(code, namespace)  # noqa: S102 - running the painter's own script is the point
     except Exception:

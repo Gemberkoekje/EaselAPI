@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import json
 import math
+import os
+import tempfile
+import zipfile
 from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
 from pathlib import Path
@@ -488,6 +491,8 @@ class Session:
         key = str(name).strip()
         if not key:
             raise ValueError("A landmark needs a name: mark('eye_l', 0.42, 0.31)")
+        if not (math.isfinite(x) and math.isfinite(y)):
+            raise ValueError(f"A landmark needs a real position, got ({x!r}, {y!r}).")
         pt = (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
         self.marks[key] = pt
         return pt
@@ -508,10 +513,14 @@ class Session:
     def dry(self, amount: float = 1.0, region=None) -> StrokeRecord:
         """Dry the canvas so the next paint covers instead of mixing."""
         r = as_region(region) if region is not None else None
+        # Snapshot before the mark, like every other canvas-mutating call: without
+        # this, undo() after a dry() pops the *previous* paint action's snapshot
+        # while only dropping the dry record, desyncing the canvas from the log.
+        self.history.push_snapshot(self.canvas.snapshot())
         self.canvas.dry(amount, r)
         return self.history.add(
             StrokeRecord(
-                index=len(self.history.records),
+                index=self._index_base + len(self.history.records),
                 kind="dry",
                 note=f"dry {amount:.2f}" + (f" in {r}" if r is not None else ""),
                 params={"amount": float(amount),
@@ -528,13 +537,17 @@ class Session:
         if n <= 0 or not self.history.records:
             return 0
         depth = self.history.undo_depth
-        if depth:
+        if depth >= n:
             snap = self.history.pop_snapshots(n)
             if snap is not None:
                 self.canvas.restore(snap)
-                return min(n, depth)
-        # No snapshots -- this session came off disk. Rebuild from the log instead,
-        # which costs a full repaint but is exact.
+                return n
+        # Too few snapshots for the full request (older ones are dropped past
+        # MAX_SNAPSHOTS), or none at all because this session came off disk.
+        # Rebuild the whole way from the log instead -- costs a full repaint, but
+        # it is exact, and it is what keeps undo(n) answering the same question
+        # the same way regardless of how many snapshots this process happens to
+        # have cached.
         keep = max(0, len(self.history.records) - n)
         undone = len(self.history.records) - keep
         self._adopt(self.replay(upto=keep))
@@ -826,12 +839,16 @@ class Session:
             x0, y0, x1, y1 = self.canvas.region_px(r)
             canvas_rgb = canvas_rgb[y0:y1, x0:x1]
             rw, rh = ref_img.size
-            ref_img = ref_img.crop((
-                int(np.clip(round(r.x0 * rw), 0, rw - 1)),
-                int(np.clip(round(r.y0 * rh), 0, rh - 1)),
-                int(np.clip(round(r.x1 * rw), 1, rw)),
-                int(np.clip(round(r.y1 * rh), 1, rh)),
-            ))
+            # x0/y0 clipped first so a crop touching or past the far edge still
+            # leaves room for x1/y1 to land strictly past it: rounding two
+            # independently-clamped endpoints does not by itself guarantee
+            # x1 > x0, and a zero-width PIL crop does not raise -- it silently
+            # feeds an empty array into the value comparison below, as NaNs.
+            ref_x0 = int(np.clip(round(r.x0 * rw), 0, max(rw - 1, 0)))
+            ref_y0 = int(np.clip(round(r.y0 * rh), 0, max(rh - 1, 0)))
+            ref_x1 = int(np.clip(max(round(r.x1 * rw), ref_x0 + 1), 1, rw))
+            ref_y1 = int(np.clip(max(round(r.y1 * rh), ref_y0 + 1), 1, rh))
+            ref_img = ref_img.crop((ref_x0, ref_y0, ref_x1, ref_y1))
         ref_rgb = np.asarray(ref_img, dtype=np.uint8)
 
         result = compare_images(canvas_rgb, ref_rgb, region=r, threshold=threshold,
@@ -1038,22 +1055,36 @@ class Session:
         #
         # The canvas tooth and grain are a pure function of (texture, size, seed,
         # strength), so they are rebuilt on load rather than stored.
-        with open(p, "wb") as fh:
-            np.savez_compressed(
-                fh,
-                meta=np.array(json.dumps(meta)),
-                log=np.array(self.history.to_json()),
-                rgb=self.canvas.rgb,
-                wetness=self.canvas.wetness,
-                thickness=self.canvas.thickness,
-                # Only when there is one: a graphite channel is the same size as a
-                # colour plane and a painting that never drew should not carry it.
-                sketch=(self.canvas.sketch if self.canvas.has_sketch
-                        else np.zeros((0, 0), dtype=np.float32)),
-                frames=np.stack(frames) if frames else np.zeros((0, 1, 1, 3), dtype=np.uint8),
-                last_look=self._last_look if self._last_look is not None
-                else np.zeros((0, 0, 3), dtype=np.uint8),
-            )
+        #
+        # Written to a temp file and swapped into place with os.replace: the
+        # `.easel` file is the only copy of the painting, and a crash or a full
+        # disk partway through an in-place write would leave a truncated file with
+        # no way back. os.replace is atomic on both POSIX and Windows for a
+        # destination on the same filesystem, which the temp file always is.
+        fd, tmp_name = tempfile.mkstemp(dir=p.parent, prefix=f".{p.name}.", suffix=".tmp")
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                np.savez_compressed(
+                    fh,
+                    meta=np.array(json.dumps(meta)),
+                    log=np.array(self.history.to_json()),
+                    rgb=self.canvas.rgb,
+                    wetness=self.canvas.wetness,
+                    thickness=self.canvas.thickness,
+                    # Only when there is one: a graphite channel is the same size
+                    # as a colour plane and a painting that never drew should not
+                    # carry it.
+                    sketch=(self.canvas.sketch if self.canvas.has_sketch
+                            else np.zeros((0, 0), dtype=np.float32)),
+                    frames=(np.stack(frames) if frames
+                            else np.zeros((0, 1, 1, 3), dtype=np.uint8)),
+                    last_look=(self._last_look if self._last_look is not None
+                               else np.zeros((0, 0, 3), dtype=np.uint8)),
+                )
+        except BaseException:
+            Path(tmp_name).unlink(missing_ok=True)
+            raise
+        os.replace(tmp_name, p)
         return p
 
     @classmethod
@@ -1064,65 +1095,76 @@ class Session:
             raise FileNotFoundError(
                 f"No session at {p}. Create one with `easel new` before painting."
             )
-        with np.load(p, allow_pickle=False) as data:
-            meta = json.loads(str(data["meta"]))
-            if meta.get("format") not in _READABLE_FORMATS:
-                raise ValueError(
-                    f"Session file {p} has format {meta.get('format')}, "
-                    f"this build of Easel reads {_READABLE_FORMATS} and writes "
-                    f"format {_EASEL_FORMAT}."
+        try:
+            with np.load(p, allow_pickle=False) as data:
+                meta = json.loads(str(data["meta"]))
+                if meta.get("format") not in _READABLE_FORMATS:
+                    raise ValueError(
+                        f"Session file {p} has format {meta.get('format')}, "
+                        f"this build of Easel reads {_READABLE_FORMATS} and writes "
+                        f"format {_EASEL_FORMAT}."
+                    )
+                s = cls.__new__(cls)
+                s.seed = int(meta["seed"])
+                s.rng = _decode_rng(meta["rng_state"])
+                s.out_dir = Path(meta["out_dir"])
+                s.timelapse = bool(meta["timelapse"])
+                s._look_counter = int(meta["look_counter"])
+                s.marks = {
+                    k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()
+                }
+                s._preparation = None
+                s._index_base = 0
+
+                canvas = Canvas.__new__(Canvas)
+                canvas.width = int(meta["width"])
+                canvas.height = int(meta["height"])
+                canvas.seed = s.seed
+                canvas.texture_name = meta["texture"]
+                canvas.ground_name = meta["ground"]
+                canvas.ground_spec = meta.get("ground_spec", meta["ground"])
+                canvas.rgb = data["rgb"].astype(np.float32)
+                canvas.wetness = data["wetness"].astype(np.float32)
+                canvas.thickness = data["thickness"].astype(np.float32)
+                canvas.texture_strength = float(meta.get("texture_strength", 1.0))
+                canvas.height_map, canvas.grain = build_surface(
+                    canvas.texture_name,
+                    canvas.height,
+                    canvas.width,
+                    s.seed,
+                    canvas.texture_strength,
                 )
-            s = cls.__new__(cls)
-            s.seed = int(meta["seed"])
-            s.rng = _decode_rng(meta["rng_state"])
-            s.out_dir = Path(meta["out_dir"])
-            s.timelapse = bool(meta["timelapse"])
-            s._look_counter = int(meta["look_counter"])
-            s.marks = {k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()}
-            s._preparation = None
-            s._index_base = 0
+                canvas.tooth_ceiling = tooth_ceiling(canvas.height_map, canvas.grain)
+                canvas.stroke_count = int(meta["stroke_count"])
+                # Format 1 has no sketch array at all; format 2 stores one only when
+                # something was drawn.
+                stored = data["sketch"] if "sketch" in data.files else None
+                if stored is not None and stored.size:
+                    canvas.sketch = stored.astype(np.float32)
+                    canvas.has_sketch = True
+                else:
+                    canvas.sketch = np.zeros((canvas.height, canvas.width), dtype=np.float32)
+                    canvas.has_sketch = False
+                s.canvas = canvas
 
-            canvas = Canvas.__new__(Canvas)
-            canvas.width = int(meta["width"])
-            canvas.height = int(meta["height"])
-            canvas.seed = s.seed
-            canvas.texture_name = meta["texture"]
-            canvas.ground_name = meta["ground"]
-            canvas.ground_spec = meta.get("ground_spec", meta["ground"])
-            canvas.rgb = data["rgb"].astype(np.float32)
-            canvas.wetness = data["wetness"].astype(np.float32)
-            canvas.thickness = data["thickness"].astype(np.float32)
-            canvas.texture_strength = float(meta.get("texture_strength", 1.0))
-            canvas.height_map, canvas.grain = build_surface(
-                canvas.texture_name,
-                canvas.height,
-                canvas.width,
-                s.seed,
-                canvas.texture_strength,
-            )
-            canvas.tooth_ceiling = tooth_ceiling(canvas.height_map, canvas.grain)
-            canvas.stroke_count = int(meta["stroke_count"])
-            # Format 1 has no sketch array at all; format 2 stores one only when
-            # something was drawn.
-            stored = data["sketch"] if "sketch" in data.files else None
-            if stored is not None and stored.size:
-                canvas.sketch = stored.astype(np.float32)
-                canvas.has_sketch = True
-            else:
-                canvas.sketch = np.zeros((canvas.height, canvas.width), dtype=np.float32)
-                canvas.has_sketch = False
-            s.canvas = canvas
+                s.palette = Palette()
+                for name, rgb in meta.get("palette_slots", {}).items():
+                    s.palette[name] = np.array(rgb, dtype=np.float32)
 
-            s.palette = Palette()
-            for name, rgb in meta.get("palette_slots", {}).items():
-                s.palette[name] = np.array(rgb, dtype=np.float32)
-
-            s.history = History()
-            s.history.records = History.records_from_json(str(data["log"]))
-            frames = data["frames"]
-            s.history._frames = [f for f in frames] if frames.size else []
-            last = data["last_look"]
-            s._last_look = last if last.size else None
+                s.history = History()
+                s.history.records = History.records_from_json(str(data["log"]))
+                frames = data["frames"]
+                s.history._frames = [f for f in frames] if frames.size else []
+                last = data["last_look"]
+                s._last_look = last if last.size else None
+        except (zipfile.BadZipFile, KeyError, TypeError, EOFError) as exc:
+            # A missing array, an unreadable zip, or a log entry with a field this
+            # build's StrokeRecord does not know about (a newer Easel wrote it, or
+            # the file is simply damaged) -- all of these are "not a valid session
+            # file", not a bug in this code, and the CLI already knows how to
+            # report that cleanly.
+            raise ValueError(f"{p} is not a valid Easel session file, or is corrupted: "
+                             f"{exc}") from exc
         return s
 
     # -- replay -----------------------------------------------------------------

@@ -5,6 +5,11 @@ A failure writes the new render to ``tests/golden/<case>.actual.png`` beside the
 stored ``<case>.png`` and reports how far apart they are, because the only useful
 response to one of these failing is to look at both images.
 
+An exact hash mismatch falls back to :func:`golden_cases.close_enough`, a tight
+numeric tolerance, before failing -- see that function's docstring for why: a
+same-source numpy build has been observed to round a handful of pixels +-1 of 255
+differently with nothing about the painting having changed.
+
 If the change was intended: ``python scripts/make_golden.py``.
 """
 
@@ -36,6 +41,8 @@ def test_golden_marks_unchanged(name):
     arr = gc.build(name)
     actual = gc.digest(arr)
     if actual == expected:
+        return
+    if gc.close_enough(arr, name):
         return
 
     # Failed: leave the evidence on disk and say how far it moved.

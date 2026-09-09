@@ -44,6 +44,9 @@ def main(argv: list[str]) -> int:
         hashes[name] = new
         if name not in gc.HASH_ONLY:
             Image.fromarray(arr, mode="RGB").save(gc.GOLDEN_DIR / f"{name}.png")
+        if name in gc.POOL_BLOCK:
+            pooled = gc.pool_average(arr, gc.POOL_BLOCK[name])
+            Image.fromarray(pooled, mode="RGB").save(gc.tolerance_reference_path(name))
         actual = gc.GOLDEN_DIR / f"{name}.actual.png"
         if actual.exists():
             actual.unlink()

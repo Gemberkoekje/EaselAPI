@@ -564,6 +564,212 @@ and scored worst of four in the probe -- was rewritten to run passes along the f
 
 ---
 
+---
+
+# Adversarial code review — CLI, session and engine robustness
+
+Every prior round above was found by rendering something and looking at it. This
+one was different on purpose: three fresh sessions read the code itself (no
+painting), one over `cli.py`/`session.py`/`history.py`, one over the numeric core
+(`canvas.py`, `brush.py`, `stroke.py`, `color.py`, `texture.py`), one over
+`measure.py`/`prepare.py`/`look.py`/`palette.py`/`regions.py` -- hunting for
+crashes, corruption and silently-wrong results a "does the painting look right"
+pass would not surface. Every finding below was reproduced against the actual
+code, not inferred from reading it. None of it moved a golden image.
+
+## Fixed
+
+### 23. `dry()` did not snapshot before mutating the canvas, desyncing undo from the log
+
+**Symptom.** `s.stroke(...); s.dry(); s.undo(1)` restored the canvas to the state
+*before the stroke*, not before the dry -- while only removing the `dry` record
+from the log. The log still claimed the stroke happened; `s.replay()` then
+disagreed with what was on screen.
+
+**Cause.** Every other canvas-mutating call (`stroke`, `pencil`, `erase`) pushes an
+undo snapshot immediately before it changes the canvas, so one snapshot always
+corresponds to the record it undoes. `dry()` called `self.canvas.dry(...)` and
+logged a record without ever pushing a snapshot, so the snapshot on top of the
+stack after a `dry()` belongs to whatever came *before* it.
+
+**Fix.** `dry()` snapshots first, like the others (`easel/session.py`). Also fixed
+in passing: it logged its record's `index` as `len(self.history.records)` instead
+of `self._index_base + len(...)`, the only one of the four record-adding methods
+that skipped `_index_base` -- harmless everywhere except inside a `rehearse()`
+trial, where the number shown in the log would have been wrong.
+`test_undo_after_dry_lands_on_the_state_before_dry_not_before_the_stroke`.
+
+### 24. `undo(n)` past `MAX_SNAPSHOTS` silently undid fewer strokes than asked
+
+**Symptom.** A script that made more than 24 strokes (the snapshot cap) in one
+process and then called `s.undo(30)` got only 24 strokes undone, no error -- while
+the identical log, saved and reloaded, correctly undoes all 30 through log replay.
+Same session, different answer, depending only on how many snapshots this process
+happened to have cached.
+
+**Cause.** `undo()` took the fast snapshot path whenever *any* snapshots existed,
+even fewer than requested, and returned however many that path actually managed
+rather than falling through to the always-correct log-replay path for the
+shortfall.
+
+**Fix.** The snapshot path is only taken when it can satisfy the whole request;
+otherwise `undo()` rebuilds from the log, exactly as it already did for a
+freshly-loaded session (`easel/session.py`).
+`test_undo_beyond_cached_snapshots_matches_a_fresh_reload`.
+
+### 25. `easel new` silently overwrote an existing session
+
+**Symptom.** Re-running `easel new p.easel ...` on a painting already in progress
+replaced it with a blank canvas, no confirmation, no error.
+
+**Fix.** `easel new` now refuses to touch an existing file unless `--force` is
+given (`easel/cli.py`). `test_new_refuses_to_clobber_an_existing_session_without_force`.
+
+### 26. `Session.save()` was not atomic
+
+**Symptom.** `save()` opened the destination `.easel` file directly and streamed
+the new archive into it. The file is the painting's only copy; a crash, a full
+disk, or a killed process partway through left it truncated with no way back.
+
+**Fix.** Saves now write to a temp file beside the destination and `os.replace()`
+it into place -- atomic on both POSIX and Windows for a same-filesystem
+destination, which the temp file always is (`easel/session.py`).
+`test_save_replaces_the_file_atomically_and_leaves_no_temp_behind`.
+
+### 27. A corrupted or incompatible session file crashed with a raw traceback
+
+**Symptom.** Three separate ways to get a `Traceback (most recent call last)`
+instead of the `easel: ...` message every other bad-input case gets: a truncated
+`.easel` file (`zipfile.BadZipFile`) -- the exact failure mode finding 26's
+non-atomic save made a real risk, not a contrived one; a log entry with a field
+this build's `StrokeRecord` does not know about (`TypeError`); an output path
+that collides with an existing non-directory file (`FileExistsError`).
+
+**Fix.** `Session.load()` wraps the structural part of reading a session
+(`zipfile.BadZipFile`, `KeyError`, `TypeError`, `EOFError`) and re-raises as the
+same `ValueError` every other unreadable-session case already produces, without
+swallowing the deliberate format-mismatch `ValueError` it already raised. The
+CLI's top-level handler now also catches `OSError` (covers `FileExistsError` and
+friends) alongside the exceptions it already caught (`easel/session.py`,
+`easel/cli.py`). `test_a_corrupted_session_file_raises_a_clear_error`,
+`test_a_corrupted_session_file_fails_the_cli_cleanly`.
+
+### 28. `easel run`'s `SyntaxError` in the painter's own script escaped as a raw traceback
+
+**Symptom.** A script with an ordinary Python 2-ism or typo failed at `compile()`,
+outside the `try` that gives a runtime error in the same script the friendly
+"script raised, session saved with N strokes" treatment -- bare traceback instead.
+
+**Fix.** `compile()` gets its own `try`, reporting the syntax error clearly and
+distinctly from a runtime failure (nothing ran, so there is nothing to save)
+(`easel/cli.py`). `test_run_reports_a_syntax_error_without_touching_the_session`.
+
+### 29. `cell("A12")` silently resolved to cell A1 instead of raising
+
+**Symptom.** `cell("A12")`, `cell("D67")` and `cell("B23")` all returned a valid
+cell -- the *wrong* one -- instead of raising. `cell("H88")` correctly raised, by
+luck.
+
+**Cause.** The validation and the lookup both wrote `text[1:] not in GRID_ROWS` /
+`GRID_ROWS.index(text[1:])`, and Python's `in` on a string is substring
+membership: `"12" in "12345678"` is `True` (a match at index 0), so a two-digit
+row typo passed validation and `.index("12")` returned 0.
+
+**Fix.** Require `len(text) == 2` and check `text[1]` (a single character) against
+`GRID_ROWS`, not `text[1:]` (`easel/regions.py`). This also feeds `as_region()`
+and `span()`, both of which fall back to `cell()`.
+`test_two_digit_row_typo_is_rejected_not_silently_truncated`.
+
+### 30. A region touching the canvas's or a reference image's far edge could crop to zero pixels
+
+**Symptom.** `Canvas.region_px()` clamped its two endpoints to the same `[0,
+width]` range independently, so a region rounding to exactly `width` on its low
+edge produced `x0 == width`, and the "at least one pixel" guard then returned
+`x1 = width + 1` -- one column past the array. `Session.compare()`'s own,
+separate cropping of the *reference* image had the same class of bug with no
+guard at all: two independently-clamped endpoints do not by themselves guarantee
+`x1 > x0`. A crop landing exactly on that gave a zero-width PIL crop, which does
+not raise -- it silently fed an empty array into `compare()`'s per-cell means,
+which came back as NaN, which then broke `Comparison`'s own bookkeeping (a NaN
+cell is neither "off" nor "not off" under `abs(delta) > threshold`, so it printed
+as out-of-range in the table while being excluded from the counts the same table's
+caption claims to summarize).
+
+**Fix.** Both places now clamp the *start* of the crop first, to leave room for at
+least one pixel before computing the end -- `x0` to `[0, width-1]`, then `x1` to
+`[x0+1, width]` -- instead of clamping both ends to the same range and only
+patching up the width afterwards (`easel/canvas.py`, `easel/session.py`).
+
+### 31. NaN/Infinity coordinates crashed opaquely, or were silently persisted
+
+**Symptom.** A NaN or Infinity point in a stroke or a pencil line reached
+`np.arange` inside path resampling and failed there with a cryptic numpy message
+naming no bad input (`ValueError: arange: cannot compute length`, or a
+maximum-size error for Infinity) -- plausible for an agent whose own upstream
+coordinate math momentarily divides by zero. Separately, `mark()` used
+`np.clip(x, 0, 1)` to bound a landmark, and `np.clip` does not sanitise NaN, so a
+non-finite mark was accepted silently and written into the session's own JSON
+metadata as a bare `NaN`/`Infinity` token -- round-trips through this codebase's
+own `json.loads`, but is not standard JSON.
+
+**Fix.** `paint_stroke()` and `draw_pencil()` reject non-finite points with a
+clear message before resampling; `mark()` rejects a non-finite position
+(`easel/stroke.py`, `easel/session.py`).
+`test_nan_or_inf_point_is_rejected_not_a_cryptic_numpy_crash`,
+`test_marking_a_non_finite_point_explains_itself`. Also fixed:
+`pressure_curve([], n)` (an empty pressure list) reached `np.interp` with empty
+arrays instead of raising; `test_empty_pressure_list_explains_itself`.
+
+### 32. `merge()`/`split()` could trace the wrong connected component's outline
+
+**Symptom.** `_trace_outline`'s own docstring claims "only the outer boundary of
+the largest run", but it started tracing from the mask's topmost-then-leftmost
+pixel regardless of which run that belonged to. Invisible for an area fresh out of
+`prepare_reference()` (always one connected run), but `merge()`'s own docstring
+example is joining hair split by an ear -- two pieces that do not touch -- and the
+outline of the merged area silently covered only whichever piece happened to
+contain that one pixel, sometimes the *smaller* one. `split()`'s k-means
+partition has the same exposure: two separated patches of similar tint can land
+in one part with no regard for contiguity. `Session.sketch()` draws pencil
+straight from these outlines, so assisted mode could silently omit whole pieces of
+a merged mass from the underdrawing.
+
+**Fix.** `_trace_outline` now finds every 8-connected run in the mask and traces
+only the largest, matching what it already claimed to do
+(`easel/prepare.py::_largest_component`).
+`test_outline_traces_the_largest_run_when_merge_joins_two_that_do_not_touch`.
+
+## Open, with evidence
+
+- **The Kubelka-Munk reflectance floor (finding 5's `0.01`) also perturbs pixels
+  that are not being mixed with anything.** `blend_wet()` converts *both* colours
+  to K/S space before weighting them by `amount`, and `_to_ks` clips its input to
+  `[0.01, 1-1e-4]` first -- so a pixel darker than that floor gets rounded up to it
+  by the K/S round-trip even at a tiny `amount`, not just `amount == 1`. Reachable
+  through ordinary painting, not a contrived input: `Canvas.stamp()` calls
+  `blend_wet` across a dab's whole square bounding box, and any pixel inside that
+  square but outside the tip's actual footprint has a small but non-zero `amount`
+  from the mask's soft edge. Measured: a pure-black pixel one mask-corner away
+  from an unrelated `round_soft` stamp lightened from linear `0.0` to `0.016`ish
+  (sRGB `(0,0,0)` to roughly `(26,26,26)`). The same floor also caps how dark any
+  *pigment* can ever read: `cadmium_yellow`'s blue channel (`#FFC012`, linear
+  `~0.006`) can never paint truer than sRGB blue `25`, off by 7 from the swatch's
+  own `18`, at any opacity, because every application re-floors it.
+
+  Not taken, on purpose: the floor is load-bearing for finding 5 (without it, a
+  near-zero channel's K/S blows up and swamps a real mixture -- "red + blue comes
+  out green"), so shrinking it risks reopening that finding, and the fix that
+  *doesn't* risk it -- keeping the floor's effect proportional to `amount` instead
+  of applying it to `dst` outright -- changes the wet-blend formula for every soft
+  dab edge in the engine, which is most of what this engine paints. That is
+  exactly the kind of change finding 11 warns against making by eye late in a
+  milestone, and every golden image would need regenerating and *looking at*, not
+  just re-hashing, to know whether it actually looks better. Left for a session
+  with the budget to render both versions of a real painting side by side and
+  judge.
+
+---
+
 ## Not yet reviewed
 
 The MCP server (now M8 in the brief), which does not exist yet.

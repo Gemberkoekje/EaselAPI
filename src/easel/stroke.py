@@ -155,6 +155,8 @@ def pressure_curve(pressure, n: int) -> np.ndarray:
         )
 
     arr = np.atleast_1d(np.asarray(pressure, dtype=np.float32))
+    if arr.size == 0:
+        raise ValueError("A pressure list needs at least one value.")
     if arr.size == 1:
         return np.full(n, float(np.clip(arr[0], 0.0, 1.0)), dtype=np.float32)
     src_t = np.linspace(0.0, 1.0, arr.size, dtype=np.float32)
@@ -208,6 +210,8 @@ def paint_stroke(
     pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
     if pts.shape[1] != 2:
         raise ValueError(f"Points must be (n, 2) normalised coordinates, got shape {pts.shape}")
+    if not np.isfinite(pts).all():
+        raise ValueError(f"Points must be finite numbers, got {points!r}")
 
     base_color = parse_color(color)
     path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
@@ -396,6 +400,8 @@ def draw_pencil(
     pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
     if pts.shape[1] != 2:
         raise ValueError(f"Points must be (n, 2) normalised coordinates, got shape {pts.shape}")
+    if not np.isfinite(pts).all():
+        raise ValueError(f"Points must be finite numbers, got {points!r}")
 
     path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
     px = np.empty_like(path)
