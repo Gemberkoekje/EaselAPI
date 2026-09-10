@@ -79,3 +79,10 @@ m8b/*.gif
 !m8b/before.png
 !m8b/after.png
 !m8b/compared.png
+
+# REHEARSAL6. The two references are REHEARSAL4's, byte for byte -- `launch_note.md`
+# records the checksums and `verify_done.py` reads them from `rehearsal4/` -- so a
+# painter's working copy of one is not committed a second time. Session files are
+# ignored repository-wide and are 15 MB each; `save_logs.py` writes the history that
+# the checks actually read into `rehearsal6/sessions/` instead.
+rehearsal6/**/ref.jpg

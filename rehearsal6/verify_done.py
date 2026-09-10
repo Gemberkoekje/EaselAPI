@@ -67,9 +67,24 @@ VALUE_WORDS = ("value", "correct", "fix", "darken", "lighten", "knock down",
                "knockdown", "raise", "lower", "compare", "cell", "delta")
 
 
-def _session(path: str) -> tuple[dict, list]:
-    with np.load(path, allow_pickle=False) as z:
-        return json.loads(str(z["meta"])), json.loads(str(z["log"]))
+def _session(path: str) -> tuple[dict, list] | None:
+    """A session's meta and history, from the `.easel` or from the saved JSON.
+
+    `*.easel` is ignored repository-wide -- a canvas is 15 MB -- so after the run
+    `save_logs.py` writes each history out beside the paintings. Preferring the
+    `.easel` while it exists and falling back to the JSON means these checks give the
+    same answer during the run and from a fresh clone a year later.
+    """
+    if os.path.exists(path):
+        with np.load(path, allow_pickle=False) as z:
+            return json.loads(str(z["meta"])), json.loads(str(z["log"]))
+    run, name = path.split("/")[-2], os.path.basename(path)[:-6]
+    saved = f"{HERE}/sessions/{run}-{name}.json"
+    if os.path.exists(saved):
+        with open(saved, encoding="utf-8") as handle:
+            payload = json.load(handle)
+        return payload["meta"], payload["log"]
+    return None
 
 
 def _charged(log: list) -> list:
@@ -89,11 +104,11 @@ def _charged(log: list) -> list:
 
 
 def last_ten(run: str) -> None:
-    path = f"{HERE}/{run}/copy.easel"
-    if not os.path.exists(path):
-        print(f"\n  {run}: no copy.easel")
+    loaded = _session(f"{HERE}/{run}/copy.easel")
+    if loaded is None:
+        print(f"\n  {run}: no session for the copy")
         return
-    _, log = _session(path)
+    _, log = loaded
     charged = _charged(log)
     tail = charged[-10:]
     print(f"\n  {run} -- the last {len(tail)} charged marks, oldest first")
@@ -120,11 +135,11 @@ def signatures() -> None:
     found = False
     for run in ("pass", "sitter"):
         for name in ("copy", "own1", "own2"):
-            path = f"{HERE}/{run}/{name}.easel"
-            if not os.path.exists(path):
+            loaded = _session(f"{HERE}/{run}/{name}.easel")
+            if loaded is None:
                 continue
             found = True
-            _, log = _session(path)
+            _, log = loaded
             marks = [r for r in log
                      if "signature" in str(r.get("note", "")).lower()]
             state = (f"{len(marks)} mark(s)" if marks else "UNSIGNED")

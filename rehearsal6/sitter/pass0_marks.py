@@ -1,0 +1,8 @@
+s.mark("eye",      0.458, 0.308)
+s.mark("nose",     0.400, 0.357)
+s.mark("mouth",    0.455, 0.448)
+s.mark("chin",     0.468, 0.515)
+s.mark("hairtop",  0.545, 0.105)
+s.mark("hairback", 0.700, 0.375)
+s.mark("shoulder", 0.705, 0.470)
+print(s.stroke_count)
