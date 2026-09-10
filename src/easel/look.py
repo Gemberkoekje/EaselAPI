@@ -127,7 +127,9 @@ def render_look(
         sketch: show the pencil underdrawing the paint has not covered.
         marks: named landmarks to draw on both panels, ``{name: (x, y)}``.
         strokes: previewed strokes to draw over both panels. Each is a dict with
-            ``points`` and optionally ``width`` (normalised) and ``label``.
+            ``points`` and optionally ``width`` (normalised), ``label``, and
+            ``fill`` for a mass, which is drawn as the shape it will cover rather
+            than as a band along its outline.
 
     Returns:
         A PIL image, ready to save or hand to a vision model.
@@ -337,7 +339,13 @@ def _draw_strokes(frame: _Frame, strokes: list) -> Image.Image:
         if not pts:
             continue
         width = max(1, int(round(float(spec.get("width", 0.0)) * ppu)))
-        if len(pts) > 1:
+        if spec.get("fill") and len(pts) > 2:
+            # A mass, not a mark: what matters is the area it will cover, so it is
+            # drawn as the shape rather than as a band of the brush's width -- an
+            # outline at brush width reads as a ring, which is the one thing the
+            # mass is not.
+            draw.polygon(pts, fill=_PREVIEW_BAND + (70,), outline=_PREVIEW_LINE + (220,))
+        elif len(pts) > 1:
             draw.line(pts, fill=_PREVIEW_BAND + (90,), width=width, joint="curve")
             draw.line(pts, fill=_PREVIEW_LINE + (220,), width=1)
         else:
@@ -345,8 +353,9 @@ def _draw_strokes(frame: _Frame, strokes: list) -> Image.Image:
             r = max(2, width // 2)
             draw.ellipse([x - r, y - r, x + r, y + r], fill=_PREVIEW_BAND + (90,),
                          outline=_PREVIEW_LINE + (220,))
-        for x, y in pts:
-            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=_MARK_COLOR + (255,))
+        if not spec.get("fill"):
+            for x, y in pts:
+                draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=_MARK_COLOR + (255,))
         label = str(spec.get("label", i + 1))
         lx, ly = pts[0]
         draw.rectangle([lx + 4, ly - 14, lx + 10 + 6 * len(label), ly - 2],

@@ -1,4 +1,4 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools, and M6's final pass
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools, M6's final pass, and M8's shaped masses
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
 `REHEARSAL3.md` (the M6 final pass — the most recent measurement, and it says what
@@ -24,9 +24,10 @@ mass is laid along the canvas's axes, and nothing ever said to paint back to fro
 Both are written up in `rehearsal3/HUMAN_NOTES.md` with their probes.
 
 M7 (marks at detail scale) is specified and not started; the golden images it needs
-as its gate now exist. **M8 is new** — non-rectangular masses, added to the brief
-after this pass, and it takes the slot before the server for the same reason M6 did:
-it changes the API. M9 (MCP) is untouched and correctly last.
+as its gate now exist. **M8 is done** — a place can now be a shape, and `block_in`
+fills one, which is the largest open item the unprompted stage pointed at; see
+*M8 — shaped masses* below. M6b (darks) and M6c (sweep) are still open and still
+belong before REHEARSAL4. M9 (MCP) is untouched and correctly last.
 
 The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
 author: the unprompted painting went well, the **copy did not reach a likeness**,
@@ -52,7 +53,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M6b Darks | **New**, decided by the human after the guide critique. The `0.23` value floor is the pigment swatches, not the mixing model (`REVIEW.md` 33); darken the masstones so ultramarine + umber reaches the model's own floor. Moves every golden, and that is accepted. Before REHEARSAL4. |
 | M6c Sweep | **New.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, replacing the fifteen-line recipe in `CALIBRATION.md` (`REVIEW.md` 34). Additive; one golden added. Before REHEARSAL4. |
 | M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
-| M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
+| M8 Non-rectangular masses | **Done.** `Polygon` is a place beside `Region`, built with `polygon`, `ellipse`, `blob`, `hull` or `ribbon`; `block_in` cuts every pass against the outline, so a shaped mass keeps its silhouette and a concave one keeps its bite. `direction="axis"` sweeps along the mass's own long axis. `dry`, `erase`, `look`, `compare`, `preview` and `rehearse` all take a shape. Additive: no golden moved, one was added. Evidence in `samples/shapes.png` and `m8/`. |
 | M9 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -70,7 +71,9 @@ src/easel/
                `paint_stroke()` is the hot loop; `draw_pencil()` is the same walk
                for graphite.
   palette.py   pigments (no black), mixing, named slots.
-  regions.py   named regions, A–H/1–8 grid cells, relative placement.
+  regions.py   named regions, A–H/1–8 grid cells, relative placement, and from M8
+               `Polygon` — a shaped place — with `polygon`, `ellipse`, `blob`,
+               `hull` and `ribbon` to build one without inventing coordinates.
   look.py      the look() renderer: grid, values, crop, side-by-side, diff, and
                from M6 the fine (tenths) grid, matching crops of both panels,
                landmarks and the preview overlay. `_Frame` is the piece to
@@ -90,16 +93,26 @@ src/easel/
 
 tests/test_engine.py      95 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
-tests/test_precision.py   48 tests for M6: the graphite channel and what buries it,
+tests/test_precision.py   50 tests for M6: the graphite channel and what buries it,
                           landmarks, matching crops, and mostly what the planning
                           tools must *not* do -- preview paints nothing, rehearse
                           commits nothing, neither disturbs the painting after it.
+tests/test_shapes.py      36 tests for M8: the shape itself, the five builders, and
+                          what a shaped block-in must do -- stop at the silhouette,
+                          come back in pieces across a concave mass, and log
+                          ordinary strokes so undo and replay are right for free.
 tests/test_golden.py      visual regression. `tests/golden_cases.py` holds the fixed
                           scripts; `tests/golden/*.png` are the stored renders, and
                           they are there to be *looked at* when a case fails.
 scripts/make_golden.py    regenerates them. Only after looking.
 scripts/make_brush_sampler.py   regenerates samples/brushes.png — the primary
                           test artefact. Look at it after every engine change.
+scripts/make_shape_sampler.py   regenerates samples/shapes.png — every shape
+                          builder against every sweep direction, with the box each
+                          mass would have been in the last column.
+m8/paint_two_ways.py      M8's other half of the evidence: one composition painted
+                          as boxes and as shapes, same seed, same colours, and the
+                          axis-alignment number for both.
 examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
                           step with the printed ones -- two were rewritten in M5,
                           and M6 added the seventh (draw, rehearse, paint).
@@ -144,6 +157,61 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
                           that one. Read the M4 "Method" note before reviewing
                           anything else here.
 ```
+
+## M8 — shaped masses
+
+**What changed.** A place is now either a `Region` (a rectangle, unchanged) or a
+`Polygon` (a closed outline). `block_in` fills either: for a shape it sweeps at the
+angle asked for and cuts every pass against the outline, so the passes stop at the
+silhouette, and a pass crossing a concave mass comes back as the two or three pieces
+that are really inside it. Five builders make one without the painter inventing
+coordinates — `polygon`, `ellipse`, `blob`, `hull`, `ribbon` — and each takes a
+*place* where a centre would do, so `blob(cell("D5"))` is an irregular mass filling
+a cell the painter read off a look. `direction="axis"` sweeps along the shape's own
+long axis. `dry`, `erase`, `look`, `compare`, `preview` and `rehearse` all take a
+shape; the first two act inside the outline (and record it, so they replay), the
+rest crop to the rectangle around it.
+
+**It is additive.** Every existing painting replays byte for byte: the rectangle
+branches of `_block_paths` are untouched, and the named directions still run their
+own hand-written geometry rather than being re-expressed as angles. No golden image
+moved; one (`shapes`) was added. The full suite passed unchanged before the new
+tests were written, which is the check that matters here.
+
+**Decisions taken.**
+- **A shape's default `overhang` is `0`, a rectangle's stays `0.35`.** A rectangle is
+  blocked in past its edge so the mass does not look cropped; a shape's edge is the
+  drawing. Only the pass *centres* stop at the boundary — the brush still breaks
+  about three-quarters of its width past it, which is the ragged spill a block-in has
+  always had at its ends. The M6 assisted run lost a whole edge of its subject to the
+  rectangle overhang (`rehearsal3/assisted/GOTCHAS.md`, gotcha 10).
+- **The traced-copy question is recorded, not decided.** The brief reserves it for
+  the human, so the engine does the one thing it can: `s.ref_shape(n)` returns the
+  prepared area as a shape *marked traced*, blocking one in appends to `s.assisted`
+  and puts `(traced)` in the log, and that list is saved with the session (format 3)
+  and printed by `s.log()`. `s.sketch()` records itself the same way. A run that
+  uses either cannot leave it out of the write-up by accident. The painter's own way
+  — `hull` on three or four verified landmarks, or a `blob` sized to the cells the
+  prepared table says an area covers — is what the guide teaches.
+- **No `sweep()` here.** Passes swept *along* a boundary and stepped inward is M6c
+  and still open; this is the straight sweep, clipped. The `CALIBRATION.md` recipe
+  is gone either way: a closed shape is one call now.
+
+**The evidence, both halves.** `samples/shapes.png` is the sampler: five builders
+against four sweep directions, with the box each mass would have been in the last
+column — that column is the comparison the sheet exists for. `m8/paint_two_ways.py`
+is the real painting: one composition, the same five masses, the same colours, seed
+and order, laid once as boxes and once as shapes. As boxes it is a stack of
+rectangles; as shapes it is a picture. 53 passes against 46, and the axis-aligned
+edge share (`rehearsal3/probe_axis_alignment.py`) went 31.4% → 25.2%. The number
+moves less than the pictures do, because much of what that probe counts is the
+bristle comb's own streaks along each pass — which is M7's business, not this one's.
+
+**What it does not fix.** The painter still has to *decide* to use a shape. The
+vocabulary is no longer all rectangles, but the guide is now the thing under test
+again: whether a fresh session reaches for `blob` and `hull` instead of `span`, and
+whether the unprompted paintings stop being bands, is a question for a run, not for
+this note.
 
 ## Key decisions, and why
 
@@ -321,6 +389,26 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
     and `replay()` from the still-intact log then disagreed with what was on
     screen. If you add a new kind of mark, grep for `push_snapshot` in
     `session.py` and add the call before you add the record, not after.
+19. **A record that carries a place has to carry the whole place.** `dry` and
+    `erase` used to log `{"region": [x0, y0, x1, y1]}`, and a shape logged as its
+    bounding box would replay as a rectangle — worse, a shape logged as *nothing*
+    would replay as the whole canvas. They now log `shape` (the points) or
+    `region` (the bounds), and `_place_from_params` in `session.py` is the one
+    place that reads either back. `sketch_lines()` reads the same field, because
+    what an eraser removed from the canvas has to be what it removed from the
+    lines.
+20. **A rehearsed mass is not pixel-identical to the painted one.** A rehearsal
+    gets its own generator on purpose (so trying something cannot change the
+    painting that follows), strokes are seeded per index and so come out the same,
+    but a `block_in`'s pass wander is drawn from the session's stream and does not.
+    Same masses in the same places, different wobble. Do not write a test that
+    asserts equality there; assert the overlap.
+21. **A self-intersecting outline is accepted.** `Polygon` checks for three
+    distinct points and a non-zero area, not for simplicity, and everything
+    downstream is even-odd — so a bow-tie fills as two triangles rather than
+    raising. `inset` is a mitre offset and can fold a spiky outline through
+    itself, which is why it checks the result's area and centre and falls back to
+    pulling the points toward the centre.
 
 ## What to do next, in order
 
@@ -340,27 +428,20 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
      answered its question — the tools do reach below a cell — and the assisted run
      answered its own: the machine sketch is a wash and slightly worse.
    - Write it up as `REHEARSAL4.md`, short. It only has one thing to report.
-2. **The vocabulary is all rectangles** (`REHEARSAL3.md`, *How unprompted is
-   unprompted?*). Twenty-two named regions, every one axis-aligned, and one helper
-   named after a thing in the world: `horizon()`. **This is the one thing the
-   unprompted experiment says to fix.** Thirty-two fresh sessions
-   (`rehearsal3/unprompted/`) showed the guide's *words* barely steer the subject —
-   but a painter told only what the engine is mechanically bad at justifies its
-   choice by horizontal bands and rectangles six times in eight, in as many words:
-   *"the rectangular regions are working for me instead of against me."* Painters are
-   not accidentally laying bands, they are reasoning their way to band-shaped
-   pictures because a band is the only mass this tool fills honestly. No amount of
-   guide prose fixes that; the fix is to make a non-rectangular mass as cheap as a
-   rectangular one. A polygon region — `ref_outline(n)` already returns one — is the
-   largest open item in the repo, and it is partly the traced-copy question the brief
-   reserves for the human. It changes what gets painted, so it wants a milestone and
-   a real painting as evidence, not a rehearsal.
-   - **The guide side is done.** The angle, back-to-front and `edge()` edits, and
-     then the critique pass (below) that took every subject noun out of the guide --
-     not on the strength of the p ≈ 0.10 pooling, which an earlier version of this
-     note rightly refused to act on, but because the brief says in as many words
-     that the guide must not contain example subjects, and it did. The engine side
-     is item 4.
+2. **The vocabulary is no longer all rectangles — now find out whether that was
+   enough.** M8 is built (above): a mass can be a shape, `block_in` fills one, and
+   the guide teaches it. What that has *not* shown is the thing the unprompted
+   experiment actually asked, which was never about the engine's capability but
+   about what a painter reasons its way to. Thirty-two fresh sessions
+   (`rehearsal3/unprompted/`) justified band-shaped pictures six times in eight, in
+   as many words: *"the rectangular regions are working for me instead of against
+   me."* The reply to that is now in the box, so the open question is whether a fresh
+   session reaches for it: does the copy stage use shaped masses, and do the two
+   unprompted paintings stop being stacks of bands? `probe_axis_alignment.py` gives
+   the number; the pair in `m8/` gives it a scale (31.4% as boxes, 25.2% as shapes,
+   same composition). Fold this into REHEARSAL4 rather than running it on its own —
+   the same run answers it and the value question, and running two measurements
+   against one painting is free.
 3. **Decide what the unprompted stage is for** (`REHEARSAL3.md`, *Still open*).
    It is a question about the brief, so it is the human's to answer, and it is cheap
    either way. 63% of thirty-two fresh sessions named the same subject before reading
@@ -409,18 +490,23 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
    the painter can *choose* the axis — but a mass still gets one axis per call unless
    the painter passes a sequence.
-7. Then M8 — non-rectangular masses (item 2 above is the argument for it), and only
-   then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview`
-   and `compare` returning their images inline.
+7. Then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview` and
+   `compare` returning their images inline. It exposes the API, so everything that
+   changes the API goes first: M6b, M6c, M7 and the wet-blend floor (brief item 11)
+   are what is left of that list now M8 has landed. The server's tool surface has to
+   carry shapes as arguments, which is the one new thing M8 adds to its design: a
+   place is a name, a cell, a span, a rectangle **or a list of points**.
 
 ## Verify the scaffold
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 149 tests, about 35s (the goldens repaint)
+pytest -q                              # 200 tests, about 60s (the goldens repaint)
 python -m ruff check src tests scripts examples   # ruff is not on PATH here either
 python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png
+python scripts/make_shape_sampler.py   # then look at samples/shapes.png
+python m8/paint_two_ways.py            # the shaped/boxed pair, and their numbers
 python scripts/make_golden.py          # only after looking at what changed
 python examples/exercises.py           # writes out/ex_*.png, including the M6 loop
 python -m easel brushes                # the CLI, without needing it on PATH

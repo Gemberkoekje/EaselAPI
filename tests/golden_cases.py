@@ -30,6 +30,7 @@ _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO / "src") not in sys.path:  # pragma: no cover - import plumbing
     sys.path.insert(0, str(_REPO / "src"))
 
+from easel.regions import blob, hull, polygon, ribbon  # noqa: E402
 from easel.session import Session  # noqa: E402
 from easel.texture import TEXTURES  # noqa: E402
 
@@ -137,6 +138,40 @@ def draw_drawing(s: Session) -> None:
     s.erase((0.02, 0.14, 0.30, 0.22))
 
 
+def draw_shapes(s: Session) -> None:
+    """M8: masses that are not rectangles, and every way of laying one out.
+
+    A shape swept along its own axis, a concave one whose passes have to come back
+    in pieces, a mass hung on landmarks, and one following a line. Between them they
+    cover the clip against the outline, the multi-span pass, the angle resolution and
+    the default of no overhang -- the four things that could change what a shaped
+    mass looks like without anything else in this file noticing.
+    """
+    p = s.palette
+    p["dark"] = p.mix("ultramarine", "burnt_umber", 0.45)
+    p["mid"] = p.tint("burnt_sienna", 0.35)
+
+    s.block_in(blob((0.30, 0.34), 0.24, 0.20, seed=4, name="blob"), brush="bristle",
+               color="dark", direction="axis", density=0.9, size=0.10)
+    s.block_in(polygon([(0.58, 0.10), (0.96, 0.10), (0.96, 0.62), (0.80, 0.62),
+                        (0.80, 0.30), (0.70, 0.30), (0.70, 0.62), (0.58, 0.62)],
+                       name="notch"),
+               brush="flat", color="mid", direction="vertical", size=0.07)
+    s.block_in(hull([(0.08, 0.98), (0.34, 0.66), (0.52, 0.98)], name="hull"),
+               brush="bristle", color="mid", direction=28, density=1.0, size=0.08)
+    s.block_in(ribbon([(0.56, 0.96), (0.76, 0.80), (0.98, 0.78)], 0.12, end_width=0.05,
+                      name="ribbon"),
+               brush="flat", color="dark", direction="axis", size=0.05)
+
+
+def build_shapes() -> np.ndarray:
+    """The shaped block-ins, on linen. Returns 8-bit sRGB."""
+    w, h = GOLDEN_SIZE
+    s = Session(w, h, texture="linen", ground="toned_grey", seed=17, timelapse=False)
+    draw_shapes(s)
+    return s.canvas.to_srgb8()
+
+
 def build_drawing() -> np.ndarray:
     """The pencil, on rough paper. Returns 8-bit sRGB."""
     w, h = GOLDEN_SIZE
@@ -179,6 +214,7 @@ def _load_sampler_module():
 #: name -> builder. Every entry gets a stored hash.
 CASES: dict[str, object] = {f"marks_{t}": (lambda t=t: build_marks(t)) for t in TEXTURES}
 CASES["drawing"] = build_drawing
+CASES["shapes"] = build_shapes
 CASES["sampler"] = build_sampler
 
 #: Cases stored as a hash only. The sampler is 190x19440 as one strip and a

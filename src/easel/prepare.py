@@ -27,7 +27,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from easel.color import linear_to_oklab, linear_to_srgb, luminance, srgb_to_linear
-from easel.regions import GRID_COLS, GRID_ROWS, Region
+from easel.regions import GRID_COLS, GRID_ROWS, Polygon, Region
 
 __all__ = ["Area", "Preparation", "prepare_reference", "LEVELS"]
 
@@ -128,6 +128,14 @@ class Preparation:
     def region(self, number: int) -> Region:
         """An area's bounding rectangle, for ``look(region=...)`` or a block-in."""
         return self[number].region
+
+    def shape(self, number: int) -> Polygon:
+        """An area as a :class:`~easel.regions.Polygon`, ready to block in.
+
+        Traced, and marked as such: see :meth:`easel.session.Session.ref_shape`.
+        """
+        return Polygon(tuple(self[number].outline), name=f"area {int(number)}",
+                       traced=True)
 
     def outline(self, number: int) -> list[tuple[float, float]]:
         """An area's boundary as normalised points."""

@@ -44,6 +44,7 @@ print(f"{len(blocks)} python blocks\n")
 
 PREAMBLE = (
     "from easel import Session, Region, region, cell, span, horizon, below, above\n"
+    "from easel import blob, ellipse, hull, ribbon, polygon\n"
     "s = Session(400, 300, ground='toned_grey', seed=1, timelapse=True, out_dir='out/_check')\n"
     "p = s.palette\n"
     "s.palette['dark'] = s.palette.mix('ultramarine','burnt_umber',0.45)\n"

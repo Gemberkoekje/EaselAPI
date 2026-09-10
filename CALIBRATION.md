@@ -150,8 +150,8 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - Successive passes run in opposite directions on their own, so a mass does not
   fade toward the side the brush ran out on.
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
-  a number of degrees clockwise from horizontal, or a sequence of any of those for
-  one pass each.
+  `"axis"` (the place's own long axis), a number of degrees clockwise from
+  horizontal, or a sequence of any of those for one pass each.
 
 ### Laying a mass along its own axis
 
@@ -169,35 +169,48 @@ Running the passes along the form is the whole win: fourteen points squarer to
 less, and twenty fewer strokes. Pinning the tip on top of that matters on short
 marks and at the ends of long ones, not along their length.
 
-### Sweeping a shaped mass
+### Shaped masses (M8)
 
-`block_in` fills a rectangle. A mass with a silhouette is laid by sweeping passes
-along its boundary and stepping into the mass one part-brush at a time — passes
-that follow the edge, not columns that hang off it. This is a recipe rather than
-an API call for now (phase M6c in `painting-api-brief.md` makes it `s.sweep()`);
-the knots below are an arbitrary boundary, not a subject.
+`block_in` fills a shape as readily as a rectangle: `blob`, `ellipse`, `hull`,
+`ribbon`, `polygon`. The passes are cut against the outline, so a mass with a
+silhouette keeps it, and a concave one comes back in pieces rather than being
+painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against the
+`0.32` box around it:
 
-```python
-def edge(knots):                       # a boundary given as (x, y) corners
-    def at(x):
-        for (x0, y0), (x1, y1) in zip(knots, knots[1:]):
-            if x0 <= x <= x1:
-                return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
-        return knots[-1][1]
-    return at
+| | Shape | Its box |
+|---|---|---|
+| passes at `size=0.06` | 14 | 15 |
+| passes at `size=0.12` | 7 | 7 |
+| passes at `size=0.16` | 5 | 6 |
+| default `overhang` | `0` | `0.35` |
 
-top = edge([(0.33, 1.02), (0.46, 0.66), (0.58, 0.43), (0.74, 0.50), (1.02, 0.68)])
-for k in range(9):                                  # passes, not columns
-    off = 0.035 * k                                 # step down into the mass
-    xs = [0.345 + 0.65 * i / 8 for i in range(9)]
-    band = [(x, min(top(x) + off, 1.02)) for x in xs]
-    s.stroke(band if k % 2 == 0 else band[::-1], "bristle", "dark",
-             size=0.13, load=0.9, pressure="even")
-```
+- **A shaped mass costs what its box costs.** The passes are counted across the
+  extent of the mass along the sweep's normal, not over its area, so a shape and its
+  box come out within a pass of each other. Budget for a shape exactly as before.
+- **Coverage at `density=1.0` is 99% of the shape**, at every brush size tried
+  (`0.06` to `0.20`).
+- **Paint stops within three-quarters of a brush width past the silhouette.** The
+  pass *centres* stop at the boundary — that is what `overhang=0` means — and the
+  brush spreads half its width beyond, plus the pass wander. There is no second edge
+  out there: it is the same ragged spill a block-in has always had at its ends.
+- **One sweep leaves the boundary stringy**, because a bristle brush covers about
+  three-quarters of its width. `direction=("axis", 90)` crosses it and closes it up,
+  at twice the passes (7 → 17 on the blob above).
+- **`"axis"`** resolves to the long axis of the outline, weighted by edge length:
+  `-35.5°` for a ribbon from `(0.15, 0.8)` to `(0.85, 0.3)`, `0°` for a wide
+  ellipse, `90°` for a tall rectangle.
 
-One sweep leaves the boundary stringy, because a bristle brush covers about
-three-quarters of its width. Cross it with a second set of passes at an angle to
-the first and the mass closes up.
+Five masses of a 900×675 painting, sized `0.06`–`0.17`, come to 46 passes; the same
+composition laid as the boxes around those masses came to 53, and looked like boxes.
+Its axis-aligned edge share went from 31.4% as boxes to 25.2% as shapes — a real
+move, and a smaller one than the pictures look, because much of what that probe
+counts is the bristle comb's own streaks along each pass rather than the boundaries
+of the masses. The pair is `m8/boxes.png` and `m8/shapes.png`; regenerate with
+`python m8/paint_two_ways.py`.
+
+Passes swept *along* a boundary and stepped inward, rather than straight across the
+mass, describe a form differently again and are still open: phase M6c in
+`painting-api-brief.md` (`s.sweep()`).
 
 ---
 

@@ -7,12 +7,12 @@ they are painted over.
 
 The whole API runs through one object::
 
-    from easel import Session
+    from easel import Session, blob, cell
 
     s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
     s.palette["shadow"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
 
-    s.block_in("lower-half", brush="bristle", color="shadow", density=0.8)
+    s.block_in(blob(cell("D5")), brush="bristle", color="shadow", density=0.8)
     s.look(values=True)          # check the value structure
     s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
     s.export("painting.png")
@@ -44,15 +44,21 @@ from easel.regions import (
     GRID_COLS,
     GRID_ROWS,
     REGION_NAMES,
+    Polygon,
     Region,
     above,
     below,
     between,
+    blob,
     cell,
+    ellipse,
     golden,
     horizon,
+    hull,
     left_of,
+    polygon,
     region,
+    ribbon,
     right_of,
     span,
     thirds,
@@ -113,6 +119,12 @@ __all__ = [
     "left_of",
     "right_of",
     "between",
+    "Polygon",
+    "polygon",
+    "ellipse",
+    "blob",
+    "hull",
+    "ribbon",
     # looking, measuring and reading the reference
     "render_look",
     "load_reference",
