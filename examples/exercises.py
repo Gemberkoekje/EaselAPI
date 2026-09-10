@@ -33,10 +33,12 @@ def value_scale() -> None:
 def pressure_profiles() -> None:
     """The same gesture under each pressure profile.
 
-    The low opacity and the flat load are what make this legible. Pressure scales
-    how heavily paint lands, not how wide the mark is, so at full strength the
-    overlapping dabs saturate and all six profiles come out identical -- and paint
-    running out along the stroke hides the profile behind its own fade.
+    On the round brush (left) the profile changes the *width* of the mark as well
+    as how heavily paint lands; on the bristle (right) it changes only the paint,
+    because an oriented tip keeps its chisel. The low opacity and the flat load are
+    what make the paint half legible: at full strength the overlapping dabs saturate
+    and every profile lays the same solid mark, and paint running out along the
+    stroke hides the profile behind its own fade.
     """
     s = Session(900, 500, ground="toned_grey", seed=2, out_dir=OUT)
     for i, p in enumerate(["taper", "press_in", "lift_off", "even", "swell", "dab"]):

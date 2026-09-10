@@ -680,12 +680,13 @@ them will each look like a strip of tape.
 
 A `bristle` stroke is never solid. Fully loaded it covers about three-quarters of
 its own width, in a comb of parallel streaks. That comb is what makes it alive on
-a mark whose direction you mean — hair, a fold, the sweep of an edge — and it is
-what makes corduroy of a big quiet mass laid with single passes: above about
-`size=0.12` the streaks print wider than anything in the picture, and every stroke
-prints the same ones. Lay large quiet masses — a wall, a sky, a tabletop, a coat —
-with `flat`, or with two `bristle` passes crossed, and keep single bristle
-strokes for marks that have a direction.
+a mark whose direction you mean — hair, a fold, the sweep of an edge. A bristle has
+a width of its own, about a two-hundredth of the canvas, so a bigger brush prints
+*more* streaks rather than fatter ones, and the brush picks up a slightly different
+comb every stroke — spacing, phase, and which bristles are missing. What still makes
+corduroy of a big quiet mass is laying it in single parallel passes: cross them, or
+lay large quiet masses — a wall, a sky, a tabletop, a coat — with `flat`, and keep
+single bristle strokes for marks that have a direction.
 
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
 one. **Use a bigger brush than feels comfortable**, especially early.
@@ -790,26 +791,37 @@ back into it solidly afterwards.
 
 Or pass a number, or a list interpolated along the stroke: `pressure=[0.2, 1.0, 0.3]`.
 
-**Pressure changes how heavily paint lands, not how wide the mark is.** A stroke at
-`pressure=0.2` covers the same width as one at `1.0`; it just lays less paint. Two
+**On a round tip — `round_hard`, `round_soft`, `liner` — pressure changes how wide
+the mark is as well as how much paint lands.** `size` is its width at full
+pressure: a `round_hard` at `size=0.06` on a 600-wide canvas is 36 px held at
+`pressure=1.0`, 24 px at `0.5` and 14 px at `0.1`, and it never goes below about a
+pixel and a half however light the touch. **On the oriented tips — `flat`,
+`bristle`, `knife` — it changes only how much paint lands**, because a flat brush's
+width is the mass it lays and you want that to be the width you asked for. Three
 consequences worth knowing before you go looking for a bug:
 
-- On a long stroke with dabs overlapping, the profile is easy to miss — the marks
-  pile up and saturate, so `taper` and `even` can come out looking much the same.
-  You see the profiles most clearly on shortish strokes, and on a colour that is not
-  already at full strength against its background.
-- **Varying the width of your marks is your job, not the pressure profile's.** Pass
-  a different `size` — that is the single most effective thing you can do to stop a
-  painting looking mechanical, and no pressure setting will do it for you.
+- A mark that tapers is **one** stroke: `pressure=[1, 0]` starts at the width you
+  asked for and ends at a lash. That is how you paint a lid, a brow, a twig or the
+  far end of a cast shadow without painting it twice at two sizes.
+- On a long stroke with dabs overlapping, the *paint* part of the profile is easy
+  to miss — the marks pile up and saturate, so `taper` and `even` come out much the
+  same in strength even when they differ in width. You see it most clearly on
+  shortish strokes, and on a colour that is not already at full strength against its
+  background.
+- **Varying the width of your masses is still your job**, because the brushes that
+  lay masses do not vary with pressure. Pass a different `size` — that is the single
+  most effective thing you can do to stop a painting looking mechanical.
 
 **At the scale of a feature.** A `round_hard` line keeps its width down to about
 three pixels of the long side (`size=0.003` on a 1200-wide canvas), at full
 strength, so the brushes go as small as anything you will paint. What changes at
-that scale is not the brush. A single dab lands at about a third of its colour's
-strength, so a highlight the size of a catchlight is two or three dabs on the same
-spot, not one. A fine line runs dry over the same *distance* as a fat one, which
-is far more brush-lengths, so it lasts. And pressure does not thin a line at its
-ends, so a mark that tapers is two strokes of different sizes. Anything the size
+that scale is not the brush. **A single dab is a light touch** — it lands about a
+quarter of the way to its colour, at about half the width you asked for, because a
+lone dab is the *start* of the default `taper`. A highlight the size of a
+catchlight is `s.dab(x, y, ..., press=3)`: three stamps on the same spot, the
+middle one at full pressure, and **one** stroke against your budget. A fine line
+runs dry over the same *distance* as a fat one, which is far more brush-lengths, so
+it lasts. Anything the size
 of a cell or smaller is three marks at most — the dark, the light, and the edge
 between them — laid dark first and looked at through a `region=` crop before the
 light goes on.
@@ -871,7 +883,7 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
-s.dab(x, y, brush, color, size=...)                # one mark
+s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
 s.block_in(region, brush, color, direction=, density=)   # a mass, as strokes
 s.smudge(points, size=)                            # move paint around
 s.glaze(points, color, opacity=)                   # thin transparent film
@@ -955,11 +967,13 @@ for i in range(9):
 s.look(values=True)     # do the steps look evenly spaced in greyscale?
 ```
 
-**2. One stroke, six pressures.** See what the profiles actually do. Note the
-`opacity=0.35` and `load_falloff=0.0`: at full strength the overlapping dabs
-saturate and every profile looks identical, and paint running out along the stroke
-hides the profile behind its own fade. Both have to be out of the way before you
-can see what pressure alone is doing.
+**2. One stroke, six pressures.** See what the profiles actually do. On the round
+brush on the left they change the *width* of the mark; on the `bristle` on the right
+they change only how much paint lands. Note the `opacity=0.35` and
+`load_falloff=0.0`: at full strength the overlapping dabs saturate and the strength
+part of every profile looks identical, and paint running out along the stroke hides
+it behind its own fade. Both have to be out of the way before you can see what
+pressure alone is doing.
 
 ```python
 from easel import Session

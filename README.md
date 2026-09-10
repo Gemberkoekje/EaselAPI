@@ -135,6 +135,17 @@ painted rather than generated:
 - **The tooth gate is roughened with aperiodic grain.** Gating a near-periodic weave
   with a smooth threshold produces a halftone dot screen as paint runs out, which
   reads as print rather than as dry brush.
+- **The bristle comb is drawn per stroke, and a bristle has a width of its own.**
+  One fixed comb per brush means every wide mark prints the same streaks and a mass
+  laid in passes comes out as corduroy; a fixed *count* across the tip means the
+  streaks scale with the brush, so a big mass prints stripes wider than anything in
+  the picture and a small mark carries the brush's signature instead of the
+  feature's. So spacing, phase and the missing bristles are redrawn each stroke, and
+  the count follows the brush's size.
+- **Width follows pressure on the round tips.** Pressure that changes only how much
+  paint lands is invisible once an opaque colour saturates, and it means a mark that
+  tapers — a lid, a brow, a lash, a twig — is two strokes at two sizes. The oriented
+  tips keep their chisel, because a `flat` brush's width is the mass it lays.
 
 ## Status
 

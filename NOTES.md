@@ -1,15 +1,16 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools, and M6's final pass
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, and M7
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
-`REHEARSAL3.md` (the M6 final pass — the most recent measurement, and it says what
-is still wrong), then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
+`REHEARSAL3.md` (the M6 final pass — the most recent *measurement*, and it says what
+is still wrong), then `M7.md` (the most recent *change*: what a mark looks like now),
+then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
 then `PAINTER.md` (what a fresh agent is given), then `src/easel/session.py` (the
 object everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
-Status: **M1–M5 done. M6's tools are built and its protocol has now been run —
-three fresh sessions, `REHEARSAL3.md`. M6 is not done: the copy passes on
-recognition, stroke budget and rejected marks, and fails the `0.10` number.** Five
+Status: **M1–M5 done. M7 done — `M7.md`. M6's tools are built and its protocol has
+now been run — three fresh sessions, `REHEARSAL3.md`. M6 is not done: the copy passes
+on recognition, stroke budget and rejected marks, and fails the `0.10` number.** Five
 of the seven failing cells were the painter's own, all in the same direction, and
 the fixes they point at are now in the guide. A guide fix is a hypothesis until a
 fresh session paints against it, which is what `REHEARSAL.md` → `REHEARSAL2.md`
@@ -22,8 +23,14 @@ what is wrong with these paintings than anything the three sessions reported: ev
 mass is laid along the canvas's axes, and nothing ever said to paint back to front.
 Both are written up in `rehearsal3/HUMAN_NOTES.md` with their probes.
 
-M7 (marks at detail scale) is specified and not started; the golden images it needs
-as its gate now exist. **M8 is new** — non-rectangular masses, added to the brief
+**M7 (marks at detail scale) is done** — `M7.md`. The bristle comb is drawn per
+stroke and a bristle has a width of its own rather than the brush's; width follows
+pressure on the round tips, so a lid line tapers in one stroke instead of two; and
+`dab(press=n)` lands a catchlight in one mark. Judged on the sampler and on the M6
+headline painting repainted by both engines, then the goldens regenerated once. The
+one thing it makes harder is in `M7.md`'s *The trap, stated plainly*: a lone
+`s.dab()` is a light touch and now lands at about half the width asked for.
+**M8 is new** — non-rectangular masses, added to the brief
 after this pass, and it takes the slot before the server for the same reason M6 did:
 it changes the API. M9 (MCP) is untouched and correctly last.
 
@@ -48,7 +55,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
-| M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
+| M7 Marks at detail scale | **Done** — `M7.md`. Comb drawn per stroke (two marks of one brush were identical to the last bit); `BRISTLE_PITCH` gives a bristle a width of its own, 4 at `size=0.02` and 36 at `size=0.18` where it was 22 at every size; width follows pressure on the round tips (14 px at pressure 0.1 against 36 px at 1.0), oriented tips keep their chisel; `dab(press=n)`. Judged on the sampler *and* on `rehearsal3/pass` repainted by both engines — the same 295 marks, whole-picture value 0.4239 → 0.4231. All five goldens regenerated after looking. |
 | M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
 | M9 MCP server | Not started, and correctly last. |
 
@@ -87,6 +94,9 @@ src/easel/
 
 tests/test_engine.py      95 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
+tests/test_marks.py       17 tests for M7: the comb per stroke and against size,
+                          width following pressure on the round tips (and not on the
+                          oriented ones), and `press`.
 tests/test_precision.py   48 tests for M6: the graphite channel and what buries it,
                           landmarks, matching crops, and mostly what the planning
                           tools must *not* do -- preview paints nothing, rehearse
@@ -112,6 +122,13 @@ rehearsal3/unprompted/    the adversarial check on "how unprompted is unprompted
                           samples.md (32 fresh sessions naming a subject across four
                           conditions), and the two guide variants they were given.
                           Read PREREGISTERED.md before samples.md.
+m7/                       M7's evidence: three probes that run against either engine
+                          (`PYTHONPATH=<pre-m7>/src python m7/probe_comb.py` for the
+                          before), `make_sheets.py` for the four panels of
+                          `marks_compared.png`, and `repaint.py`, which replays
+                          `rehearsal3/pass` -- 295 strokes of the mug -- on whichever
+                          engine is on the path. That is the "real painting" the
+                          brief asks for before a golden is regenerated.
 rehearsal3/               M6's final pass: three fresh sessions (pass/ the headline
                           mug and its unprompted painting, sitter/ the same
                           photograph REHEARSAL2 painted, assisted/ the machine-laid
@@ -352,13 +369,12 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    is to have the human name a subject with no reference image, which measures
    invention instead of the model's prior at the same cost. Until that is decided,
    do not read anything into what an unprompted painting is *of*.
-4. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
-   streaks with the
-   brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the
-   eye test in `REHEARSAL2.md` says width, for tapering marks), and give `dab()` a
-   `press` count so a catchlight can land at full strength.
-   Both change every stroke, so both want the sampler *and* a real painting as
-   the evidence, and a milestone of their own.
+4. ~~**M7 — Marks at detail scale.**~~ **Done — `M7.md`.** What it leaves behind,
+   for whoever runs the next fresh session: a lone `s.dab()` is now a light touch at
+   about half the width asked for (`press=3` for the mark at full size), and
+   `s.glaze()` thins at both ends unless it is given `pressure="even"`, because it
+   defaults to a `round_soft` at a `taper`. Whether `glaze()`'s own default should
+   change is an API question and was deliberately left alone.
 5. Consider varying `block_in`'s pass *axis* automatically between passes. The
    travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
    the painter can *choose* the axis — but a mass still gets one axis per call unless
@@ -371,7 +387,7 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 149 tests, about 35s (the goldens repaint)
+pytest -q                              # 180 tests, about 85s (the goldens repaint)
 python -m ruff check src tests scripts examples   # ruff is not on PATH here either
 python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png
