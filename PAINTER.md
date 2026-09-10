@@ -58,8 +58,14 @@ below 1.0 so the ground still breathes through.
 
 ```python
 s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
-s.block_in("lower-half", brush="bristle", color="dark", density=0.7, size=0.2)
+s.block_in(blob(cell("D5"), 0.26, wobble=0.3, seed=2), brush="bristle", color="dark",
+           density=0.7, size=0.2, direction="axis")
 ```
+
+A place can be a rectangle — `cell("D5")`, `span("E5", "H8")`, `region("lower-half")`
+— or a **shape**: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. `block_in` fills
+either, and a shape's passes stop at its own silhouette. Most masses are shapes; see
+*Masses that are not rectangles*.
 
 Resist detail here. If you can already name what you are painting, you have gone
 too far too early.
@@ -396,11 +402,18 @@ s.look(region=prep.region(4), reference="ref.jpg", grid="fine")
 and cuts one thing along its own shading, because it knows about colours and a
 painting is made of things. `merge` and `split` are how you say so.
 
-`s.sketch()` lays those outlines as pencil in one call. **That is an assisted mode.**
-The drawing is meant to be yours, and any write-up has to say it was used. Prefer
-`prepare` for *reading* the reference and your own `pencil()` for drawing it. The
-same goes for handing `s.ref_outline(n)` straight to `sweep()`: the boundary of a
-mass is a drawing, and if the machine found it, say so.
+`s.sketch()` lays those outlines as pencil in one call, and `s.ref_shape(n)` hands
+one back as a shape. **Both are assisted modes**, and so is handing
+`s.ref_outline(n)` straight to `sweep()`: the boundary of a mass is a drawing, and
+if the machine found it, say so. The drawing is meant to be yours, and any write-up
+has to say one was used — where you went through `sketch()` or `ref_shape(n)` the
+painting records it for you (`s.log()` prints it, and it is in the saved session),
+and where you copied the points out by hand nothing can, so it is on you.
+
+Prefer `prepare` for *reading* the reference: look at the area, then lay your own
+outline over it — `hull` on three or four verified landmarks, a `blob` sized to the
+cells the table says it covers, or an edge you read off the grid and `sweep`.
+
 
 ---
 
@@ -435,10 +448,38 @@ least `0.03` wide, running along the boundary with its centre outside the shape,
 laying the background's own colour up to where the shape stops. The edge is then
 where two masses meet, which is the only kind of edge a painting has.
 
-**A region is a rectangle. Almost nothing you want to paint is.** `block_in` fills
-a box, which is right for a band or a flat plane and wrong for anything with a
-silhouette. If you block in a shaped mass as a box you get a box, and no amount of
-later work removes that. Give the boundary instead, and let the passes follow it:
+**Masses that are not rectangles.** Almost nothing you want to paint is a box, and
+you will be tempted to paint boxes anyway, because a rectangle is the easiest place
+to name. If you block in a shaped mass as a box you get a box, and no amount of
+later work removes that. There are two ways not to, and they answer different
+questions.
+
+**When you can say what shape the mass is**, build it and fill it. Five ways to make
+one, none of which needs you to invent coordinates:
+
+```python
+blob(cell("D5"), 0.22, wobble=0.3, seed=2)     # an irregular mass filling a cell
+ellipse(span("C3", "E5"))                      # a round mass filling a run of cells
+hull([s.pt("top_l"), s.pt("top_r"), s.pt("base")])   # the mass around your landmarks
+ribbon([(0.15, 0.8), (0.5, 0.55), (0.9, 0.62)], 0.18)   # a mass following a line
+polygon([(0.2, 0.9), (0.35, 0.4), (0.6, 0.5), (0.7, 0.95)])   # an outline you have
+```
+
+Look at it before you spend twenty passes on it, then fill it along its own axis:
+
+```python
+shape = blob(span("D4", "F6"), wobble=0.35, seed=5)
+s.preview(shape)                                    # the silhouette, painting nothing
+s.block_in(shape, "bristle", "dark", direction="axis", density=0.9, size=0.12)
+```
+
+A shaped block-in costs about what its box would: the passes are counted across the
+mass, not over its area. They stop at the boundary rather than a third of a brush
+past it, and a mass with a bite out of it keeps the bite — one pass across a concave
+shape comes back as the two pieces that are really inside it.
+
+**When what you have is one boundary** — the edge that matters, read off the grid —
+give it to `sweep` and let the passes follow it:
 
 ```python
 edge = [(0.06, 0.68), (0.31, 0.48), (0.56, 0.63), (0.84, 0.45)]   # read off the grid
@@ -454,16 +495,27 @@ mass into strands and print the canvas's axis over the whole thing.
   word or an angle steps every pass the same way, which is the hand working down a
   near-horizontal edge, and an `(x, y)` point *inside* the mass makes the passes
   follow a curved edge instead of shearing off it. A boundary that closes on itself
-  needs neither — `closed=True`, and the mass is what it encloses.
+  needs neither — `closed=True`, and the mass is what it encloses. A shape is such a
+  boundary: `s.sweep(shape, "bristle", "dark", depth=0.2)` sweeps round its own
+  outline.
 - `cross=` is the second set of passes, leaning that many degrees across the first.
   Take it: one sweep on its own comes out stringy, because a bristle brush covers
   about three-quarters of its width, and the crossing is what closes the mass up.
-  Twenty to thirty degrees is usually enough.
+  Twenty to thirty degrees is usually enough. A shaped `block_in` has the same
+  problem and the same answer — `direction=("axis", 90)`.
 - `depth=` is how far into the mass to go, and the brush decides how many passes
   that takes unless you say `passes=`.
 
-If the mass is close enough to a box that this feels like overkill, `block_in` at
-the angle the mass runs at is the cheaper version of the same idea.
+**Which one?** Fill a shape when you can see the whole silhouette and want it
+covered; sweep when one edge is the thing you care about, or when the passes
+following the form is the point. And if the mass is close enough to a box that
+either feels like overkill, `block_in` at the angle the mass runs at is the cheaper
+version of the same idea.
+
+**The shape is a place, not a line.** Nothing draws that outline, and you must not
+either: the silhouette is where this mass's paint stops and the mass behind it still
+shows, which is why the far masses go down first.
+
 
 **When something is wrong, paint over it.** Your instinct will be to reach for
 `undo`. Resist it. Real repairs happen with paint: let the area dry, then work over
@@ -618,7 +670,12 @@ from horizontal, as well as the four names:
 ```python
 s.block_in(span("A4", "F7"), "flat", "shadow", direction=28, size=0.12)
 s.block_in(span("A4", "F7"), "flat", "shadow", direction=(28, 118), size=0.12)  # crossed
+s.block_in(ribbon([(0.2, 0.8), (0.8, 0.4)], 0.2), "flat", "shadow", direction="axis")
 ```
+
+`direction="axis"` is the mass answering the question itself: it sweeps along the
+long axis of the shape (or of the rectangle) you gave it, so you do not have to work
+the angle out.
 
 Passes that run along the form cover it in fewer strokes than passes that step
 down it, and they come out visibly less square. Measured, if you want the numbers,
@@ -752,8 +809,8 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
 s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
-s.block_in(region, brush, color, direction=, density=, overhang=)   # a mass, as strokes
-s.sweep(edge, brush, color, into=, depth=, cross=, passes=)        # a mass with a shape
+s.block_in(place, brush, color, direction=, density=, overhang=)    # a mass, as strokes
+s.sweep(edge, brush, color, into=, depth=, cross=, passes=)         # a mass with a shape
 s.smudge(points, size=)                            # move paint around
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
@@ -775,8 +832,9 @@ s.log()                                            # what you have done so far
 ```
 
 `block_in` takes `direction=` of `"horizontal"`, `"vertical"`, `"diagonal"`,
-`"cross"`, **a number of degrees**, or a sequence of any of those for one pass each.
-Two passes of parallel strokes look like hatching; crossed passes look like paint.
+`"cross"`, `"axis"` (the place's own long axis), **a number of degrees**, or a
+sequence of any of those for one pass each. Two passes of parallel strokes look like
+hatching; crossed passes look like paint.
 
 Both space their passes a part-brush apart, which assumes a pass is one brush wide
 all along — true of `flat`, `bristle` and `knife`, and not of a round tip under a
@@ -789,12 +847,14 @@ one `sweep` — a pass per part-brush of `depth`, and two or three times that ag
 if you cross it. Check `s.stroke_count` if you are keeping a budget — a whole
 painting is usually a few hundred marks, not a few thousand.
 
-**`block_in` paints past its region** by a fraction of a brush on every side. That
+**`block_in` paints past a rectangle** by a fraction of a brush on every side. That
 is fine for a band and wrong for a mass that meets another at the *same* depth,
 where it lands on its neighbour. Painting back to front is the real answer — the
 far mass spilling into where the near one is going does no harm, because the near
 one goes on over it next. For two masses at the same depth, pass `overhang=0` or
-inset the region by half the brush size.
+inset the place by half the brush size. A **shape** already does this: its passes
+stop at the silhouette, and only the brush's own width breaks past it — about
+three-quarters of a brush at the widest.
 
 `compare(region=cell("D4"))` measures the tenths of one cell and labels them the
 way `grid="fine"` does.
@@ -812,13 +872,31 @@ r.point(0.5, 0.5)    # a point inside a region, in the region's own 0–1 space
 r.inset(0.05)  r.scaled(0.8)  r.split_h(3)  r.split_v(2)
 ```
 
+Shapes — a mass that is not a box. Every one of these is a place like the ones
+above, and goes anywhere a region goes:
+
+```python
+blob(place, radius, wobble=0.25, seed=0)   # an irregular silhouette
+ellipse(place, rx, ry, rotate=0)           # round, or filling the place given
+hull([p1, p2, p3])                         # the mass around three or four points
+ribbon(points, width, end_width=None)      # a mass running along a line
+polygon(points)                            # an outline you already have
+shape.inset(0.03)  shape.scaled(0.9)  shape.shifted(0.02, 0)   # ... as a region does
+shape.axis   shape.area   shape.center   shape.contains(x, y)   shape.closed
+```
+
+`place` is a point `(x, y)` or any region — `blob(cell("D5"))` is an irregular mass
+filling that cell. `shape.closed` is the outline as a path, for `s.pencil(...)` or
+`s.preview(...)`; `s.sweep(shape, ...)` takes the shape itself. `shape.box` is the
+rectangle around it.
+
 Under `easel run` all of these are already in scope. In a plain Python script,
 import them: `from easel import Session, Region, region, cell, span, horizon,
-below, above, left_of, right_of, between`.
+below, above, left_of, right_of, between, blob, ellipse, hull, ribbon, polygon`.
 
 ---
 
-## Seven small exercises
+## Eight small exercises
 
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
@@ -966,6 +1044,29 @@ Three things to notice. The two rehearsals cost nothing and neither appears in
 vanished exactly where the paint landed and survived everywhere else — which is what
 an underdrawing is for, and why making it disappear is the painting.
 
+**8. A box and a shape.** The same mass twice, so you can see the difference before
+you have to judge it in a painting.
+
+```python
+from easel import Session, blob, cell
+
+s = Session(900, 400, ground="toned_grey", seed=3)
+s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+
+mass = blob(cell("B4").point(0.5, 0.5), 0.16, 0.30, wobble=0.3, seed=1)
+s.block_in(mass.box, "bristle", "dark", size=0.10, direction="axis")   # as a box
+s.block_in(mass.shifted(0.5, 0.0), "bristle", "dark", size=0.10,
+           direction="axis")                                           # as a shape
+s.look()
+```
+
+Same brush, same direction, same number of passes — the passes are counted across
+the mass, not over its area, so a shape costs what its box costs. One of them is a
+rectangle and will still be a rectangle at the end of the painting; the other has a
+silhouette, and a silhouette is what a mass *is*. Then look at the ends of the
+passes on the shaped one: they stop at the boundary, and the brush breaks past it by
+about half its width, which is the ragged edge you want and did not have to make.
+
 ---
 
 ## A checklist before you call it finished
@@ -981,6 +1082,8 @@ an underdrawing is for, and why making it disappear is the painting.
   shape that only makes sense with the photograph next to it is not painted yet.
 - Is every mass laid along its own axis, or are the big shapes stacks of horizontal
   and vertical bars? Turn the picture on its side if you cannot tell.
+- Is any mass a rectangle that should have been a shape? A box is a decision, and
+  it is the wrong one everywhere except a band or a flat plane.
 - Was it painted back to front? An edge you had to cut carefully around something
   is a mass that went on in the wrong order.
 - Is there pencil still showing where you did not mean it to? `s.erase()` takes

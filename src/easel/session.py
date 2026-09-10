@@ -32,15 +32,16 @@ from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
 from easel.measure import Comparison, compare_images, heat_sheet
 from easel.palette import Palette
 from easel.prepare import Preparation, prepare_reference
-from easel.regions import Region, as_region
+from easel.regions import Polygon, Region, as_place, as_region
 from easel.stroke import catmull_rom, draw_pencil, paint_stroke, press_width
 
 __all__ = ["Session"]
 
 #: Bumped to 2 by M6: sessions now carry a graphite channel and named landmarks.
-#: Format 1 files still load -- they simply have neither.
-_EASEL_FORMAT = 2
-_READABLE_FORMATS = (1, 2)
+#: Bumped to 3 by M8: and a note of which assisted modes the painting has used.
+#: Format 1 and 2 files still load -- they simply have less in them.
+_EASEL_FORMAT = 3
+_READABLE_FORMATS = (1, 2, 3)
 #: Stream label for a rehearsal's generator, so it cannot collide with the real one.
 _REHEARSAL_STREAM = 918273645
 
@@ -91,6 +92,12 @@ class Session:
         #: drawing, and the masses get hung on them. See :meth:`mark`.
         self.marks: dict[str, tuple[float, float]] = {}
         self._preparation: Preparation | None = None
+        #: Assisted modes this painting has used: a machine-laid sketch, or a mass
+        #: blocked in on an outline traced from the reference. The brief reserves
+        #: the traced-copy question for the human, and a run that answers it one way
+        #: has to say so -- so the painting keeps the record instead of the write-up
+        #: having to remember. See :meth:`ref_shape` and :meth:`sketch`.
+        self.assisted: list[str] = []
         # Where this session's per-stroke seeds start. Zero for a real painting; a
         # rehearsal continues from the real session's count, so what is tried on the
         # scrap of canvas is the mark that lands when it is painted for real.
@@ -222,57 +229,116 @@ class Session:
         density: float = 1.0,
         pressure="taper",
         size: float | None = None,
-        overhang: float = 0.35,
+        overhang: float | None = None,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
-        """Fill a region with overlapping strokes, the way a painter blocks in a mass.
+        """Fill a place with overlapping strokes, the way a painter blocks in a mass.
 
         This emits real strokes, not a fill: the brushwork stays visible, the edges
         stay ragged, and the paint runs out along each pass. That is the point --
         a flat fill is the single clearest tell that an image was not painted.
 
+        The place can be a rectangle or a **shape**. Given a shape, each pass is cut
+        against the outline and stops there, so a mass keeps its silhouette instead
+        of arriving as a box that later strokes have to carve back:
+
+            s.block_in(blob(cell("D5"), wobble=0.3), "bristle", "dark", direction="axis")
+
         Args:
-            region: a name, a :class:`~easel.regions.Region`, or a 4-tuple.
+            region: a name, a :class:`~easel.regions.Region`, a 4-tuple, or a
+                :class:`~easel.regions.Polygon` from ``polygon``, ``ellipse``,
+                ``blob``, ``hull`` or ``ribbon``.
             brush: preset name or brush.
             color: the colour to lay in.
-            direction: ``"horizontal"``, ``"vertical"``, ``"diagonal"`` or
-                ``"cross"``; a number of degrees, clockwise from the horizontal, to
-                sweep the mass along its own form rather than along the canvas; or a
-                sequence of any of those for one pass each. Vary this between passes
-                so the marks are not parallel -- and prefer the angle the *subject*
-                runs at. A hillside swept at its own angle stops being a stack of
-                horizontal bars, which is the single loudest tell that nobody chose
-                the direction.
-            density: 1.0 covers the region; below 1 leaves the ground showing
+            direction: ``"horizontal"``, ``"vertical"``, ``"diagonal"``, ``"cross"``
+                or ``"axis"`` (the place's own long axis); a number of degrees,
+                clockwise from the horizontal, to sweep the mass along its own form
+                rather than along the canvas; or a sequence of any of those for one
+                pass each. Vary this between passes so the marks are not parallel --
+                and prefer the angle the *subject* runs at. A hillside swept at its
+                own angle stops being a stack of horizontal bars, which is the single
+                loudest tell that nobody chose the direction.
+            density: 1.0 covers the place; below 1 leaves the ground showing
                 through, which is usually what you want for a first pass.
             pressure: pressure profile for each pass.
             size: brush size override.
-            overhang: how far each pass runs past the region edge, as a fraction of
-                the brush width. Some overhang keeps the block from looking cropped.
+            overhang: how far each pass runs past the edge, as a fraction of the
+                brush width. Defaults to ``0.35`` for a rectangle, where some
+                overhang keeps the block from looking cropped, and to ``0`` for a
+                shape, where the edge is the drawing. (Either way the brush is wider
+                than the step between passes, so paint still breaks past the
+                boundary; it is the pass *centres* that stop.)
             note: recorded in the log.
 
         Returns:
             The records for every stroke laid down.
         """
-        r = as_region(region)
+        place = as_place(region)
         b = self._resolve_brush(brush, size, None, brush_overrides)
+        shaped = isinstance(place, Polygon)
+        over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
 
         band = max(b.size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
         records: list[StrokeRecord] = []
+        traced = ""
+        if getattr(place, "traced", False):
+            # An outline lifted off the reference, not drawn by the painter. The
+            # brief reserves that question for the human; the least this can do is
+            # be impossible to leave out of the write-up by accident.
+            traced = " (traced)"
+            self._note_assisted(f"traced outline blocked in: {place.name or 'shape'}")
 
         for pass_dir in _pass_directions(direction):
-            for path in self._block_paths(r, pass_dir, band, b.size * overhang):
+            angle = place.axis if pass_dir == "axis" else pass_dir
+            paths = (self._shape_paths(place, angle, band, b.size * over) if shaped
+                     else self._block_paths(place, angle, band, b.size * over))
+            for path in paths:
                 records.append(
                     self.stroke(
                         path,
                         brush=b,
                         color=color,
                         pressure=pressure,
-                        note=note or f"block-in {r.name or 'region'} {pass_dir}",
+                        note=note or (f"block-in {place.name or ('shape' if shaped else 'region')} "
+                                      f"{pass_dir}{traced}"),
                     )
                 )
         return records
+
+    def _shape_paths(self, poly: Polygon, degrees, band: float, over: float):
+        """Sweep a shape at an angle, every pass cut against its own outline.
+
+        The same sweep as :meth:`_angled_paths`, clipped to the boundary instead of
+        to four sides. A pass that crosses a concave shape comes back as the two or
+        three pieces that are really inside it, so a mass with a bite out of it keeps
+        the bite instead of being painted across.
+        """
+        rng = self.rng
+        theta = math.radians(_angle_of(degrees))
+        dx, dy = math.cos(theta), math.sin(theta)
+        nx, ny = -dy, dx
+        pts = np.asarray(poly.points, dtype=np.float64)
+        cx, cy = poly.box.center
+        offs = (pts[:, 0] - cx) * nx + (pts[:, 1] - cy) * ny
+        lo_n, hi_n = float(offs.min()), float(offs.max())
+        n_passes = max(1, int(round((hi_n - lo_n) / band)))
+
+        for i in range(n_passes):
+            off = lo_n + (i + 0.5) * (hi_n - lo_n) / n_passes
+            ox, oy = cx + nx * off, cy + ny * off
+            for t0, t1 in _spans_inside(poly, (ox, oy), (dx, dy)):
+                if t1 - t0 < band * 0.35:
+                    continue        # a sliver at the tip of the shape, not a stroke
+                a, z = t0 - over, t1 + over
+                wob = rng.normal(0.0, band * 0.3, size=3)
+                path = [
+                    _canvas_point(ox + dx * a + nx * wob[0], oy + dy * a + ny * wob[0]),
+                    _canvas_point(ox + dx * (a + z) * 0.5 + nx * wob[1],
+                                  oy + dy * (a + z) * 0.5 + ny * wob[1]),
+                    _canvas_point(ox + dx * z + nx * wob[2], oy + dy * z + ny * wob[2]),
+                ]
+                yield path if i % 2 == 0 else path[::-1]
 
     def _angled_paths(self, r: Region, degrees: float, band: float, over: float):
         """Sweep a region at an arbitrary angle, stepping along the sweep's normal.
@@ -410,9 +476,10 @@ class Session:
     ) -> list[StrokeRecord]:
         """Lay a mass that has a silhouette: passes swept along its edge, stepped inward.
 
-        ``block_in`` fills a rectangle, which is right for a band and wrong for
-        anything with a shape -- block a shaped mass in as a box and you get a box,
-        and no amount of later work takes it out again. This is the other way round:
+        ``block_in`` fills a place: a rectangle, or a shape whose silhouette the
+        painter can name, with the passes cut against it. This is the other way of
+        laying a mass that has a shape, and it answers a different question -- here
+        the boundary is the thing in hand and the passes follow it:
         the boundary is given, the first pass runs along it, and every pass after
         that is the same curve offset one part-brush further into the mass. Passes
         that run *along* the edge describe the form; columns that hang *down* from
@@ -428,7 +495,10 @@ class Session:
 
         Args:
             edge: normalised (x, y) points along the boundary, in order. It may run
-                off the canvas -- a mass that meets the frame should.
+                off the canvas -- a mass that meets the frame should. A
+                :class:`~easel.regions.Polygon` is such a boundary and is accepted
+                as one: it closes on itself, so ``into`` and ``closed`` are not
+                needed, and a traced one carries its own mark into the log.
             brush: preset name or brush.
             color: the colour to lay in.
             into: which side of the edge the mass is on. ``"down"``, ``"up"``,
@@ -458,6 +528,15 @@ class Session:
         Returns:
             The records for every stroke laid down.
         """
+        if isinstance(edge, Polygon):
+            # A shape *is* a boundary that comes back on itself, which is what a
+            # closed sweep wants. Its outline repeats the first point, so `closed`
+            # infers itself, and the traced-copy question follows the shape here the
+            # same way it follows it into block_in.
+            if edge.traced:
+                self._note_assisted(f"traced outline swept: {edge.name or 'shape'}")
+            edge = edge.closed
+
         b = self._resolve_brush(brush, size, None, brush_overrides)
         depth = float(depth)
         if not math.isfinite(depth) or depth <= 0.0:
@@ -604,21 +683,21 @@ class Session:
         return record
 
     def erase(self, region=None, note: str = "") -> StrokeRecord:
-        """Rub out the drawing, all of it or inside one region.
+        """Rub out the drawing, all of it or inside one region or shape.
 
         Erase before painting rather than arguing with a line while painting. A line
         the painter has decided is wrong costs nothing to remove and costs a great
         deal to paint around.
         """
-        r = as_region(region) if region is not None else None
+        place = as_place(region) if region is not None else None
         self.history.push_snapshot(self.canvas.snapshot())
-        self.canvas.erase_sketch(r)
+        self.canvas.erase_sketch(place)
         return self.history.add(
             StrokeRecord(
                 index=self._index_base + len(self.history.records),
                 kind="erase",
-                note=note or ("erase" + (f" {r}" if r is not None else " all")),
-                params={"region": list(r.bounds) if r is not None else None},
+                note=note or ("erase" + (f" {place}" if place is not None else " all")),
+                params=_place_params(place),
             )
         )
 
@@ -640,8 +719,8 @@ class Session:
             if r.kind == "pencil":
                 lines.append([(float(x), float(y)) for x, y in r.points])
             elif r.kind == "erase":
-                bounds = r.params.get("region")
-                lines = [] if bounds is None else _erase_from_lines(lines, bounds)
+                place = _place_from_params(r.params)
+                lines = [] if place is None else _erase_from_lines(lines, place)
         return lines
 
     # -- landmarks --------------------------------------------------------------
@@ -686,20 +765,23 @@ class Session:
 
     # -- canvas state -----------------------------------------------------------
     def dry(self, amount: float = 1.0, region=None) -> StrokeRecord:
-        """Dry the canvas so the next paint covers instead of mixing."""
-        r = as_region(region) if region is not None else None
+        """Dry the canvas so the next paint covers instead of mixing.
+
+        All of it, or inside one region or shape -- a shaped mass can be dried and
+        painted over without drying the wet neighbour it has to blend into.
+        """
+        place = as_place(region) if region is not None else None
         # Snapshot before the mark, like every other canvas-mutating call: without
         # this, undo() after a dry() pops the *previous* paint action's snapshot
         # while only dropping the dry record, desyncing the canvas from the log.
         self.history.push_snapshot(self.canvas.snapshot())
-        self.canvas.dry(amount, r)
+        self.canvas.dry(amount, place)
         return self.history.add(
             StrokeRecord(
                 index=self._index_base + len(self.history.records),
                 kind="dry",
-                note=f"dry {amount:.2f}" + (f" in {r}" if r is not None else ""),
-                params={"amount": float(amount),
-                        "region": list(r.bounds) if r is not None else None},
+                note=f"dry {amount:.2f}" + (f" in {place}" if place is not None else ""),
+                params={"amount": float(amount), **_place_params(place)},
             )
         )
 
@@ -824,7 +906,9 @@ class Session:
         Args:
             strokes: what to preview. Each entry is either a list of points or a
                 dict of arguments for :meth:`stroke` (``points`` plus any of
-                ``brush``, ``size``, ``note``...). A single path is also accepted.
+                ``brush``, ``size``, ``note``...), or a **mass**: a shape, a region,
+                or a dict with ``shape=`` and any :meth:`block_in` argument, drawn
+                as the area it would cover. A single path or shape is also accepted.
             reference: shown alongside, with the same overlay.
             region: crop both panels to a place, enlarged.
             grid: as :meth:`look`. ``"fine"`` for tenths.
@@ -837,8 +921,9 @@ class Session:
             plan = [{"points": [s.pt("top_l"), (0.44, 0.30)], "brush": "liner",
                      "size": 0.004, "label": "edge"}]
             s.preview(plan, reference=ref, region=cell("D4"), grid="fine")
+            s.preview(blob(cell("D5")), reference=ref)      # a mass, before filling it
         """
-        specs = self._stroke_specs(strokes)
+        specs = self._plan_specs(strokes)
         ref_img = None if reference is None else load_reference(reference)
         img = render_look(
             self.canvas,
@@ -848,7 +933,9 @@ class Session:
             region=region,
             reference=ref_img,
             marks=self.marks or None,
-            strokes=[self._preview_shape(spec, i) for i, spec in enumerate(specs)],
+            strokes=[(self._preview_mass(spec, i) if kind == "mass"
+                      else self._preview_shape(spec, i))
+                     for i, (kind, spec) in enumerate(specs)],
         )
         return save_look(img, self._look_path(path, "preview"))
 
@@ -874,7 +961,8 @@ class Session:
         painting, so what is rehearsed is what lands when it is painted for real.
 
         Args:
-            strokes: as :meth:`preview`.
+            strokes: as :meth:`preview`, marks and masses alike -- a shaped mass is
+                twenty passes, and worth trying on the scrap of canvas first.
             reference: shown alongside, cropped to the same place.
             region: crop both panels, enlarged. Use one -- the point is feature scale.
             grid: as :meth:`look`.
@@ -883,9 +971,12 @@ class Session:
             scale: long-side pixel limit.
         """
         trial = self._trial_session()
-        for spec in self._stroke_specs(strokes):
-            kwargs = {k: v for k, v in spec.items() if k != "label"}
-            trial.stroke(**kwargs)
+        for kind, spec in self._plan_specs(strokes):
+            kwargs = {k: v for k, v in spec.items() if k not in ("label", "place")}
+            if kind == "mass":
+                trial.block_in(spec["place"], **kwargs)
+            else:
+                trial.stroke(**kwargs)
 
         ref_img = None if reference is None else load_reference(reference)
         img = render_look(
@@ -923,6 +1014,7 @@ class Session:
         trial._last_look = None
         trial.marks = self.marks
         trial._preparation = self._preparation
+        trial.assisted = []
         trial._index_base = self._index_base + len(self.history.records)
         return trial
 
@@ -957,6 +1049,43 @@ class Session:
             spec["points"] = [(float(x), float(y)) for x, y in pts]
             out.append(spec)
         return out
+
+    def _plan_specs(self, entries) -> list[tuple[str, dict]]:
+        """Split what ``preview`` and ``rehearse`` accept into marks and masses.
+
+        A plan entry is a mark -- a path, or a dict of :meth:`stroke` arguments -- or
+        a mass: a shape or region, or a dict with ``shape=`` and any :meth:`block_in`
+        argument. One list holds both, so a plan is previewed, rehearsed and painted
+        without being rewritten in between, which is when a plan drifts.
+        """
+        if isinstance(entries, (dict, Polygon, Region)) or _is_path(entries):
+            entries = [entries]
+        out: list[tuple[str, dict]] = []
+        for entry in entries:
+            if isinstance(entry, (Polygon, Region)):
+                out.append(("mass", {"place": as_place(entry)}))
+            elif isinstance(entry, dict) and "points" not in entry and (
+                    "shape" in entry or "region" in entry):
+                spec = dict(entry)
+                place = spec.pop("shape", None)
+                fallback = spec.pop("region", None)
+                spec["place"] = as_place(place if place is not None else fallback)
+                out.append(("mass", spec))
+            else:
+                out.append(("stroke", self._stroke_specs([entry])[0]))
+        return out
+
+    def _preview_mass(self, spec: dict, index: int) -> dict:
+        """What the overlay needs for a mass: its outline and the brush filling it."""
+        place = spec["place"]
+        b = self._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
+                                spec.get("opacity"), {})
+        points = (place.closed if isinstance(place, Polygon)
+                  else [(place.x0, place.y0), (place.x1, place.y0),
+                        (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
+        return {"points": points, "width": b.size, "fill": True,
+                "label": str(spec.get("label", spec.get("note") or place.name
+                                      or f"mass {index + 1}"))}
 
     def _preview_shape(self, spec: dict, index: int) -> dict:
         """What the overlay needs: the path, the brush's width, and a label."""
@@ -1128,6 +1257,22 @@ class Session:
         """One prepared area's boundary as normalised points."""
         return self.preparation.outline(number)
 
+    def ref_shape(self, number: int) -> Polygon:
+        """One prepared area as a shape, ready to block in. **An assisted mode.**
+
+        The outline came off the photograph, not out of the painter, so a mass
+        blocked in on one is partly traced -- the question the brief reserves for the
+        human, the same one :meth:`sketch` raises. Using it is a choice, not a
+        default: it is recorded in :attr:`assisted` and in the log, and a run that
+        uses it says so in the write-up.
+
+        The unassisted way is to read the map, look at the shape, and lay the
+        outline yourself: three or four landmarks and ``hull(...)``, or ``blob``,
+        ``ellipse`` or ``ribbon`` sized to a cell.
+        """
+        return Polygon(tuple(self.preparation.outline(number)),
+                       name=f"area {int(number)}", traced=True)
+
     def sketch(
         self,
         reference: str | Path | Image.Image | None = None,
@@ -1165,6 +1310,8 @@ class Session:
                 self.pencil(outline + outline[:1], pressure=pressure, smooth=False,
                             note=f"sketch area {number}")
             )
+        if records:
+            self._note_assisted(f"machine sketch: {len(records)} outlines laid as pencil")
         return records
 
     # -- output -----------------------------------------------------------------
@@ -1197,9 +1344,17 @@ class Session:
         """Record a time-lapse frame by hand, when ``timelapse`` is off."""
         self.history.add_frame(self.canvas.thumbnail_srgb8())
 
+    def _note_assisted(self, what: str) -> None:
+        """Record an assisted mode, once. See :attr:`assisted`."""
+        if what not in self.assisted:
+            self.assisted.append(what)
+
     def log(self, last: int = 10) -> str:
-        """A short text summary of recent marks."""
-        return self.history.summary(last)
+        """A short text summary of recent marks, and any assisted mode used."""
+        text = self.history.summary(last)
+        if self.assisted:
+            text += "\nAssisted: " + "; ".join(self.assisted)
+        return text
 
     # -- persistence ------------------------------------------------------------
     def save(self, path: str | Path) -> Path:
@@ -1227,6 +1382,7 @@ class Session:
             "palette_slots": {k: [float(c) for c in v] for k, v in self.palette.slots.items()},
             "marks": {k: [float(v[0]), float(v[1])] for k, v in self.marks.items()},
             "has_sketch": bool(self.canvas.has_sketch),
+            "assisted": list(self.assisted),
         }
         frames = self.history._frames
         # Written through an open handle: np.savez_compressed appends ".npz" to a
@@ -1294,6 +1450,7 @@ class Session:
                     k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()
                 }
                 s._preparation = None
+                s.assisted = [str(a) for a in meta.get("assisted", [])]
                 s._index_base = 0
 
                 canvas = Canvas.__new__(Canvas)
@@ -1379,10 +1536,11 @@ class Session:
         for name, rgb in self.palette.slots.items():
             fresh.palette[name] = rgb
         fresh.marks = dict(self.marks)
+        fresh.assisted = list(self.assisted)
 
         for record in records:
             if record.kind == "dry":
-                fresh.dry(record.params.get("amount", 1.0), record.params.get("region"))
+                fresh.dry(record.params.get("amount", 1.0), _place_from_params(record.params))
                 continue
             if record.kind == "pencil":
                 fresh.pencil(
@@ -1394,7 +1552,7 @@ class Session:
                 )
                 continue
             if record.kind == "erase":
-                fresh.erase(record.params.get("region"), note=record.note)
+                fresh.erase(_place_from_params(record.params), note=record.note)
                 continue
             params = dict(record.params)
             color = params.pop("color", record.color_hex or "#000000")
@@ -1462,6 +1620,68 @@ def _pass_directions(direction) -> list:
     if not passes:
         raise ValueError("block_in(direction=...) was given an empty sequence")
     return passes
+
+
+#: The named directions as angles, for the shaped sweep. The rectangle branches
+#: keep their own hand-written geometry so that every painting made before shapes
+#: existed replays byte for byte; these are the same lines, as numbers.
+_NAMED_ANGLES = {"horizontal": 0.0, "vertical": 90.0, "diagonal": -45.0}
+
+
+def _angle_of(direction) -> float:
+    """A direction as degrees, whether it arrived as a name or a number."""
+    if isinstance(direction, str):
+        if direction not in _NAMED_ANGLES:
+            raise ValueError(
+                f"Unknown direction {direction!r}. Use 'horizontal', 'vertical', "
+                f"'diagonal', 'cross', 'axis', or a number of degrees."
+            )
+        return _NAMED_ANGLES[direction]
+    return float(direction)
+
+
+def _spans_inside(poly: Polygon, origin, d) -> list[tuple[float, float]]:
+    """Where the line through ``origin`` along ``d`` runs inside the shape.
+
+    As parameter intervals along ``d``, in order. Even-odd: crossing an edge swaps
+    inside for outside, so the sorted crossings pair up into spans. A vertex sitting
+    exactly on the line counts once (the ``> 0`` test is half-open), which is what
+    stops a pass through a corner from swallowing the rest of the shape.
+    """
+    ox, oy = origin
+    dx, dy = d
+    nx, ny = -dy, dx
+    ts: list[float] = []
+    pts = poly.points
+    for (ax, ay), (bx, by) in zip(pts, [*pts[1:], pts[0]], strict=True):
+        sa = (ax - ox) * nx + (ay - oy) * ny
+        sb = (bx - ox) * nx + (by - oy) * ny
+        if (sa > 0.0) == (sb > 0.0):
+            continue
+        u = sa / (sa - sb)
+        px, py = ax + (bx - ax) * u, ay + (by - ay) * u
+        ts.append((px - ox) * dx + (py - oy) * dy)
+    ts.sort()
+    return [(ts[i], ts[i + 1]) for i in range(0, len(ts) - 1, 2)]
+
+
+def _place_params(place) -> dict:
+    """A region or a shape as something the log can hold and :meth:`replay` rebuild."""
+    if place is None:
+        return {"region": None}
+    if isinstance(place, Polygon):
+        return {"region": None, "shape": [[float(x), float(y)] for x, y in place.points],
+                "shape_name": place.name}
+    return {"region": list(place.bounds)}
+
+
+def _place_from_params(params: dict):
+    """The other direction: what ``dry`` and ``erase`` were given, out of the log."""
+    pts = params.get("shape")
+    if pts:
+        return Polygon(tuple((float(x), float(y)) for x, y in pts),
+                       name=str(params.get("shape_name", "")))
+    return params.get("region")
 
 
 def _canvas_point(x: float, y: float) -> tuple[float, float]:
@@ -1689,14 +1909,17 @@ def _segment_inside(p, q, bounds) -> tuple[float, float] | None:
     return (t0, t1)
 
 
-def _erase_from_lines(lines, bounds) -> list[list[tuple[float, float]]]:
-    """Every part of every line that is *outside* ``bounds``.
+def _erase_from_lines(lines, place) -> list[list[tuple[float, float]]]:
+    """Every part of every line that is *outside* the erased place.
 
     A line wholly inside disappears, a line wholly outside is untouched, and a line
     that crosses comes back as the one or two pieces left over. Anything reduced to
     a single point is dropped: a stroke cannot be aimed along it.
     """
+    if isinstance(place, Polygon):
+        return _erase_from_lines_shape(lines, place)
     kept: list[list[tuple[float, float]]] = []
+    bounds = tuple(place.bounds if isinstance(place, Region) else place)
     x0, y0, x1, y1 = bounds
     for line in lines:
         if len(line) < 2:
@@ -1722,6 +1945,55 @@ def _erase_from_lines(lines, bounds) -> list[list[tuple[float, float]]]:
         if len(run) >= 2:
             kept.append(run)
     return kept
+
+
+def _erase_from_lines_shape(lines, poly: Polygon) -> list[list[tuple[float, float]]]:
+    """The same, against a shape: cut each segment at every crossing of the outline.
+
+    The rectangle above is clipped analytically against four sides. A shape has as
+    many sides as it has points, so a segment is split at every crossing and the
+    pieces whose middle is outside the shape are the ones that survive.
+    """
+    kept: list[list[tuple[float, float]]] = []
+    for line in lines:
+        if len(line) < 2:
+            if line and not poly.contains(*line[0]):
+                kept.append(list(line))
+            continue
+        run: list[tuple[float, float]] = []
+        for p, q in zip(line, line[1:], strict=False):
+            cuts = [0.0, *_crossings(p, q, poly), 1.0]
+            for t0, t1 in zip(cuts, cuts[1:], strict=False):
+                if t1 - t0 < 1e-9:
+                    continue
+                if poly.contains(*_lerp(p, q, (t0 + t1) * 0.5)):
+                    if len(run) >= 2:
+                        kept.append(run)
+                    run = []
+                    continue
+                if not run:
+                    run.append(_lerp(p, q, t0))
+                run.append(_lerp(p, q, t1))
+        if len(run) >= 2:
+            kept.append(run)
+    return kept
+
+
+def _crossings(p, q, poly: Polygon) -> list[float]:
+    """Where the segment ``p``-``q`` crosses the shape's outline, along the segment."""
+    rx, ry = q[0] - p[0], q[1] - p[1]
+    out: list[float] = []
+    pts = poly.points
+    for (ax, ay), (bx, by) in zip(pts, [*pts[1:], pts[0]], strict=True):
+        sx, sy = bx - ax, by - ay
+        denom = rx * sy - ry * sx
+        if abs(denom) < 1e-15:
+            continue                            # parallel: no single crossing point
+        t = ((ax - p[0]) * sy - (ay - p[1]) * sx) / denom
+        u = ((ax - p[0]) * ry - (ay - p[1]) * rx) / denom
+        if 1e-9 < t < 1.0 - 1e-9 and -1e-9 <= u <= 1.0 + 1e-9:
+            out.append(t)
+    return sorted(out)
 
 
 def _lerp(p, q, t: float) -> tuple[float, float]:

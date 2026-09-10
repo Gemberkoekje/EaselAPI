@@ -23,6 +23,7 @@ samples/*.gif
 # The brush sampler is the project's primary test artefact and its best
 # at-a-glance description, so it is committed even though it is generated.
 !samples/brushes.png
+!samples/shapes.png
 
 # Editors / OS
 .vscode/
@@ -54,6 +55,11 @@ rehearsal2/*.gif
 # Golden images: the stored ones are committed (they are what a human looks at
 # when a case fails). The `.actual.png` a failing test writes beside them is not.
 tests/golden/*.actual.png
+# M8's evidence: the pair of paintings, not the looks and time-lapses beside them.
+m8/*.png
+m8/*.gif
+!m8/boxes.png
+!m8/shapes.png
 
 # M6 final pass (rehearsal3): three fresh sessions — the headline copy plus its
 # unprompted painting, the sitter, and the assisted run. Same rule as before: the

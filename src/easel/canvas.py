@@ -352,13 +352,17 @@ class Canvas:
         return landed
 
     def erase_sketch(self, region=None) -> None:
-        """Clear the graphite, all of it or inside one region."""
+        """Clear the graphite, all of it or inside one region or shape."""
         if region is None:
             self.sketch[:] = 0.0
             self.has_sketch = False
             return
-        x0, y0, x1, y1 = self.region_px(region)
-        self.sketch[y0:y1, x0:x1] = 0.0
+        mask = self._mask_of(region)
+        if mask is None:
+            x0, y0, x1, y1 = self.region_px(region)
+            self.sketch[y0:y1, x0:x1] = 0.0
+        else:
+            self.sketch[mask] = 0.0
         self.has_sketch = bool(self.sketch.any())
 
     def wetness_at(self, cx: float, cy: float) -> float:
@@ -377,14 +381,28 @@ class Canvas:
         a = float(np.clip(amount, 0.0, 1.0))
         if region is None:
             self.wetness *= 1.0 - a
-        else:
+            return
+        mask = self._mask_of(region)
+        if mask is None:
             x0, y0, x1, y1 = self.region_px(region)
             self.wetness[y0:y1, x0:x1] *= 1.0 - a
+        else:
+            self.wetness[mask] *= 1.0 - a
 
     def tick_wetness(self) -> None:
         """Called once per stroke: paint dries slowly on its own."""
         self.wetness *= _WET_DECAY_PER_STROKE
         self.stroke_count += 1
+
+    def _mask_of(self, region) -> np.ndarray | None:
+        """A shaped place as a boolean mask, or ``None`` for a plain rectangle.
+
+        Duck-typed on ``mask``, the way ``region_px`` is duck-typed on ``bounds``, so
+        the canvas keeps knowing nothing about the composition helpers -- and so a
+        rectangle still goes through the slice it always did.
+        """
+        mask = getattr(region, "mask", None)
+        return None if mask is None else mask(self.width, self.height)
 
     def region_px(self, region) -> tuple[int, int, int, int]:
         """Normalised region bounds to integer pixel bounds, clipped to the canvas.

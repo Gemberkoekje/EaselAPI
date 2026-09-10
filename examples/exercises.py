@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from easel import Region, Session, cell, region
+from easel import Region, Session, blob, cell, region
 
 OUT = Path("out")
 
@@ -163,10 +163,23 @@ def draw_try_paint() -> None:
     s.look(region="C3:F6", path=OUT / "ex7_painted.png")
 
 
+def a_box_and_a_shape() -> None:
+    """8. The same mass as a rectangle and as a shape, side by side."""
+    s = Session(900, 400, ground="toned_grey", seed=3, out_dir=OUT)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+
+    mass = blob(cell("B4").point(0.5, 0.5), 0.16, 0.30, wobble=0.3, seed=1)
+    boxed = s.block_in(mass.box, "bristle", "dark", size=0.10, direction="axis")
+    shaped = s.block_in(mass.shifted(0.5, 0.0), "bristle", "dark", size=0.10,
+                        direction="axis")
+    print(f"  the box took {len(boxed)} passes, the shape {len(shaped)}")
+    s.look(path=OUT / "ex8_box_and_shape.png")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for fn in (value_scale, pressure_profiles, paint_running_out,
-               wet_versus_dry, edge_study, draw_try_paint):
+               wet_versus_dry, edge_study, draw_try_paint, a_box_and_a_shape):
         print(f"{fn.__name__} ...")
         fn()
     print("mixing:")

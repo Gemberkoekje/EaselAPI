@@ -12,12 +12,12 @@ There are no layers, and no undo that costs nothing. You work in passes, and whe
 something is wrong you paint over it.
 
 ```python
-from easel import Session
+from easel import Session, blob, cell
 
 s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
 s.palette["shadow"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
 
-s.block_in("lower-half", brush="bristle", color="shadow", density=0.8)
+s.block_in(blob(cell("D5")), brush="bristle", color="shadow", density=0.8)
 s.look(values=True)                       # check the value structure
 s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
 s.export("painting.png")
@@ -28,6 +28,12 @@ s.export("painting.png")
 *Every brush, size and pressure profile, on each canvas texture. Regenerate with
 `python scripts/make_brush_sampler.py` — this sheet is the project's primary test
 artefact, and looking at it catches what the test suite cannot.*
+
+![Shape sampler: five ways to build a mass, each filled along four sweep directions, with the bounding box in the last column](samples/shapes.png)
+
+*A mass does not have to be a rectangle. Each row is one way of building a shape,
+each column a way of sweeping it; the last column is the box that mass would have
+been. Regenerate with `python scripts/make_shape_sampler.py`.*
 
 ## Install
 
@@ -62,7 +68,8 @@ change when the engine does. The engine is designed around one habit:
 | Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
-| Masses | `block_in(region, ...)` fills a rectangle with overlapping passes; `sweep(edge, ...)` lays a mass that has a silhouette, as passes along its own boundary stepped inward. Both emit ordinary strokes. |
+| Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. Any of them goes where a region goes. |
+| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
 | Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like. Neither touches the canvas. |
@@ -153,10 +160,10 @@ painted rather than generated:
 
 ## Status
 
-Early. The engine, palette, composition helpers, `look()`, history, CLI and the
-precision tools (drawing, landmarks, preview, rehearse, compare, prepare) are
-working; see [`NOTES.md`](NOTES.md) for what is done, what is stubbed, and what is
-next. An MCP server is deliberately last.
+Early. The engine, palette, composition helpers, `look()`, history, CLI, the
+precision tools (drawing, landmarks, preview, rehearse, compare, prepare) and
+shaped masses are working; see [`NOTES.md`](NOTES.md) for what is done, what is
+stubbed, and what is next. An MCP server is deliberately last.
 
 ## Licence
 

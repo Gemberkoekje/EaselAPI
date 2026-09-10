@@ -171,8 +171,8 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - Successive passes run in opposite directions on their own, so a mass does not
   fade toward the side the brush ran out on.
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
-  a number of degrees clockwise from horizontal, or a sequence of any of those for
-  one pass each.
+  `"axis"` (the place's own long axis), a number of degrees clockwise from
+  horizontal, or a sequence of any of those for one pass each.
 - **The part-brush step assumes a pass is one brush wide all along it, which is
   true of every tip except a round one under a varying pressure.** The step at full
   density is `0.55 * size`; a round tip at the default `taper` is `0.53 * size` at
@@ -197,13 +197,63 @@ Running the passes along the form is the whole win: fourteen points squarer to
 less, and twenty fewer strokes. Pinning the tip on top of that matters on short
 marks and at the ends of long ones, not along their length.
 
+### Shaped masses (M8)
+
+`block_in` fills a shape as readily as a rectangle: `blob`, `ellipse`, `hull`,
+`ribbon`, `polygon`. The passes are cut against the outline, so a mass with a
+silhouette keeps it, and a concave one comes back in pieces rather than being
+painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against the
+`0.32` box around it:
+
+| | Shape | Its box |
+|---|---|---|
+| passes at `size=0.06` | 14 | 15 |
+| passes at `size=0.12` | 7 | 7 |
+| passes at `size=0.16` | 5 | 6 |
+| default `overhang` | `0` | `0.35` |
+
+- **A shaped mass costs what its box costs.** The passes are counted across the
+  extent of the mass along the sweep's normal, not over its area, so a shape and its
+  box come out within a pass of each other. Budget for a shape exactly as before.
+- **Coverage at `density=1.0` is 99% of the shape**, at every brush size tried
+  (`0.06` to `0.20`).
+- **Paint stops within three-quarters of a brush width past the silhouette.** The
+  pass *centres* stop at the boundary — that is what `overhang=0` means — and the
+  brush spreads half its width beyond, plus the pass wander. There is no second edge
+  out there: it is the same ragged spill a block-in has always had at its ends.
+- **One sweep leaves the boundary stringy**, because a bristle brush covers about
+  three-quarters of its width. `direction=("axis", 90)` crosses it and closes it up,
+  at twice the passes (7 → 17 on the blob above).
+- **`"axis"`** resolves to the long axis of the outline, weighted by edge length:
+  `-35.5°` for a ribbon from `(0.15, 0.8)` to `(0.85, 0.3)`, `0°` for a wide
+  ellipse, `90°` for a tall rectangle.
+
+Five masses of a 900×675 painting, sized `0.06`–`0.17`, come to 46 passes; the same
+composition laid as the boxes around those masses came to 53, and looked like boxes.
+Measured on that pair: **17.8% of the boxed painting's paint landed outside the
+masses it was meant to lay, against 10.7% of the shaped one** — and most of that
+10.7% is the brush's own half-width spill past every silhouette, which is paint in
+the right place. The axis-aligned edge share moved less, 27.5% to 25.0%, because
+most of the strong edges in either picture are the bristle comb's streaks along the
+passes rather than the boundaries of masses; read that number with the pictures, not
+instead of them. The pair is `m8/boxes.png` and `m8/shapes.png`; regenerate with
+`python m8/paint_two_ways.py`.
+
+**A shape or a sweep?** They answer different questions. `block_in(shape)` fills a
+mass whose *silhouette* you can name, with straight passes cut against it.
+`sweep(edge)` follows one *boundary* you have read off the reference and steps
+inward from it, so the passes describe the form rather than crossing it — and it
+needs no closed shape. A shape's own outline can be swept: `shape.closed` is a loop,
+which `sweep` detects. The numbers for that are in the next section.
+
 ---
 
 ## `sweep`
 
-`block_in` fills a rectangle; `sweep` lays a mass that has a silhouette, as passes
-along its boundary stepped into the mass one part-brush at a time. Everything below
-is `scripts/probe_sweep.py` on one arbitrary five-point boundary — not a subject —
+`block_in` fills a place — a rectangle, or a shape, with the passes cut against its
+outline (above). `sweep` is the other way of laying a mass that has a silhouette:
+passes *along* its boundary, stepped into the mass one part-brush at a time.
+Everything below is `scripts/probe_sweep.py` on one arbitrary five-point boundary — not a subject —
 at `depth=0.34` with a bristle brush at `0.13`, on a 520×400 canvas.
 
 | The same mass | Strokes | Axis-aligned edges | Paint outside the shape | Value spread inside it |
@@ -217,7 +267,9 @@ Read it as three separate claims:
 - **The shape.** A box drawn round this boundary puts a fifth of its paint on the
   wrong side of it, and comes out fifteen points squarer by the axis-alignment
   metric (the one from the M6 pass, above). Both are permanent: no later work takes
-  a box's corners out again.
+  a box's corners out again. Blocking in the *shape* rather than its box fixes the
+  first of those without a sweep at all; sweeping also changes what the passes
+  describe.
 - **The cost.** Nothing, for the shape. Both versions are five strokes, because a
   pass is a pass whether it runs along an edge or across a rectangle.
 - **The crossing.** One sweep leaves the mass stringy — a bristle brush covers

@@ -325,6 +325,12 @@ def _cmd_reference() -> int:
     print("\nRegions (region(...)):")
     print("  " + ", ".join(REGION_NAMES))
     print("\nGrid cells: A1 through H8, via cell('D6').")
+    print("\nShapes -- a mass that is not a rectangle, for block_in(...):")
+    print("  polygon(points)                 an outline you already have")
+    print("  ellipse(place, rx, ry, rotate)  a round mass, or one filling a cell")
+    print("  blob(place, radius, seed=)      an irregular silhouette")
+    print("  hull([points])                  the mass around three or four landmarks")
+    print("  ribbon(points, width)           a mass running along a line")
     return 0
 
 
