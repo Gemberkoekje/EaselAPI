@@ -398,7 +398,9 @@ painting is made of things. `merge` and `split` are how you say so.
 
 `s.sketch()` lays those outlines as pencil in one call. **That is an assisted mode.**
 The drawing is meant to be yours, and any write-up has to say it was used. Prefer
-`prepare` for *reading* the reference and your own `pencil()` for drawing it.
+`prepare` for *reading* the reference and your own `pencil()` for drawing it. The
+same goes for handing `s.ref_outline(n)` straight to `sweep()`: the boundary of a
+mass is a drawing, and if the machine found it, say so.
 
 ---
 
@@ -436,16 +438,32 @@ where two masses meet, which is the only kind of edge a painting has.
 **A region is a rectangle. Almost nothing you want to paint is.** `block_in` fills
 a box, which is right for a band or a flat plane and wrong for anything with a
 silhouette. If you block in a shaped mass as a box you get a box, and no amount of
-later work removes that. For a mass with a shape, drive the strokes yourself:
-**sweep each pass along the silhouette**, then step one part-brush into the mass
-and sweep again, and cross with a second set of passes at an angle so the boundary
-closes up. Passes that run *along* the edge describe the form; columns that hang
-*down* from it comb the mass into strands and print the canvas's axis over the
-whole thing. Nine or ten passes give you a real silhouette, which is what you
-wanted from the block-in and could not have got. There is a worked recipe in
-`CALIBRATION.md` under *Sweeping a shaped mass*. If the mass is close enough to a
-box that this feels like overkill, `block_in` at the angle the mass runs at is the
-cheaper version of the same idea.
+later work removes that. Give the boundary instead, and let the passes follow it:
+
+```python
+edge = [(0.06, 0.68), (0.31, 0.48), (0.56, 0.63), (0.84, 0.45)]   # read off the grid
+s.sweep(edge, "bristle", "dark", into="down", depth=0.30, size=0.12, cross=25)
+```
+
+`sweep` runs its first pass along the edge and steps each one after it a part-brush
+further into the mass, alternating direction the way `block_in` does. Passes that
+run *along* the edge describe the form; columns that hang *down* from it comb the
+mass into strands and print the canvas's axis over the whole thing.
+
+- `into=` is which side of the edge the mass is on, and you have to say: a compass
+  word or an angle steps every pass the same way, which is the hand working down a
+  near-horizontal edge, and an `(x, y)` point *inside* the mass makes the passes
+  follow a curved edge instead of shearing off it. A boundary that closes on itself
+  needs neither — `closed=True`, and the mass is what it encloses.
+- `cross=` is the second set of passes, leaning that many degrees across the first.
+  Take it: one sweep on its own comes out stringy, because a bristle brush covers
+  about three-quarters of its width, and the crossing is what closes the mass up.
+  Twenty to thirty degrees is usually enough.
+- `depth=` is how far into the mass to go, and the brush decides how many passes
+  that takes unless you say `passes=`.
+
+If the mass is close enough to a box that this feels like overkill, `block_in` at
+the angle the mass runs at is the cheaper version of the same idea.
 
 **When something is wrong, paint over it.** Your instinct will be to reach for
 `undo`. Resist it. Real repairs happen with paint: let the area dry, then work over
@@ -720,6 +738,7 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
 s.dab(x, y, brush, color, size=...)                # one mark
 s.block_in(region, brush, color, direction=, density=, overhang=)   # a mass, as strokes
+s.sweep(edge, brush, color, into=, depth=, cross=, passes=)        # a mass with a shape
 s.smudge(points, size=)                            # move paint around
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
@@ -745,9 +764,10 @@ s.log()                                            # what you have done so far
 Two passes of parallel strokes look like hatching; crossed passes look like paint.
 
 One `block_in` is not one stroke: it lays a pass for every brush-width of the
-region, so a big region with a small brush is twenty or thirty of them. Check
-`s.stroke_count` if you are keeping a budget — a whole painting is usually a few
-hundred marks, not a few thousand.
+region, so a big region with a small brush is twenty or thirty of them. Neither is
+one `sweep` — a pass per part-brush of `depth`, and two or three times that again
+if you cross it. Check `s.stroke_count` if you are keeping a budget — a whole
+painting is usually a few hundred marks, not a few thousand.
 
 **`block_in` paints past its region** by a fraction of a brush on every side. That
 is fine for a band and wrong for a mass that meets another at the *same* depth,

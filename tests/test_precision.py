@@ -819,3 +819,210 @@ def test_the_dark_swatches_state_a_colour_the_engine_can_lay(tmp_path):
             f"{name} states {PIGMENTS[name]}, whose lowest channel {lowest:.4f} is "
             f"under the {float(_FLOOR)} reflectance floor and renders lighter"
         )
+
+
+# --------------------------------------------------------------------------------------
+# M6c: sweeping a shaped mass
+# --------------------------------------------------------------------------------------
+#: A silhouette with a peak in it: a box drawn round this covers a lot of ground the
+#: shape does not, which is the whole argument for sweeping.
+RIDGE = [(0.05, 0.74), (0.50, 0.44), (0.95, 0.62)]
+
+
+def painted_mask(s, before):
+    """Where paint landed, asked of the canvas rather than of the log."""
+    return np.abs(s.canvas.rgb - before).max(axis=2) > 1e-3
+
+
+def painted_at(mask, x, y):
+    h, w = mask.shape
+    return bool(mask[int(np.clip(y, 0.0, 0.999) * h), int(np.clip(x, 0.0, 0.999) * w)])
+
+
+def test_sweep_gives_a_silhouette_where_block_in_gives_a_box(tmp_path):
+    """The finding this call exists for (REVIEW.md 34): `block_in` fills a rectangle,
+    and almost nothing worth painting is one. The corner of the bounding box above
+    the ridge is the difference, and it is the difference you cannot paint out."""
+    swept = make(tmp_path)
+    before = swept.canvas.rgb.copy()
+    swept.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.26, size=0.12)
+    swept_mask = painted_mask(swept, before)
+
+    boxed = make(tmp_path)
+    boxed.block_in(Region(0.05, 0.44, 0.95, 0.74), "bristle", "burnt_umber", size=0.12)
+    boxed_mask = painted_mask(boxed, before)
+
+    outside = (0.12, 0.52)          # inside the box, well above the ridge
+    inside = (0.50, 0.60)           # under the ridge, in both
+    assert painted_at(boxed_mask, *outside), "the box did not reach its own corner"
+    assert not painted_at(swept_mask, *outside), \
+        "the sweep filled the box's corner: it is a box"
+    assert painted_at(swept_mask, *inside) and painted_at(boxed_mask, *inside)
+
+
+def test_sweep_passes_alternate_direction(tmp_path):
+    """Paint runs out along a stroke, so passes that all start at the same end stack
+    their run-out and leave the mass a value lighter at the other. Same reason as
+    `block_in` (REVIEW.md finding 12), same behaviour."""
+    s = make(tmp_path)
+    records = s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.26,
+                      size=0.12, passes=4)
+    starts = [r.points[0][0] for r in records]
+    assert len(records) == 4
+    assert len({round(x) for x in starts}) == 2, "every pass started at the same end"
+
+
+def test_sweep_steps_one_part_brush_at_a_time(tmp_path):
+    """Left alone the brush decides how many passes the depth takes, the way a
+    block-in does; `passes=` is there for when the painter would rather say."""
+    def swept(**kw):
+        s = make(tmp_path)
+        return s.sweep(RIDGE, "bristle", "burnt_umber", into="down", size=0.12, **kw)
+
+    step = 0.12 * (1.0 - 0.45)                       # one part-brush, as block_in spaces
+    assert len(swept(depth=4 * step)) == 4
+    assert len(swept(depth=7 * step)) == 7
+    assert len(swept(depth=4 * step, passes=9)) == 9  # said, not derived
+    assert len(swept(depth=4 * step, density=0.5)) == 3   # spaced out, ground showing
+
+
+def test_sweep_stays_on_the_mass_side_of_its_own_edge(tmp_path):
+    """A mass laid by sweeping must not creep across the boundary it was hung on:
+    half a brush past it is the edge, a whole brush past it is a different shape."""
+    s = make(tmp_path)
+    before = s.canvas.rgb.copy()
+    s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.26, size=0.12,
+            cross=25)
+    ys, xs = np.nonzero(painted_mask(s, before))
+    assert xs.size, "the sweep laid no paint at all"
+
+    xn, yn = xs / s.canvas.width, ys / s.canvas.height
+    ridge_y = np.interp(xn, [p[0] for p in RIDGE], [p[1] for p in RIDGE])
+    # A brush width, in the units y is measured in: size is a fraction of the long
+    # side and this canvas is wider than it is tall.
+    slack = 0.12 * s.canvas.width / s.canvas.height
+    assert float((yn - ridge_y).min()) > -slack, "paint landed well outside the shape"
+    assert float((yn - ridge_y).max()) < 0.26 + slack, "paint ran past the far side"
+
+
+def test_cross_closes_the_mass_up_without_moving_its_edge(tmp_path):
+    """One sweep leaves the boundary stringy, because a bristle brush covers about
+    three-quarters of its width. That is what `cross=` is for, and a second set that
+    also grew the shape would be no use."""
+    def swept(**kw):
+        s = make(tmp_path)
+        before = s.canvas.rgb.copy()
+        records = s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.26,
+                          size=0.12, **kw)
+        return records, s.canvas.rgb.mean(axis=2), painted_mask(s, before)
+
+    plain, plain_lum, plain_mask = swept()
+    crossed, crossed_lum, crossed_mask = swept(cross=25)
+    assert len(crossed) > len(plain), "cross= laid no second set"
+
+    # Stringing is a value defect, not a coverage one -- a starved dab still marks
+    # the canvas. Measured inside the mass, not over the whole canvas, where a
+    # bigger shape would score better for the wrong reason.
+    rows, cols = slice(int(0.50 * 360), int(0.70 * 360)), slice(int(0.30 * 480), int(0.70 * 480))
+    plain_core, crossed_core = plain_lum[rows, cols], crossed_lum[rows, cols]
+    assert crossed_core.std() < plain_core.std() * 0.6, "the crossed mass is as streaky"
+    assert crossed_core.mean() < plain_core.mean(), "the second set laid no more paint"
+    assert crossed_core.std() > 0.004, "the crossed mass came out a flat fill"
+
+    ys_p = np.nonzero(plain_mask.any(axis=1))[0]
+    ys_c = np.nonzero(crossed_mask.any(axis=1))[0]
+    assert abs(int(ys_c.min()) - int(ys_p.min())) < 0.03 * 360, \
+        "the cross set moved the silhouette instead of filling behind it"
+
+
+def test_a_closed_edge_needs_no_into_and_fills_its_own_shape(tmp_path):
+    """`ref_outline(n)` hands back a polygon and does not repeat its first point, so
+    `closed=True` is what makes it a boundary rather than an open line. Feeding it
+    straight in is an assisted mode -- that is a rule for the write-up, not a thing
+    the engine refuses."""
+    theta = np.linspace(0.0, 2.0 * np.pi, 16, endpoint=False)
+    blob = [(0.5 + 0.22 * np.cos(t), 0.5 + 0.26 * np.sin(t)) for t in theta]
+
+    s = make(tmp_path)
+    before = s.canvas.rgb.copy()
+    records = s.sweep(blob, "bristle", "burnt_umber", closed=True, depth=0.28, size=0.09)
+    mask = painted_mask(s, before)
+    assert records
+    assert painted_at(mask, 0.5, 0.5), "the middle of the shape never got covered"
+    assert not painted_at(mask, 0.5, 0.06), "paint landed a long way outside the shape"
+
+    ys, xs = np.nonzero(mask)
+    radius = np.hypot((xs / s.canvas.width - 0.5) / 0.22,
+                      (ys / s.canvas.height - 0.5) / 0.26)
+    assert float(radius.max()) < 1.0 + 0.09 / 0.22, "the shape grew as it was filled"
+
+
+def test_a_sweep_deeper_than_its_mass_stops_instead_of_scribbling(tmp_path):
+    """Offsetting a closed curve inward eventually runs it past its own centre.
+    Without the fold check every pass after that crosses itself, and a painter who
+    asked for a deep mass gets a scribble on top of a good one."""
+    theta = np.linspace(0.0, 2.0 * np.pi, 16, endpoint=False)
+    blob = [(0.5 + 0.20 * np.cos(t), 0.5 + 0.20 * np.sin(t)) for t in theta]
+
+    s = make(tmp_path)
+    before = s.canvas.rgb.copy()
+    records = s.sweep(blob, "bristle", "burnt_umber", closed=True, depth=0.9, size=0.08)
+    step = 0.08 * (1.0 - 0.45)
+    assert 0 < len(records) < round(0.9 / step), "every pass was laid, folds and all"
+
+    ys, xs = np.nonzero(painted_mask(s, before))
+    radius = np.hypot(xs / s.canvas.width - 0.5, ys / s.canvas.height - 0.5)
+    assert float(radius.max()) < 0.20 + 0.08, "the folded passes threw paint outside"
+
+
+def test_sweeping_a_curved_edge_follows_it_rather_than_the_canvas(tmp_path):
+    """`into=` a point inside the mass steps along the boundary's own normal, so the
+    band keeps its depth all the way round a curve. A fixed direction is the hand
+    working down a near-horizontal edge, and on an arc it shears off it."""
+    centre, radius = (0.5, 0.5), 0.33
+    arc = [(centre[0] + radius * np.cos(t), centre[1] + radius * np.sin(t))
+           for t in np.linspace(-2.3, 2.3, 9)]
+
+    s = make(tmp_path)
+    before = s.canvas.rgb.copy()
+    s.sweep(arc, "bristle", "burnt_umber", into=centre, depth=0.16, size=0.08)
+    ys, xs = np.nonzero(painted_mask(s, before))
+    r = np.hypot(xs / s.canvas.width - centre[0], ys / s.canvas.height - centre[1])
+    assert float(r.max()) < radius + 0.08, "paint escaped outside the arc"
+    assert float(r.min()) > radius - 0.16 - 0.08, "paint ran past the depth asked for"
+
+
+def test_sweep_is_ordinary_strokes_so_undo_and_replay_are_free(tmp_path):
+    """It emits strokes and nothing else, which is what makes the log, undo and
+    replay right without any of them knowing sweeping exists."""
+    s = make(tmp_path)
+    before = s.canvas.rgb.copy()
+    records = s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.2,
+                      size=0.12, cross=25)
+    assert {r.kind for r in records} == {"stroke"}
+    assert s.stroke_count == len(records)
+    assert [r.note for r in records[:1]] == ["sweep"]
+    assert records[-1].note == "sweep cross"
+
+    assert np.array_equal(s.replay().canvas.to_srgb8(), s.canvas.to_srgb8())
+    s.undo(len(records))
+    assert np.array_equal(s.canvas.rgb, before), "undo did not scrape the sweep back"
+
+
+def test_sweep_asks_which_side_the_mass_is_on(tmp_path):
+    """An open edge has two sides and the engine cannot know which one is the mass.
+    Guessing it is the loudest possible failure: the whole shape lands inside out."""
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match="which side of an open edge"):
+        s.sweep(RIDGE, "bristle", "burnt_umber", depth=0.2)
+    with pytest.raises(ValueError, match="degrees"):
+        s.sweep(RIDGE, "bristle", "burnt_umber", into="sideways", depth=0.2)
+    with pytest.raises(ValueError, match="columns hanging off the edge"):
+        s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.2, cross=90)
+    with pytest.raises(ValueError, match="at least two"):
+        s.sweep([(0.4, 0.4)], "bristle", "burnt_umber", into="down")
+    # A depth in pixels: a pass per part-brush and nothing to bound the count, so
+    # this would be thousands of strokes laid mostly off the canvas.
+    with pytest.raises(ValueError, match="normalised"):
+        s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=120)
+    assert s.stroke_count == 0, "a rejected sweep still put paint on the canvas"
