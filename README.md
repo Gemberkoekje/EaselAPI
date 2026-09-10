@@ -68,7 +68,8 @@ change when the engine does. The engine is designed around one habit:
 | Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
-| Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. `block_in` fills one pass by pass and stops at its silhouette. |
+| Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. Any of them goes where a region goes. |
+| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
 | Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like. Neither touches the canvas. |
@@ -145,6 +146,17 @@ painted rather than generated:
 - **The tooth gate is roughened with aperiodic grain.** Gating a near-periodic weave
   with a smooth threshold produces a halftone dot screen as paint runs out, which
   reads as print rather than as dry brush.
+- **The bristle comb is drawn per stroke, and a bristle has a width of its own.**
+  One fixed comb per brush means every wide mark prints the same streaks and a mass
+  laid in passes comes out as corduroy; a fixed *count* across the tip means the
+  streaks scale with the brush, so a big mass prints stripes wider than anything in
+  the picture and a small mark carries the brush's signature instead of the
+  feature's. So spacing, phase and the missing bristles are redrawn each stroke, and
+  the count follows the brush's size.
+- **Width follows pressure on the round tips.** Pressure that changes only how much
+  paint lands is invisible once an opaque colour saturates, and it means a mark that
+  tapers — a lid, a brow, a lash, a twig — is two strokes at two sizes. The oriented
+  tips keep their chisel, because a `flat` brush's width is the mass it lays.
 
 ## Status
 

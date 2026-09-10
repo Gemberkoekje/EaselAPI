@@ -26,57 +26,78 @@ Each pigment, one flat pass on a toned grey ground, read off the exported PNG:
 
 | Pigment | Value |
 |---|---|
-| `burnt_umber` | 0.23 |
-| `ultramarine` | 0.26 |
-| `alizarin` | 0.30 |
-| `burnt_sienna` | 0.33 |
-| `viridian` | 0.39 |
-| `cerulean` | 0.42 |
-| `cadmium_red` | 0.48 |
-| `yellow_ochre` | 0.58 |
-| `cadmium_yellow` | 0.79 |
-| `lemon_yellow` | 0.88 |
-| `titanium_white` | 0.96 |
+| `burnt_umber` | 0.13 |
+| `alizarin` | 0.15 |
+| `ultramarine` | 0.16 |
+| `burnt_sienna` | 0.21 |
+| `viridian` | 0.22 |
+| `cerulean` | 0.30 |
+| `cadmium_red` | 0.42 |
+| `yellow_ochre` | 0.56 |
+| `cadmium_yellow` | 0.75 |
+| `lemon_yellow` | 0.83 |
+| `titanium_white` | 0.95 |
 
-**The floor is about `0.23`, and it is the pigments, not the mixing.** Mixing in
-this engine never takes a channel below the darker of its two ingredients, so no
-mixture is darker than the darkest thing in the box. `ultramarine` + `burnt_umber`
-at 50/50 reads `0.226` — a hair under umber alone. Eight dried passes of the darkest
-mix measure `0.231`, four rounds of glazing `0.234`, all five darks mixed together
-`0.228` (`rehearsal3/probe_value_floor.py`). The pigment swatches are simply lighter
-than real tube masstones; real ultramarine and burnt umber mixed go close to black,
-and these do not. That is an engine limit, and phase M6b in `painting-api-brief.md` darkens
-the pigments to fix it. Until it lands, `compare()` marks cells below reach with
-`~` and leaves them out of `fixable`.
+**The floor is about `0.13`, and it is the model's, not the pigments'.** Nothing in
+this engine reflects less than `0.01` linear -- the floor in `color.py` that keeps
+mixtures behaving like paint -- and `0.01` is value `0.10`. The box stops three
+hundredths above it, and those three hundredths are hue: a dark that is still blue,
+or still brown, cannot sit on the floor in all three channels at once.
 
-### If you want to map a reference's range onto the palette's
+`mix("ultramarine", "burnt_umber", 0.5)` reads `0.14` (`#21232d`) and is the bottom
+of your range -- darker than any single pigment, because each channel takes the
+darker side from a different ingredient. Vary the ratio and it holds that value
+while swinging cool to warm: `0.3` is `#1f2434`, `0.7` is `#24231f`.
 
-Not a rule — one way to plan the three values when the reference runs darker than
-the box does. Read the reference's lightest and darkest cell off `compare()` on the
-empty canvas, decide what they become on your canvas, and place the rest
-proportionally:
+Mixing still cannot go *below* the darkest ingredient in any one channel, so piling
+paint on does not help: eight dried passes of the darkest mix measure `0.129`
+against one pass at `0.133`, four rounds of glazing `0.132`
+(`rehearsal3/probe_value_floor.py`). If a mass is not dark enough, mix it darker.
 
-```python
-lo, hi = 0.23, 0.94              # what the palette reaches
-ref_lo, ref_hi = 0.06, 0.59      # what the reference runs, from compare()
-def mine(v):                     # where a reference value lands on your canvas
-    return lo + (hi - lo) * (v - ref_lo) / (ref_hi - ref_lo)
-```
+Before M6b these swatches were colour-chart brights rather than masstones -- 
+`burnt_umber` was `#4A3728` -- and the box floored at `0.23` with no mixture below
+it. That is the number the older parts of this repo quote, and `REVIEW.md`
+findings 21 and 33 are the history.
 
-Relationships are what read; absolute values are not.
+### The value scale
+
+Nine even steps from the darkest mix to white, mixed to a value rather than to a
+ratio (guide exercise 1). The white ratio each step needs:
+
+| Step | Value | White |
+|---|---|---|
+| 1 | 0.14 | 0.00 |
+| 2 | 0.24 | 0.33 |
+| 3 | 0.34 | 0.51 |
+| 4 | 0.45 | 0.63 |
+| 5 | 0.55 | 0.72 |
+| 6 | 0.65 | 0.80 |
+| 7 | 0.75 | 0.86 |
+| 8 | 0.86 | 0.93 |
+| 9 | 0.96 | 1.00 |
+
+Rendered, the nine bands measure `0.148` to `0.951` in steps of `0.100`, even to
+within `0.002`. The curve in the third column is the useful part: a third of a
+canvas of white buys the first step and it takes nine tenths to reach the eighth,
+which is why a mixture that *should* be halfway comes out too dark, and why the fix
+is always more white than feels right.
 
 ### Tinting and mixing
 
 - White is a weaker lightener than you expect. For a really pale colour use a
   white ratio of about `0.7`, not `0.4`.
 - A yellow and a blue make green even when you were after a grey, and tinting does
-  not undo it: `tint(mix("yellow_ochre", "cerulean", 0.3), 0.5)` is `#98ae69`, a
+  not undo it: `tint(mix("yellow_ochre", "cerulean", 0.3), 0.5)` is `#a8b278`, a
   pale green. Neutral greys come from complements or from earth and white:
-  `tint(mix("ultramarine", "burnt_sienna", 0.5), 0.7)` is a cool grey (`#9c8d8d`),
-  `mix("burnt_umber", "titanium_white", 0.6)` a warm one (`#8b725b`), and
+  `tint(mix("ultramarine", "burnt_sienna", 0.5), 0.7)` is a cool grey (`#968e90`),
+  `mix("burnt_umber", "titanium_white", 0.6)` a warm one (`#776157`), and
   `desaturate(c, 0.5)` pulls any mixture toward grey at the same value.
-- The mixing model is a Kubelka-Munk power mean (`src/easel/color.py`); the
-  optional Mixbox backend is better and is opt-in for licence reasons.
+- The mixing model is a Kubelka-Munk power mean of K/S with exponent `0.35`
+  (`src/easel/color.py`); the optional Mixbox backend is better and is opt-in for
+  licence reasons. The exponent is what gives white its tinting strength: it is set
+  so that a 50/50 mix with white carries a colour about a quarter of the way up the
+  palette's value range, and it moved from `0.5` in M6b because darkening the
+  masstones widened that range. Lower it further and yellow + blue loses its green.
 
 ---
 
@@ -152,6 +173,13 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
   `"axis"` (the place's own long axis), a number of degrees clockwise from
   horizontal, or a sequence of any of those for one pass each.
+- **The part-brush step assumes a pass is one brush wide all along it, which is
+  true of every tip except a round one under a varying pressure.** The step at full
+  density is `0.55 * size`; a round tip at the default `taper` is `0.53 * size` at
+  the ends of each pass, so there the passes stop touching and the mass shows them.
+  This is why masses are laid with `flat` or `bristle`. If you want a round tip for
+  one, pass `pressure="even"` and the old behaviour is back. `sweep` steps by the
+  same rule and has the same caveat — its golden case shows it, deliberately.
 
 ### Laying a mass along its own axis
 
@@ -202,34 +230,137 @@ painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against
 
 Five masses of a 900×675 painting, sized `0.06`–`0.17`, come to 46 passes; the same
 composition laid as the boxes around those masses came to 53, and looked like boxes.
-Its axis-aligned edge share went from 31.4% as boxes to 25.2% as shapes — a real
-move, and a smaller one than the pictures look, because much of what that probe
-counts is the bristle comb's own streaks along each pass rather than the boundaries
-of the masses. The pair is `m8/boxes.png` and `m8/shapes.png`; regenerate with
+Measured on that pair: **17.8% of the boxed painting's paint landed outside the
+masses it was meant to lay, against 10.7% of the shaped one** — and most of that
+10.7% is the brush's own half-width spill past every silhouette, which is paint in
+the right place. The axis-aligned edge share moved less, 27.5% to 25.0%, because
+most of the strong edges in either picture are the bristle comb's streaks along the
+passes rather than the boundaries of masses; read that number with the pictures, not
+instead of them. The pair is `m8/boxes.png` and `m8/shapes.png`; regenerate with
 `python m8/paint_two_ways.py`.
 
-Passes swept *along* a boundary and stepped inward, rather than straight across the
-mass, describe a form differently again and are still open: phase M6c in
-`painting-api-brief.md` (`s.sweep()`).
+**A shape or a sweep?** They answer different questions. `block_in(shape)` fills a
+mass whose *silhouette* you can name, with straight passes cut against it.
+`sweep(edge)` follows one *boundary* you have read off the reference and steps
+inward from it, so the passes describe the form rather than crossing it — and it
+needs no closed shape. A shape's own outline can be swept: `shape.closed` is a loop,
+which `sweep` detects. The numbers for that are in the next section.
+
+---
+
+## `sweep`
+
+`block_in` fills a place — a rectangle, or a shape, with the passes cut against its
+outline (above). `sweep` is the other way of laying a mass that has a silhouette:
+passes *along* its boundary, stepped into the mass one part-brush at a time.
+Everything below is `scripts/probe_sweep.py` on one arbitrary five-point boundary — not a subject —
+at `depth=0.34` with a bristle brush at `0.13`, on a 520×400 canvas.
+
+| The same mass | Strokes | Axis-aligned edges | Paint outside the shape | Value spread inside it |
+|---|---|---|---|---|
+| `block_in` over the bounding box | 5 | 35.9% | 19.4% | 0.047 |
+| `sweep` along the boundary | 5 | 20.9% | 6.5% | 0.031 |
+| `sweep`, crossed at 26° | 17 | 21.8% | 6.5% | 0.011 |
+
+Read it as three separate claims:
+
+- **The shape.** A box drawn round this boundary puts a fifth of its paint on the
+  wrong side of it, and comes out fifteen points squarer by the axis-alignment
+  metric (the one from the M6 pass, above). Both are permanent: no later work takes
+  a box's corners out again. Blocking in the *shape* rather than its box fixes the
+  first of those without a sweep at all; sweeping also changes what the passes
+  describe.
+- **The cost.** Nothing, for the shape. Both versions are five strokes, because a
+  pass is a pass whether it runs along an edge or across a rectangle.
+- **The crossing.** One sweep leaves the mass stringy — a bristle brush covers
+  about three-quarters of its width, and the gaps show as a value spread of `0.031`
+  a part-brush inside the boundary. Crossing at 26° takes that to `0.011` and lays
+  the mass about a hundredth darker for twelve more strokes. It does not move the
+  silhouette: the paint outside the shape is unchanged.
+
+The two shape columns are geometry and did not notice M6b; the two value columns
+are a third of a value lower under the darkened masstones than they were before it,
+and the crossing still takes two thirds of the spread out.
+
+Do not read the last column as *lower is better without limit*. A mass with no
+variation left in it is a flat fill, which is the loudest tell there is; `0.011` is
+still visibly brushwork, and the sheet the probe writes is there to check that by
+eye.
+
+### Spacing, depth and how many passes
+
+- Passes step **one part-brush** apart: `size × (1 − 0.45 × density)`, the same rule
+  `block_in` spaces its passes by. At `density=1.0` that is `0.55` of the brush
+  width. The recipe this call replaced stepped `0.27` of a brush width, which is
+  `density≈1.6`.
+- `depth` and the step are in **normalised canvas units**, so on a canvas that is
+  not square a sweep stepped `"down"` steps in fractions of the *height* while the
+  brush is measured against the *long side*. On 520×400 a `0.0715` step down is 29
+  px against a 68 px brush — tighter overlap than the same sweep run left to right.
+  `block_in` has always mixed the two units the same way.
+- Left alone the brush decides how many passes a depth takes: `round(depth / step)`.
+  `passes=` says instead, and pins the spacing at `depth / passes`.
+- A crossed sweep is roughly three times the strokes of a plain one at 26°, and more
+  as the angle steepens: the second set is spaced `step / cos(angle)` apart but has
+  further to run.
+
+### Sweeping deeper than the mass
+
+Offsetting a closed boundary inward eventually runs it past its own centre. `sweep`
+drops the folded part and stops when nothing is left, so asking for too much depth
+costs strokes that are never laid rather than a scribble in the middle. A boundary
+of radius `0.20`, bristle at `0.13`:
+
+| Depth asked for | Passes it works out to | Passes actually laid |
+|---|---|---|
+| 0.10 | 1 | 1 |
+| 0.20 | 3 | 3 |
+| 0.40 | 6 | 4 |
+| 0.90 | 13 | 4 |
 
 ---
 
 ## Pressure
 
-Pressure shapes how heavily paint lands along the stroke. **It does not change the
-width of the mark** in the current engine: a stroke at `pressure=0.2` covers the
-same width as one at `1.0` and lays less paint. Consequences:
+Pressure shapes how heavily paint lands along the stroke, and on a **round** tip —
+`round_hard`, `round_soft`, `liner` — how wide the mark is. `size` is the width at
+full pressure; a light touch keeps a third of it, plus a floor of 0.75 px of radius
+so a fine line thins rather than disappearing. Measured on `round_hard` at
+`size=0.06` on a 600 px canvas (`m7/probe_pressure.py`):
 
-- On a long stroke the overlapping dabs saturate, so `taper` and `even` come out
-  looking much the same. The profiles show most clearly on short strokes, and on a
-  colour that is not already at full strength against its background. Exercise 2
-  in the guide uses `opacity=0.35` and `load_falloff=0.0` to get both out of the
-  way.
-- A mark that tapers in width is two strokes of different sizes.
+| pressure | width | paint landed |
+|---|---|---|
+| 0.10 | 14 px | 2 080 |
+| 0.25 | 18 px | 7 441 |
+| 0.50 | 24 px | 23 234 |
+| 0.75 | 30 px | 46 471 |
+| 1.00 | 36 px | 79 538 |
 
-This is scheduled to change (M7 in `painting-api-brief.md`: width following
-pressure for the round tips). When it does, this section and the guide's pressure
-paragraph are rewritten, not patched.
+The **oriented** tips — `flat`, `bristle`, `knife` — keep their chisel: 60 px at
+pressure 0.2 and at 1.0 alike, because a flat brush's width is the mass it lays.
+
+The named profiles, widest and narrowest point of one stroke, same brush:
+
+| profile | widest | narrowest |
+|---|---|---|
+| `even` | 36 px | 36 px |
+| `taper` | 36 px | 26 px |
+| `press_in` | 36 px | 20 px |
+| `lift_off` | 36 px | 20 px |
+| `swell` | 36 px | 24 px |
+| `dab` | 36 px | 20 px |
+
+A hand-written profile goes further than any named one: `pressure=[1, 0]` on a
+`liner` at `size=0.02` runs 12, 10, 8, 6 px along its length. A mark that tapers is
+one stroke, not two of different sizes.
+
+- On a long stroke the overlapping dabs saturate, so `taper` and `even` land much
+  the same *weight* even where they differ in width. The paint half of the profile
+  shows most clearly on short strokes, and on a colour that is not already at full
+  strength against its background. Exercise 2 in the guide uses `opacity=0.35` and
+  `load_falloff=0.0` to get both out of the way.
+- The light end of a taper is *thin*, not faint: dabs overlap by more than 90%, so
+  it still accumulates to nearly full colour.
 
 ---
 
@@ -237,8 +368,24 @@ paragraph are rewritten, not patched.
 
 - A `round_hard` line keeps its width down to about three pixels of the long side
   (`size=0.003` on a 1200-wide canvas), at full strength.
-- A single dab lands at about a third of its colour's strength. A small highlight
-  is two or three dabs on the same spot.
+- **A single dab is a light touch.** A lone dab is the *start* of the default
+  `taper`, so its pressure is 0.28: it lands about a quarter of the way to its
+  colour and, since a round tip's width follows its pressure, at about half the
+  width asked for. `dab(press=n)` stamps the same spot n times inside one mark, with
+  the profile running across the stamps, so three of them press through full
+  pressure in the middle one. White at `size=0.06`, measured on three grounds
+  (`m7/probe_dab.py`):
+
+  | stamps | on `toned_grey` | on `umber_wash` | on `warm_white` | width |
+  |---|---|---|---|---|
+  | 1 | 0.17 | 0.12 | 0.26 | 12 px |
+  | 2 | 0.31 | 0.24 | 0.43 | 12 px |
+  | 3 | **0.84** | **0.80** | **0.87** | 24 px |
+  | 5 | 0.92 | 0.90 | 0.93 | 23 px |
+
+  Fractions of the way from the ground to the colour. A catchlight is `press=3`,
+  and it costs one stroke; three *separate* dabs reach 0.45 on `toned_grey` and
+  cost three.
 - A fine line runs dry over the same *distance* as a fat one, which is far more
   brush-lengths, so it lasts.
 - A `region=` crop is at full resolution and a small one is enlarged to at least
@@ -247,6 +394,36 @@ paragraph are rewritten, not patched.
 - Three `knife` marks two values lighter than the mass under them read as three
   things stuck to the surface, not as paint. Keep a knife mark close in value to
   what it lands on and let a later stroke or a `smudge` break one of its ends.
+
+---
+
+## The bristle comb
+
+A bristle has a width of its own — `BRISTLE_PITCH`, 0.005 of the canvas long side —
+and the count follows the brush, so a wider brush prints more streaks rather than
+fatter ones. Measured on a 900 px canvas (`m7/probe_comb.py`):
+
+| `size` | tip | bristles | comb pitch |
+|---|---|---|---|
+| 0.02 | 18 px | 4 | 4.5 px |
+| 0.04 | 36 px | 8 | 4.5 px |
+| 0.08 | 72 px | 16 | 4.5 px |
+| 0.12 | 108 px | 24 | 4.5 px |
+| 0.18 | 162 px | 36 | 4.5 px |
+
+Before M7 the count was 22 at every size, so the pitch ran 3 px at `size=0.02` to
+26 px at `size=0.18` — the brush's signature rather than the mark's.
+
+The comb — spacing, phase, and which bristles are missing — is drawn once per
+stroke and held for all of that stroke's dabs, so striations stay put along a mark
+and differ from the next mark's. Two strokes of one brush used to be identical to
+the last bit; their combs now correlate +0.39, −0.05 and +0.33 over three pairs.
+
+The pitch is the comb in the tip. What *reads* on a fully loaded straight stroke is
+coarser, because consecutive dabs overlap by more than 90% and fill the weaker
+bristles in, so only the missing ones show — two to seven streaks across a mark, at
+any size. The comb shows at its own scale where the stroke is starved or the tooth
+is biting. `bristle_count` still pins a comb if you want a fixed one.
 
 ---
 

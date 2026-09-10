@@ -9,9 +9,13 @@ all the engine could do before this milestone -- and the other fills the mass.
 
     python m8/paint_two_ways.py
 
-Writes ``m8/boxes.png`` and ``m8/shapes.png``, and prints the axis-alignment share
-from ``rehearsal3/probe_axis_alignment.py`` for both. That probe is the number the
+Writes ``m8/boxes.png`` and ``m8/shapes.png``, and prints two numbers for each:
+the share of paint that landed outside the masses the painter meant to lay, and the
+axis-alignment share from ``rehearsal3/probe_axis_alignment.py`` -- the number the
 brief names for whether a painting is built out of horizontal and vertical edges.
+The first is the direct measurement of what this milestone changed; the second is
+blunter than it looks, because most of the strong edges in any painting here are the
+bristle comb's own streaks along each pass rather than the boundaries of masses.
 
 There is no subject here on purpose: the guide must not carry one, and neither
 should the evidence for a change to the guide's own vocabulary.
@@ -22,6 +26,8 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -48,6 +54,21 @@ def masses():
         ("light", blob((0.30, 0.26), 0.17, 0.11, wobble=0.35, seed=9), "light", 0.06,
          "axis", 1.0),
     ]
+
+
+def stray_paint(s: Session, shapes) -> float:
+    """Share of the paint that landed outside the masses the painter meant to lay.
+
+    Measured against the *shapes* either way: the mass is what the painter wanted,
+    and the box is only what the tool could reach for. Anything outside it is paint
+    a later pass has to take back.
+    """
+    ground = s.canvas.rgb.reshape(-1, 3)[0]
+    marked = np.abs(s.canvas.rgb - ground).max(axis=2) > 0.02
+    wanted = np.zeros(s.size[::-1], dtype=bool)
+    for shape in shapes:
+        wanted |= shape.mask(*s.size)
+    return 100.0 * float((marked & ~wanted).sum()) / max(int(marked.sum()), 1)
 
 
 def paint(as_boxes: bool) -> Session:
@@ -80,15 +101,16 @@ def main() -> int:
     probe = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(probe)
 
+    shapes = [shape for _name, shape, *_rest in masses()]
     for label, as_boxes in (("boxes", True), ("shapes", False)):
         s = paint(as_boxes)
         path = s.export(OUT / f"{label}.png")
         s.timelapse_gif(OUT / f"{label}.gif")
         s.look(path=OUT / f"{label}_look.png", grid=True)
         s.look(path=OUT / f"{label}_values.png", values=True)
-        share = probe.axis_share(str(path))
-        print(f"{label:7s} {s.stroke_count:4d} strokes  "
-              f"axis-aligned edges {share:5.1f}%  -> {path}")
+        print(f"{label:7s} {s.stroke_count:4d} marks  "
+              f"paint outside the masses {stray_paint(s, shapes):5.1f}%  "
+              f"axis-aligned edges {probe.axis_share(str(path)):5.1f}%  -> {path}")
     return 0
 
 

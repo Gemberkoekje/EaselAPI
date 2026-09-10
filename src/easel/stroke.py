@@ -22,13 +22,30 @@ from easel.canvas import Canvas
 from easel.color import mix_many, parse_color
 
 __all__ = ["PRESSURE_PROFILES", "StrokeResult", "paint_stroke", "draw_pencil", "catmull_rom",
-           "pressure_curve"]
+           "pressure_curve", "press_width"]
 
 #: Named pressure profiles. Anything else can be given as a scalar or a list.
 PRESSURE_PROFILES = ("taper", "press_in", "lift_off", "even", "swell", "dab")
 
 # How many brush diameters a full load lasts, before falloff is applied.
 _LOAD_DISTANCE_DIAMETERS = 10.0
+
+# How much of its width a round tip keeps at the lightest touch. Pressure used to
+# change how much paint landed and nothing else, so a stroke at pressure 0.1 and one
+# at 1.0 covered the same 58 px and the six named profiles were indistinguishable
+# once an opaque colour saturated (REVIEW.md, *Open, with evidence*). A lid line, a
+# brow or a lash could not taper, and every tapering mark was two strokes of
+# different sizes. The round tips are the drawing tips -- liner, round_hard,
+# round_soft -- so they are where width follows pressure; the oriented tips keep
+# their chisel, because a flat brush's width is the mass it lays.
+_PRESS_WIDTH_FLOOR = 0.35
+# ...and the narrowest a mark may get whatever the pressure, as a radius in pixels:
+# a pixel and a half wide. Below that a line stops being a line and starts being a
+# dotted one, which is not what a light touch looks like -- and a dab whose radius
+# falls under the half-pixel guard below is not thin, it is absent.
+_MIN_PRESS_RADIUS_PX = 0.75
+
+_ROUND_TIPS = ("round_soft", "round_hard")
 
 
 @dataclass
@@ -163,6 +180,21 @@ def pressure_curve(pressure, n: int) -> np.ndarray:
     return np.clip(np.interp(t, src_t, arr), 0.0, 1.0).astype(np.float32)
 
 
+def press_width(brush: Brush, pressure, n: int = 32) -> float:
+    """The share of its nominal width a mark with this brush and pressure covers.
+
+    The *widest* point of the mark, which is what a preview's band stands for: the
+    envelope the mark will sit inside. 1.0 for every tip whose width does not follow
+    pressure, and for any profile that presses through full pressure somewhere along
+    it -- which the named profiles all do, given enough dabs to get there. ``n`` is
+    how many dabs the mark is: a lone stamp only ever sees the start of its profile.
+    """
+    if brush.tip not in _ROUND_TIPS:
+        return 1.0
+    peak = float(pressure_curve(pressure, max(1, int(n))).max())
+    return _PRESS_WIDTH_FLOOR + (1.0 - _PRESS_WIDTH_FLOOR) * peak
+
+
 # --------------------------------------------------------------------------------------
 # Painting
 # --------------------------------------------------------------------------------------
@@ -189,6 +221,7 @@ def paint_stroke(
     rng: np.random.Generator | None = None,
     glaze: bool = False,
     smooth: bool = True,
+    press: int = 1,
 ) -> StrokeResult:
     """Stamp a stroke onto the canvas.
 
@@ -202,6 +235,10 @@ def paint_stroke(
         glaze: deposit colour without building paint height.
         smooth: fit a spline through the points. Turn this off for a deliberate
             hard-cornered mark.
+        press: how many times a one-point mark is stamped on the same spot. The
+            pressure profile runs across the stamps, so three of a ``taper`` press
+            through full pressure in the middle one. Only meaningful for a single
+            dab; a path is stamped along its length instead.
 
     Returns:
         A :class:`StrokeResult` describing what was stamped.
@@ -230,8 +267,25 @@ def paint_stroke(
     spacing_px = max(brush.spacing * max(along, diameter * 0.12), 1.0)
 
     pos, angles, dists = _resample(px, spacing_px)
+    stamps = max(1, int(press))
+    if stamps > 1:
+        if len(pos) > 1:
+            raise ValueError(
+                f"press={press} stamps one mark on the same spot, so it needs a "
+                f"single point; this path resolves to {len(pos)} dabs. For a heavier "
+                f"stroke use opacity, load, or a second pass."
+            )
+        pos = np.repeat(pos, stamps, axis=0)
+        angles = np.repeat(angles, stamps)
+        dists = np.repeat(dists, stamps)
     n = len(pos)
-    press = pressure_curve(pressure, n)
+    profile = pressure_curve(pressure, n)
+
+    # The comb this stroke prints, drawn once and held: bristles stay put along a
+    # stroke the way real ones do, and the next stroke picks the brush up again.
+    comb = int(rng.integers(1, 1 << 31)) if brush.tip == "bristle" else 0
+    bristles = brush.bristles(diameter) if brush.tip == "bristle" else 0
+    width_follows_press = brush.tip in _ROUND_TIPS
 
     # Per-dab randomness, drawn once so the stroke is reproducible.
     #
@@ -276,13 +330,22 @@ def paint_stroke(
         cx = float(pos[i, 0] + jitter_xy[i, 0])
         cy = float(pos[i, 1] + jitter_xy[i, 1])
         r = radius * float(size_var[i])
+        if width_follows_press:
+            # A round tip pressed harder puts more of itself on the surface. With a
+            # floor, because a brush lifted almost clear still leaves the width of
+            # its point, and because a mark thinner than a pixel is not a mark.
+            r = max(
+                r * (_PRESS_WIDTH_FLOOR + (1.0 - _PRESS_WIDTH_FLOOR) * float(profile[i])),
+                _MIN_PRESS_RADIUS_PX,
+            )
         if r < 0.6:
             continue
         # Split the centre into a whole pixel and a sub-pixel phase; the phase is
         # baked into the stamp so dabs are not all snapped to the pixel grid.
         ix = math.floor(cx)
         iy = math.floor(cy)
-        mask = brush.mask(r, float(angles[i]), cx - ix, cy - iy)
+        mask = brush.mask(r, float(angles[i]), cx - ix, cy - iy,
+                          comb=comb, count=bristles or None)
 
         if brush.smudge > 0.0:
             sampled = canvas.sample(float(ix), float(iy), mask)
@@ -318,7 +381,7 @@ def paint_stroke(
 
         ld = float(load[i])
         # As the paint runs out the mark gets thinner as well as more broken.
-        strength = brush.opacity * float(press[i]) * (0.35 + 0.65 * ld)
+        strength = brush.opacity * float(profile[i]) * (0.35 + 0.65 * ld)
 
         deposited += canvas.stamp(
             float(ix),

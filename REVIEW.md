@@ -520,10 +520,17 @@ unmeetable target is worse than one that reports nothing, because the painter sp
 strokes on it.
 
 **Fixed** with `Palette.darkest_value` and `Comparison.unreachable` / `.fixable`.
-Unreachable cells print `~` instead of `*` and are counted separately, and the guide
-now says what to do instead -- compress the reference's range onto the palette's
-rather than matching it. Note this does *not* change what counts as out: `off` is
-unchanged, so nothing that was reported stops being reported.
+Unreachable cells print `~` instead of `*` and are counted separately. Note this
+does *not* change what counts as out: `off` is unchanged, so nothing that was
+reported stops being reported.
+
+**Superseded in part by M6b.** The split was the right tool and the floor was the
+wrong number: finding 33 says why, and the masstones are darker since. The box now
+bottoms out at `0.13` rather than `0.235`, `Level3.jpg`'s eighteen unreachable
+cells are the painter's own work again, and the guide no longer teaches compressing
+a reference's range onto the palette's -- that paragraph was the workaround, and it
+is gone. What survives here is the split itself, for the deepest few cells a
+photograph can still hold below `0.13 - 0.10`; on an ordinary reference expect none.
 
 ### 22. Nothing could sweep a mass along its own axis
 
@@ -549,18 +556,29 @@ and scored worst of four in the probe -- was rewritten to run passes along the f
 
 ## Open, with evidence
 
-- **Pressure changes opacity, not width.** A stroke at `pressure=0.1` and one at
-  `1.0` cover an identical bounding box - 58px tall in both - and differ only in how
-  much paint lands (mean delta 0.013 against 0.089). Because dabs overlap and
-  accumulate, an opaque colour saturates and the six named profiles become visually
-  indistinguishable: guide exercise 2 as written demonstrated nothing, and the three
-  pressure columns of `samples/brushes.png` look alike for every brush. Making
-  pressure modulate dab radius would fix that *and* attack "everything the same
-  width", which is on the brief's clip-art list. It would also change every stroke
-  in the engine, which is the thing finding 11 warns against doing by eye late in a
-  milestone. Not taken. `PAINTER.md` now states what pressure does and does not do,
-  fixes the exercise so it demonstrates its lesson, and tells the painter that
-  varying width is their own job.
+- **Pressure changes opacity, not width.** ~~Open.~~ **Taken in M7 — see `M7.md`.**
+  A stroke at `pressure=0.1` and one at `1.0` cover an identical bounding box - 58px
+  tall in both - and differ only in how much paint lands (mean delta 0.013 against
+  0.089). Because dabs overlap and accumulate, an opaque colour saturates and the six
+  named profiles become visually indistinguishable: guide exercise 2 as written
+  demonstrated nothing, and the three pressure columns of `samples/brushes.png` look
+  alike for every brush. Making pressure modulate dab radius would fix that *and*
+  attack "everything the same width", which is on the brief's clip-art list. It would
+  also change every stroke in the engine, which is the thing finding 11 warns against
+  doing by eye late in a milestone — so it waited for a milestone of its own, with the
+  golden images in place as its gate.
+
+  What M7 did: the **round** tips (`round_soft`, `round_hard`, and so `liner`) scale
+  their dab radius with the pressure profile, with a floor of a third of the width
+  and never below 0.75 px of radius; the oriented tips keep their chisel, because a
+  `flat` brush's width is the mass it lays. Measured after
+  (`m7/probe_pressure.py`): `round_hard` at `size=0.06` on a 600 px canvas runs
+  14 px at pressure 0.1 against 36 px at 1.0, and a single stroke at
+  `pressure=[1, 0]` runs 12 px to 6 px along its length — which is the tapering lid
+  line `REHEARSAL2.md`'s eye test could not paint in one mark. The strength formula
+  is unchanged, so the light end of a taper still accumulates to nearly full colour
+  and reads as thin rather than as faint. Judged on the sampler and on a real
+  painting (`m7/mug_compared.png`) before any golden was regenerated.
 
 ---
 
@@ -768,6 +786,23 @@ only the largest, matching what it already claimed to do
   with the budget to render both versions of a real painting side by side and
   judge.
 
+  **Re-measured after M6b, which expected it to get worse, and it did not.** The
+  brief reasoned that darker pigments would put more channels near the `0.01`
+  floor and so widen this. The lift only fires on a canvas pixel *below* the floor,
+  though, and after M6b there are none: every dark swatch is written at or above
+  `0.01` on purpose (`palette.py`), and no reflectance the model produces goes under
+  it. Measured on a real painting, 78 strokes: darkest channel anywhere `0.0141`
+  against `0.0409` before -- much closer to the floor, still above it -- and
+  `0.0000%` of pixels below it under either palette. A faint dab passing overhead
+  moves at most 1 of 255, which is ordinary paint landing, not this.
+
+  So **item 11 does not move up**; if anything M6b made its first half harder to
+  reach. What is still live is its second half, and only there: a colour the painter
+  supplies below the floor cannot be laid as written. `cadmium_yellow` (`#FFC012`,
+  blue `~0.006`) still reads blue `26` rather than its own `18`, and a literal
+  `"#000000"` lands at `26` grey. Both are the floor doing its job at the input
+  rather than at the output, and neither is a soft edge.
+
 ---
 
 ## Not yet reviewed
@@ -811,7 +846,7 @@ critique said, what changed in the guide, and the two items it leaves open.
 - **The pressure section.** Cut to what pressure does today, with a note in
   `CALIBRATION.md` that M7 rewrites it rather than patching it.
 
-## Open, with evidence
+## Fixed after the critique
 
 ### 33. The `0.23` value floor is the pigment swatches, not a painting lesson
 
@@ -830,13 +865,62 @@ mixed go close to black; that is the whole point of the mixture, and here it
 cannot happen. Finding 21 reported the floor correctly and then built a tool
 around it; this finding says the floor itself is the defect.
 
-**Not fixed here**, on purpose: darkening the masstones changes every golden
-image and every rehearsal's colours, and the brief reserves changes of that kind
-for a human looking at the sampler and a real painting. **Decided by the human:
-darken the masstones, goldens included.** It is phase M6b in the brief's build
-order, before REHEARSAL4. Until it lands, the guide carries one short paragraph
-saying the floor is an engine limit, `CALIBRATION.md` carries the numbers, and
-`compare()` keeps its `~` split.
+**Fixed in M6b** by darkening the masstones, which is what the human decided
+rather than adding a black. The six darks are now written as tube masstones and
+the box floors at `0.13`:
+
+| Pigment | Was | Now | Value was | Value now |
+|---|---|---|---|---|
+| `burnt_umber` | `#4A3728` | `#2A1E1A` | 0.23 | 0.13 |
+| `ultramarine` | `#2E3B8C` | `#1A2856` | 0.26 | 0.17 |
+| `alizarin` | `#8E2438` | `#3E1A22` | 0.30 | 0.15 |
+| `burnt_sienna` | `#8A3D24` | `#56291A` | 0.33 | 0.21 |
+| `viridian` | `#20705B` | `#1A4638` | 0.39 | 0.24 |
+| `cerulean` | `#2A6FA8` | `#215884` | 0.42 | 0.33 |
+
+`mix("ultramarine", "burnt_umber", 0.5)` reads `0.137` against `0.226` before, and
+the model's own limit — the `0.01` linear reflectance floor from finding 5 — is
+`0.10`. The three hundredths between them are hue, and they are not recoverable:
+a dark that is still blue cannot sit on the floor in all three channels, and
+pigments with no hue left break the mixtures findings 5 and 6 protect. Cerulean
+came down with the rest to keep the ladder between viridian and cadmium red from
+opening into a gap.
+
+**The mixing exponent moved too**, `0.5` to `0.35`, and that was not cosmetic.
+Finding 6 chose `0.5` so that white would carry a 50/50 mixture about a quarter of
+the way up the palette's value range — `0.235` of it, measured on the old swatches.
+Darkening the darks widened the range from `0.73` to `0.83` and left `0.5` crossing
+only `0.158` of it: finding 6's own complaint, returning with nothing about white
+changed. `0.35` puts it back at `0.234`, and the mixes the finding was tuned
+against land where they did (`cerulean + white` at `0.7`: `0.698` → `0.707`; the
+ultramarine/burnt-sienna cool grey `0.567` → `0.555`). Lower again and yellow +
+blue loses its green and goes brown, so `0.35` is where it stops. `blend_wet` uses
+the same exponent, so the palette's number and the canvas's pixel stay the same
+mixture; it costs about `1.2x` in the per-pixel wet blend.
+
+**Every golden image moved, and was looked at first** — the three `marks_*` cases,
+`drawing`, and the sampler, plus a real painting (`rehearsal/own*.py` re-rendered
+under both palettes, which is a scratch comparison and not a change to the record).
+The darks are deeper and still hold their colour; break-up, dry brush, the tooth
+speckle, the knife edge and the graphite showing through a glaze are unchanged. On
+that painting the value range went from `0.212`–`0.910` to `0.122`–`0.945`.
+
+The guide's floor paragraph, the compression formula in `CALIBRATION.md`, and the
+brief's *Reachable* paragraph are rewritten for the new range. `compare()` keeps
+its `~` split for the deepest few cells a photograph can still hold — see
+finding 21.
+
+**Also fixed here: exercise 1 was a trap.** It asked "do the steps look evenly
+spaced in greyscale?" of nine steps mixed at equal white ratios, which under this
+model run `0.03` to `0.21` apart — the answer was plainly no and the exercise had
+no way to say so. It now mixes to a *value*, bisecting for the ratio, and the nine
+bands render `0.148` to `0.951` in steps of `0.100`. The ratios it prints (a third
+of white for the first step, nine tenths for the eighth) are the lesson the old
+version buried.
+
+## Open, with evidence
+
+## Fixed since the critique
 
 ### 34. Sweeping a shaped mass is a recipe the painter has to retype
 
@@ -846,3 +930,38 @@ The guide argues, correctly, that a mass with a silhouette is laid as passes swe
 along its edge and stepped inward, not as a box and not as columns. It then handed
 the painter fifteen lines of code to do it. That is an API call — phase M6c in
 the brief has the shape — and the recipe sits in `CALIBRATION.md` until it is one.
+
+**Fix.** `s.sweep(edge, brush, color, into=, depth=, size=, passes=, cross=,
+closed=, density=)` in `easel/session.py`. The first pass runs along the boundary
+and each one after it is the same curve offset one part-brush further in — the same
+spacing rule `block_in` uses — with successive passes alternating direction, and
+`cross=` lays a second set leaning across the first. It emits ordinary strokes, so
+the log, `undo` and `replay` needed no changes at all.
+
+Two things the recipe left to the painter, and this had to decide:
+
+- **Which side of the edge the mass is on.** An open boundary has two sides and
+  guessing is the loudest possible failure — the whole shape lands inside out — so
+  `into=` is required for one: a compass word or an angle steps every pass the same
+  way, which is what the recipe did, and an `(x, y)` point inside the mass steps
+  each point along the boundary's own normal instead, which is what a curved edge
+  needs. A closed boundary has an inside, so `closed=True` needs neither.
+- **What happens past the middle.** Offsetting a closed curve inward eventually
+  folds it through itself, and every pass after that crosses itself. Points that
+  travel backwards along the boundary relative to the last one kept are dropped, and
+  a pass with nothing left is not laid: asking for more depth than the mass has
+  costs strokes that never happen rather than a scribble in the middle of a good
+  mass.
+
+**Measured** (`scripts/probe_sweep.py`, one boundary, three ways, re-run under
+M6b's darks): a `block_in` over the bounding box puts 19.4% of its paint outside
+the shape and scores 35.9% on the axis-alignment metric; the sweep, for the same
+five strokes, puts 6.5% outside and scores 20.9%. Crossing at 26° takes the value
+spread inside the mass from `0.031` to `0.011` for twelve more strokes, without
+moving the silhouette. The numbers and the sheet are in `CALIBRATION.md` under
+*`sweep`*; the recipe is out of it, and the guide's *A region is a rectangle*
+paragraph is one call.
+
+**Additive, as the brief asked.** No golden image moved; one was added
+(`tests/golden/sweep.png`, the geometry rather than the marks). Ten tests in
+`tests/test_precision.py`.

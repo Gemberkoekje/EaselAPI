@@ -17,26 +17,53 @@ OUT = Path("out")
 
 
 def value_scale() -> None:
-    """Nine steps, dark to light. Check them in greyscale, not in colour."""
+    """Nine even steps from the darkest mix to white. Check them in greyscale.
+
+    Mixed to a *value*, not to a ratio. Equal spoonfuls of white do not give equal
+    steps -- white is far stronger than its share of the mixture, so the first
+    half-canvas of it moves the colour a fifth of the way and the last moves it a
+    third. Ask for the value and let the search find the ratio; the printed ratios
+    are the lesson.
+    """
     s = Session(900, 200, ground="toned_grey", seed=1, out_dir=OUT)
+    p = s.palette
+    dark = p.mix("ultramarine", "burnt_umber", 0.5)
+    lo, hi = p.value_of(dark), p.value_of("titanium_white")
+
     for i in range(9):
+        target = lo + (hi - lo) * i / 8.0
+        step = mix_to_value(p, dark, "titanium_white", target)
         band = Region(i / 9.0, 0.15, (i + 1) / 9.0, 0.85)
-        s.block_in(
-            band, "flat",
-            s.palette.mix("burnt_umber", "titanium_white", i / 8.0),
-            density=1.0, size=0.06,
-        )
+        s.block_in(band, "flat", step, density=1.0, size=0.06)
     s.export(OUT / "ex_value_scale.png")
     s.look(values=True, path=OUT / "ex_value_scale_values.png")
+
+
+def mix_to_value(palette, dark, light, target: float):
+    """The mixture of ``dark`` and ``light`` that reads ``target`` in greyscale.
+
+    Twenty halvings of the ratio, which is plenty: ``value_of`` is the number the
+    values view shows, and it rises with the ratio, so bisection cannot miss.
+    """
+    lo, hi = 0.0, 1.0
+    for _ in range(20):
+        mid = (lo + hi) / 2.0
+        if palette.value_of(palette.mix(dark, light, mid)) < target:
+            lo = mid
+        else:
+            hi = mid
+    return palette.mix(dark, light, (lo + hi) / 2.0)
 
 
 def pressure_profiles() -> None:
     """The same gesture under each pressure profile.
 
-    The low opacity and the flat load are what make this legible. Pressure scales
-    how heavily paint lands, not how wide the mark is, so at full strength the
-    overlapping dabs saturate and all six profiles come out identical -- and paint
-    running out along the stroke hides the profile behind its own fade.
+    On the round brush (left) the profile changes the *width* of the mark as well
+    as how heavily paint lands; on the bristle (right) it changes only the paint,
+    because an oriented tip keeps its chisel. The low opacity and the flat load are
+    what make the paint half legible: at full strength the overlapping dabs saturate
+    and every profile lays the same solid mark, and paint running out along the
+    stroke hides the profile behind its own fade.
     """
     s = Session(900, 500, ground="toned_grey", seed=2, out_dir=OUT)
     for i, p in enumerate(["taper", "press_in", "lift_off", "even", "swell", "dab"]):

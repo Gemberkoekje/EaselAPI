@@ -139,12 +139,17 @@ way a first pass turns into mush. **If two of your three are within `0.10` of ea
 other, they will not read as separate masses** no matter how different their
 colours are.
 
-**The box has no black, and for now it has no true dark either.** The darkest thing
-you can mix reads about `0.23` in the greyscale view, and no number of passes or
-glazes takes it lower. That is a limit of the current pigments, not a lesson about
-painting, and it is on the list to be fixed. Until it is: build contrast by pushing
-the lights up rather than the darks down, and when `compare()` marks a cell `~` it
-is saying that cell is below reach — leave it and paint the rest.
+**The box has no black, and it does not need one.** `mix("ultramarine",
+"burnt_umber", 0.5)` reads about `0.14` in the greyscale view — a near-black with a
+colour in it, which is what a dark in a painting should be. Vary the ratio and it
+stays that dark while swinging from cool to warm: more blue for a shadow in
+daylight, more umber for one by a lamp. That mixture, not any single pigment, is
+the bottom of your range.
+
+The floor is around `0.13`, and it is the model's own: no reflectance in this engine
+goes below `0.01` linear, which is value `0.10`, and the last few hundredths are the
+hue the pigments still carry. Piling on passes or glazes will not go lower, so if a
+mass is not dark enough, mix it darker rather than painting it again.
 
 ### 4. Refine the mid-tones
 
@@ -343,8 +348,10 @@ print(s.compare("ref.jpg"))
 Per cell: the reference's mean value, yours, the difference, and a heat map beside
 the two greyscales. Negative means your canvas is *darker* there. **The number that
 matters is `0.10`**: a cell further out than that is a separation the painting has
-lost. A cell marked `~` asks for a value below anything the box reaches (see step 3)
-and is not work.
+lost. Every one of them is yours to fix. A cell marked `~` asks for a value below
+anything the box reaches (see step 3) and is not work — on most references there
+will be none, and if a photograph does hold one or two, they are its deepest
+shadows and nothing else.
 
 Run it **twice**, not continuously:
 
@@ -396,12 +403,17 @@ and cuts one thing along its own shading, because it knows about colours and a
 painting is made of things. `merge` and `split` are how you say so.
 
 `s.sketch()` lays those outlines as pencil in one call, and `s.ref_shape(n)` hands
-one back as a shape you could block in directly. **Both are assisted modes.** The
-drawing is meant to be yours, and any write-up has to say one was used — the
-painting records it (`s.log()` prints it, and it is in the saved session), so it
-cannot be left out by accident. Prefer `prepare` for *reading* the reference: look
-at the area, then lay your own outline over it with `hull` on three or four
-landmarks, or a `blob` sized to the cells the table says it covers.
+one back as a shape. **Both are assisted modes**, and so is handing
+`s.ref_outline(n)` straight to `sweep()`: the boundary of a mass is a drawing, and
+if the machine found it, say so. The drawing is meant to be yours, and any write-up
+has to say one was used — where you went through `sketch()` or `ref_shape(n)` the
+painting records it for you (`s.log()` prints it, and it is in the saved session),
+and where you copied the points out by hand nothing can, so it is on you.
+
+Prefer `prepare` for *reading* the reference: look at the area, then lay your own
+outline over it — `hull` on three or four verified landmarks, a `blob` sized to the
+cells the table says it covers, or an edge you read off the grid and `sweep`.
+
 
 ---
 
@@ -438,9 +450,12 @@ where two masses meet, which is the only kind of edge a painting has.
 
 **Masses that are not rectangles.** Almost nothing you want to paint is a box, and
 you will be tempted to paint boxes anyway, because a rectangle is the easiest place
-to name. Resist it in the one way that works: give the mass its own outline and
-block *that* in. Five ways to make one, none of which needs you to invent
-coordinates:
+to name. If you block in a shaped mass as a box you get a box, and no amount of
+later work removes that. There are two ways not to, and they answer different
+questions.
+
+**When you can say what shape the mass is**, build it and fill it. Five ways to make
+one, none of which needs you to invent coordinates:
 
 ```python
 blob(cell("D5"), 0.22, wobble=0.3, seed=2)     # an irregular mass filling a cell
@@ -450,8 +465,7 @@ ribbon([(0.15, 0.8), (0.5, 0.55), (0.9, 0.62)], 0.18)   # a mass following a lin
 polygon([(0.2, 0.9), (0.35, 0.4), (0.6, 0.5), (0.7, 0.95)])   # an outline you have
 ```
 
-Then look at it before you spend twenty passes on it, and fill it along its own
-axis:
+Look at it before you spend twenty passes on it, then fill it along its own axis:
 
 ```python
 shape = blob(span("D4", "F6"), wobble=0.35, seed=5)
@@ -460,15 +474,48 @@ s.block_in(shape, "bristle", "dark", direction="axis", density=0.9, size=0.12)
 ```
 
 A shaped block-in costs about what its box would: the passes are counted across the
-mass, not over its area. It stops at the boundary rather than a third of a brush
+mass, not over its area. They stop at the boundary rather than a third of a brush
 past it, and a mass with a bite out of it keeps the bite — one pass across a concave
 shape comes back as the two pieces that are really inside it.
 
+**When what you have is one boundary** — the edge that matters, read off the grid —
+give it to `sweep` and let the passes follow it:
+
+```python
+edge = [(0.06, 0.68), (0.31, 0.48), (0.56, 0.63), (0.84, 0.45)]   # read off the grid
+s.sweep(edge, "bristle", "dark", into="down", depth=0.30, size=0.12, cross=25)
+```
+
+`sweep` runs its first pass along the edge and steps each one after it a part-brush
+further into the mass, alternating direction the way `block_in` does. Passes that
+run *along* the edge describe the form; columns that hang *down* from it comb the
+mass into strands and print the canvas's axis over the whole thing.
+
+- `into=` is which side of the edge the mass is on, and you have to say: a compass
+  word or an angle steps every pass the same way, which is the hand working down a
+  near-horizontal edge, and an `(x, y)` point *inside* the mass makes the passes
+  follow a curved edge instead of shearing off it. A boundary that closes on itself
+  needs neither — `closed=True`, and the mass is what it encloses. A shape is such a
+  boundary: `s.sweep(shape, "bristle", "dark", depth=0.2)` sweeps round its own
+  outline.
+- `cross=` is the second set of passes, leaning that many degrees across the first.
+  Take it: one sweep on its own comes out stringy, because a bristle brush covers
+  about three-quarters of its width, and the crossing is what closes the mass up.
+  Twenty to thirty degrees is usually enough. A shaped `block_in` has the same
+  problem and the same answer — `direction=("axis", 90)`.
+- `depth=` is how far into the mass to go, and the brush decides how many passes
+  that takes unless you say `passes=`.
+
+**Which one?** Fill a shape when you can see the whole silhouette and want it
+covered; sweep when one edge is the thing you care about, or when the passes
+following the form is the point. And if the mass is close enough to a box that
+either feels like overkill, `block_in` at the angle the mass runs at is the cheaper
+version of the same idea.
+
 **The shape is a place, not a line.** Nothing draws that outline, and you must not
 either: the silhouette is where this mass's paint stops and the mass behind it still
-shows, which is why the far masses go down first. One pass leaves the boundary
-stringy, because a bristle brush covers about three-quarters of its width — cross it
-with a second set at an angle (`direction=("axis", 90)`) and it closes up.
+shows, which is why the far masses go down first.
+
 
 **When something is wrong, paint over it.** Your instinct will be to reach for
 `undo`. Resist it. Real repairs happen with paint: let the area dry, then work over
@@ -596,10 +643,12 @@ quiet masses.
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
 
 **A `bristle` stroke is never solid.** It lays a comb of parallel streaks, which is
-what makes it alive on a mark whose direction you mean, and what makes ribbing of
-a big quiet mass laid with single passes — above about `size=0.12` the streaks
-print wider than anything in the picture, and every stroke prints the same ones.
-Lay large quiet masses with `flat`, or with two `bristle` passes crossed, and keep
+what makes it alive on a mark whose direction you mean. A bristle has a width of its
+own, about a two-hundredth of the canvas, so a bigger brush prints *more* streaks
+rather than fatter ones, and the brush picks up a slightly different comb each
+stroke — spacing, phase, and which bristles are missing. What still makes ribbing of
+a big quiet mass is laying it in single parallel passes: cross them, or lay large
+quiet masses with `flat`, and keep
 single bristle strokes for marks that have a direction.
 
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
@@ -677,7 +726,7 @@ as an even field over everything, and it stays visible under every later stroke.
 
 ### Pressure
 
-`pressure` shapes how heavily paint lands along the stroke:
+`pressure` shapes the stroke along its length:
 
 - `"taper"` — lands light, presses, lifts off. **The default, and usually right.**
 - `"press_in"` — starts light, ends heavy.
@@ -688,17 +737,30 @@ as an even field over everything, and it stays visible under every later stroke.
 
 Or pass a number, or a list interpolated along the stroke: `pressure=[0.2, 1.0, 0.3]`.
 
-In the current engine pressure changes how much paint lands, **not how wide the
-mark is**. So the profiles show most clearly on short strokes and on a colour that
-is not already at full strength, and **varying the width of your marks is your job,
-not the pressure profile's** — pass a different `size`. That is the single most
-effective thing you can do to stop a painting looking mechanical.
+**On a round tip — `round_hard`, `round_soft`, `liner` — pressure changes how wide
+the mark is as well as how much paint lands.** `size` is its width at full pressure,
+and it never thins below about a pixel and a half however light the touch. **On the
+oriented tips — `flat`, `bristle`, `knife` — it changes only how much paint lands**,
+because a flat brush's width is the mass it lays and you want that to be the width
+you asked for. So:
+
+- **A mark that tapers is one stroke.** `pressure=[1, 0]` starts at the width you
+  asked for and ends at a point.
+- The *paint* half of the profile shows most clearly on short strokes and on a
+  colour that is not already at full strength — on a long stroke the overlapping
+  dabs saturate and `taper` and `even` land much the same weight, even where they
+  differ in width.
+- **Varying the width of your masses is still your job**, because the brushes that
+  lay masses do not vary with pressure. Pass a different `size`. That is the single
+  most effective thing you can do to stop a painting looking mechanical.
 
 **At the scale of a feature** the brushes go as small as anything you will paint.
-What changes is not the brush: a single dab lands at a fraction of its colour's
-strength, so a small highlight is two or three dabs on the same spot, not one; and
-a mark that tapers in width is two strokes of different sizes. Anything the size of
-a cell or smaller is three marks at most — the dark, the light, and the edge
+What changes is not the brush: a single dab is a *light touch* — the start of a
+`taper`, so it lands a fraction of its colour at about half the width you asked for
+— and a small highlight is `s.dab(x, y, ..., press=3)`, three stamps on the same
+spot, the middle one at full pressure, and **one** stroke against your budget.
+Anything the size of a cell or smaller is three marks at most — the dark, the
+light, and the edge
 between them — laid dark first and looked at through a `region=` crop before the
 light goes on.
 
@@ -746,8 +808,9 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
-s.dab(x, y, brush, color, size=...)                # one mark
+s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
 s.block_in(place, brush, color, direction=, density=, overhang=)    # a mass, as strokes
+s.sweep(edge, brush, color, into=, depth=, cross=, passes=)         # a mass with a shape
 s.smudge(points, size=)                            # move paint around
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
@@ -773,10 +836,16 @@ s.log()                                            # what you have done so far
 sequence of any of those for one pass each. Two passes of parallel strokes look like
 hatching; crossed passes look like paint.
 
+Both space their passes a part-brush apart, which assumes a pass is one brush wide
+all along — true of `flat`, `bristle` and `knife`, and not of a round tip under a
+varying pressure. Lay masses with `flat` or `bristle`; if you want a round tip for
+one, give it `pressure="even"` or it will show its passes at their ends.
+
 One `block_in` is not one stroke: it lays a pass for every brush-width of the
-region, so a big region with a small brush is twenty or thirty of them. Check
-`s.stroke_count` if you are keeping a budget — a whole painting is usually a few
-hundred marks, not a few thousand.
+region, so a big region with a small brush is twenty or thirty of them. Neither is
+one `sweep` — a pass per part-brush of `depth`, and two or three times that again
+if you cross it. Check `s.stroke_count` if you are keeping a budget — a whole
+painting is usually a few hundred marks, not a few thousand.
 
 **`block_in` paints past a rectangle** by a fraction of a brush on every side. That
 is fine for a band and wrong for a mass that meets another at the *same* depth,
@@ -818,7 +887,8 @@ shape.axis   shape.area   shape.center   shape.contains(x, y)   shape.closed
 
 `place` is a point `(x, y)` or any region — `blob(cell("D5"))` is an irregular mass
 filling that cell. `shape.closed` is the outline as a path, for `s.pencil(...)` or
-`s.preview(...)`. `shape.box` is the rectangle around it.
+`s.preview(...)`; `s.sweep(shape, ...)` takes the shape itself. `shape.box` is the
+rectangle around it.
 
 Under `easel run` all of these are already in scope. In a plain Python script,
 import them: `from easel import Session, Region, region, cell, span, horizon,
@@ -831,24 +901,47 @@ below, above, left_of, right_of, between, blob, ellipse, hull, ribbon, polygon`.
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
 
-**1. A value scale.** Nine steps from dark to light. This calibrates your sense of
-what the palette can actually reach.
+**1. A value scale.** Nine even steps from the darkest mix to white. This
+calibrates your sense of what the palette reaches, and it teaches the one thing
+about white you will otherwise learn the expensive way.
+
+Mix to a *value*, not to a ratio. Equal spoonfuls of white do not give equal steps:
+white is much stronger than its share of the mixture, so ask for the value you want
+and let a search find the ratio.
 
 ```python
 from easel import Session, Region
 
 s = Session(900, 200, ground="toned_grey", seed=1)
+p = s.palette
+dark = p.mix("ultramarine", "burnt_umber", 0.5)     # the darkest thing in the box
+lo, hi = p.value_of(dark), p.value_of("titanium_white")
+
+def at_value(target):                # the ratio of white that reads `target`
+    a, b = 0.0, 1.0
+    for _ in range(20):
+        mid = (a + b) / 2
+        a, b = (mid, b) if p.value_of(p.mix(dark, "titanium_white", mid)) < target else (a, mid)
+    return (a + b) / 2
+
 for i in range(9):
-    v = i / 8.0
+    r = at_value(lo + (hi - lo) * i / 8)
     band = Region(i / 9.0, 0.15, (i + 1) / 9.0, 0.85)
-    s.block_in(band, "flat", s.palette.mix("burnt_umber", "titanium_white", v),
-               density=1.0, size=0.06)
-s.look(values=True)     # do the steps look evenly spaced in greyscale?
+    s.block_in(band, "flat", p.mix(dark, "titanium_white", r), density=1.0, size=0.06)
+    print(f"value {lo + (hi - lo) * i / 8:.2f}  white {r:.2f}")
+s.look(values=True)     # nine even steps, 0.14 to 0.96
 ```
 
-**2. One stroke, six pressures.** See what the profiles actually do. The low
-`opacity` and the flat `load_falloff` are what make this legible: at full strength
-the overlapping dabs saturate and every profile looks identical, and paint running
+Look at the printed ratios, not just the picture. A third of white gets you the
+first step; it takes nine tenths to reach the eighth. That curve is why a mixture
+that "should" be halfway comes out too dark, and why the fix is always to add more
+white than feels right.
+
+**2. One stroke, six pressures.** See what the profiles actually do. On the round
+brush on the left they change the *width* of the mark as well; on the `bristle` on
+the right they change only how much paint lands. The low `opacity` and the flat
+`load_falloff` are what make the paint half legible: at full strength the
+overlapping dabs saturate and every profile lays the same weight, and paint running
 out along the stroke hides the profile behind its own fade.
 
 ```python

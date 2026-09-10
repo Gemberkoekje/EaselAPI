@@ -1,16 +1,17 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools, M6's final pass, and M8's shaped masses
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, M7, and M8's shaped masses
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
-`REHEARSAL3.md` (the M6 final pass — the most recent measurement, and it says what
-is still wrong), then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
+`REHEARSAL3.md` (the M6 final pass — the most recent *measurement*, and it says what
+is still wrong), then `M7.md` (the most recent *change*: what a mark looks like now),
+then `REHEARSAL.md` and `REHEARSAL2.md` (the two M5 rehearsals),
 then `PAINTER.md` (what a fresh agent is given) and `CALIBRATION.md` (the measured
 numbers the guide no longer carries), then `src/easel/session.py` (the object
 everything goes through), then `src/easel/stroke.py` and `src/easel/canvas.py`
 (where the marks actually happen).**
 
-Status: **M1–M5 done. M6's tools are built and its protocol has now been run —
-three fresh sessions, `REHEARSAL3.md`. M6 is not done: the copy passes on
-recognition, stroke budget and rejected marks, and fails the `0.10` number.** Five
+Status: **M1–M5 done. M7 done — `M7.md`. M6's tools are built and its protocol has
+now been run — three fresh sessions, `REHEARSAL3.md`. M6 is not done: the copy passes
+on recognition, stroke budget and rejected marks, and fails the `0.10` number.** Five
 of the seven failing cells were the painter's own, all in the same direction, and
 the fixes they point at are now in the guide. A guide fix is a hypothesis until a
 fresh session paints against it, which is what `REHEARSAL.md` → `REHEARSAL2.md`
@@ -23,11 +24,19 @@ what is wrong with these paintings than anything the three sessions reported: ev
 mass is laid along the canvas's axes, and nothing ever said to paint back to front.
 Both are written up in `rehearsal3/HUMAN_NOTES.md` with their probes.
 
-M7 (marks at detail scale) is specified and not started; the golden images it needs
-as its gate now exist. **M8 is done** — a place can now be a shape, and `block_in`
-fills one, which is the largest open item the unprompted stage pointed at; see
-*M8 — shaped masses* below. M6b (darks) and M6c (sweep) are still open and still
-belong before REHEARSAL4. M9 (MCP) is untouched and correctly last.
+**M7 (marks at detail scale) is done** — `M7.md`. The bristle comb is drawn per
+stroke and a bristle has a width of its own rather than the brush's; width follows
+pressure on the round tips, so a lid line tapers in one stroke instead of two; and
+`dab(press=n)` lands a catchlight in one mark. Judged on the sampler and on the M6
+headline painting repainted by both engines, then the goldens regenerated once. The
+one thing it makes harder is in `M7.md`'s *The trap, stated plainly*: a lone
+`s.dab()` is a light touch and now lands at about half the width asked for.
+**M8 (non-rectangular masses) is done** too — a place can now be a shape, and
+`block_in` fills one, which is the largest open item the unprompted stage pointed
+at; see *M8 — shaped masses* below. It arrived beside M6c, and the two are
+complements rather than alternatives: fill a silhouette you can name, sweep a
+boundary you have read. M9 (MCP) is untouched and correctly last, and everything
+before it is now done.
 
 The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
 author: the unprompted painting went well, the **copy did not reach a likeness**,
@@ -50,10 +59,10 @@ additions (`span()`, enlarged crops) came out of that.
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
-| M6b Darks | **New**, decided by the human after the guide critique. The `0.23` value floor is the pigment swatches, not the mixing model (`REVIEW.md` 33); darken the masstones so ultramarine + umber reaches the model's own floor. Moves every golden, and that is accepted. Before REHEARSAL4. |
-| M6c Sweep | **New.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, replacing the fifteen-line recipe in `CALIBRATION.md` (`REVIEW.md` 34). Additive; one golden added. Before REHEARSAL4. |
-| M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
-| M8 Non-rectangular masses | **Done.** `Polygon` is a place beside `Region`, built with `polygon`, `ellipse`, `blob`, `hull` or `ribbon`; `block_in` cuts every pass against the outline, so a shaped mass keeps its silhouette and a concave one keeps its bite. `direction="axis"` sweeps along the mass's own long axis. `dry`, `erase`, `look`, `compare`, `preview` and `rehearse` all take a shape. Additive: no golden moved, one was added. Evidence in `samples/shapes.png` and `m8/`. |
+| M6b Darks | **Done.** The six darks are tube masstones now, so the box floors at `0.13` rather than `0.235` and `mix("ultramarine", "burnt_umber", 0.5)` reads `0.137` against the model's own `0.10` (`REVIEW.md` 33 has the before/after table). The mixing exponent moved `0.5` → `0.35` to keep white's tinting where finding 6 set it against the wider range. Exercise 1 mixes to a value instead of a ratio and its nine bands are even to `0.002`. Every golden regenerated once, looked at first. Item 11 re-measured: it does **not** move up. |
+| M6c Sweep | **Done.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, `cross=` for the second set, `closed=True` for a boundary that comes back on itself (`REVIEW.md` 34). Ordinary strokes, so undo and replay came free. Additive: no golden moved, one added — and regenerated once when M6b's darks landed under it, geometry identical. The recipe is out of `CALIBRATION.md`, and it takes a shape as its edge (M8). |
+| M7 Marks at detail scale | **Done** — `M7.md`. Comb drawn per stroke (two marks of one brush were identical to the last bit); `BRISTLE_PITCH` gives a bristle a width of its own, 4 at `size=0.02` and 36 at `size=0.18` where it was 22 at every size; width follows pressure on the round tips (14 px at pressure 0.1 against 36 px at 1.0), oriented tips keep their chisel; `dab(press=n)`. Judged on the sampler *and* on `rehearsal3/pass` repainted by both engines — the same 295 marks, and the whole picture's mean value moved by less than a hundredth. Every golden regenerated after looking. |
+| M8 Non-rectangular masses | **Done.** `Polygon` is a place beside `Region`, built with `polygon`, `ellipse`, `blob`, `hull` or `ribbon`; `block_in` cuts every pass against the outline, so a shaped mass keeps its silhouette and a concave one keeps its bite. `direction="axis"` sweeps along the mass's own long axis. `dry`, `erase`, `look`, `compare`, `preview`, `rehearse` and `sweep` all take a shape. Additive: no golden moved, one was added. Evidence in `samples/shapes.png` and `m8/`. |
 | M9 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -93,10 +102,16 @@ src/easel/
 
 tests/test_engine.py      95 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
-tests/test_precision.py   50 tests for M6: the graphite channel and what buries it,
+tests/test_marks.py       17 tests for M7: the comb per stroke and against size,
+                          width following pressure on the round tips (and not on the
+                          oriented ones), and `press`.
+tests/test_precision.py   60 tests for M6: the graphite channel and what buries it,
                           landmarks, matching crops, and mostly what the planning
                           tools must *not* do -- preview paints nothing, rehearse
                           commits nothing, neither disturbs the painting after it.
+                          The last ten are M6c's: a swept mass keeps its silhouette,
+                          the crossing closes it up, and a sweep deeper than its own
+                          mass stops rather than scribbling.
 tests/test_shapes.py      36 tests for M8: the shape itself, the five builders, and
                           what a shaped block-in must do -- stop at the silhouette,
                           come back in pieces across a concave mass, and log
@@ -110,6 +125,9 @@ scripts/make_brush_sampler.py   regenerates samples/brushes.png — the primary
 scripts/make_shape_sampler.py   regenerates samples/shapes.png — every shape
                           builder against every sweep direction, with the box each
                           mass would have been in the last column.
+scripts/probe_sweep.py    what `sweep()` costs and what it buys, on one boundary
+                          three ways. Writes out/sweep_sheet.png; the numbers behind
+                          CALIBRATION's *`sweep`* section.
 m8/paint_two_ways.py      M8's other half of the evidence: one composition painted
                           as boxes and as shapes, same seed, same colours, and the
                           axis-alignment number for both.
@@ -128,6 +146,13 @@ rehearsal3/unprompted/    the adversarial check on "how unprompted is unprompted
                           samples.md (32 fresh sessions naming a subject across four
                           conditions), and the two guide variants they were given.
                           Read PREREGISTERED.md before samples.md.
+m7/                       M7's evidence: three probes that run against either engine
+                          (`PYTHONPATH=<pre-m7>/src python m7/probe_comb.py` for the
+                          before), `make_sheets.py` for the four panels of
+                          `marks_compared.png`, and `repaint.py`, which replays
+                          `rehearsal3/pass` -- 295 strokes of the mug -- on whichever
+                          engine is on the path. That is the "real painting" the
+                          brief asks for before a golden is regenerated.
 rehearsal3/               M6's final pass: three fresh sessions (pass/ the headline
                           mug and its unprompted painting, sitter/ the same
                           photograph REHEARSAL2 painted, assisted/ the machine-laid
@@ -142,7 +167,7 @@ PAINTER.md                the guide a fresh agent is given. The deliverable. No
                           before committing a change to it.
 CALIBRATION.md            the engine's measured numbers (graphite survival, wetness
                           decay, the value floor, load windows, block_in overhang,
-                          the axis-alignment table, the shaped-mass sweep recipe).
+                          the axis-alignment table, what a sweep costs and buys).
                           Split out of the guide after the critique that preceded
                           REHEARSAL4, so the guide states rules and this states
                           measurements. Update it when the engine changes.
@@ -202,10 +227,15 @@ against four sweep directions, with the box each mass would have been in the las
 column — that column is the comparison the sheet exists for. `m8/paint_two_ways.py`
 is the real painting: one composition, the same five masses, the same colours, seed
 and order, laid once as boxes and once as shapes. As boxes it is a stack of
-rectangles; as shapes it is a picture. 53 passes against 46, and the axis-aligned
-edge share (`rehearsal3/probe_axis_alignment.py`) went 31.4% → 25.2%. The number
-moves less than the pictures do, because much of what that probe counts is the
-bristle comb's own streaks along each pass — which is M7's business, not this one's.
+rectangles; as shapes it is a picture. 53 passes against 46, and **17.8% of the
+boxed painting's paint landed outside the masses it meant to lay, against 10.7% of
+the shaped one** — most of that 10.7% being the brush's own half-width spill past
+each silhouette. The axis-alignment probe moves much less, 27.5% → 25.0%: most of
+the strong edges in either picture are the bristle comb's streaks along the passes,
+not the boundaries of masses, and M7's finer comb made that more true than it was
+before this merge (it read 31.4% → 25.2% under the old comb and the old palette).
+That probe is the wrong instrument for this question at this scale; the stray-paint
+share is the right one, and the pictures are righter still.
 
 **What it does not fix.** The painter still has to *decide* to use a shape. The
 vocabulary is no longer all rectangles, but the guide is now the thing under test
@@ -286,13 +316,15 @@ this note.
   accumulate, erase records clip. Undo and replay are then right for free, because
   there is no second copy of the drawing to keep in step. REVIEW 20 was exactly the
   bug you get from the other design.
-- **`compare()` separates *wrong* from *impossible*.** The palette has no black and
-  floors at `0.235`; photographs do not. Cells whose reference is below the floor
-  are reported as `unreachable` rather than as work. `off` is unchanged, so nothing
-  that used to be reported stopped being reported — the split is additional
-  information, not a quieter threshold. A measuring stick that reports an unmeetable
-  target costs strokes: two fresh sessions spent about twenty-five each finding this
-  out for themselves.
+- **`compare()` separates *wrong* from *impossible*.** Cells whose reference is
+  below the palette's floor are reported as `unreachable` rather than as work.
+  `off` is unchanged, so nothing that used to be reported stopped being reported —
+  the split is additional information, not a quieter threshold. A measuring stick
+  that reports an unmeetable target costs strokes: two fresh sessions spent about
+  twenty-five each finding that out for themselves, back when the floor was `0.235`.
+  M6b took it to `0.13`, so the list is normally empty now — which is the right end
+  state for a split like this. **Build the tool that tells the painter the truth,
+  then go and fix the thing it was telling the truth about.**
 - **Drawing does not count as a stroke.** `History.UNPAINTED_KINDS`. The brief's
   definition of done counts strokes, and a painter charged for the underdrawing is
   a painter who skips it.
@@ -389,7 +421,35 @@ this note.
     and `replay()` from the still-intact log then disagreed with what was on
     screen. If you add a new kind of mark, grep for `push_snapshot` in
     `session.py` and add the call before you add the record, not after.
-19. **A record that carries a place has to carry the whole place.** `dry` and
+19. **A tuned constant often encodes a *ratio*, not an absolute — so it moves when
+    the thing it is relative to moves.** The mixing exponent was set at `0.5` in
+    REVIEW 6 to give white its real tinting strength, and the comment said so
+    without saying strength *compared to what*. M6b darkened the palette, which
+    widened its value range from `0.73` to `0.83`, and `0.5` silently went from
+    carrying a 50/50 white mix `0.235` of the way up that range to `0.158` — the
+    same number, quietly doing a different job, and finding 6 reopening with
+    nothing about white touched. When you tune a constant, write down the invariant
+    you tuned it to hold and not just the value you landed on: the next person to
+    move the inputs then knows whether the constant has to follow.
+20. **A workaround built around a defect has to be taken out when the defect is
+    fixed, and its *documentation* is the part that gets left behind.** The
+    `unreachable` split (REVIEW 21) was correct and stayed; the guide paragraph
+    teaching painters to compress a reference's range onto the palette's, and
+    `CALIBRATION.md`'s formula for doing it, were the workaround, and were still
+    true-sounding after the reason for them had gone. Grep for the *number* — here
+    `0.23` — not just the feature, when a limit moves.
+21. **Normalised space is not isotropic, and `size` is measured against the long
+    side.** A coordinate is a fraction of the *width* in x and of the *height* in y,
+    so on a canvas that is not square a step of `0.07` down is a different number of
+    pixels from `0.07` across — while a brush at `size=0.07` is `0.07` of the long
+    side whichever way it travels. `block_in` has always mixed the two (`band` comes
+    from `b.size` and is compared against `r.height`), and M6c's `sweep` follows it
+    on purpose rather than introducing a second convention in one call: its passes
+    step one part-brush *in normalised units*, so a sweep run down a 4:3 canvas
+    overlaps more than the same sweep run across it. The numbers are in
+    `CALIBRATION.md` under *`sweep`*. If this is ever made pixel-true, make both
+    pixel-true in the same change, and expect every golden image to move.
+22. **A record that carries a place has to carry the whole place.** `dry` and
     `erase` used to log `{"region": [x0, y0, x1, y1]}`, and a shape logged as its
     bounding box would replay as a rectangle — worse, a shape logged as *nothing*
     would replay as the whole canvas. They now log `shape` (the points) or
@@ -397,13 +457,13 @@ this note.
     place that reads either back. `sketch_lines()` reads the same field, because
     what an eraser removed from the canvas has to be what it removed from the
     lines.
-20. **A rehearsed mass is not pixel-identical to the painted one.** A rehearsal
+23. **A rehearsed mass is not pixel-identical to the painted one.** A rehearsal
     gets its own generator on purpose (so trying something cannot change the
     painting that follows), strokes are seeded per index and so come out the same,
     but a `block_in`'s pass wander is drawn from the session's stream and does not.
     Same masses in the same places, different wobble. Do not write a test that
     asserts equality there; assert the overlap.
-21. **A self-intersecting outline is accepted.** `Polygon` checks for three
+24. **A self-intersecting outline is accepted.** `Polygon` checks for three
     distinct points and a non-zero area, not for simplicity, and everything
     downstream is even-odd — so a bow-tie fills as two triangles rather than
     raising. `inset` is a mitre offset and can fold a spiky outline through
@@ -416,14 +476,16 @@ this note.
    three fresh sessions, `REHEARSAL3.md`. Read that first; it says what passed and
    what did not. The copy stage failed only on value, and failed it in a single
    direction: every wrong cell on the mug was too *light*, straight down the
-   shadow side. Everything that failure points at is now in `PAINTER.md` — value
-   compression, `compare()` on the empty canvas, `fixable` versus the cells no paint
-   can reach, and painting back to front — **and a guide fix is a hypothesis until a
-   fresh session paints against it.** That is the whole lesson of
-   `REHEARSAL.md` → `REHEARSAL2.md`.
+   shadow side. Everything that failure points at is now in `PAINTER.md` —
+   `compare()` on the empty canvas, planning the three values as numbers, and
+   painting back to front — **and a guide fix is a hypothesis until a fresh session
+   paints against it.** That is the whole lesson of `REHEARSAL.md` → `REHEARSAL2.md`.
+   The value-compression passage is gone: M6b removed the reason for it, and a run
+   against the old palette would have measured a moving target (gotcha 16).
    - **Same reference, `Level1.jpg`, fresh session, `PAINTER.md` only, own pencil.**
-     The question is narrow: does the value error go away? If no cell on the mug is
-     more than `0.10` out except the two that cannot be painted, M6 is done.
+     The question is narrow: does the value error go away? With the darks in place
+     the criterion is **every** cell on the mug within `0.10`, not `fixable` — see
+     the brief's *Reachable* paragraph.
    - Do not re-run the sitter or the assisted mode to decide this. The sitter
      answered its question — the tools do reach below a cell — and the assisted run
      answered its own: the machine sketch is a wash and slightly worse.
@@ -438,10 +500,13 @@ this note.
    me."* The reply to that is now in the box, so the open question is whether a fresh
    session reaches for it: does the copy stage use shaped masses, and do the two
    unprompted paintings stop being stacks of bands? `probe_axis_alignment.py` gives
-   the number; the pair in `m8/` gives it a scale (31.4% as boxes, 25.2% as shapes,
-   same composition). Fold this into REHEARSAL4 rather than running it on its own —
-   the same run answers it and the value question, and running two measurements
-   against one painting is free.
+   the number, though the pair in `m8/` shows how blunt it is at this scale (27.5%
+   as boxes against 25.0% as shapes, for two pictures that look nothing alike).
+   What separated them cleanly was the share of paint landing outside the intended
+   masses, 17.8% against 10.7%; on a fresh session's painting the equivalent
+   question is simply whether the log shows shapes at all. Fold this into REHEARSAL4
+   rather than running it on its own — the same run answers it and the value
+   question, and running two measurements against one painting is free.
 3. **Decide what the unprompted stage is for** (`REHEARSAL3.md`, *Still open*).
    It is a question about the brief, so it is the human's to answer, and it is cheap
    either way. 63% of thirty-two fresh sessions named the same subject before reading
@@ -467,41 +532,54 @@ this note.
      does -- the honest fix, and it moves every golden image and every rehearsal's
      colours; or add one genuinely dark pigment, which is additive and leaves the
      goldens alone but does not make the classic mixture work. **The first is
-     taken (M6b).** Either way the
-     Kubelka-Munk reflectance floor (`0.01` linear, value about `0.10`) is the new
-     bottom, and the *Reachable* paragraph in the brief, `compare()`'s `~` split and
-     step 3 of the guide all get shorter or go. Until it is decided the guide says,
-     in one paragraph, that the floor is an engine limit and not a lesson.
-   - **Sweeping a shaped mass should be an API call, not a recipe.** The guide
-     argues for laying a silhouetted mass as passes swept along its edge, and the
-     painter is then expected to retype fifteen lines to do it. `CALIBRATION.md`
-     holds the recipe for now. The call is M8's polygon `block_in`, or a smaller
-     `sweep(edge_points, ...)` that steps a stroke inward from a hand-given
-     boundary; the second is not the traced-copy question, because the boundary is
-     the painter's own, and could land before M8 proper. **That is M6c.**
-5. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
-   streaks with the
-   brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the
-   eye test in `REHEARSAL2.md` says width, for tapering marks), and give `dab()` a
-   `press` count so a catchlight can land at full strength.
-   Both change every stroke, so both want the sampler *and* a real painting as
-   the evidence, and a milestone of their own.
+     taken (M6b), and is now done.** The box floors at `0.13`, three hundredths
+     above the Kubelka-Munk reflectance floor (`0.01` linear, value `0.10`) that is
+     the model's real bottom; the guide's floor paragraph, `CALIBRATION.md`'s
+     compression formula and the brief's *Reachable* paragraph are rewritten, and
+     `compare()`'s `~` split stays for the deepest few cells a photograph can hold.
+     Two things M6b turned up that were not in the plan: equal white ratios cannot
+     give an even value scale at *any* exponent, so exercise 1 had to mix to a value
+     instead (it was asking "do these look evenly spaced?" of steps running `0.03`
+     to `0.21` apart); and the exponent itself had to move, because it encodes
+     white's tinting strength *relative to the palette's range* and the range
+     changed underneath it.
+   - **Sweeping a shaped mass should be an API call, not a recipe. Done (M6c).**
+     `s.sweep(edge, ...)` steps passes inward from a hand-given boundary; the
+     recipe is out of `CALIBRATION.md` and the numbers behind it are in its place.
+     It is not the traced-copy question, because the boundary is the painter's own
+     -- but the `sketch()` rule applies to it, and the guide says so: a run that
+     hands `ref_outline(n)` straight to `sweep()` is an assisted mode. It did not
+     make M8 unnecessary, and M8 has not made it redundant: sweeping helps the
+     painter who already has a boundary in hand, and a shaped `block_in` helps the
+     one who can name the silhouette but has not drawn it. They meet in the middle
+     -- `sweep` takes a shape as its edge, and a traced one carries its own mark.
+5. ~~**M7 — Marks at detail scale.**~~ **Done — `M7.md`.** What it leaves behind,
+   for whoever runs the next fresh session: a lone `s.dab()` is now a light touch at
+   about half the width asked for (`press=3` for the mark at full size), and
+   `s.glaze()` thins at both ends unless it is given `pressure="even"`, because it
+   defaults to a `round_soft` at a `taper`. Whether `glaze()`'s own default should
+   change is an API question and was deliberately left alone.
 6. Consider varying `block_in`'s pass *axis* automatically between passes. The
    travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
    the painter can *choose* the axis — but a mass still gets one axis per call unless
    the painter passes a sequence.
-7. Then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview` and
+7. **The wet-blend reflectance floor** (brief item 11), the last engine change
+   before the server. M6b re-measured it and it does *not* move up, so it sits here
+   rather than in front of REHEARSAL4 — but it is still open, and it is still the
+   one finding in the repo that was found by reading the code rather than by
+   looking at a picture.
+8. Then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview` and
    `compare` returning their images inline. It exposes the API, so everything that
-   changes the API goes first: M6b, M6c, M7 and the wet-blend floor (brief item 11)
-   are what is left of that list now M8 has landed. The server's tool surface has to
-   carry shapes as arguments, which is the one new thing M8 adds to its design: a
-   place is a name, a cell, a span, a rectangle **or a list of points**.
+   changes it goes first, and that list is now down to item 7. The server's tool
+   surface has to carry shapes as arguments, which is the one new thing M8 adds to
+   its design: a place is a name, a cell, a span, a rectangle **or a list of
+   points**, and `sweep` takes the same.
 
 ## Verify the scaffold
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 200 tests, about 60s (the goldens repaint)
+pytest -q                              # 232 tests, about 100s (the goldens repaint)
 python -m ruff check src tests scripts examples   # ruff is not on PATH here either
 python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png

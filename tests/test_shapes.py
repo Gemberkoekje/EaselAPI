@@ -391,6 +391,34 @@ def test_rehearsing_a_mass_shows_the_paint_without_spending_it(tmp_path):
 
 
 # --------------------------------------------------------------------------------------
+# A shape and a sweep
+# --------------------------------------------------------------------------------------
+def test_a_shape_can_be_swept_along_its_own_outline(tmp_path):
+    """M6c sweeps a boundary; M8 builds shapes. A shape *is* a boundary, and one
+    that comes back on itself -- so it goes straight into ``sweep``, and the painter
+    does not have to choose between the two milestones."""
+    s = make(tmp_path)
+    shape = blob((0.5, 0.5), 0.28, 0.24, seed=2)
+    records = s.sweep(shape, "bristle", "burnt_umber", depth=0.14, size=0.07)
+    assert records and all(r.kind == "stroke" for r in records)
+
+    marks = painted(s)
+    inside = shape.mask(*s.size)
+    far_out = ~shape.inset(-0.07).mask(*s.size)
+    assert (marks & inside).sum() > 0.5 * inside.sum(), "the sweep missed the mass"
+    assert (marks & far_out).sum() < 0.01 * far_out.sum(), \
+        "the sweep ran outside the shape it was given"
+    assert np.array_equal(s.replay().canvas.to_srgb8(), s.canvas.to_srgb8())
+
+
+def test_sweeping_a_traced_shape_records_it_the_way_blocking_one_in_does(tmp_path):
+    s = make(tmp_path)
+    traced = Polygon(ellipse((0.5, 0.5), 0.3, 0.25).points, name="area 7", traced=True)
+    s.sweep(traced, "bristle", "burnt_umber", depth=0.08, size=0.06)
+    assert s.assisted and "area 7" in s.assisted[0]
+
+
+# --------------------------------------------------------------------------------------
 # The traced-copy question
 # --------------------------------------------------------------------------------------
 def test_the_painters_own_shape_is_not_an_assisted_mode(tmp_path):

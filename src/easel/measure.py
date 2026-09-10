@@ -103,10 +103,16 @@ class Comparison:
     def unreachable(self) -> list[CellCompare]:
         """Cells asking for a value darker than any paint in the box, worst first.
 
-        Not a failure of the painting. The palette has no black and bottoms out
-        around ``0.23``; a lamp-lit photograph has cells at ``0.04``. Chasing these
-        spends strokes that cannot land, which is exactly what two rehearsals did
-        before this existed.
+        Not a failure of the painting. Chasing these spends strokes that cannot
+        land, which is exactly what two rehearsals did before this existed.
+
+        Expect it to be empty most of the time now. It was built when the palette
+        floored at ``0.23`` and a lamp-lit photograph put eighteen of sixty-four
+        cells below anything a stroke could reach; the masstones are darker since,
+        the box bottoms out near ``0.13``, and an ordinary shadow is the painter's
+        own work again. What is left here is the deepest few cells a photograph can
+        hold, and a list this size is a fact about the reference, not a licence to
+        stop early.
         """
         if self.floor <= 0.0:
             return []
