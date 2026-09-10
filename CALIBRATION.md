@@ -233,21 +233,35 @@ painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against
 | passes at `size=0.16` | 5 | 6 |
 | default `overhang` | `0` | `0.35` |
 
-- **A shaped mass costs what its box costs.** The passes are counted across the
-  extent of the mass along the sweep's normal, not over its area, so a shape and its
-  box come out within a pass of each other. Budget for a shape exactly as before.
-  **The box is the operative half of that sentence and a curved ribbon shows why**:
-  the box a bend sweeps out is far larger than the ribbon's own width, so the cost
-  follows the box and not the mass you were picturing.
+- **A shaped mass costs its box along the passes' normal, times the number of times
+  a pass line crosses it.** Both factors, not just the first. The passes are counted
+  across the extent of the mass, not over its area — but each pass is then cut
+  against the outline, and a pass that crosses a concave shape comes back as the two
+  or three pieces really inside it, each of which is charged as a stroke.
 
-  | Shape | width | brush | passes |
-  |---|---|---|---|
-  | `ribbon`, straight | `0.029` | `0.015` | **3** |
-  | `ribbon`, curved | `0.029` | `0.015` | **19** |
-  | `blob` of comparable box | — | `0.015` | 44 |
+      strokes  =  (extent along the passes' normal / part-brush)  ×  crossings
 
-  A painter budgeted 4 for the curved one and paid 21, which was 7% of its stroke
-  budget on a single call. Cost anything long and curved off `shape.box`.
+  Measured at brush `0.015`, density `1.0` (part-brush `0.00825`):
+
+  | Shape | extent | passes | **strokes** | crossings |
+  |---|---|---|---|---|
+  | `ribbon`, straight, `0.029` wide | `0.029` | 4 | **4** | 1.00× |
+  | `ribbon`, curved, `0.029` wide | `0.342` | 42 | **75** | 1.79× |
+  | `ellipse`, convex | `0.400` | 48 | **48** | 1.00× |
+  | concave, a bite out of one side | `0.400` | 48 | **78** | 1.62× |
+
+  The first factor is the one a curved `ribbon` shows most loudly: the box a bend
+  sweeps out is ten times the band's own width, so a mass `0.029` across costs what
+  a mass `0.342` across costs. The second is invisible on every convex shape and is
+  why the earlier version of this entry — *"a shape and its box come out within a
+  pass of each other"* — was wrong on anything with a bite in it: such a shape runs
+  30 strokes past its box, not one. The tell was already in the table above it, which
+  recorded a curved ribbon at 19 passes beside a painter who paid **21**.
+
+  **Neither factor is one to work out by hand: ask `s.cost(...)`**, which walks the
+  passes without laying them and returns exactly what `block_in` or `sweep` will
+  charge. It is on every `preview` overlay too. A painter budgeted 4 for a curved
+  ribbon and paid 21, which was 7% of its stroke budget on a single call.
 - **Coverage at `density=1.0` is 99% of the shape**, at every brush size tried
   (`0.06` to `0.20`) — **measured on a blob, which is convex.** It does not carry
   over to a concave shape that has been `inset()`, because erosion pulls in from

@@ -571,3 +571,138 @@ def test_which_assisted_modes_were_used_survives_a_round_trip_through_disk(tmp_p
                "bristle", "burnt_umber", size=0.12)
     s.save(tmp_path / "p.easel")
     assert Session.load(tmp_path / "p.easel").assisted == s.assisted
+
+
+# --------------------------------------------------------------------------------------
+# What a mass costs, before it is paid for
+# --------------------------------------------------------------------------------------
+def test_cost_is_what_block_in_actually_charges(tmp_path):
+    """The whole point of quoting a price is that it is the price.
+
+    ``cost`` walks the passes instead of laying them, which is the only reason it is
+    cheap enough to put on every preview -- and also the only way it could ever drift
+    from what ``block_in`` charges. This is the test that holds the two together, so
+    the cases below are deliberately the awkward ones: concave, curved, off-axis,
+    thinned out, and a plain rectangle to prove nothing moved for the old shapes.
+    """
+    curved = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)
+    horseshoe = polygon([(0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.6, 0.7),
+                         (0.6, 0.45), (0.4, 0.45), (0.4, 0.7), (0.3, 0.7)])
+    cases = [
+        {"shape": curved, "size": 0.015},
+        {"shape": horseshoe, "size": 0.02},
+        {"shape": horseshoe, "size": 0.02, "direction": "axis"},
+        {"shape": horseshoe, "size": 0.02, "direction": "cross"},
+        {"shape": ellipse((0.5, 0.5), 0.2, 0.12), "size": 0.03, "density": 0.5},
+        {"shape": blob(cell("D5"), 0.12, seed=3), "size": 0.03, "direction": 37},
+        {"region": cell("D4"), "size": 0.02, "direction": "vertical"},
+        {"region": cell("D4"), "brush": "flat", "size": 0.02, "overhang": 0.0},
+    ]
+    for spec in cases:
+        s = make(tmp_path)
+        quoted = s.cost(spec)
+        kw = {k: v for k, v in spec.items() if k not in ("shape", "region")}
+        paid = len(s.block_in(spec.get("shape", spec.get("region")), **kw))
+        assert quoted == paid, f"quoted {quoted} and charged {paid} for {spec}"
+
+
+def test_cost_is_what_sweep_actually_charges(tmp_path):
+    """The same guarantee for the other way of laying a mass, including the cross
+    passes and the ones that fold through the middle and are dropped."""
+    edge = [(0.15, 0.55), (0.40, 0.42), (0.70, 0.50), (0.88, 0.40)]
+    cases = [
+        {"edge": edge, "into": "down", "depth": 0.25, "size": 0.03},
+        {"edge": edge, "into": "down", "depth": 0.25, "size": 0.03, "cross": 25},
+        {"edge": edge, "into": "down", "depth": 0.25, "size": 0.03, "passes": 6},
+        {"edge": edge, "into": "up", "depth": 0.2, "size": 0.04, "density": 0.6},
+        {"edge": ellipse((0.5, 0.5), 0.25, 0.18), "depth": 0.1, "size": 0.03},
+    ]
+    for spec in cases:
+        s = make(tmp_path)
+        quoted = s.cost(spec)
+        kw = {k: v for k, v in spec.items() if k != "edge"}
+        paid = len(s.sweep(spec["edge"], **kw))
+        assert quoted == paid, f"quoted {quoted} and charged {paid} for {spec}"
+
+
+def test_a_curved_mass_costs_more_than_the_box_rule_predicts(tmp_path):
+    """The reason this call exists, as a number.
+
+    A mass is priced on the extent of its box along the sweep's normal *and* on how
+    many times a pass line crosses it. The guide used to say a shape costs what its
+    box costs, which is right only while the shape is convex -- a painter budgeted 4
+    for a curved ribbon and paid 21. Neither factor is one a painter can work out by
+    hand, which is why the engine has to be the one to say.
+    """
+    s = make(tmp_path)
+    straight = s.cost({"shape": ribbon([(0.2, 0.5), (0.78, 0.5)], 0.029), "size": 0.015})
+    curved = s.cost({"shape": ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029),
+                     "size": 0.015})
+    assert straight <= 5, "a straight band is a few passes"
+    assert curved > 6 * straight, "the bend is the whole finding"
+
+    # Concave, so pass lines cross it more than once: strictly more strokes than the
+    # passes its box alone would account for.
+    horseshoe = polygon([(0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.6, 0.7),
+                         (0.6, 0.45), (0.4, 0.45), (0.4, 0.7), (0.3, 0.7)])
+    box = s.cost({"region": horseshoe.box, "size": 0.02, "overhang": 0.0})
+    assert s.cost({"shape": horseshoe, "size": 0.02}) > box
+
+
+def test_pricing_a_plan_paints_nothing_and_spends_nothing(tmp_path):
+    """``cost`` has to be free in both senses or it will not be called.
+
+    Free of paint and of the log, like ``preview``; and free of the *stroke stream*,
+    which is the one that would not announce itself -- the pass wander is drawn while
+    the passes are counted, and a session that had been quoted a price would then
+    paint a different picture from one that had not.
+    """
+    s = make(tmp_path)
+    plan = [{"shape": blob((0.5, 0.5), 0.25, seed=1), "size": 0.08},
+            {"points": [(0.2, 0.2), (0.8, 0.3)], "brush": "liner"}]
+    before = s.canvas.rgb.copy()
+
+    assert s.cost(plan) == s.cost(plan), "a quote that changes is not a quote"
+    assert s.cost(plan[1]) == 1, "a mark is one stroke"
+    assert np.array_equal(before, s.canvas.rgb), "pricing painted something"
+    assert not s.history.records, "pricing reached the log"
+
+    quoted = s.cost(plan[0])
+    unquoted = make(tmp_path)
+    for session in (s, unquoted):
+        session.block_in(plan[0]["shape"], size=0.08)
+    assert len(s.history.records) == quoted
+    assert np.array_equal(s.canvas.rgb, unquoted.canvas.rgb), \
+        "being quoted a price changed the painting"
+
+
+def test_a_preview_carries_the_price_of_every_mass_on_it(tmp_path):
+    """A painter that has to ask is a painter who finds out afterwards.
+
+    ``preview`` already answers *where does this mass go*; the count rides along on
+    the same overlay because the run that found this cost 7% of a stroke budget in
+    one call, from a session that was previewing and rehearsing constantly.
+    """
+    s = make(tmp_path)
+    shape = blob((0.5, 0.5), 0.22, seed=1)
+    spec = {"shape": shape, "size": 0.06, "label": "coat"}
+    entry = s._preview_entry(*s._plan_specs(spec)[0], 0)
+    assert entry["label"] == f"coat  {s.cost(spec)} strokes"
+
+    # A mark is one stroke and saying so on every overlay would be noise.
+    mark = s._preview_entry(*s._plan_specs({"points": [(0.2, 0.2), (0.6, 0.5)]})[0], 0)
+    assert "strokes" not in mark["label"]
+
+
+def test_pricing_a_sweep_refuses_what_painting_it_would_refuse(tmp_path):
+    """A quote that succeeds where the purchase fails is worse than no quote: the
+    painter plans against a number for a mass the engine will not lay. ``cost`` and
+    ``sweep`` go through the same arithmetic, so they raise the same complaints."""
+    s = make(tmp_path)
+    edge = [(0.2, 0.5), (0.8, 0.5)]
+    for bad in ({"passes": 0}, {"depth": 0.0}, {"depth": 40.0}, {"cross": 0}):
+        spec = {"edge": edge, "into": "down", **bad}
+        with pytest.raises(ValueError):
+            s.cost(spec)
+        with pytest.raises(ValueError):
+            s.sweep(edge, into="down", **bad)

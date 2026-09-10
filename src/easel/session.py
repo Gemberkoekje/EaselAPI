@@ -283,9 +283,7 @@ class Session:
         place = as_place(region)
         b = self._resolve_brush(brush, size, None, brush_overrides)
         shaped = isinstance(place, Polygon)
-        over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
 
-        band = _pass_step(b.size, density)
         records: list[StrokeRecord] = []
         traced = ""
         if getattr(place, "traced", False):
@@ -295,22 +293,42 @@ class Session:
             traced = " (traced)"
             self._note_assisted(f"traced outline blocked in: {place.name or 'shape'}")
 
+        for pass_dir, path in self._block_in_paths(place, b, direction, density, overhang):
+            records.append(
+                self.stroke(
+                    path,
+                    brush=b,
+                    color=color,
+                    pressure=pressure,
+                    note=note or (f"block-in {place.name or ('shape' if shaped else 'region')} "
+                                  f"{pass_dir}{traced}"),
+                )
+            )
+        return records
+
+    def _block_in_paths(self, place, b: Brush, direction, density: float, overhang):
+        """Every pass ``block_in`` would lay, as geometry, before any of it is paint.
+
+        Split out so :meth:`cost` and :meth:`preview` can say what a mass charges
+        without laying it: walking the passes is about a three-hundredth of the time
+        painting them takes, and the count does not depend on the wander drawn per
+        pass. It stays a generator, and stays consumed one path at a time by the
+        loop above, because the pass wander is drawn from ``self.rng`` *between* the
+        ``stroke()`` calls -- collecting the paths up front would reorder the stream
+        and move every shaped painting ever made.
+
+        One place, so the price quoted and the price paid cannot drift apart;
+        ``test_cost_is_what_block_in_actually_charges`` holds them together.
+        """
+        shaped = isinstance(place, Polygon)
+        over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
+        band = _pass_step(b.size, density)
         for pass_dir in _pass_directions(direction):
             angle = place.axis if pass_dir == "axis" else pass_dir
             paths = (self._shape_paths(place, angle, band, b.size * over) if shaped
                      else self._block_paths(place, angle, band, b.size * over))
             for path in paths:
-                records.append(
-                    self.stroke(
-                        path,
-                        brush=b,
-                        color=color,
-                        pressure=pressure,
-                        note=note or (f"block-in {place.name or ('shape' if shaped else 'region')} "
-                                      f"{pass_dir}{traced}"),
-                    )
-                )
-        return records
+                yield pass_dir, path
 
     def _shape_paths(self, poly: Polygon, degrees, band: float, over: float):
         """Sweep a shape at an angle, every pass cut against its own outline.
@@ -544,6 +562,29 @@ class Session:
             edge = edge.closed
 
         b = self._resolve_brush(brush, size, None, brush_overrides)
+        depth, step, n_passes, cross = self._sweep_passes(b, depth, passes, cross, density)
+
+        records: list[StrokeRecord] = []
+        for kind, path in self._sweep_paths(edge, step, n_passes, depth, cross,
+                                            into, closed):
+            records.append(
+                self.stroke(
+                    path,
+                    brush=b, color=color, pressure=pressure,
+                    note=note or kind,
+                )
+            )
+        return records
+
+    def _sweep_passes(self, b: Brush, depth, passes, cross, density: float):
+        """How many passes a sweep lays, how far apart -- and what it refuses to lay.
+
+        Shared by :meth:`sweep` and :meth:`cost`, so that a sweep which is quoted a
+        price and then painted agrees with itself on the count, and one that cannot
+        be painted raises the same complaint when it is priced instead.
+
+        Returns ``(depth, step, n_passes, cross)``, each validated.
+        """
         depth = float(depth)
         if not math.isfinite(depth) or depth <= 0.0:
             raise ValueError(
@@ -578,29 +619,36 @@ class Session:
                     f"At 90 they are columns hanging off the edge, which is the "
                     f"thing sweeping exists to avoid."
                 )
+        return depth, step, n_passes, cross
 
+    def _sweep_paths(self, edge, step: float, n_passes: int, depth: float,
+                     cross, into, closed):
+        """Every pass ``sweep`` would lay, as geometry, before any of it is paint.
+
+        :meth:`_block_in_paths`' counterpart, and split out for the same reason: a
+        sweep is one call and ten to thirty strokes, so :meth:`cost` has to be able
+        to price one without painting it. A generator for the same reason too --
+        the wander comes off ``self.rng`` between the ``stroke()`` calls above.
+
+        Yields the log note for each pass beside its path, because the two sets of
+        passes are named differently in the log and a caller that only counts them
+        does not care which is which.
+        """
         spacing = max(step * 0.6, 0.008)
         spine, ring = _sweep_spine(edge, closed, spacing)
         normals = _sweep_normals(spine, into, ring)
         cum = _arc_length(spine)
         length = float(cum[-1])
-        records: list[StrokeRecord] = []
 
         for k in range(n_passes):
             off = k * step + self._sweep_wobble(cum, length, step, ring)
             path = _drop_folds(spine + normals * off[:, None], spine, step)
             if path is None:
                 continue                      # this pass folded in on itself: past the middle
-            records.append(
-                self.stroke(
-                    path if k % 2 == 0 else path[::-1],
-                    brush=b, color=color, pressure=pressure,
-                    note=note or "sweep",
-                )
-            )
+            yield "sweep", (path if k % 2 == 0 else path[::-1])
 
         if cross is None:
-            return records
+            return
 
         for i, (us, vs) in enumerate(_cross_lines(length, depth, step, cross, spacing)):
             base = _band_points(spine, normals, cum, us, np.zeros_like(vs))
@@ -608,14 +656,7 @@ class Session:
             path = _drop_folds(_band_points(spine, normals, cum, us, vs + wob), base, step)
             if path is None:
                 continue
-            records.append(
-                self.stroke(
-                    path if i % 2 == 0 else path[::-1],
-                    brush=b, color=color, pressure=pressure,
-                    note=note or "sweep cross",
-                )
-            )
-        return records
+            yield "sweep cross", (path if i % 2 == 0 else path[::-1])
 
     def _sweep_wobble(self, at, length: float, step: float, ring: bool) -> np.ndarray:
         """A smooth wander along a pass, so a sweep is not a set of parallel rules.
@@ -1062,6 +1103,65 @@ class Session:
         )
         return save_look(img, self._look_path(path, "rehearse"))
 
+    def cost(self, strokes) -> int:
+        """What a plan would charge against the stroke budget, without painting it.
+
+        A mark costs one. A **mass** costs what its passes come to, and that is the
+        number no painter can work out by hand: a mass is priced on the extent of
+        its bounding box along the sweep's normal *and* on how many times a pass
+        line crosses it, so anything curved or concave costs more than the box it
+        sits in. A ribbon `0.029` wide at brush `0.015` is 4 passes straight and 75
+        round a bend -- and the bend is not a defect to route around, it is what the
+        band costs when its box is ten times its width.
+
+        Same plan as :meth:`preview` and :meth:`rehearse`, so the three answer the
+        three questions about a mark in the same words: where it goes, what it looks
+        like, and what it costs. Nothing is painted, nothing is logged, and the
+        stroke stream is not spent, so this can be called as often as it is useful::
+
+            plan = {"shape": mass, "brush": "bristle", "color": "dark", "size": 0.05}
+            s.cost(plan)                      # 31 -- a tenth of the budget
+            s.cost(dict(plan, size=0.09))     # 12 -- the same mass, a wider brush
+            s.preview(plan)                   # the count is on the overlay too
+
+        Args:
+            strokes: as :meth:`preview` -- marks, masses and sweeps, one or a list.
+
+        Returns:
+            The number of strokes painting the plan would charge.
+        """
+        return sum(self._plan_cost(kind, spec)
+                   for kind, spec in self._plan_specs(strokes))
+
+    def _plan_cost(self, kind: str, spec: dict) -> int:
+        """Price one plan entry by walking its passes, not by laying them.
+
+        On a trial session, whose generator holds a *copy* of the real stream: the
+        pass wander is drawn while counting and would otherwise be spent, changing
+        the painting that followed. The count itself does not depend on it.
+        """
+        if kind == "stroke":
+            return 1
+        trial = self._trial_session()
+        b = trial._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
+                                 spec.get("opacity"), {})
+        if kind == "mass":
+            return sum(1 for _ in trial._block_in_paths(
+                spec["place"], b, spec.get("direction", "horizontal"),
+                float(spec.get("density", 1.0)), spec.get("overhang")))
+
+        # A sweep works its pass count out from the depth before any geometry is
+        # walked, so the quote goes through the same arithmetic the painted one does
+        # -- including its refusals, so a plan that cannot be swept says so when it
+        # is priced rather than when it is paid for.
+        edge = spec["edge"]
+        depth, step, n_passes, cross = trial._sweep_passes(
+            b, spec.get("depth", 0.2), spec.get("passes"), spec.get("cross"),
+            float(spec.get("density", 1.0)))
+        return sum(1 for _ in trial._sweep_paths(
+            edge.closed if isinstance(edge, Polygon) else edge,
+            step, n_passes, depth, cross, spec.get("into"), spec.get("closed")))
+
     def _trial_session(self) -> Session:
         """A throwaway session sharing this one's surface, palette and seeding.
 
@@ -1162,6 +1262,16 @@ class Session:
             return self._preview_sweep(spec, index)
         return self._preview_shape(spec, index)
 
+    def _priced(self, kind: str, spec: dict, label: str) -> str:
+        """A mass's label with what it charges, so the price is on the picture.
+
+        Only for the two kinds that cost more than the painter can count: a mark is
+        one stroke and saying so would be noise on every overlay. Walking the passes
+        costs a few milliseconds against the preview's own render, which is why this
+        can be unconditional rather than something to remember to ask for.
+        """
+        return f"{label}  {self._plan_cost(kind, spec)} strokes"
+
     def _preview_sweep(self, spec: dict, index: int) -> dict:
         """What the overlay needs for a sweep: the ground it covers, and the brush."""
         b = self._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
@@ -1171,8 +1281,9 @@ class Session:
                               b.size, float(spec.get("density", 1.0)),
                               float(spec.get("depth", 0.2)), spec.get("into"),
                               spec.get("closed"))
+        label = str(spec.get("label", spec.get("note") or f"sweep {index + 1}"))
         return {"points": points, "width": b.size, "fill": True,
-                "label": str(spec.get("label", spec.get("note") or f"sweep {index + 1}"))}
+                "label": self._priced("sweep", spec, label)}
 
     def _preview_mass(self, spec: dict, index: int) -> dict:
         """What the overlay needs for a mass: its outline and the brush filling it."""
@@ -1182,9 +1293,10 @@ class Session:
         points = (place.closed if isinstance(place, Polygon)
                   else [(place.x0, place.y0), (place.x1, place.y0),
                         (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
+        label = str(spec.get("label", spec.get("note") or place.name
+                              or f"mass {index + 1}"))
         return {"points": points, "width": b.size, "fill": True,
-                "label": str(spec.get("label", spec.get("note") or place.name
-                                      or f"mass {index + 1}"))}
+                "label": self._priced("mass", spec, label)}
 
     def _preview_shape(self, spec: dict, index: int) -> dict:
         """What the overlay needs: the path, the brush's width, and a label."""
