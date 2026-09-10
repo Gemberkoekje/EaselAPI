@@ -119,8 +119,8 @@ def join(before: Path, after: Path, out: Path) -> Path:
     sheet = Image.new("RGB", (a.size[0] + b.size[0] + gap,
                               max(a.size[1], b.size[1]) + head), (18, 18, 20))
     draw = ImageDraw.Draw(sheet)
-    draw.text((8, 7), "BEFORE  (M6 engine)", fill=(255, 220, 160))
-    draw.text((a.size[0] + gap + 8, 7), "AFTER  (M7)", fill=(180, 255, 190))
+    draw.text((8, 7), "BEFORE  (main, before M7)", fill=(255, 220, 160))
+    draw.text((a.size[0] + gap + 8, 7), "AFTER  (main + M7)", fill=(180, 255, 190))
     sheet.paste(a, (0, head))
     sheet.paste(b, (a.size[0] + gap, head))
     sheet.save(out)

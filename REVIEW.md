@@ -520,10 +520,17 @@ unmeetable target is worse than one that reports nothing, because the painter sp
 strokes on it.
 
 **Fixed** with `Palette.darkest_value` and `Comparison.unreachable` / `.fixable`.
-Unreachable cells print `~` instead of `*` and are counted separately, and the guide
-now says what to do instead -- compress the reference's range onto the palette's
-rather than matching it. Note this does *not* change what counts as out: `off` is
-unchanged, so nothing that was reported stops being reported.
+Unreachable cells print `~` instead of `*` and are counted separately. Note this
+does *not* change what counts as out: `off` is unchanged, so nothing that was
+reported stops being reported.
+
+**Superseded in part by M6b.** The split was the right tool and the floor was the
+wrong number: finding 33 says why, and the masstones are darker since. The box now
+bottoms out at `0.13` rather than `0.235`, `Level3.jpg`'s eighteen unreachable
+cells are the painter's own work again, and the guide no longer teaches compressing
+a reference's range onto the palette's -- that paragraph was the workaround, and it
+is gone. What survives here is the split itself, for the deepest few cells a
+photograph can still hold below `0.13 - 0.10`; on an ordinary reference expect none.
 
 ### 22. Nothing could sweep a mass along its own axis
 
@@ -779,8 +786,182 @@ only the largest, matching what it already claimed to do
   with the budget to render both versions of a real painting side by side and
   judge.
 
+  **Re-measured after M6b, which expected it to get worse, and it did not.** The
+  brief reasoned that darker pigments would put more channels near the `0.01`
+  floor and so widen this. The lift only fires on a canvas pixel *below* the floor,
+  though, and after M6b there are none: every dark swatch is written at or above
+  `0.01` on purpose (`palette.py`), and no reflectance the model produces goes under
+  it. Measured on a real painting, 78 strokes: darkest channel anywhere `0.0141`
+  against `0.0409` before -- much closer to the floor, still above it -- and
+  `0.0000%` of pixels below it under either palette. A faint dab passing overhead
+  moves at most 1 of 255, which is ordinary paint landing, not this.
+
+  So **item 11 does not move up**; if anything M6b made its first half harder to
+  reach. What is still live is its second half, and only there: a colour the painter
+  supplies below the floor cannot be laid as written. `cadmium_yellow` (`#FFC012`,
+  blue `~0.006`) still reads blue `26` rather than its own `18`, and a literal
+  `"#000000"` lands at `26` grey. Both are the floor doing its job at the input
+  rather than at the output, and neither is a soft edge.
+
 ---
 
 ## Not yet reviewed
 
 The MCP server (now M8 in the brief), which does not exist yet.
+
+---
+
+# Guide critique — before REHEARSAL4
+
+A reading of `PAINTER.md` as a whole, by a reviewer, after the M6 final pass and
+before the next run. Not an engine review: the finding is that the guide had
+become a lab notebook, and two of its passages were teaching the painter to work
+around engine defects rather than reporting them here. What follows is what the
+critique said, what changed in the guide, and the two items it leaves open.
+
+## Fixed in the guide
+
+- **It leaked subjects.** The brief says the guide must not contain example
+  subjects, and it named sky, water, a post, a wall, a table, a mug, a spoon, hair,
+  a coat, a face, an eye and the lip of a cup — and its back-to-front example was
+  the estuary REHEARSAL2 painted. Every example is now an abstract mass, the
+  landmark names are `top_l` / `top_r` / `base`, and the engine's own painter-facing
+  strings (`easel brushes`, the `mark()` docstring and error, `prepare()`'s
+  docstring) were neutralised the same way. NOTES gotcha 15 records why the nouns
+  matter as much as the code blocks.
+- **It had turned into a curve-fitting manual.** "Work down `fixable`, largest
+  first, and stop when it is empty" is an optimiser loop, two paragraphs above the
+  sentence saying that matching cell by cell is tracing. `compare()` is now asked
+  for twice — once on the empty canvas to read the reference's range, once after
+  the block-in to check the three masses — and *When to stop measuring* sits
+  directly under it. Every calibration number (graphite survival by opacity,
+  wetness decay per stroke, the load window, run-out per texture, `block_in`
+  overhang, the 35%-versus-20% axis table) moved to `CALIBRATION.md`. The guide
+  went from about 8,500 words to about 6,900, a fifth of which is the seven
+  exercises.
+- **The drawing order contradicted itself.** Section 2 said draw after the far
+  masses; the reference section was headed *The drawing, before the masses*. One
+  sentence now reconciles them in both places: landmarks before anything, pencil
+  after the far masses, near masses on top.
+- **The pressure section.** Cut to what pressure does today, with a note in
+  `CALIBRATION.md` that M7 rewrites it rather than patching it.
+
+## Fixed after the critique
+
+### 33. The `0.23` value floor is the pigment swatches, not a painting lesson
+
+**Found by**: the guide critique, which called the compression formula, the `~`
+marker and two paragraphs on not fighting the floor "an engine defect dressed up as
+a painting lesson".
+
+**Evidence.** `Palette.value_of` per pigment, one flat pass on toned grey:
+`burnt_umber` 0.23, `ultramarine` 0.26, `alizarin` 0.30, `burnt_sienna` 0.33,
+`viridian` 0.39. `mix("ultramarine", "burnt_umber", 0.5)` reads `0.226`, a hair
+under umber alone. The mixing model (a power mean of Kubelka-Munk K/S, per
+channel) cannot take any channel below the darker ingredient's, so no mixture is
+darker than the darkest pigment in the box — and the darkest pigment is a swatch
+at `#4A3728`, far lighter than a tube masstone. Real ultramarine and burnt umber
+mixed go close to black; that is the whole point of the mixture, and here it
+cannot happen. Finding 21 reported the floor correctly and then built a tool
+around it; this finding says the floor itself is the defect.
+
+**Fixed in M6b** by darkening the masstones, which is what the human decided
+rather than adding a black. The six darks are now written as tube masstones and
+the box floors at `0.13`:
+
+| Pigment | Was | Now | Value was | Value now |
+|---|---|---|---|---|
+| `burnt_umber` | `#4A3728` | `#2A1E1A` | 0.23 | 0.13 |
+| `ultramarine` | `#2E3B8C` | `#1A2856` | 0.26 | 0.17 |
+| `alizarin` | `#8E2438` | `#3E1A22` | 0.30 | 0.15 |
+| `burnt_sienna` | `#8A3D24` | `#56291A` | 0.33 | 0.21 |
+| `viridian` | `#20705B` | `#1A4638` | 0.39 | 0.24 |
+| `cerulean` | `#2A6FA8` | `#215884` | 0.42 | 0.33 |
+
+`mix("ultramarine", "burnt_umber", 0.5)` reads `0.137` against `0.226` before, and
+the model's own limit — the `0.01` linear reflectance floor from finding 5 — is
+`0.10`. The three hundredths between them are hue, and they are not recoverable:
+a dark that is still blue cannot sit on the floor in all three channels, and
+pigments with no hue left break the mixtures findings 5 and 6 protect. Cerulean
+came down with the rest to keep the ladder between viridian and cadmium red from
+opening into a gap.
+
+**The mixing exponent moved too**, `0.5` to `0.35`, and that was not cosmetic.
+Finding 6 chose `0.5` so that white would carry a 50/50 mixture about a quarter of
+the way up the palette's value range — `0.235` of it, measured on the old swatches.
+Darkening the darks widened the range from `0.73` to `0.83` and left `0.5` crossing
+only `0.158` of it: finding 6's own complaint, returning with nothing about white
+changed. `0.35` puts it back at `0.234`, and the mixes the finding was tuned
+against land where they did (`cerulean + white` at `0.7`: `0.698` → `0.707`; the
+ultramarine/burnt-sienna cool grey `0.567` → `0.555`). Lower again and yellow +
+blue loses its green and goes brown, so `0.35` is where it stops. `blend_wet` uses
+the same exponent, so the palette's number and the canvas's pixel stay the same
+mixture; it costs about `1.2x` in the per-pixel wet blend.
+
+**Every golden image moved, and was looked at first** — the three `marks_*` cases,
+`drawing`, and the sampler, plus a real painting (`rehearsal/own*.py` re-rendered
+under both palettes, which is a scratch comparison and not a change to the record).
+The darks are deeper and still hold their colour; break-up, dry brush, the tooth
+speckle, the knife edge and the graphite showing through a glaze are unchanged. On
+that painting the value range went from `0.212`–`0.910` to `0.122`–`0.945`.
+
+The guide's floor paragraph, the compression formula in `CALIBRATION.md`, and the
+brief's *Reachable* paragraph are rewritten for the new range. `compare()` keeps
+its `~` split for the deepest few cells a photograph can still hold — see
+finding 21.
+
+**Also fixed here: exercise 1 was a trap.** It asked "do the steps look evenly
+spaced in greyscale?" of nine steps mixed at equal white ratios, which under this
+model run `0.03` to `0.21` apart — the answer was plainly no and the exercise had
+no way to say so. It now mixes to a *value*, bisecting for the ratio, and the nine
+bands render `0.148` to `0.951` in steps of `0.100`. The ratios it prints (a third
+of white for the first step, nine tenths for the eighth) are the lesson the old
+version buried.
+
+## Open, with evidence
+
+## Fixed since the critique
+
+### 34. Sweeping a shaped mass is a recipe the painter has to retype
+
+**Found by**: the guide critique.
+
+The guide argues, correctly, that a mass with a silhouette is laid as passes swept
+along its edge and stepped inward, not as a box and not as columns. It then handed
+the painter fifteen lines of code to do it. That is an API call — phase M6c in
+the brief has the shape — and the recipe sits in `CALIBRATION.md` until it is one.
+
+**Fix.** `s.sweep(edge, brush, color, into=, depth=, size=, passes=, cross=,
+closed=, density=)` in `easel/session.py`. The first pass runs along the boundary
+and each one after it is the same curve offset one part-brush further in — the same
+spacing rule `block_in` uses — with successive passes alternating direction, and
+`cross=` lays a second set leaning across the first. It emits ordinary strokes, so
+the log, `undo` and `replay` needed no changes at all.
+
+Two things the recipe left to the painter, and this had to decide:
+
+- **Which side of the edge the mass is on.** An open boundary has two sides and
+  guessing is the loudest possible failure — the whole shape lands inside out — so
+  `into=` is required for one: a compass word or an angle steps every pass the same
+  way, which is what the recipe did, and an `(x, y)` point inside the mass steps
+  each point along the boundary's own normal instead, which is what a curved edge
+  needs. A closed boundary has an inside, so `closed=True` needs neither.
+- **What happens past the middle.** Offsetting a closed curve inward eventually
+  folds it through itself, and every pass after that crosses itself. Points that
+  travel backwards along the boundary relative to the last one kept are dropped, and
+  a pass with nothing left is not laid: asking for more depth than the mass has
+  costs strokes that never happen rather than a scribble in the middle of a good
+  mass.
+
+**Measured** (`scripts/probe_sweep.py`, one boundary, three ways, re-run under
+M6b's darks): a `block_in` over the bounding box puts 19.4% of its paint outside
+the shape and scores 35.9% on the axis-alignment metric; the sweep, for the same
+five strokes, puts 6.5% outside and scores 20.9%. Crossing at 26° takes the value
+spread inside the mass from `0.031` to `0.011` for twelve more strokes, without
+moving the silhouette. The numbers and the sheet are in `CALIBRATION.md` under
+*`sweep`*; the recipe is out of it, and the guide's *A region is a rectangle*
+paragraph is one call.
+
+**Additive, as the brief asked.** No golden image moved; one was added
+(`tests/golden/sweep.png`, the geometry rather than the marks). Ten tests in
+`tests/test_precision.py`.

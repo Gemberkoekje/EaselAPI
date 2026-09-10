@@ -56,13 +56,13 @@ PREAMBLE = (
     "path = [(0.2,0.3),(0.5,0.4),(0.8,0.3)]\n"
     # The guide's landmark blocks assume marks already exist by the time a later
     # block uses s.pt(...), which is true when the guide is read in order.
-    "s.mark('rim_l', 0.335, 0.315)\n"
-    "s.mark('rim_r', 0.630, 0.315)\n"
-    "s.mark('foot', 0.480, 0.715)\n"
+    "s.mark('top_l', 0.335, 0.315)\n"
+    "s.mark('top_r', 0.630, 0.315)\n"
+    "s.mark('base', 0.480, 0.715)\n"
     "s.pencil([(0.30, 0.40), (0.50, 0.55)])\n"
     # ...and the same for the plan that preview, rehearse and the paint block share.
     "plan = [{'points': [(0.335, 0.315), (0.40, 0.62)], 'brush': 'liner',\n"
-    "         'size': 0.006, 'color': 'light', 'label': 'rim'}]\n"
+    "         'size': 0.006, 'color': 'light', 'label': 'edge'}]\n"
 )
 ok = bad = skipped = 0
 for i, b in enumerate(blocks, 1):

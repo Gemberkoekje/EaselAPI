@@ -45,8 +45,11 @@ directory, which is often not on `PATH` (it warns when it is not), so
 ## If you are an LLM agent, read PAINTER.md
 
 [`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
-tone the ground, establish big value shapes, check values, refine, edges, highlights
-last — rather than listing functions. The engine is designed around one habit:
+tone the ground, paint back to front, check values, refine, edges, highlights
+last — rather than listing functions. The measured numbers behind its rules
+(graphite survival, wetness decay, the value floor, load windows) are kept apart in
+[`CALIBRATION.md`](CALIBRATION.md), so the guide stays short and the numbers can
+change when the engine does. The engine is designed around one habit:
 
 > Look every five to fifteen strokes. A stroke you did not look at was a guess.
 
@@ -59,6 +62,7 @@ last — rather than listing functions. The engine is designed around one habit:
 | Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
+| Masses | `block_in(region, ...)` fills a rectangle with overlapping passes; `sweep(edge, ...)` lays a mass that has a silhouette, as passes along its own boundary stepped inward. Both emit ordinary strokes. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
 | Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like. Neither touches the canvas. |
@@ -80,7 +84,7 @@ easel run painting.easel first_pass.py
 easel look painting.easel --grid
 easel look painting.easel --values
 easel look painting.easel --region D4 --fine --reference ref.jpg
-easel mark painting.easel rim_l 0.335 0.315
+easel mark painting.easel top_l 0.335 0.315
 easel compare painting.easel ref.jpg
 easel prepare painting.easel ref.jpg --level coarse
 easel undo painting.easel 3

@@ -95,8 +95,8 @@ def compare(before: Path, after: Path, out: Path) -> Path:
     """The two paintings side by side, with the marks that changed enlarged below."""
     from PIL import Image, ImageDraw  # noqa: PLC0415 - only this mode needs it
 
-    pair = [(Image.open(before).convert("RGB"), "BEFORE  (M6 engine)"),
-            (Image.open(after).convert("RGB"), "AFTER  (M7)")]
+    pair = [(Image.open(before).convert("RGB"), "BEFORE  (main, before M7)"),
+            (Image.open(after).convert("RGB"), "AFTER  (main + M7)")]
     rows = [[(im.resize((round(im.width * PANEL_H / im.height), PANEL_H), Image.LANCZOS),
               f"{label} -- 295 strokes") for im, label in pair]]
     for title, box in DETAILS.items():

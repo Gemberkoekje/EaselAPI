@@ -33,7 +33,7 @@ from easel.measure import Comparison, compare_images, heat_sheet
 from easel.palette import Palette
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import Region, as_region
-from easel.stroke import draw_pencil, paint_stroke, press_width
+from easel.stroke import catmull_rom, draw_pencil, paint_stroke, press_width
 
 __all__ = ["Session"]
 
@@ -392,6 +392,159 @@ class Session:
                 f"Use 'horizontal', 'vertical', 'diagonal' or 'cross'."
             )
 
+    def sweep(
+        self,
+        edge,
+        brush: str | Brush = "bristle",
+        color="burnt_umber",
+        into=None,
+        depth: float = 0.2,
+        size: float | None = None,
+        passes: int | None = None,
+        cross: float | None = None,
+        closed: bool | None = None,
+        density: float = 1.0,
+        pressure="taper",
+        note: str = "",
+        **brush_overrides,
+    ) -> list[StrokeRecord]:
+        """Lay a mass that has a silhouette: passes swept along its edge, stepped inward.
+
+        ``block_in`` fills a rectangle, which is right for a band and wrong for
+        anything with a shape -- block a shaped mass in as a box and you get a box,
+        and no amount of later work takes it out again. This is the other way round:
+        the boundary is given, the first pass runs along it, and every pass after
+        that is the same curve offset one part-brush further into the mass. Passes
+        that run *along* the edge describe the form; columns that hang *down* from
+        it comb the mass into strands and print the canvas's axis over the whole
+        thing.
+
+        It emits ordinary strokes, so the log, ``undo`` and ``replay`` are the same
+        as for anything else painted by hand.
+
+        The edge is meant to be the painter's own -- seen, marked and read off the
+        grid. Feeding ``ref_outline(n)`` straight in is an assisted mode, the same
+        as :meth:`sketch`: worth running, and any write-up has to say it was used.
+
+        Args:
+            edge: normalised (x, y) points along the boundary, in order. It may run
+                off the canvas -- a mass that meets the frame should.
+            brush: preset name or brush.
+            color: the colour to lay in.
+            into: which side of the edge the mass is on. ``"down"``, ``"up"``,
+                ``"left"``, ``"right"`` or a number of degrees clockwise from the
+                horizontal step every pass along that one direction, the way a hand
+                works down a near-horizontal edge. An (x, y) point *inside* the mass
+                steps along the boundary's own normal instead, so the passes stay
+                parallel to a curved edge. A closed edge needs neither: the mass is
+                what the edge encloses.
+            depth: how far into the mass to sweep, in normalised canvas units. The
+                passes cover it a part-brush at a time.
+            size: brush size override.
+            passes: how many passes, if you would rather say than let the brush
+                decide. Given, it pins the spacing at ``depth / passes``.
+            cross: lay a second set of passes leaning this many degrees off the
+                boundary, over the same ground. One sweep leaves the edge stringy,
+                because a bristle brush covers about three-quarters of its width;
+                crossing it closes the mass up. Twenty to thirty is usually enough.
+            closed: treat the edge as a loop. Inferred when the last point is the
+                first; pass ``True`` for a boundary that comes back on itself
+                without repeating its first point, as ``ref_outline`` returns.
+            density: as ``block_in``: 1.0 covers, below 1 spaces the passes out and
+                leaves what is underneath showing through.
+            pressure: pressure profile for each pass.
+            note: recorded in the log.
+
+        Returns:
+            The records for every stroke laid down.
+        """
+        b = self._resolve_brush(brush, size, None, brush_overrides)
+        depth = float(depth)
+        if not math.isfinite(depth) or depth <= 0.0:
+            raise ValueError(
+                f"sweep(depth={depth!r}) is how far into the mass to sweep, and has "
+                f"to be a positive distance."
+            )
+        if depth > _MAX_SWEEP_DEPTH:
+            # A pass per part-brush, and nothing bounds the count the way a region
+            # bounds block_in's. Almost always a depth given in pixels.
+            raise ValueError(
+                f"sweep(depth={depth!r}) is deeper than the canvas. Coordinates here "
+                f"are normalised 0..1, so a mass the height of the canvas is "
+                f"depth=1.0."
+            )
+
+        # One part-brush, the same rule block_in spaces its passes by.
+        step = max(b.size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
+        if passes is None:
+            n_passes = max(1, int(round(depth / step)))
+        else:
+            n_passes = int(passes)
+            if n_passes < 1:
+                raise ValueError(f"sweep(passes={passes!r}) needs at least one pass.")
+            step = depth / n_passes
+
+        if cross is not None:
+            cross = float(cross)
+            if not math.isfinite(cross) or not 0.0 < abs(cross) < 90.0:
+                raise ValueError(
+                    f"sweep(cross={cross!r}) is how far the second set of passes "
+                    f"leans off the boundary, in degrees: not zero, and under 90. "
+                    f"At 90 they are columns hanging off the edge, which is the "
+                    f"thing sweeping exists to avoid."
+                )
+
+        spacing = max(step * 0.6, 0.008)
+        spine, ring = _sweep_spine(edge, closed, spacing)
+        normals = _sweep_normals(spine, into, ring)
+        cum = _arc_length(spine)
+        length = float(cum[-1])
+        records: list[StrokeRecord] = []
+
+        for k in range(n_passes):
+            off = k * step + self._sweep_wobble(cum, length, step, ring)
+            path = _drop_folds(spine + normals * off[:, None], spine, step)
+            if path is None:
+                continue                      # this pass folded in on itself: past the middle
+            records.append(
+                self.stroke(
+                    path if k % 2 == 0 else path[::-1],
+                    brush=b, color=color, pressure=pressure,
+                    note=note or "sweep",
+                )
+            )
+
+        if cross is None:
+            return records
+
+        for i, (us, vs) in enumerate(_cross_lines(length, depth, step, cross, spacing)):
+            base = _band_points(spine, normals, cum, us, np.zeros_like(vs))
+            wob = self._sweep_wobble(us, length, step, False)
+            path = _drop_folds(_band_points(spine, normals, cum, us, vs + wob), base, step)
+            if path is None:
+                continue
+            records.append(
+                self.stroke(
+                    path if i % 2 == 0 else path[::-1],
+                    brush=b, color=color, pressure=pressure,
+                    note=note or "sweep cross",
+                )
+            )
+        return records
+
+    def _sweep_wobble(self, at, length: float, step: float, ring: bool) -> np.ndarray:
+        """A smooth wander along a pass, so a sweep is not a set of parallel rules.
+
+        Three draws interpolated along the pass, not noise per point: independent
+        per-point noise clumps and gaps, which reads as an artefact rather than as a
+        hand (REVIEW.md finding 4). A closed edge gets the same value at both ends
+        so the seam does not step.
+        """
+        wob = self.rng.normal(0.0, step * 0.3, size=3)
+        if ring:
+            wob[-1] = wob[0]
+        return np.interp(at, [0.0, length * 0.5, length], wob)
+
     # -- drawing ----------------------------------------------------------------
     def pencil(
         self,
@@ -495,12 +648,12 @@ class Session:
     def mark(self, name: str, x: float, y: float) -> tuple[float, float]:
         """Record a named point, and show it on every look from now on.
 
-        This is the unit of a drawing. Six or seven verified points -- the corner of
-        an eye, the base of a nose, where a handle meets a body -- and the masses
-        get hung on them. Verify each one against the reference at feature scale
-        before trusting it::
+        This is the unit of a drawing. Six or seven verified points -- where a
+        silhouette turns, where two masses meet, the top and base of a shape -- and
+        the masses get hung on them. Verify each one against the reference at
+        feature scale before trusting it::
 
-            s.mark("eye_l", *cell("D4").point(0.3, 0.6))
+            s.mark("top_l", *cell("D4").point(0.3, 0.6))
             s.look(region=cell("D4"), reference=ref, grid="fine")
 
         Args:
@@ -512,7 +665,7 @@ class Session:
         """
         key = str(name).strip()
         if not key:
-            raise ValueError("A landmark needs a name: mark('eye_l', 0.42, 0.31)")
+            raise ValueError("A landmark needs a name: mark('top_l', 0.42, 0.31)")
         if not (math.isfinite(x) and math.isfinite(y)):
             raise ValueError(f"A landmark needs a real position, got ({x!r}, {y!r}).")
         pt = (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
@@ -520,7 +673,7 @@ class Session:
         return pt
 
     def pt(self, name: str) -> tuple[float, float]:
-        """A landmark, for use in a path: ``s.stroke([s.pt("brow"), s.pt("eye_l")])``."""
+        """A landmark, for use in a path: ``s.stroke([s.pt("top_l"), s.pt("base")])``."""
         key = str(name).strip()
         if key not in self.marks:
             known = ", ".join(sorted(self.marks)) or "(none yet)"
@@ -681,8 +834,8 @@ class Session:
 
         Example::
 
-            plan = [{"points": [s.pt("brow"), (0.44, 0.30)], "brush": "liner",
-                     "size": 0.004, "label": "brow"}]
+            plan = [{"points": [s.pt("top_l"), (0.44, 0.30)], "brush": "liner",
+                     "size": 0.004, "label": "edge"}]
             s.preview(plan, reference=ref, region=cell("D4"), grid="fine")
         """
         specs = self._stroke_specs(strokes)
@@ -853,9 +1006,10 @@ class Session:
                 print(c.label, c.delta)
 
         Cells whose reference is darker than the palette's own floor are reported
-        as ``unreachable`` rather than as work: the box has no black in it, and a
-        lamp-lit photograph has cells no mixture here can reach. Read ``fixable``
-        for the list worth strokes.
+        as ``unreachable`` rather than as work. Since the masstones were darkened
+        that floor is close to the engine's own, so expect the list to be empty:
+        every cell on the object is normally the painter's to fix, and ``fixable``
+        is then just ``off``.
         """
         ref_img = load_reference(reference)
         r = as_region(region) if region is not None else None
@@ -899,10 +1053,10 @@ class Session:
 
         No model and no learned segmentation: the photograph is quantised in a
         perceptual colour space and its connected areas are labelled and numbered.
-        The map will be wrong in places -- it joins hair to a wall of the same brown
-        and cuts a coat along its folds -- so read it, then correct it with
+        The map will be wrong in places -- it joins two things of the same colour
+        and cuts one thing along its shading -- so read it, then correct it with
         ``prep.merge(...)`` and ``prep.split(...)``. The useful sentence is "area 5
-        is the hair, less the strip that is really wall".
+        is one thing, less the strip that belongs to its neighbour".
 
         Args:
             reference: a path or a PIL image.
@@ -1314,6 +1468,200 @@ def _canvas_point(x: float, y: float) -> tuple[float, float]:
     """A point clamped to the canvas, the way the named block-in branches clamp."""
     return (float(np.clip(x, 0.0, 1.0)), float(np.clip(y, 0.0, 1.0)))
 
+
+#: The deepest a sweep will go. The canvas is one unit across and an edge may run a
+#: little off it, so anything past this is a depth given in pixels by mistake -- and
+#: a sweep lays a pass per part-brush, with nothing else to bound the count.
+_MAX_SWEEP_DEPTH = 2.0
+
+#: What the words ``into=`` accepts mean, in degrees clockwise from the horizontal --
+#: the same convention as ``block_in(direction=)``, and y runs down the canvas.
+_INTO_WORDS = {"right": 0.0, "down": 90.0, "left": 180.0, "up": -90.0}
+
+
+def _arc_length(points: np.ndarray) -> np.ndarray:
+    """Cumulative distance along a polyline, one entry per point."""
+    d = np.diff(points, axis=0)
+    return np.concatenate([[0.0], np.cumsum(np.hypot(d[:, 0], d[:, 1]))])
+
+
+def _sweep_spine(edge, closed, spacing: float) -> tuple[np.ndarray, bool]:
+    """The boundary a sweep follows: smoothed, then resampled at even arc length.
+
+    Smoothed first because that is the curve the strokes will actually paint -- a
+    stroke fits a spline through its points, so offsetting the raw corners would
+    step the passes off the painted edge. Even spacing is what lets the offset be
+    measured in one part-brush and the cross passes be laid in the mass's own
+    coordinates rather than the canvas's.
+
+    Returns the spine and whether the edge is a loop. A loop's spine repeats its
+    first point at the end, so interpolating along it wraps.
+    """
+    try:
+        pts = np.asarray(edge, dtype=np.float64)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "sweep(edge=...) wants a list of (x, y) points along the boundary, "
+            "like [(0.2, 0.7), (0.45, 0.52), (0.8, 0.6)]."
+        ) from exc
+    if pts.ndim != 2 or pts.shape[1] != 2 or len(pts) < 2:
+        raise ValueError(
+            f"sweep(edge=...) wants at least two (x, y) points along the boundary; "
+            f"got an array of shape {pts.shape}."
+        )
+    if not np.isfinite(pts).all():
+        raise ValueError("sweep(edge=...) has a point that is not a finite number.")
+    if float(np.abs(pts - pts[0]).max()) < 1e-9:
+        raise ValueError("sweep(edge=...) has no length: every point is the same place.")
+
+    repeats_first = bool(np.allclose(pts[0], pts[-1], atol=1e-9))
+    ring = repeats_first if closed is None else bool(closed)
+    if ring:
+        if repeats_first:
+            pts = pts[:-1]
+        if len(pts) < 3:
+            raise ValueError(
+                "A closed edge wants at least three points; two make a line, not a shape."
+            )
+        pts = np.vstack([pts, pts[:1]])
+
+    dense = catmull_rom(pts.astype(np.float32), samples_per_segment=12).astype(np.float64)
+    cum = _arc_length(dense)
+    total = float(cum[-1])
+    if total < 1e-9:
+        raise ValueError("sweep(edge=...) has no length: every point is the same place.")
+
+    # Enough points to follow the curve, few enough that a long edge stays quick.
+    count = int(np.clip(round(total / max(spacing, 1e-4)) + 1, 4, 96))
+    at = np.linspace(0.0, total, count)
+    spine = np.stack(
+        [np.interp(at, cum, dense[:, 0]), np.interp(at, cum, dense[:, 1])], axis=1
+    )
+    return spine, ring
+
+
+def _sweep_normals(spine: np.ndarray, into, ring: bool) -> np.ndarray:
+    """Unit vectors pointing into the mass, one per spine point.
+
+    A fixed ``into`` gives every pass the same direction, which is the hand working
+    down a near-horizontal edge and is what the recipe this replaces did. A point
+    inside the mass, or a closed edge, gives each point the boundary's own inward
+    normal instead, so the passes stay parallel to a curve rather than shearing off
+    it. The side is chosen once for the whole edge, not per point: a normal that
+    flips halfway along would fold the pass back on itself.
+    """
+    if ring:
+        core = spine[:-1]
+        tang = np.roll(core, -1, axis=0) - np.roll(core, 1, axis=0)
+        tang = np.vstack([tang, tang[:1]])
+    else:
+        tang = np.gradient(spine, axis=0)
+    mag = np.hypot(tang[:, 0], tang[:, 1])
+    mag[mag < 1e-12] = 1.0
+    tang = tang / mag[:, None]
+    perp = np.stack([-tang[:, 1], tang[:, 0]], axis=1)
+
+    if isinstance(into, str):
+        try:
+            degrees = _INTO_WORDS[into]
+        except KeyError:
+            raise ValueError(
+                f"sweep(into={into!r}) is which side of the edge the mass is on. "
+                f"Use {', '.join(sorted(_INTO_WORDS))}, a number of degrees "
+                f"clockwise from the horizontal, or a point inside the mass."
+            ) from None
+        return _fixed_normals(len(spine), degrees)
+    if isinstance(into, (int, float, np.floating, np.integer)) and not isinstance(into, bool):
+        if not math.isfinite(float(into)):
+            raise ValueError("sweep(into=...) is not a finite angle.")
+        return _fixed_normals(len(spine), float(into))
+    if into is None:
+        if not ring:
+            raise ValueError(
+                "sweep() cannot tell which side of an open edge the mass is on. Say "
+                "so: into='down' (or 'up', 'left', 'right', or a number of degrees "
+                "clockwise from the horizontal), or into=(x, y) for a point inside "
+                "the mass. A closed boundary needs neither -- pass closed=True."
+            )
+        # Shoelace: positive area means the interior lies to the left of travel.
+        area = 0.5 * float(
+            np.sum(spine[:-1, 0] * spine[1:, 1] - spine[1:, 0] * spine[:-1, 1])
+        )
+        return perp if area > 0.0 else -perp
+
+    target = np.asarray(into, dtype=np.float64)
+    if target.shape != (2,) or not np.isfinite(target).all():
+        raise ValueError(
+            f"sweep(into={into!r}) wants a compass word, a number of degrees, or one "
+            f"(x, y) point inside the mass."
+        )
+    facing = float(np.sum((target - spine) * perp))
+    return perp if facing >= 0.0 else -perp
+
+
+def _fixed_normals(count: int, degrees: float) -> np.ndarray:
+    theta = math.radians(degrees)
+    return np.repeat(np.array([[math.cos(theta), math.sin(theta)]]), count, axis=0)
+
+
+def _drop_folds(path: np.ndarray, spine: np.ndarray, step: float) -> np.ndarray | None:
+    """Take the folds out of an offset pass, and drop it entirely if it collapsed.
+
+    Offsetting a curve inward eventually runs it past its own centre, where the
+    passes cross themselves and scribble. A point that travels *backwards* along
+    the boundary relative to the last one kept is on the far side of such a fold,
+    so it goes. Returns ``None`` when what is left is too short to be a mark, which
+    is how a sweep deeper than its own mass stops instead of scribbling.
+    """
+    keep = [0]
+    for i in range(1, len(path)):
+        j = keep[-1]
+        forward = float(np.dot(path[i] - path[j], spine[i] - spine[j]))
+        if forward > 0.0:
+            keep.append(i)
+    if len(keep) < 2:
+        return None
+    out = path[keep]
+    d = np.diff(out, axis=0)
+    if float(np.hypot(d[:, 0], d[:, 1]).sum()) < step * 0.5:
+        return None
+    return out
+
+
+def _band_points(spine, normals, cum, us: np.ndarray, vs: np.ndarray) -> np.ndarray:
+    """Points given in the mass's own coordinates: ``us`` along the edge, ``vs`` into it."""
+    x = np.interp(us, cum, spine[:, 0])
+    y = np.interp(us, cum, spine[:, 1])
+    nx = np.interp(us, cum, normals[:, 0])
+    ny = np.interp(us, cum, normals[:, 1])
+    mag = np.hypot(nx, ny)
+    mag[mag < 1e-12] = 1.0
+    return np.stack([x + vs * nx / mag, y + vs * ny / mag], axis=1)
+
+
+def _cross_lines(length: float, depth: float, step: float, degrees: float, spacing: float):
+    """The second set of passes, as (along, into) coordinates in the swept band.
+
+    A straight line in the band's own coordinates is a pass that follows the form
+    and still crosses the first set at ``degrees``, which is what closes up the
+    stringing a single sweep leaves. Clipped to the band, so the silhouette the
+    first pass laid stays where it is.
+    """
+    lean = math.tan(math.radians(degrees))
+    apart = step / math.cos(math.radians(degrees))
+    lo = min(0.0, -lean * length)
+    hi = max(depth, depth - lean * length)
+    count = max(1, int(round((hi - lo) / apart)))
+    for i in range(count):
+        start = lo + (i + 0.5) * (hi - lo) / count
+        ends = ((0.0 - start) / lean, (depth - start) / lean)
+        u0 = max(0.0, min(ends))
+        u1 = min(length, max(ends))
+        if u1 - u0 <= max(step, 1e-4) * 0.5:
+            continue                      # this line only clips a corner of the band
+        points = max(3, int(round((u1 - u0) / max(spacing, 1e-4))) + 1)
+        us = np.linspace(u0, u1, points)
+        yield us, np.clip(start + lean * us, 0.0, depth)
 
 def _segment_inside(p, q, bounds) -> tuple[float, float] | None:
     """The stretch of the segment ``p``-``q`` that lies inside ``bounds``.
