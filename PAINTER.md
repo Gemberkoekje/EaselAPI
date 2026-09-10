@@ -591,10 +591,12 @@ quiet masses.
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
 
 **A `bristle` stroke is never solid.** It lays a comb of parallel streaks, which is
-what makes it alive on a mark whose direction you mean, and what makes ribbing of
-a big quiet mass laid with single passes — above about `size=0.12` the streaks
-print wider than anything in the picture, and every stroke prints the same ones.
-Lay large quiet masses with `flat`, or with two `bristle` passes crossed, and keep
+what makes it alive on a mark whose direction you mean. A bristle has a width of its
+own, about a two-hundredth of the canvas, so a bigger brush prints *more* streaks
+rather than fatter ones, and the brush picks up a slightly different comb each
+stroke — spacing, phase, and which bristles are missing. What still makes ribbing of
+a big quiet mass is laying it in single parallel passes: cross them, or lay large
+quiet masses with `flat`, and keep
 single bristle strokes for marks that have a direction.
 
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
@@ -667,7 +669,7 @@ as an even field over everything, and it stays visible under every later stroke.
 
 ### Pressure
 
-`pressure` shapes how heavily paint lands along the stroke:
+`pressure` shapes the stroke along its length:
 
 - `"taper"` — lands light, presses, lifts off. **The default, and usually right.**
 - `"press_in"` — starts light, ends heavy.
@@ -678,17 +680,30 @@ as an even field over everything, and it stays visible under every later stroke.
 
 Or pass a number, or a list interpolated along the stroke: `pressure=[0.2, 1.0, 0.3]`.
 
-In the current engine pressure changes how much paint lands, **not how wide the
-mark is**. So the profiles show most clearly on short strokes and on a colour that
-is not already at full strength, and **varying the width of your marks is your job,
-not the pressure profile's** — pass a different `size`. That is the single most
-effective thing you can do to stop a painting looking mechanical.
+**On a round tip — `round_hard`, `round_soft`, `liner` — pressure changes how wide
+the mark is as well as how much paint lands.** `size` is its width at full pressure,
+and it never thins below about a pixel and a half however light the touch. **On the
+oriented tips — `flat`, `bristle`, `knife` — it changes only how much paint lands**,
+because a flat brush's width is the mass it lays and you want that to be the width
+you asked for. So:
+
+- **A mark that tapers is one stroke.** `pressure=[1, 0]` starts at the width you
+  asked for and ends at a point.
+- The *paint* half of the profile shows most clearly on short strokes and on a
+  colour that is not already at full strength — on a long stroke the overlapping
+  dabs saturate and `taper` and `even` land much the same weight, even where they
+  differ in width.
+- **Varying the width of your masses is still your job**, because the brushes that
+  lay masses do not vary with pressure. Pass a different `size`. That is the single
+  most effective thing you can do to stop a painting looking mechanical.
 
 **At the scale of a feature** the brushes go as small as anything you will paint.
-What changes is not the brush: a single dab lands at a fraction of its colour's
-strength, so a small highlight is two or three dabs on the same spot, not one; and
-a mark that tapers in width is two strokes of different sizes. Anything the size of
-a cell or smaller is three marks at most — the dark, the light, and the edge
+What changes is not the brush: a single dab is a *light touch* — the start of a
+`taper`, so it lands a fraction of its colour at about half the width you asked for
+— and a small highlight is `s.dab(x, y, ..., press=3)`, three stamps on the same
+spot, the middle one at full pressure, and **one** stroke against your budget.
+Anything the size of a cell or smaller is three marks at most — the dark, the
+light, and the edge
 between them — laid dark first and looked at through a `region=` crop before the
 light goes on.
 
@@ -736,7 +751,7 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
-s.dab(x, y, brush, color, size=...)                # one mark
+s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
 s.block_in(region, brush, color, direction=, density=, overhang=)   # a mass, as strokes
 s.sweep(edge, brush, color, into=, depth=, cross=, passes=)        # a mass with a shape
 s.smudge(points, size=)                            # move paint around
@@ -762,6 +777,11 @@ s.log()                                            # what you have done so far
 `block_in` takes `direction=` of `"horizontal"`, `"vertical"`, `"diagonal"`,
 `"cross"`, **a number of degrees**, or a sequence of any of those for one pass each.
 Two passes of parallel strokes look like hatching; crossed passes look like paint.
+
+Both space their passes a part-brush apart, which assumes a pass is one brush wide
+all along — true of `flat`, `bristle` and `knife`, and not of a round tip under a
+varying pressure. Lay masses with `flat` or `bristle`; if you want a round tip for
+one, give it `pressure="even"` or it will show its passes at their ends.
 
 One `block_in` is not one stroke: it lays a pass for every brush-width of the
 region, so a big region with a small brush is twenty or thirty of them. Neither is
@@ -839,9 +859,11 @@ first step; it takes nine tenths to reach the eighth. That curve is why a mixtur
 that "should" be halfway comes out too dark, and why the fix is always to add more
 white than feels right.
 
-**2. One stroke, six pressures.** See what the profiles actually do. The low
-`opacity` and the flat `load_falloff` are what make this legible: at full strength
-the overlapping dabs saturate and every profile looks identical, and paint running
+**2. One stroke, six pressures.** See what the profiles actually do. On the round
+brush on the left they change the *width* of the mark as well; on the `bristle` on
+the right they change only how much paint lands. The low `opacity` and the flat
+`load_falloff` are what make the paint half legible: at full strength the
+overlapping dabs saturate and every profile lays the same weight, and paint running
 out along the stroke hides the profile behind its own fade.
 
 ```python

@@ -556,18 +556,29 @@ and scored worst of four in the probe -- was rewritten to run passes along the f
 
 ## Open, with evidence
 
-- **Pressure changes opacity, not width.** A stroke at `pressure=0.1` and one at
-  `1.0` cover an identical bounding box - 58px tall in both - and differ only in how
-  much paint lands (mean delta 0.013 against 0.089). Because dabs overlap and
-  accumulate, an opaque colour saturates and the six named profiles become visually
-  indistinguishable: guide exercise 2 as written demonstrated nothing, and the three
-  pressure columns of `samples/brushes.png` look alike for every brush. Making
-  pressure modulate dab radius would fix that *and* attack "everything the same
-  width", which is on the brief's clip-art list. It would also change every stroke
-  in the engine, which is the thing finding 11 warns against doing by eye late in a
-  milestone. Not taken. `PAINTER.md` now states what pressure does and does not do,
-  fixes the exercise so it demonstrates its lesson, and tells the painter that
-  varying width is their own job.
+- **Pressure changes opacity, not width.** ~~Open.~~ **Taken in M7 — see `M7.md`.**
+  A stroke at `pressure=0.1` and one at `1.0` cover an identical bounding box - 58px
+  tall in both - and differ only in how much paint lands (mean delta 0.013 against
+  0.089). Because dabs overlap and accumulate, an opaque colour saturates and the six
+  named profiles become visually indistinguishable: guide exercise 2 as written
+  demonstrated nothing, and the three pressure columns of `samples/brushes.png` look
+  alike for every brush. Making pressure modulate dab radius would fix that *and*
+  attack "everything the same width", which is on the brief's clip-art list. It would
+  also change every stroke in the engine, which is the thing finding 11 warns against
+  doing by eye late in a milestone — so it waited for a milestone of its own, with the
+  golden images in place as its gate.
+
+  What M7 did: the **round** tips (`round_soft`, `round_hard`, and so `liner`) scale
+  their dab radius with the pressure profile, with a floor of a third of the width
+  and never below 0.75 px of radius; the oriented tips keep their chisel, because a
+  `flat` brush's width is the mass it lays. Measured after
+  (`m7/probe_pressure.py`): `round_hard` at `size=0.06` on a 600 px canvas runs
+  14 px at pressure 0.1 against 36 px at 1.0, and a single stroke at
+  `pressure=[1, 0]` runs 12 px to 6 px along its length — which is the tapering lid
+  line `REHEARSAL2.md`'s eye test could not paint in one mark. The strength formula
+  is unchanged, so the light end of a taper still accumulates to nearly full colour
+  and reads as thin rather than as faint. Judged on the sampler and on a real
+  painting (`m7/mug_compared.png`) before any golden was regenerated.
 
 ---
 

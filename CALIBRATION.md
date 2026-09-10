@@ -173,6 +173,13 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
   a number of degrees clockwise from horizontal, or a sequence of any of those for
   one pass each.
+- **The part-brush step assumes a pass is one brush wide all along it, which is
+  true of every tip except a round one under a varying pressure.** The step at full
+  density is `0.55 * size`; a round tip at the default `taper` is `0.53 * size` at
+  the ends of each pass, so there the passes stop touching and the mass shows them.
+  This is why masses are laid with `flat` or `bristle`. If you want a round tip for
+  one, pass `pressure="even"` and the old behaviour is back. `sweep` steps by the
+  same rule and has the same caveat — its golden case shows it, deliberately.
 
 ### Laying a mass along its own axis
 
@@ -263,20 +270,45 @@ of radius `0.20`, bristle at `0.13`:
 
 ## Pressure
 
-Pressure shapes how heavily paint lands along the stroke. **It does not change the
-width of the mark** in the current engine: a stroke at `pressure=0.2` covers the
-same width as one at `1.0` and lays less paint. Consequences:
+Pressure shapes how heavily paint lands along the stroke, and on a **round** tip —
+`round_hard`, `round_soft`, `liner` — how wide the mark is. `size` is the width at
+full pressure; a light touch keeps a third of it, plus a floor of 0.75 px of radius
+so a fine line thins rather than disappearing. Measured on `round_hard` at
+`size=0.06` on a 600 px canvas (`m7/probe_pressure.py`):
 
-- On a long stroke the overlapping dabs saturate, so `taper` and `even` come out
-  looking much the same. The profiles show most clearly on short strokes, and on a
-  colour that is not already at full strength against its background. Exercise 2
-  in the guide uses `opacity=0.35` and `load_falloff=0.0` to get both out of the
-  way.
-- A mark that tapers in width is two strokes of different sizes.
+| pressure | width | paint landed |
+|---|---|---|
+| 0.10 | 14 px | 2 080 |
+| 0.25 | 18 px | 7 441 |
+| 0.50 | 24 px | 23 234 |
+| 0.75 | 30 px | 46 471 |
+| 1.00 | 36 px | 79 538 |
 
-This is scheduled to change (M7 in `painting-api-brief.md`: width following
-pressure for the round tips). When it does, this section and the guide's pressure
-paragraph are rewritten, not patched.
+The **oriented** tips — `flat`, `bristle`, `knife` — keep their chisel: 60 px at
+pressure 0.2 and at 1.0 alike, because a flat brush's width is the mass it lays.
+
+The named profiles, widest and narrowest point of one stroke, same brush:
+
+| profile | widest | narrowest |
+|---|---|---|
+| `even` | 36 px | 36 px |
+| `taper` | 36 px | 26 px |
+| `press_in` | 36 px | 20 px |
+| `lift_off` | 36 px | 20 px |
+| `swell` | 36 px | 24 px |
+| `dab` | 36 px | 20 px |
+
+A hand-written profile goes further than any named one: `pressure=[1, 0]` on a
+`liner` at `size=0.02` runs 12, 10, 8, 6 px along its length. A mark that tapers is
+one stroke, not two of different sizes.
+
+- On a long stroke the overlapping dabs saturate, so `taper` and `even` land much
+  the same *weight* even where they differ in width. The paint half of the profile
+  shows most clearly on short strokes, and on a colour that is not already at full
+  strength against its background. Exercise 2 in the guide uses `opacity=0.35` and
+  `load_falloff=0.0` to get both out of the way.
+- The light end of a taper is *thin*, not faint: dabs overlap by more than 90%, so
+  it still accumulates to nearly full colour.
 
 ---
 
@@ -284,8 +316,24 @@ paragraph are rewritten, not patched.
 
 - A `round_hard` line keeps its width down to about three pixels of the long side
   (`size=0.003` on a 1200-wide canvas), at full strength.
-- A single dab lands at about a third of its colour's strength. A small highlight
-  is two or three dabs on the same spot.
+- **A single dab is a light touch.** A lone dab is the *start* of the default
+  `taper`, so its pressure is 0.28: it lands about a quarter of the way to its
+  colour and, since a round tip's width follows its pressure, at about half the
+  width asked for. `dab(press=n)` stamps the same spot n times inside one mark, with
+  the profile running across the stamps, so three of them press through full
+  pressure in the middle one. White at `size=0.06`, measured on three grounds
+  (`m7/probe_dab.py`):
+
+  | stamps | on `toned_grey` | on `umber_wash` | on `warm_white` | width |
+  |---|---|---|---|---|
+  | 1 | 0.17 | 0.12 | 0.26 | 12 px |
+  | 2 | 0.31 | 0.24 | 0.43 | 12 px |
+  | 3 | **0.84** | **0.80** | **0.87** | 24 px |
+  | 5 | 0.92 | 0.90 | 0.93 | 23 px |
+
+  Fractions of the way from the ground to the colour. A catchlight is `press=3`,
+  and it costs one stroke; three *separate* dabs reach 0.45 on `toned_grey` and
+  cost three.
 - A fine line runs dry over the same *distance* as a fat one, which is far more
   brush-lengths, so it lasts.
 - A `region=` crop is at full resolution and a small one is enlarged to at least
@@ -294,6 +342,36 @@ paragraph are rewritten, not patched.
 - Three `knife` marks two values lighter than the mass under them read as three
   things stuck to the surface, not as paint. Keep a knife mark close in value to
   what it lands on and let a later stroke or a `smudge` break one of its ends.
+
+---
+
+## The bristle comb
+
+A bristle has a width of its own — `BRISTLE_PITCH`, 0.005 of the canvas long side —
+and the count follows the brush, so a wider brush prints more streaks rather than
+fatter ones. Measured on a 900 px canvas (`m7/probe_comb.py`):
+
+| `size` | tip | bristles | comb pitch |
+|---|---|---|---|
+| 0.02 | 18 px | 4 | 4.5 px |
+| 0.04 | 36 px | 8 | 4.5 px |
+| 0.08 | 72 px | 16 | 4.5 px |
+| 0.12 | 108 px | 24 | 4.5 px |
+| 0.18 | 162 px | 36 | 4.5 px |
+
+Before M7 the count was 22 at every size, so the pitch ran 3 px at `size=0.02` to
+26 px at `size=0.18` — the brush's signature rather than the mark's.
+
+The comb — spacing, phase, and which bristles are missing — is drawn once per
+stroke and held for all of that stroke's dabs, so striations stay put along a mark
+and differ from the next mark's. Two strokes of one brush used to be identical to
+the last bit; their combs now correlate +0.39, −0.05 and +0.33 over three pairs.
+
+The pitch is the comb in the tip. What *reads* on a fully loaded straight stroke is
+coarser, because consecutive dabs overlap by more than 90% and fill the weaker
+bristles in, so only the missing ones show — two to seven streaks across a mark, at
+any size. The comb shows at its own scale where the stroke is starved or the tooth
+is biting. `bristle_count` still pins a comb if you want a fixed one.
 
 ---
 

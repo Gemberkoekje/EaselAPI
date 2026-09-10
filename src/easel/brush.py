@@ -17,7 +17,7 @@ from dataclasses import dataclass, field, replace
 
 import numpy as np
 
-__all__ = ["Brush", "BRUSHES", "brush", "TIPS", "tip_mask"]
+__all__ = ["Brush", "BRUSHES", "brush", "TIPS", "tip_mask", "bristles_for"]
 
 #: Tip shapes available to :class:`Brush`.
 TIPS = ("round_soft", "round_hard", "flat", "bristle", "knife")
@@ -36,6 +36,19 @@ _SUBPIXEL_STEPS = 4
 #: process -- and the painting a script produced depended on what had run before it
 #: in the same interpreter. See REVIEW.md finding 19.
 _RADIUS_STEPS = 4
+
+#: The width of one bristle streak, as a fraction of the canvas long side, when a
+#: brush does not pin its own :attr:`Brush.bristle_count`. A bristle is a physical
+#: thing: a wider brush holds *more* of them, not fatter ones. The comb used to be
+#: a fixed count across the tip, so its streaks scaled with the brush -- 3 px at
+#: ``size=0.02`` and 26 px at ``size=0.18`` on a 900 px canvas (`m7/probe_comb.py`),
+#: which is why a big quiet mass came out as corduroy and a detail stroke carried
+#: the brush's pattern rather than the feature's. The default is set so that the
+#: `bristle` preset at its own default size keeps the 22 bristles it always had.
+BRISTLE_PITCH = 0.005
+#: No bristle narrower than this, in pixels. Below about a pixel the comb stops
+#: being a comb and becomes aliasing noise, which is worse than no comb at all.
+_MIN_BRISTLE_PX = 1.2
 
 
 @dataclass(frozen=True)
@@ -71,8 +84,14 @@ class Brush:
             paints pure colour, 1 only moves what is already there.
         texture_sensitivity: how strongly canvas tooth gates deposition. Higher
             values give a drier, more broken stroke on rough surfaces.
-        bristle_count: number of bristles for the bristle tip.
-        bristle_seed: fixes the striation pattern for a given brush.
+        bristle_count: number of bristles for the bristle tip. ``0``, the default,
+            derives it from ``size`` and ``bristle_pitch``, so a bigger brush has
+            more streaks rather than wider ones. Set it to pin a comb.
+        bristle_pitch: the width of one bristle streak, as a fraction of the canvas
+            long side. Ignored when ``bristle_count`` is set.
+        bristle_seed: fixes the striation pattern for a given brush. The comb is
+            also varied per *stroke* (see :func:`easel.stroke.paint_stroke`); this
+            seed is what the variation is drawn around.
     """
 
     name: str = "round"
@@ -92,7 +111,8 @@ class Brush:
     thickness_gain: float = 0.5
     smudge: float = 0.0
     texture_sensitivity: float = 0.6
-    bristle_count: int = 22
+    bristle_count: int = 0
+    bristle_pitch: float = BRISTLE_PITCH
     bristle_seed: int = 0
     meta: dict = field(default_factory=dict, compare=False, repr=False)
 
@@ -103,6 +123,13 @@ class Brush:
             raise ValueError(f"size must be in (0, 1], got {self.size}")
         if self.spacing <= 0.0:
             raise ValueError(f"spacing must be > 0, got {self.spacing}")
+        if self.bristle_count < 0:
+            raise ValueError(
+                f"bristle_count must be >= 0, got {self.bristle_count}. "
+                f"0 derives the comb from the brush's size."
+            )
+        if self.bristle_pitch <= 0.0:
+            raise ValueError(f"bristle_pitch must be > 0, got {self.bristle_pitch}")
 
     def scaled(self, factor: float) -> Brush:
         """A copy of this brush at a different size. ``scaled(0.5)`` is half as wide."""
@@ -114,20 +141,62 @@ class Brush:
 
     # -- mask ---------------------------------------------------------------------
     def mask(
-        self, radius_px: float, angle_rad: float, frac_x: float = 0.0, frac_y: float = 0.0
+        self,
+        radius_px: float,
+        angle_rad: float,
+        frac_x: float = 0.0,
+        frac_y: float = 0.0,
+        comb: int = 0,
+        count: int | None = None,
     ) -> np.ndarray:
-        """The tip stamp for this brush at a given radius, direction and sub-pixel phase."""
+        """The tip stamp for this brush at a given radius, direction and sub-pixel phase.
+
+        Args:
+            comb: which comb to print, for the bristle tip. A stroke draws one of
+                these and uses it for all of its dabs, so the striations stay put
+                along the stroke and differ from the next stroke's.
+            count: how many bristles across the tip. A stroke works this out once
+                from the brush's nominal size; left out, it is derived here from
+                the radius asked for.
+        """
         return tip_mask(
             tip=self.tip,
             radius_px=radius_px,
             angle_rad=angle_rad if self.angle_follow else math.radians(self.angle),
             hardness=self.hardness,
             aspect=self.aspect,
-            bristle_count=self.bristle_count,
+            bristle_count=(
+                count if count is not None
+                else bristles_for(self.size, self.bristle_pitch,
+                                  radius_px * 2.0, self.bristle_count)
+            ),
             bristle_seed=self.bristle_seed,
             frac_x=frac_x,
             frac_y=frac_y,
+            comb=comb,
         )
+
+    def bristles(self, diameter_px: float) -> int:
+        """How many bristles this brush combs a stroke into, at ``diameter_px`` wide."""
+        return bristles_for(self.size, self.bristle_pitch, diameter_px, self.bristle_count)
+
+
+def bristles_for(size: float, pitch: float, diameter_px: float, count: int = 0) -> int:
+    """How many bristles a tip of ``size`` combs a stroke into.
+
+    A bristle has a width of its own: ``pitch``, as a fraction of the canvas long
+    side. A wider brush therefore holds more of them rather than fatter ones, which
+    is what keeps a big mass from printing corduroy and a small mark from carrying
+    the brush's signature instead of the feature's. ``count``, when non-zero, pins
+    the comb and ignores the pitch.
+
+    Never fewer than three -- two bristles is not a comb -- and never so many that
+    one would be drawn narrower than :data:`_MIN_BRISTLE_PX`, where the comb stops
+    reading as bristles and starts reading as noise.
+    """
+    n = int(count) if int(count) > 0 else int(round(float(size) / max(float(pitch), 1e-6)))
+    limit = int(max(3.0, float(diameter_px) / _MIN_BRISTLE_PX))
+    return int(min(max(n, 3), max(limit, 3)))
 
 
 def tip_mask(
@@ -140,6 +209,7 @@ def tip_mask(
     bristle_seed: int = 0,
     frac_x: float = 0.0,
     frac_y: float = 0.0,
+    comb: int = 0,
 ) -> np.ndarray:
     """Build (and cache) a tip stamp as a float32 array in 0..1.
 
@@ -149,6 +219,11 @@ def tip_mask(
     :data:`_SUBPIXEL_STEPS` phases per axis. Without this, dab centres snap to whole
     pixels and the dab spacing beats against the pixel grid, striping every stroke
     made with a thin tip.
+
+    ``comb`` picks which set of bristles the tip has -- their spacing, where they
+    sit across the tip, and which of them are missing. It is part of the cache key,
+    so a stroke that draws one comb and holds it prints the same striations from
+    end to end while the next stroke prints different ones.
     """
     # Quantise the radius *before* anything is computed from it, so that the mask is
     # a pure function of the cache key. A quarter of a pixel is finer than the
@@ -177,6 +252,7 @@ def tip_mask(
         round(float(aspect), 3),
         int(bristle_count),
         int(bristle_seed),
+        int(comb),
     )
     cached = _MASK_CACHE.get(key)
     if cached is not None:
@@ -217,7 +293,7 @@ def tip_mask(
         mask = _falloff(np.abs(u), max(aspect, 1e-3), u_edge)
         mask = mask * _falloff(np.abs(v), 1.0, edge * 0.5)
         if tip == "bristle":
-            mask = mask * _bristle_profile(v, bristle_count, bristle_seed)
+            mask = mask * _bristle_profile(v, bristle_count, bristle_seed, comb)
 
     mask = np.clip(mask, 0.0, 1.0).astype(np.float32)
     if len(_MASK_CACHE) > _MASK_CACHE_LIMIT:  # pragma: no cover - only on huge sessions
@@ -233,25 +309,36 @@ def _falloff(dist: np.ndarray, limit: float, edge: float) -> np.ndarray:
     return (t * t * (3.0 - 2.0 * t)).astype(np.float32)
 
 
-def _bristle_profile(v: np.ndarray, count: int, seed: int) -> np.ndarray:
+def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.ndarray:
     """Per-bristle alpha across the tip width.
 
-    The pattern is fixed per brush, so striations stay put along a stroke the way
-    real bristles do, rather than shimmering from dab to dab.
+    The pattern is fixed for a given ``(seed, comb)``, so striations stay put along a
+    stroke the way real bristles do, rather than shimmering from dab to dab. What
+    changes between strokes is ``comb``: the brush is picked up again, and its
+    spacing, where the comb sits across the tip, and which bristles are missing are
+    all drawn afresh. Without that, every wide bristle mark in a painting printed
+    the identical set of streaks and masses went to corduroy (REHEARSAL2.md,
+    *Still open*).
     """
-    rng = np.random.default_rng(1000 + int(seed))
-    n = max(3, int(count))
-    strengths = rng.uniform(0.45, 1.0, size=n).astype(np.float32)
+    rng = np.random.default_rng([1000 + int(seed), int(comb)])
+    # Spacing: the comb is not the same width every time the brush is picked up.
+    n = max(3, int(round(max(3, int(count)) * float(rng.uniform(0.86, 1.16)))))
+    # Phase: where the comb sits across the tip, in bristles. Decides which bristle
+    # lands on the edge of the mark, which is most of what an edge looks like.
+    phase = float(rng.uniform(0.0, 1.0))
+
+    top = n + 1
+    strengths = rng.uniform(0.45, 1.0, size=top + 1).astype(np.float32)
     # Some bristles are missing or splayed. These gaps are what read as dry brush.
-    gaps = rng.random(n) < 0.22
+    gaps = rng.random(top + 1) < 0.22
     if gaps.any():
         strengths[gaps] *= rng.uniform(0.0, 0.25, size=int(gaps.sum())).astype(np.float32)
     # Bristles cluster slightly rather than sitting on a perfect comb.
-    offsets = rng.uniform(-0.4, 0.4, size=n).astype(np.float32)
+    offsets = rng.uniform(-0.4, 0.4, size=top + 1).astype(np.float32)
 
-    idx_f = (v + 1.0) * 0.5 * (n - 1)
-    base = np.clip(idx_f.astype(np.int32), 0, n - 1)
-    idx = np.clip(np.round(idx_f + offsets[base]), 0, n - 1).astype(np.int32)
+    idx_f = (v + 1.0) * 0.5 * (n - 1) + phase
+    base = np.clip(idx_f.astype(np.int32), 0, top)
+    idx = np.clip(np.round(idx_f + offsets[base]), 0, top).astype(np.int32)
     return strengths[idx]
 
 
@@ -349,7 +436,6 @@ BRUSHES: dict[str, Brush] = {
         wetness=0.85,
         thickness_gain=0.8,
         texture_sensitivity=0.95,
-        bristle_count=22,
     ),
     # Palette knife: flat slabs of thick paint with a hard edge; drags what it meets.
     "knife": Brush(

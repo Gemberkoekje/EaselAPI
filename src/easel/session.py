@@ -33,7 +33,7 @@ from easel.measure import Comparison, compare_images, heat_sheet
 from easel.palette import Palette
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import Region, as_region
-from easel.stroke import catmull_rom, draw_pencil, paint_stroke
+from easel.stroke import catmull_rom, draw_pencil, paint_stroke, press_width
 
 __all__ = ["Session"]
 
@@ -119,6 +119,7 @@ class Session:
         opacity: float | None = None,
         glaze: bool = False,
         smooth: bool = True,
+        press: int = 1,
         note: str = "",
         **brush_overrides,
     ) -> StrokeRecord:
@@ -135,6 +136,8 @@ class Session:
             opacity: override the brush opacity.
             glaze: lay colour without building paint height.
             smooth: fit a spline through the points. Off gives hard corners.
+            press: for a one-point mark, how many times to stamp the same spot.
+                See :meth:`dab`. One mark either way, in the log and in the budget.
             note: a line recorded in the log, for the painter's own benefit.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
@@ -143,6 +146,9 @@ class Session:
         """
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
         col = self._resolve_color(color)
+        stamps = int(press)
+        if stamps < 1:
+            raise ValueError(f"press must be at least 1, got {press}.")
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         self.history.push_snapshot(self.canvas.snapshot())
@@ -158,6 +164,7 @@ class Session:
             rng=self._stroke_rng(index),
             glaze=glaze,
             smooth=smooth,
+            press=stamps,
         )
 
         record = self.history.add(
@@ -171,16 +178,31 @@ class Session:
                 dabs=result.dabs,
                 paint=result.paint,
                 note=note,
-                params=_brush_params(b, col, glaze=glaze, smooth=smooth),
+                params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps),
             )
         )
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
         return record
 
-    def dab(self, x: float, y: float, brush="round_hard", color="burnt_umber", **kw):
-        """A single mark at one point. Convenience for accents and highlights."""
-        return self.stroke([(x, y)], brush=brush, color=color, **kw)
+    def dab(self, x: float, y: float, brush="round_hard", color="burnt_umber",
+            press: int = 1, **kw):
+        """A single mark at one point. Convenience for accents and highlights.
+
+        ``press`` is how many times the brush is set down on the same spot, in one
+        mark: one stroke in the log, one against the budget. One touch is a light
+        one -- it lands about a quarter of the way to its colour, at about half the
+        brush's width, because a lone dab is the *start* of the default ``taper``
+        and a round tip's width follows its pressure. Three stamps press through
+        full pressure in the middle one, so a catchlight lands at the size asked
+        for and reads as light rather than as a smudge of it.
+
+        Example::
+
+            s.dab(*s.pt("catchlight"), brush="round_hard", color="white",
+                  size=0.006, press=3)
+        """
+        return self.stroke([(x, y)], brush=brush, color=color, press=press, **kw)
 
     def smudge(self, points, size: float = 0.07, pressure="even", **kw):
         """Drag what is already on the canvas, rather than adding paint."""
@@ -942,9 +964,13 @@ class Session:
             spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
             {k: v for k, v in spec.items()
              if k not in ("points", "brush", "size", "opacity", "color", "pressure",
-                          "glaze", "smooth", "note", "label")},
+                          "glaze", "smooth", "press", "note", "label")},
         )
-        return {"points": spec["points"], "width": b.size,
+        # The band stands for how wide the mark will be, and on a round tip that now
+        # depends on the pressure it is planned with -- a lone stamp most of all.
+        dabs = int(spec.get("press", 1)) if len(spec["points"]) == 1 else 32
+        width = b.size * press_width(b, spec.get("pressure", "taper"), dabs)
+        return {"points": spec["points"], "width": width,
                 "label": str(spec.get("label", spec.get("note", "") or index + 1))}
 
     # -- measuring --------------------------------------------------------------
@@ -1374,6 +1400,9 @@ class Session:
             color = params.pop("color", record.color_hex or "#000000")
             glaze = bool(params.pop("glaze", False))
             smooth = bool(params.pop("smooth", True))
+            # Logs written before press existed have no key for it, and one stamp is
+            # what they meant: they replay unchanged.
+            press = int(params.pop("press", 1))
             fresh.stroke(
                 record.points,
                 brush=_brush_from_params(params),
@@ -1381,6 +1410,7 @@ class Session:
                 pressure=record.pressure,
                 glaze=glaze,
                 smooth=smooth,
+                press=press,
                 note=record.note,
             )
         return fresh
