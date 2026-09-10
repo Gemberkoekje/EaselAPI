@@ -1368,7 +1368,12 @@ that tag can repoint it to different code without this repository's review.
 **Fix.** All three pinned to the commit SHA of their current latest release, with
 the version kept alongside as a comment (`actions/checkout@11d5960a... # v4.4.0`,
 and so on) — the standard form Dependabot's already-configured `github-actions`
-ecosystem update recognises and keeps current (`.github/workflows/ci.yml`,
+ecosystem update recognises and keeps current. A Dependabot PR bumping the same
+three actions to v7 (mutable tags) merged to `main` while this one was open;
+resolved by taking v7 and re-pinning it to its own commit SHA
+(`actions/checkout@3d3c42e5... # v7.0.1`, `actions/setup-python@5fda3b95... #
+v7.0.0`, `actions/upload-artifact@043fb46d... # v7.0.1`) rather than reverting
+either change (`.github/workflows/ci.yml`,
 `.github/dependabot.yml`).
 
 ### 62. CI never installed the `mixbox` extra, so `color.mix_many`'s pymixbox path was never exercised by any job
