@@ -50,6 +50,18 @@ class Region:
     name: str = ""
 
     def __post_init__(self) -> None:
+        # NaN and Infinity both compare False against every ordering, so
+        # `x1 <= x0` alone lets a NaN or Infinite bound straight through --
+        # Polygon already guards its own points against exactly this
+        # (`_clean_points`'s `math.isfinite` check); Region did not, and it
+        # surfaced downstream instead as a raw, unexplained crash wherever a
+        # bound was later multiplied by a canvas size and rounded to a pixel
+        # index (:meth:`easel.canvas.Canvas.region_px`), or as corrupted state
+        # if the NaN made it into the undo log first.
+        if not all(math.isfinite(v) for v in (self.x0, self.y0, self.x1, self.y1)):
+            raise ValueError(
+                f"Region needs finite bounds, got ({self.x0}, {self.y0}, {self.x1}, {self.y1})"
+            )
         if self.x1 <= self.x0 or self.y1 <= self.y0:
             raise ValueError(
                 f"Region must have positive extent, got ({self.x0}, {self.y0}, {self.x1}, {self.y1})"
@@ -493,10 +505,18 @@ class Polygon:
                 best = made
         # A mitre join on a spiky or very thin outline can fold the shape through
         # itself; a fold shows up as a shape that lost most of its area or whose
-        # middle is no longer inside the original.
-        if best is not None and (not smaller or (best.area >= 0.05 * self.area
-                                                 and self.contains(*best.center))):
-            return best
+        # middle is no longer inside the original. This used to be checked only
+        # when shrinking (`not smaller` short-circuited the check away entirely
+        # when growing), but growing a spiky concave outline outward can fold it
+        # just as easily -- the reflex vertices are exactly where a mitre offset
+        # overshoots -- so it needs the same sanity check, mirrored: the
+        # *original* centre should still land inside the grown shape, and a
+        # proper outward offset should not have lost area.
+        if best is not None:
+            sane = (best.area >= 0.05 * self.area and self.contains(*best.center)) if smaller \
+                else (best.area >= 0.95 * self.area and best.contains(*self.center))
+            if sane:
+                return best
         # The offset ate the shape (a thin or spiky outline will do that). Fall back
         # to pulling every point toward the centre by the same amount.
         return self._toward_centre(a)

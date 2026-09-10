@@ -120,6 +120,8 @@ def parse_color(value) -> np.ndarray:
     * an existing linear ndarray of shape (3,) produced by Easel itself.
     """
     if isinstance(value, np.ndarray) and value.dtype == np.float32 and value.shape == (3,):
+        if not np.isfinite(value).all():
+            raise ValueError(f"Colour components must be finite numbers, got {value!r}")
         return value
     if isinstance(value, str):
         s = value.strip()
@@ -137,6 +139,12 @@ def parse_color(value) -> np.ndarray:
     arr = np.asarray(value, dtype=np.float32)
     if arr.shape != (3,):
         raise ValueError(f"Colour must have 3 components, got shape {arr.shape}")
+    if not np.isfinite(arr).all():
+        # Left unchecked, a NaN component sails through the clip below (NaN is
+        # neither < 0 nor > 1, so np.clip leaves it as NaN) and then NaNs every
+        # pixel a stamp() using it ever touches -- which renders as solid black
+        # with no error anywhere near the actual cause.
+        raise ValueError(f"Colour components must be finite numbers, got {value!r}")
     return srgb_to_linear(np.clip(arr, 0.0, 1.0))
 
 

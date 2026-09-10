@@ -590,6 +590,30 @@ def test_undo_after_reload_uses_replay(tmp_path):
     assert np.array_equal(loaded.canvas.to_srgb8(), expected)
 
 
+def test_block_in_after_a_reload_draws_from_the_same_stream_as_never_saving(tmp_path):
+    """block_in()/sweep() draw their pass wobble from Session.rng, which round-trips
+    through save/load via ``_encode_rng``/``_decode_rng``. Nothing else in this
+    file paints with block_in on a session obtained from ``Session.load()``, so a
+    broken rng round-trip would pass the whole suite silently -- this pins the
+    exact scenario finding 1's fix (a corrupted rng_state used to fail open onto
+    an entropy-seeded generator instead of raising) protects.
+    """
+    reference = Session(64, 64, seed=5, timelapse=False)
+    reference.stroke([(0.1, 0.1), (0.5, 0.5)], "bristle", "burnt_umber")
+    reference.block_in(cell("B2"), "bristle", "ultramarine", density=0.8)
+    reference.block_in(cell("D4"), "bristle", "ultramarine", density=0.8)
+
+    reloaded = Session(64, 64, seed=5, timelapse=False)
+    reloaded.stroke([(0.1, 0.1), (0.5, 0.5)], "bristle", "burnt_umber")
+    reloaded.block_in(cell("B2"), "bristle", "ultramarine", density=0.8)
+    path = tmp_path / "p.easel"
+    reloaded.save(path)
+    reloaded = Session.load(path)
+    reloaded.block_in(cell("D4"), "bristle", "ultramarine", density=0.8)
+
+    assert np.array_equal(reference.canvas.to_srgb8(), reloaded.canvas.to_srgb8())
+
+
 def test_save_replaces_the_file_atomically_and_leaves_no_temp_behind(tmp_path):
     """The `.easel` file is the only copy of the painting: a crash partway through
     an in-place write must not be able to leave it truncated.

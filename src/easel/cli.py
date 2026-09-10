@@ -21,6 +21,8 @@ import sys
 import traceback
 from pathlib import Path
 
+from PIL import Image as _PILImage
+
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
 from easel.palette import PIGMENTS
@@ -141,7 +143,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         return _dispatch(args)
-    except (OSError, ValueError, KeyError, SyntaxError) as exc:
+    except (OSError, ValueError, KeyError, SyntaxError,
+            _PILImage.DecompressionBombError) as exc:
+        # DecompressionBombError is Pillow's guard against a crafted or merely
+        # huge reference image decoding into an enormous array; it subclasses
+        # plain Exception rather than OSError, so without naming it here it
+        # escaped this handler as a raw traceback instead of the same clean
+        # "easel: ..." message every other bad-input case gets.
         print(f"easel: {exc}", file=sys.stderr)
         return 1
 
@@ -255,6 +263,11 @@ def _cmd_prepare(session: Session, args) -> int:
 
 def _cmd_mark(session: Session, args) -> int:
     """Record, list or forget a landmark."""
+    if args.forget and args.name is None:
+        raise ValueError(
+            f"easel mark {args.session} --forget needs a name: "
+            f"easel mark {args.session} top_l --forget"
+        )
     if args.name is None:
         if not session.marks:
             print("No landmarks yet. easel mark painting.easel top_l 0.42 0.31")
@@ -298,6 +311,18 @@ def _cmd_run(session: Session, args) -> int:
 
     try:
         exec(code, namespace)  # noqa: S102 - running the painter's own script is the point
+    except SystemExit as exc:
+        # sys.exit()/exit()/quit() raise this, not Exception, so it is not caught
+        # by the except below -- left unhandled here it propagates straight out
+        # of main() and skips session.save() entirely. A script that exits early
+        # (deliberately, or a stray exit()/quit() copied from an interactive
+        # example) would then silently discard everything painted so far, and
+        # with code 0 the CLI would look like it had succeeded with nothing saved
+        # and no message printed at all.
+        session.save(args.session)
+        print(f"easel: {script.name} called exit(); session saved with "
+              f"{session.stroke_count} strokes\n", file=sys.stderr)
+        return exc.code if isinstance(exc.code, int) else (1 if exc.code else 0)
     except Exception:
         # Save what was painted before the error: a half-finished pass is still work.
         session.save(args.session)

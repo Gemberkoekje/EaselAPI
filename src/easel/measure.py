@@ -50,10 +50,14 @@ class CellCompare:
     delta: float
     ref_hex: str
     canvas_hex: str
+    #: What counts as out, for this cell. Sourced from the comparison it belongs
+    #: to, so ``off`` agrees with a custom ``compare(threshold=...)`` instead of
+    #: silently falling back to the module default regardless of what was asked.
+    threshold: float = VALUE_THRESHOLD
 
     @property
     def off(self) -> bool:
-        return abs(self.delta) > VALUE_THRESHOLD
+        return abs(self.delta) > self.threshold
 
     def __str__(self) -> str:
         return (f"{self.label} ref {self.ref:.2f} canvas {self.canvas:.2f} "
@@ -186,11 +190,17 @@ def _means(arr: np.ndarray, cols: int, rows: int) -> tuple[np.ndarray, np.ndarra
     values = np.zeros((rows, cols), dtype=np.float32)
     colours = np.zeros((rows, cols, 3), dtype=np.float32)
     for r in range(rows):
-        y0, y1 = int(round(r * h / rows)), max(int(round((r + 1) * h / rows)), 1)
-        y1 = max(y1, y0 + 1)
+        # y0 clamped to a real row index first, then y1 given at least one row
+        # past it and clamped to the array: rounding a region a few pixels tall
+        # into ten row-tenths can otherwise push y0 to or past h, which slices
+        # to an empty array regardless of y1 and means() it to NaN. A NaN delta
+        # compares false against any threshold, so a cell like that silently
+        # dropped out of `off`/`fixable` instead of being reported.
+        y0 = min(int(round(r * h / rows)), h - 1)
+        y1 = min(max(int(round((r + 1) * h / rows)), y0 + 1), h)
         for c in range(cols):
-            x0, x1 = int(round(c * w / cols)), max(int(round((c + 1) * w / cols)), 1)
-            x1 = max(x1, x0 + 1)
+            x0 = min(int(round(c * w / cols)), w - 1)
+            x1 = min(max(int(round((c + 1) * w / cols)), x0 + 1), w)
             values[r, c] = float(value[y0:y1, x0:x1].mean())
             colours[r, c] = srgb[y0:y1, x0:x1].reshape(-1, 3).mean(axis=0)
     return values, colours
@@ -242,6 +252,7 @@ def compare_images(
                     delta=float(cv[r, c] - rv[r, c]),
                     ref_hex=_hex(rc[r, c]),
                     canvas_hex=_hex(cc[r, c]),
+                    threshold=threshold,
                 )
             )
     return Comparison(cells=cells, columns=cols, rows=rows, region=region,
