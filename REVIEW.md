@@ -759,55 +759,21 @@ only the largest, matching what it already claimed to do
 
 ## Open, with evidence
 
-- **The Kubelka-Munk reflectance floor (finding 5's `0.01`) also perturbs pixels
-  that are not being mixed with anything.** `blend_wet()` converts *both* colours
-  to K/S space before weighting them by `amount`, and `_to_ks` clips its input to
-  `[0.01, 1-1e-4]` first -- so a pixel darker than that floor gets rounded up to it
-  by the K/S round-trip even at a tiny `amount`, not just `amount == 1`. Reachable
-  through ordinary painting, not a contrived input: `Canvas.stamp()` calls
-  `blend_wet` across a dab's whole square bounding box, and any pixel inside that
-  square but outside the tip's actual footprint has a small but non-zero `amount`
-  from the mask's soft edge. Measured: a pure-black pixel one mask-corner away
-  from an unrelated `round_soft` stamp lightened from linear `0.0` to `0.016`ish
-  (sRGB `(0,0,0)` to roughly `(26,26,26)`). The same floor also caps how dark any
-  *pigment* can ever read: `cadmium_yellow`'s blue channel (`#FFC012`, linear
-  `~0.006`) can never paint truer than sRGB blue `25`, off by 7 from the swatch's
-  own `18`, at any opacity, because every application re-floors it.
-
-  Not taken, on purpose: the floor is load-bearing for finding 5 (without it, a
-  near-zero channel's K/S blows up and swamps a real mixture -- "red + blue comes
-  out green"), so shrinking it risks reopening that finding, and the fix that
-  *doesn't* risk it -- keeping the floor's effect proportional to `amount` instead
-  of applying it to `dst` outright -- changes the wet-blend formula for every soft
-  dab edge in the engine, which is most of what this engine paints. That is
-  exactly the kind of change finding 11 warns against making by eye late in a
-  milestone, and every golden image would need regenerating and *looking at*, not
-  just re-hashing, to know whether it actually looks better. Left for a session
-  with the budget to render both versions of a real painting side by side and
-  judge.
-
-  **Re-measured after M6b, which expected it to get worse, and it did not.** The
-  brief reasoned that darker pigments would put more channels near the `0.01`
-  floor and so widen this. The lift only fires on a canvas pixel *below* the floor,
-  though, and after M6b there are none: every dark swatch is written at or above
-  `0.01` on purpose (`palette.py`), and no reflectance the model produces goes under
-  it. Measured on a real painting, 78 strokes: darkest channel anywhere `0.0141`
-  against `0.0409` before -- much closer to the floor, still above it -- and
-  `0.0000%` of pixels below it under either palette. A faint dab passing overhead
-  moves at most 1 of 255, which is ordinary paint landing, not this.
-
-  So **item 11 does not move up**; if anything M6b made its first half harder to
-  reach. What is still live is its second half, and only there: a colour the painter
-  supplies below the floor cannot be laid as written. `cadmium_yellow` (`#FFC012`,
-  blue `~0.006`) still reads blue `26` rather than its own `18`, and a literal
-  `"#000000"` lands at `26` grey. Both are the floor doing its job at the input
-  rather than at the output, and neither is a soft edge.
+- **The Kubelka-Munk reflectance floor (finding 5's `0.01`) was a floor on the
+  answer and not only on the arithmetic.** Carried here through M6b, M6c, M7 and M8
+  on the grounds that fixing it would change the wet blend on every soft dab edge in
+  the engine, and so wanted a session with the budget to render both versions of a
+  real painting and judge. **Taken in M8b, and that premise turned out to be wrong**:
+  the correction is *absent* rather than merely small for any colour inside the K/S
+  band, so both samplers, both real paintings in `m7/repaint.py` and all seven golden
+  images come back byte for byte identical. Finding 35 has the reproduction, the fix,
+  the two things the fix itself cost, and what it buys.
 
 ---
 
 ## Not yet reviewed
 
-The MCP server (now M8 in the brief), which does not exist yet.
+The MCP server (M9 in the brief), which does not exist yet.
 
 ---
 
@@ -965,3 +931,91 @@ paragraph is one call.
 **Additive, as the brief asked.** No golden image moved; one was added
 (`tests/golden/sweep.png`, the geometry rather than the marks). Ten tests in
 `tests/test_precision.py`.
+
+---
+
+# The wet-blend reflectance floor — M8b
+
+Item 11 of the brief, and the last thing before the server. One finding, carried in
+*Open, with evidence* since the M6 code review and fixed here. `m8b/README.md` is the
+evidence; `m8b/compared.png` is the pair.
+
+### 35. The reflectance floor was a floor on the picture, not just on the arithmetic
+
+**Found by**: the adversarial code review during M6 — the only finding in this file
+found by reading the code rather than by rendering something and looking at it, and the
+only one whose reproduction a painter could not have run, because its two halves
+concealed each other.
+
+**Symptom, one.** A pixel with no paint landing on it changed colour. `Canvas.stamp`
+blends a dab's whole *square* bounding box, and a round tip's corners have an alpha of
+exactly zero, so a black pixel in one of those corners came away at sRGB 25 — from a
+dab whose mask value at that pixel was `0.00000000`. One `round_soft` dab on a black
+canvas moved 625 pixels off zero where the tip reaches 437.
+
+**Symptom, two.** A colour below the floor could not be laid as written, at any
+opacity. `cadmium_yellow` (`#FFC012`, blue linear `0.006`) painted opaque read blue 25
+against its swatch's own 18; a literal `#000000` landed at grey 25; and
+`mix("cadmium_yellow", x, 0.0)` — mixing with *nothing* — came back seven levels of
+blue lighter than cadmium yellow.
+
+**Cause.** `blend_wet()` and `mix_many()` convert every ingredient to K/S space, and
+`_to_ks` clips its input to `[0.01, 1 - 1e-4]` first. The clip was never taken back
+off, so it was not only a floor on the mixing arithmetic — where finding 5 needs it —
+but a floor on the answer. At an `amount` of zero the blend returned the *clipped*
+canvas rather than the canvas.
+
+Why it stayed open so long: the two halves hid each other. The canvas could only hold a
+sub-floor pixel if a sub-floor colour could be laid, and symptom two says it could not.
+The M6b re-measurement therefore found `0.0000%` of pixels below the floor on a real
+painting and concluded the first half was unreachable. That was true, and beside the
+point — it was unreachable because the second half was blocking the door.
+
+**Fix.** The clip stays on the arithmetic and comes back off the mixture, weighted by
+how much of each ingredient is in it (`_solo`, `_unclip` in `easel/color.py`). `amount`
+of 0 returns the canvas and 1 lays the colour, both exact to the eighth bit of the
+export. Finding 5 is untouched — the K/S maths still runs on clipped values — and the
+mixtures it and finding 6 were tuned against do not move: `cadmium_red + ultramarine`
+is the same violet `(66, 49, 64)`, `cerulean + white` the same `(132, 189, 206)`, the
+ultramarine/burnt-umber dark and the cool grey identical to the level. The only
+mixtures that move are cadmium yellow's, in the blue channel it writes under the floor,
+by at most 3 of 255.
+
+Two things the fix itself cost, both found by measuring rather than by reasoning:
+
+- **Measured against `np.clip` it leaks.** The K/S round trip lands a hair below its
+  own input, so an offset taken against the clip rather than against what the round
+  trip actually returns left a constant `1.7e-6` gap in one direction on *every* blend.
+  Sub-floor pixels drifted downward with no convergence — a near-black went 23 levels
+  adrift over 5000 dabs, which is this same finding again in slow motion. Measured
+  against `_solo` the two cancel, and a pixel that settles a hair under the floor is
+  pinned there on the next dab rather than creeping.
+- **It has to be skipped where the clip does not bite.** Computing it unconditionally
+  cost 20% of the time to paint a picture, and shifted in-band results by a few parts
+  in a million for no reason anyone could see. Gated on `_outside_band`, in-band work
+  is bit for bit what it was — which is why no golden moved — and the common path came
+  out about 5% *faster* than before, because the incoming colour's K/S is now worked
+  out on the `(3,)` colour rather than on a broadcast copy of the whole dab.
+
+**Judged on the sampler and a real painting, as the brief asks.** Nothing in the
+existing corpus moves: the seven goldens, `samples/brushes.png`, `samples/shapes.png`
+and both real paintings in `m7/repaint.py` are byte for byte identical, and
+`tests/test_floor.py::test_work_inside_the_band_is_bit_for_bit_what_it_was` holds that
+against the pre-M8b formula written out in full. What the change *buys* is in the
+controlled pair in `m8b/`, painted with a supplied near-black: the dark mass goes from
+18 distinct levels to 32, and from 39.8% of its pixels pinned at the old floor's value
+to 2.9%, with local contrast up from 4.55 to 6.06. Looked at, and the gain is not that
+the dark is darker. Two fifths of that mass was a single value — which is what a hole
+looks like — and the bristle comb's streaks and the linen tooth inside it were being
+crushed flat against the floor. They survive now.
+
+**What it changes outside the engine.** `PAINTER.md` and `CALIBRATION.md` both said
+"nothing in this engine reflects less than `0.01` linear", which was two claims wearing
+one coat: the *box* bottoms out around `0.13` because of the pigments in it, and the
+*engine* will lay whatever colour it is handed. Only the first is a painting lesson,
+and this is finding 33's distinction again. Both files now say so and neither changes
+its advice: mix your darks, do not reach for a tube of black. `palette.py`'s rule that
+a dark swatch must be written at or above the floor was a workaround for this defect
+and is gone; `tests/test_floor.py` checks every pigment against what the canvas
+actually receives instead, and `cadmium_yellow` — which broke that rule and always had
+— passes.

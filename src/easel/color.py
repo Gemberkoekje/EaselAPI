@@ -8,6 +8,11 @@ fastest way to make a painting look like clip-art. Easel therefore mixes in
 Kubelka-Munk absorption/scattering space (single-constant approximation), which
 keeps blue + yellow leaning green instead of sliding to grey.
 
+The Kubelka-Munk arithmetic needs a reflectance floor to behave (see ``_FLOOR``),
+but that floor is not allowed to become a floor on what can be painted: the clip is
+taken back off the mixture in proportion to how much of each ingredient is in it, so
+mixing nothing into a colour returns that colour unchanged.
+
 Known limit of the single-constant model: white is a weaker lightener here than
 real titanium white, which is a strong scatterer. Mixing 50/50 with white lightens
 less than you would expect on a real palette -- reach for a higher white ratio, or
@@ -151,6 +156,15 @@ def _hex_to_rgb(s: str) -> np.ndarray:
 # absorb a channel completely, and a hard zero makes that channel's K/S explode and
 # swamp every mixture (cadmium red + ultramarine comes out dark green instead of
 # violet). 0.01 is the smallest floor that keeps mixtures behaving like paint.
+#
+# It is a floor on the *mixing arithmetic* and nowhere else. It used to be a floor
+# on the answer too, because the clip was applied to each ingredient and never taken
+# back off: mixing a colour with nothing returned the clipped colour, so a channel
+# below 0.01 could not be laid however opaquely it was painted, and -- worse -- a
+# canvas pixel below 0.01 was rounded up to it by any dab whose *bounding box* it
+# fell in, with no paint landing on it at all. `_solo` and `_unclip` below put that
+# part back, weighted the same way the mixture is, so the floor keeps finding 5 fixed
+# without deciding how dark the picture is allowed to go.
 _FLOOR = np.float32(0.01)
 _EPS = np.float32(1e-4)
 
@@ -203,6 +217,55 @@ def _from_ks(ks: np.ndarray) -> np.ndarray:
     return np.clip(1.0 + ks - np.sqrt(ks * ks + 2.0 * ks), 0.0, 1.0).astype(np.float32)
 
 
+def _solo(ks_p: np.ndarray) -> np.ndarray:
+    """What the K/S round trip does to one ingredient on its own: the weight-1 mixture.
+
+    Equal to the ingredient itself for anything inside the K/S band, but only to
+    within a few parts in a million -- ``_to_ks`` and ``_from_ks`` are not exact
+    inverses in float32, and neither is raising to ``p`` and back. Outside the band
+    it is the clipped colour instead, which is the whole point.
+    """
+    return _from_ks(ks_p ** _INV_MIX_EXPONENT)
+
+
+def _outside_band(colors: np.ndarray) -> bool:
+    """Whether the K/S clip actually bites on any channel of ``colors``.
+
+    When it does not -- which is every pigment on the palette but one, and every
+    reflectance this model produces -- the correction below is identically the
+    float32 round trip and nothing else, a few parts in a million. Testing for that
+    costs two reductions; computing it costs a pow and a square root over the whole
+    dab, on every dab of every stroke. Skipping it also keeps this engine bit for bit
+    where it was for work that never leaves the band, which is what lets a painting
+    made before this phase replay into the same pixels.
+    """
+    return bool(colors.min() < _FLOOR or colors.max() > 1.0 - _EPS)
+
+
+def _unclip(mixed: np.ndarray, offset: np.ndarray) -> np.ndarray:
+    """Put back what the K/S round trip took off the ingredients, weighted as they were.
+
+    ``offset`` is each ingredient's own ``c - _solo(c)`` averaged by the *same*
+    weights the mixture used. For a colour outside the K/S band that is the clip,
+    carried through the mix in proportion to how much of that colour is actually
+    there -- the floor stays where the mixing arithmetic needs it and stops being a
+    floor on the result.
+
+    Measuring the offset against ``_solo`` rather than against ``np.clip`` directly
+    is what makes the ends *exact*, and it is not a nicety. The K/S round trip lands
+    a hair below its own input, so an offset that ignored it would leave
+    ``amount = 0`` short by that hair -- and a pixel under the floor would then be
+    clipped up, offset back down past where it started, and leak a little further on
+    every dab whose bounding box it fell in. Measured at 1.7e-6 per blend, one
+    direction, no convergence: 5000 dabs took a near-black 23 levels adrift. Against
+    ``_solo`` the two cancel to within 5e-10 at either end. The last of that is
+    ``mixed + (c - mixed)`` rounding, where a colour far under the floor and the floor
+    itself are too far apart to cancel bit for bit in float32; it is nothing in the
+    eight bits that reach the PNG, and unlike the leak it does not accumulate.
+    """
+    return np.clip(mixed + offset, 0.0, 1.0).astype(np.float32)
+
+
 def mix(a, b, ratio: float = 0.5) -> np.ndarray:
     """Mix two colours like paint. ``ratio`` is the proportion of ``b``.
 
@@ -231,7 +294,10 @@ def mix_many(colors, weights=None) -> np.ndarray:
         return srgb_to_linear(out)
 
     ks = _ks_pow(_to_ks(cols))
-    return _from_ks(np.sum(ks * w[:, None], axis=0) ** _INV_MIX_EXPONENT)
+    mixed = _from_ks(np.sum(ks * w[:, None], axis=0) ** _INV_MIX_EXPONENT)
+    if not _outside_band(cols):
+        return mixed
+    return _unclip(mixed, np.sum((cols - _solo(ks)) * w[:, None], axis=0))
 
 
 def blend_wet(dst: np.ndarray, src: np.ndarray, amount: np.ndarray) -> np.ndarray:
@@ -240,9 +306,32 @@ def blend_wet(dst: np.ndarray, src: np.ndarray, amount: np.ndarray) -> np.ndarra
     ``dst`` is (h, w, 3) linear RGB already on the canvas, ``src`` is the incoming
     colour (3,) or (h, w, 3), and ``amount`` is (h, w) in 0..1 giving how much of
     the incoming paint displaces what is there.
+
+    This is :func:`mix_many` on two colours weighted ``1 - amount`` and ``amount``,
+    per pixel, and has to stay that way: the palette's number and the canvas's pixel
+    are the same mixture or neither can be trusted. The ends hold to the eighth bit
+    of the export -- ``amount`` of 0 returns ``dst`` and 1 lays ``src`` -- which
+    matters because :meth:`easel.canvas.Canvas.stamp` blends a dab's whole square
+    bounding box, most of which is outside the tip and has an ``amount`` of zero.
     """
     a = amount[..., None].astype(np.float32)
-    src_b = np.broadcast_to(np.asarray(src, dtype=np.float32), dst.shape)
+    inv_a = np.float32(1.0) - a
+    # The incoming colour is one colour per stroke and not one per pixel in every call
+    # the engine itself makes, so its K/S conversion is worked out on the (3,) colour
+    # and left to broadcast rather than done per pixel.
+    src_c = np.asarray(src, dtype=np.float32)
+    ks_src = _ks_pow(_to_ks(src_c))
     ks_dst = _ks_pow(_to_ks(dst))
-    ks_src = _ks_pow(_to_ks(src_b))
-    return _from_ks((ks_dst * (1.0 - a) + ks_src * a) ** _INV_MIX_EXPONENT)
+    mixed = _from_ks((ks_dst * inv_a + ks_src * a) ** _INV_MIX_EXPONENT)
+
+    # Each side is corrected only if the clip bites on it. A pixel that settles a hair
+    # *under* the floor is caught by this test on the next dab and pinned there, so it
+    # cannot creep down a millionth at a time.
+    terms = []
+    if _outside_band(src_c):
+        terms.append((src_c - _solo(ks_src)) * a)
+    if _outside_band(dst):
+        terms.append((dst - _solo(ks_dst)) * inv_a)
+    if not terms:
+        return mixed
+    return _unclip(mixed, terms[0] if len(terms) == 1 else terms[0] + terms[1])

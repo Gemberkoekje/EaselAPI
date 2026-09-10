@@ -1,4 +1,4 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, M7, and M8's shaped masses
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, M7, M8's shaped masses, and M8b's floor
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
 `REHEARSAL3.md` (the M6 final pass — the most recent *measurement*, and it says what
@@ -35,8 +35,14 @@ one thing it makes harder is in `M7.md`'s *The trap, stated plainly*: a lone
 `block_in` fills one, which is the largest open item the unprompted stage pointed
 at; see *M8 — shaped masses* below. It arrived beside M6c, and the two are
 complements rather than alternatives: fill a silhouette you can name, sweep a
-boundary you have read. M9 (MCP) is untouched and correctly last, and everything
-before it is now done.
+boundary you have read.
+
+**M8b (the wet-blend reflectance floor) is done**, which closes the last engine item
+in front of the server and the last entry in `REVIEW.md`'s *Open, with evidence*. The
+floor from finding 5 was clipping the *answer* and not only the mixing arithmetic, so a
+pixel with no paint landing on it still moved and a colour under the floor could not be
+laid at all; see *M8b — the floor off the answer* below. M9 (MCP) is untouched and
+correctly last, and everything before it is now done.
 
 The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
 author: the unprompted painting went well, the **copy did not reach a likeness**,
@@ -63,6 +69,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M6c Sweep | **Done.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, `cross=` for the second set, `closed=True` for a boundary that comes back on itself (`REVIEW.md` 34). Ordinary strokes, so undo and replay came free. Additive: no golden moved, one added — and regenerated once when M6b's darks landed under it, geometry identical. The recipe is out of `CALIBRATION.md`, and it takes a shape as its edge (M8). |
 | M7 Marks at detail scale | **Done** — `M7.md`. Comb drawn per stroke (two marks of one brush were identical to the last bit); `BRISTLE_PITCH` gives a bristle a width of its own, 4 at `size=0.02` and 36 at `size=0.18` where it was 22 at every size; width follows pressure on the round tips (14 px at pressure 0.1 against 36 px at 1.0), oriented tips keep their chisel; `dab(press=n)`. Judged on the sampler *and* on `rehearsal3/pass` repainted by both engines — the same 295 marks, and the whole picture's mean value moved by less than a hundredth. Every golden regenerated after looking. |
 | M8 Non-rectangular masses | **Done.** `Polygon` is a place beside `Region`, built with `polygon`, `ellipse`, `blob`, `hull` or `ribbon`; `block_in` cuts every pass against the outline, so a shaped mass keeps its silhouette and a concave one keeps its bite. `direction="axis"` sweeps along the mass's own long axis. `dry`, `erase`, `look`, `compare`, `preview`, `rehearse` and `sweep` all take a shape. Additive: no golden moved, one was added. Evidence in `samples/shapes.png` and `m8/`. |
+| M8b Wet-blend floor | **Done.** The K/S clip stays on the arithmetic, where finding 5 needs it, and comes back off the mixture weighted by how much of each ingredient is in it: `amount` of 0 returns the canvas and 1 lays the colour. The brief expected this to change every soft dab edge in the engine; it changes nothing inside the K/S band, so both samplers, both real paintings and all seven goldens are byte for byte identical and none was regenerated. What it buys is in `m8b/` — a dark mass built from 32 levels rather than 18, with two fifths of it no longer pinned to one value. `REVIEW.md` 35. |
 | M9 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -116,6 +123,11 @@ tests/test_shapes.py      36 tests for M8: the shape itself, the five builders, 
                           what a shaped block-in must do -- stop at the silhouette,
                           come back in pieces across a concave mass, and log
                           ordinary strokes so undo and replay are right for free.
+tests/test_floor.py       34 tests for M8b, and the ones that matter most assert
+                          that nothing happens: paint that is not landing must not
+                          move the pixel it is not landing on, in-band work is bit
+                          for bit what it was, and the identity has to survive being
+                          repeated a few thousand times rather than only once.
 tests/test_golden.py      visual regression. `tests/golden_cases.py` holds the fixed
                           scripts; `tests/golden/*.png` are the stored renders, and
                           they are there to be *looked at* when a case fails.
@@ -131,6 +143,12 @@ scripts/probe_sweep.py    what `sweep()` costs and what it buys, on one boundary
 m8/paint_two_ways.py      M8's other half of the evidence: one composition painted
                           as boxes and as shapes, same seed, same colours, and the
                           axis-alignment number for both.
+m8b/probe_floor.py        both halves of the floor defect as numbers, before and
+                          after. `--label` names the run.
+m8b/paint_the_dark.py     M8b's evidence: one composition painted by both engines,
+                          in the range the fix opens up. Writes m8b/compared.png,
+                          and measures what the dark mass is *made of* rather than
+                          only how dark it got.
 examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
                           step with the printed ones -- two were rewritten in M5,
                           and M6 added the seventh (draw, rehearse, paint).
@@ -242,6 +260,75 @@ vocabulary is no longer all rectangles, but the guide is now the thing under tes
 again: whether a fresh session reaches for `blob` and `hull` instead of `span`, and
 whether the unprompted paintings stop being bands, is a question for a run, not for
 this note.
+
+## M8b — the floor off the answer
+
+Brief item 11, `REVIEW.md` finding 35, evidence in `m8b/`. Kubelka-Munk needs a
+reflectance floor or a near-zero channel's K/S blows up and swamps every mixture --
+that is finding 5, and `0.01` is the smallest floor that keeps red + blue violet. The
+defect was that `_to_ks` clipped each ingredient on the way in and the clip was never
+taken back off, so the floor decided two things it had no business deciding.
+
+**A pixel with nothing landing on it still moved.** `Canvas.stamp` blends a dab's whole
+*square* bounding box and a round tip's corners have an alpha of exactly zero, so a
+black pixel in one of those corners came away at sRGB 25 from a dab whose mask value
+there was `0.00000000`. **And a colour under the floor could not be laid at all**, at
+any opacity: `cadmium_yellow` read blue 25 against its swatch's 18, `#000000` landed at
+grey 25, and `mix("cadmium_yellow", x, 0.0)` -- mixing with nothing -- came back seven
+levels lighter than cadmium yellow.
+
+The fix is to keep the clip on the arithmetic and take it back off the mixture,
+weighted by how much of each ingredient is in it (`_solo` and `_unclip` in `color.py`).
+Then `amount` of 0 returns the canvas, 1 lays the colour, and a colour outside the band
+is carried through a mixture in proportion to how much of it is there.
+
+### Three things worth knowing next time
+
+**The brief's premise was wrong, and finding that out was most of the work.** Item 11
+said the fix "changes the wet-blend formula for every soft dab edge in the engine,
+which is most of what this engine paints", and it is on that basis that it waited four
+milestones. It does not. The correction is *identically absent* for any colour inside
+the K/S band, every pigment but `cadmium_yellow` is inside it, and no reflectance this
+model produces falls outside it -- so the seven goldens, both samplers and both real
+paintings in `m7/repaint.py` come back byte for byte identical and not one golden was
+regenerated. The scary-sounding item was a two-line change to where a clip is applied.
+
+**"Judged on a real painting" had to be re-aimed.** When the change provably moves
+nothing in the corpus, rendering the corpus twice proves only that. The judgement has
+to happen in the range the fix *opens*, which is what `m8b/paint_the_dark.py` is: the
+same five masses as `m8/paint_two_ways.py`, painted with a supplied `#060606`. And the
+number worth looking at is not "the darkest pixel went 23 to 6" -- a mass can be darker
+and still be a hole. It is that the dark went from 18 distinct levels to 32 and from
+39.8% of its pixels pinned at one value to 2.9%, with local contrast up from 4.55 to
+6.06. The comb's streaks and the linen tooth were being crushed flat against the floor;
+they survive now, and that is what the eye actually sees in `m8b/compared.png`.
+
+**Both of the fix's own costs were found by measuring, not by reasoning.** The first
+version measured the clip's offset against `np.clip`, which is the obvious thing and is
+wrong: the K/S round trip lands a hair below its own input, so the offset left a
+constant `1.7e-6` gap in one direction on every blend and sub-floor pixels leaked
+downward forever -- 23 levels over 5000 dabs, the same bug in slow motion. Measuring
+against `_solo`, what the round trip actually returns, makes the two cancel. The second
+version was correct and 20% slower to paint a picture, and shifted in-band results by a
+few parts in a million for no visible reason; gating the correction on whether the clip
+bites at all (`_outside_band`) made in-band work bit for bit what it was *and* came out
+about 5% faster than before, because the incoming colour's K/S is now worked out on the
+`(3,)` colour instead of on a broadcast copy of the whole dab. Neither of those was
+visible from reading the code. Both took a probe.
+
+### What it took out of the guide
+
+`PAINTER.md` and `CALIBRATION.md` both said "nothing in this engine reflects less than
+`0.01` linear". That was two claims wearing one coat -- the *box* bottoms out around
+`0.13` because of the pigments in it, and the *engine* lays whatever it is handed --
+and only the first is a painting lesson. This is finding 33's distinction over again,
+and it is worth expecting a third instance: **when the guide explains a limit, check
+which of the engine and the palette actually imposes it.** Neither file changed its
+advice; the box still has no black because mixed darks are alive and tube black is
+dead. `palette.py`'s rule that a dark swatch must sit at or above the floor was a
+workaround for this defect and is gone -- what replaces it is `tests/test_floor.py`
+checking every pigment against what the canvas actually receives, which
+`cadmium_yellow` had been failing all along.
 
 ## Key decisions, and why
 
@@ -469,6 +556,21 @@ this note.
     raising. `inset` is a mitre offset and can fold a spiky outline through
     itself, which is why it checks the result's area and centre and falls back to
     pulling the points toward the centre.
+25. **When a document explains a limit, check which layer actually imposes it.**
+    Twice now a guide passage has stated a *palette* choice as an *engine* fact and
+    been believed: REVIEW 33 (the `0.23` value floor was the swatches, not the model)
+    and REVIEW 35 ("nothing in this engine reflects less than `0.01`" was the box's
+    range, not the engine's). Both read as physics and both were furniture. The tell
+    is a sentence that tells the painter what is impossible; go and try it before
+    believing it, because the fix for an engine limit and the fix for a palette
+    choice are nothing alike.
+26. **An identity in floating point is a claim to be measured, not assumed.** The
+    first M8b fix restored a clipped colour by adding back `c - np.clip(c)`, which is
+    exactly right on paper. The K/S round trip does not land on its own input, though,
+    so the correction missed by a constant `1.7e-6` *in one direction* on every blend,
+    and a near-black leaked 23 levels over 5000 dabs. A single application looked
+    perfect. Iterate the operation a few thousand times and compare to the start --
+    a drift that is invisible once is a defect once a painting has 30,000 dabs in it.
 
 ## What to do next, in order
 
@@ -563,14 +665,12 @@ this note.
    travel direction alternates on its own (REVIEW finding 12), and since REVIEW 22
    the painter can *choose* the axis — but a mass still gets one axis per call unless
    the painter passes a sequence.
-7. **The wet-blend reflectance floor** (brief item 11), the last engine change
-   before the server. M6b re-measured it and it does *not* move up, so it sits here
-   rather than in front of REHEARSAL4 — but it is still open, and it is still the
-   one finding in the repo that was found by reading the code rather than by
-   looking at a picture.
+7. ~~**The wet-blend reflectance floor** (brief item 11).~~ **Done — M8b.** The one
+   finding in the repo found by reading the code rather than by looking at a picture,
+   and the last engine change before the server.
 8. Then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview` and
    `compare` returning their images inline. It exposes the API, so everything that
-   changes it goes first, and that list is now down to item 7. The server's tool
+   changes it goes first, and that list is now empty. The server's tool
    surface has to carry shapes as arguments, which is the one new thing M8 adds to
    its design: a place is a name, a cell, a span, a rectangle **or a list of
    points**, and `sweep` takes the same.
