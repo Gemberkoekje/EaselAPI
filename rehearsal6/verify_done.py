@@ -150,6 +150,36 @@ def signatures() -> None:
         print("  (no sessions yet)")
 
 
+def planning() -> None:
+    """Count `preview` and `rehearse` looks per run, across whatever the painter
+    called its output directory.
+
+    REHEARSAL4's counter looks in `<run>/out`, because both of its painters used the
+    default. REHEARSAL6's two chose differently -- the sitter kept `out/`, the pass
+    run split its work into `out_copy/`, `out_own1/` and `out_own2/` -- so counting
+    only `out/` would report the pass run as having judged nothing, which is the
+    opposite of what it did. Same arithmetic as REHEARSAL4's, over every directory
+    whose name starts with `out`.
+    """
+    print("\n== Marks judged before they were paid for ==")
+    print(f"  {'run':<10} {'preview':>8} {'rehearse':>9}   verdict")
+    for run in ("pass", "sitter"):
+        base = f"{HERE}/{run}"
+        previews = rehearsals = 0
+        if os.path.isdir(base):
+            for entry in sorted(os.listdir(base)):
+                if not entry.startswith("out") or not os.path.isdir(f"{base}/{entry}"):
+                    continue
+                names = os.listdir(f"{base}/{entry}")
+                previews += sum(1 for n in names if n.startswith("preview"))
+                rehearsals += sum(1 for n in names if n.startswith("rehearse"))
+        verdict = ("used both" if previews and rehearsals else
+                   "NEITHER - marks were judged only after painting"
+                   if not previews and not rehearsals else
+                   "one of the two only")
+        print(f"  {run:<10} {previews:>8} {rehearsals:>9}   {verdict}")
+
+
 def containment() -> None:
     print("\n== The second number: did the dark stay in the thing containing it? ==")
     print("  (dark paint in the mouth's box that is nowhere near dark in the photo,")
@@ -233,7 +263,7 @@ if __name__ == "__main__":
         last_ten(run)
 
     signatures()
-    verify.planning()
+    planning()
     verify.shapes()
     buried()
     axes()
