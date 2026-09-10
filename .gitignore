@@ -72,3 +72,10 @@ rehearsal3/**/*.gif
 !rehearsal3/**/copy_timelapse.gif
 !rehearsal3/**/own_timelapse.gif
 !rehearsal3/*.png
+
+# M8b's evidence: the pair of paintings and the sheet, not the looks beside them.
+m8b/*.png
+m8b/*.gif
+!m8b/before.png
+!m8b/after.png
+!m8b/compared.png

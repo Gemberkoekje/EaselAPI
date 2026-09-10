@@ -135,9 +135,11 @@ A few decisions worth knowing about, because they are the ones that make output 
 painted rather than generated:
 
 - **Pigment mixing, not RGB averaging.** Colours combine in Kubelka-Munk K/S space
-  using a power mean (`p = 0.5`). Plain RGB averaging turns every mixture
+  using a power mean (`p = 0.35`). Plain RGB averaging turns every mixture
   grey-brown; a hard reflectance floor is also needed, or a channel-zero colour
-  swamps the mix and red + blue comes out green. See `src/easel/color.py`.
+  swamps the mix and red + blue comes out green. That floor clips the *arithmetic*
+  only and is taken back off the mixture, so a colour darker than it still lays as
+  written. See `src/easel/color.py`.
 - **Spacing is measured along travel.** A flat or knife tip is thin in the direction
   it moves. Spacing it like a round tip leaves a picket fence of discrete bars.
 - **Wobble is smoothed, not per-dab.** Independent per-dab jitter makes neighbouring

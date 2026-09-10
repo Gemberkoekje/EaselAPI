@@ -146,10 +146,15 @@ stays that dark while swinging from cool to warm: more blue for a shadow in
 daylight, more umber for one by a lamp. That mixture, not any single pigment, is
 the bottom of your range.
 
-The floor is around `0.13`, and it is the model's own: no reflectance in this engine
-goes below `0.01` linear, which is value `0.10`, and the last few hundredths are the
-hue the pigments still carry. Piling on passes or glazes will not go lower, so if a
+The floor is around `0.13`, and it is the **box's**. Mixing never takes a channel
+below the darker of its two ingredients, so the darkest thing you can reach is set by
+the swatches and nothing else — and piling on passes or glazes will not go lower. If a
 mass is not dark enough, mix it darker rather than painting it again.
+
+That is a fact about the paint you have, not about the engine. A colour you supply
+yourself lands exactly as written, black included. The box has no black because mixed
+darks are alive and a tube black is dead, which is a reason to keep mixing, not a wall
+you are being held behind.
 
 ### 4. Refine the mid-tones
 

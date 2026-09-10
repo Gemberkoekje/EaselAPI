@@ -798,27 +798,24 @@ def test_the_palette_floor_is_the_models_own_and_not_the_swatches(tmp_path):
     assert mixed < 0.15, f"ultramarine + burnt umber reads {mixed:.3f}, not a dark"
 
 
-def test_the_dark_swatches_state_a_colour_the_engine_can_lay(tmp_path):
-    """A channel below the reflectance floor renders as the floor.
+def test_no_pigment_absorbs_a_channel_completely():
+    """Finding 5's actual requirement of the swatches: no channel is zero.
 
-    So a swatch written darker than 0.01 linear would claim a colour no stroke can
-    put down, and `value_of` would disagree with the canvas. Finding 5 asks only
-    that no channel is zero; the darks, which is where the floor bites, are held to
-    the stronger rule.
+    A hard zero makes that channel's K/S explode and swamps every mixture, which is
+    how red + blue came out green. M6b held the darks to the stronger rule of being
+    written at or above the reflectance floor too, but that was a workaround for the
+    floor also landing on the *result*: a channel under `0.01` rendered as `0.01`, so
+    a darker swatch would have stated a colour no stroke could lay. M8b took the
+    floor off the result, so the stronger rule is no longer the engine's to impose --
+    `tests/test_floor.py` checks each pigment against what the canvas actually
+    receives instead, `cadmium_yellow`'s sub-floor blue included, and how dark the
+    box reaches is `test_the_palette_floor_is_the_models_own_and_not_the_swatches`.
     """
-    from easel.color import _FLOOR, parse_color
+    from easel.color import parse_color
     from easel.palette import PIGMENTS
 
     for name, hexval in PIGMENTS.items():
         assert float(parse_color(hexval).min()) > 0.0, f"{name} has a zero channel"
-
-    for name in ("burnt_umber", "ultramarine", "alizarin",
-                 "burnt_sienna", "viridian", "cerulean"):
-        lowest = float(parse_color(PIGMENTS[name]).min())
-        assert lowest >= float(_FLOOR), (
-            f"{name} states {PIGMENTS[name]}, whose lowest channel {lowest:.4f} is "
-            f"under the {float(_FLOOR)} reflectance floor and renders lighter"
-        )
 
 
 # --------------------------------------------------------------------------------------

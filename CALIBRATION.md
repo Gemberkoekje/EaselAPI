@@ -38,11 +38,16 @@ Each pigment, one flat pass on a toned grey ground, read off the exported PNG:
 | `lemon_yellow` | 0.83 |
 | `titanium_white` | 0.95 |
 
-**The floor is about `0.13`, and it is the model's, not the pigments'.** Nothing in
-this engine reflects less than `0.01` linear -- the floor in `color.py` that keeps
-mixtures behaving like paint -- and `0.01` is value `0.10`. The box stops three
-hundredths above it, and those three hundredths are hue: a dark that is still blue,
-or still brown, cannot sit on the floor in all three channels at once.
+**The floor is about `0.13`, and it is the pigments', not the model's.** Mixing never
+takes a channel below the darker of its two ingredients, so the swatches set it: this
+is the value of the darkest mixture the box can reach.
+
+`color.py`'s `0.01` reflectance floor is a separate thing and is not a floor on the
+picture. It clips the K/S *arithmetic*, where finding 5 needs it, and comes back off
+the mixture weighted by how much of each ingredient is in it, so a colour the painter
+supplies below it is laid as written -- a literal `#000000` renders as `#000000`
+(`REVIEW.md` 35). Before M8b it did floor the answer, and the number quoted here was
+`0.10` on that basis.
 
 `mix("ultramarine", "burnt_umber", 0.5)` reads `0.14` (`#21232d`) and is the bottom
 of your range -- darker than any single pigment, because each channel takes the
