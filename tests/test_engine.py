@@ -21,6 +21,7 @@ from easel import Session
 from easel.brush import BRUSHES, brush, tip_mask
 from easel.canvas import Canvas
 from easel.color import linear_to_srgb, mix, parse_color, srgb_to_linear
+from easel.history import History
 from easel.palette import Palette
 from easel.regions import Region, cell, region
 from easel.stroke import PRESSURE_PROFILES, catmull_rom, paint_stroke, pressure_curve
@@ -541,6 +542,28 @@ def test_history_logs_every_mark():
     assert len(s.history.records) == 2
     assert s.stroke_count == 1  # drying is not a mark
     assert "first" in s.log()
+
+
+def test_signature_marks_are_free_up_to_the_allowance():
+    """The guide grants five free marks to sign with; the counter must honour it.
+
+    Two REHEARSAL6 painters found that it did not, by watching `stroke_count` go past
+    the budget they were painting to, and one of them undid a finished mark to pay for
+    its signature. Past the allowance every signature mark is charged, so a painter
+    cannot buy strokes by noting them.
+    """
+    s = Session(80, 80, seed=1, timelapse=False)
+    for _ in range(3):
+        s.stroke([(0.2, 0.2), (0.8, 0.8)], "bristle", "ultramarine")
+    assert s.stroke_count == 3
+
+    for _ in range(History.SIGNATURE_ALLOWANCE):
+        s.stroke([(0.85, 0.9), (0.9, 0.88)], "liner", "ultramarine", note="signature")
+    assert s.stroke_count == 3, "marks noted `signature` are free up to the allowance"
+
+    s.stroke([(0.85, 0.8), (0.9, 0.78)], "liner", "ultramarine", note="signature")
+    assert s.stroke_count == 4, "past the allowance a signature mark is charged"
+    assert len(s.history.records) == 3 + History.SIGNATURE_ALLOWANCE + 1
 
 
 def test_timelapse_and_contact_sheet(tmp_path):

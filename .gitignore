@@ -79,3 +79,16 @@ m8b/*.gif
 !m8b/before.png
 !m8b/after.png
 !m8b/compared.png
+
+# REHEARSAL6. The two references are REHEARSAL4's, byte for byte -- `launch_note.md`
+# records the checksums and `verify_done.py` reads them from `rehearsal4/` -- so a
+# painter's working copy of one is not committed a second time. Session files are
+# ignored repository-wide and are 15 MB each; `save_logs.py` writes the history that
+# the checks actually read into `rehearsal6/sessions/` instead.
+rehearsal6/**/ref.jpg
+# A painter's own looks, previews and rehearsals: 35 MB of intermediate PNGs that
+# regenerate from the scripts beside them. `out/` is already ignored above; the pass
+# run named its directories per painting. The marks each painter's log points at are
+# copied into `<run>/rejected/` and committed, because "the painter can point to
+# strokes it rejected" is a criterion and not an intermediate.
+rehearsal6/**/out_*/

@@ -204,6 +204,29 @@ slabs. Do it while the paint is wet — that is what step 5 and the **Wet paint*
 section are for — and if you leave a plane as one flat value with marks laid on top,
 it will read as a mask rather than as a form.
 
+**Know what one smudge actually buys you, because it is not a lost join.** Measured
+on a hard join between two values: the bare step is `0.330`, one pass at `size=0.040`
+takes it to `0.184`, and **three passes take it back to `0.280`**. So a smudge removes
+about **40%** of the step, once — and doing it again, which is exactly what you will
+want to do, undoes most of the first pass and leaves a thumbprint besides.
+
+**When once is not enough, stop smudging and lay paint.** Many overlapping strokes at
+closely spaced values — a scumble — is what closes a join that a single smudge only
+softened, and it is the one approach three separate painters arrived at independently
+after the smudge recipe failed them:
+
+```python
+for i in range(8):                                   # close the join with paint
+    t = i / 7
+    s.stroke([(-0.05, 0.46 + t * 0.10), (1.05, 0.47 + t * 0.10)], "bristle",
+             s.palette.mix("shadow", "light", t), size=0.05, opacity=0.5)
+```
+
+**This matters more than it looks**, because a wide soft passage is where a picture's
+structure comes from. A field gradated top to bottom is a stack of horizontal bands
+until its joins are gone — and a stack of bands is a composition, which your quiet
+passage will announce to a viewer whether or not you meant to compose one there.
+
 ### 5. Edges: lost and found
 
 This is the step that separates a painting from a diagram, and the one you will be
@@ -221,6 +244,19 @@ s.stroke([(0.6, 0.3), (0.62, 0.5)], "round_hard", "dark", size=0.02)  # sharpen 
 **`smudge` is far stronger than "move paint around" suggests**, and it walks a
 light/dark boundary into the dark side rather than blurring it evenly. Keep it small
 and rehearse anything bigger; `CALIBRATION.md` has the window.
+
+**Run it *along* a boundary, never across one.** Dragged across, it pulls a lobe of
+the light mass into the dark one and what you get is a visible finger-shaped
+thumbprint — the tool's own geometry, in a place you were trying to make quiet. That
+failed for three separate painters in one run, on the exact usage the line above
+demonstrates. Along the boundary, in short passes, it does what it is for:
+
+```python
+s.smudge([(0.30, 0.40), (0.38, 0.41)], size=0.04)   # along the edge, not across it
+```
+
+And it is one pass, not three — see *what one smudge buys you* in step 4. If the
+boundary is still there after that, the answer is paint, not another smudge.
 
 An image where every edge is equally sharp looks like clip-art. That is the single
 most common way this goes wrong.
@@ -308,7 +344,10 @@ s.look(region=cell("D4"), reference="ref.jpg", grid="fine")
 ```
 
 `grid="fine"` divides what is on screen into tenths and labels them, and the crop is
-enlarged so a single cell fills the panel. **Read the two digits off the label; do
+enlarged so a single cell fills the panel. **The crop is also padded out to the
+panel's shape, so you are shown a little more than the span you asked for** — do not
+do pixel arithmetic off its edges. Measure off the `mark()` crosses instead, which are
+drawn on both panels and whose canvas coordinates you already know. **Read the two digits off the label; do
 not estimate a fraction.** A label pair `(3, 6)` is `cell("D4").point(0.3, 0.6)` —
 the near corner of that little square — and its middle is `point(0.35, 0.65)`.
 Reading a label is something you do reliably. Estimating "about a third across" is
@@ -362,7 +401,9 @@ s.preview(plan,  reference="ref.jpg", region=span("C3", "F6"), grid="fine")
 s.rehearse(plan, reference="ref.jpg", region=span("C3", "F6"))
 ```
 
-`preview` draws your intended points and the brush's *width* over both panels —
+`preview` draws your intended points and the brush's *width* over both panels — at a
+default width if you gave it bare points rather than a plan, which is fine for checking
+placement and useless for checking an edge —
 where the mark will go, checked against the photograph. `rehearse` paints it on a
 copy of the canvas and shows you the result — what it will look like, with its
 tooth and its edge and how it mixes with what is already there. A feature smaller
@@ -386,6 +427,11 @@ easel is for, and it is the last reason to reach for `undo`.
 s.look(reference="ref.jpg", values=True)   # both panels greyscale, same scale
 ```
 
+**A cool mass on a warm ground reads about two steps lighter than it measures**, so this
+is also the tool for the commonest false alarm there is: a painter concluded three times
+that its subject was far too light and `compare()` said it was inside `0.05` every time.
+Believe the number.
+
 Both sides are converted the same way, so the greys are directly comparable. This
 is the fastest way to find the error that will otherwise sink the painting: a
 background far lighter than the reference's, a light mass that is not actually the
@@ -404,7 +450,9 @@ print(s.compare("ref.jpg"))
 ```
 
 Per cell: the reference's mean value, yours, the difference, and a heat map beside
-the two greyscales. Negative means your canvas is *darker* there. **The number that
+the two greyscales. Negative means your canvas is *darker* there. Narrowed to one
+place with `region=`, the per-cell detail lines beneath the table are `col,row` — the
+transpose of the table above them, so read the header before you trust a pair. **The number that
 matters is `0.10`**: a cell further out than that is a separation the painting has
 lost. Every one of them is yours to fix. A cell marked `~` asks for a value below
 anything the box reaches (see step 3) and is not work — on most references there
@@ -426,12 +474,11 @@ Run it **twice**, not continuously:
 rule actually bites, and a number you have just measured is the most convincing
 possible reason to ignore it: a mass repainted at block-in size buries every fine mark
 lying on it, and those are the expensive ones, while what you are fixing is a tenth of
-a value. In order of preference — repaint it *before* the near things go on (free, and
-what the two-`compare()` rhythm is for); repair around them, shaping the correction to
-what is still bare; or repaint and restore them on purpose, having counted the cost.
-What you must not do is block in the whole mass again and hope. Look at the picture
-afterwards, not just the number: `compare()` will happily report the cell improved
-while the mark you buried was the reason the painting read.
+a value. Cheapest first: repaint it *before* the near things go on, which is what the
+two-`compare()` rhythm is for. After that it is a repair, and *When something is wrong,
+paint over it* has the method. Look at the picture afterwards, not just the number:
+`compare()` will happily report the cell improved while the mark you buried was the
+reason the painting read.
 
 The mean colour is in the table too, coarse on purpose: it is there to catch "that
 whole passage is too warm", not to be sampled and matched. **Matching cell by cell
@@ -465,6 +512,35 @@ So **spend the last third of your strokes on what is around the thing you measur
 A well-built feature in an unfinished picture reads as a detail come loose; a rough one
 in a picture that holds together reads as the thing itself. A viewer recognises a
 subject from its mass and its placement long before they can see a feature at all.
+
+**Decide what share of the budget the subject gets before your first stroke, and spend
+everything else out of what is left.** There is arithmetic here for what a *mass*
+costs — `extent / step`, below — and none at all for what a *picture* costs, and the
+gap is expensive in exactly one direction. The guide warns you about spending too much
+on detail; the commoner failure is quieter. A painter working to 300 spent **59% of
+them before it began the subject at all**, reached the thing the picture was about with
+41% left, and its own verdict was that the part it came for is the weakest passage in
+the finished painting. Nothing told it that was happening, because every one of those
+marks was a reasonable mark.
+
+Write the split down. Something is the picture and everything else is what it stands
+in, and the second is not entitled to half.
+
+**This is also the rule that has to carry a busy picture.** Depth order scales to any
+number of masses without changing; attention does not. Everything else here assumes one
+subject against a ground, and once several things could plausibly be the subject the
+checklist's question — *is the thing you measured most carefully still attached to the
+picture?* — has a harder version: **is the thing you measured most carefully still the
+thing the picture is about?**
+
+**And when the two closing rules collide, this is the order.** *Spend the last third on
+the surroundings* and *your last marks should be about the picture* pull against each
+other on a copy that is being scored, because every near mass you lay late knocks a cell
+back out of tolerance. **Finish the value work early and deliberately** — check
+`compare()` comes back clean, and then stop measuring. The last third is then free for
+the surroundings, and the last few marks for the picture: an accent, an incident, an
+edge thrown away on purpose. A painter that has to spend its last marks on the score has
+already lost the picture.
 
 ### Letting the reference be cut up for you (optional)
 
@@ -559,6 +635,15 @@ A shaped block-in costs about what its box would: the passes are counted across 
 mass, not over its area. A mass with a bite out of it keeps the bite — one pass across
 a concave shape comes back as the two pieces that are really inside it.
 
+**Read "what its box would" literally, because for a long curved shape the box is the
+whole story and the mass is not.** The passes step across the *bounding box*, so a
+ribbon that bends pays for the box its bend sweeps out rather than for its own width. A
+ribbon `0.029` wide at `size=0.015` costs **3 passes** laid straight and **19** with a
+curve in it — the same ribbon, the same brush. A painter budgeted 4 for one and paid
+21, which was 7% of its stroke budget on a single call and nearly cost it the strokes
+for the rest of the picture. **Before you block in anything long and curved, look at
+`shape.box` and cost it off that.**
+
 **The paint still lands outside the shape, and it is the most expensive first mistake
 with shapes.** A pass stops when its *centre* reaches the boundary, so the brush hangs
 over — and with a brush that is a large fraction of the mass, the silhouette you built
@@ -569,6 +654,23 @@ of the mass's width, or `inset()` the shape by half the brush size.**
 mass = blob(span("D4", "F6"), wobble=0.3, seed=2)
 s.block_in(mass.inset(0.045), "flat", "dark", size=0.09)   # inset by half the brush
 s.block_in(mass, "flat", "dark", size=0.06)                # or keep the brush small
+```
+
+**On a shape that is not convex, `inset()` takes far more than a rim, and it takes it
+out of the thin parts first.** Erosion pulls in from every boundary at once, so a lobe
+narrower than twice the inset disappears entirely while the body of the mass barely
+changes. Measured on a real fifteen-point outline, `inset(0.052)` kept **62.7%** of the
+shape's area: the block-in then covered 98.4% of what it was given and **76.2% of the
+mass the painter meant**, with one whole limb at 15.5% — bare canvas, found twenty
+strokes later by `compare()` and six strokes to fill.
+
+**So preview the inset shape, not the shape.** `CALIBRATION.md`'s coverage figure is
+measured on a blob, and a blob is convex.
+
+```python
+mass = polygon([(0.30, 0.30), (0.70, 0.30), (0.70, 0.44), (0.44, 0.44),
+                (0.44, 0.62), (0.70, 0.62), (0.70, 0.78), (0.30, 0.78)])
+s.preview(mass.inset(0.045))                # what you are about to fill, not what you drew
 ```
 
 Worth a `preview()` every time. And **do not cross a small shaped mass** — the
@@ -597,7 +699,7 @@ mass into strands and print the canvas's axis over the whole thing.
   outline.
 - `cross=` is the second set of passes, leaning that many degrees across the first.
   **Take it** — one sweep on its own comes out stringy, and the crossing is what
-  closes the mass up. Twenty to thirty degrees is usually enough. A shaped `block_in`
+  closes the mass up. Twenty to thirty degrees is usually enough, and **`cross=0` is not how you decline it** — that raises. Leave the argument out. A shaped `block_in`
   has the same problem and the same answer, `direction=("axis", 90)`.
 - `depth=` is how far into the mass to go, and the brush decides how many passes
   that takes unless you say `passes=`.
@@ -630,19 +732,66 @@ that repeat it.
 either: the silhouette is where this mass's paint stops and the mass behind it still
 shows, which is why the far masses go down first.
 
+**A hole in a mass is painted the same way, and it is easy to get exactly wrong.**
+The reflex is to dab the background colour into the middle of the mass, and what
+that gives you is a row of floating discs — the brush's own shape, announcing
+itself. **A gap is a broken sliver worked in from the silhouette with a starved
+brush**, not a dot in the interior: the light comes in from the edge of the mass,
+so that is where the hole opens.
+
+```python
+s.stroke([(0.42, 0.36), (0.47, 0.41)], "round_hard", "pale",
+         size=0.012, load=0.3, opacity=0.7)      # in from the edge, not a dot
+```
+
 
 **When something is wrong, paint over it.** Your instinct will be to reach for
 `undo`. Resist it. Real repairs happen with paint: let the area dry, then work over
 it opaquely.
 
+**Burying something takes a particular kind of mark, and the wrong one leaves a
+worse mess than the mistake.** A `bristle` does not bury — its comb leaves the old
+paint showing between the streaks, however high you push the opacity. A `flat` or
+`knife` buries and leaves a rectangle with chisel ends. A `round_hard` buries and
+leaves a capsule with rounded ends. What works:
+
 ```python
 s.dry()                                                     # so new paint covers
-s.block_in(cell("C4"), "bristle", "corrected_colour", density=1.0)
+s.stroke([(-0.05, 0.55), (1.05, 0.58)], "flat", "corrected_colour",
+         size=0.09, load=1.0, opacity=1.0, pressure="even")
 ```
 
+**A long stroke, a solid tip, `load=1.0`, full opacity, run along the grain of what
+is already there so that its own ends fall outside the area you are fixing.** Every
+clause earns its place: a solid tip because a comb does not cover, full load because
+a starved brush leaves a speckled film that everything after it sits on, and the ends
+outside because an oriented tip's chisel end is a straight edge you did not intend
+wherever it stops inside the picture.
+
+**Repairing a mass that already has things standing on it is a different job, and it
+needs a method rather than a warning.** Repainting the mass buries the fine marks on
+it, which are the expensive ones. The only approach that has worked across six
+sessions: **keep every mass and every near thing in its own named function, and
+re-run the whole stack in depth order.** The repair then goes in at its own depth and
+the near things go back on top of it, because they were never a one-off.
+
+```python
+def far_mass():  s.block_in("upper-half", "flat", "shadow", size=0.16)
+def near_mass(): s.block_in(span("A4", "H6"), "flat", "mid", size=0.14)
+def details():   s.stroke(path, "round_hard", "light", size=0.02)
+
+for layer in (far_mass, near_mass, details):     # fix one, re-run all of them
+    layer()
+```
+
+That is what back-to-front costs at repair time, and it is cheaper than the
+alternative every time you need it twice.
+
 `undo(n)` exists and is documented below, but treat it as scraping the canvas —
-something you do occasionally and reluctantly, not a free rewind. Painting over
-leaves a history in the surface that is part of why paintings look alive.
+something you do occasionally and reluctantly, not a free rewind. **`n` counts log
+entries, not marks you paid for**, so an `undo(3)` spanning a pencil line gives you
+back two strokes. Painting over leaves a history in the surface that is part of why
+paintings look alive.
 
 **You will under-vary your marks.** Real brushwork varies in width, pressure,
 direction and opacity constantly. If every stroke uses the same brush at the same
@@ -785,7 +934,45 @@ square to their travel — right for a mass, wrong for an accent, and they do no
 under a pressure list. **Small accents want `round_hard`. `flat` and `knife` want a
 length.**
 
+### The shape each tool leaves behind
+
+That last rule is the most useful sentence in this guide, and it is one of a family.
+**Every tool here has a geometry of its own, and if you do not decide the shape, the
+tool decides it for you** — then you spend twenty marks fighting a structure you never
+chose. What each one leaves when you are not watching:
+
+| Reach for | and if you are not watching, you get |
+|---|---|
+| `flat` / `knife`, short | a rectangle with chisel ends |
+| `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
+| `bristle` below `size≈0.025` | a comb: a woven strap across a band, or a ladder of evenly spaced ticks along an edge |
+| `sweep` round a closed shape | **concentric rings**, because the passes step inward from the boundary |
+| several overlapping `blob`s | a dome — blobs of similar size average to a circle and the irregularities cancel |
+| a shallow shape, passes along its long axis | **its bounding box** |
+| any loop or generator you write | its own statistical signature: one density, one mark length, no clumps and no holes |
+| repair laid on repair, always additive | horizontal strata, one visible edge per repaint |
+
+Two of those need more than a row.
+
+**The shallow-shape one is not covered by the brush-width rule.** An ellipse
+`0.256 × 0.128` filled with a `flat` at `0.022` — a twelfth of the mass's width, well
+inside the "keep the brush under about a fifth" rule below — came out a rectangle.
+**The dimension that matters is the mass's extent *perpendicular to the passes*, not
+its width.** Run the passes across the short way, or turn them:
+
+```python
+s.block_in(ellipse(span("D4", "F5")), "flat", "mid", direction=90, size=0.022)
+```
+
+**And a mass much longer than it is wide is a stroke, not a mass.** `block_in` will
+comb a `0.022 × 0.18` band even at `density=1.0` with `direction="axis"`. A long
+`stroke()` is the right tool; `block_in` is for something with two dimensions.
+
 Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` a small one.
+**On a canvas that is not square that is not the same unit as a coordinate**: `size` is a
+fraction of the long side while `y` is normalised over the short one, so a brush hangs
+over a shape by a different amount vertically than horizontally. It is the reason a
+mass you placed by number comes back a little taller than you drew it.
 **Use a bigger brush than feels comfortable**, especially early — but that is advice
 about *masses*. **Scale a mark off the thing it describes, not off the canvas**;
 carrying the big brush down to something small costs a repaint. The numbers are in
@@ -903,6 +1090,13 @@ What changes is not the brush: a single dab is a *light touch* — the start of 
 spot, the middle one at full pressure, and **one** stroke against your budget. The
 three-marks rule for anything cell-sized or smaller is in step 6, where you will be
 when you need it.
+
+**Use `press=3` for anything you actually want to land.** `CALIBRATION.md`'s numbers
+for the lighter touches are measured with white on three grounds, and a dark accent on
+a lit passage behaves nothing like that: a near-black accent at `press=2` did not
+register at all, and cost a painter one of its last ten strokes to lay again. `press=1` and
+`press=2` are whispers — reach for them when a whisper is the mark you want, not when
+you are being careful.
 
 ---
 
@@ -1071,6 +1265,9 @@ dark = p.mix("ultramarine", "burnt_umber", 0.5)     # the darkest thing in the b
 lo, hi = p.value_of(dark), p.value_of("titanium_white")
 
 def at_value(target):                # the ratio of white that reads `target`
+    if target < lo:                  # it can only add white, so it can only go up
+        raise ValueError(f"{target:.2f} is below the darkest mix ({lo:.2f}) — "
+                         "mix a darker colour, do not ask this for it")
     a, b = 0.0, 1.0
     for _ in range(20):
         mid = (a + b) / 2
@@ -1089,6 +1286,13 @@ Look at the printed ratios, not just the picture. A third of white gets you the
 first step; it takes nine tenths to reach the eighth. That curve is why a mixture
 that "should" be halfway comes out too dark, and why the fix is always to add more
 white than feels right.
+
+**`at_value` only goes up**, which is why it now raises rather than shrugging. It
+searches a ratio of *white*, so a target below the darkest mix has no answer and the
+bare bisection used to return `0.0` and hand back the base value without saying so — a
+painter asked it for `0.30`, got a field at `0.41`, and did not find out until
+`compare()` told it. Reach for this function to plan a range upward from your dark; to
+go lower, mix a darker colour or supply one (**Colour**, below).
 
 **2. One stroke, six pressures.** See what the profiles actually do. On the round
 brush on the left they change the *width* of the mark as well; on the `bristle` on

@@ -83,10 +83,28 @@ class History:
     #: the underdrawing, which is the opposite of what M6 is for.
     UNPAINTED_KINDS = ("dry", "look", "pencil", "erase")
 
+    #: How many marks a painter may sign with, free of the stroke budget. The guide
+    #: grants this and until REHEARSAL6 nothing honoured it: a mark noted `signature`
+    #: is an ordinary stroke, so it was charged, and two painters found that out by
+    #: watching the counter go past their budget. One of them undid a finished mark to
+    #: pay for its signature. Past the allowance every signature mark is charged, so
+    #: the exemption cannot be spent on painting.
+    SIGNATURE_ALLOWANCE = 5
+
+    @staticmethod
+    def _is_signature(record: StrokeRecord) -> bool:
+        return "signature" in str(record.note).lower()
+
     @property
     def stroke_count(self) -> int:
-        """How many marks of paint have been made. Drawing and drying do not count."""
-        return sum(1 for r in self.records if r.kind not in History.UNPAINTED_KINDS)
+        """How many marks of paint have been paid for.
+
+        Drawing and drying do not count, and neither do the first
+        :data:`SIGNATURE_ALLOWANCE` marks noted ``signature``.
+        """
+        paint = [r for r in self.records if r.kind not in History.UNPAINTED_KINDS]
+        signed = sum(1 for r in paint if History._is_signature(r))
+        return len(paint) - min(signed, History.SIGNATURE_ALLOWANCE)
 
     def summary(self, last: int = 10) -> str:
         """A short text log of recent actions, for the painter to re-read."""

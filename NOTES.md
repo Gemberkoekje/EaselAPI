@@ -611,8 +611,69 @@ checking every pigment against what the canvas actually receives, which
 
 ## What to do next, in order
 
-**Start here. `REHEARSAL5.md` is the most recent measurement and it changed the
-ordering.** The guide changes from REHEARSAL4 have now been tested: one worked, one did
+**Start here. `REHEARSAL6.md` is the most recent measurement.** The brief's definition
+of done has now been run end to end a second time, on both references, and **every
+criterion in it is met** -- including the `preview`/`rehearse` clause REHEARSAL4 failed,
+and the unprompted pair broke its own composition by the widest margin any run has
+managed (`+8.12` dB to `-9.52`, with the edge split reversed rather than levelled).
+Items **00a-00e** below come out of it and go before everything else. The 0a-0f block
+under them is REHEARSAL5's and is kept because items 0b-0e are still the standing rules;
+**0f is done.**
+
+**00a. ~~The signature exemption is a promise the engine does not keep.~~ Done.**
+`History.stroke_count` now skips up to `History.SIGNATURE_ALLOWANCE` (five) records noted
+`signature` and charges everything past it, so the cap cannot be spent on painting;
+`tests/test_engine.py::test_signature_marks_are_free_up_to_the_allowance` holds it, and
+`rehearsal4/verify_done.py`'s own allowance is now a cross-check rather than the only
+place the exemption exists. The original finding, kept because it is the reason: `PAINTER.md:1265` says up to five marks noted
+`signature` "do not come out of your stroke budget". `History.stroke_count`
+(`src/easel/history.py:87`) counts every record whose kind is not `dry`/`look`/`pencil`/
+`erase`, so it charges them. The exemption exists only in `rehearsal4/verify_done.py`,
+which no painter sees. **Both REHEARSAL6 painters found this independently**, and the
+sitter painter -- which was planning to 299 -- undid, dropped the mole on the sitter's
+neck, and re-signed with one mark. `UNPAINTED_KINDS` is the wrong shape for this: the
+exemption is per-*record*, capped at five, and everything past five charged, or the
+cap is not a cap. Deleting the promise from the guide is the other honest option and
+the worse one -- a painter that pays for its signature will not sign.
+
+**00b. The depth-order paragraph has failed three runs. Rewrite it.** Containment
+`17.5%`, `16.3%`, `13.2%` against REHEARSAL3's `0.1%`: the dark still leaves the cup.
+Item 0c below left it untouched on the grounds that one session is not evidence it
+fails. Three are. What is now certain is that stating the rule, giving it a runnable
+three-mass example *and* putting it in the checklist is **not sufficient**, which is
+the same lesson REHEARSAL.md -> REHEARSAL2.md taught about the guide generally.
+
+**00c. Retire or re-scale the value criterion.** Worst cell on the last three mugs:
+`0.0985`, `0.0961`, `0.0987`, against a `0.10` threshold. Three different painters have
+cleared it by a thousandth. It is saturated, and on all three runs `probe_human_notes`'s
+containment caught a defect it could not see. The second number is doing the work now.
+
+**00d. Two costing rules mislead a painter about what a mass costs, and both go before
+M9** because M9 exposes the API. **A curved `ribbon`**: `block_in` on one `0.029` wide
+at brush `0.015` costs **19 passes**, where the same width straight costs **3**. The
+guide says both "the passes are counted across the mass, not over its area" and "a
+shaped mass costs what its box costs"; for a curved ribbon those disagree and the box
+wins. It ate 7% of a painter's budget in one call. **`inset()` on a concave shape**:
+`inset(0.052)` on a real 15-point coat outline keeps **62.7%** of the area, and the
+block-in then covered 76.2% of the actual mass with a whole lobe at 15.5%. The guide
+offers "`inset()` the shape by half the brush size" unqualified and CALIBRATION's
+99%-coverage figure is measured on a convex blob. `ENGINE_CHANGES.md`'s note that the
+2.7x erosion is "correct and documented" is about the maths; this is about the advice.
+
+**00e. Four smaller guide defects, each of which cost a painter strokes.** Exercise 1's
+`at_value()` only searches upward and silently returns the base when asked for anything
+darker. `sweep(cross=0)` raises while omitting `cross` works. `undo(n)` counts log
+entries, not paid marks. `look(region=)` pads the crop past the span asked for. And the
+largest omission: **nothing in the guide says how to bury something** -- "when something
+is wrong, paint over it" does not say with what, and a bristle leaves the old paint
+showing between its streaks, a flat leaves a rectangle, a round tip leaves a capsule.
+The answer a painter spent fifteen strokes arriving at: a long stroke, solid tip,
+`load=1.0`, full opacity, run along the grain of what is there so its ends fall outside
+the repair.
+
+---
+
+**REHEARSAL5's list, kept. `REHEARSAL5.md` changed the ordering when it was written.** The guide changes from REHEARSAL4 have now been tested: one worked, one did
 nothing, one backfired, and the pass criterion turned out to be gameable and was gamed.
 The list below is the order to work in; items 0a–0f are new and everything after them is
 history kept for context.
@@ -662,9 +723,17 @@ painted a pond seen from above. Twelve sessions told to audit their own defaults
 landscape as the first thing that arrived and walked away from it
 (`rehearsal5/naming/A_reflective_samples.md`).
 
-**0f. Then one more `Level1.jpg` run, then M9.** That run closes M6. It is the first to
-be measured on two numbers rather than one, and the first where a signed painting is
-expected.
+**0f. ~~Then one more `Level1.jpg` run, then M9.~~ Done -- `REHEARSAL6.md`, and it was
+the whole definition of done rather than only the mug.** It was the first run measured
+on two numbers rather than one and the first where a signed painting was expected, and
+all three of the brief's additions did what they were added to do: containment caught a
+defect the value criterion reported as clean, all four paintings were signed by painters
+neither of whom was told to, and **the last-ten rule was tested rather than merely
+passed** -- the sitter painter found a cell out of tolerance in its closing marks and
+painted a face plane instead of the number, writing that chasing it "would have fixed E4
+and ruined the jaw". That is REHEARSAL5's failure mode arriving and being declined by a
+painter that did not know the rule existed for that reason. M6 is closed. What the run
+found is items 00a-00e above.
 
 ---
 

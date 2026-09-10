@@ -1,0 +1,8631 @@
+{
+ "meta": {
+  "format": 3,
+  "width": 640,
+  "height": 900,
+  "texture": "smooth",
+  "ground": "umber_wash",
+  "ground_spec": "umber_wash",
+  "seed": 41,
+  "timelapse": true,
+  "out_dir": "out",
+  "look_counter": 17,
+  "stroke_count": 157,
+  "texture_strength": 1.0,
+  "rng_state": {
+   "bit_generator": "PCG64",
+   "state": {
+    "state": 321743488208284031317160157613556099188,
+    "inc": 16450919397810582319219321886622321693
+   },
+   "has_uint32": 0,
+   "uinteger": 0
+  },
+  "palette_slots": {
+   "wall_d": [
+    0.015920639038085938,
+    0.019216537475585938,
+    0.03431892395019531
+   ],
+   "wall": [
+    0.034424781799316406,
+    0.04076957702636719,
+    0.06867647171020508
+   ],
+   "wall_l": [
+    0.06691169738769531,
+    0.07735061645507812,
+    0.12108135223388672
+   ],
+   "floor": [
+    0.024713516235351562,
+    0.029539108276367188,
+    0.051177024841308594
+   ],
+   "spill": [
+    0.5595113635063171,
+    0.18530511856079102,
+    0.027830123901367188
+   ],
+   "spill2": [
+    0.7044914960861206,
+    0.3689194917678833,
+    0.0887441635131836
+   ],
+   "lit": [
+    0.8243737816810608,
+    0.6176849603652954,
+    0.29436421394348145
+   ],
+   "blaze": [
+    0.908367395401001,
+    0.8438107371330261,
+    0.7129642367362976
+   ],
+   "glare": [
+    0.8970043063163757,
+    0.8360599279403687,
+    0.6558724641799927
+   ]
+  },
+  "marks": {},
+  "has_sketch": false,
+  "assisted": []
+ },
+ "log": [
+  {
+   "index": 0,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.71244,
+     0.0
+    ],
+    [
+     0.6897,
+     0.4325
+    ],
+    [
+     0.69386,
+     0.865
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 150613.78802490234,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 1,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.62444,
+     0.865
+    ],
+    [
+     0.66138,
+     0.4325
+    ],
+    [
+     0.63364,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 139516.35148620605,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 2,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.58733,
+     0.0
+    ],
+    [
+     0.60651,
+     0.4325
+    ],
+    [
+     0.60936,
+     0.865
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 134926.25369262695,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 3,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.51826,
+     0.865
+    ],
+    [
+     0.54714,
+     0.4325
+    ],
+    [
+     0.55607,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 137960.19131469727,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 4,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.47018,
+     0.0
+    ],
+    [
+     0.492,
+     0.4325
+    ],
+    [
+     0.49204,
+     0.865
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 142168.59214782715,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 5,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.44344,
+     0.865
+    ],
+    [
+     0.41755,
+     0.4325
+    ],
+    [
+     0.40197,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 141777.16859436035,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 6,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.38102,
+     0.0
+    ],
+    [
+     0.38528,
+     0.4325
+    ],
+    [
+     0.37645,
+     0.865
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 435,
+   "paint": 141616.95072937012,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 7,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.32065,
+     0.865
+    ],
+    [
+     0.33042,
+     0.48656
+    ],
+    [
+     0.31291,
+     0.10813
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 381,
+   "paint": 130118.5973815918,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.085,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 8,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.35487,
+     0.85288
+    ],
+    [
+     0.56331,
+     0.87045
+    ],
+    [
+     0.77332,
+     0.86544
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 171,
+   "paint": 48998.13806152344,
+   "note": "block-in shape 4.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 9,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.87831,
+     0.92996
+    ],
+    [
+     0.54938,
+     0.93702
+    ],
+    [
+     0.22465,
+     0.88375
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 269,
+   "paint": 74516.09426879883,
+   "note": "block-in shape 4.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 10,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.14264,
+     0.93251
+    ],
+    [
+     0.56268,
+     0.96761
+    ],
+    [
+     0.98412,
+     0.9829
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 343,
+   "paint": 85095.09390258789,
+   "note": "block-in shape 4.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 11,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.38332,
+     1.0
+    ],
+    [
+     0.22111,
+     1.0
+    ],
+    [
+     0.06127,
+     0.97196
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 133,
+   "paint": 23047.626876831055,
+   "note": "block-in shape 4.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 12,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.60603,
+     0.0
+    ],
+    [
+     0.597,
+     0.4225
+    ],
+    [
+     0.60747,
+     0.845
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 53938.81612968445,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 13,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.56072,
+     0.845
+    ],
+    [
+     0.57248,
+     0.4225
+    ],
+    [
+     0.58434,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 51782.88299560547,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 14,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.54813,
+     0.0
+    ],
+    [
+     0.53614,
+     0.4225
+    ],
+    [
+     0.55567,
+     0.845
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 53572.50862312317,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 15,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.52183,
+     0.845
+    ],
+    [
+     0.52187,
+     0.4225
+    ],
+    [
+     0.52145,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 50708.659150123596,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 16,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.48982,
+     0.0
+    ],
+    [
+     0.49307,
+     0.4225
+    ],
+    [
+     0.50174,
+     0.845
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 54129.03635120392,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 17,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.47266,
+     0.845
+    ],
+    [
+     0.47678,
+     0.4225
+    ],
+    [
+     0.48294,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 51451.419595718384,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 18,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.45176,
+     0.0
+    ],
+    [
+     0.45929,
+     0.4225
+    ],
+    [
+     0.46113,
+     0.845
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 54105.18367958069,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 19,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.42703,
+     0.845
+    ],
+    [
+     0.42052,
+     0.4225
+    ],
+    [
+     0.41623,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 761,
+   "paint": 52979.16248989105,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 20,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.3935,
+     0.0009
+    ],
+    [
+     0.40595,
+     0.12929
+    ],
+    [
+     0.43313,
+     0.25614
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 105,
+   "paint": 58655.74949645996,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 21,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.40049,
+     0.77144
+    ],
+    [
+     0.35432,
+     0.38719
+    ],
+    [
+     0.34436,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 315,
+   "paint": 165282.16452026367,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 22,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.24245,
+     0.00291
+    ],
+    [
+     0.29568,
+     0.4312
+    ],
+    [
+     0.35537,
+     0.85882
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 350,
+   "paint": 177284.4333190918,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 23,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.30635,
+     0.86103
+    ],
+    [
+     0.25616,
+     0.43042
+    ],
+    [
+     0.21291,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 352,
+   "paint": 179868.81135559082,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 24,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.13702,
+     0.00013
+    ],
+    [
+     0.17976,
+     0.43352
+    ],
+    [
+     0.20676,
+     0.86856
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 355,
+   "paint": 184796.80715942383,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 25,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.15626,
+     0.87093
+    ],
+    [
+     0.11843,
+     0.43503
+    ],
+    [
+     0.04628,
+     0.00274
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 356,
+   "paint": 182041.89096069336,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 26,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.02915,
+     0.0
+    ],
+    [
+     0.06546,
+     0.43566
+    ],
+    [
+     0.1193,
+     0.87187
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 356,
+   "paint": 162565.85424804688,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 27,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.04774,
+     0.87645
+    ],
+    [
+     0.02679,
+     0.72108
+    ],
+    [
+     0.0,
+     0.56659
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 128,
+   "paint": 49823.34799194336,
+   "note": "block-in shape 84.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 28,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     1.0,
+     0.54876
+    ],
+    [
+     1.0,
+     0.71712
+    ],
+    [
+     0.96729,
+     0.87811
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 136,
+   "paint": 44867.1279296875,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 29,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.91898,
+     0.87614
+    ],
+    [
+     0.91827,
+     0.43437
+    ],
+    [
+     0.97926,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 358,
+   "paint": 181046.65251159668,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 30,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.92683,
+     0.00089
+    ],
+    [
+     0.91252,
+     0.43898
+    ],
+    [
+     0.80149,
+     0.8669
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 356,
+   "paint": 177836.73867797852,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 31,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.78757,
+     0.86854
+    ],
+    [
+     0.79914,
+     0.43227
+    ],
+    [
+     0.85284,
+     0.00043
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 355,
+   "paint": 185353.39512634277,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 32,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.7844,
+     0.00056
+    ],
+    [
+     0.74615,
+     0.43191
+    ],
+    [
+     0.71263,
+     0.86377
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 353,
+   "paint": 175618.02633666992,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 33,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.63695,
+     0.85892
+    ],
+    [
+     0.68352,
+     0.43054
+    ],
+    [
+     0.73285,
+     0.00246
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 350,
+   "paint": 178741.01902770996,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 34,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.67462,
+     0.00366
+    ],
+    [
+     0.5928,
+     0.21048
+    ],
+    [
+     0.59657,
+     0.4263
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 176,
+   "paint": 94338.49829101562,
+   "note": "block-in shape 96.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.105,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 35,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.26526,
+     0.85551
+    ],
+    [
+     0.27348,
+     0.86008
+    ],
+    [
+     0.28346,
+     0.8616
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 12,
+   "paint": 1794.5032958984375,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 36,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.24746,
+     0.87986
+    ],
+    [
+     0.219,
+     0.87273
+    ],
+    [
+     0.19758,
+     0.85341
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 37,
+   "paint": 5983.157638549805,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 37,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.12218,
+     0.86468
+    ],
+    [
+     0.17017,
+     0.87558
+    ],
+    [
+     0.2042,
+     0.9107
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 62,
+   "paint": 9973.293701171875,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 38,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.17016,
+     0.92555
+    ],
+    [
+     0.11512,
+     0.88923
+    ],
+    [
+     0.06396,
+     0.8462
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 86,
+   "paint": 13737.378723144531,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 39,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.0,
+     0.87082
+    ],
+    [
+     0.06236,
+     0.91047
+    ],
+    [
+     0.14192,
+     0.93037
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 94,
+   "paint": 13543.330337524414,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 40,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.10267,
+     0.95424
+    ],
+    [
+     0.04314,
+     0.9416
+    ],
+    [
+     0.00377,
+     0.89403
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 79,
+   "paint": 11439.13510131836,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 41,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.00796,
+     0.92655
+    ],
+    [
+     0.02716,
+     0.96711
+    ],
+    [
+     0.06162,
+     0.98126
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 57,
+   "paint": 7228.395980834961,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 42,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.02201,
+     1.0
+    ],
+    [
+     0.01726,
+     0.98211
+    ],
+    [
+     0.00642,
+     0.96899
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 27,
+   "paint": 2811.1975059509277,
+   "note": "block-in shape 30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 43,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.73474,
+     0.85929
+    ],
+    [
+     0.74207,
+     0.85385
+    ],
+    [
+     0.75061,
+     0.85052
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 12,
+   "paint": 1940.4939880371094,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 44,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.82054,
+     0.85665
+    ],
+    [
+     0.78741,
+     0.85364
+    ],
+    [
+     0.77821,
+     0.89208
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 51,
+   "paint": 8258.355026245117,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 45,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.80713,
+     0.89966
+    ],
+    [
+     0.84801,
+     0.87986
+    ],
+    [
+     0.8885,
+     0.85936
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 56,
+   "paint": 9120.769653320312,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 46,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.95351,
+     0.85695
+    ],
+    [
+     0.89924,
+     0.88984
+    ],
+    [
+     0.84166,
+     0.91697
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 78,
+   "paint": 12013.727394104004,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 47,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.88334,
+     0.94667
+    ],
+    [
+     0.92695,
+     0.88076
+    ],
+    [
+     0.99846,
+     0.86317
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 100,
+   "paint": 15183.42626953125,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 48,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     1.0,
+     0.91451
+    ],
+    [
+     0.94908,
+     0.91702
+    ],
+    [
+     0.91215,
+     0.95407
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 65,
+   "paint": 10097.353713989258,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 49,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.94943,
+     0.97616
+    ],
+    [
+     0.96512,
+     0.9427
+    ],
+    [
+     0.99824,
+     0.93945
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 48,
+   "paint": 7208.462982177734,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 50,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.99611,
+     0.97409
+    ],
+    [
+     0.99138,
+     0.9861
+    ],
+    [
+     0.98543,
+     0.99601
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 19,
+   "paint": 1822.2963638305664,
+   "note": "block-in shape -30.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.055,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 51,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 52,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.05,
+     0.905
+    ],
+    [
+     0.16,
+     0.93
+    ],
+    [
+     0.34,
+     0.968
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 123,
+   "paint": 55600.49943602085,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.1,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 53,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.05,
+     1.02
+    ],
+    [
+     0.2,
+     1.03
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 96,
+   "paint": 4036.518881201744,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.08,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 54,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     1.05,
+     0.905
+    ],
+    [
+     0.86,
+     0.935
+    ],
+    [
+     0.7,
+     0.972
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 111,
+   "paint": 49305.89449619659,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.1,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 55,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     1.05,
+     1.02
+    ],
+    [
+     0.82,
+     1.03
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 88,
+   "paint": 4154.8408126831055,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.08,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 56,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     -0.05,
+     0.862
+    ],
+    [
+     0.22,
+     0.868
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 174,
+   "paint": 14254.832912623882,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 57,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     1.05,
+     0.862
+    ],
+    [
+     0.8,
+     0.868
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 161,
+   "paint": 13453.656460367143,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.045,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 58,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.452,
+     -0.05
+    ],
+    [
+     0.436,
+     0.3
+    ],
+    [
+     0.42,
+     0.6
+    ],
+    [
+     0.404,
+     0.875
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 528,
+   "paint": 121679.42160844803,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 59,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.582,
+     -0.05
+    ],
+    [
+     0.594,
+     0.3
+    ],
+    [
+     0.604,
+     0.6
+    ],
+    [
+     0.616,
+     0.875
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 528,
+   "paint": 122506.42841672897,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.075,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 60,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.446,
+     -0.04
+    ],
+    [
+     0.43,
+     0.3
+    ],
+    [
+     0.414,
+     0.6
+    ],
+    [
+     0.398,
+     0.87
+    ]
+   ],
+   "pressure": [
+    0.4,
+    1.0,
+    0.8,
+    1.0
+   ],
+   "dabs": 820,
+   "paint": 7836.048104584217,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.009,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 61,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.588,
+     -0.04
+    ],
+    [
+     0.6,
+     0.34
+    ],
+    [
+     0.612,
+     0.72
+    ],
+    [
+     0.62,
+     0.87
+    ]
+   ],
+   "pressure": [
+    0.3,
+    0.7,
+    1.0,
+    0.6
+   ],
+   "dabs": 819,
+   "paint": 2669.301209628582,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.007,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 62,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 63,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.446,
+     -0.04
+    ],
+    [
+     0.43,
+     0.3
+    ],
+    [
+     0.414,
+     0.6
+    ],
+    [
+     0.398,
+     0.875
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 385,
+   "paint": 91380.583319664,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.034,
+    "opacity": 0.95,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 64,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.588,
+     -0.04
+    ],
+    [
+     0.6,
+     0.34
+    ],
+    [
+     0.612,
+     0.72
+    ],
+    [
+     0.62,
+     0.875
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 436,
+   "paint": 73400.4709328413,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.03,
+    "opacity": 0.95,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 65,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.462,
+     -0.03
+    ],
+    [
+     0.448,
+     0.32
+    ],
+    [
+     0.432,
+     0.62
+    ],
+    [
+     0.416,
+     0.87
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 644,
+   "paint": 19036.261965751648,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.02,
+    "opacity": 0.45,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 66,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.574,
+     -0.03
+    ],
+    [
+     0.586,
+     0.32
+    ],
+    [
+     0.598,
+     0.62
+    ],
+    [
+     0.608,
+     0.87
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 804,
+   "paint": 9470.209119603038,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.016,
+    "opacity": 0.35,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 67,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.47,
+     -0.03
+    ],
+    [
+     0.456,
+     0.32
+    ],
+    [
+     0.44,
+     0.62
+    ],
+    [
+     0.424,
+     0.87
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 811,
+   "paint": 4111.2036594077945,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.01,
+    "opacity": 0.55,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 68,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.2895,
+     0.945
+    ],
+    [
+     0.02,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 192,
+   "paint": 14619.35891723819,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.075,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 69,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.3705,
+     0.945
+    ],
+    [
+     0.2,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 147,
+   "paint": 13375.87736611627,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.07,
+    "opacity": 0.7,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 70,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.4515,
+     0.945
+    ],
+    [
+     0.38,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 119,
+   "paint": 8384.801677569048,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.06,
+    "opacity": 0.8,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 71,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.5595,
+     0.945
+    ],
+    [
+     0.62,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 115,
+   "paint": 7999.294541988522,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.06,
+    "opacity": 0.8,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 72,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.6405,
+     0.945
+    ],
+    [
+     0.8,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 142,
+   "paint": 13179.691936364921,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.07,
+    "opacity": 0.7,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 73,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.51,
+     0.872
+    ],
+    [
+     0.717,
+     0.945
+    ],
+    [
+     0.97,
+     1.04
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 182,
+   "paint": 15254.788719451055,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.075,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 74,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.06,
+     0.9
+    ],
+    [
+     0.1,
+     0.93
+    ],
+    [
+     0.22,
+     0.98
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 29,
+   "paint": 74810.333984375,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.11,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 75,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     1.06,
+     0.9
+    ],
+    [
+     0.9,
+     0.932
+    ],
+    [
+     0.78,
+     0.982
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 29,
+   "paint": 76066.11080932617,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.11,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 76,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.06,
+     1.03
+    ],
+    [
+     0.08,
+     1.04
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 21,
+   "paint": 0.0,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.07,
+    "opacity": 0.85,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 77,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     1.06,
+     1.03
+    ],
+    [
+     0.92,
+     1.04
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 21,
+   "paint": 4.563484333921224,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.07,
+    "opacity": 0.85,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 78,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 79,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.464,
+     -0.04
+    ],
+    [
+     0.454,
+     0.3
+    ],
+    [
+     0.439,
+     0.62
+    ],
+    [
+     0.424,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 170,
+   "paint": 263794.97984313965,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.078,
+    "opacity": 0.95,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 80,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.566,
+     -0.04
+    ],
+    [
+     0.578,
+     0.3
+    ],
+    [
+     0.59,
+     0.62
+    ],
+    [
+     0.601,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 179,
+   "paint": 249169.654392004,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.074,
+    "opacity": 0.95,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 81,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.518,
+     -0.04
+    ],
+    [
+     0.522,
+     0.3
+    ],
+    [
+     0.523,
+     0.62
+    ],
+    [
+     0.527,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 89,
+   "paint": 97882.08128356934,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.15,
+    "opacity": 0.16,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 82,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.518,
+     -0.04
+    ],
+    [
+     0.522,
+     0.3
+    ],
+    [
+     0.523,
+     0.62
+    ],
+    [
+     0.527,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 136,
+   "paint": 55309.091917037964,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.098,
+    "opacity": 0.14,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 83,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     -0.05,
+     0.1
+    ],
+    [
+     0.04,
+     0.46
+    ],
+    [
+     -0.02,
+     0.82
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 194,
+   "paint": 38313.22152709961,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.14,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 84,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     1.05,
+     0.1
+    ],
+    [
+     0.96,
+     0.46
+    ],
+    [
+     1.02,
+     0.82
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 194,
+   "paint": 44808.695194244385,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.14,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 85,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     0.1,
+     0.2
+    ],
+    [
+     0.16,
+     0.58
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 142,
+   "paint": 17058.441940307617,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.1,
+    "opacity": 0.35,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 86,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     0.9,
+     0.26
+    ],
+    [
+     0.84,
+     0.62
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 135,
+   "paint": 19046.583156585693,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.1,
+    "opacity": 0.35,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 87,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.06,
+     0.34
+    ],
+    [
+     0.26,
+     0.3
+    ],
+    [
+     0.36,
+     0.33
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 205,
+   "paint": 702.1708402633667,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.03,
+    "opacity": 0.28,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.8,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 88,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.7,
+     0.56
+    ],
+    [
+     0.86,
+     0.6
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 109,
+   "paint": 262.1215389966965,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.024,
+    "opacity": 0.22,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.8,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 89,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.24,
+     0.72
+    ],
+    [
+     0.34,
+     0.66
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 85,
+   "paint": 655.0647072792053,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.038,
+    "opacity": 0.2,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.9,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 90,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.76,
+     0.16
+    ],
+    [
+     0.92,
+     0.13
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 107,
+   "paint": 240.80490581691265,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.02,
+    "opacity": 0.25,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.7,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 91,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 92,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.54146,
+     0.0
+    ],
+    [
+     0.54288,
+     0.4425
+    ],
+    [
+     0.54903,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 797,
+   "paint": 19046.358159542084,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.03,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 93,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.52073,
+     0.885
+    ],
+    [
+     0.52017,
+     0.4425
+    ],
+    [
+     0.52787,
+     0.0
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 797,
+   "paint": 18966.594146683812,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.03,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 94,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.5138,
+     0.0
+    ],
+    [
+     0.51215,
+     0.4425
+    ],
+    [
+     0.50191,
+     0.885
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 797,
+   "paint": 18468.855502724648,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.03,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 95,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.503,
+     -0.04
+    ],
+    [
+     0.499,
+     0.4
+    ],
+    [
+     0.496,
+     0.88
+    ]
+   ],
+   "pressure": [
+    0.6,
+    1.0,
+    0.9
+   ],
+   "dabs": 828,
+   "paint": 11930.96286469698,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.01,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 96,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.551,
+     -0.04
+    ],
+    [
+     0.554,
+     0.4
+    ],
+    [
+     0.557,
+     0.88
+    ]
+   ],
+   "pressure": [
+    0.5,
+    0.9,
+    1.0
+   ],
+   "dabs": 828,
+   "paint": 8258.692789793015,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.009,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 97,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.14,
+     0.856
+    ],
+    [
+     0.3,
+     0.876
+    ],
+    [
+     0.4,
+     0.902
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 46,
+   "paint": 47474.97967529297,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.06,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 98,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     0.86,
+     0.856
+    ],
+    [
+     0.7,
+     0.876
+    ],
+    [
+     0.6,
+     0.902
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 46,
+   "paint": 48573.48718261719,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.06,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 99,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     -0.05,
+     0.848
+    ],
+    [
+     0.2,
+     0.856
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 52,
+   "paint": 27709.02897489071,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.05,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 100,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     1.05,
+     0.848
+    ],
+    [
+     0.8,
+     0.856
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 52,
+   "paint": 27686.783409118652,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.05,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 101,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.47,
+     0.884
+    ],
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.556,
+     0.884
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 31,
+   "paint": 4659.5312423706055,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.03,
+    "opacity": 0.95,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 102,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.43,
+     0.916
+    ],
+    [
+     0.512,
+     0.906
+    ],
+    [
+     0.594,
+     0.918
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 66,
+   "paint": 6107.777717590332,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.026,
+    "opacity": 0.75,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 103,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 104,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.261,
+     0.948
+    ],
+    [
+     0.01,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 164,
+   "paint": 17554.38687087316,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.09,
+    "opacity": 0.6,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 105,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.336,
+     0.948
+    ],
+    [
+     0.16,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 134,
+   "paint": 20558.715713577345,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.085,
+    "opacity": 0.72,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 106,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.416,
+     0.948
+    ],
+    [
+     0.32,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 118,
+   "paint": 9840.854142624594,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.07,
+    "opacity": 0.82,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 107,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.596,
+     0.948
+    ],
+    [
+     0.68,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 112,
+   "paint": 12356.766511283815,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.07,
+    "opacity": 0.82,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 108,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.676,
+     0.948
+    ],
+    [
+     0.84,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 128,
+   "paint": 14104.087993855821,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.085,
+    "opacity": 0.72,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 109,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.751,
+     0.948
+    ],
+    [
+     0.99,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 158,
+   "paint": 15117.769847311312,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.09,
+    "opacity": 0.6,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 110,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.476,
+     0.948
+    ],
+    [
+     0.44,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 140,
+   "paint": 4319.212525744457,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.048,
+    "opacity": 0.85,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 111,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.512,
+     0.878
+    ],
+    [
+     0.546,
+     0.948
+    ],
+    [
+     0.58,
+     1.05
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 139,
+   "paint": 4159.310318362099,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.048,
+    "opacity": 0.85,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 112,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.06,
+     0.94
+    ],
+    [
+     0.22,
+     0.918
+    ],
+    [
+     0.34,
+     0.9
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 168,
+   "paint": 3328.8145208358765,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.045,
+    "opacity": 0.35,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 113,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.94,
+     0.94
+    ],
+    [
+     0.78,
+     0.918
+    ],
+    [
+     0.66,
+     0.9
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 168,
+   "paint": 4952.190013885498,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.045,
+    "opacity": 0.35,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 114,
+   "kind": "smudge",
+   "brush": "smudge",
+   "color_hex": "#f7f4ef",
+   "points": [
+    [
+     0.28,
+     0.93
+    ],
+    [
+     0.2,
+     0.952
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 30,
+   "paint": 4265.73046875,
+   "note": "",
+   "params": {
+    "name": "smudge",
+    "tip": "round_soft",
+    "size": 0.035,
+    "opacity": 0.6,
+    "hardness": 0.25,
+    "spacing": 0.06,
+    "jitter": 0.01,
+    "size_jitter": 0.06,
+    "load": 1.0,
+    "load_falloff": 0.0,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.95,
+    "thickness_gain": 0.0,
+    "smudge": 1.0,
+    "texture_sensitivity": 0.3,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.9301109313964844,
+     0.9046613574028015,
+     0.8631572723388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 115,
+   "kind": "smudge",
+   "brush": "smudge",
+   "color_hex": "#f7f4ef",
+   "points": [
+    [
+     0.72,
+     0.93
+    ],
+    [
+     0.8,
+     0.952
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 30,
+   "paint": 4348.020973205566,
+   "note": "",
+   "params": {
+    "name": "smudge",
+    "tip": "round_soft",
+    "size": 0.035,
+    "opacity": 0.6,
+    "hardness": 0.25,
+    "spacing": 0.06,
+    "jitter": 0.01,
+    "size_jitter": 0.06,
+    "load": 1.0,
+    "load_falloff": 0.0,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.95,
+    "thickness_gain": 0.0,
+    "smudge": 1.0,
+    "texture_sensitivity": 0.3,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.9301109313964844,
+     0.9046613574028015,
+     0.8631572723388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 116,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.478,
+     0.882
+    ],
+    [
+     0.548,
+     0.882
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 37,
+   "paint": 2331.063175201416,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.02,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 117,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.452,
+     0.9
+    ],
+    [
+     0.512,
+     0.894
+    ],
+    [
+     0.572,
+     0.9
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 52,
+   "paint": 3405.1215858459473,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.024,
+    "opacity": 0.6,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 118,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.12,
+     0.46
+    ],
+    [
+     0.3,
+     0.42
+    ],
+    [
+     0.38,
+     0.44
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 177,
+   "paint": 784.7217903137207,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.026,
+    "opacity": 0.22,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.8,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 119,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     0.66,
+     0.3
+    ],
+    [
+     0.84,
+     0.27
+    ]
+   ],
+   "pressure": "lift_off",
+   "dabs": 119,
+   "paint": 1166.3831481933594,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.034,
+    "opacity": 0.3,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.9,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 120,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.8,
+     0.7
+    ],
+    [
+     0.96,
+     0.74
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 109,
+   "paint": 156.88378090411425,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.022,
+    "opacity": 0.18,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 0.7,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 121,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 122,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.1,
+     0.985
+    ],
+    [
+     0.34,
+     0.955
+    ],
+    [
+     0.5,
+     0.94
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 195,
+   "paint": 10076.147687911987,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.055,
+    "opacity": 0.45,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 123,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.92,
+     0.985
+    ],
+    [
+     0.7,
+     0.955
+    ],
+    [
+     0.56,
+     0.94
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 193,
+   "paint": 6598.371255874634,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.05,
+    "opacity": 0.4,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 124,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.2,
+     0.905
+    ],
+    [
+     0.44,
+     0.892
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 155,
+   "paint": 1030.6959247589111,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.03,
+    "opacity": 0.3,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 125,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.44,
+     0.244
+    ],
+    [
+     0.7,
+     0.252
+    ],
+    [
+     0.9,
+     0.262
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 221,
+   "paint": 14469.686714172363,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.055,
+    "opacity": 0.75,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 126,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     -0.04,
+     0.268
+    ],
+    [
+     0.16,
+     0.278
+    ],
+    [
+     0.32,
+     0.286
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 191,
+   "paint": 15019.833285331726,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.05,
+    "opacity": 0.7,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 127,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.18,
+     0.836
+    ],
+    [
+     0.34,
+     0.832
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 103,
+   "paint": 1557.1460313796997,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.03,
+    "opacity": 0.4,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 128,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.82,
+     0.836
+    ],
+    [
+     0.66,
+     0.832
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 103,
+   "paint": 759.3662004470825,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.026,
+    "opacity": 0.32,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 129,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     -0.05,
+     0.06
+    ],
+    [
+     0.06,
+     0.42
+    ],
+    [
+     -0.02,
+     0.78
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 171,
+   "paint": 45064.242584228516,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.16,
+    "opacity": 0.45,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 130,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#222634",
+   "points": [
+    [
+     0.2,
+     0.1
+    ],
+    [
+     0.26,
+     0.4
+    ]
+   ],
+   "pressure": "taper",
+   "dabs": 126,
+   "paint": 11865.37638092041,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.09,
+    "opacity": 0.28,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.015920639038085938,
+     0.019216537475585938,
+     0.03431892395019531
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 131,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.04,
+     0.966
+    ],
+    [
+     0.056,
+     0.984
+    ],
+    [
+     0.086,
+     0.952
+    ]
+   ],
+   "pressure": [
+    0.9,
+    1.0,
+    0.4
+   ],
+   "dabs": 56,
+   "paint": 372.9299832582474,
+   "note": "signature",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.006,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 132,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 133,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.54759,
+     0.17
+    ],
+    [
+     0.55011,
+     0.235
+    ],
+    [
+     0.55179,
+     0.3
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 118,
+   "paint": 4887.258773803711,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.028,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 134,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.54575,
+     0.3
+    ],
+    [
+     0.53049,
+     0.235
+    ],
+    [
+     0.5339,
+     0.17
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 119,
+   "paint": 4620.168834686279,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.028,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 135,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.51526,
+     0.17
+    ],
+    [
+     0.52358,
+     0.235
+    ],
+    [
+     0.52543,
+     0.3
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 118,
+   "paint": 4514.672780990601,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.028,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 136,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.50852,
+     0.3
+    ],
+    [
+     0.5089,
+     0.235
+    ],
+    [
+     0.50688,
+     0.17
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 118,
+   "paint": 4646.06755065918,
+   "note": "block-in shape 90.0",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.028,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 137,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.492,
+     0.165
+    ],
+    [
+     0.49,
+     0.305
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 127,
+   "paint": 4543.974914550781,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.011,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 138,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.562,
+     0.165
+    ],
+    [
+     0.564,
+     0.305
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 127,
+   "paint": 3637.5496349334717,
+   "note": "",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.01,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 139,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.47,
+     0.23
+    ],
+    [
+     0.486,
+     0.234
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 9,
+   "paint": 932.8274154663086,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.022,
+    "opacity": 0.6,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 140,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.57,
+     0.228
+    ],
+    [
+     0.588,
+     0.232
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 11,
+   "paint": 850.2061309814453,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.02,
+    "opacity": 0.5,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 141,
+   "kind": "stroke",
+   "brush": "round_hard",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.03,
+     0.95
+    ],
+    [
+     0.095,
+     0.992
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 23,
+   "paint": 10705.781860351562,
+   "note": "",
+   "params": {
+    "name": "round_hard",
+    "tip": "round_hard",
+    "size": 0.04,
+    "opacity": 0.9,
+    "hardness": 0.85,
+    "spacing": 0.07,
+    "jitter": 0.02,
+    "size_jitter": 0.03,
+    "load": 1.0,
+    "load_falloff": 0.5,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.8,
+    "thickness_gain": 0.55,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.5,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 142,
+   "kind": "stroke",
+   "brush": "liner",
+   "color_hex": "#494f62",
+   "points": [
+    [
+     0.885,
+     0.822
+    ],
+    [
+     0.899,
+     0.84
+    ],
+    [
+     0.929,
+     0.808
+    ]
+   ],
+   "pressure": [
+    0.9,
+    1.0,
+    0.4
+   ],
+   "dabs": 56,
+   "paint": 374.2471902370453,
+   "note": "signature",
+   "params": {
+    "name": "liner",
+    "tip": "round_hard",
+    "size": 0.006,
+    "opacity": 0.95,
+    "hardness": 1.0,
+    "spacing": 0.05,
+    "jitter": 0.0,
+    "size_jitter": 0.0,
+    "load": 1.0,
+    "load_falloff": 0.18,
+    "angle_follow": false,
+    "angle": 0.0,
+    "aspect": 1.0,
+    "wetness": 0.6,
+    "thickness_gain": 0.35,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.35,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.06691169738769531,
+     0.07735061645507812,
+     0.12108135223388672
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 143,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 144,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.47,
+     0.1
+    ],
+    [
+     0.468,
+     0.24
+    ],
+    [
+     0.466,
+     0.36
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 186,
+   "paint": 13833.86414718628,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.052,
+    "opacity": 0.88,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 145,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#34394a",
+   "points": [
+    [
+     0.586,
+     0.1
+    ],
+    [
+     0.588,
+     0.24
+    ],
+    [
+     0.59,
+     0.36
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 201,
+   "paint": 17917.40177154541,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.048,
+    "opacity": 0.88,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.034424781799316406,
+     0.04076957702636719,
+     0.06867647171020508
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 146,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.518,
+     0.06
+    ],
+    [
+     0.52,
+     0.23
+    ],
+    [
+     0.522,
+     0.4
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 287,
+   "paint": 18088.354515075684,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.044,
+    "opacity": 0.88,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 147,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.502,
+     0.07
+    ],
+    [
+     0.5,
+     0.4
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 298,
+   "paint": 510.7802060395916,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.014,
+    "opacity": 0.8,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 148,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.552,
+     0.07
+    ],
+    [
+     0.554,
+     0.4
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 298,
+   "paint": 549.9957916348067,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.013,
+    "opacity": 0.8,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 149,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.484,
+     0.05
+    ],
+    [
+     0.482,
+     0.42
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 334,
+   "paint": 320.2741697103338,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.02,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 150,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.572,
+     0.05
+    ],
+    [
+     0.574,
+     0.42
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 334,
+   "paint": 674.9945407421328,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.018,
+    "opacity": 0.5,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 151,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.06,
+     0.93
+    ],
+    [
+     0.1,
+     0.952
+    ],
+    [
+     0.22,
+     0.985
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 86,
+   "paint": 19692.955783627927,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.09,
+    "opacity": 0.95,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 152,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#2c3040",
+   "points": [
+    [
+     -0.06,
+     1.01
+    ],
+    [
+     0.14,
+     1.03
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 77,
+   "paint": 1124.7247508503497,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.07,
+    "opacity": 0.9,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.024713516235351562,
+     0.029539108276367188,
+     0.051177024841308594
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 153,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 154,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.512,
+     -0.03
+    ],
+    [
+     0.513,
+     0.22
+    ],
+    [
+     0.514,
+     0.46
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 442,
+   "paint": 14096.714442491531,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.03,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 155,
+   "kind": "stroke",
+   "brush": "flat",
+   "color_hex": "#f4eddc",
+   "points": [
+    [
+     0.544,
+     -0.03
+    ],
+    [
+     0.545,
+     0.22
+    ],
+    [
+     0.546,
+     0.46
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 442,
+   "paint": 13940.829348564148,
+   "note": "",
+   "params": {
+    "name": "flat",
+    "tip": "flat",
+    "size": 0.03,
+    "opacity": 0.9,
+    "hardness": 0.75,
+    "spacing": 0.09,
+    "jitter": 0.02,
+    "size_jitter": 0.07,
+    "load": 1.0,
+    "load_falloff": 0.6,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.26,
+    "wetness": 0.85,
+    "thickness_gain": 0.65,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.65,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.908367395401001,
+     0.8438107371330261,
+     0.7129642367362976
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 156,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.494,
+     -0.03
+    ],
+    [
+     0.495,
+     0.46
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 442,
+   "paint": 763.277274005377,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.016,
+    "opacity": 0.85,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 157,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.562,
+     -0.03
+    ],
+    [
+     0.563,
+     0.46
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 442,
+   "paint": 462.5377417365671,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.015,
+    "opacity": 0.85,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 158,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.478,
+     -0.03
+    ],
+    [
+     0.479,
+     0.48
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 459,
+   "paint": 1669.4325764675523,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.022,
+    "opacity": 0.6,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 159,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.578,
+     -0.03
+    ],
+    [
+     0.579,
+     0.48
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 459,
+   "paint": 1055.305050977593,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.02,
+    "opacity": 0.55,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 160,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.462,
+     -0.03
+    ],
+    [
+     0.463,
+     0.5
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 477,
+   "paint": 934.3123574934434,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.026,
+    "opacity": 0.35,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 161,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#c5772e",
+   "points": [
+    [
+     0.594,
+     -0.03
+    ],
+    [
+     0.595,
+     0.5
+    ]
+   ],
+   "pressure": "swell",
+   "dabs": 477,
+   "paint": 439.43450522811327,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.024,
+    "opacity": 0.3,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.5595113635063171,
+     0.18530511856079102,
+     0.027830123901367188
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 162,
+   "kind": "dry",
+   "brush": "",
+   "color_hex": "",
+   "points": [],
+   "pressure": "taper",
+   "dabs": 0,
+   "paint": 0.0,
+   "note": "dry 1.00",
+   "params": {
+    "amount": 1.0,
+    "region": null
+   }
+  },
+  {
+   "index": 163,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.487,
+     -0.03
+    ],
+    [
+     0.488,
+     0.24
+    ],
+    [
+     0.489,
+     0.5
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 477,
+   "paint": 2482.2308590702887,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.02,
+    "opacity": 0.85,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 164,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#daa454",
+   "points": [
+    [
+     0.57,
+     -0.03
+    ],
+    [
+     0.571,
+     0.24
+    ],
+    [
+     0.572,
+     0.5
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 477,
+   "paint": 1976.706504245798,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.019,
+    "opacity": 0.8,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.7044914960861206,
+     0.3689194917678833,
+     0.0887441635131836
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 165,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.5,
+     -0.03
+    ],
+    [
+     0.501,
+     0.26
+    ],
+    [
+     0.502,
+     0.5
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 477,
+   "paint": 779.5915528746918,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.014,
+    "opacity": 0.9,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  },
+  {
+   "index": 166,
+   "kind": "stroke",
+   "brush": "bristle",
+   "color_hex": "#eace94",
+   "points": [
+    [
+     0.557,
+     -0.03
+    ],
+    [
+     0.558,
+     0.26
+    ],
+    [
+     0.559,
+     0.5
+    ]
+   ],
+   "pressure": "even",
+   "dabs": 477,
+   "paint": 679.2625450855558,
+   "note": "",
+   "params": {
+    "name": "bristle",
+    "tip": "bristle",
+    "size": 0.013,
+    "opacity": 0.9,
+    "hardness": 0.65,
+    "spacing": 0.09,
+    "jitter": 0.03,
+    "size_jitter": 0.1,
+    "load": 1.0,
+    "load_falloff": 0.55,
+    "angle_follow": true,
+    "angle": 0.0,
+    "aspect": 0.3,
+    "wetness": 0.85,
+    "thickness_gain": 0.8,
+    "smudge": 0.0,
+    "texture_sensitivity": 0.95,
+    "bristle_count": 0,
+    "bristle_pitch": 0.005,
+    "bristle_seed": 0,
+    "color": [
+     0.8243737816810608,
+     0.6176849603652954,
+     0.29436421394348145
+    ],
+    "glaze": false,
+    "smooth": true,
+    "press": 1
+   }
+  }
+ ]
+}

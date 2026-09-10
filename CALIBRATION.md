@@ -236,8 +236,25 @@ painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against
 - **A shaped mass costs what its box costs.** The passes are counted across the
   extent of the mass along the sweep's normal, not over its area, so a shape and its
   box come out within a pass of each other. Budget for a shape exactly as before.
+  **The box is the operative half of that sentence and a curved ribbon shows why**:
+  the box a bend sweeps out is far larger than the ribbon's own width, so the cost
+  follows the box and not the mass you were picturing.
+
+  | Shape | width | brush | passes |
+  |---|---|---|---|
+  | `ribbon`, straight | `0.029` | `0.015` | **3** |
+  | `ribbon`, curved | `0.029` | `0.015` | **19** |
+  | `blob` of comparable box | — | `0.015` | 44 |
+
+  A painter budgeted 4 for the curved one and paid 21, which was 7% of its stroke
+  budget on a single call. Cost anything long and curved off `shape.box`.
 - **Coverage at `density=1.0` is 99% of the shape**, at every brush size tried
-  (`0.06` to `0.20`).
+  (`0.06` to `0.20`) — **measured on a blob, which is convex.** It does not carry
+  over to a concave shape that has been `inset()`, because erosion pulls in from
+  every boundary at once and a lobe narrower than twice the inset vanishes whole.
+  On a real fifteen-point outline, `inset(0.052)` kept **62.7%** of the area; the
+  block-in covered 98.4% of what it was handed and **76.2% of the mass intended**,
+  with one limb at 15.5%. **Preview the inset shape, not the shape.**
 - **Paint stops within three-quarters of a brush width past the silhouette.** The
   pass *centres* stop at the boundary — that is what `overhang=0` means — and the
   brush spreads half its width beyond, plus the pass wander. There is no second edge
@@ -359,6 +376,24 @@ of radius `0.20`, bristle at `0.13`:
 - At `size=0.10` it drags finger-shaped lobes several cells long and reads as a
   thumbprint through the paint. **`0.035`–`0.045` behaves**; anything larger wants a
   `rehearse()` first. A rehearsal run lost a whole mass to seven smudges at `0.10`.
+- **Inside that window it removes about 40% of a join, once, and repetition undoes it.**
+  The steepest value step across a hard join, per 1% of canvas height:
+
+  | | join sharpness |
+  |---|---|
+  | bare join | `0.330` |
+  | smudge `0.035`, one pass | `0.214` |
+  | smudge `0.040`, one pass | `0.184` |
+  | **smudge `0.040`, three passes** | **`0.280`** |
+
+  So *behaves* means *helps once*. It is not a blender and it will not finish a join.
+  Four painters in one run called it the advice that cost them most, all four having
+  reached for a second and third pass when the first did not close the join. When one
+  pass is not enough the answer is paint — overlapping strokes at closely spaced
+  values — not another smudge.
+- **It works along a boundary and fails across one.** Dragged across, it pulls a lobe
+  of the lighter mass into the darker and leaves a finger-shaped thumbprint; run along
+  the boundary in short passes it does what it is for.
 - It counts against `s.stroke_count`, as `glaze` does.
 
 ---
