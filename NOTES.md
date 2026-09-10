@@ -49,7 +49,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M4 CLI and guide | Done. CLI, `PAINTER.md`, install, and the adversarial review the brief asks for after M4 — four defects found and fixed, see `REVIEW.md` findings 11–14. |
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
-| M6b Darks | **New**, decided by the human after the guide critique. The `0.23` value floor is the pigment swatches, not the mixing model (`REVIEW.md` 33); darken the masstones so ultramarine + umber reaches the model's own floor. Moves every golden, and that is accepted. Before REHEARSAL4. |
+| M6b Darks | **Done.** The six darks are tube masstones now, so the box floors at `0.13` rather than `0.235` and `mix("ultramarine", "burnt_umber", 0.5)` reads `0.137` against the model's own `0.10` (`REVIEW.md` 33 has the before/after table). The mixing exponent moved `0.5` → `0.35` to keep white's tinting where finding 6 set it against the wider range. Exercise 1 mixes to a value instead of a ratio and its nine bands are even to `0.002`. Every golden regenerated once, looked at first. Item 11 re-measured: it does **not** move up. |
 | M6c Sweep | **New.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, replacing the fifteen-line recipe in `CALIBRATION.md` (`REVIEW.md` 34). Additive; one golden added. Before REHEARSAL4. |
 | M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
 | M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
@@ -218,13 +218,15 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
   accumulate, erase records clip. Undo and replay are then right for free, because
   there is no second copy of the drawing to keep in step. REVIEW 20 was exactly the
   bug you get from the other design.
-- **`compare()` separates *wrong* from *impossible*.** The palette has no black and
-  floors at `0.235`; photographs do not. Cells whose reference is below the floor
-  are reported as `unreachable` rather than as work. `off` is unchanged, so nothing
-  that used to be reported stopped being reported — the split is additional
-  information, not a quieter threshold. A measuring stick that reports an unmeetable
-  target costs strokes: two fresh sessions spent about twenty-five each finding this
-  out for themselves.
+- **`compare()` separates *wrong* from *impossible*.** Cells whose reference is
+  below the palette's floor are reported as `unreachable` rather than as work.
+  `off` is unchanged, so nothing that used to be reported stopped being reported —
+  the split is additional information, not a quieter threshold. A measuring stick
+  that reports an unmeetable target costs strokes: two fresh sessions spent about
+  twenty-five each finding that out for themselves, back when the floor was `0.235`.
+  M6b took it to `0.13`, so the list is normally empty now — which is the right end
+  state for a split like this. **Build the tool that tells the painter the truth,
+  then go and fix the thing it was telling the truth about.**
 - **Drawing does not count as a stroke.** `History.UNPAINTED_KINDS`. The brief's
   definition of done counts strokes, and a painter charged for the underdrawing is
   a painter who skips it.
@@ -321,6 +323,23 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
     and `replay()` from the still-intact log then disagreed with what was on
     screen. If you add a new kind of mark, grep for `push_snapshot` in
     `session.py` and add the call before you add the record, not after.
+19. **A tuned constant often encodes a *ratio*, not an absolute — so it moves when
+    the thing it is relative to moves.** The mixing exponent was set at `0.5` in
+    REVIEW 6 to give white its real tinting strength, and the comment said so
+    without saying strength *compared to what*. M6b darkened the palette, which
+    widened its value range from `0.73` to `0.83`, and `0.5` silently went from
+    carrying a 50/50 white mix `0.235` of the way up that range to `0.158` — the
+    same number, quietly doing a different job, and finding 6 reopening with
+    nothing about white touched. When you tune a constant, write down the invariant
+    you tuned it to hold and not just the value you landed on: the next person to
+    move the inputs then knows whether the constant has to follow.
+20. **A workaround built around a defect has to be taken out when the defect is
+    fixed, and its *documentation* is the part that gets left behind.** The
+    `unreachable` split (REVIEW 21) was correct and stayed; the guide paragraph
+    teaching painters to compress a reference's range onto the palette's, and
+    `CALIBRATION.md`'s formula for doing it, were the workaround, and were still
+    true-sounding after the reason for them had gone. Grep for the *number* — here
+    `0.23` — not just the feature, when a limit moves.
 
 ## What to do next, in order
 
@@ -328,14 +347,16 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
    three fresh sessions, `REHEARSAL3.md`. Read that first; it says what passed and
    what did not. The copy stage failed only on value, and failed it in a single
    direction: every wrong cell on the mug was too *light*, straight down the
-   shadow side. Everything that failure points at is now in `PAINTER.md` — value
-   compression, `compare()` on the empty canvas, `fixable` versus the cells no paint
-   can reach, and painting back to front — **and a guide fix is a hypothesis until a
-   fresh session paints against it.** That is the whole lesson of
-   `REHEARSAL.md` → `REHEARSAL2.md`.
+   shadow side. Everything that failure points at is now in `PAINTER.md` —
+   `compare()` on the empty canvas, planning the three values as numbers, and
+   painting back to front — **and a guide fix is a hypothesis until a fresh session
+   paints against it.** That is the whole lesson of `REHEARSAL.md` → `REHEARSAL2.md`.
+   The value-compression passage is gone: M6b removed the reason for it, and a run
+   against the old palette would have measured a moving target (gotcha 16).
    - **Same reference, `Level1.jpg`, fresh session, `PAINTER.md` only, own pencil.**
-     The question is narrow: does the value error go away? If no cell on the mug is
-     more than `0.10` out except the two that cannot be painted, M6 is done.
+     The question is narrow: does the value error go away? With the darks in place
+     the criterion is **every** cell on the mug within `0.10`, not `fixable` — see
+     the brief's *Reachable* paragraph.
    - Do not re-run the sitter or the assisted mode to decide this. The sitter
      answered its question — the tools do reach below a cell — and the assisted run
      answered its own: the machine sketch is a wash and slightly worse.
@@ -386,11 +407,17 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
      does -- the honest fix, and it moves every golden image and every rehearsal's
      colours; or add one genuinely dark pigment, which is additive and leaves the
      goldens alone but does not make the classic mixture work. **The first is
-     taken (M6b).** Either way the
-     Kubelka-Munk reflectance floor (`0.01` linear, value about `0.10`) is the new
-     bottom, and the *Reachable* paragraph in the brief, `compare()`'s `~` split and
-     step 3 of the guide all get shorter or go. Until it is decided the guide says,
-     in one paragraph, that the floor is an engine limit and not a lesson.
+     taken (M6b), and is now done.** The box floors at `0.13`, three hundredths
+     above the Kubelka-Munk reflectance floor (`0.01` linear, value `0.10`) that is
+     the model's real bottom; the guide's floor paragraph, `CALIBRATION.md`'s
+     compression formula and the brief's *Reachable* paragraph are rewritten, and
+     `compare()`'s `~` split stays for the deepest few cells a photograph can hold.
+     Two things M6b turned up that were not in the plan: equal white ratios cannot
+     give an even value scale at *any* exponent, so exercise 1 had to mix to a value
+     instead (it was asking "do these look evenly spaced?" of steps running `0.03`
+     to `0.21` apart); and the exponent itself had to move, because it encodes
+     white's tinting strength *relative to the palette's range* and the range
+     changed underneath it.
    - **Sweeping a shaped mass should be an API call, not a recipe.** The guide
      argues for laying a silhouetted mass as passes swept along its edge, and the
      painter is then expected to retype fifteen lines to do it. `CALIBRATION.md`
