@@ -106,6 +106,47 @@ def test_inset_stays_inside_the_shape_and_a_negative_one_grows_it():
         "the inset shape left the original"
 
 
+def test_insetting_a_shape_that_does_not_contain_its_own_centre():
+    """A horseshoe's centroid sits in the gap, not in the mass. The fold check used
+    to ask whether the offset shape's *centre* was still inside the original, which
+    a horseshoe fails for reasons that have nothing to do with the offset -- so a
+    perfectly good mitre was thrown away and a scale about a centroid outside the
+    mass returned in its place, with half its points sticking out of the shape it
+    had been asked to shrink."""
+    shoe = polygon([(0.2, 0.2), (0.8, 0.2), (0.8, 0.35), (0.35, 0.35),
+                    (0.35, 0.65), (0.8, 0.65), (0.8, 0.8), (0.2, 0.8)])
+    assert not shoe.contains(*shoe.center), "this shape was meant to be a horseshoe"
+
+    smaller = shoe.inset(0.045)
+    assert smaller.area < shoe.area
+    assert all(shoe.contains(x, y) for x, y in smaller.points), \
+        "the inset shape left the original"
+    assert smaller.width == pytest.approx(shoe.width - 0.09, abs=0.005), \
+        "the outline did not move in by what was asked"
+
+    bigger = shoe.inset(-0.045)
+    assert all(bigger.contains(x, y) for x, y in shoe.points), \
+        "the grown shape lost part of the original"
+
+
+def test_a_tip_retreats_further_than_an_edge_and_that_is_the_offset_working():
+    """Reported as ``inset()`` shrinking a mass by 2.7 times what was asked. It
+    reproduces on a star and it is not a defect: every *edge* moves in by the
+    amount, so a *tip* moves in by amount / sin(half-angle), which is exactly where
+    a brush of that reach has to stop. ``scaled`` is the one that takes a fixed
+    fraction off a mass."""
+    star = polygon([(0.5 + (0.25 if i % 2 == 0 else 0.0875) * math.cos(i * math.pi / 5),
+                     0.5 + (0.25 if i % 2 == 0 else 0.0875) * math.sin(i * math.pi / 5))
+                    for i in range(10)])
+    assert star.width - star.inset(0.045).width == pytest.approx(0.24, abs=0.02), \
+        "the mitre limit moved"
+    assert all(star.contains(x, y) for x, y in star.inset(0.045).points)
+
+    square = polygon([(0.3, 0.3), (0.7, 0.3), (0.7, 0.7), (0.3, 0.7)])
+    assert square.width - square.inset(0.045).width == pytest.approx(0.09, abs=1e-9), \
+        "a shape with no tips shrinks by exactly what it was asked"
+
+
 def test_insetting_past_the_middle_leaves_a_sliver_rather_than_raising():
     """A painter mid-painting should not get an exception for asking for too much
     margin. Region.inset has always behaved this way; so does a shape."""
@@ -123,6 +164,33 @@ def test_a_shape_carries_its_name_and_where_it_came_from_through_a_reshape():
 # --------------------------------------------------------------------------------------
 # Building one without doing arithmetic
 # --------------------------------------------------------------------------------------
+def test_one_radius_is_a_circle_wherever_the_shape_is_placed():
+    """The two branches used to disagree. A radius given with a point made a circle;
+    the same radius given with a region set the width and left the height at the
+    region's own half-height, so ``blob(cell("D5"), 0.26)`` came back nearly five
+    times wider than it was tall and the height never moved at all. A shape helper
+    that quietly returns a horizontal sausage is the wrong default anywhere, and
+    especially in an engine whose loudest recurring defect is horizontal bands."""
+    c = cell("D5")
+    for made in (ellipse(c, 0.1), ellipse(c, ry=0.1), ellipse(c.center, 0.1)):
+        assert made.width == pytest.approx(0.2, rel=0.02)
+        assert made.height == pytest.approx(made.width, rel=0.02)
+
+    in_a_region = blob(c, 0.22, wobble=0.3, seed=2)
+    on_a_point = blob(c.center, 0.22, wobble=0.3, seed=2)
+    assert np.allclose(in_a_region.points, on_a_point.points), \
+        "a radius means one thing on a point and another inside a region"
+
+
+def test_no_radius_still_fills_the_place_it_was_given():
+    """The other half of the rule, and the reason the region branch exists at all:
+    given a place and no radius, a blob is that place's own size."""
+    c = cell("D5")
+    filled = blob(c, wobble=0.3, seed=2)
+    assert filled.width == pytest.approx(c.width, abs=0.02)
+    assert filled.height == pytest.approx(c.height, abs=0.02)
+
+
 def test_an_ellipse_fills_the_place_it_is_given():
     """``ellipse(cell("D5"))`` is the point: a place the painter read off a look,
     not four numbers it made up."""
@@ -378,16 +446,17 @@ def test_rehearsing_a_mass_shows_the_paint_without_spending_it(tmp_path):
     assert np.array_equal(before, s.canvas.rgb), "the rehearsal was committed"
     assert not s.history.records
 
-    # What was rehearsed is what lands -- the same mass in the same place. Not the
-    # same pixels: a block-in's wander comes from the session's own generator, and
-    # the rehearsal deliberately has its own so that trying something does not
-    # change the painting that follows it.
+    # What was rehearsed is what lands, pixel for pixel. A mass is one call and ten
+    # to thirty strokes, which makes it the most expensive mark to get wrong and the
+    # one most worth trying first -- and a rehearsal that showed a different mass
+    # from the one that lands would be worse than no rehearsal at all. The trial
+    # holds a *copy* of the session's stream, which is where a block-in's pass
+    # wander comes from; spending the copy costs the real session nothing.
     trial = s._trial_session()
     trial.block_in(plan[0]["shape"], "bristle", "burnt_umber", size=0.08)
     s.block_in(plan[0]["shape"], "bristle", "burnt_umber", size=0.08)
-    rehearsed, real = painted(trial), painted(s)
-    overlap = (rehearsed & real).sum() / max((rehearsed | real).sum(), 1)
-    assert overlap > 0.9, f"the rehearsed mass landed somewhere else ({overlap:.2f})"
+    assert np.array_equal(trial.canvas.rgb, s.canvas.rgb), \
+        "the rehearsed mass is not the mass that lands"
 
 
 # --------------------------------------------------------------------------------------
@@ -409,6 +478,46 @@ def test_a_shape_can_be_swept_along_its_own_outline(tmp_path):
     assert (marks & far_out).sum() < 0.01 * far_out.sum(), \
         "the sweep ran outside the shape it was given"
     assert np.array_equal(s.replay().canvas.to_srgb8(), s.canvas.to_srgb8())
+
+
+def test_a_sweep_can_be_rehearsed_and_is_the_sweep_that_lands(tmp_path):
+    """``sweep`` is the other way of laying a mass, and costs the same to get wrong:
+    one call, ten to thirty strokes, and until now nothing to look at first.
+    ``preview`` answers *where*; a rehearsal answers *what will it look like*."""
+    s = make(tmp_path)
+    edge = [(0.08, 0.62), (0.34, 0.44), (0.60, 0.58), (0.90, 0.42)]
+    plan = {"edge": edge, "brush": "bristle", "color": "burnt_umber", "into": "down",
+            "depth": 0.22, "size": 0.09, "cross": 25}
+    before = s.canvas.rgb.copy()
+    assert s.rehearse(plan, path=tmp_path / "rh_sweep.png").exists()
+    assert np.array_equal(before, s.canvas.rgb), "the rehearsal was committed"
+    assert not s.history.records, "the rehearsal reached the log"
+
+    trial = s._trial_session()
+    trial.sweep(edge, "bristle", "burnt_umber", into="down", depth=0.22, size=0.09,
+                cross=25)
+    s.sweep(edge, "bristle", "burnt_umber", into="down", depth=0.22, size=0.09,
+            cross=25)
+    assert np.array_equal(trial.canvas.rgb, s.canvas.rgb), \
+        "the rehearsed sweep is not the sweep that lands"
+
+
+def test_previewing_a_sweep_shows_the_ground_it_would_cover(tmp_path):
+    """A sweep's silhouette is not its edge: it is the band from the edge to depth,
+    on the side the mass is on. Drawn as the edge it would answer the wrong
+    question, which is the one thing preview exists not to do."""
+    s = make(tmp_path)
+    edge = [(0.10, 0.40), (0.50, 0.40), (0.90, 0.40)]
+    band = s._preview_sweep({"edge": edge, "into": "down", "depth": 0.25,
+                             "size": 0.08}, 0)
+    ys = [y for _, y in band["points"]]
+    assert band["fill"], "a sweep previewed as a line, not as the mass it lays"
+    assert min(ys) == pytest.approx(0.40, abs=0.01)
+    assert max(ys) == pytest.approx(0.65, abs=0.01)
+
+    before = s.canvas.rgb.copy()
+    s.preview({"edge": edge, "into": "down", "depth": 0.25}, path=tmp_path / "pv.png")
+    assert np.array_equal(before, s.canvas.rgb) and not s.history.records
 
 
 def test_sweeping_a_traced_shape_records_it_the_way_blocking_one_in_does(tmp_path):

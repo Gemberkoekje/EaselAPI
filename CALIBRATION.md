@@ -42,6 +42,15 @@ Each pigment, one flat pass on a toned grey ground, read off the exported PNG:
 takes a channel below the darker of its two ingredients, so the swatches set it: this
 is the value of the darkest mixture the box can reach.
 
+**It is a much lower wall than it looks, because of what `0.10` means.** A cell passes
+within `0.10` of the reference, so **anything the reference puts at `0.03` or above is
+reachable with the paint in the box** — you have to *cover* the cell to get there, at
+`density=1.0` and full load, with the darkest mixture and nothing lighter showing
+through. A dim reference measured in a rehearsal put 17 of its 64 cells below the
+floor — a third of the picture — and every one of them landed inside tolerance, worst
+at `+0.09`. The margin is real and thin: one light mark inside such a cell spends all
+of it. Cover properly before concluding a supplied colour is needed.
+
 `color.py`'s `0.01` reflectance floor is a separate thing and is not a floor on the
 picture. It clips the K/S *arithmetic*, where finding 5 needs it, and comes back off
 the mixture weighted by how much of each ingredient is in it, so a colour the painter
@@ -59,7 +68,7 @@ paint on does not help: eight dried passes of the darkest mix measure `0.129`
 against one pass at `0.133`, four rounds of glazing `0.132`
 (`rehearsal3/probe_value_floor.py`). If a mass is not dark enough, mix it darker.
 
-Before M6b these swatches were colour-chart brights rather than masstones -- 
+Before M6b these swatches were colour-chart brights rather than masstones --
 `burnt_umber` was `#4A3728` -- and the box floored at `0.23` with no mixture below
 it. That is the number the older parts of this repo quote, and `REVIEW.md`
 findings 21 and 33 are the history.
@@ -150,6 +159,13 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - A pass laid at `0.5` because it sounded painterly leaves a speckled film that
   everything after it sits on. Anything meant to read as a solid mass wants
   `load=1.0`.
+- **`opacity` does not thin a long stroke, it only slows it down.** Consecutive dabs
+  overlap by more than 90%, so a low opacity accumulates back to nearly full colour
+  along the mark. A rehearsal run laid grain at `opacity=0.08` expecting a whisper and
+  got bold stripes, which cost it a whole repaint of the mass underneath. Working
+  numbers: `stroke(opacity=0.04)` is nearly invisible; a visible soft film is
+  `glaze(opacity=0.10)`, which is built for it. Same accumulation as the light end of
+  a taper being thin rather than faint — see *Pressure*.
 - A fully loaded `bristle` stroke covers about three-quarters of its own width, in
   a comb of parallel streaks. Above about `size=0.12` those streaks print wider than
   anything in the picture, and every stroke prints the same ones.
@@ -226,9 +242,19 @@ painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against
   pass *centres* stop at the boundary — that is what `overhang=0` means — and the
   brush spreads half its width beyond, plus the pass wander. There is no second edge
   out there: it is the same ragged spill a block-in has always had at its ends.
+- **So the brush has to be small relative to the mass, or the shape inset.** A mass
+  `0.32` across blocked at `size=0.12` puts paint `0.06` outside the drawing on every
+  side and the silhouette is simply gone, taking its neighbours with it; the same mass
+  inset `0.045` and blocked at `size=0.09` lands on the drawing. Keep the brush under
+  about a fifth of the mass's width, or `inset()` by half the brush size — it works on
+  `polygon`, `ellipse` and `ribbon` alike. A rehearsal run lost 72 strokes and its
+  only `undo` to this, which makes it the most expensive first mistake with
+  shapes on record.
 - **One sweep leaves the boundary stringy**, because a bristle brush covers about
   three-quarters of its width. `direction=("axis", 90)` crosses it and closes it up,
-  at twice the passes (7 → 17 on the blob above).
+  at twice the passes (7 → 17 on the blob above). **On a small mass, don't**: the two
+  pass directions meet the outline at different angles and serrate it into a sawtooth.
+  The crossing is for masses several brushes across.
 - **`"axis"`** resolves to the long axis of the outline, weighted by edge length:
   `-35.5°` for a ribbon from `(0.15, 0.8)` to `(0.85, 0.3)`, `0°` for a wide
   ellipse, `90°` for a tall rectangle.
@@ -325,6 +351,18 @@ of radius `0.20`, bristle at `0.13`:
 
 ---
 
+## `smudge`
+
+- **It is much stronger than "moves paint around" suggests, and it is not symmetric**:
+  it pulls the *lighter* mass into the darker one more than the reverse, so a smudge
+  run along a light/dark boundary walks the boundary into the dark side.
+- At `size=0.10` it drags finger-shaped lobes several cells long and reads as a
+  thumbprint through the paint. **`0.035`–`0.045` behaves**; anything larger wants a
+  `rehearse()` first. A rehearsal run lost a whole mass to seven smudges at `0.10`.
+- It counts against `s.stroke_count`, as `glaze` does.
+
+---
+
 ## Pressure
 
 Pressure shapes how heavily paint lands along the stroke, and on a **round** tip —
@@ -391,6 +429,16 @@ one stroke, not two of different sizes.
   Fractions of the way from the ground to the colour. A catchlight is `press=3`,
   and it costs one stroke; three *separate* dabs reach 0.45 on `toned_grey` and
   cost three.
+- **Scale a mark off the thing it describes, not off the canvas.** Inside a mass
+  `0.3` of the canvas across, a plane within it wants about `size≈0.015–0.025` and a
+  detail within that plane `0.004–0.010`. Carrying "use a bigger brush than feels
+  comfortable" — which is advice about masses — down to this scale costs a repaint;
+  A rehearsal run did it three times and put the cost at about forty strokes.
+- **An oriented tip does not taper under a pressure list.** On a `flat`,
+  `pressure=[1.0, 0.25]` fades the paint without narrowing the mark, so a short one
+  comes out as a bar with a weak end rather than a stroke that tapers. Width follows
+  pressure on the round tips only (see *Pressure*), which is why a small accent wants
+  `round_hard`.
 - A fine line runs dry over the same *distance* as a fat one, which is far more
   brush-lengths, so it lasts.
 - A `region=` crop is at full resolution and a small one is enlarged to at least
@@ -419,6 +467,11 @@ fatter ones. Measured on a 900 px canvas (`m7/probe_comb.py`):
 Before M7 the count was 22 at every size, so the pitch ran 3 px at `size=0.02` to
 26 px at `size=0.18` — the brush's signature rather than the mark's.
 
+The pitch being fixed in canvas units is what puts a floor under the brush: at
+`size=0.02` a bristle mark is four streaks with gaps between them rather than a
+covered mark. That is right for a few strands and wrong for a small solid plane,
+which wants `flat` at `pressure="even"` or `round_hard` instead.
+
 The comb — spacing, phase, and which bristles are missing — is drawn once per
 stroke and held for all of that stroke's dabs, so striations stay put along a mark
 and differ from the next mark's. Two strokes of one brush used to be identical to
@@ -435,5 +488,16 @@ is biting. `bristle_count` still pins a comb if you want a fixed one.
 ## Budget
 
 A whole painting is usually a few hundred marks, not a few thousand. `s.stroke_count`
-keeps the tally; `pencil()`, `erase()`, `mark()`, `preview()` and `rehearse()` do not
-count.
+keeps the tally; `pencil()`, `erase()`, `mark()`, `look()`, `preview()`, `rehearse()`
+and `compare()` do not count. **`smudge()` and `glaze()` do** — they are marks like any
+other, and a rehearsal run measured that (297 → 299 for two smudges) with three
+strokes of budget left.
+
+**A mass can be costed before the call rather than discovered after it.** Passes step
+`size × (1 − 0.45 × density)` apart, so a mass takes about `extent / step` of them,
+times about three if crossed:
+
+```python
+step = 0.12 * (1 - 0.45 * 0.9)      # size=0.12, density=0.9  ->  0.071
+passes = 0.32 / step                # a mass 0.32 across       ->  about 5
+```

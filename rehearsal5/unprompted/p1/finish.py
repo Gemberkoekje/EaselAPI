@@ -1,0 +1,6 @@
+s.unmark("bow")
+s.unmark("stern")
+print("strokes", s.stroke_count)
+print(s.export("../own1_final.png"))
+print(s.timelapse_gif("../own1_timelapse.gif"))
+print(s.look())
