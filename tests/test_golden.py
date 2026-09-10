@@ -70,10 +70,17 @@ def test_golden_marks_unchanged(name):
     )
 
 
-def test_golden_cases_are_deterministic():
-    """The same case built twice is the same pixels. Without this the rest is noise."""
-    a = gc.build("marks_linen")
-    b = gc.build("marks_linen")
+@pytest.mark.parametrize("name", sorted(gc.CASES))
+def test_golden_cases_are_deterministic(name):
+    """The same case built twice is the same pixels. Without this the rest is noise.
+
+    Checked for every case, not just one: determinism is a property of how each
+    case draws its randomness (block_in's wobble, a bristle's comb, dab jitter),
+    and a case that consumes it differently from the rest is exactly the kind of
+    thing a single spot-checked case would miss.
+    """
+    a = gc.build(name)
+    b = gc.build(name)
     assert gc.digest(a) == gc.digest(b)
 
 

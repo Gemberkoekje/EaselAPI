@@ -159,35 +159,43 @@ class Session:
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         self.history.push_snapshot(self.canvas.snapshot())
-
-        index = self._index_base + len(self.history.records)
-        pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
-        result = paint_stroke(
-            self.canvas,
-            pts,
-            b,
-            col,
-            pressure=pressure,
-            rng=self._stroke_rng(index),
-            glaze=glaze,
-            smooth=smooth,
-            press=stamps,
-        )
-
-        record = self.history.add(
-            StrokeRecord(
-                index=index,
-                kind="glaze" if glaze else ("smudge" if b.smudge >= 1.0 else "stroke"),
-                brush=b.name,
-                color_hex=self.palette.hex(col),
-                points=[[float(x), float(y)] for x, y in pts],
-                pressure=pressure if isinstance(pressure, str) else _plain(pressure),
-                dabs=result.dabs,
-                paint=result.paint,
-                note=note,
-                params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps),
+        try:
+            index = self._index_base + len(self.history.records)
+            pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+            result = paint_stroke(
+                self.canvas,
+                pts,
+                b,
+                col,
+                pressure=pressure,
+                rng=self._stroke_rng(index),
+                glaze=glaze,
+                smooth=smooth,
+                press=stamps,
             )
-        )
+
+            record = self.history.add(
+                StrokeRecord(
+                    index=index,
+                    kind="glaze" if glaze else ("smudge" if b.smudge >= 1.0 else "stroke"),
+                    brush=b.name,
+                    color_hex=self.palette.hex(col),
+                    points=[[float(x), float(y)] for x, y in pts],
+                    pressure=pressure if isinstance(pressure, str) else _plain(pressure),
+                    dabs=result.dabs,
+                    paint=result.paint,
+                    note=note,
+                    params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps),
+                )
+            )
+        except Exception:
+            # A bad path (wrong shape, a NaN/Infinity point) is caught inside
+            # paint_stroke *after* the snapshot above was pushed. Left in place,
+            # that snapshot has no record to match it, and the next undo() would
+            # silently delete an unrelated, successful earlier stroke instead of
+            # undoing nothing. See REVIEW.md.
+            self.history.discard_snapshot()
+            raise
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
         return record
@@ -659,25 +667,31 @@ class Session:
             s.look()                       # is the drawing right before any paint?
         """
         self.history.push_snapshot(self.canvas.snapshot())
-        index = self._index_base + len(self.history.records)
-        pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
-        result = draw_pencil(
-            self.canvas, pts, width=width, pressure=pressure,
-            rng=self._stroke_rng(index), smooth=smooth,
-        )
-        record = self.history.add(
-            StrokeRecord(
-                index=index,
-                kind="pencil",
-                brush="pencil",
-                points=[[float(x), float(y)] for x, y in pts],
-                pressure=float(pressure),
-                dabs=result.dabs,
-                paint=result.paint,
-                note=note,
-                params={"width": float(width), "smooth": bool(smooth)},
+        try:
+            index = self._index_base + len(self.history.records)
+            pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+            result = draw_pencil(
+                self.canvas, pts, width=width, pressure=pressure,
+                rng=self._stroke_rng(index), smooth=smooth,
             )
-        )
+            record = self.history.add(
+                StrokeRecord(
+                    index=index,
+                    kind="pencil",
+                    brush="pencil",
+                    points=[[float(x), float(y)] for x, y in pts],
+                    pressure=float(pressure),
+                    dabs=result.dabs,
+                    paint=result.paint,
+                    note=note,
+                    params={"width": float(width), "smooth": bool(smooth)},
+                )
+            )
+        except Exception:
+            # Same reasoning as stroke(): a failure after the snapshot above must
+            # not leave it orphaned against the wrong record.
+            self.history.discard_snapshot()
+            raise
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
         return record
@@ -692,7 +706,7 @@ class Session:
         place = as_place(region) if region is not None else None
         self.history.push_snapshot(self.canvas.snapshot())
         self.canvas.erase_sketch(place)
-        return self.history.add(
+        record = self.history.add(
             StrokeRecord(
                 index=self._index_base + len(self.history.records),
                 kind="erase",
@@ -700,6 +714,12 @@ class Session:
                 params=_place_params(place),
             )
         )
+        if self.timelapse:
+            # erase() visibly changes the rendered canvas (it clears the sketch
+            # channel, which the thumbnail includes) the same way stroke() and
+            # pencil() do, so it belongs in the time-lapse the same way they are.
+            self.history.add_frame(self.canvas.thumbnail_srgb8())
+        return record
 
     def sketch_lines(self) -> list[list[tuple[float, float]]]:
         """Every pencil line still drawn, as normalised points.
@@ -795,9 +815,19 @@ class Session:
             return 0
         depth = self.history.undo_depth
         if depth >= n:
+            undone = self.history.records[-n:]
             snap = self.history.pop_snapshots(n)
             if snap is not None:
                 self.canvas.restore(snap)
+                if self.timelapse:
+                    # Every record kind that pushes a snapshot except "dry" also
+                    # adds a time-lapse frame (dry() only touches wetness, which
+                    # a plain render never shows); drop exactly as many frames as
+                    # undone records actually added, so the time-lapse does not
+                    # keep frames for strokes that are no longer on the canvas.
+                    self.history.drop_last_frames(
+                        sum(1 for r in undone if r.kind != "dry")
+                    )
                 return n
         # Too few snapshots for the full request (older ones are dropped past
         # MAX_SNAPSHOTS), or none at all because this session came off disk.
@@ -849,7 +879,7 @@ class Session:
         """
         ref_img = None if reference is None else load_reference(reference)
 
-        current = self.canvas.to_srgb8(impasto=impasto)
+        current = self._look_array(values, impasto, sketch)
         img = render_look(
             self.canvas,
             scale=scale,
@@ -876,8 +906,25 @@ class Session:
             diff_against=self._last_look if diff else None,
             marks=self.marks if show_marks else None, **kwargs
         )
-        self._last_look = self.canvas.to_srgb8(impasto=kwargs.get("impasto", True))
+        self._last_look = self._look_array(
+            kwargs.get("values", False), kwargs.get("impasto", True), kwargs.get("sketch", True)
+        )
         return img
+
+    def _look_array(self, values: bool, impasto: bool, sketch: bool) -> np.ndarray:
+        """The array :func:`render_look` actually draws, before any grid or diff tint.
+
+        Stored as ``_last_look`` so the next ``diff=True`` call compares like
+        with like. Storing the plain colour render regardless of ``values``
+        (the bug this replaced) meant a ``look(values=True, diff=True)`` always
+        compared a greyscale render against a stored colour one -- which differ
+        almost everywhere by construction -- and tinted the whole canvas as
+        "changed" even when nothing had been painted since the last look.
+        """
+        if values:
+            grey = self.canvas.values(sketch=sketch)
+            return np.repeat(grey[:, :, None], 3, axis=2)
+        return self.canvas.to_srgb8(impasto=impasto, sketch=sketch)
 
     def _look_path(self, path: str | Path | None, prefix: str = "look") -> Path:
         if path is not None:
@@ -1463,6 +1510,16 @@ class Session:
                 canvas.rgb = data["rgb"].astype(np.float32)
                 canvas.wetness = data["wetness"].astype(np.float32)
                 canvas.thickness = data["thickness"].astype(np.float32)
+                # meta's width/height drive every pixel-coordinate computation from
+                # here on (to_px, region_px, stamp's clipping...); if they disagree
+                # with what was actually stored -- a hand-edited or corrupted file --
+                # trusting meta alone silently paints at the wrong scale or crashes
+                # deep inside a stamp() far from this clear a place to say why.
+                if canvas.rgb.shape[:2] != (canvas.height, canvas.width):
+                    raise ValueError(
+                        f"meta says {canvas.width}x{canvas.height}, but the stored "
+                        f"canvas array is {canvas.rgb.shape[1]}x{canvas.rgb.shape[0]}."
+                    )
                 canvas.texture_strength = float(meta.get("texture_strength", 1.0))
                 canvas.height_map, canvas.grain = build_surface(
                     canvas.texture_name,
@@ -1494,12 +1551,15 @@ class Session:
                 s.history._frames = [f for f in frames] if frames.size else []
                 last = data["last_look"]
                 s._last_look = last if last.size else None
-        except (zipfile.BadZipFile, KeyError, TypeError, EOFError) as exc:
-            # A missing array, an unreadable zip, or a log entry with a field this
+        except (zipfile.BadZipFile, KeyError, TypeError, EOFError, ValueError) as exc:
+            # A missing array, an unreadable zip, a log entry with a field this
             # build's StrokeRecord does not know about (a newer Easel wrote it, or
-            # the file is simply damaged) -- all of these are "not a valid session
-            # file", not a bug in this code, and the CLI already knows how to
-            # report that cleanly.
+            # the file is simply damaged), a meta or log blob that is not valid
+            # JSON, or an rng_state that does not decode -- all of these are "not
+            # a valid session file", not a bug in this code, and the CLI already
+            # knows how to report that cleanly. ``ValueError`` also covers the
+            # deliberate format-mismatch raise just above: wrapping it repeats the
+            # same information with one added sentence, not a different one.
             raise ValueError(f"{p} is not a valid Easel session file, or is corrupted: "
                              f"{exc}") from exc
         return s
@@ -1537,6 +1597,14 @@ class Session:
             fresh.palette[name] = rgb
         fresh.marks = dict(self.marks)
         fresh.assisted = list(self.assisted)
+        # The replayed session shares this one's out_dir, so without carrying
+        # these across, its very next look()/preview()/rehearse()/compare() would
+        # renumber from 1 and silently overwrite an earlier look_NNN.png this
+        # session already wrote -- and ref_shape()/sketch() etc. would raise "No
+        # prepared reference yet" even though this session has one.
+        fresh._look_counter = self._look_counter
+        fresh._last_look = self._last_look
+        fresh._preparation = self._preparation
 
         for record in records:
             if record.kind == "dry":
@@ -1574,9 +1642,15 @@ class Session:
         return fresh
 
     def _adopt(self, other: Session) -> None:
-        """Take on another session's canvas and history, keeping our own identity."""
+        """Take on another session's canvas, history and rng, keeping our own identity."""
         self.canvas = other.canvas
         self.history = other.history
+        # `other` is a fresh replay of exactly the kept records, so `other.rng`
+        # is already in the state a plain seed + those records would produce --
+        # not adopting it left self.rng wherever it happened to be before the
+        # undo, so a block_in()/sweep() painted after this fallback path drew
+        # its wobble from a stream a real replay would never have produced.
+        self.rng = other.rng
 
     # -- internals --------------------------------------------------------------
     def _resolve_brush(self, brush, size, opacity, overrides: dict) -> Brush:
@@ -2066,19 +2140,22 @@ def _encode_rng(rng: np.random.Generator) -> dict:
 
 
 def _decode_rng(state: dict) -> np.random.Generator:
+    # Deliberately not wrapped in a try/except: a malformed rng_state used to be
+    # swallowed here and silently replaced with an OS-entropy-seeded generator, so
+    # two loads of the same file painted differently from that point on with no
+    # error at all. Letting KeyError/TypeError/ValueError propagate means
+    # Session.load()'s own except clause turns this into the same clear
+    # "is not a valid Easel session file" message every other corruption gets.
     gen = np.random.default_rng()
-    try:
-        s = dict(state)
-        inner = dict(s.get("state", {}))
-        for key in ("state", "inc"):
-            if key in inner:
-                inner[key] = int(inner[key])
-        s["state"] = inner
-        if "has_uint32" in s:
-            s["has_uint32"] = int(s["has_uint32"])
-        if "uinteger" in s:
-            s["uinteger"] = int(s["uinteger"])
-        gen.bit_generator.state = s
-    except Exception:  # pragma: no cover - defensive, keeps a load from failing hard
-        pass
+    s = dict(state)
+    inner = dict(s.get("state", {}))
+    for key in ("state", "inc"):
+        if key in inner:
+            inner[key] = int(inner[key])
+    s["state"] = inner
+    if "has_uint32" in s:
+        s["has_uint32"] = int(s["has_uint32"])
+    if "uinteger" in s:
+        s["uinteger"] = int(s["uinteger"])
+    gen.bit_generator.state = s
     return gen

@@ -211,7 +211,7 @@ def _decorate(frame: _Frame, grid, marks, strokes) -> None:
     if grid == "fine":
         frame.img = _draw_fine_grid(frame.img, frame.crop)
     elif grid:
-        frame.img = _draw_grid(frame.img)
+        frame.img = _draw_grid(frame)
     if marks:
         frame.img = _draw_marks(frame, marks)
 
@@ -238,27 +238,45 @@ def _downsample(img: Image.Image, long_side: int) -> Image.Image:
     return img.resize((max(1, int(round(w * f))), max(1, int(round(h * f)))), Image.LANCZOS)
 
 
-def _draw_grid(img: Image.Image) -> Image.Image:
-    """Overlay a labelled grid. Labels sit inside the cell they name."""
-    out = img.convert("RGB").copy()
+def _draw_grid(frame: _Frame) -> Image.Image:
+    """Overlay the labelled A-H/1-8 grid. Labels sit inside the cell they name.
+
+    Positioned through ``frame.to_px``, which already maps normalised canvas
+    coordinates into this panel -- the whole canvas when there is no crop, or
+    the crop's own sub-rectangle when there is one. Dividing the panel's own
+    pixels into eight equal columns, as this used to do, is only correct
+    uncropped; against a ``look(region=...)`` crop it drew eight lines spanning
+    just the crop and labelled them A-H regardless of which cells the crop
+    actually falls in, which is a grid that does not correspond to any real
+    cell boundary -- exactly the "which cell is this" question the grid exists
+    to answer, answered wrong.
+    """
+    out = frame.img.convert("RGB").copy()
     draw = ImageDraw.Draw(out)
     w, h = out.size
     ncol, nrow = len(GRID_COLS), len(GRID_ROWS)
+    cw, ch = 1.0 / ncol, 1.0 / nrow
 
     for i in range(1, ncol):
-        x = int(round(w * i / ncol))
-        draw.line([(x, 0), (x, h)], fill=_GRID_LINE, width=1)
+        x, _ = frame.to_px(i * cw, 0.0)
+        if 0.0 <= x <= w:
+            draw.line([(x, 0), (x, h)], fill=_GRID_LINE, width=1)
     for j in range(1, nrow):
-        y = int(round(h * j / nrow))
-        draw.line([(0, y), (w, y)], fill=_GRID_LINE, width=1)
+        _, y = frame.to_px(0.0, j * ch)
+        if 0.0 <= y <= h:
+            draw.line([(0, y), (w, y)], fill=_GRID_LINE, width=1)
 
-    # Label every cell. Without labels the painter has to count squares, which is
-    # exactly the kind of arithmetic this whole module exists to avoid.
-    cw, ch = w / ncol, h / nrow
+    # Label every cell that is actually visible in this panel. Without labels
+    # the painter has to count squares, which is exactly the kind of arithmetic
+    # this whole module exists to avoid.
     for ci, col in enumerate(GRID_COLS):
         for ri, row in enumerate(GRID_ROWS):
+            x0, y0 = frame.to_px(ci * cw, ri * ch)
+            x1, y1 = frame.to_px((ci + 1) * cw, (ri + 1) * ch)
+            if x1 <= 0 or y1 <= 0 or x0 >= w or y0 >= h:
+                continue                       # this cell is outside the crop
             label = f"{col}{row}"
-            x, y = int(ci * cw) + 2, int(ri * ch) + 2
+            x, y = int(max(x0, 0)) + 2, int(max(y0, 0)) + 2
             draw.rectangle([x, y, x + 17, y + 11], fill=_GRID_LABEL_BG)
             draw.text((x + 3, y + 1), label, fill=_GRID_LABEL)
     return out

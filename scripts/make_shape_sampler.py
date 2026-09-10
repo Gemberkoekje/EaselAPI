@@ -49,10 +49,16 @@ SHAPES = {
 }
 
 #: label -> (direction, whether to fill the shape or the box it sits in).
+#: "cross-axis" is resolved per shape in render_cell, to the shape's own axis
+#: plus its perpendicular -- ("axis", 90.0) looked right by accident here
+#: because these five shapes mostly run near-horizontal, but 90.0 is an
+#: *absolute* angle, not "90 degrees from whatever the shape's axis is", so for
+#: a shape whose own axis already runs near-vertical (hull, ribbon) the second
+#: pass duplicated the first instead of crossing it.
 COLUMNS = [
     ("horizontal", ("horizontal", False)),
     ("axis", ("axis", False)),
-    ("cross", (("axis", 90.0), False)),
+    ("cross", ("cross-axis", False)),
     ("its box", ("horizontal", True)),
 ]
 
@@ -62,6 +68,8 @@ def render_cell(shape, direction, as_box: bool, seed: int) -> Image.Image:
                 timelapse=False)
     s.palette["mass"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
     place = shape.box if as_box else shape
+    if direction == "cross-axis":
+        direction = (shape.axis, shape.axis + 90.0)
     s.block_in(place, "bristle", "mass", direction=direction, density=1.0, size=0.16)
     return Image.fromarray(s.canvas.to_srgb8(), mode="RGB")
 

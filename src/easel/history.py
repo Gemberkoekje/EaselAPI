@@ -92,6 +92,11 @@ class History:
         """A short text log of recent actions, for the painter to re-read."""
         if not self.records:
             return "(nothing painted yet)"
+        if last <= 0:
+            # `records[-0:]` is `records[0:]` -- the whole log -- not the empty
+            # slice "the last zero entries" implies, so this has to be checked
+            # explicitly rather than left to fall out of the negative-index slice.
+            return ""
         lines = []
         for r in self.records[-last:]:
             bits = [f"#{r.index:03d}", r.kind]
@@ -117,6 +122,18 @@ class History:
         self._snapshots.append(snap)
         if len(self._snapshots) > MAX_SNAPSHOTS:
             self._snapshots.pop(0)
+
+    def discard_snapshot(self) -> None:
+        """Drop the most recently pushed snapshot without touching the log.
+
+        For when the action a snapshot was pushed ahead of failed before it could
+        add its own record: left in place, that snapshot has no matching record,
+        and :meth:`pop_snapshots` assumes a strict 1:1 correspondence between the
+        two stacks -- the next ``undo()`` would then pop this orphan against an
+        unrelated, earlier, *successful* record and silently undo that instead.
+        """
+        if self._snapshots:
+            self._snapshots.pop()
 
     def pop_snapshots(self, n: int) -> dict | None:
         """Take the state from ``n`` steps back, discarding what is undone."""
@@ -149,6 +166,17 @@ class History:
             # block-in is the most interesting part of a time-lapse.
             self._frames = self._frames[::2]
 
+    def drop_last_frames(self, n: int) -> None:
+        """Remove the most recent ``n`` time-lapse frames, for ``undo``.
+
+        Exact as long as the sequence has never been thinned past
+        :data:`MAX_FRAMES`; past that point the frame-to-record correspondence is
+        already approximate, and dropping the most recent frames is still the
+        right direction to err in.
+        """
+        if n > 0 and self._frames:
+            del self._frames[-min(n, len(self._frames)):]
+
     @property
     def frame_count(self) -> int:
         return len(self._frames)
@@ -176,6 +204,10 @@ class History:
         """Write the time-lapse as a single contact sheet of thumbnails."""
         if not self._frames:
             raise ValueError("No time-lapse frames were recorded.")
+        if columns < 1:
+            raise ValueError(
+                f"save_contact_sheet(columns={columns!r}) needs at least one column."
+            )
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
 

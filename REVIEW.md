@@ -1019,3 +1019,487 @@ a dark swatch must be written at or above the floor was a workaround for this de
 and is gone; `tests/test_floor.py` checks every pigment against what the canvas
 actually receives instead, and `cadmium_yellow` — which broke that rule and always had
 — passes.
+
+---
+
+# Adversarial code review — engine, CLI, security, CI and test coverage (post-M8b)
+
+Two reviews, done together. The first continues the practice above: read the code
+itself, not by rendering and looking, hunting for crashes, corruption and
+silently-wrong results — this time over the areas that had not had a dedicated
+code-level pass since the M6 code review (`regions.py`'s shape and sweep code from
+M6c/M8, the painting-ops half of `session.py`, and the M7/M8b changes to
+`brush.py`/`stroke.py`/`color.py`), plus a re-pass of everything reviewed before, on
+the grounds that a lot of code has landed since. The second is broader than the
+brief's own framing asks for: a general pass over security/trust boundaries,
+`.github/workflows/ci.yml` and `pyproject.toml`, and whether the test suite actually
+proves what it claims to — not just "does the output look painterly."
+
+Method: fourteen independent reviewers, one per file or dimension, each handed the
+full list of findings already fixed above so as not to re-report them. Every finding
+below was then checked by two more reviewers working from the code alone — one
+trying specifically to refute it, one judging whether the proposed fix was correct
+and proportionate — and only survived here if both agreed it was real. Thirty-eight
+candidates went in; thirty-seven survived that pass. (The other: a claim that
+`Region` accepted non-finite bounds the way `Polygon` guards against — true, but the
+reviewers judged the reproduction given didn't establish it caused the "permanent
+undo/log corruption" claimed. Finding 47 below fixes the same gap anyway, found
+independently and reproduced against `Canvas.region_px`.)
+
+## Fixed
+
+### 36. A malformed `rng_state`, `meta` blob or log entry in a session file failed silently or crashed raw
+
+**Symptom.** `_decode_rng` wrapped the whole state-restore in `try: ... except
+Exception: pass`, so a corrupted `rng_state` field was swallowed and `Session.load()`
+quietly handed back a session seeded from OS entropy instead of the file's own seed —
+two loads of the *same file* then painted differently from that point on, with no
+error at all. Separately, `json.loads` on a corrupted-but-zip-valid `meta` blob or log
+entry raised a bare `json.JSONDecodeError`, which `Session.load()`'s except clause
+(`zipfile.BadZipFile, KeyError, TypeError, EOFError`) did not list, so it escaped as a
+raw traceback instead of the same clear message every other corruption case gets.
+
+**Fix.** `_decode_rng` no longer swallows its own exception — a bad state now
+propagates. `ValueError` (which `JSONDecodeError` subclasses) was added to
+`Session.load()`'s except tuple, so both failure modes turn into the same
+`"... is not a valid Easel session file, or is corrupted"` message
+(`easel/session.py`). `test_block_in_after_a_reload_draws_from_the_same_stream_as_never_saving`
+covers the rng half; no test exercised the swallowed-corruption path directly since
+by definition it never raised.
+
+### 37. `Session.replay()` reset the look counter and dropped the prepared reference
+
+**Symptom.** `replay()` returns a fresh session sharing the original's `out_dir`, but
+its `_look_counter` restarted at 0 — the very next `look()` on the replayed session
+silently overwrote `look_001.png`, a file the original session had already written.
+`_preparation` was not carried across either, so `replayed.ref_shape(...)`,
+`.sketch()` and `.look_areas()` all raised `"No prepared reference yet"` right after a
+`prepare()` + `replay()`, even though `marks` and `assisted` — state of exactly the
+same kind — were already preserved two lines above.
+
+**Fix.** `replay()` now also copies `_look_counter`, `_last_look` and `_preparation`
+onto the fresh session, the same treatment `marks` and `assisted` already got
+(`easel/session.py`).
+
+### 38. A failed `stroke()`/`pencil()` orphaned an undo snapshot, so the next `undo()` deleted an unrelated stroke
+
+**Symptom.** `stroke()` and `pencil()` push an undo snapshot, *then* parse the points
+and call `paint_stroke`/`draw_pencil`, whose own validation (bad shape, a NaN/Infinity
+point) can still raise. A raised exception there left a snapshot on the stack with no
+matching log record. `History.pop_snapshots()` assumes a strict 1:1 correspondence
+between its snapshot stack and the log — so the next `undo(1)` popped that orphan
+against the *previous, successful* record instead, silently deleting a stroke that had
+nothing to do with the failure.
+
+**Fix.** `History.discard_snapshot()` drops the most recently pushed snapshot without
+touching the log; `stroke()` and `pencil()` call it in an `except` around the fallible
+part of each, then re-raise (`easel/history.py`, `easel/session.py`). Found
+independently by two reviewers, one reading `session.py`'s painting operations, one
+reading `history.py`'s undo bookkeeping.
+
+### 39. `undo()` never trimmed time-lapse frames for the strokes it undid
+
+**Symptom.** Neither of `undo()`'s two paths (the fast snapshot restore, or a full
+rebuild from the log) removed the corresponding frames from `History._frames`, so a
+time-lapse GIF or contact sheet kept frames for strokes no longer on the canvas.
+
+**Fix.** `History.drop_last_frames(n)` removes the most recent `n` frames;
+`undo()`'s fast path calls it with the count of undone records that actually produced
+a frame (every kind except `dry`, which only touches wetness and has nothing a plain
+render would show change). The log-rebuild path needs no separate handling: it
+replays only the kept records through the same stroke/pencil/dry/erase calls, which
+now build exactly the right frame count on their own (`easel/history.py`,
+`easel/session.py`).
+
+### 40. `erase()` never recorded a time-lapse frame
+
+**Symptom.** `erase()` visibly changes the rendered canvas — it clears the `sketch`
+channel, which the thumbnail includes — the same way `stroke()` and `pencil()` do,
+but unlike them it never called `add_frame()`, so a drawing rubbed out mid-painting
+vanished from the time-lapse with no frame showing it happening.
+
+**Fix.** `erase()` now records a frame when `timelapse` is on, matching `stroke()`
+and `pencil()` (`easel/session.py`). This also closes finding 39's `frames_to_drop`
+count for `erase` records.
+
+### 41. `easel run` silently discarded painted strokes when a script called `sys.exit()`
+
+**Symptom.** `sys.exit()`/`exit()`/`quit()` raise `SystemExit`, which is not an
+`Exception` subclass, so `_cmd_run`'s `except Exception:` never caught it. Uncaught,
+it propagated straight out of `main()`, skipping `session.save()` entirely — a
+script that exited early (deliberately, or a stray `exit()` copied from an
+interactive example) silently lost everything painted so far, and with exit code 0
+the CLI looked like it had succeeded, with nothing saved and no message printed.
+
+**Fix.** `_cmd_run` now catches `SystemExit` explicitly, saves the session, and
+prints a clear message before returning the script's own exit code
+(`easel/cli.py`).
+
+### 42. `easel mark --forget` with no name silently listed marks instead of erroring
+
+**Symptom.** `_cmd_mark` checked `args.name is None` before checking `args.forget`,
+so `easel mark p.easel --forget` (no name given) fell into the "list every mark"
+branch and silently ignored the flag — it neither erred nor forgot anything.
+
+**Fix.** `_cmd_mark` now raises a clear `ValueError` when `--forget` is given without
+a name (`easel/cli.py`).
+
+### 43. `History.summary(last=0)` returned the whole log instead of nothing
+
+**Symptom.** `self.records[-last:]` with `last=0` is `self.records[-0:]`, which
+Python treats as `self.records[0:]` — the entire log, not the empty slice
+"the last zero entries" implies.
+
+**Fix.** `summary()` checks `last <= 0` explicitly and returns `""`
+(`easel/history.py`).
+
+### 44. `History.save_contact_sheet(columns=0)` crashed with a raw `ZeroDivisionError`
+
+**Fix.** Raises a clear `ValueError` up front instead (`easel/history.py`).
+
+### 45. NaN/Infinity `Canvas` dimensions or `texture_strength` bypassed validation and crashed raw, or silently NaN'd the whole canvas
+
+**Symptom.** `if width < 8 or height < 8` lets NaN and Infinity straight through —
+both compare `False` to `< 8` — so `int(width)` then failed with an unrelated raw
+`ValueError`/`OverflowError` instead of the constructor's own clear message. A NaN
+`texture_strength` was never checked at all and silently NaN'd the whole tooth field
+and, through it, every pixel it gates — rendering as solid black with no error
+anywhere near the cause.
+
+**Fix.** `Canvas.__init__` now checks `math.isfinite` on both dimensions before the
+size comparison, and validates `texture_strength` is finite before using it
+(`easel/canvas.py`).
+
+### 46. `stamp()` clamped thickness but not wetness, so a bad `wetness_gain` could pin a pixel's paint acceptance shut
+
+**Symptom.** `thickness` is clamped to `[0, MAX_THICKNESS]` right after it is
+updated; `wetness` was not. A brush override with an out-of-range (or NaN)
+`wetness_gain` could push a pixel's wetness far past 1.0, or to NaN permanently.
+`effective = alpha * (1.0 - 0.55 * wet)` then goes negative and clips to zero for
+every dab that lands there — the pixel stops accepting paint until wetness decays
+back down, which at the normal 6%-per-stroke rate can take hundreds of strokes for a
+large overshoot, and never happens at all for NaN.
+
+**Fix.** `wetness` is now clamped to `[0, 1]` in the same place thickness already
+is (`easel/canvas.py`).
+
+### 47. `Region` accepted NaN/Infinity bounds, crashing opaquely wherever they were later used
+
+**Symptom.** `Region.__post_init__` only checked `x1 <= x0`/`y1 <= y0`, both of which
+are `False` for NaN — unlike `Polygon`, which already guards its points with
+`math.isfinite`. A `Region` built this way crashed with a raw, unrelated exception the
+first time a consumer multiplied a bound by a canvas dimension and rounded it to a
+pixel index (`Canvas.region_px`), far from anywhere that named the actual problem.
+
+**Fix.** `Region.__post_init__` now checks `math.isfinite` on all four bounds first,
+matching `Polygon` (`easel/regions.py`).
+
+### 48. `thumbnail_srgb8()` could produce a zero-width or zero-height frame on an extreme aspect ratio
+
+**Symptom.** The box-average downsample divides both axes by a `step` sized off the
+*longer* one. A canvas far thinner than `step` on the other axis — an extreme aspect
+ratio, still at or above the 8px minimum — floored that axis's block count to zero,
+handing PIL a zero-width or zero-height frame: corrupting the time-lapse in memory and
+crashing `save_gif()` on it.
+
+**Fix.** Each axis's step is now capped at that axis's own size before dividing. For
+the ordinary case (both axes at least `step`) this changes nothing — the cap does not
+bite — so no golden image moved (`easel/canvas.py`).
+
+### 49. `draw_pencil` mis-anchored its sub-pixel mask, jumping pencil lines a pixel at a time
+
+**Symptom.** The tip mask's sub-pixel phase was computed against `math.floor(cx)`,
+but the mask was then handed to `canvas.rub(cx, cy, ...)` with the *raw* `cx`
+still attached — and `rub()` anchors a mask with `round(cx)`, not `floor(cx)`.
+Whenever a dab's fractional position was `>= 0.5`, `round` and `floor` disagreed by
+one whole pixel, so the mask (built for one anchor) landed at another, snapping the
+line sideways. `paint_stroke`/`Canvas.stamp` already avoid this by computing the floor
+first and passing that integer value on; `draw_pencil` did not.
+
+**Fix.** `draw_pencil` now floors `cx`/`cy` first and passes that value to
+`canvas.rub()`, matching the pattern `paint_stroke` already uses
+(`easel/stroke.py`). **This changes pencil line rendering** — looked at on the
+`drawing` golden case (before/after, both pencil lines and the two demonstration
+dabs) before regenerating: the wavy lines and the circle outlines are visibly the
+same drawing, with individual segments landing a pixel more precisely on their
+intended path. `tests/golden/drawing.png` and its hash are regenerated; no other
+golden case touches pencil and none of the other six moved.
+
+### 50. `StrokeResult.bounds` used the canvas's long side for both axes, understating extent on a non-square canvas's short axis
+
+**Symptom.** A dab's pixel radius was converted to normalised units by dividing by
+`canvas.long_side` for *both* the x and y extents, while the dab's centre was
+correctly normalised per-axis (`/width` and `/height` separately). On a canvas far
+wider than tall, this understated the reported extent on the y axis by a factor of
+`height / long_side`.
+
+**Fix.** The radius is now normalised per axis, the same way the centre already is
+(`easel/stroke.py`). `StrokeResult.bounds` is not currently read by anything in the
+engine (not stored on `StrokeRecord`, not consumed by `session.py`), so this has no
+rendering effect — it only corrects the metadata a direct `paint_stroke()` caller
+would see.
+
+### 51. `parse_color()` never validated finiteness, so a NaN colour component silently NaN'd the canvas
+
+**Symptom.** Every path through `parse_color` — the already-linear fast path and the
+tuple/list/array path — accepted a NaN or Infinite component. NaN sails through
+`np.clip` unchanged (it is neither `< 0` nor `> 1`), so it reached `blend_wet`, which
+NaN's every pixel it touches from then on — rendering as solid black with no error
+anywhere near the actual cause. This is the same failure mode as finding 45's ground
+colour, from the palette/mixing side rather than the canvas-construction side.
+
+**Fix.** Both paths now raise a clear `ValueError` on a non-finite component
+(`easel/color.py`).
+
+### 52. `Polygon.inset()` skipped its own fold-detection when growing
+
+**Symptom.** The mitre-offset self-intersection check (area not collapsed, centre
+still inside) only ran when shrinking (`amount > 0`) — the boolean short-circuited it
+away entirely when growing (`not smaller` was `True`). A spiky or very concave
+outline grown outward can fold through itself at its own reflex vertices just as
+easily as one shrunk inward can, so growing had no protection at all.
+
+**Fix.** The same sanity check now runs both ways, mirrored for the grow direction:
+the *original* centre must still land inside the grown shape, and the grown area must
+not have shrunk. Either check failing falls back to the existing
+`_toward_centre` scaling, exactly as the shrink path already did
+(`easel/regions.py`).
+
+### 53. `Preparation.split()` could hand back an area number k-means never assigned to any pixel
+
+**Symptom.** k-means can converge with an empty cluster on duplicate-heavy colour
+data — a large flat-coloured area is exactly that. `split()` unconditionally added a
+fresh number to its returned list for every requested part, regardless of whether
+`assign` actually contained that cluster's index. A number with no pixels behind it
+crashed with `KeyError` on the caller's very next `prep[number]`,
+`prep.region(number)`, or `prep.outline(number)`.
+
+**Fix.** `split()` now skips a part whose cluster is empty and only returns numbers
+that were actually assigned to at least one pixel (`easel/prepare.py`).
+
+### 54. `compare()`'s per-cell means could divide into an empty slice and silently vanish as NaN
+
+**Symptom.** Dividing a small region into ten row/column tenths could round a cell's
+start index to or past the array's own width/height, slicing to an empty array and
+`.mean()`-ing it to NaN. A NaN `delta` compares `False` against any threshold, so a
+cell like that silently dropped out of `off`/`fixable`/`worst` instead of being
+reported — a real difference in a legitimately-out region could go unmeasured simply
+because the crop was too small to subdivide cleanly.
+
+**Fix.** Each axis's start index is now clamped to a valid row/column first, and its
+end index given at least one unit past that and clamped to the array — guaranteeing a
+non-empty slice regardless of how small the source array is (`easel/measure.py`).
+
+### 55. `look(values=True, diff=True)` tinted the whole canvas as changed even when nothing was painted
+
+**Symptom.** `Session.look()` always stored `_last_look` as the plain colour render
+(`canvas.to_srgb8(impasto=impasto)`), ignoring both `values` and `sketch`. The next
+`diff=True` call then compared whatever *this* call actually rendered — greyscale,
+when `values=True` — against that stored colour array. Grey and colour differ almost
+everywhere by construction, so the diff overlay tinted nearly the entire canvas as
+"changed" regardless of what had actually been painted since the previous look.
+
+**Fix.** `_last_look` is now captured through a small helper that renders the same
+way `render_look` itself does — greyscale when `values=True`, colour otherwise, both
+respecting `sketch` — so a diff compares like with like. `look_image()` had the
+identical bug and got the identical fix (`easel/session.py`).
+
+### 56. `look(region=..., grid=True)` drew the full A-H/1-8 grid mislabelled onto the crop
+
+**Symptom.** `_draw_grid` divided the panel's own pixel dimensions into eight equal
+columns and rows regardless of whether the panel was a crop — correct only when
+looking at the whole canvas. Against a `region=` crop it drew eight lines spanning
+just the crop and labelled them A through H, which do not correspond to any real
+cell boundary: exactly the "which cell is this" question the grid exists to answer,
+answered wrong.
+
+**Fix.** `_draw_grid` now positions every line and label through `frame.to_px`, which
+already maps normalised canvas coordinates into the panel — the whole canvas when
+uncropped (unchanged behaviour) or the crop's own sub-rectangle when cropped, only
+labelling cells actually visible (`easel/look.py`).
+
+### 57. `CellCompare.off` ignored the `Comparison`'s own configured threshold
+
+**Symptom.** `compare(threshold=...)` lets a painter set what counts as out, and
+`Comparison.off`/`.fixable`/`.table()` all honour it — but the per-cell
+`CellCompare.off` property read the module-level `VALUE_THRESHOLD` constant instead,
+regardless of what was actually asked for. A cell's own `.off` could disagree with
+whether it appeared in the comparison's own `off` list.
+
+**Fix.** `CellCompare` now carries the threshold it was built with, and `off` reads
+that instead of the constant (`easel/measure.py`).
+
+### 58. `Session.load()` never cross-checked `meta`'s width/height against the stored array shapes
+
+**Symptom.** `canvas.width`/`canvas.height` came from `meta` alone and drove every
+pixel-coordinate computation from that point on (`to_px`, `region_px`, `stamp`'s own
+clipping) without ever being checked against the actual shape of the loaded `rgb`
+array. A hand-edited or corrupted file with mismatched declared dimensions would
+either paint at the wrong scale silently or crash deep inside a `stamp()` call, far
+from anywhere that could say why.
+
+**Fix.** `Session.load()` now raises a clear `ValueError` (caught and wrapped the
+same way every other corruption is) when the stored array's shape disagrees with
+`meta`'s declared width/height (`easel/session.py`).
+
+### 59. A crafted or oversized reference image escaped the CLI's clean-error handling
+
+**Symptom.** Pillow's `DecompressionBombError` — its guard against a crafted or
+merely huge image decoding into an enormous array — subclasses plain `Exception`,
+not `OSError`, so `main()`'s except tuple did not catch it: it escaped as a raw
+traceback instead of the same `"easel: ..."` message every other bad-input case
+gets. (`PIL.UnidentifiedImageError`, for an unreadable file, is already an `OSError`
+subclass and was already covered.)
+
+**Fix.** `main()`'s except tuple now names `PIL.Image.DecompressionBombError`
+explicitly (`easel/cli.py`).
+
+### 60. CI set no `permissions:`, leaving the default (broader) `GITHUB_TOKEN` scope in effect
+
+**Fix.** Added a top-level `permissions: contents: read` — every job here only
+checks out code and uploads a build artifact (`.github/workflows/ci.yml`).
+
+### 61. CI's actions were pinned to mutable tags rather than commit SHAs
+
+**Symptom.** `actions/checkout@v4`, `actions/setup-python@v5` and
+`actions/upload-artifact@v4` are tags, not immutable references — whoever controls
+that tag can repoint it to different code without this repository's review.
+
+**Fix.** All three pinned to the commit SHA of their current latest release, with
+the version kept alongside as a comment (`actions/checkout@11d5960a... # v4.4.0`,
+and so on) — the standard form Dependabot's already-configured `github-actions`
+ecosystem update recognises and keeps current (`.github/workflows/ci.yml`,
+`.github/dependabot.yml`).
+
+### 62. CI never installed the `mixbox` extra, so `color.mix_many`'s pymixbox path was never exercised by any job
+
+**Symptom.** `pyproject.toml` declares `mixbox` as a distinct optional-dependency
+group from `dev`; the `test` job installs only `.[dev]`, on every leg of its matrix.
+`color.py`'s mixbox import is wrapped in a bare `try/except`, so `MIXBOX_AVAILABLE`
+is always `False` in CI, and the runtime call site at `mix_many` (line ~289, marked
+`# pragma: no cover`) has no guard of its own — a pymixbox API break there would
+surface as an uncaught crash for the one audience that opts in, with zero warning
+from CI.
+
+**Fix.** A new `tests/test_mixbox.py`, skipped unless `MIXBOX_AVAILABLE`, checks the
+integration seam itself (runs, returns a valid finite colour, is order-independent,
+mixing a colour with itself is a no-op) without asserting exact values — the rest of
+the suite hard-codes Kubelka-Munk-specific numbers that were never meant to be
+mixbox-aware, so this file must not be allowed to flip `MIXBOX_AVAILABLE` on for
+them. A new `mixbox` CI job installs `.[dev,mixbox]` on a single OS/Python leg and
+runs *only* that file, leaving the main `test` job's install and every other test
+untouched (`.github/workflows/ci.yml`). Verified locally: installing `pymixbox` and
+running the *existing* suite unmodified breaks eight tests (`test_floor.py` and six
+golden cases, all hard-coded to the Kubelka-Munk model) — confirming the new job has
+to stay scoped to the one new file, not broadened to the whole suite.
+
+### 63. `Session.rng`'s save/load round-trip had no test coverage at all
+
+**Symptom.** `block_in()`/`sweep()` draw their pass-wobble from `self.rng`, which is
+persisted through `_encode_rng`/`_decode_rng` on save/load. No test in the suite
+calls `block_in`/`sweep` on a session obtained from `Session.load()` — the closest,
+`test_undo_after_reload_uses_replay`, exercises `replay()`, which reseeds `self.rng`
+from `self.seed` directly rather than testing whether the *persisted* stream survives
+a round trip. A broken round trip (finding 36's swallowed-exception bug, among other
+possible ones) would have passed the whole suite silently.
+
+**Fix.** `test_block_in_after_a_reload_draws_from_the_same_stream_as_never_saving`
+paints identically in two sessions, saving and reloading one partway through, and
+asserts the canvases are pixel-identical (`tests/test_engine.py`).
+
+### 64. `undo()`'s log-rebuild fallback never re-adopted the replayed session's `rng`
+
+**Symptom.** `undo()` falls back to `self._adopt(self.replay(upto=keep))` when too
+few snapshots are cached, or always for a freshly-loaded session. `replay()` builds a
+fresh session whose `rng` is correctly reseeded and re-advanced for exactly the kept
+records — but `_adopt()` only copied over `canvas` and `history`, leaving
+`self.rng` wherever it happened to be before the undo. A `block_in()`/`sweep()`
+painted after this fallback path drew its wobble from a stream a true replay up to
+that point would never have produced.
+
+**Fix.** `_adopt()` now also takes on `other.rng` (`easel/session.py`). See *Open,
+with evidence* below for the related case this does not close.
+
+### 65. The golden determinism test only spot-checked one of seven cases
+
+**Symptom.** `test_golden_cases_are_deterministic` built `"marks_linen"` twice and
+compared the hashes — a real property, but checked for exactly one of `gc.CASES`'s
+seven. Determinism depends on how each case consumes randomness (a bristle's comb,
+`block_in`'s wobble, dab jitter), which is exactly the kind of thing that differs
+case to case and that a single spot-check would miss.
+
+**Fix.** Parametrized over every case (`tests/test_golden.py`). All seven pass.
+
+### 66. The shape sampler's "cross" column duplicated the axis pass for shapes whose own axis runs vertical
+
+**Symptom.** `scripts/make_shape_sampler.py`'s "cross" column used
+`direction=("axis", 90.0)` — but `90.0` is an *absolute* angle, not "90 degrees from
+whatever this shape's axis is". For the sheet's mostly-horizontal shapes this
+happened to look like a cross by coincidence; for `hull` and `ribbon`, whose own axis
+already runs close to vertical, the second pass landed at nearly the same angle as
+the first instead of crossing it.
+
+**Fix.** The cross direction is now resolved per shape, as `(shape.axis, shape.axis +
+90.0)` (`scripts/make_shape_sampler.py`). `samples/shapes.png` regenerated and
+looked at: the `cross` column now visibly crosshatches every row, `hull` and
+`ribbon` included, where it previously matched the `axis` column almost exactly for
+those two.
+
+## Open, with evidence
+
+- **`blend_wet()` does not honour `MIXBOX_AVAILABLE`.** `mix_many()` routes through
+  pymixbox's latent-space blending when the optional extra is installed;
+  `blend_wet()` — the per-pixel function every actual dab on the canvas goes through
+  — always uses the built-in Kubelka-Munk arithmetic regardless. `blend_wet`'s own
+  docstring says plainly why this matters: *"the palette's number and the canvas's
+  pixel are the same mixture or neither can be trusted."* When mixbox is installed,
+  they silently stop being that. Not fixed here: pymixbox's Python API
+  (`rgb_to_latent`/`latent_to_rgb`) takes one colour triple at a time, not an array,
+  so making `blend_wet` route through it for real would mean either a per-pixel
+  Python loop in the hottest path in the engine (a stamp can touch thousands of
+  pixels; painting a whole passage stamps thousands of times) or a from-scratch
+  vectorised reimplementation of mixbox's latent space — either is real engineering,
+  neither is a small fix, and finding 62 establishes this path has *never* been
+  exercised by CI, so there is nothing here yet to test a fix against. Wants a
+  session with the budget to prototype and measure the performance cost, the way
+  finding 11 got before it was fixed.
+
+- **`Session.load()` restores `out_dir` from the session file with no validation.**
+  `out_dir` round-trips through save/load because that is how `easel look p.easel`
+  keeps writing to the same place across CLI invocations — a real, load-bearing use,
+  not an oversight. But it means loading and then `look()`-ing a `.easel` file
+  someone else handed you writes wherever *they* set `out_dir` to, silently,
+  including an absolute path outside the working directory. Rejecting an absolute or
+  `..`-escaping `out_dir` outright would also reject configurations a user
+  legitimately sets themselves with `--out-dir` when *creating* a session — the CLI
+  has no way to tell "the invoker chose this" from "the file says so" apart, because
+  it is the same field either way. Wants a product decision (a new CLI flag to
+  override the stored value? a warning when a loaded `out_dir` differs from the
+  cwd?) rather than a rule a reviewer should pick unilaterally.
+
+- **`undo()`'s fast snapshot path does not rewind `Session.rng`.** Finding 64 fixed
+  the log-rebuild fallback; the common case — snapshots still cached, `undo()` just
+  restores one — does not rewind `self.rng` at all, so `s.block_in(...); s.undo(1);
+  s.block_in(...)` draws different wobble than a fresh session doing the same two
+  calls would. A correct fix needs an `rng` snapshot at the same granularity as the
+  canvas snapshot, but `block_in`/`sweep` draw their wobble from a lazily-evaluated
+  generator (`_shape_paths`/`_block_paths`/`_sweep_wobble` are Python generators),
+  interleaved *between* the per-path `stroke()` calls that push each canvas
+  snapshot — so by the time a given `stroke()` call's snapshot is pushed, that
+  path's own wobble has already been drawn from `self.rng`. Snapshotting `self.rng`'s
+  state at that point and restoring it on undo would leave the stream advanced past
+  the undone stroke's own draw rather than rewound to before it — subtly wrong in a
+  way a quick fix here is more likely to get wrong than right. Affects only the
+  specific sequence "paint with `block_in`/`sweep`, undo, paint with `block_in`/
+  `sweep` again" — `stroke()`/`pencil()`/`dry()`/`erase()` alone never touch
+  `self.rng` at all, and neither does the normal `stroke()`-count-many-undos-then-
+  keep-painting pattern PAINTER.md actually teaches.
+
+## Investigated and *not* a defect
+
+- **`Region` accepting non-finite bounds**, reported independently by the security
+  reviewer alongside finding 47 with a claim of "permanent undo/log corruption" from
+  it. The adversarial-refutation pass couldn't reproduce corruption specifically
+  (a `Region` built this way crashes on first real use — `Canvas.region_px`, per
+  finding 47 — rather than silently corrupting anything), so it was not counted as
+  confirmed on its own terms. Finding 47 closes the same underlying gap regardless.

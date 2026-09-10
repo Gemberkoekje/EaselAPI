@@ -26,6 +26,8 @@ Three channels beyond colour:
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_to_linear
@@ -138,7 +140,13 @@ class Canvas:
         seed: int = 0,
         texture_strength: float = 1.0,
     ) -> None:
-        if width < 8 or height < 8:
+        # NaN and Infinity both compare False to `< 8`, so a plain `width < 8`
+        # check lets either through and `int(width)` then fails with a raw,
+        # unrelated ValueError ("cannot convert float NaN to integer") or
+        # OverflowError ("cannot convert float infinity to integer") instead of
+        # this constructor's own clear message.
+        if (not (math.isfinite(width) and math.isfinite(height))
+                or width < 8 or height < 8):
             raise ValueError(f"Canvas must be at least 8x8, got {width}x{height}")
         self.width = int(width)
         self.height = int(height)
@@ -148,6 +156,13 @@ class Canvas:
         # The exact argument, kept so a session can be rebuilt from its log.
         self.ground_spec = ground if isinstance(ground, str) else [float(v) for v in ground]
 
+        if not math.isfinite(texture_strength):
+            # Left unchecked this silently NaNs the whole tooth field (and every
+            # pixel it gates), which renders as solid black with no error at all.
+            raise ValueError(
+                f"Canvas texture_strength must be a finite number, got "
+                f"{texture_strength!r}."
+            )
         self.texture_strength = float(texture_strength)
         self.height_map, self.grain = build_surface(
             texture, self.height, self.width, seed, texture_strength
@@ -283,6 +298,15 @@ class Canvas:
             np.clip(thick, 0.0, _MAX_THICKNESS, out=thick)
 
         np.maximum(wet, alpha * float(wetness_gain), out=wet)
+        # Thickness two lines above is clamped the same way; wetness was not,
+        # so a brush override with an out-of-range wetness_gain (or a NaN one)
+        # could pin a pixel's wetness far above 1.0 -- or to NaN, permanently.
+        # `effective = alpha * (1.0 - 0.55 * wet)` then goes negative and clips
+        # to zero for every dab that lands there, so the pixel stops accepting
+        # any paint at all until wetness decays back down, which at the normal
+        # 6%-per-stroke rate can take hundreds of strokes for a large overshoot
+        # and never happens at all for NaN.
+        np.clip(wet, 0.0, 1.0, out=wet)
         return float(effective.sum())
 
     def sample(self, cx: float, cy: float, mask: np.ndarray) -> np.ndarray:
@@ -467,9 +491,19 @@ class Canvas:
             return (linear_to_srgb(full) * 255.0 + 0.5).astype(np.uint8)
         # Box-average each block rather than point-sampling, so the thumbnail does
         # not alias the canvas weave into moire.
-        h = (self.height // step) * step
-        w = (self.width // step) * step
-        blocks = full[:h, :w].reshape(h // step, step, w // step, step, 3)
+        #
+        # Each axis is capped at its own size before dividing: `step` is sized
+        # off the *longer* axis, and a canvas far thinner than that on the other
+        # axis (an extreme aspect ratio, still >= 8px, the minimum) would
+        # otherwise floor that axis's block count to zero -- a zero-width or
+        # zero-height frame that corrupts the time-lapse and crashes
+        # ``save_gif()`` on it. For the common case both axes are already at
+        # least `step`, so this caps to nothing and the result is unchanged.
+        step_y = min(step, self.height)
+        step_x = min(step, self.width)
+        h = (self.height // step_y) * step_y
+        w = (self.width // step_x) * step_x
+        blocks = full[:h, :w].reshape(h // step_y, step_y, w // step_x, step_x, 3)
         small = blocks.mean(axis=(1, 3))
         return (linear_to_srgb(small) * 255.0 + 0.5).astype(np.uint8)
 

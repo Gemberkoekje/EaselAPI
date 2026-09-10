@@ -185,11 +185,22 @@ class Preparation:
         # note the painter already made about this area is still about this area.
         fresh = [n] + [max(self.numbers) + 1 + i for i in range(int(into) - 1)]
         flat = self.labels[area_mask]
+        used: list[int] = []
         for part, new in enumerate(fresh):
-            flat[assign == part] = new
+            member = assign == part
+            if not member.any():
+                # k-means can converge with an empty cluster on duplicate-heavy
+                # colour data (a large flat-coloured area is exactly that).
+                # Handing back a number with the label map never assigns to it
+                # means the very next prep[number]/region(number)/outline(number)
+                # raises KeyError -- so skip it here instead of promising an
+                # area that was never actually created.
+                continue
+            flat[member] = new
+            used.append(new)
         self.labels[area_mask] = flat
         self._rebuild()
-        return fresh
+        return used
 
     # -- output ------------------------------------------------------------------
     def table(self) -> str:

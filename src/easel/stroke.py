@@ -398,9 +398,16 @@ def paint_stroke(
         stamped += 1
 
         nx, ny = cx / max(canvas.width - 1, 1), cy / max(canvas.height - 1, 1)
-        rn = r / canvas.long_side
-        min_x, max_x = min(min_x, nx - rn), max(max_x, nx + rn)
-        min_y, max_y = min(min_y, ny - rn), max(max_y, ny + rn)
+        # The dab's pixel radius r is the same physical size along both axes, but
+        # a pixel is not the same *normalised* distance along both axes on a
+        # non-square canvas -- so it has to be divided by each axis's own pixel
+        # extent, the same way the centre (nx, ny) just was, rather than by
+        # canvas.long_side for both: that understated the extent on the short
+        # axis by exactly width/long_side or height/long_side.
+        rnx = r / max(canvas.width - 1, 1)
+        rny = r / max(canvas.height - 1, 1)
+        min_x, max_x = min(min_x, nx - rnx), max(max_x, nx + rnx)
+        min_y, max_y = min(min_y, ny - rny), max(max_y, ny + rny)
 
     canvas.tick_wetness()
 
@@ -491,11 +498,21 @@ def draw_pencil(
     for i in range(n):
         cx = float(pos[i, 0] + drift[i, 0])
         cy = float(pos[i, 1] + drift[i, 1])
+        # The mask's sub-pixel phase is measured against the *floored* centre,
+        # so the centre handed to canvas.rub() has to be that same floored
+        # value too -- rub() itself anchors a mask with round(cx), and passing
+        # the raw cx (fractional part still attached) meant round() and floor()
+        # silently disagreed whenever that fraction was >= 0.5, jumping the
+        # line a whole pixel off the phase the mask was actually built for.
+        # paint_stroke/Canvas.stamp already do it this way for exactly this
+        # reason.
+        ix = math.floor(cx)
+        iy = math.floor(cy)
         mask = tip_mask(
             "round_hard", radius, 0.0, hardness=0.75,
-            frac_x=cx - math.floor(cx), frac_y=cy - math.floor(cy),
+            frac_x=cx - ix, frac_y=cy - iy,
         )
-        landed += canvas.rub(cx, cy, mask, float(strength[i]), press)
+        landed += canvas.rub(float(ix), float(iy), mask, float(strength[i]), press)
         nx, ny = cx / max(canvas.width - 1, 1), cy / max(canvas.height - 1, 1)
         min_x, max_x = min(min_x, nx), max(max_x, nx)
         min_y, max_y = min(min_y, ny), max(max_y, ny)
