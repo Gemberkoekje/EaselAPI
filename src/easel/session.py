@@ -980,9 +980,10 @@ class Session:
                 print(c.label, c.delta)
 
         Cells whose reference is darker than the palette's own floor are reported
-        as ``unreachable`` rather than as work: the box has no black in it, and a
-        lamp-lit photograph has cells no mixture here can reach. Read ``fixable``
-        for the list worth strokes.
+        as ``unreachable`` rather than as work. Since the masstones were darkened
+        that floor is close to the engine's own, so expect the list to be empty:
+        every cell on the object is normally the painter's to fix, and ``fixable``
+        is then just ``off``.
         """
         ref_img = load_reference(reference)
         r = as_region(region) if region is not None else None

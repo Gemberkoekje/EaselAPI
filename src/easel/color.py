@@ -160,16 +160,41 @@ _EPS = np.float32(1e-4)
 # Why: single-constant Kubelka-Munk treats white as just another reflectance, but
 # real titanium white is a powerful scatterer that dominates a mixture well beyond
 # its volume share. At p=1 a 50/50 white mix barely lightens, which is wrong and
-# actively misleading to paint with. p=0.5 gives white its real tinting strength
-# while leaving the mixtures that matter behaving like paint: yellow + blue stays
-# olive, red + blue stays violet, and nothing collapses toward grey.
-_MIX_EXPONENT = np.float32(0.5)
+# actively misleading to paint with. A lower exponent gives white its real tinting
+# strength while leaving the mixtures that matter behaving like paint: yellow + blue
+# stays olive, red + blue stays violet, and nothing collapses toward grey.
+#
+# How this number is set: white must carry a 50/50 mixture about a quarter of the
+# way up the palette's own value range. That is what p=0.5 did for the old, much
+# lighter pigments (0.235 of the range). Darkening the masstones (M6b) widened the
+# range from 0.73 to 0.83 and left p=0.5 crossing only 0.158 of it -- finding 6's
+# complaint coming back by the back door, with nothing about white changed. p=0.35
+# puts it at 0.234, and the named mixes land where they did: cerulean + white at
+# 0.7 goes 0.698 -> 0.707, the ultramarine/burnt-sienna cool grey 0.567 -> 0.555.
+# Lower than this and yellow + blue loses its green and goes brown, which is one of
+# the two mixtures the exponent exists to protect.
+_MIX_EXPONENT = np.float32(0.35)
+
+
+#: The exponent's inverse, precomputed: the power mean weights ``K/S ** p`` and then
+#: raises the weighted sum back by ``1 / p``.
+_INV_MIX_EXPONENT = np.float32(1.0 / float(_MIX_EXPONENT))
 
 
 def _to_ks(reflectance: np.ndarray) -> np.ndarray:
     """Kubelka-Munk K/S from reflectance (single-constant approximation)."""
     r = np.clip(reflectance, _FLOOR, 1.0 - _EPS)
     return ((1.0 - r) ** 2) / (2.0 * r)
+
+
+def _ks_pow(ks: np.ndarray) -> np.ndarray:
+    """``K/S ** p``, the space the power mean averages in.
+
+    Split out so ``mix_many`` and ``blend_wet`` cannot drift apart: the palette's
+    number and the canvas's pixel have to be the same mixture or neither can be
+    trusted (REVIEW.md finding 16, from the other direction).
+    """
+    return np.power(ks, _MIX_EXPONENT, dtype=np.float32)
 
 
 def _from_ks(ks: np.ndarray) -> np.ndarray:
@@ -205,10 +230,8 @@ def mix_many(colors, weights=None) -> np.ndarray:
         out = np.asarray(_mixbox.latent_to_rgb(tuple(blended.tolist())), dtype=np.float32) / 255.0
         return srgb_to_linear(out)
 
-    # Power mean with exponent _MIX_EXPONENT (0.5 -> sqrt and square, which are
-    # cheap enough to run per pixel in the wet-blend path).
-    ks = np.sqrt(_to_ks(cols))
-    return _from_ks(np.sum(ks * w[:, None], axis=0) ** 2)
+    ks = _ks_pow(_to_ks(cols))
+    return _from_ks(np.sum(ks * w[:, None], axis=0) ** _INV_MIX_EXPONENT)
 
 
 def blend_wet(dst: np.ndarray, src: np.ndarray, amount: np.ndarray) -> np.ndarray:
@@ -220,6 +243,6 @@ def blend_wet(dst: np.ndarray, src: np.ndarray, amount: np.ndarray) -> np.ndarra
     """
     a = amount[..., None].astype(np.float32)
     src_b = np.broadcast_to(np.asarray(src, dtype=np.float32), dst.shape)
-    ks_dst = np.sqrt(_to_ks(dst))
-    ks_src = np.sqrt(_to_ks(src_b))
-    return _from_ks((ks_dst * (1.0 - a) + ks_src * a) ** 2)
+    ks_dst = _ks_pow(_to_ks(dst))
+    ks_src = _ks_pow(_to_ks(src_b))
+    return _from_ks((ks_dst * (1.0 - a) + ks_src * a) ** _INV_MIX_EXPONENT)

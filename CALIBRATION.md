@@ -26,57 +26,78 @@ Each pigment, one flat pass on a toned grey ground, read off the exported PNG:
 
 | Pigment | Value |
 |---|---|
-| `burnt_umber` | 0.23 |
-| `ultramarine` | 0.26 |
-| `alizarin` | 0.30 |
-| `burnt_sienna` | 0.33 |
-| `viridian` | 0.39 |
-| `cerulean` | 0.42 |
-| `cadmium_red` | 0.48 |
-| `yellow_ochre` | 0.58 |
-| `cadmium_yellow` | 0.79 |
-| `lemon_yellow` | 0.88 |
-| `titanium_white` | 0.96 |
+| `burnt_umber` | 0.13 |
+| `alizarin` | 0.15 |
+| `ultramarine` | 0.16 |
+| `burnt_sienna` | 0.21 |
+| `viridian` | 0.22 |
+| `cerulean` | 0.30 |
+| `cadmium_red` | 0.42 |
+| `yellow_ochre` | 0.56 |
+| `cadmium_yellow` | 0.75 |
+| `lemon_yellow` | 0.83 |
+| `titanium_white` | 0.95 |
 
-**The floor is about `0.23`, and it is the pigments, not the mixing.** Mixing in
-this engine never takes a channel below the darker of its two ingredients, so no
-mixture is darker than the darkest thing in the box. `ultramarine` + `burnt_umber`
-at 50/50 reads `0.226` — a hair under umber alone. Eight dried passes of the darkest
-mix measure `0.231`, four rounds of glazing `0.234`, all five darks mixed together
-`0.228` (`rehearsal3/probe_value_floor.py`). The pigment swatches are simply lighter
-than real tube masstones; real ultramarine and burnt umber mixed go close to black,
-and these do not. That is an engine limit, and phase M6b in `painting-api-brief.md` darkens
-the pigments to fix it. Until it lands, `compare()` marks cells below reach with
-`~` and leaves them out of `fixable`.
+**The floor is about `0.13`, and it is the model's, not the pigments'.** Nothing in
+this engine reflects less than `0.01` linear -- the floor in `color.py` that keeps
+mixtures behaving like paint -- and `0.01` is value `0.10`. The box stops three
+hundredths above it, and those three hundredths are hue: a dark that is still blue,
+or still brown, cannot sit on the floor in all three channels at once.
 
-### If you want to map a reference's range onto the palette's
+`mix("ultramarine", "burnt_umber", 0.5)` reads `0.14` (`#21232d`) and is the bottom
+of your range -- darker than any single pigment, because each channel takes the
+darker side from a different ingredient. Vary the ratio and it holds that value
+while swinging cool to warm: `0.3` is `#1f2434`, `0.7` is `#24231f`.
 
-Not a rule — one way to plan the three values when the reference runs darker than
-the box does. Read the reference's lightest and darkest cell off `compare()` on the
-empty canvas, decide what they become on your canvas, and place the rest
-proportionally:
+Mixing still cannot go *below* the darkest ingredient in any one channel, so piling
+paint on does not help: eight dried passes of the darkest mix measure `0.129`
+against one pass at `0.133`, four rounds of glazing `0.132`
+(`rehearsal3/probe_value_floor.py`). If a mass is not dark enough, mix it darker.
 
-```python
-lo, hi = 0.23, 0.94              # what the palette reaches
-ref_lo, ref_hi = 0.06, 0.59      # what the reference runs, from compare()
-def mine(v):                     # where a reference value lands on your canvas
-    return lo + (hi - lo) * (v - ref_lo) / (ref_hi - ref_lo)
-```
+Before M6b these swatches were colour-chart brights rather than masstones -- 
+`burnt_umber` was `#4A3728` -- and the box floored at `0.23` with no mixture below
+it. That is the number the older parts of this repo quote, and `REVIEW.md`
+findings 21 and 33 are the history.
 
-Relationships are what read; absolute values are not.
+### The value scale
+
+Nine even steps from the darkest mix to white, mixed to a value rather than to a
+ratio (guide exercise 1). The white ratio each step needs:
+
+| Step | Value | White |
+|---|---|---|
+| 1 | 0.14 | 0.00 |
+| 2 | 0.24 | 0.33 |
+| 3 | 0.34 | 0.51 |
+| 4 | 0.45 | 0.63 |
+| 5 | 0.55 | 0.72 |
+| 6 | 0.65 | 0.80 |
+| 7 | 0.75 | 0.86 |
+| 8 | 0.86 | 0.93 |
+| 9 | 0.96 | 1.00 |
+
+Rendered, the nine bands measure `0.148` to `0.951` in steps of `0.100`, even to
+within `0.002`. The curve in the third column is the useful part: a third of a
+canvas of white buys the first step and it takes nine tenths to reach the eighth,
+which is why a mixture that *should* be halfway comes out too dark, and why the fix
+is always more white than feels right.
 
 ### Tinting and mixing
 
 - White is a weaker lightener than you expect. For a really pale colour use a
   white ratio of about `0.7`, not `0.4`.
 - A yellow and a blue make green even when you were after a grey, and tinting does
-  not undo it: `tint(mix("yellow_ochre", "cerulean", 0.3), 0.5)` is `#98ae69`, a
+  not undo it: `tint(mix("yellow_ochre", "cerulean", 0.3), 0.5)` is `#a8b278`, a
   pale green. Neutral greys come from complements or from earth and white:
-  `tint(mix("ultramarine", "burnt_sienna", 0.5), 0.7)` is a cool grey (`#9c8d8d`),
-  `mix("burnt_umber", "titanium_white", 0.6)` a warm one (`#8b725b`), and
+  `tint(mix("ultramarine", "burnt_sienna", 0.5), 0.7)` is a cool grey (`#968e90`),
+  `mix("burnt_umber", "titanium_white", 0.6)` a warm one (`#776157`), and
   `desaturate(c, 0.5)` pulls any mixture toward grey at the same value.
-- The mixing model is a Kubelka-Munk power mean (`src/easel/color.py`); the
-  optional Mixbox backend is better and is opt-in for licence reasons.
+- The mixing model is a Kubelka-Munk power mean of K/S with exponent `0.35`
+  (`src/easel/color.py`); the optional Mixbox backend is better and is opt-in for
+  licence reasons. The exponent is what gives white its tinting strength: it is set
+  so that a 50/50 mix with white carries a colour about a quarter of the way up the
+  palette's value range, and it moved from `0.5` in M6b because darkening the
+  masstones widened that range. Lower it further and yellow + blue loses its green.
 
 ---
 
@@ -180,23 +201,27 @@ at `depth=0.34` with a bristle brush at `0.13`, on a 520×400 canvas.
 
 | The same mass | Strokes | Axis-aligned edges | Paint outside the shape | Value spread inside it |
 |---|---|---|---|---|
-| `block_in` over the bounding box | 5 | 36.3% | 19.4% | 0.043 |
-| `sweep` along the boundary | 5 | 20.8% | 6.4% | 0.029 |
-| `sweep`, crossed at 26° | 17 | 22.0% | 6.5% | 0.011 |
+| `block_in` over the bounding box | 5 | 35.9% | 19.4% | 0.047 |
+| `sweep` along the boundary | 5 | 20.9% | 6.5% | 0.031 |
+| `sweep`, crossed at 26° | 17 | 21.8% | 6.5% | 0.011 |
 
 Read it as three separate claims:
 
 - **The shape.** A box drawn round this boundary puts a fifth of its paint on the
-  wrong side of it, and comes out sixteen points squarer by the axis-alignment
+  wrong side of it, and comes out fifteen points squarer by the axis-alignment
   metric (the one from the M6 pass, above). Both are permanent: no later work takes
   a box's corners out again.
 - **The cost.** Nothing, for the shape. Both versions are five strokes, because a
   pass is a pass whether it runs along an edge or across a rectangle.
 - **The crossing.** One sweep leaves the mass stringy — a bristle brush covers
-  about three-quarters of its width, and the gaps show as a value spread of `0.029`
+  about three-quarters of its width, and the gaps show as a value spread of `0.031`
   a part-brush inside the boundary. Crossing at 26° takes that to `0.011` and lays
   the mass about a hundredth darker for twelve more strokes. It does not move the
   silhouette: the paint outside the shape is unchanged.
+
+The two shape columns are geometry and did not notice M6b; the two value columns
+are a third of a value lower under the darkened masstones than they were before it,
+and the crossing still takes two thirds of the spread out.
 
 Do not read the last column as *lower is better without limit*. A mass with no
 variation left in it is a flat fill, which is the loudest tell there is; `0.011` is
