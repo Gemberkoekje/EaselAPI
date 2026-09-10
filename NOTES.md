@@ -620,8 +620,12 @@ Items **00a-00e** below come out of it and go before everything else. The 0a-0f 
 under them is REHEARSAL5's and is kept because items 0b-0e are still the standing rules;
 **0f is done.**
 
-**00a. The signature exemption is a promise the engine does not keep, and it costs
-paintings marks. Fix it in the engine.** `PAINTER.md:1265` says up to five marks noted
+**00a. ~~The signature exemption is a promise the engine does not keep.~~ Done.**
+`History.stroke_count` now skips up to `History.SIGNATURE_ALLOWANCE` (five) records noted
+`signature` and charges everything past it, so the cap cannot be spent on painting;
+`tests/test_engine.py::test_signature_marks_are_free_up_to_the_allowance` holds it, and
+`rehearsal4/verify_done.py`'s own allowance is now a cross-check rather than the only
+place the exemption exists. The original finding, kept because it is the reason: `PAINTER.md:1265` says up to five marks noted
 `signature` "do not come out of your stroke budget". `History.stroke_count`
 (`src/easel/history.py:87`) counts every record whose kind is not `dry`/`look`/`pencil`/
 `erase`, so it charges them. The exemption exists only in `rehearsal4/verify_done.py`,

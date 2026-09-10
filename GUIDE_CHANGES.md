@@ -13,6 +13,19 @@ afterwards rather than taken from a painter's word.
 until a fresh session paints against it. Make them, then run the definition of done
 again.
 
+> **Status: items 1–12 are applied**, together with the engine fix in item 6. The guide
+> grew by 219 lines and gave 16 back; `check_guide_blocks.py` runs 43 blocks with none
+> failing; `pytest -q` is 280 passed, 3 skipped, with one test added for the signature
+> allowance; and the reference grep is clean on both photographs — **including three
+> leaks these very edits introduced and had to have taken back out.** Two of the new
+> examples named the sitter photograph (*a portrait in a crowded room*, *the face*, *a
+> near-black eye*) and a third used *horizon* for the structure the whole investigation
+> is about. That is the leak rule catching its own author, four runs after it was
+> written, and it is the best argument in the repo for keeping the grep a precondition
+> rather than a habit.
+>
+> **Items 13–17 are not applied.** They change the brief, and that is the owner's call.
+
 ## Ground rules for this work
 
 - **`python rehearsal/check_guide_blocks.py` must stay green.** Every python block in
