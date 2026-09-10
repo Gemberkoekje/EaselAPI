@@ -838,6 +838,8 @@ order, before REHEARSAL4. Until it lands, the guide carries one short paragraph
 saying the floor is an engine limit, `CALIBRATION.md` carries the numbers, and
 `compare()` keeps its `~` split.
 
+## Fixed since the critique
+
 ### 34. Sweeping a shaped mass is a recipe the painter has to retype
 
 **Found by**: the guide critique.
@@ -846,3 +848,37 @@ The guide argues, correctly, that a mass with a silhouette is laid as passes swe
 along its edge and stepped inward, not as a box and not as columns. It then handed
 the painter fifteen lines of code to do it. That is an API call — phase M6c in
 the brief has the shape — and the recipe sits in `CALIBRATION.md` until it is one.
+
+**Fix.** `s.sweep(edge, brush, color, into=, depth=, size=, passes=, cross=,
+closed=, density=)` in `easel/session.py`. The first pass runs along the boundary
+and each one after it is the same curve offset one part-brush further in — the same
+spacing rule `block_in` uses — with successive passes alternating direction, and
+`cross=` lays a second set leaning across the first. It emits ordinary strokes, so
+the log, `undo` and `replay` needed no changes at all.
+
+Two things the recipe left to the painter, and this had to decide:
+
+- **Which side of the edge the mass is on.** An open boundary has two sides and
+  guessing is the loudest possible failure — the whole shape lands inside out — so
+  `into=` is required for one: a compass word or an angle steps every pass the same
+  way, which is what the recipe did, and an `(x, y)` point inside the mass steps
+  each point along the boundary's own normal instead, which is what a curved edge
+  needs. A closed boundary has an inside, so `closed=True` needs neither.
+- **What happens past the middle.** Offsetting a closed curve inward eventually
+  folds it through itself, and every pass after that crosses itself. Points that
+  travel backwards along the boundary relative to the last one kept are dropped, and
+  a pass with nothing left is not laid: asking for more depth than the mass has
+  costs strokes that never happen rather than a scribble in the middle of a good
+  mass.
+
+**Measured** (`scripts/probe_sweep.py`, one boundary, three ways): a `block_in` over
+the bounding box puts 19.4% of its paint outside the shape and scores 36.3% on the
+axis-alignment metric; the sweep, for the same five strokes, puts 6.4% outside and
+scores 20.8%. Crossing at 26° takes the value spread inside the mass from `0.029`
+to `0.011` for twelve more strokes, without moving the silhouette. The numbers and
+the sheet are in `CALIBRATION.md` under *`sweep`*; the recipe is out of it, and the
+guide's *A region is a rectangle* paragraph is one call.
+
+**Additive, as the brief asked.** No golden image moved; one was added
+(`tests/golden/sweep.png`, the geometry rather than the marks). Ten tests in
+`tests/test_precision.py`.

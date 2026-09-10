@@ -169,35 +169,70 @@ Running the passes along the form is the whole win: fourteen points squarer to
 less, and twenty fewer strokes. Pinning the tip on top of that matters on short
 marks and at the ends of long ones, not along their length.
 
-### Sweeping a shaped mass
+---
 
-`block_in` fills a rectangle. A mass with a silhouette is laid by sweeping passes
-along its boundary and stepping into the mass one part-brush at a time — passes
-that follow the edge, not columns that hang off it. This is a recipe rather than
-an API call for now (phase M6c in `painting-api-brief.md` makes it `s.sweep()`);
-the knots below are an arbitrary boundary, not a subject.
+## `sweep`
 
-```python
-def edge(knots):                       # a boundary given as (x, y) corners
-    def at(x):
-        for (x0, y0), (x1, y1) in zip(knots, knots[1:]):
-            if x0 <= x <= x1:
-                return y0 + (y1 - y0) * (x - x0) / (x1 - x0)
-        return knots[-1][1]
-    return at
+`block_in` fills a rectangle; `sweep` lays a mass that has a silhouette, as passes
+along its boundary stepped into the mass one part-brush at a time. Everything below
+is `scripts/probe_sweep.py` on one arbitrary five-point boundary — not a subject —
+at `depth=0.34` with a bristle brush at `0.13`, on a 520×400 canvas.
 
-top = edge([(0.33, 1.02), (0.46, 0.66), (0.58, 0.43), (0.74, 0.50), (1.02, 0.68)])
-for k in range(9):                                  # passes, not columns
-    off = 0.035 * k                                 # step down into the mass
-    xs = [0.345 + 0.65 * i / 8 for i in range(9)]
-    band = [(x, min(top(x) + off, 1.02)) for x in xs]
-    s.stroke(band if k % 2 == 0 else band[::-1], "bristle", "dark",
-             size=0.13, load=0.9, pressure="even")
-```
+| The same mass | Strokes | Axis-aligned edges | Paint outside the shape | Value spread inside it |
+|---|---|---|---|---|
+| `block_in` over the bounding box | 5 | 36.3% | 19.4% | 0.043 |
+| `sweep` along the boundary | 5 | 20.8% | 6.4% | 0.029 |
+| `sweep`, crossed at 26° | 17 | 22.0% | 6.5% | 0.011 |
 
-One sweep leaves the boundary stringy, because a bristle brush covers about
-three-quarters of its width. Cross it with a second set of passes at an angle to
-the first and the mass closes up.
+Read it as three separate claims:
+
+- **The shape.** A box drawn round this boundary puts a fifth of its paint on the
+  wrong side of it, and comes out sixteen points squarer by the axis-alignment
+  metric (the one from the M6 pass, above). Both are permanent: no later work takes
+  a box's corners out again.
+- **The cost.** Nothing, for the shape. Both versions are five strokes, because a
+  pass is a pass whether it runs along an edge or across a rectangle.
+- **The crossing.** One sweep leaves the mass stringy — a bristle brush covers
+  about three-quarters of its width, and the gaps show as a value spread of `0.029`
+  a part-brush inside the boundary. Crossing at 26° takes that to `0.011` and lays
+  the mass about a hundredth darker for twelve more strokes. It does not move the
+  silhouette: the paint outside the shape is unchanged.
+
+Do not read the last column as *lower is better without limit*. A mass with no
+variation left in it is a flat fill, which is the loudest tell there is; `0.011` is
+still visibly brushwork, and the sheet the probe writes is there to check that by
+eye.
+
+### Spacing, depth and how many passes
+
+- Passes step **one part-brush** apart: `size × (1 − 0.45 × density)`, the same rule
+  `block_in` spaces its passes by. At `density=1.0` that is `0.55` of the brush
+  width. The recipe this call replaced stepped `0.27` of a brush width, which is
+  `density≈1.6`.
+- `depth` and the step are in **normalised canvas units**, so on a canvas that is
+  not square a sweep stepped `"down"` steps in fractions of the *height* while the
+  brush is measured against the *long side*. On 520×400 a `0.0715` step down is 29
+  px against a 68 px brush — tighter overlap than the same sweep run left to right.
+  `block_in` has always mixed the two units the same way.
+- Left alone the brush decides how many passes a depth takes: `round(depth / step)`.
+  `passes=` says instead, and pins the spacing at `depth / passes`.
+- A crossed sweep is roughly three times the strokes of a plain one at 26°, and more
+  as the angle steepens: the second set is spaced `step / cos(angle)` apart but has
+  further to run.
+
+### Sweeping deeper than the mass
+
+Offsetting a closed boundary inward eventually runs it past its own centre. `sweep`
+drops the folded part and stops when nothing is left, so asking for too much depth
+costs strokes that are never laid rather than a scribble in the middle. A boundary
+of radius `0.20`, bristle at `0.13`:
+
+| Depth asked for | Passes it works out to | Passes actually laid |
+|---|---|---|
+| 0.10 | 1 | 1 |
+| 0.20 | 3 | 3 |
+| 0.40 | 6 | 4 |
+| 0.90 | 13 | 4 |
 
 ---
 

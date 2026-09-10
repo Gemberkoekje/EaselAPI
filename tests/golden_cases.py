@@ -145,6 +145,49 @@ def build_drawing() -> np.ndarray:
     return s.canvas.to_srgb8()
 
 
+def draw_sweep(s: Session) -> None:
+    """Every way a swept mass is laid: a fixed direction, a shape's own normals, a cross.
+
+    ``sweep`` emits ordinary strokes, so the marks themselves are covered by
+    ``paint_marks`` -- what this case guards is the geometry that places them. An
+    open edge stepped along one direction, a closed edge whose inward normal is its
+    own and whose passes have to stop before they fold through the middle, a curved
+    edge with the mass on the inside, and a second set of passes crossing the first.
+    Each of those is a way the boundary can silently move.
+    """
+    p = s.palette
+    p["dark"] = p.mix("ultramarine", "burnt_umber", 0.45)
+    p["light"] = p.tint("yellow_ochre", 0.6)
+
+    # A silhouette with a peak in it: swept along the edge, stepped into the mass,
+    # and crossed so the boundary closes up. It runs off both sides, as a mass that
+    # meets the frame should.
+    ridge = [(-0.03, 0.70), (0.25, 0.55), (0.52, 0.68), (0.78, 0.52), (1.03, 0.64)]
+    s.sweep(ridge, "bristle", "dark", into="down", depth=0.36, size=0.12, cross=26)
+
+    # A closed boundary: there is no side to name, the inward normal is the shape's
+    # own, and this one is asked for half a canvas of depth on a shape a fifth of
+    # that -- the passes have to stop rather than scribble through the middle.
+    theta = np.linspace(0.0, 2.0 * np.pi, 11, endpoint=False)
+    s.sweep([(0.25 + 0.17 * np.cos(t), 0.26 + 0.20 * np.sin(t)) for t in theta],
+            "flat", "light", closed=True, depth=0.5, size=0.07)
+
+    # A curved open edge with the mass on the inside, so the passes follow the curve
+    # instead of shearing off it, and a pass count said rather than derived.
+    arc = [(0.74 + 0.17 * np.cos(t), 0.27 + 0.17 * np.sin(t))
+           for t in np.linspace(-2.2, 2.2, 7)]
+    s.sweep(arc, "round_soft", "cadmium_red", into=(0.74, 0.27), depth=0.12,
+            size=0.05, passes=3)
+
+
+def build_sweep() -> np.ndarray:
+    """The swept masses, on linen. Returns 8-bit sRGB."""
+    w, h = GOLDEN_SIZE
+    s = Session(w, h, texture="linen", ground="toned_grey", seed=3, timelapse=False)
+    draw_sweep(s)
+    return s.canvas.to_srgb8()
+
+
 def build_sampler() -> np.ndarray:
     """Every painted cell of ``samples/brushes.png``, stacked, as one array.
 
@@ -179,6 +222,7 @@ def _load_sampler_module():
 #: name -> builder. Every entry gets a stored hash.
 CASES: dict[str, object] = {f"marks_{t}": (lambda t=t: build_marks(t)) for t in TEXTURES}
 CASES["drawing"] = build_drawing
+CASES["sweep"] = build_sweep
 CASES["sampler"] = build_sampler
 
 #: Cases stored as a hash only. The sampler is 190x19440 as one strip and a

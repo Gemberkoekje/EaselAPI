@@ -50,7 +50,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M5 Rehearsal | Done, twice. First run (author): copy fell short, ten guide gaps and four engine defects fixed — `REHEARSAL.md`. Second run (fresh session, revised guide): copy recognisable at 253 strokes, unprompted painting at 133; nine more guide gaps, `span()` and enlarged crops — `REHEARSAL2.md`. |
 | M6 Precision | **Tools done, protocol run, not passed.** Golden images first (they found REVIEW 19 on their first run). Then the `sketch` graphite channel, landmarks, matching crops with `grid="fine"`, `preview()`, `rehearse()`, `compare()`, `prepare()`, the `liner` preset, six CLI verbs, the guide's drawing step. `REHEARSAL3.md` ran the protocol three times over: the tools **do** reach below a cell — the sitter has an eye with a lid, an iris and a catchlight where REHEARSAL2 had a smear — and the copy stage still fails on value. Findings 20–22 and eight guide edits came out of it. |
 | M6b Darks | **New**, decided by the human after the guide critique. The `0.23` value floor is the pigment swatches, not the mixing model (`REVIEW.md` 33); darken the masstones so ultramarine + umber reaches the model's own floor. Moves every golden, and that is accepted. Before REHEARSAL4. |
-| M6c Sweep | **New.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, replacing the fifteen-line recipe in `CALIBRATION.md` (`REVIEW.md` 34). Additive; one golden added. Before REHEARSAL4. |
+| M6c Sweep | **Done.** `s.sweep(edge, ...)`: passes swept along a hand-given boundary and stepped inward, `cross=` for the second set, `closed=True` for a boundary that comes back on itself (`REVIEW.md` 34). Ordinary strokes, so undo and replay came free. Additive: no golden moved, one added. The recipe is out of `CALIBRATION.md` and the guide's *A region is a rectangle* paragraph is one call. |
 | M7 Marks at detail scale | Specified; not started. Its gate — the golden images — now exists. |
 | M8 Non-rectangular masses | **New**, added to the brief after the M6 pass. Every named place is an axis-aligned rectangle, so a band is the only mass `block_in` fills honestly — and six fresh sessions in eight, given only the engine's mechanical limits, chose band-shaped pictures and said so. `ref_outline(n)` already returns a polygon. Before the server, because it changes the API. |
 | M9 MCP server | Not started, and correctly last. |
@@ -90,16 +90,22 @@ src/easel/
 
 tests/test_engine.py      95 tests: bounds, determinism, undo, replay, colour,
                           paint behaviour, composition, persistence, error messages.
-tests/test_precision.py   48 tests for M6: the graphite channel and what buries it,
+tests/test_precision.py   60 tests for M6: the graphite channel and what buries it,
                           landmarks, matching crops, and mostly what the planning
                           tools must *not* do -- preview paints nothing, rehearse
                           commits nothing, neither disturbs the painting after it.
+                          The last ten are M6c's: a swept mass keeps its silhouette,
+                          the crossing closes it up, and a sweep deeper than its own
+                          mass stops rather than scribbling.
 tests/test_golden.py      visual regression. `tests/golden_cases.py` holds the fixed
                           scripts; `tests/golden/*.png` are the stored renders, and
                           they are there to be *looked at* when a case fails.
 scripts/make_golden.py    regenerates them. Only after looking.
 scripts/make_brush_sampler.py   regenerates samples/brushes.png — the primary
                           test artefact. Look at it after every engine change.
+scripts/probe_sweep.py    what `sweep()` costs and what it buys, on one boundary
+                          three ways. Writes out/sweep_sheet.png; the numbers behind
+                          CALIBRATION's *`sweep`* section.
 examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
                           step with the printed ones -- two were rewritten in M5,
                           and M6 added the seventh (draw, rehearse, paint).
@@ -129,7 +135,7 @@ PAINTER.md                the guide a fresh agent is given. The deliverable. No
                           before committing a change to it.
 CALIBRATION.md            the engine's measured numbers (graphite survival, wetness
                           decay, the value floor, load windows, block_in overhang,
-                          the axis-alignment table, the shaped-mass sweep recipe).
+                          the axis-alignment table, what a sweep costs and buys).
                           Split out of the guide after the critique that preceded
                           REHEARSAL4, so the guide states rules and this states
                           measurements. Update it when the engine changes.
@@ -322,6 +328,18 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
     screen. If you add a new kind of mark, grep for `push_snapshot` in
     `session.py` and add the call before you add the record, not after.
 
+19. **Normalised space is not isotropic, and `size` is measured against the long
+    side.** A coordinate is a fraction of the *width* in x and of the *height* in y,
+    so on a canvas that is not square a step of `0.07` down is a different number of
+    pixels from `0.07` across — while a brush at `size=0.07` is `0.07` of the long
+    side whichever way it travels. `block_in` has always mixed the two (`band` comes
+    from `b.size` and is compared against `r.height`), and M6c's `sweep` follows it
+    on purpose rather than introducing a second convention in one call: its passes
+    step one part-brush *in normalised units*, so a sweep run down a 4:3 canvas
+    overlaps more than the same sweep run across it. The numbers are in
+    `CALIBRATION.md` under *`sweep`*. If this is ever made pixel-true, make both
+    pixel-true in the same change, and expect every golden image to move.
+
 ## What to do next, in order
 
 1. **Finish M6: one more run, one narrow question.** The protocol has been run —
@@ -391,13 +409,15 @@ REVIEW.md                 four rounds. M1/M2: ten defects fixed. M4: four more
      bottom, and the *Reachable* paragraph in the brief, `compare()`'s `~` split and
      step 3 of the guide all get shorter or go. Until it is decided the guide says,
      in one paragraph, that the floor is an engine limit and not a lesson.
-   - **Sweeping a shaped mass should be an API call, not a recipe.** The guide
-     argues for laying a silhouetted mass as passes swept along its edge, and the
-     painter is then expected to retype fifteen lines to do it. `CALIBRATION.md`
-     holds the recipe for now. The call is M8's polygon `block_in`, or a smaller
-     `sweep(edge_points, ...)` that steps a stroke inward from a hand-given
-     boundary; the second is not the traced-copy question, because the boundary is
-     the painter's own, and could land before M8 proper. **That is M6c.**
+   - **Sweeping a shaped mass should be an API call, not a recipe. Done (M6c).**
+     `s.sweep(edge, ...)` steps passes inward from a hand-given boundary; the
+     recipe is out of `CALIBRATION.md` and the numbers behind it are in its place.
+     It is not the traced-copy question, because the boundary is the painter's own
+     -- but the `sketch()` rule applies to it, and the guide says so: a run that
+     hands `ref_outline(n)` straight to `sweep()` is an assisted mode. It does not
+     make M8 unnecessary: `block_in` still fills a rectangle and every *named* place
+     is still one, so a painter who has not read this far still reaches for a box.
+     Sweeping only helps the painter who already has a boundary in hand.
 5. **M7 — Marks at detail scale.** Vary the bristle comb per stroke and scale its
    streaks with the
    brush, decide the pressure question (`REVIEW.md`, *Open, with evidence*; the
