@@ -488,6 +488,15 @@ class Polygon:
         by half a brush. A shape shrunk past its own width collapses to a sliver at
         the centre rather than raising -- a painter mid-painting should not get an
         exception for asking for too much margin.
+
+        Every *edge* moves in by ``amount``; a *tip* moves further, because that is
+        where a brush of that reach has to stop. On a lobed or spiky outline the
+        lobes therefore retreat by up to about three times what was asked, and the
+        bounding box shrinks with them: ``inset(0.045)`` on a five-pointed star
+        takes 0.24 off its width, not 0.09. That is the offset doing its job -- it
+        is what keeps a brush half its width inside the silhouette -- and it is not
+        the same move as :meth:`scaled`, which is the one to reach for when what is
+        wanted is a smaller mass rather than a margin.
         """
         a = float(amount)
         if abs(a) < 1e-9:
@@ -504,17 +513,28 @@ class Polygon:
             if best is None or (made.area < best.area) == smaller:
                 best = made
         # A mitre join on a spiky or very thin outline can fold the shape through
-        # itself; a fold shows up as a shape that lost most of its area or whose
-        # middle is no longer inside the original. This used to be checked only
-        # when shrinking (`not smaller` short-circuited the check away entirely
-        # when growing), but growing a spiky concave outline outward can fold it
-        # just as easily -- the reflex vertices are exactly where a mitre offset
-        # overshoots -- so it needs the same sanity check, mirrored: the
-        # *original* centre should still land inside the grown shape, and a
-        # proper outward offset should not have lost area.
+        # itself; a fold shows up as a shape that lost most of its area, or as
+        # points that came out the wrong side of the outline they were offset
+        # from. Growing needs the same check mirrored, because growing a spiky
+        # concave outline can fold it just as easily -- the reflex vertices are
+        # exactly where a mitre offset overshoots.
+        #
+        # The test is containment of the *points*, not of the centre. A concave
+        # shape need not contain its own centroid -- a C or a horseshoe does not,
+        # and neither does a deeply lobed blob -- so testing the centre threw the
+        # offset away on exactly the shapes an offset is hardest on, and fell back
+        # to a scale about a centroid that is nowhere near the middle of the mass.
+        # That returned an inset shape with half its points *outside* the shape it
+        # had been asked to shrink.
         if best is not None:
-            sane = (best.area >= 0.05 * self.area and self.contains(*best.center)) if smaller \
-                else (best.area >= 0.95 * self.area and best.contains(*self.center))
+            mine = np.asarray(self.points, dtype=np.float64)
+            theirs = np.asarray(best.points, dtype=np.float64)
+            if smaller:
+                sane = (best.area >= 0.05 * self.area
+                        and bool(self.inside(theirs[:, 0], theirs[:, 1]).all()))
+            else:
+                sane = (best.area >= 0.95 * self.area
+                        and bool(best.inside(mine[:, 0], mine[:, 1]).all()))
             if sane:
                 return best
         # The offset ate the shape (a thin or spiky outline will do that). Fall back
@@ -592,8 +612,9 @@ def ellipse(place, rx: float | None = None, ry: float | None = None,
 
     Args:
         place: a point ``(x, y)``, or any region -- the ellipse is inscribed in it.
-        rx, ry: radii. Default to half the region's width and height; ``ry``
-            defaults to ``rx``, which makes a circle on a square canvas.
+        rx, ry: radii. One on its own sets both, so a single radius is a circle on
+            a square canvas wherever the shape is placed; give neither and they
+            default to half the place's width and height.
         rotate: degrees, clockwise.
         steps: how many points the outline gets.
         name: shows up in the log.
@@ -610,9 +631,11 @@ def blob(place, radius: float | None = None, ry: float | None = None,
     """An irregular closed shape -- a mass with a silhouette nobody drew by hand.
 
     The same arguments as :func:`ellipse` plus ``wobble`` (how far the outline
-    wanders from the ellipse, as a fraction of its radius) and ``seed``. The seed is
-    the shape's own, not the session's: the same seed is the same silhouette, so a
-    blob you liked comes back.
+    wanders from the ellipse, as a fraction of its radius) and ``seed``. One radius
+    is round and two are oval, the same on a point as inside a region; leave both
+    out and the blob fills the place it was given. The seed is the shape's own, not
+    the session's: the same seed is the same silhouette, so a blob you liked comes
+    back.
 
     Reach for this when a mass wants a shape and the shape is nobody's business but
     the painting's -- and then *look* at it, with ``s.preview(shape)``, before
@@ -797,16 +820,24 @@ def _try_polygon(pts: np.ndarray, name: str, traced: bool) -> Polygon | None:
 
 
 def _centre_and_radii(place, rx, ry) -> tuple[float, float, float, float]:
-    """A centre and two radii from either a point or a region."""
+    """A centre and two radii from either a point or a region.
+
+    One radius is a circle and two are an ellipse, wherever the shape is put; give
+    neither and it takes the place's own half-extents. The region branch used to let
+    ``ry`` fall back to the region's half-height instead of to ``rx``, so
+    ``blob(cell("D5"), 0.26)`` came back a sausage nearly five times wider than it
+    was tall while the same radius on a point gave a circle.
+    """
     if _looks_like_point(place):
         cx, cy = (float(place[0]), float(place[1]))
-        dx = 0.15 if rx is None else abs(float(rx))
-        dy = dx if ry is None else abs(float(ry))
+        dx = dy = 0.15
     else:
         r = as_region(place)
         cx, cy = r.center
-        dx = r.width * 0.5 if rx is None else abs(float(rx))
-        dy = r.height * 0.5 if ry is None else abs(float(ry))
+        dx, dy = r.width * 0.5, r.height * 0.5
+    if rx is not None or ry is not None:
+        dx = abs(float(rx if rx is not None else ry))
+        dy = abs(float(ry)) if ry is not None else dx
     return cx, cy, max(dx, 1e-4), max(dy, 1e-4)
 
 

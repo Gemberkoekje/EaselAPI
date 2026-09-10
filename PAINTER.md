@@ -103,10 +103,35 @@ Three things follow from it:
 - **Let the near mass overlap.** Run it a little into the far one. A silhouette
   that stops exactly on a boundary was measured; one that overlaps was painted.
 - **A mistake in the background is cheap while the foreground is not there yet.**
-  It stops being cheap the moment something is standing in front of it.
+  It stops being cheap the moment something is standing in front of it. Repainting a
+  mass buries everything standing on it, and the correction you have just decided to
+  make is exactly when you will forget that — so this rule is repeated where those
+  decisions actually get made, under **Put a number on it**.
 
 The exception is the ground itself, which is behind everything and goes on first by
 definition. Everything after that is in depth order.
+
+**Anything with an inside has its own depth order, and it is the one most often got
+wrong.** A hollow thing is not one mass. It is three, at three depths, and all three
+belong to the same object: **the far edge, then what is inside, then the near edge.**
+
+```python
+far  = ellipse(span("D2", "F3"))          # what stands behind the inside
+near = polygon([(0.36, 0.31), (0.64, 0.31), (0.62, 0.72), (0.38, 0.72)])
+
+s.block_in(far, "flat", "pale", size=0.04)                 # behind the inside
+s.block_in(far.inset(0.015), "flat", "dark", size=0.04)    # the inside
+s.block_in(near, "flat", "light", size=0.06)               # in front of the inside
+```
+
+Painted in that order, the inside's near edge is a real edge — the place where the
+near mass's paint stops and the dark behind it still shows. Painted the other way
+round there is nothing for the inside to stop against, so it runs out over the near
+edge and no later mark puts it back: you would be cutting the near mass in around a
+dark that is already outside it, which is painting up to a line.
+
+Ask it of anything you can see into, before the first stroke: **what is behind the
+inside, what is the inside, and what is in front of it?**
 
 ### 3. Check your values before you check anything else
 
@@ -140,27 +165,44 @@ other, they will not read as separate masses** no matter how different their
 colours are.
 
 **The box has no black, and it does not need one.** `mix("ultramarine",
-"burnt_umber", 0.5)` reads about `0.14` in the greyscale view — a near-black with a
-colour in it, which is what a dark in a painting should be. Vary the ratio and it
-stays that dark while swinging from cool to warm: more blue for a shadow in
-daylight, more umber for one by a lamp. That mixture, not any single pigment, is
-the bottom of your range.
+"burnt_umber", 0.5)` is a near-black with a colour in it, which is what a dark in a
+painting should be, and varying the ratio holds that value while swinging cool to
+warm — more blue for a shadow in daylight, more umber for one by a lamp. That mixture,
+not any single pigment, is the bottom of your range. **Piling on passes or glazes will
+not go lower**: if a mass is not dark enough, mix it darker rather than painting it
+again.
 
-The floor is around `0.13`, and it is the **box's**. Mixing never takes a channel
-below the darker of its two ingredients, so the darkest thing you can reach is set by
-the swatches and nothing else — and piling on passes or glazes will not go lower. If a
-mass is not dark enough, mix it darker rather than painting it again.
-
-That is a fact about the paint you have, not about the engine. A colour you supply
-yourself lands exactly as written, black included. The box has no black because mixed
-darks are alive and a tube black is dead, which is a reason to keep mixing, not a wall
-you are being held behind.
+**The floor is a lower wall than it looks**, because a cell only has to land within
+`0.10`. A reference darker than the darkest mixture is usually still reachable — you
+have to *cover* the cell, at `density=1.0` and full load, with nothing lighter showing
+through. Cover properly before concluding you need a colour of your own; you can
+supply one and it lands exactly as written, black included (**Colour**, below, has the
+syntax), but mixed darks are alive and a tube black is dead. `CALIBRATION.md` has the
+arithmetic and how far it stretches.
 
 ### 4. Refine the mid-tones
 
 Now the middle values, with a medium brush (`size≈0.08–0.12`). Work across the
 whole canvas rather than finishing one corner — a painting should come up all at
 once, like a photograph developing. Look every ten strokes or so.
+
+**There is no gradient tool, and you should stop looking for one.** Nothing here
+grades a mass smoothly from one value to another: wet-into-wet blending dies after
+about a dozen strokes as the paint sets, `round_soft` airbrushes above `size≈0.05`,
+and `smudge` only moves paint that is already down. What a painter does instead is
+paint the gradient as **steps and then lose the joins**:
+
+```python
+steps = [(cell("D4"), "dark"), (cell("D5"), "shadow"), (cell("D6"), "light")]
+for place, value in steps:
+    s.block_in(place, "flat", value, pressure="even", size=0.03)
+s.smudge([(0.42, 0.50), (0.46, 0.62)], size=0.04)   # walk each join once, while wet
+```
+
+Three or four steps read as a gradient once the joins are softened; two read as two
+slabs. Do it while the paint is wet — that is what step 5 and the **Wet paint**
+section are for — and if you leave a plane as one flat value with marks laid on top,
+it will read as a mask rather than as a form.
 
 ### 5. Edges: lost and found
 
@@ -176,6 +218,10 @@ s.smudge([(0.3, 0.4), (0.45, 0.44)], size=0.06)     # soften an edge
 s.stroke([(0.6, 0.3), (0.62, 0.5)], "round_hard", "dark", size=0.02)  # sharpen one
 ```
 
+**`smudge` is far stronger than "move paint around" suggests**, and it walks a
+light/dark boundary into the dark side rather than blurring it evenly. Keep it small
+and rehearse anything bigger; `CALIBRATION.md` has the window.
+
 An image where every edge is equally sharp looks like clip-art. That is the single
 most common way this goes wrong.
 
@@ -188,6 +234,13 @@ the others count for less.
 ```python
 s.dab(0.62, 0.35, "round_hard", "titanium_white", size=0.015)
 ```
+
+**Anything the size of a cell or smaller is three marks at most — the dark, the light,
+and the edge between them** — laid dark first, and looked at through a `region=` crop
+before the light goes on. This is the whole method at that scale — a knuckle, a hinge,
+a fold, a catchlight: not more marks, smaller ones, in that order. `size` is the *feature's*
+fraction of the canvas, not the mass's; see **The brushes**. There is more on painting
+at that scale under **Pressure**.
 
 ---
 
@@ -369,6 +422,17 @@ Run it **twice**, not continuously:
   `0.10`, the structure is right; if a mass is out, fix the *mass* — a bigger brush,
   not a smaller one.
 
+**Before you repaint a mass, look at what is standing on it.** This is where step 2's
+rule actually bites, and a number you have just measured is the most convincing
+possible reason to ignore it: a mass repainted at block-in size buries every fine mark
+lying on it, and those are the expensive ones, while what you are fixing is a tenth of
+a value. In order of preference — repaint it *before* the near things go on (free, and
+what the two-`compare()` rhythm is for); repair around them, shaping the correction to
+what is still bare; or repaint and restore them on purpose, having counted the cost.
+What you must not do is block in the whole mass again and hope. Look at the picture
+afterwards, not just the number: `compare()` will happily report the cell improved
+while the mark you buried was the reason the painting read.
+
 The mean colour is in the table too, coarse on purpose: it is there to catch "that
 whole passage is too warm", not to be sampled and matched. **Matching cell by cell
 is tracing**, and it produces a painting nobody would look at twice. If you find
@@ -388,6 +452,19 @@ Past that point, more measuring makes the painting worse, not better: it turns
 marks into corrections and corrections into mud. The grid gets the masses into the
 right cells and the landmarks get the features into the right places. Neither will
 paint a feature for you.
+
+**And precision is paid for somewhere else in the picture.** Landmarks buy accuracy
+exactly where you point them, out of the budget for everything you did not. The
+failure: the part you measured is built, and the mass it belongs to has dissolved into
+the background — silhouette, support and surroundings never got their own passes. A
+small mass sitting *on* a bigger one instead of *in* it is the checklist's question at
+feature scale; **it happens at picture scale too, and there it is far harder to see,
+because everything you have been looking at looks right.**
+
+So **spend the last third of your strokes on what is around the thing you measured.**
+A well-built feature in an unfinished picture reads as a detail come loose; a rough one
+in a picture that holds together reads as the thing itself. A viewer recognises a
+subject from its mass and its placement long before they can see a feature at all.
 
 ### Letting the reference be cut up for you (optional)
 
@@ -479,9 +556,24 @@ s.block_in(shape, "bristle", "dark", direction="axis", density=0.9, size=0.12)
 ```
 
 A shaped block-in costs about what its box would: the passes are counted across the
-mass, not over its area. They stop at the boundary rather than a third of a brush
-past it, and a mass with a bite out of it keeps the bite — one pass across a concave
-shape comes back as the two pieces that are really inside it.
+mass, not over its area. A mass with a bite out of it keeps the bite — one pass across
+a concave shape comes back as the two pieces that are really inside it.
+
+**The paint still lands outside the shape, and it is the most expensive first mistake
+with shapes.** A pass stops when its *centre* reaches the boundary, so the brush hangs
+over — and with a brush that is a large fraction of the mass, the silhouette you built
+simply disappears, taking its neighbours with it. **Keep the brush under about a fifth
+of the mass's width, or `inset()` the shape by half the brush size.**
+
+```python
+mass = blob(span("D4", "F6"), wobble=0.3, seed=2)
+s.block_in(mass.inset(0.045), "flat", "dark", size=0.09)   # inset by half the brush
+s.block_in(mass, "flat", "dark", size=0.06)                # or keep the brush small
+```
+
+Worth a `preview()` every time. And **do not cross a small shaped mass** — the
+crossing below is for masses several brushes across; on a small one it serrates its own
+boundary.
 
 **When what you have is one boundary** — the edge that matters, read off the grid —
 give it to `sweep` and let the passes follow it:
@@ -504,10 +596,9 @@ mass into strands and print the canvas's axis over the whole thing.
   boundary: `s.sweep(shape, "bristle", "dark", depth=0.2)` sweeps round its own
   outline.
 - `cross=` is the second set of passes, leaning that many degrees across the first.
-  Take it: one sweep on its own comes out stringy, because a bristle brush covers
-  about three-quarters of its width, and the crossing is what closes the mass up.
-  Twenty to thirty degrees is usually enough. A shaped `block_in` has the same
-  problem and the same answer — `direction=("axis", 90)`.
+  **Take it** — one sweep on its own comes out stringy, and the crossing is what
+  closes the mass up. Twenty to thirty degrees is usually enough. A shaped `block_in`
+  has the same problem and the same answer, `direction=("axis", 90)`.
 - `depth=` is how far into the mass to go, and the brush decides how many passes
   that takes unless you say `passes=`.
 
@@ -516,6 +607,24 @@ covered; sweep when one edge is the thing you care about, or when the passes
 following the form is the point. And if the mass is close enough to a box that
 either feels like overkill, `block_in` at the angle the mass runs at is the cheaper
 version of the same idea.
+
+**The mass that needed no drawing is the one that will give you away.** You will reach
+for a shape on your subject, because its silhouette was a problem you had to solve,
+and then lay everything behind it in boxes because nothing back there asked anything of
+you. That is backwards. A viewer expects construction on the subject and forgives it;
+a background of square patches, every edge parallel to the canvas, reads instantly as
+made by a machine. **Give the masses that needed no drawing the same treatment as the
+ones that did** — see *The angle of the mark*, which is the same rule and the loudest
+tell in this engine.
+
+**And the marks inside it are not parallel lines.** This is the half that gets missed,
+and missing it is worse than leaving the background alone: told to work a quiet mass, a
+painter reaches for the texture of what it is — grain, weave, brick, ripple — and lays
+it as a row of long strokes all running the same way, which is a stack of bands with a
+different name. A measured run came out *squarer* than the one that ignored the
+background entirely. If a surface has a grain, the grain **varies**: it breaks, it
+crosses, it disappears for a whole passage. Three marks that describe it beat thirty
+that repeat it.
 
 **The shape is a place, not a line.** Nothing draws that outline, and you must not
 either: the silhouette is where this mass's paint stops and the mass behind it still
@@ -583,6 +692,24 @@ s.stroke([...], "bristle", "shadow")     # refer to it by name later
 | `value_of(c)` | How light it reads, `0.0`–`1.0`. Useful for planning values. |
 | `hex(c)` | The sRGB hex, for your own notes. |
 
+**Supplying a colour of your own.** A slot takes a hex string or a linear RGB triple,
+and what you supply lands exactly as written — including a black, and including
+anything below the darkest mixture the box can reach:
+
+```python
+s.palette["ink"] = "#0d0c10"           # hex string
+s.palette["ink"] = (0.05, 0.05, 0.07)  # linear RGB, 0.0-1.0
+```
+
+**A list of 0–255 integers is not one of the forms**, and it does not raise — it
+clamps, so `[13, 12, 16]` gives you white. If you supply a colour, print
+`value_of()` on it before you paint a field of it.
+
+Reach for this when a reference genuinely goes below the palette's floor (step 3),
+and not otherwise: the box has no black because mixed darks are alive, and a slot
+full of tube black is the fastest way to a dead painting. Most dark references do not
+need it — see the floor arithmetic in step 3.
+
 Three things about the mixing that will surprise you:
 
 - **Blue and yellow make green**, red and blue make violet, and complements make
@@ -647,17 +774,22 @@ quiet masses.
 | `knife` | Thick slabs with a hard edge. Drags what it crosses. Use rarely, for punctuation, and keep it close in value to what it lands on or it reads as something stuck to the surface. |
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
 
-**A `bristle` stroke is never solid.** It lays a comb of parallel streaks, which is
-what makes it alive on a mark whose direction you mean. A bristle has a width of its
-own, about a two-hundredth of the canvas, so a bigger brush prints *more* streaks
-rather than fatter ones, and the brush picks up a slightly different comb each
-stroke — spacing, phase, and which bristles are missing. What still makes ribbing of
-a big quiet mass is laying it in single parallel passes: cross them, or lay large
-quiet masses with `flat`, and keep
-single bristle strokes for marks that have a direction.
+**A `bristle` stroke is never solid** — it lays a comb of streaks, which is what makes
+it alive on a mark whose direction you mean. Lay a big quiet mass with `flat`, or with
+bristle passes that *cross*; single parallel passes rib it. Below about `size=0.02` a
+bristle is four streaks with gaps, not a brush: small solid planes want `flat` at
+`pressure="even"`, or `round_hard`.
 
-Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` is a small
-one. **Use a bigger brush than feels comfortable**, especially early.
+**A short `flat` or `knife` stroke is a rectangle.** The oriented tips hold a chisel
+square to their travel — right for a mass, wrong for an accent, and they do not taper
+under a pressure list. **Small accents want `round_hard`. `flat` and `knife` want a
+length.**
+
+Size is a fraction of the canvas's long side. `0.2` is a big brush, `0.02` a small one.
+**Use a bigger brush than feels comfortable**, especially early — but that is advice
+about *masses*. **Scale a mark off the thing it describes, not off the canvas**;
+carrying the big brush down to something small costs a repaint. The numbers are in
+`CALIBRATION.md`.
 
 ### The angle of the mark
 
@@ -704,30 +836,35 @@ the brush to change to — not `round_soft`, which airbrushes at any size a mass
 
 ### Per-stroke overrides
 
-Anything about a brush can be overridden per stroke:
+Anything about a brush can be overridden per stroke — and per **mass**: `block_in`
+and `sweep` take the same keywords and pass them down to every stroke they emit.
 
 ```python
 s.stroke(path, "bristle", "shadow", size=0.14, opacity=0.5)
 s.stroke(path, "flat", "light", hardness=0.9, jitter=0.05, load=0.4)
 s.stroke(path, "bristle", "shadow", size=0.12, load_falloff=0.25)   # runs dry slower
+s.block_in(cell("D5"), "flat", "shadow", opacity=0.5, load=0.8)     # masses too
 ```
 
-**`load` is how much paint the brush carries.** Brushes start full, and anything
-that has to read as a *solid mass* — a block of local colour, a correction painted
-over something wrong — wants to stay there: pass `load=1.0` explicitly when you are
-covering. Dropping it is how you get dry brush — a broken, scratchy mark — and it is
-one of the best tools you have for making a surface look worked. The useful window
-is about `0.4` to `0.6`; below that a bristle brush is genuinely nearly empty and
-leaves almost nothing. Look after a dry-brush pass rather than assuming, and if a
-stroke seems to have vanished, `s.log()` will tell you how much paint it laid.
+**`opacity` does not thin a long stroke, it only slows it down.** Dabs overlap, so a
+low opacity accumulates back to nearly full colour. If you want a soft film, that is
+what `glaze()` is for.
 
-**A loaded brush runs dry along a stroke, and a long stroke shows it.** Where a long
-stroke ends is where its texture is loudest, and if every stroke in a field runs
-the same way, one side of the field speckles. `load_falloff` sets how fast the brush
-empties; for a big even field either lower it, or run the next stroke the other way
-so the two dry ends do not coincide. **Do not lay one broken pass across the whole
-canvas**: a single load, one brush, edge to edge, prints the surface's own texture
-as an even field over everything, and it stays visible under every later stroke.
+**`load` is how much paint the brush carries**, and dropping it is how you get dry
+brush — one of the best tools you have for making a surface look worked. But pass
+`load=1.0` explicitly for anything that has to read as a *solid* mass, a correction
+included; a pass laid low because it sounded painterly leaves a speckled film that
+everything after it sits on.
+
+**A loaded brush runs dry along a stroke**, so where a long stroke ends is where its
+texture is loudest — and if every stroke in a field runs the same way, one side of the
+field speckles. Run the next one back the other way. **Do not lay one broken pass
+across the whole canvas**: edge to edge on a single load prints the canvas's own
+texture as an even field over everything, and it stays visible under every later
+stroke.
+
+Windows, falloff numbers and what each texture does are in `CALIBRATION.md`; if a
+stroke seems to have vanished, `s.log()` says how much paint it laid.
 
 ### Pressure
 
@@ -763,11 +900,9 @@ you asked for. So:
 What changes is not the brush: a single dab is a *light touch* — the start of a
 `taper`, so it lands a fraction of its colour at about half the width you asked for
 — and a small highlight is `s.dab(x, y, ..., press=3)`, three stamps on the same
-spot, the middle one at full pressure, and **one** stroke against your budget.
-Anything the size of a cell or smaller is three marks at most — the dark, the
-light, and the edge
-between them — laid dark first and looked at through a `region=` crop before the
-light goes on.
+spot, the middle one at full pressure, and **one** stroke against your budget. The
+three-marks rule for anything cell-sized or smaller is in step 6, where you will be
+when you need it.
 
 ---
 
@@ -799,6 +934,10 @@ Each look writes a numbered PNG under `out/` — `out/look_001.png`, `out/look_0
 and so on — and returns the path. Print it and open that file. The numbering belongs
 to the session, so a second session started in the same directory begins again at
 `look_001.png` and writes over the first one's; copy anything you want to keep.
+**This bites hardest when you paint more than one picture**: a second painting in the
+same directory silently overwrites the first painting's entire record of itself, looks
+and rehearsals alike. Give each painting its own directory, or copy out the frames
+that matter before you start the next one.
 
 Use `values=True` far more often than feels necessary. Use `diff=True` after a pass
 to confirm you changed what you meant to change and nothing else.
@@ -852,14 +991,23 @@ one `sweep` — a pass per part-brush of `depth`, and two or three times that ag
 if you cross it. Check `s.stroke_count` if you are keeping a budget — a whole
 painting is usually a few hundred marks, not a few thousand.
 
-**`block_in` paints past a rectangle** by a fraction of a brush on every side. That
-is fine for a band and wrong for a mass that meets another at the *same* depth,
-where it lands on its neighbour. Painting back to front is the real answer — the
-far mass spilling into where the near one is going does no harm, because the near
-one goes on over it next. For two masses at the same depth, pass `overhang=0` or
-inset the place by half the brush size. A **shape** already does this: its passes
-stop at the silhouette, and only the brush's own width breaks past it — about
-three-quarters of a brush at the widest.
+**A mass can be costed before the call rather than discovered after it** —
+`CALIBRATION.md` has the arithmetic, and it is the difference between planning a pass
+and finding out.
+
+**What counts against the budget:** `stroke`, `dab`, `block_in` and `sweep` per pass,
+and also **`smudge` and `glaze`** — those two are marks like any other. What is free:
+`pencil`, `erase`, `mark`, `look`, `preview`, `rehearse` and `compare`. Do not
+discover the first list with three strokes left.
+
+**`block_in` paints past a rectangle** by a fraction of a brush on every side, and
+past a *shape* by up to three-quarters of a brush — see **Masses that are not
+rectangles** for what that costs and how to inset for it. That spill is fine for a
+band and wrong for a mass that meets another at the *same* depth, where it lands on
+its neighbour. Painting back to front is the real answer — the far mass spilling into
+where the near one is going does no harm, because the near one goes on over it next.
+For two masses at the same depth, pass `overhang=0` or inset the place by half the
+brush size.
 
 `compare(region=cell("D4"))` measures the tenths of one cell and labels them the
 way `grid="fine"` does.
@@ -1088,9 +1236,19 @@ about half its width, which is the ragged edge you want and did not have to make
 - Is every mass laid along its own axis, or are the big shapes stacks of horizontal
   and vertical bars? Turn the picture on its side if you cannot tell.
 - Is any mass a rectangle that should have been a shape? A box is a decision, and
-  it is the wrong one everywhere except a band or a flat plane.
+  it is the wrong one everywhere except a band or a flat plane. **Check the
+  background hardest** — it is the mass you never had to draw, and the one most
+  likely to be a grid of square patches.
+- **Is the thing you measured most carefully still attached to the picture?** Cover
+  it and look at what is left: if the rest is unresolved, you spent your precision in
+  one place and the painting somewhere else.
 - Was it painted back to front? An edge you had to cut carefully around something
   is a mass that went on in the wrong order.
+- **Anything with an inside — is its far edge under its contents, and its contents
+  under its near edge?** Something that has escaped the thing containing it, or a
+  small mass sitting *on* a bigger one rather than *in* it: the same mistake twice.
+- **Did a correction bury something?** Every mass you repainted after the first
+  block-in: look at what was standing on it before you did.
 - Is there pencil still showing where you did not mean it to? `s.erase()` takes
   it out; `s.export(path, sketch=False)` hides all of it at once, but a drawing
   showing through thin paint is a good thing and worth keeping.
@@ -1102,7 +1260,30 @@ s.look(reference="ref.jpg")
 s.look(reference="ref.jpg", values=True)   # compare value structure, not colour
 ```
 
-Then:
+## Sign it
+
+When you have decided it is finished — after the last look, before you export — sign
+it. **Up to five marks, and they do not come out of your stroke budget**, so long as
+each one carries `note="signature"`:
+
+```python
+s.stroke([(0.86, 0.94), (0.90, 0.92)], "liner", "dark", size=0.006,
+         note="signature")
+```
+
+You do not have a name, so this is not a name. It is a mark: whatever you would put in
+the corner of something you made. Choose it yourself — nothing here says what it should
+look like, and the five marks are a limit, not a target. One is enough.
+
+Two things it is not. It is not a title, and it is not a last chance to fix something:
+a signature laid across a passage you were unhappy with is a sixth correction wearing a
+hat, and the budget exemption exists because the mark is *not* part of the painting.
+Put it where it does the picture no harm — a corner, small, close in value to what it
+sits on.
+
+Then say in your log what you chose and why. That question is asked here, at the end,
+and not before you started, because a mark chosen to be explained is not the same as a
+mark chosen.
 
 ```python
 s.export("painting.png")

@@ -71,6 +71,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M8 Non-rectangular masses | **Done.** `Polygon` is a place beside `Region`, built with `polygon`, `ellipse`, `blob`, `hull` or `ribbon`; `block_in` cuts every pass against the outline, so a shaped mass keeps its silhouette and a concave one keeps its bite. `direction="axis"` sweeps along the mass's own long axis. `dry`, `erase`, `look`, `compare`, `preview`, `rehearse` and `sweep` all take a shape. Additive: no golden moved, one was added. Evidence in `samples/shapes.png` and `m8/`. |
 | M8b Wet-blend floor | **Done.** The K/S clip stays on the arithmetic, where finding 5 needs it, and comes back off the mixture weighted by how much of each ingredient is in it: `amount` of 0 returns the canvas and 1 lays the colour. The brief expected this to change every soft dab edge in the engine; it changes nothing inside the K/S band, so both samplers, both real paintings and all seven goldens are byte for byte identical and none was regenerated. What it buys is in `m8b/` — a dark mass built from 32 levels rather than 18, with two fifths of it no longer pinned to one value. `REVIEW.md` 35. |
 | Post-M8b adversarial code + general review | **Done.** Fourteen independent readers over every module not code-reviewed since M6 (`regions.py`'s shape/sweep code, the painting-ops half of `session.py`, M7/M8b's `brush.py`/`stroke.py`/`color.py`), plus a general pass beyond the brief's own framing: security/trust boundaries, `.github/workflows/ci.yml`, `pyproject.toml`, and whether the test suite proves what it claims to. 37 of 38 candidate findings survived independent adversarial verification; 34 fixed, 3 left open with the reasoning for why (`REVIEW.md` findings 36–66, and *Open, with evidence*). One rendering change (`draw_pencil`'s sub-pixel anchor, finding 49) judged on the `drawing` golden before regenerating it; the shape sampler's `cross` column bug (finding 66) regenerated and looked at. Every other fix is pure robustness/security/CI/test-coverage — no other golden moved. |
+| Pre-M9 engine changes | **Done** — `engine_changes/`. The brief's rule is that anything changing the API lands before the server exposes it, and `ENGINE_CHANGES.md` was that list. `blob(region, radius)` was a 4.9 : 1 horizontal sausage because the point branch and the region branch disagreed; one radius now means a circle wherever the shape is put, which moved no golden and no call in the corpus. `rehearse()` takes a `sweep` (`edge=`) as well as a `block_in` (`shape=`, which M8 had already added and the request did not know about), and the trial session now holds a *copy* of the real stream state, so a rehearsed mass is pixel-identical to the painted one — note 23 above was the thing standing in the way. `inset()`'s 2.7× report reproduces on a star and is correct erosion, documented rather than changed; the concave case underneath it was a real defect — the fold check asked whether a shape contained its own centroid, which a horseshoe does not. Every golden and both samplers byte for byte unmoved. |
 | M9 MCP server | Not started, and correctly last. |
 
 ## File map
@@ -150,6 +151,12 @@ m8b/paint_the_dark.py     M8b's evidence: one composition painted by both engine
                           in the range the fix opens up. Writes m8b/compared.png,
                           and measures what the dark mass is *made of* rather than
                           only how dark it got.
+engine_changes/           the three engine changes wanted before M9, and the only
+                          place to start on them: README.md is the write-up,
+                          probe_blob_radii.py / probe_rehearsed_mass.py /
+                          probe_inset.py measure each item and draw its picture.
+                          Every probe carries the pre-change behaviour in it, so
+                          "before" is a function call rather than a git checkout.
 examples/exercises.py     the abstract warm-ups from PAINTER.md, runnable. Kept in
                           step with the printed ones -- two were rewritten in M5,
                           and M6 added the seventh (draw, rehearse, paint).
@@ -333,6 +340,19 @@ checking every pigment against what the canvas actually receives, which
 
 ## Key decisions, and why
 
+- **A new finding never adds a paragraph to `PAINTER.md`.** It does one of three
+  things: **replaces** an existing rule, **becomes a checklist line**, or **goes to
+  `CALIBRATION.md` or here**. This is a hard rule and it exists because the guide was
+  growing by roughly a paragraph per rehearsal — every finding right, every one added,
+  the document turning into a changelog of everything that went wrong once. `PAINTER.md`
+  went 8,621 → 10,805 words across a single rehearsal's fixes. The failure mode is not
+  that any paragraph is wrong; it is that **a fresh session reads the guide exactly
+  once, at the start, when it matters most**, and the tenth rehearsal produces a guide
+  nobody finishes. The test for a candidate paragraph: strip the measurement and the
+  reasoning out of it and see what is left. If what is left is one line, that line is
+  the rule and it goes in the guide; the measurement and the reasoning go to
+  `CALIBRATION.md`, which exists for exactly this and which the guide already points
+  at. If nothing is left, it was not a rule.
 - **Pigment mixing is a power mean of Kubelka-Munk K/S with exponent 0.5**, over a
   reflectance floor of `0.01`. Both constants were chosen against a table of known
   paint mixes, not by taste. The floor stops a channel-zero colour from swamping
@@ -492,6 +512,17 @@ checking every pigment against what the canvas actually receives, which
     painted, and a painter told "paint something of your own" after reading it has
     been handed a subject. The recipe now lives in `CALIBRATION.md` with abstract
     knots, and the guide carries no subjects at all.
+    **This rule was broken again after REHEARSAL4, in the other direction, and it is
+    worse that way.** The depth-order paragraph written to fix the human's note used
+    the *copy reference* as its worked example — mug, tea, cup, rim — and the scale
+    rule used a head and a cheek. An unprompted subject leaking out of the guide
+    costs you the unprompted stage; **a copy reference leaking in costs you the copy
+    score, and does it invisibly, because the number simply improves.** The human
+    caught it by reading the diff. Both are the same failure of nerve: a rule is
+    easier to write with a concrete example, and the nearest concrete example is
+    always whatever you were just looking at. Write the rule with a list, or with a
+    ratio, and **grep the guide for the current references before every run** —
+    `mug`, `tea`, `cup`, `face`, `head`, and whatever the references hold next time.
 16. **Never change the engine while a measurement is running.** The three sessions of
     the M6 pass painted against one engine and every fix landed after the last of
     them exported. Otherwise the run measures a moving target and none of the numbers
@@ -545,12 +576,17 @@ checking every pigment against what the canvas actually receives, which
     place that reads either back. `sketch_lines()` reads the same field, because
     what an eraser removed from the canvas has to be what it removed from the
     lines.
-23. **A rehearsed mass is not pixel-identical to the painted one.** A rehearsal
-    gets its own generator on purpose (so trying something cannot change the
-    painting that follows), strokes are seeded per index and so come out the same,
-    but a `block_in`'s pass wander is drawn from the session's stream and does not.
-    Same masses in the same places, different wobble. Do not write a test that
-    asserts equality there; assert the overlap.
+23. **A rehearsed mass *is* pixel-identical to the painted one, and the trick is a
+    copy.** The trial needs its own generator so that trying something cannot change
+    the painting that follows, and it needs the *same draws* the real call would make
+    so that what is rehearsed is what lands. Those read as opposites and are not: the
+    trial gets its own generator **object** holding a copy of the session's stream
+    state (`_trial_session`). Strokes never needed it -- they are seeded per index --
+    but `block_in` and `sweep` take their pass wander from the running stream, and
+    before `engine_changes/` the trial had a *differently seeded* one, so a rehearsal
+    showed the right masses in the right places with a different hand. There is a test
+    for equality now, and one that the painting after two rehearsals is unchanged;
+    both are needed, and passing one is not passing the other.
 24. **A self-intersecting outline is accepted.** `Polygon` checks for three
     distinct points and a non-zero area, not for simplicity, and everything
     downstream is even-odd — so a bow-tie fills as two triangles rather than
@@ -575,7 +611,102 @@ checking every pigment against what the canvas actually receives, which
 
 ## What to do next, in order
 
-1. **Finish M6: one more run, one narrow question.** The protocol has been run —
+**Start here. `REHEARSAL5.md` is the most recent measurement and it changed the
+ordering.** The guide changes from REHEARSAL4 have now been tested: one worked, one did
+nothing, one backfired, and the pass criterion turned out to be gameable and was gamed.
+The list below is the order to work in; items 0a–0f are new and everything after them is
+history kept for context.
+
+**0a. ~~`ENGINE_CHANGES.md` — hand it to a fresh session.~~ Done — `engine_changes/`.**
+All three landed, no golden moved, both samplers byte for byte unmoved. `blob(region,
+radius)` takes option (a): one radius is a circle wherever the shape is put, which is
+what `ellipse`'s own docstring had been promising while the region branch did something
+else. `rehearse()` takes a `sweep` under `edge=`, and — the half that mattered — the
+trial session now holds a *copy* of the real stream state, so a rehearsed mass is
+pixel-identical to the painted one instead of merely being in the same place. `inset()`
+splits in two: the 2.7× reproduces on a star and is correct erosion (documented, not
+changed), and underneath it was a genuine defect on concave shapes that do not contain
+their own centroid. **Three things for whoever holds the guide**, none of them mine to
+edit: `PAINTER.md:543`'s `blob(cell("D5"), 0.22)` is *still* not "a mass filling a cell"
+under either rule — `0.22` is a radius, so it is 3.9 cells across and always was, and
+the fix cannot make it smaller; `PAINTER.md:1032` says `wobble=0.25` where the default
+is `0.22`; and the note `ENGINE_CHANGES.md` expected in `CALIBRATION.md` about rehearsal
+fidelity was never there, it was note 23 above. `engine_changes/README.md` has the rest.
+
+**0b. The pass criterion is fixed in the brief and needs no more argument.** `compare()`
+alone rewards damage — REHEARSAL5's painter laid a bar of dark it knew was bad to move
+two cells inside `0.10` and said so in its first paragraph. The brief now adds
+`probe_human_notes.py`'s containment as a second number and a procedural rule: **the
+last ten strokes of a copy may not be value corrections.** Enforce both on the next run.
+
+**0c. Guide changes are made; do not make more before the next run.** The seven nouns
+are stripped (see 0d), the background rule has gained its missing half — *and the marks
+inside it are not parallel lines* — and the signature is added. **The depth-order
+paragraph is deliberately untouched** even though REHEARSAL5's containment number did
+not move: one session is not evidence it fails, and rewriting it now is the changelog
+habit this file forbids under *Key decisions*.
+
+**0d. The leak rule is now three strikes and a procedure.** Mug, sitter, boat — the last
+of which put six of six fresh sessions on the same rowing boat and contaminated two live
+experiments (`rehearsal5/naming/THE_BOAT.md`). Any list is a ranked list and its first
+item is the answer, so a guide example may not name a paintable object at all. Before
+every run: grep for the references' nouns **and** read the guide's examples and name the
+subject yourself.
+
+**0e. Stop running naming probes.** Three attempts, and the dissociation is settled: 0 of
+8 sessions *name* water, 4 of 4 *paint* it. Verbal probes measure what a session says
+when interrupted. The finding they did produce is worth keeping and is better than a
+tally — **the estuary is not a subject this model picks, it is a world it puts things
+in**: given a boat it beaches it on a mudflat, and when told to break the structure it
+painted a pond seen from above. Twelve sessions told to audit their own defaults named a
+landscape as the first thing that arrived and walked away from it
+(`rehearsal5/naming/A_reflective_samples.md`).
+
+**0f. Then one more `Level1.jpg` run, then M9.** That run closes M6. It is the first to
+be measured on two numbers rather than one, and the first where a signed painting is
+expected.
+
+---
+
+1. ~~**Finish M6: one more run, one narrow question.**~~ **Run — `REHEARSAL4.md`,
+   and M6 is still not finished.** The whole definition of done was run end to end:
+   two fresh sessions, the mug and the sitter, plus the two unprompted paintings.
+   **Read `REHEARSAL4.md` before anything below it in this list** — items 2 and 3 are
+   answered there, and item 1's own narrow question is answered *yes*.
+   - **The value error is gone.** 0 of 64 cells out on both copies, against
+     REHEARSAL3's 8; the guide fixes made after REHEARSAL3 survive their first
+     fresh-session test. But the margin is `0.0015` on the mug and `0.005` on the
+     sitter, so treat the criterion as saturated rather than as comfortable.
+   - **A different criterion failed instead**, and nobody was watching it: the pass
+     session called `preview()` once and `rehearse()` never, so it cannot point to a
+     mark it rejected *before painting it*. It spent 138 of 299 strokes repainting
+     one table three times. The sitter session, which rehearsed constantly, called
+     `rehearse` "the best thing in this toolkit".
+   - **The human's note is the most valuable thing in the run** and no criterion in
+     the brief could see it: the tea is painted before the rim, so it flows out of
+     the cup (17.5% of its own area escaped, against REHEARSAL3's 0.1%), and the
+     table was blocked in over the finished handle. `rehearsal4/HUMAN_NOTES.md`.
+   - Fourteen guide changes come out of it, and **they are now made** — see
+     *What was changed in `PAINTER.md`* in `REHEARSAL4.md` for the table. All 37
+     guide code blocks still run, full suite still green. **Every one of them is a
+     hypothesis until a fresh session paints against it**, so the next move is that
+     run, not more editing.
+   - **The human's read of the paintings is in `REHEARSAL4.md` and it changed two
+     conclusions.** On the mug, R4 is the better copy and R3 the prettier one; the
+     remaining tell is the table, *"the mass that needed no drawing is the one that
+     shows the grid."* On the sitter, **R3 reads more as a person than R4** — R4 has
+     the better face and lost the figure around it. That is a tension in the M6
+     method itself: landmarks buy features and cost the mass. Both are now guide
+     changes and both need the next run to test them.
+   - **A leak was introduced and caught**: the first version of these edits taught
+     depth order using the copy reference by name (mug, tea, cup) and scale using a
+     head and a cheek. Neither appeared in the guide before. A copy reference inside
+     the painter's manual feeds straight back into the copy score and would have been
+     invisible in the numbers. Fixed, and the rule now stands: **grep the guide for
+     the current references before every run** (gotcha 15).
+
+   The original item, for context — the reasoning still holds:
+   The protocol has been run —
    three fresh sessions, `REHEARSAL3.md`. Read that first; it says what passed and
    what did not. The copy stage failed only on value, and failed it in a single
    direction: every wrong cell on the mug was too *light*, straight down the

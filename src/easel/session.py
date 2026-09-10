@@ -42,8 +42,6 @@ __all__ = ["Session"]
 #: Format 1 and 2 files still load -- they simply have less in them.
 _EASEL_FORMAT = 3
 _READABLE_FORMATS = (1, 2, 3)
-#: Stream label for a rehearsal's generator, so it cannot collide with the real one.
-_REHEARSAL_STREAM = 918273645
 
 
 class Session:
@@ -287,7 +285,7 @@ class Session:
         shaped = isinstance(place, Polygon)
         over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
 
-        band = max(b.size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
+        band = _pass_step(b.size, density)
         records: list[StrokeRecord] = []
         traced = ""
         if getattr(place, "traced", False):
@@ -562,7 +560,7 @@ class Session:
             )
 
         # One part-brush, the same rule block_in spaces its passes by.
-        step = max(b.size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
+        step = _pass_step(b.size, density)
         if passes is None:
             n_passes = max(1, int(round(depth / step)))
         else:
@@ -953,9 +951,11 @@ class Session:
         Args:
             strokes: what to preview. Each entry is either a list of points or a
                 dict of arguments for :meth:`stroke` (``points`` plus any of
-                ``brush``, ``size``, ``note``...), or a **mass**: a shape, a region,
-                or a dict with ``shape=`` and any :meth:`block_in` argument, drawn
-                as the area it would cover. A single path or shape is also accepted.
+                ``brush``, ``size``, ``note``...), or a **mass**, drawn as the area
+                it would cover: a shape, a region, or a dict with ``shape=`` and any
+                :meth:`block_in` argument; or a dict with ``edge=`` and any
+                :meth:`sweep` argument, drawn as the ground that sweep would cover.
+                A single path or shape is also accepted.
             reference: shown alongside, with the same overlay.
             region: crop both panels to a place, enlarged.
             grid: as :meth:`look`. ``"fine"`` for tenths.
@@ -969,6 +969,7 @@ class Session:
                      "size": 0.004, "label": "edge"}]
             s.preview(plan, reference=ref, region=cell("D4"), grid="fine")
             s.preview(blob(cell("D5")), reference=ref)      # a mass, before filling it
+            s.preview({"edge": edge, "into": "down", "depth": 0.3})   # and a sweep
         """
         specs = self._plan_specs(strokes)
         ref_img = None if reference is None else load_reference(reference)
@@ -980,8 +981,7 @@ class Session:
             region=region,
             reference=ref_img,
             marks=self.marks or None,
-            strokes=[(self._preview_mass(spec, i) if kind == "mass"
-                      else self._preview_shape(spec, i))
+            strokes=[self._preview_entry(kind, spec, i)
                      for i, (kind, spec) in enumerate(specs)],
         )
         return save_look(img, self._look_path(path, "preview"))
@@ -1004,8 +1004,30 @@ class Session:
         this size. A feature the size of an eye can be tried three ways and judged
         before a stroke is spent, which is what a painter's scrap of canvas is for.
 
-        The trial strokes are seeded as if they were the next strokes of the real
-        painting, so what is rehearsed is what lands when it is painted for real.
+        The trial marks are seeded as if they were the next marks of the real
+        painting, so what is rehearsed is what lands when it is painted for real --
+        pixel for pixel, masses included, as long as the plan is painted before
+        anything else is.
+
+        **A mass is the thing worth rehearsing.** ``block_in`` and ``sweep`` are one
+        call each and ten to thirty strokes each, which makes them the most
+        expensive mark a painter can get wrong, and :meth:`preview` only shows the
+        silhouette. Describe one instead of calling it and it is painted on the
+        copy, looked at, and costs nothing::
+
+            plan = [{"shape": blob(span("D4", "F6"), wobble=0.3, seed=2),
+                     "brush": "bristle", "color": "dark", "size": 0.09,
+                     "direction": "axis"}]
+            s.rehearse(plan, region=span("D4", "F6"))     # what would that look like?
+            s.rehearse([dict(plan[0], size=0.05)], region=span("D4", "F6"))  # or this?
+            s.block_in(plan[0]["shape"], "bristle", "dark", size=0.09,
+                       direction="axis")                  # the one you chose
+
+        A sweep is described the same way, with the boundary under ``edge=`` and any
+        other :meth:`sweep` argument beside it::
+
+            s.rehearse({"edge": edge, "into": "down", "depth": 0.30, "cross": 25,
+                        "brush": "bristle", "color": "dark", "size": 0.12})
 
         Args:
             strokes: as :meth:`preview`, marks and masses alike -- a shaped mass is
@@ -1019,9 +1041,12 @@ class Session:
         """
         trial = self._trial_session()
         for kind, spec in self._plan_specs(strokes):
-            kwargs = {k: v for k, v in spec.items() if k not in ("label", "place")}
+            kwargs = {k: v for k, v in spec.items()
+                      if k not in ("label", "place", "edge")}
             if kind == "mass":
                 trial.block_in(spec["place"], **kwargs)
+            elif kind == "sweep":
+                trial.sweep(spec["edge"], **kwargs)
             else:
                 trial.stroke(**kwargs)
 
@@ -1041,17 +1066,20 @@ class Session:
         """A throwaway session sharing this one's surface, palette and seeding.
 
         The canvas channels are copied and the tooth is shared, so a rehearsal costs
-        a few small arrays rather than a whole canvas. It gets its *own* generator,
-        seeded from this session's current state, because a rehearsal that consumed
-        the real session's random stream would change the painting that follows it.
+        a few small arrays rather than a whole canvas. It gets its own generator
+        *object* holding a copy of this session's stream state, so what is tried on
+        the scrap of canvas is what lands -- masses included -- without the trial
+        consuming the real stream and changing the painting that follows it.
         """
         trial = Session.__new__(Session)
         trial.seed = self.seed
-        # Its own stream, derived from the seed and how far along the painting is.
-        # Only block_in draws from this one, and a rehearsal that consumed the real
-        # session's stream would quietly change every stroke painted after it.
-        trial.rng = np.random.default_rng([self.seed, _REHEARSAL_STREAM,
-                                           len(self.history.records)])
+        # A separate generator holding this one's current state. `block_in` and
+        # `sweep` draw their pass wander from here, so a copy of the state is what
+        # makes a rehearsed mass the same mass, pixel for pixel, when it is painted
+        # for real -- and because it is a copy, spending it costs the real session
+        # nothing. Strokes need no help: they are seeded per index below.
+        trial.rng = np.random.default_rng(self.seed)
+        trial.rng.bit_generator.state = self.rng.bit_generator.state
         trial.canvas = self.canvas.trial_copy()
         trial.palette = self.palette
         trial.history = History()
@@ -1101,8 +1129,10 @@ class Session:
         """Split what ``preview`` and ``rehearse`` accept into marks and masses.
 
         A plan entry is a mark -- a path, or a dict of :meth:`stroke` arguments -- or
-        a mass: a shape or region, or a dict with ``shape=`` and any :meth:`block_in`
-        argument. One list holds both, so a plan is previewed, rehearsed and painted
+        a mass. A mass is described the way the call that lays it is: a shape or
+        region, or a dict with ``shape=`` and any :meth:`block_in` argument, is a
+        block-in; a dict with ``edge=`` and any :meth:`sweep` argument is a sweep.
+        One list holds all three, so a plan is previewed, rehearsed and painted
         without being rewritten in between, which is when a plan drifts.
         """
         if isinstance(entries, (dict, Polygon, Region)) or _is_path(entries):
@@ -1111,6 +1141,8 @@ class Session:
         for entry in entries:
             if isinstance(entry, (Polygon, Region)):
                 out.append(("mass", {"place": as_place(entry)}))
+            elif isinstance(entry, dict) and "points" not in entry and "edge" in entry:
+                out.append(("sweep", dict(entry)))
             elif isinstance(entry, dict) and "points" not in entry and (
                     "shape" in entry or "region" in entry):
                 spec = dict(entry)
@@ -1121,6 +1153,26 @@ class Session:
             else:
                 out.append(("stroke", self._stroke_specs([entry])[0]))
         return out
+
+    def _preview_entry(self, kind: str, spec: dict, index: int) -> dict:
+        """What the overlay needs, whichever of the three kinds this entry is."""
+        if kind == "mass":
+            return self._preview_mass(spec, index)
+        if kind == "sweep":
+            return self._preview_sweep(spec, index)
+        return self._preview_shape(spec, index)
+
+    def _preview_sweep(self, spec: dict, index: int) -> dict:
+        """What the overlay needs for a sweep: the ground it covers, and the brush."""
+        b = self._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
+                                spec.get("opacity"), {})
+        edge = spec["edge"]
+        points = _sweep_cover(edge.closed if isinstance(edge, Polygon) else edge,
+                              b.size, float(spec.get("density", 1.0)),
+                              float(spec.get("depth", 0.2)), spec.get("into"),
+                              spec.get("closed"))
+        return {"points": points, "width": b.size, "fill": True,
+                "label": str(spec.get("label", spec.get("note") or f"sweep {index + 1}"))}
 
     def _preview_mass(self, spec: dict, index: int) -> dict:
         """What the overlay needs for a mass: its outline and the brush filling it."""
@@ -1677,6 +1729,28 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+def _pass_step(size: float, density: float) -> float:
+    """One part-brush: how far apart ``block_in`` and ``sweep`` put their passes.
+
+    The same number in both, and now in one place, because ``preview`` has to work
+    out the ground a sweep would cover without laying it.
+    """
+    return max(size * (1.0 - 0.45 * float(np.clip(density, 0.05, 2.0))), 0.004)
+
+
+def _sweep_cover(edge, size: float, density: float, depth: float, into,
+                 closed) -> list[tuple[float, float]]:
+    """The outline of the ground a sweep would cover: its edge, and the edge a depth in.
+
+    What ``preview`` draws for a sweep, so the question it answers for a block-in --
+    *where would this mass land* -- gets answered for the other way of laying one.
+    """
+    spine, ring = _sweep_spine(edge, closed, max(_pass_step(size, density) * 0.6, 0.008))
+    far = spine + _sweep_normals(spine, into, ring) * float(depth)
+    ring_points = np.vstack([spine, far[::-1], spine[:1]])
+    return [(float(x), float(y)) for x, y in ring_points]
+
+
 def _pass_directions(direction) -> list:
     """One entry per pass: the names as before, plus angles and sequences of either.
 
