@@ -133,12 +133,17 @@ way a first pass turns into mush. **If two of your three are within `0.10` of ea
 other, they will not read as separate masses** no matter how different their
 colours are.
 
-**The box has no black, and for now it has no true dark either.** The darkest thing
-you can mix reads about `0.23` in the greyscale view, and no number of passes or
-glazes takes it lower. That is a limit of the current pigments, not a lesson about
-painting, and it is on the list to be fixed. Until it is: build contrast by pushing
-the lights up rather than the darks down, and when `compare()` marks a cell `~` it
-is saying that cell is below reach — leave it and paint the rest.
+**The box has no black, and it does not need one.** `mix("ultramarine",
+"burnt_umber", 0.5)` reads about `0.14` in the greyscale view — a near-black with a
+colour in it, which is what a dark in a painting should be. Vary the ratio and it
+stays that dark while swinging from cool to warm: more blue for a shadow in
+daylight, more umber for one by a lamp. That mixture, not any single pigment, is
+the bottom of your range.
+
+The floor is around `0.13`, and it is the model's own: no reflectance in this engine
+goes below `0.01` linear, which is value `0.10`, and the last few hundredths are the
+hue the pigments still carry. Piling on passes or glazes will not go lower, so if a
+mass is not dark enough, mix it darker rather than painting it again.
 
 ### 4. Refine the mid-tones
 
@@ -337,8 +342,10 @@ print(s.compare("ref.jpg"))
 Per cell: the reference's mean value, yours, the difference, and a heat map beside
 the two greyscales. Negative means your canvas is *darker* there. **The number that
 matters is `0.10`**: a cell further out than that is a separation the painting has
-lost. A cell marked `~` asks for a value below anything the box reaches (see step 3)
-and is not work.
+lost. Every one of them is yours to fix. A cell marked `~` asks for a value below
+anything the box reaches (see step 3) and is not work — on most references there
+will be none, and if a photograph does hold one or two, they are its deepest
+shadows and nothing else.
 
 Run it **twice**, not continuously:
 
@@ -776,20 +783,41 @@ below, above, left_of, right_of, between`.
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
 
-**1. A value scale.** Nine steps from dark to light. This calibrates your sense of
-what the palette can actually reach.
+**1. A value scale.** Nine even steps from the darkest mix to white. This
+calibrates your sense of what the palette reaches, and it teaches the one thing
+about white you will otherwise learn the expensive way.
+
+Mix to a *value*, not to a ratio. Equal spoonfuls of white do not give equal steps:
+white is much stronger than its share of the mixture, so ask for the value you want
+and let a search find the ratio.
 
 ```python
 from easel import Session, Region
 
 s = Session(900, 200, ground="toned_grey", seed=1)
+p = s.palette
+dark = p.mix("ultramarine", "burnt_umber", 0.5)     # the darkest thing in the box
+lo, hi = p.value_of(dark), p.value_of("titanium_white")
+
+def at_value(target):                # the ratio of white that reads `target`
+    a, b = 0.0, 1.0
+    for _ in range(20):
+        mid = (a + b) / 2
+        a, b = (mid, b) if p.value_of(p.mix(dark, "titanium_white", mid)) < target else (a, mid)
+    return (a + b) / 2
+
 for i in range(9):
-    v = i / 8.0
+    r = at_value(lo + (hi - lo) * i / 8)
     band = Region(i / 9.0, 0.15, (i + 1) / 9.0, 0.85)
-    s.block_in(band, "flat", s.palette.mix("burnt_umber", "titanium_white", v),
-               density=1.0, size=0.06)
-s.look(values=True)     # do the steps look evenly spaced in greyscale?
+    s.block_in(band, "flat", p.mix(dark, "titanium_white", r), density=1.0, size=0.06)
+    print(f"value {lo + (hi - lo) * i / 8:.2f}  white {r:.2f}")
+s.look(values=True)     # nine even steps, 0.14 to 0.96
 ```
+
+Look at the printed ratios, not just the picture. A third of white gets you the
+first step; it takes nine tenths to reach the eighth. That curve is why a mixture
+that "should" be halfway comes out too dark, and why the fix is always to add more
+white than feels right.
 
 **2. One stroke, six pressures.** See what the profiles actually do. The low
 `opacity` and the flat `load_falloff` are what make this legible: at full strength

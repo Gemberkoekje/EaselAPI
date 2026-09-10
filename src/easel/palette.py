@@ -5,7 +5,10 @@ neutrals, which is most of what makes a painting look painted. Darks are made fr
 umber plus a blue, not from a tube of black.
 
 Pigment hex values are chosen so that no channel is zero -- see the note on the
-reflectance floor in :mod:`easel.color`.
+reflectance floor in :mod:`easel.color`. The darks are chosen so that no channel is
+below that floor either, which is a stronger rule and a more honest one: a channel
+under ``0.01`` renders as ``0.01`` anyway, so a swatch written darker than the floor
+would state a colour the engine cannot lay.
 """
 
 from __future__ import annotations
@@ -17,6 +20,16 @@ from easel.color import linear_to_srgb, luminance, mix, mix_many, parse_color
 __all__ = ["PIGMENTS", "Palette"]
 
 #: The default limited palette: a warm and a cool of each primary, white, and a dark.
+#:
+#: The darks are **masstones** -- the colour of the paint straight from the tube,
+#: laid thick -- and a masstone is much darker than the swatch most colour charts
+#: print. That matters here because mixing cannot rescue it: this engine's mix
+#: never takes a channel below the darker of its two ingredients, so the darkest
+#: thing the box reaches is set by the swatches and nothing else. With the old,
+#: chart-bright swatches the box floored at value ``0.23`` and no mixture went
+#: below it, which is not what paint does -- ultramarine and burnt umber mixed are
+#: meant to go near black, and that is the whole reason a limited palette can do
+#: without one.
 PIGMENTS: dict[str, str] = {
     # whites
     "titanium_white": "#F7F4EF",
@@ -25,15 +38,15 @@ PIGMENTS: dict[str, str] = {
     "lemon_yellow": "#F2E33B",
     # reds: warm then cool
     "cadmium_red": "#E03C31",
-    "alizarin": "#8E2438",
+    "alizarin": "#3E1A22",
     # blues: warm then cool
-    "ultramarine": "#2E3B8C",
-    "cerulean": "#2A6FA8",
+    "ultramarine": "#1A2856",
+    "cerulean": "#215884",
     # earths / darks (no black by default)
-    "burnt_umber": "#4A3728",
+    "burnt_umber": "#2A1E1A",
     "yellow_ochre": "#C08A2E",
-    "burnt_sienna": "#8A3D24",
-    "viridian": "#20705B",
+    "burnt_sienna": "#56291A",
+    "viridian": "#1A4638",
 }
 
 # Convenient short aliases so the painter can type less.
@@ -146,15 +159,21 @@ class Palette:
 
     @property
     def darkest_value(self) -> float:
-        """The lowest value anything in this box reaches.
+        """The lowest value anything in this box reaches -- about ``0.13``.
 
-        There is no black pigment here, by the brief's rule, so the palette bottoms
-        out well above zero -- and a photograph does not. Mixing does not rescue it:
-        every dark mixed together, piled up in eight dried passes and glazed over
-        itself, measures within a hundredth of the darkest single pigment. A cell of
-        a reference darker than this cannot be matched by any stroke, which is why
-        :meth:`~easel.session.Session.compare` reports those cells separately
-        instead of asking the painter to keep spending on them.
+        Mixing cannot go below it: this model never takes a channel under the darker
+        of its two ingredients, so the darkest pigment is the floor, and piling on
+        eight dried passes or four rounds of glazing lands within a hundredth of one
+        flat pass. What sets the number is therefore the swatches, and the swatches
+        are masstones, so the box now stops within a few hundredths of the engine's
+        own limit -- the ``0.01`` linear reflectance floor in :mod:`easel.color`, or
+        value ``0.10``. The rest of the gap is hue: a dark that is still blue, or
+        still brown, cannot sit on the floor in all three channels at once.
+
+        It is no longer a number the painter has to paint around. It is here so that
+        :meth:`~easel.session.Session.compare` can tell an honest miss from the few
+        cells a photograph may still hold below anything a pigment reaches, rather
+        than reporting both the same way and sending the painter after neither.
         """
         return min(self.value_of(name) for name in set(self.pigment_names))
 

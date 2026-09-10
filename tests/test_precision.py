@@ -730,10 +730,16 @@ def test_the_named_block_in_directions_still_paint_exactly_what_they_did(tmp_pat
 
 
 def test_compare_separates_cells_no_paint_can_reach(tmp_path, reference):
-    """Both fresh sessions of the M6 pass spent strokes chasing cells below the
-    palette's floor, and neither could find out that was what they were doing."""
+    """The split still has to work for what is left below the floor after M6b.
+
+    It was built (finding 21) because the palette floored at 0.23 and a lamp-lit
+    photograph has whole masses under that. M6b took the floor down to the model's
+    own, so an ordinary dark cell is now the painter's work again -- but a
+    photograph can still hold a few cells below anything a pigment reaches, and
+    those must not be reported as strokes worth spending.
+    """
     s = make(tmp_path)
-    dark = Image.new("RGB", (480, 360), (10, 10, 10))
+    dark = Image.new("RGB", (480, 360), (3, 3, 3))
     dark_path = tmp_path / "dark.png"
     dark.save(dark_path)
 
@@ -748,12 +754,68 @@ def test_compare_separates_cells_no_paint_can_reach(tmp_path, reference):
     assert not s.compare(reference).unreachable
 
 
-def test_the_palette_floor_is_the_darkest_thing_in_the_box(tmp_path):
-    """No black pigment, by the brief's rule -- so the floor is well above zero and
-    the painter has to be told, because the reference will not be."""
+def test_a_shadow_a_photograph_would_hold_is_now_the_painters_own_work(tmp_path):
+    """The M6b criterion, as a test.
+
+    Before M6b a cell at value 0.10 -- an ordinary lamp-lit shadow, nothing
+    exotic -- was below anything a stroke could reach, and `compare()` had to
+    excuse it. Two fresh sessions each spent about twenty-five strokes finding
+    that out (finding 21). It has to be reachable now, or the darks did not move
+    far enough to matter.
+    """
+    s = make(tmp_path)
+    shadow = Image.new("RGB", (480, 360), (25, 25, 25))     # value 0.098
+    shadow_path = tmp_path / "shadow.png"
+    shadow.save(shadow_path)
+
+    c = s.compare(shadow_path)
+    assert not c.unreachable, (
+        "a lamp-lit shadow is still being written off as unpaintable; "
+        f"floor {c.floor:.3f}"
+    )
+
+
+def test_the_palette_floor_is_the_models_own_and_not_the_swatches(tmp_path):
+    """M6b: the box bottoms out where the *engine* does, not where the swatches did.
+
+    The reflectance floor in `color.py` is 0.01 linear, which is value 0.10 -- the
+    darkest neutral this model can represent at all. Before M6b the palette stopped
+    0.13 above it, because mixing never goes below the darkest ingredient and the
+    darkest ingredient was a chart swatch rather than a masstone. The remaining gap
+    is the hue the pigments still carry: a coloured dark cannot sit on the floor in
+    all three channels at once, and pigments with no hue left would break the
+    mixtures findings 5 and 6 protect.
+    """
     s = make(tmp_path)
     floor = s.palette.darkest_value
-    assert 0.15 < floor < 0.30
+    assert 0.10 < floor < 0.15, f"palette floor {floor:.3f}"
     assert floor == pytest.approx(
         min(s.palette.value_of(n) for n in set(s.palette.pigment_names))
     )
+
+    # The mixture that is the whole point of a box without black.
+    mixed = s.palette.value_of(s.palette.mix("ultramarine", "burnt_umber", 0.5))
+    assert mixed < 0.15, f"ultramarine + burnt umber reads {mixed:.3f}, not a dark"
+
+
+def test_the_dark_swatches_state_a_colour_the_engine_can_lay(tmp_path):
+    """A channel below the reflectance floor renders as the floor.
+
+    So a swatch written darker than 0.01 linear would claim a colour no stroke can
+    put down, and `value_of` would disagree with the canvas. Finding 5 asks only
+    that no channel is zero; the darks, which is where the floor bites, are held to
+    the stronger rule.
+    """
+    from easel.color import _FLOOR, parse_color
+    from easel.palette import PIGMENTS
+
+    for name, hexval in PIGMENTS.items():
+        assert float(parse_color(hexval).min()) > 0.0, f"{name} has a zero channel"
+
+    for name in ("burnt_umber", "ultramarine", "alizarin",
+                 "burnt_sienna", "viridian", "cerulean"):
+        lowest = float(parse_color(PIGMENTS[name]).min())
+        assert lowest >= float(_FLOOR), (
+            f"{name} states {PIGMENTS[name]}, whose lowest channel {lowest:.4f} is "
+            f"under the {float(_FLOOR)} reflectance floor and renders lighter"
+        )
