@@ -141,6 +141,79 @@ class Palette:
         """Mix a colour with its rough complement to make a lively neutral."""
         return self.mix(a, b, ratio)
 
+    def at_value(self, base, target: float, light="titanium_white",
+                 dark=None, steps: int = 24) -> np.ndarray:
+        """The mixture of ``base`` that reads at ``target`` -- reached from either side.
+
+        Planning values means hitting a number, and a painter hits it from whichever
+        side the mixture happens to start on. Adding white raises a colour; to lower
+        one you mix in a dark. This does both: it bisects toward ``light`` when the
+        target is above the base and toward ``dark`` when it is below, and hands back
+        the colour rather than a ratio, because the colour is what the next call
+        wants::
+
+            p = s.palette
+            p["shadow"] = p.mix("ultramarine", "burnt_umber", 0.4)
+            s.block_in(cell("D5"), "flat", p.at_value("shadow", 0.45))   # a step up
+            s.block_in(cell("D6"), "flat", p.at_value("ochre", 0.30))    # and down
+
+        The default ``dark`` is the blue-umber the palette is built around rather
+        than a black it does not have, so lowering a value keeps a colour that still
+        has a hue in it.
+
+        The relationship is steeply curved -- a third of white gets the first step
+        of nine and it takes nine tenths to reach the eighth -- which is why this
+        searches rather than interpolating, and why a mixture that "should" be
+        halfway comes out too dark.
+
+        Args:
+            base: the colour to move.
+            target: the value to reach, as :meth:`value_of` reports it.
+            light: what to raise with.
+            dark: what to lower with. Defaults to an ultramarine/burnt-umber dark.
+            steps: bisection steps. 24 settles well inside a thousandth.
+
+        Returns:
+            The mixed colour, as an (r, g, b) array.
+
+        Raises:
+            ValueError: if the target is outside what mixing ``base`` with ``light``
+                or ``dark`` can reach. It raises rather than returning the nearest
+                it managed, because silently handing back a colour at the wrong value
+                is exactly the failure this exists to stop -- a painter who asks for
+                ``0.30`` and is given ``0.41`` does not find out until
+                :meth:`~easel.session.Session.compare` says so, a mass later.
+        """
+        target = float(target)
+        base_v = self.value_of(base)
+        if abs(target - base_v) < 1e-4:
+            return np.asarray(self._resolve(base), dtype=np.float32)
+
+        if dark is None:
+            dark = self.mix("ultramarine", "burnt_umber", 0.5)
+        toward = light if target > base_v else dark
+        reach = self.value_of(toward)
+        if (target > base_v and target > reach) or (target < base_v and target < reach):
+            raise ValueError(
+                f"value {target:.3f} is out of reach: {self.hex(base)} reads "
+                f"{base_v:.3f} and mixing it toward {self.hex(toward)} only gets to "
+                f"{reach:.3f}. Mix a "
+                f"{'lighter' if target > base_v else 'darker'} ingredient and ask "
+                f"again, or plan a value this box can lay."
+            )
+
+        lo, hi = 0.0, 1.0
+        for _ in range(max(1, int(steps))):
+            mid = (lo + hi) * 0.5
+            below = self.value_of(self.mix(base, toward, mid)) < target
+            # Mixing toward white raises the value and toward a dark lowers it, so
+            # which half to keep depends on which way we are travelling.
+            if below == (target > base_v):
+                lo = mid
+            else:
+                hi = mid
+        return self.mix(base, toward, (lo + hi) * 0.5)
+
     # -- inspection --------------------------------------------------------------
     def hex(self, color) -> str:
         """The sRGB hex string for a colour, for logging and for ``look()`` labels."""

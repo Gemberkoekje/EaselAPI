@@ -15,6 +15,7 @@ import json
 import math
 import os
 import tempfile
+import warnings
 import zipfile
 from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
@@ -29,19 +30,35 @@ from easel.canvas import Canvas, build_surface, tooth_ceiling
 from easel.color import parse_color
 from easel.history import History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
-from easel.measure import Comparison, compare_images, heat_sheet
+from easel.measure import (
+    Comparison,
+    compare_images,
+    compare_plan,
+    heat_sheet,
+    plan_sheet,
+)
 from easel.palette import Palette
 from easel.prepare import Preparation, prepare_reference
-from easel.regions import Polygon, Region, as_place, as_region
+from easel.regions import (
+    Polygon,
+    Region,
+    as_place,
+    as_region,
+    blob,
+    ellipse,
+    polygon,
+)
 from easel.stroke import catmull_rom, draw_pencil, paint_stroke, press_width
 
 __all__ = ["Session"]
 
 #: Bumped to 2 by M6: sessions now carry a graphite channel and named landmarks.
 #: Bumped to 3 by M8: and a note of which assisted modes the painting has used.
-#: Format 1 and 2 files still load -- they simply have less in them.
-_EASEL_FORMAT = 3
-_READABLE_FORMATS = (1, 2, 3)
+#: Bumped to 4: and a stroke budget, so the split a painter writes down survives
+#: being closed and reopened between ``easel run`` calls.
+#: Format 1, 2 and 3 files still load -- they simply have less in them.
+_EASEL_FORMAT = 4
+_READABLE_FORMATS = (1, 2, 3, 4)
 
 
 class Session:
@@ -57,6 +74,12 @@ class Session:
         timelapse: record a frame after every mark. Cheap, and the human watching
             gets to see the painting happen.
         out_dir: where ``look()`` writes its PNGs.
+        budget: how many strokes this painting is allowed, if you want the engine to
+            hold the number. A painter is told to write the split down before
+            starting; this is where it gets written. Nothing is refused when it runs
+            out -- the budget is a plan, not a lock -- but :meth:`cost` says when a
+            call would eat a large share of what is left, and ``easel run`` prints
+            spent and remaining after every pass.
 
     Example::
 
@@ -76,6 +99,7 @@ class Session:
         timelapse: bool = True,
         out_dir: str | Path = "out",
         texture_strength: float = 1.0,
+        budget: int | None = None,
     ) -> None:
         self.seed = int(seed)
         self.rng = np.random.default_rng(self.seed)
@@ -84,6 +108,8 @@ class Session:
         self.history = History()
         self.out_dir = Path(out_dir)
         self.timelapse = bool(timelapse)
+        #: The stroke budget, or ``None``. See :meth:`budget_line` and :meth:`cost`.
+        self.budget = None if budget is None else int(budget)
         self._look_counter = 0
         self._last_look: np.ndarray | None = None
         #: Named landmarks: ``{name: (x, y)}``. Six or seven verified points are a
@@ -112,6 +138,37 @@ class Session:
     @property
     def size(self) -> tuple[int, int]:
         return (self.canvas.width, self.canvas.height)
+
+    @property
+    def spent(self) -> int:
+        """Strokes charged so far. The same number as :attr:`stroke_count`, named
+        for the budget rather than for the log."""
+        return self.history.stroke_count
+
+    @property
+    def remaining(self) -> int | None:
+        """Strokes left of the budget, or ``None`` when no budget was set.
+
+        Goes negative rather than clamping: a painting that has overrun by forty
+        strokes should say so, not sit at zero looking finished.
+        """
+        return None if self.budget is None else self.budget - self.spent
+
+    def budget_line(self) -> str:
+        """One line of budget for a human or an agent to read after a pass.
+
+        Printed by ``easel run``. Without a budget it still says what was spent,
+        because the count is worth seeing either way::
+
+            142 of 300 strokes spent, 158 left
+            142 strokes spent (no budget set)
+        """
+        if self.budget is None:
+            return f"{self.spent} strokes spent (no budget set)"
+        left = self.remaining
+        if left < 0:
+            return f"{self.spent} of {self.budget} strokes spent, {-left} OVER budget"
+        return f"{self.spent} of {self.budget} strokes spent, {left} left"
 
     # -- painting ---------------------------------------------------------------
     def stroke(
@@ -236,6 +293,7 @@ class Session:
         pressure="taper",
         size: float | None = None,
         overhang: float | None = None,
+        edge: str = "ragged",
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -275,6 +333,22 @@ class Session:
                 shape, where the edge is the drawing. (Either way the brush is wider
                 than the step between passes, so paint still breaks past the
                 boundary; it is the pass *centres* that stop.)
+            edge: ``"ragged"``, the default -- the passes stop at the boundary and
+                the brush breaks past it, which is what a brush does, and what a mass
+                sitting behind other things wants. ``"clean"`` gives the mass a drawn
+                contour instead: the shape is inset by half the brush, filled, and
+                then one pass is swept along that inset outline in the same colour,
+                so the **outer half of the brush lands on the line you drew**.
+                Reach for it on a small mass whose silhouette is the drawing -- a
+                round tip lays its half-brush overhang as separate discs, and at that
+                size they read as a fringe of dots around the shape rather than as a
+                soft edge. Measured on a pear-sized mass, round tip at ``size=0.05``:
+                paint reaches 20px past the outline ragged and 13px clean, and the
+                clean silhouette is the less ragged of the two. **Use a solid tip.**
+                Clean pulls the paint in on a comb too, but one bristle pass along a
+                contour is stringy -- it covers about three-quarters of its width --
+                so it leaves a *rougher* outline than the ragged fill did, and says
+                so when asked.
             note: recorded in the log.
 
         Returns:
@@ -283,6 +357,12 @@ class Session:
         place = as_place(region)
         b = self._resolve_brush(brush, size, None, brush_overrides)
         shaped = isinstance(place, Polygon)
+        if edge not in ("ragged", "clean"):
+            raise ValueError(
+                f"block_in(edge={edge!r}) is either 'ragged' -- the brush breaks past "
+                f"the boundary, the default -- or 'clean', which insets the fill by "
+                f"half the brush and lays one pass along the outline itself."
+            )
 
         records: list[StrokeRecord] = []
         traced = ""
@@ -293,7 +373,20 @@ class Session:
             traced = " (traced)"
             self._note_assisted(f"traced outline blocked in: {place.name or 'shape'}")
 
-        for pass_dir, path in self._block_in_paths(place, b, direction, density, overhang):
+        # A clean edge fills the shape half a brush short of its own boundary. The
+        # fill's own overhang then carries the paint back out to the true outline,
+        # and the contour pass below draws it.
+        fill = place.inset(b.size * 0.5) if edge == "clean" else place
+        if edge == "clean" and b.tip == "bristle":
+            warnings.warn(
+                f"block_in(edge='clean') with a bristle brush ({b.name!r}) leaves a "
+                f"stringier contour than the ragged fill it replaces: one comb pass "
+                f"covers about three-quarters of its width. Use a solid tip "
+                f"('flat', 'knife', 'round_hard') for a drawn edge.",
+                stacklevel=2,
+            )
+
+        for pass_dir, path in self._block_in_paths(fill, b, direction, density, overhang):
             records.append(
                 self.stroke(
                     path,
@@ -304,6 +397,20 @@ class Session:
                                   f"{pass_dir}{traced}"),
                 )
             )
+        if edge == "clean":
+            # The contour pass runs along the *inset* outline, not the drawn one, so
+            # that the outer half of the brush lands on the drawn line rather than
+            # half a brush past it. Measured on a pear-sized mass with a round tip at
+            # size 0.05: paint reaches 20px past the outline blocked in ragged, 38px
+            # with the contour laid along the drawn line, and 13px this way -- and
+            # this way also leaves the least ragged silhouette of the three.
+            records.extend(self.sweep(
+                fill if isinstance(fill, Polygon) else polygon(fill),
+                brush=b, color=color, passes=1, depth=max(b.size * 0.5, 1e-3),
+                pressure=pressure,
+                note=note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
+                              f"{traced}"),
+            ))
         return records
 
     def _block_in_paths(self, place, b: Brush, direction, density: float, overhang):
@@ -671,6 +778,164 @@ class Session:
         return np.interp(at, [0.0, length * 0.5, length], wob)
 
     # -- drawing ----------------------------------------------------------------
+    def cover(
+        self,
+        place,
+        color,
+        brush: str | Brush = "flat",
+        size: float | None = None,
+        direction: str = "horizontal",
+        density: float = 1.0,
+        overhang: float = 1.0,
+        dry_first: bool = True,
+        note: str = "",
+        **brush_overrides,
+    ) -> list[StrokeRecord]:
+        """Bury a mistake, with every clause of the burying recipe already set.
+
+        Repairs happen with paint, not with :meth:`undo` -- and burying takes a
+        particular kind of mark that the wrong brush makes worse. This is that mark:
+        the area dried first so new paint covers instead of mixing, a **solid tip**
+        because a comb leaves the old paint showing between its streaks however high
+        the opacity goes, ``load=1.0`` and ``load_falloff=0.0`` because a brush that
+        runs dry leaves a speckled film that everything after it has to sit on,
+        ``opacity=1.0``, ``pressure="even"``, and passes that **end outside the area**
+        so no chisel end stops inside the picture and draws an edge nobody wanted::
+
+            s.cover(cell("D5"), "corrected_sky")     # that is the whole repair
+
+        ``load_falloff=0.0`` is the clause that is easy to miss: a full-width
+        correction stroke at ``load=1.0`` still runs dry and speckles at its far end
+        without it, which is the failure that sends a painter back for a second
+        correction over the first.
+
+        Args:
+            place: what to bury -- a region, a name, a 4-tuple or a shape.
+            color: what to bury it under.
+            brush: a solid tip. ``"flat"`` and ``"knife"`` leave a chisel end,
+                ``"round_hard"`` a rounded one; both are outside the area anyway.
+                A bristle is refused the recipe and says so.
+            size: brush size override.
+            direction: as :meth:`block_in`. Run it along the grain of what is
+                already there.
+            density: as :meth:`block_in`. Leave it at 1.0 -- a correction that lets
+                the old paint through is not a correction.
+            overhang: how far past the area each pass runs, in brush widths. The
+                default of one full width is what puts the ends outside.
+            dry_first: dry the area before covering it. Free, and part of the
+                recipe; only the area, so a wet neighbour it must blend into stays
+                wet.
+            note: recorded in the log.
+
+        Returns:
+            The records for every stroke laid down, the ``dry`` not among them --
+            drying is free and is not a mark.
+        """
+        target = as_place(place)
+        b = self._resolve_brush(
+            brush, size, None,
+            {"load": 1.0, "load_falloff": 0.0, "opacity": 1.0, **brush_overrides},
+        )
+        if b.tip == "bristle":
+            warnings.warn(
+                f"cover() was given a bristle brush ({b.name!r}), which does not "
+                f"bury: its comb leaves the old paint showing between the streaks "
+                f"at any opacity. Use 'flat', 'knife' or 'round_hard'.",
+                stacklevel=2,
+            )
+        if dry_first:
+            self.dry(1.0, target)
+        return self.block_in(
+            target, brush=b, color=color, direction=direction, density=density,
+            pressure="even", overhang=overhang,
+            note=note or f"cover {target.name or 'area'}",
+        )
+
+    def scumble(
+        self,
+        band,
+        color_a,
+        color_b,
+        n: int = 8,
+        brush: str | Brush = "bristle",
+        size: float | None = None,
+        opacity: float = 0.5,
+        direction="axis",
+        overhang: float = 0.35,
+        pressure="even",
+        note: str = "",
+        **brush_overrides,
+    ) -> list[StrokeRecord]:
+        """A soft passage: ``n`` overlapping passes stepping from one value to another.
+
+        There is no gradient tool, and there should not be one -- but the thing a
+        painter reaches for a gradient *for* is a wide quiet passage, and a wide
+        quiet passage laid as three hard bars is the loudest tell in a picture. One
+        smudge takes about 40% off a join, once; doing it again undoes most of the
+        first pass. When once is not enough, the answer is paint: many overlapping
+        strokes at closely spaced values, which is what this lays::
+
+            s.scumble(span("A3", "H5"), "shadow", "light", 8)   # 8 strokes, no bars
+
+        The passes run **along** the band and step **across** it, from ``color_a`` at
+        one edge to ``color_b`` at the other, mixing one step per pass. They overlap:
+        the brush is wider than the step between them, which is what closes the
+        joins that stepping alone would leave.
+
+        Costs exactly ``n`` strokes on a band the painter can name, so it can be
+        budgeted before it is laid. (On a concave shape a pass line is cut into the
+        pieces really inside the shape, the same way :meth:`block_in` cuts one, so a
+        shape with a bite out of it costs a little more than ``n``.)
+
+        Args:
+            band: where the passage goes -- a region, a name, a 4-tuple or a shape.
+            color_a: the value at the first edge.
+            color_b: the value at the far edge.
+            n: how many passes. Below about five the steps start to read; the guide's
+                own recipe uses eight.
+            brush: preset name or brush.
+            size: brush size override. The default brush is wider than the step, and
+                that overlap is the point -- a much smaller brush leaves the bands.
+            opacity: each pass is laid part-transparent so that the passes blend
+                into each other rather than replacing one another.
+            direction: which way the passes run. ``"axis"``, the default, runs them
+                along the band's own long axis so a wide low band is swept the wide
+                way. Otherwise as :meth:`block_in`: a name or a number of degrees.
+            overhang: how far past the band each pass runs, in brush widths.
+            pressure: pressure profile for each pass. ``"even"`` by default: a taper
+                at both ends of every pass would print the band's own edges back
+                into the passage.
+            note: recorded in the log.
+
+        Returns:
+            The records for every pass laid down.
+        """
+        if int(n) < 2:
+            raise ValueError(
+                f"scumble(n={n!r}) needs at least two passes -- a passage from one "
+                f"value to another is at least two. Eight is the usual number."
+            )
+        place = as_place(band)
+        b = self._resolve_brush(brush, size, opacity, brush_overrides)
+        degrees = place.axis if direction == "axis" else _angle_of(direction)
+        n = int(n)
+        step = _normal_extent(place, degrees) / n
+        shaped = isinstance(place, Polygon)
+        paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
+                 else self._angled_paths(place, degrees, step, b.size * overhang))
+
+        records: list[StrokeRecord] = []
+        laid = 0
+        for path in paths:
+            t = laid / max(n - 1, 1)
+            records.append(self.stroke(
+                path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
+                pressure=pressure,
+                note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
+            ))
+            laid += 1
+        return records
+
     def pencil(
         self,
         points,
@@ -822,6 +1087,57 @@ class Session:
         self.marks.pop(str(name).strip(), None)
 
     # -- canvas state -----------------------------------------------------------
+    # -- shapes, in this canvas's own units --------------------------------------
+    @property
+    def aspect(self) -> float:
+        """The canvas's width over its height. ``1.333`` on a 1024x768.
+
+        The number behind the one unit trap in the whole API. Coordinates are
+        normalised on *both* axes, so ``0.1`` across is 102 pixels here and ``0.1``
+        down is 77: a distance in x and the same distance in y are not the same
+        distance. Brush sizes are a fraction of the canvas's **long side**, which is
+        why a brush is round and an ``ellipse(p, 0.1, 0.1)`` is not.
+        """
+        return self.canvas.width / self.canvas.height
+
+    def circle(self, place, r: float | None = None, wobble: float = 0.0,
+               points: int = 15, seed: int = 0, rotate: float = 0.0,
+               steps: int = 48, name: str = "") -> Polygon:
+        """A mass that is round on *this* canvas, not merely round in coordinates.
+
+        ``ellipse(p, 0.1, 0.1)`` is an oval on any canvas that is not square, because
+        the two radii are in different units. This takes one radius, in x, and works
+        the other out from :attr:`aspect` -- so what comes back is round in pixels,
+        which is what "round" meant::
+
+            s.circle((0.42, 0.55), 0.09)                 # a round lobe
+            s.circle(cell("D5"))                         # the biggest circle that fits
+            s.circle((0.42, 0.55), 0.09, wobble=0.25)    # round, but nobody drew it
+
+        Args:
+            place: a point ``(x, y)``, or a region to sit inside.
+            r: the radius across, as a fraction of the canvas width. Leave it out to
+                take the largest circle the place holds.
+            wobble: above zero, the outline wanders by this fraction of the radius
+                and what comes back is a :func:`~easel.regions.blob` -- a round mass
+                with a silhouette nobody drew by hand.
+            points: how many points a wobbled outline gets.
+            seed: the shape's own seed, not the session's. The same seed is the same
+                silhouette.
+            rotate: degrees, clockwise. Only visible on a wobbled outline.
+            steps: how many points an unwobbled outline gets.
+            name: shows up in the log.
+
+        Returns:
+            A :class:`~easel.regions.Polygon`, as :func:`~easel.regions.ellipse` and
+            :func:`~easel.regions.blob` return.
+        """
+        if wobble:
+            return blob(place, r, wobble=wobble, points=points, seed=seed,
+                        rotate=rotate, name=name, aspect=self.aspect)
+        return ellipse(place, r, rotate=rotate, steps=steps, name=name,
+                       aspect=self.aspect)
+
     def dry(self, amount: float = 1.0, region=None) -> StrokeRecord:
         """Dry the canvas so the next paint covers instead of mixing.
 
@@ -1081,14 +1397,7 @@ class Session:
         """
         trial = self._trial_session()
         for kind, spec in self._plan_specs(strokes):
-            kwargs = {k: v for k, v in spec.items()
-                      if k not in ("label", "place", "edge")}
-            if kind == "mass":
-                trial.block_in(spec["place"], **kwargs)
-            elif kind == "sweep":
-                trial.sweep(spec["edge"], **kwargs)
-            else:
-                trial.stroke(**kwargs)
+            trial._lay(kind, spec)
 
         ref_img = None if reference is None else load_reference(reference)
         img = render_look(
@@ -1102,7 +1411,65 @@ class Session:
         )
         return save_look(img, self._look_path(path, "rehearse"))
 
-    def cost(self, strokes) -> int:
+    def _lay(self, kind: str, spec: dict) -> list[StrokeRecord]:
+        """Paint one plan entry on this session.
+
+        The single dispatch from a plan entry to the call that lays it, so that what
+        :meth:`rehearse` tries on the scrap of canvas and what :meth:`paint` commits
+        cannot drift apart -- they are the same three lines, one on a trial session
+        and one on the real one.
+        """
+        # ``edge`` is dropped for a sweep, whose edge is passed positionally, and
+        # kept for a mass, where it is block_in's ragged-or-clean contour.
+        drop = ("label", "place") if kind == "mass" else ("label", "place", "edge")
+        kwargs = {k: v for k, v in spec.items() if k not in drop}
+        if kind == "mass":
+            return self.block_in(spec["place"], **kwargs)
+        if kind == "sweep":
+            return self.sweep(spec["edge"], **kwargs)
+        return [self.stroke(**kwargs)]
+
+    def paint(self, plan, note: str = "") -> list[StrokeRecord]:
+        """Paint a plan -- marks, masses and sweeps -- exactly as it was checked.
+
+        :meth:`cost`, :meth:`preview` and :meth:`rehearse` all read the same plan.
+        This paints it. Before, a mass or a sweep in a plan had to be dispatched to
+        :meth:`block_in` or :meth:`sweep` by hand once it had been approved, which
+        is the one place a plan can drift from the thing that was checked: the
+        rehearsal is of the plan, the painting is of the retyping.
+
+        The four together are the loop the guide asks for, and no line of the plan
+        is written twice::
+
+            plan = [{"shape": blob(cell("D5")), "brush": "bristle", "color": "dark"},
+                    {"edge": sill, "into": "down", "depth": 0.2, "color": "shadow"},
+                    {"points": [(0.2, 0.6), (0.6, 0.55)], "brush": "liner"}]
+
+            s.cost(plan)                    # 34 -- what it charges
+            s.preview(plan, reference=ref)  # where it goes
+            s.rehearse(plan, region=...)    # what it will look like
+            s.paint(plan)                   # the same plan, now paid for
+
+        Because a rehearsal is seeded as if it were the next marks of the real
+        painting, rehearsing a plan and then painting it -- with nothing in between
+        -- lands it pixel for pixel as it was rehearsed.
+
+        Args:
+            plan: as :meth:`preview`. One entry or a list; marks, masses and sweeps
+                may be mixed, and are painted in the order given.
+            note: recorded against every entry that does not carry a note of its own.
+
+        Returns:
+            The records for every stroke laid down, masses flattened in with marks.
+        """
+        records: list[StrokeRecord] = []
+        for kind, spec in self._plan_specs(plan):
+            if note and not spec.get("note"):
+                spec = dict(spec, note=note)
+            records.extend(self._lay(kind, spec))
+        return records
+
+    def cost(self, strokes, share: float = 0.25) -> int:
         """What a plan would charge against the stroke budget, without painting it.
 
         A mark costs one. A **mass** costs what its passes come to, and that is the
@@ -1123,14 +1490,45 @@ class Session:
             s.cost(dict(plan, size=0.09))     # 12 -- the same mass, a wider brush
             s.preview(plan)                   # the count is on the overlay too
 
+        When the session carries a ``budget``, a plan that would eat more than
+        ``share`` of what is left says so as a warning. That is the number a painter
+        cannot feel: twelve strokes sounds small until it is most of what remains.
+
         Args:
             strokes: as :meth:`preview` -- marks, masses and sweeps, one or a list.
+            share: how much of the remaining budget one plan may take before it is
+                flagged. ``0`` never flags. Ignored without a budget.
 
         Returns:
             The number of strokes painting the plan would charge.
         """
-        return sum(self._plan_cost(kind, spec)
-                   for kind, spec in self._plan_specs(strokes))
+        total = sum(self._plan_cost(kind, spec)
+                    for kind, spec in self._plan_specs(strokes))
+        self._flag_budget(total, share)
+        return total
+
+    def _flag_budget(self, total: int, share: float) -> None:
+        """Warn when a plan takes more than ``share`` of what the budget has left.
+
+        A warning rather than a refusal: the budget is the painter's plan for the
+        picture, and a painting that needs forty more strokes than it planned should
+        get them and be told, not be stopped halfway with the masses unfinished.
+        """
+        left = self.remaining
+        if left is None or share <= 0:
+            return
+        if left <= 0:
+            warnings.warn(
+                f"This plan costs {total} strokes, and the {self.budget}-stroke "
+                f"budget is already spent.",
+                stacklevel=3,
+            )
+        elif total > share * left:
+            warnings.warn(
+                f"This plan costs {total} strokes -- {total / left:.0%} of the "
+                f"{left} left of a {self.budget}-stroke budget.",
+                stacklevel=3,
+            )
 
     def _plan_cost(self, kind: str, spec: dict) -> int:
         """Price one plan entry by walking its passes, not by laying them.
@@ -1145,9 +1543,14 @@ class Session:
         b = trial._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
                                  spec.get("opacity"), {})
         if kind == "mass":
+            # A clean edge fills the shape inset by half a brush and then draws the
+            # contour, so it is priced on the inset shape plus the one contour pass.
+            clean = spec.get("edge", "ragged") == "clean"
+            place = spec["place"]
+            fill = place.inset(b.size * 0.5) if clean else place
             return sum(1 for _ in trial._block_in_paths(
-                spec["place"], b, spec.get("direction", "horizontal"),
-                float(spec.get("density", 1.0)), spec.get("overhang")))
+                fill, b, spec.get("direction", "horizontal"),
+                float(spec.get("density", 1.0)), spec.get("overhang"))) + int(clean)
 
         # A sweep works its pass count out from the depth before any geometry is
         # walked, so the quote goes through the same arithmetic the painted one does
@@ -1160,6 +1563,20 @@ class Session:
         return sum(1 for _ in trial._sweep_paths(
             edge.closed if isinstance(edge, Polygon) else edge,
             step, n_passes, depth, cross, spec.get("into"), spec.get("closed")))
+
+    def scratch(self) -> Session:
+        """A throwaway copy of this session: the painter's scrap of canvas.
+
+        Everything painted on it lands exactly where it would land on the real
+        painting -- the strokes are seeded as if they were the next marks of this
+        session -- but the canvas is a copy and the history starts empty, so nothing
+        is committed and :attr:`stroke_count` counts only what the trial itself laid.
+
+        :meth:`rehearse` is this for a plan. This is it for a whole pass: ``easel run
+        --rehearse`` runs a script against one of these, looks at the result and
+        prints what it would cost, and then throws it away.
+        """
+        return self._trial_session()
 
     def _trial_session(self) -> Session:
         """A throwaway session sharing this one's surface, palette and seeding.
@@ -1183,6 +1600,7 @@ class Session:
         trial.palette = self.palette
         trial.history = History()
         trial.out_dir = self.out_dir
+        trial.budget = self.budget
         trial.timelapse = False
         trial._look_counter = 0
         trial._last_look = None
@@ -1240,15 +1658,19 @@ class Session:
         for entry in entries:
             if isinstance(entry, (Polygon, Region)):
                 out.append(("mass", {"place": as_place(entry)}))
-            elif isinstance(entry, dict) and "points" not in entry and "edge" in entry:
-                out.append(("sweep", dict(entry)))
             elif isinstance(entry, dict) and "points" not in entry and (
                     "shape" in entry or "region" in entry):
+                # Tested before the sweep branch, because ``edge`` means two things:
+                # the boundary a sweep follows, and block_in's ragged-or-clean
+                # contour. A ``shape``/``region`` key settles it -- an entry that
+                # names the mass is a mass, and its ``edge`` is the contour.
                 spec = dict(entry)
                 place = spec.pop("shape", None)
                 fallback = spec.pop("region", None)
                 spec["place"] = as_place(place if place is not None else fallback)
                 out.append(("mass", spec))
+            elif isinstance(entry, dict) and "points" not in entry and "edge" in entry:
+                out.append(("sweep", dict(entry)))
             else:
                 out.append(("stroke", self._stroke_specs([entry])[0]))
         return out
@@ -1349,7 +1771,20 @@ class Session:
         that floor is close to the engine's own, so expect the list to be empty:
         every cell on the object is normally the painter's to fix, and ``fixable``
         is then just ``off``.
+
+        **Without a photograph, compare against the plan instead.** Hand it a dict of
+        ``{place: value}`` -- the value plan a painter writing from their head is
+        told to put down in numbers -- and it measures each named place against the
+        value it was promised, with the same table and the same sheet::
+
+            s.compare({"sky": 0.72, sill: 0.38, pear: 0.30})
+
+        The keys are places (a name, a region, a shape) and the values are what
+        :meth:`~easel.palette.Palette.value_of` reports, so a plan can be written
+        before a stroke is laid and checked after every mass.
         """
+        if isinstance(reference, dict):
+            return self._compare_plan(reference, path=path, threshold=threshold)
         ref_img = load_reference(reference)
         r = as_region(region) if region is not None else None
 
@@ -1377,6 +1812,56 @@ class Session:
             canvas_grey=_grey(canvas_rgb),
             reference_grey=_grey(ref_rgb),
         )
+        result.path = save_look(sheet, self._look_path(path, "compare"))
+        return result
+
+    def _compare_plan(self, plan: dict, path=None,
+                      threshold: float = 0.10) -> Comparison:
+        """Measure the canvas against a written value plan. See :meth:`compare`."""
+        if not plan:
+            raise ValueError(
+                "compare({}) was given an empty plan. A value plan is at least one "
+                "place and the value you mean to paint it: "
+                "s.compare({'sky': 0.72, sill: 0.38})."
+            )
+        w, h = self.canvas.width, self.canvas.height
+        places: list[tuple[str, np.ndarray, float]] = []
+        outlines: list[tuple[str, list[tuple[float, float]]]] = []
+        planned = np.zeros((h, w), dtype=np.float32)
+
+        for i, (where, target) in enumerate(plan.items()):
+            try:
+                place = as_place(where)
+            except (KeyError, ValueError) as exc:
+                raise KeyError(
+                    f"{where!r} is not a place, so it cannot carry a planned value. "
+                    f"The keys of a value plan are places -- a cell like 'D5', a "
+                    f"span like 'C3:F6', a Region, or a shape. To see a name of your "
+                    f"own in the table, build the shape with one: "
+                    f"blob(cell('D5'), name='pear')."
+                ) from exc
+            poly = place if isinstance(place, Polygon) else polygon(place)
+            name = (place.name or poly.name
+                    or (where if isinstance(where, str) else f"place {i + 1}"))
+            mask = poly.mask(w, h)
+            value = float(target)
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(
+                    f"The plan gives {name!r} a value of {value}, and a value runs "
+                    f"0..1 the way palette.value_of() reports it."
+                )
+            places.append((str(name), mask, value))
+            outlines.append((str(name), list(poly.closed)))
+            # Later places sit in front of earlier ones, as they would be painted.
+            planned[mask] = value
+
+        canvas_rgb = self.canvas.to_srgb8(impasto=False)
+        result = compare_plan(canvas_rgb, places, threshold=threshold,
+                              floor=self.palette.darkest_value)
+        plan_grey = Image.fromarray(
+            np.clip(planned * 255.0 + 0.5, 0, 255).astype(np.uint8), mode="L")
+        sheet = plan_sheet(result, canvas_grey=_grey(canvas_rgb),
+                           plan_grey=plan_grey, outlines=outlines)
         result.path = save_look(sheet, self._look_path(path, "compare"))
         return result
 
@@ -1542,9 +2027,26 @@ class Session:
                         mode="RGB").save(p)
         return p
 
-    def timelapse_gif(self, path: str | Path, fps: float = 8.0) -> Path:
-        """Write the time-lapse as an animated GIF."""
-        return self.history.save_gif(path, fps=fps)
+    def timelapse_gif(self, path: str | Path, fps: float = 8.0, every: int = 1,
+                      scale: int | None = None) -> Path:
+        """Write the time-lapse as an animated GIF.
+
+        Args:
+            path: where to write.
+            fps: frames per second.
+            every: keep every nth frame. A painting of a couple of hundred marks
+                makes a couple of megabytes at ``every=1``, and consecutive frames
+                differ by one stroke; ``every=3`` is a third of the size and reads
+                the same. The finished painting is always the last frame, whatever
+                ``every`` would have landed on.
+            scale: long side in pixels. Frames are recorded at 360 and this only
+                shrinks them further.
+
+        Example::
+
+            s.timelapse_gif("painting.gif", every=3, scale=240)   # small enough to send
+        """
+        return self.history.save_gif(path, fps=fps, every=every, scale=scale)
 
     def contact_sheet(self, path: str | Path, columns: int = 6) -> Path:
         """Write the time-lapse as a grid of thumbnails."""
@@ -1585,6 +2087,7 @@ class Session:
             "seed": self.seed,
             "timelapse": self.timelapse,
             "out_dir": str(self.out_dir),
+            "budget": self.budget,
             "look_counter": self._look_counter,
             "stroke_count": self.canvas.stroke_count,
             "texture_strength": self.canvas.texture_strength,
@@ -1654,6 +2157,9 @@ class Session:
                 s.seed = int(meta["seed"])
                 s.rng = _decode_rng(meta["rng_state"])
                 s.out_dir = Path(meta["out_dir"])
+                _warn_foreign_out_dir(p, s.out_dir)
+                budget = meta.get("budget")
+                s.budget = None if budget is None else int(budget)
                 s.timelapse = bool(meta["timelapse"])
                 s._look_counter = int(meta["look_counter"])
                 s.marks = {
@@ -1755,6 +2261,7 @@ class Session:
             timelapse=self.timelapse,
             out_dir=self.out_dir,
             texture_strength=self.canvas.texture_strength,
+            budget=self.budget,
         )
         for name, rgb in self.palette.slots.items():
             fresh.palette[name] = rgb
@@ -1840,6 +2347,29 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+def _normal_extent(place, degrees: float) -> float:
+    """How far a place reaches across a sweep at ``degrees``, along that sweep's normal.
+
+    The span :meth:`Session._shape_paths` and :meth:`Session._angled_paths` divide by
+    the pass step to decide how many passes a mass takes. :meth:`Session.scumble`
+    needs the arithmetic the other way round -- it is told how many passes to lay and
+    has to work out the step that gives exactly that many -- so the extent is lifted
+    out here rather than being measured twice in two slightly different ways.
+    """
+    if isinstance(place, Polygon):
+        pts = np.asarray(place.points, dtype=np.float64)
+        cx, cy = place.box.center
+        corners = [(float(x), float(y)) for x, y in pts]
+    else:
+        r = as_region(place)
+        cx, cy = (r.x0 + r.x1) * 0.5, (r.y0 + r.y1) * 0.5
+        corners = [(r.x0, r.y0), (r.x0, r.y1), (r.x1, r.y0), (r.x1, r.y1)]
+    theta = math.radians(float(degrees))
+    nx, ny = -math.sin(theta), math.cos(theta)
+    offs = [(x - cx) * nx + (y - cy) * ny for x, y in corners]
+    return max(max(offs) - min(offs), 1e-6)
+
+
 def _pass_step(size: float, density: float) -> float:
     """One part-brush: how far apart ``block_in`` and ``sweep`` put their passes.
 
@@ -2344,3 +2874,40 @@ def _decode_rng(state: dict) -> np.random.Generator:
         s["uinteger"] = int(s["uinteger"])
     gen.bit_generator.state = s
     return gen
+
+
+def _warn_foreign_out_dir(session_path: Path, out_dir: Path) -> None:
+    """Say so when a loaded session will write its looks outside the working directory.
+
+    ``out_dir`` round-trips through the session file because that is how ``easel look
+    p.easel`` keeps writing to the same place across CLI invocations -- load-bearing,
+    not an oversight. The cost is that loading a ``.easel`` file somebody else made
+    writes wherever *they* set it, and until now it did so silently, including to an
+    absolute path outside the working directory.
+
+    The path is still honoured. It is the same field a painter legitimately sets with
+    ``--out-dir`` when creating a session, so refusing it here would break their setup
+    to guard against a file they wrote themselves. What changes is that it is no
+    longer silent: loading someone else's session now says where it is about to
+    write, once, and the painter can point it elsewhere.
+
+    Two places count as unsurprising: the working directory, and the directory the
+    session file itself sits in -- looks beside the painting are the normal
+    arrangement, and warning about them would fire on almost every load, which is how
+    a warning stops being read at all. What is left is the case worth saying out
+    loud: a file that writes somewhere related to neither.
+    """
+    try:
+        resolved = out_dir.expanduser().resolve()
+        roots = [Path.cwd().resolve(), session_path.expanduser().resolve().parent]
+    except OSError:  # pragma: no cover - an unresolvable cwd is not ours to repair
+        return
+    if any(resolved == root or root in resolved.parents for root in roots):
+        return
+    warnings.warn(
+        f"{session_path} writes its looks to {resolved}, which is neither in the "
+        f"working directory nor beside the session file. That path came from the "
+        f"session file, not from you. Set session.out_dir, or pass --out-dir, to "
+        f"send them somewhere else.",
+        stacklevel=3,
+    )

@@ -62,6 +62,7 @@ from easel.regions import (
     right_of,
     span,
     thirds,
+    union,
 )
 from easel.session import Session
 from easel.stroke import (
@@ -125,6 +126,7 @@ __all__ = [
     "blob",
     "hull",
     "ribbon",
+    "union",
     # looking, measuring and reading the reference
     "render_look",
     "load_reference",

@@ -51,7 +51,7 @@ print(f"{len(blocks)} python blocks\n")
 
 PREAMBLE = (
     "from easel import Session, Region, region, cell, span, horizon, below, above\n"
-    "from easel import blob, ellipse, hull, ribbon, polygon\n"
+    "from easel import blob, ellipse, hull, ribbon, polygon, union\n"
     f"s = Session(400, 300, ground='toned_grey', seed=1, timelapse=True, "
     f"out_dir={str(OUT)!r})\n"
     "p = s.palette\n"

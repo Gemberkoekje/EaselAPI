@@ -133,7 +133,8 @@ _PLAN_HELP = (
     "A plan is a list of entries, or one entry on its own. A mark is a list of "
     "points, or an object with 'points' and any stroke argument. A mass is an "
     "object with 'shape' (a place) and any block_in argument -- 'brush', 'color', "
-    "'size', 'direction', 'density'. A sweep is an object with 'edge' (a place, or "
+    "'size', 'direction', 'density', and 'edge': \"clean\" for a drawn contour. "
+    "A sweep is an object with 'edge' (a place, or "
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
     "'passes', 'closed'. A bare place on its own is a mass."
 )
@@ -249,23 +250,26 @@ def _plan(entries) -> tuple[list, list[str]]:
             lines.append(f"s.block_in({_py_place(entry)})")
             continue
 
-        rest = {k: v for k, v in entry.items()
-                if k not in ("shape", "region", "edge", "points", "label")}
-        args = "".join(f", {k}={v!r}" for k, v in rest.items())
         if "points" not in entry and ("shape" in entry or "region" in entry):
+            # ``edge`` is kept here and dropped for a sweep: on a mass it is
+            # block_in's ragged-or-clean contour and belongs in the echoed call, and
+            # on a sweep it is the boundary, which is passed positionally.
             _check("mass", entry)
             source = entry.get("shape", entry.get("region"))
             specs.append(dict(entry, shape=_place(source)))
-            lines.append(f"s.block_in({_py_place(source)}{args})")
+            lines.append(f"s.block_in({_py_place(source)}"
+                         f"{_echo_args(entry, 'shape', 'region', 'points', 'label')})")
         elif "points" not in entry and "edge" in entry:
             _check("sweep", entry)
             edge = entry["edge"]
             specs.append(dict(entry, edge=_edge(edge)))
-            lines.append(f"s.sweep({_py_edge(edge)}{args})")
+            lines.append(f"s.sweep({_py_edge(edge)}"
+                         f"{_echo_args(entry, 'shape', 'region', 'edge', 'points', 'label')})")
         elif "points" in entry:
             _check("stroke", entry)
             specs.append(dict(entry, points=_points(entry["points"])))
-            lines.append(f"s.stroke({_py_points(entry['points'])}{args})")
+            lines.append(f"s.stroke({_py_points(entry['points'])}"
+                         f"{_echo_args(entry, 'shape', 'region', 'edge', 'points', 'label')})")
         else:
             raise ValueError(
                 f"A plan entry is a mark ('points'), a mass ('shape') or a sweep "
@@ -273,6 +277,17 @@ def _plan(entries) -> tuple[list, list[str]]:
                 f"is a mass, and a bare list of points is a mark."
             )
     return specs, lines
+
+
+def _echo_args(entry: dict, *drop: str) -> str:
+    """A plan entry's keywords as Python, less the ones passed positionally.
+
+    Which keys are dropped depends on the kind, because ``edge`` means two things:
+    a sweep's boundary, which is its first argument, and a mass's ragged-or-clean
+    contour, which is a keyword like any other and has to survive into the echo.
+    """
+    rest = {k: v for k, v in entry.items() if k not in drop}
+    return "".join(f", {k}={v!r}" for k, v in rest.items())
 
 
 def _check(kind: str, entry: dict) -> None:
@@ -450,7 +465,8 @@ def build_server() -> MCPServer:
     @_tool
     def new(session: str, size: str = "1024x768", texture: str = "linen",
             ground: str = "white", seed: int = 0, out_dir: str = "out",
-            timelapse: bool = True, force: bool = False) -> str:
+            timelapse: bool = True, force: bool = False,
+            budget: int | None = None) -> str:
         """Create a session file: the canvas, and the painting's only state.
 
         Args:
@@ -463,6 +479,9 @@ def build_server() -> MCPServer:
             out_dir: where look(), preview() and compare() write their PNGs.
             timelapse: record a frame after every mark, for the time-lapse.
             force: overwrite an existing session file.
+            budget: how many strokes this painting is allowed. Nothing is refused
+                when it runs out, but `run` then reports spent and remaining and
+                `cost` says when one plan would eat a large share of what is left.
         """
         path = Path(session)
         if path.exists() and not force:
@@ -472,13 +491,15 @@ def build_server() -> MCPServer:
             )
         w, h = parse_size(size)
         s = Session(w, h, texture=texture, ground=ground, seed=seed,
-                    timelapse=timelapse, out_dir=out_dir)
+                    timelapse=timelapse, out_dir=out_dir, budget=budget)
         s.save(path)
         return f"Created {path} ({w}x{h}, {texture}, ground {ground}, seed {seed})"
 
     @server.tool()
     @_tool
-    def run(session: str, script: str = "", script_path: str = "") -> str:
+    def run(session: str, script: str = "", script_path: str = "",
+            rehearse: bool = False, prelude: str = "",
+            prelude_path: str = "") -> str:
         """Paint: run a Python script against the session.
 
         This is where every mark is made. The script has `s` (the session),
@@ -498,17 +519,44 @@ def build_server() -> MCPServer:
             session: the .easel file to paint into.
             script: the Python to run, as text.
             script_path: a file to run instead, if the script is already on disk.
+            rehearse: run the whole pass against a *copy* and commit nothing. The
+                strokes are seeded as if they were the next marks of the real
+                painting, so what is rehearsed is what lands when the same pass is
+                run for real. `rehearse` (the planning tool) tries a plan; this tries
+                a script, which is what a pass actually is. Costs nothing but a look,
+                and about sixty of the pears painting's 224 strokes went on masses
+                that were repainted because rehearsing meant retyping the pass.
+            prelude: Python run first, in the same scope -- helpers, mixtures and
+                landmarks a pass should not have to redefine.
+            prelude_path: a file to use as the prelude instead.
         """
         if bool(script) == bool(script_path):
             raise ValueError(
                 "run takes either script (the Python itself) or script_path (a file), "
                 "and needs exactly one of them."
             )
+        if prelude and prelude_path:
+            raise ValueError(
+                "run takes either prelude (the Python itself) or prelude_path (a "
+                "file), not both."
+            )
         name = script_path or "<script>"
         source = Path(script_path).read_text(encoding="utf-8") if script_path else script
+        pre_name = prelude_path or "<prelude>"
+        pre = (Path(prelude_path).read_text(encoding="utf-8") if prelude_path
+               else prelude)
 
         s = Session.load(session)
-        result = run_script(s, source, name)
+        target = s.scratch() if rehearse else s
+        result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
+        if rehearse:
+            if result.code != 0:
+                return result.text
+            left = s.remaining
+            cost = (f"{target.stroke_count} strokes" if left is None
+                    else f"{target.stroke_count} strokes of the {left} left")
+            return (f"Rehearsed {Path(name).name}: {cost}. Nothing committed.\n"
+                    f"{target.look()}")
         if result.save:
             s.save(session)
         return result.text
@@ -555,8 +603,9 @@ def build_server() -> MCPServer:
 
     @server.tool()
     @_tool
-    def compare(session: str, reference: str, region: Place | None = None,
-                threshold: float = 0.10, output: str = "") -> list:
+    def compare(session: str, reference: str = "", region: Place | None = None,
+                threshold: float = 0.10, output: str = "",
+                plan: list[Any] | None = None) -> list:
         """Per-cell value of the reference, of the canvas, and the difference.
 
         Squinting says something is off; this says which mass and by how much. The
@@ -566,17 +615,44 @@ def build_server() -> MCPServer:
         Returns the table and the heat map. Matching it cell by cell is tracing;
         read it for the masses that are out, fix those, and look again.
 
+        **Without a photograph, measure against the plan.** Pass `plan` instead of
+        `reference`: a list of `{"place": <a place>, "value": 0.0..1.0}`, the value
+        plan a painter working from their head is told to write down in numbers.
+        Each place is measured against the value it was promised, and the sheet
+        shows the plan, the canvas and what is out. Give a place a name it will be
+        listed under by building it with one: `{"blob": "D5", "name": "pear"}`.
+
         Args:
             session: the .easel file.
-            reference: the image to measure against.
+            reference: the image to measure against. Leave empty when passing a plan.
             region: measure inside a place, in its own tenths, instead of over the
                 whole canvas. The labels are the ones look(grid="fine") shows.
+                Ignored when comparing against a plan.
             threshold: what counts as out.
             output: where to write the heat map.
+            plan: planned values, instead of a reference image.
         """
+        if bool(reference) == bool(plan):
+            raise ValueError(
+                "compare takes either reference (an image) or plan (the values you "
+                "meant to paint), and needs exactly one of them."
+            )
         s = Session.load(session)
-        result = s.compare(reference, region=None if region is None else _place(region),
-                           threshold=threshold, path=output or None)
+        if plan is not None:
+            targets = {}
+            for i, entry in enumerate(plan):
+                if not isinstance(entry, dict) or "place" not in entry \
+                        or "value" not in entry:
+                    raise ValueError(
+                        f"Entry {i + 1} of the plan is {entry!r}. Each one is "
+                        f'{{"place": <a place>, "value": 0.0..1.0}}.'
+                    )
+                targets[_place(entry["place"])] = float(entry["value"])
+            result = s.compare(targets, threshold=threshold, path=output or None)
+        else:
+            result = s.compare(reference,
+                               region=None if region is None else _place(region),
+                               threshold=threshold, path=output or None)
         s.save(session)
         return [str(result), Image(path=str(result.path))]
 
@@ -694,18 +770,24 @@ def build_server() -> MCPServer:
 
     @server.tool()
     @_tool
-    def timelapse(session: str, output: str, fps: float = 8.0) -> str:
+    def timelapse(session: str, output: str, fps: float = 8.0, every: int = 1,
+                  scale: int | None = None) -> str:
         """Write the painting happening: .gif for the animation, .png for a contact sheet.
 
         Args:
             session: the .easel file.
             output: where to write it. The suffix picks which of the two you get.
             fps: frames per second, for the GIF.
+            every: keep every nth frame (GIF only). Consecutive frames differ by one
+                stroke, so a couple of hundred marks make a couple of megabytes at
+                every=1 and a third of that at every=3, reading the same. The
+                finished painting is always the last frame.
+            scale: long side in pixels (GIF only). Frames are recorded at 360.
         """
         s = Session.load(session)
         out = Path(output)
         path = (s.contact_sheet(out) if out.suffix.lower() == ".png"
-                else s.timelapse_gif(out, fps=fps))
+                else s.timelapse_gif(out, fps=fps, every=every, scale=scale))
         return str(path)
 
     @server.tool()
@@ -826,7 +908,8 @@ def build_server() -> MCPServer:
         priced = [(s.cost(spec), line) for spec, line in zip(specs, lines, strict=True)]
         total = sum(n for n, _ in priced)
         body = "\n".join(f"{line}  # {n}" for n, line in priced)
-        return f"{total} stroke(s). Paints as:\n\n{body}"
+        left = "" if s.remaining is None else f" {s.budget_line()}."
+        return f"{total} stroke(s).{left} Paints as:\n\n{body}"
 
     return server
 

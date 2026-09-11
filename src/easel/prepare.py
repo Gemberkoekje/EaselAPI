@@ -27,7 +27,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from easel.color import linear_to_oklab, linear_to_srgb, luminance, srgb_to_linear
-from easel.regions import GRID_COLS, GRID_ROWS, Polygon, Region
+from easel.regions import GRID_COLS, GRID_ROWS, Polygon, Region, _trace_outline
 
 __all__ = ["Area", "Preparation", "prepare_reference", "LEVELS"]
 
@@ -548,119 +548,6 @@ def _label_point(ys: np.ndarray, xs: np.ndarray, w: int, h: int) -> tuple[float,
     # actually in the area.
     k = int(np.argmin((ys - cy) ** 2 + (xs - cx) ** 2))
     return (float(xs[k]) / w, float(ys[k]) / h)
-
-
-_MOORE = ((-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
-
-
-def _largest_component(mask: np.ndarray) -> np.ndarray:
-    """The mask's largest 8-connected run of ``True`` pixels, alone.
-
-    An area fresh out of :func:`prepare_reference` is always one connected run,
-    but :meth:`Preparation.merge` can join two that do not touch at all (its own
-    docstring's example is one thing cut in two by another), and :meth:`Preparation.split`
-    partitions by colour with no regard for where the pieces sit. A Moore-neighbour
-    trace only ever follows one run's boundary, so it needs to be handed the one
-    the caller means -- the biggest -- rather than whichever run happens to
-    contain the mask's topmost-then-leftmost pixel.
-    """
-    h, w = mask.shape
-    visited = np.zeros_like(mask, dtype=bool)
-    best: list[tuple[int, int]] = []
-    ys_all, xs_all = np.nonzero(mask)
-    for sy, sx in zip(ys_all.tolist(), xs_all.tolist(), strict=True):
-        if visited[sy, sx]:
-            continue
-        stack = [(sy, sx)]
-        visited[sy, sx] = True
-        component = [(sy, sx)]
-        while stack:
-            y, x = stack.pop()
-            for dy, dx in _MOORE:
-                ny, nx = y + dy, x + dx
-                if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not visited[ny, nx]:
-                    visited[ny, nx] = True
-                    stack.append((ny, nx))
-                    component.append((ny, nx))
-        if len(component) > len(best):
-            best = component
-
-    out = np.zeros_like(mask)
-    if best:
-        rows, cols = zip(*best, strict=True)
-        out[rows, cols] = True
-    return out
-
-
-def _trace_outline(mask: np.ndarray, tolerance: float = 0.9) -> list[tuple[float, float]]:
-    """The area's boundary as normalised points, by Moore-neighbour tracing.
-
-    Only the outer boundary of the largest run: an area with holes in it is still
-    one shape to draw, and a painter drawing a mass draws its silhouette.
-    """
-    h, w = mask.shape
-    if not np.any(mask):
-        return []
-    mask = _largest_component(mask)
-    ys, xs = np.nonzero(mask)
-
-    # Start at the topmost-leftmost pixel: the boundary is guaranteed to pass through
-    # it, and its left neighbour is guaranteed to be outside.
-    start_y = int(ys.min())
-    start_x = int(xs[ys == start_y].min())
-
-    def inside(y: int, x: int) -> bool:
-        return 0 <= y < h and 0 <= x < w and bool(mask[y, x])
-
-    contour = [(start_y, start_x)]
-    cy, cx = start_y, start_x
-    back = 6                                   # came from the left
-    for _ in range(8 * mask.size):
-        found = False
-        for step in range(1, 9):
-            d = (back + step) % 8
-            ny, nx = cy + _MOORE[d][0], cx + _MOORE[d][1]
-            if inside(ny, nx):
-                back = (d + 5) % 8             # the direction we arrived from
-                cy, cx = ny, nx
-                contour.append((cy, cx))
-                found = True
-                break
-        if not found or (cy, cx) == (start_y, start_x) and len(contour) > 2:
-            break
-
-    pts = [(x / w, y / h) for y, x in contour]
-    return _simplify(pts, tolerance / max(w, h))
-
-
-def _simplify(points: list[tuple[float, float]], epsilon: float) -> list[tuple[float, float]]:
-    """Douglas-Peucker. A traced boundary is one point per pixel; a drawing is not."""
-    if len(points) < 3:
-        return points
-    pts = np.asarray(points, dtype=np.float64)
-    keep = np.zeros(len(pts), dtype=bool)
-    keep[0] = keep[-1] = True
-    stack = [(0, len(pts) - 1)]
-    while stack:
-        i, j = stack.pop()
-        if j <= i + 1:
-            continue
-        a, b = pts[i], pts[j]
-        ab = b - a
-        length = float(np.hypot(*ab))
-        seg = pts[i + 1:j]
-        if length < 1e-12:
-            dist = np.hypot(*(seg - a).T)
-        else:
-            # The 2-D cross product, written out: numpy 2 dropped it from np.cross.
-            rel = seg - a
-            dist = np.abs(ab[0] * rel[:, 1] - ab[1] * rel[:, 0]) / length
-        k = int(dist.argmax())
-        if float(dist[k]) > epsilon:
-            keep[i + 1 + k] = True
-            stack.append((i, i + 1 + k))
-            stack.append((i + 1 + k, j))
-    return [(float(x), float(y)) for x, y in pts[keep]]
 
 
 def _with_outlines(img: Image.Image, areas: list[Area], numbers: bool = True) -> Image.Image:
