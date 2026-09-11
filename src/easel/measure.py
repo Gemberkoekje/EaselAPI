@@ -181,7 +181,8 @@ def _means(arr: np.ndarray, cols: int, rows: int) -> tuple[np.ndarray, np.ndarra
     The value is sRGB-encoded luminance, which is what the greyscale view shows.
     Averaging in linear light and reporting that would be a number the painter
     cannot see -- and a tool that reports a value the painter cannot see is how two
-    of the M5 findings happened. See NOTES.md, gotcha 0.
+    early findings happened. The measurement can be right and the instrument still
+    wrong; see ``LESSONS.md``.
     """
     h, w = arr.shape[:2]
     srgb = np.asarray(arr, dtype=np.float32) / 255.0

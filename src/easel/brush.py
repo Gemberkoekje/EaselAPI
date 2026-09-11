@@ -34,14 +34,14 @@ _SUBPIXEL_STEPS = 4
 #: brush. This one was keyed on ``ceil(radius)`` while the mask was computed from
 #: the exact radius, so a tip at r=5.9 got whatever r=5.1 had built earlier in the
 #: process -- and the painting a script produced depended on what had run before it
-#: in the same interpreter. See REVIEW.md finding 19.
+#: in the same interpreter. The general rule is trap 5 in ``LESSONS.md``.
 _RADIUS_STEPS = 4
 
 #: The width of one bristle streak, as a fraction of the canvas long side, when a
 #: brush does not pin its own :attr:`Brush.bristle_count`. A bristle is a physical
 #: thing: a wider brush holds *more* of them, not fatter ones. The comb used to be
 #: a fixed count across the tip, so its streaks scaled with the brush -- 3 px at
-#: ``size=0.02`` and 26 px at ``size=0.18`` on a 900 px canvas (`m7/probe_comb.py`),
+#: ``size=0.02`` and 26 px at ``size=0.18`` on a 900 px canvas,
 #: which is why a big quiet mass came out as corduroy and a detail stroke carried
 #: the brush's pattern rather than the feature's. The default is set so that the
 #: `bristle` preset at its own default size keeps the 22 bristles it always had.
@@ -317,8 +317,7 @@ def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.
     changes between strokes is ``comb``: the brush is picked up again, and its
     spacing, where the comb sits across the tip, and which bristles are missing are
     all drawn afresh. Without that, every wide bristle mark in a painting printed
-    the identical set of streaks and masses went to corduroy (REHEARSAL2.md,
-    *Still open*).
+    the identical set of streaks and masses went to corduroy.
     """
     rng = np.random.default_rng([1000 + int(seed), int(comb)])
     # Spacing: the comb is not the same width every time the brush is picked up.
@@ -382,7 +381,7 @@ BRUSHES: dict[str, Brush] = {
     ),
     # Liner: fine lines at feature scale -- the sharpest, thinnest mark in a picture.
     # Nothing new in the engine: lines render at their nominal width down to about
-    # three pixels (REHEARSAL2.md, the eye test), so this is one word for what
+    # three pixels (there is a test), so this is one word for what
     # otherwise takes four overrides on round_hard. No jitter of any kind, because
     # at this size a jitter of two per cent of the canvas *is* the line.
     "liner": Brush(

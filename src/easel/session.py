@@ -91,7 +91,7 @@ class Session:
         self.marks: dict[str, tuple[float, float]] = {}
         self._preparation: Preparation | None = None
         #: Assisted modes this painting has used: a machine-laid sketch, or a mass
-        #: blocked in on an outline traced from the reference. The brief reserves
+        #: blocked in on an outline traced from the reference. The protocol reserves
         #: the traced-copy question for the human, and a run that answers it one way
         #: has to say so -- so the painting keeps the record instead of the write-up
         #: having to remember. See :meth:`ref_shape` and :meth:`sketch`.
@@ -191,7 +191,7 @@ class Session:
             # paint_stroke *after* the snapshot above was pushed. Left in place,
             # that snapshot has no record to match it, and the next undo() would
             # silently delete an unrelated, successful earlier stroke instead of
-            # undoing nothing. See REVIEW.md.
+            # undoing nothing.
             self.history.discard_snapshot()
             raise
         if self.timelapse:
@@ -288,7 +288,7 @@ class Session:
         traced = ""
         if getattr(place, "traced", False):
             # An outline lifted off the reference, not drawn by the painter. The
-            # brief reserves that question for the human; the least this can do is
+            # protocol reserves that question for the human; the least this can do is
             # be impossible to leave out of the write-up by accident.
             traced = " (traced)"
             self._note_assisted(f"traced outline blocked in: {place.name or 'shape'}")
@@ -420,8 +420,7 @@ class Session:
         Consecutive passes run in opposite directions, the way a hand comes back
         across the canvas. Paint runs out along a stroke, so passes that all start
         at the same edge stack their run-out on top of each other and leave the
-        whole mass a full value lighter on the side they end at. See REVIEW.md
-        finding 12.
+        whole mass a full value lighter on the side they end at.
         """
         rng = self.rng
         if direction == "horizontal":
@@ -663,7 +662,7 @@ class Session:
 
         Three draws interpolated along the pass, not noise per point: independent
         per-point noise clumps and gaps, which reads as an artefact rather than as a
-        hand (REVIEW.md finding 4). A closed edge gets the same value at both ends
+        hand. A closed edge gets the same value at both ends
         so the seam does not step.
         """
         wob = self.rng.normal(0.0, step * 0.3, size=3)
@@ -1472,7 +1471,7 @@ class Session:
         """One prepared area as a shape, ready to block in. **An assisted mode.**
 
         The outline came off the photograph, not out of the painter, so a mass
-        blocked in on one is partly traced -- the question the brief reserves for the
+        blocked in on one is partly traced -- the question the protocol reserves for the
         human, the same one :meth:`sketch` raises. Using it is a choice, not a
         default: it is recorded in :attr:`assisted` and in the log, and a run that
         uses it says so in the write-up.

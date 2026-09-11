@@ -41,10 +41,10 @@ __all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
 # The weave is coherent and periodic; the grain is not. Weighted 0.72/0.28 the
 # weave still won, and a broad scumble at load 0.55 -- inside the window PAINTER.md
 # calls usable, on the default surface -- printed the linen as an even dot screen
-# across the whole canvas. REVIEW.md finding 11 predicted exactly this and deferred
-# it to M5 "with the sampler and a real painting as the evidence"; the M5 rehearsal
-# produced both. At 0.52/0.48 the weave still organises the breakup but no longer
-# prints as a lattice. See REVIEW.md finding 15.
+# across the whole canvas. This was predicted when the gate was written and deferred
+# "with the sampler and a real painting as the evidence"; a rehearsal run produced
+# both. At 0.52/0.48 the weave still organises the breakup but no longer prints as a
+# lattice.
 _TOOTH_HEIGHT_W = 0.52
 _TOOTH_GRAIN_W = 0.48
 
@@ -82,7 +82,7 @@ def tooth_ceiling(height_map: np.ndarray, grain: np.ndarray, stride: int = 4) ->
     occupies a narrow range -- every texture is centred near 0.5, but the gating
     field spans 0.27 on smooth against 0.50 on rough -- and the stroke stops dead
     instead of breaking up. Capping the threshold here means a brush always has some
-    peaks left to catch on, whatever it is painting on. See REVIEW.md finding 11.
+    peaks left to catch on, whatever it is painting on.
 
     Sampled on a stride: a texture's percentiles do not need every pixel, and this
     runs once per canvas.

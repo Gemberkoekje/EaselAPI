@@ -1,8 +1,8 @@
 """The fixed painting scripts behind the golden-image tests.
 
-The brief has asked for visual regression since M2 and it never existed, which is
-why every defect in the M1/M2 and M4 reviews was found by a human looking at a PNG.
-These cases are the automated half of that: a fixed script of marks on each
+Visual regression was wanted from the start and did not exist for a long time,
+which is why every defect in the early reviews was found by a human looking at a
+PNG. These cases are the automated half of that: a fixed script of marks on each
 texture, plus the sampler sheet, hashed. Any change to *what a mark looks like*
 fails loudly, in the test suite, on the change that caused it.
 
@@ -73,7 +73,8 @@ def paint_marks(s: Session) -> None:
              "knife", "dark", pressure="swell", size=0.06)
 
     # Starved: the load runs out along the stroke and the tooth takes over. This is
-    # the mark that caught the deposit-nothing bug in REVIEW.md finding 11.
+    # the mark that caught the bug where a starved brush deposited nothing at all on
+    # the narrow-toothed surfaces while still marking rough.
     s.stroke([(0.05, 0.32), (0.5, 0.30), (0.95, 0.33)],
              "bristle", "titanium_white", pressure="even", size=0.10,
              load=0.30, load_falloff=1.1)
@@ -131,7 +132,7 @@ def draw_drawing(s: Session) -> None:
     # the whole contract of the channel, side by side in one image.
     s.stroke([(0.20, 0.60), (0.40, 0.72)], "flat", "cadmium_red", size=0.10)
     # At this opacity a little over half the graphite survives the pass -- measured,
-    # not guessed. See NOTES.md for the table.
+    # not guessed. `CALIBRATION.md` has the table.
     s.glaze([(0.60, 0.56), (0.82, 0.76)], "ultramarine", opacity=0.10, size=0.10)
 
     # And the eraser: the drawing goes where the painter disagrees with it.

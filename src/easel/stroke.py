@@ -33,7 +33,7 @@ _LOAD_DISTANCE_DIAMETERS = 10.0
 # How much of its width a round tip keeps at the lightest touch. Pressure used to
 # change how much paint landed and nothing else, so a stroke at pressure 0.1 and one
 # at 1.0 covered the same 58 px and the six named profiles were indistinguishable
-# once an opaque colour saturated (REVIEW.md, *Open, with evidence*). A lid line, a
+# once an opaque colour saturated. A lid line, a
 # brow or a lash could not taper, and every tapering mark was two strokes of
 # different sizes. The round tips are the drawing tips -- liner, round_hard,
 # round_soft -- so they are where width follows pressure; the oriented tips keep

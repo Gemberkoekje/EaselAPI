@@ -1,9 +1,9 @@
-"""M8: masses that are not rectangles.
+"""Masses that are not rectangles.
 
 Every named place in this engine used to be an axis-aligned rectangle, and that
 turned out not to be cosmetic: told only what the tool was mechanically good at,
 six fresh sessions in eight justified their choice of subject by horizontal bands
-and rectangles in as many words (``rehearsal3/unprompted/``). A band was the only
+and rectangles in as many words. A band was the only
 mass ``block_in`` filled honestly, so bands were what got painted.
 
 So the assertions here are mostly about the silhouette: that a shaped block-in
@@ -308,8 +308,8 @@ def test_a_pass_across_a_concave_shape_comes_back_in_pieces(tmp_path):
 
 def test_shaped_passes_alternate_direction(tmp_path):
     """Paint runs out along a stroke. Passes that all start at the same edge stack
-    their run-out and leave the mass lighter on one side (REVIEW.md finding 12) --
-    true of a shaped sweep as much as of a rectangular one."""
+    their run-out and leave the mass lighter on one side -- true of a shaped sweep
+    as much as of a rectangular one."""
     s = make(tmp_path)
     records = s.block_in(ellipse((0.5, 0.5), 0.4, 0.3), "bristle", "burnt_umber",
                          direction="horizontal", size=0.08)
@@ -319,7 +319,7 @@ def test_shaped_passes_alternate_direction(tmp_path):
 
 def test_the_axis_direction_sweeps_along_the_mass_and_not_along_the_canvas(tmp_path):
     """A mass laid along the canvas's axes is the loudest tell that nobody chose the
-    direction (``rehearsal3/HUMAN_NOTES.md``). ``direction="axis"`` is the shape
+    direction, and it was a human who noticed. ``direction="axis"`` is the shape
     answering that question itself."""
     r = ribbon([(0.15, 0.8), (0.85, 0.25)], 0.16)
     assert r.axis == pytest.approx(-38.0, abs=8.0)
@@ -336,9 +336,8 @@ def test_the_axis_direction_sweeps_along_the_mass_and_not_along_the_canvas(tmp_p
 
 def test_a_shape_holds_its_passes_back_to_the_edge_and_a_rectangle_does_not(tmp_path):
     """A rectangle's block-in runs a third of a brush past its edge so the mass does
-    not look cropped; a shape's edge is the drawing, so its passes stop. The M6
-    assisted run lost the right edge of its subject to that overhang
-    (``rehearsal3/assisted/GOTCHAS.md``, gotcha 10)."""
+    not look cropped; a shape's edge is the drawing, so its passes stop. One
+    assisted run lost the right edge of its subject to that overhang."""
     s = make(tmp_path)
     box = Region(0.3, 0.3, 0.7, 0.7)
     rect = s.block_in(box, "flat", "burnt_umber", direction="horizontal", size=0.08)
@@ -538,7 +537,7 @@ def test_the_painters_own_shape_is_not_an_assisted_mode(tmp_path):
 
 
 def test_a_mass_blocked_in_on_a_traced_outline_says_so(tmp_path):
-    """The brief reserves the traced-copy question for the human. A run that answers
+    """The protocol reserves the traced-copy question for the human. A run that answers
     it one way has to say so in the write-up -- so the painting keeps the record."""
     s = make(tmp_path)
     traced = Polygon(((0.2, 0.2), (0.8, 0.3), (0.5, 0.8)), name="area 4", traced=True)

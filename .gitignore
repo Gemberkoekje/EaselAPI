@@ -31,64 +31,14 @@ samples/*.gif
 .DS_Store
 Thumbs.db
 
-# M5 rehearsal. The two finished paintings and their time-lapses are the evidence
-# the brief's definition of done asks for; the intermediate looks and probe sheets
-# beside them regenerate from the scripts in the same directory.
-rehearsal/*.png
-rehearsal/*.gif
-!rehearsal/copy_final.png
-!rehearsal/own_final.png
-!rehearsal/copy_timelapse.gif
-!rehearsal/own_timelapse.gif
-
-# M5, second rehearsal (a fresh session with the revised guide). Same rule: the two
-# paintings, their time-lapses and the comparison sheet are evidence; the looks and
-# probe sheets regenerate from the scripts beside them.
-rehearsal2/**/*.png
-rehearsal2/*.gif
-!rehearsal2/copy_final.png
-!rehearsal2/own_final.png
-!rehearsal2/copies_compared.png
-!rehearsal2/copy_timelapse.gif
-!rehearsal2/own_timelapse.gif
-
 # Golden images: the stored ones are committed (they are what a human looks at
 # when a case fails). The `.actual.png` a failing test writes beside them is not.
 tests/golden/*.actual.png
-# M8's evidence: the pair of paintings, not the looks and time-lapses beside them.
-m8/*.png
-m8/*.gif
-!m8/boxes.png
-!m8/shapes.png
 
-# M6 final pass (rehearsal3): three fresh sessions — the headline copy plus its
-# unprompted painting, the sitter, and the assisted run. Same rule as before: the
-# finished paintings, their time-lapses and the comparison sheets are evidence; the
-# intermediate looks and probe sheets regenerate from the scripts beside them.
-rehearsal3/**/*.png
-rehearsal3/**/*.gif
-!rehearsal3/**/copy_final.png
-!rehearsal3/**/own_final.png
-!rehearsal3/**/copy_timelapse.gif
-!rehearsal3/**/own_timelapse.gif
-!rehearsal3/*.png
-
-# M8b's evidence: the pair of paintings and the sheet, not the looks beside them.
-m8b/*.png
-m8b/*.gif
-!m8b/before.png
-!m8b/after.png
-!m8b/compared.png
-
-# REHEARSAL6. The two references are REHEARSAL4's, byte for byte -- `launch_note.md`
-# records the checksums and `verify_done.py` reads them from `rehearsal4/` -- so a
-# painter's working copy of one is not committed a second time. Session files are
-# ignored repository-wide and are 15 MB each; `save_logs.py` writes the history that
-# the checks actually read into `rehearsal6/sessions/` instead.
-rehearsal6/**/ref.jpg
-# A painter's own looks, previews and rehearsals: 35 MB of intermediate PNGs that
-# regenerate from the scripts beside them. `out/` is already ignored above; the pass
-# run named its directories per painting. The marks each painter's log points at are
-# copied into `<run>/rejected/` and committed, because "the painter can point to
-# strokes it rejected" is a criterion and not an intermediate.
-rehearsal6/**/out_*/
+# A painting's own looks, previews and rehearsals are intermediates and regenerate
+# from the pass scripts beside them; the finished painting and its time-lapse are
+# the thing itself and are committed.
+paintings/**/out_*/
+paintings/**/look_*.png
+paintings/**/preview_*.png
+paintings/**/rehearse_*.png

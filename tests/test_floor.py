@@ -95,7 +95,7 @@ def test_zero_amount_does_not_drift_when_it_is_repeated():
 
 
 def test_a_dab_does_not_lift_the_black_in_its_bounding_box():
-    """The reproduction from REVIEW.md's open entry, through the engine.
+    """The reproduction from the reflectance-floor finding, through the engine.
 
     A `round_soft` tip is a circle; its mask is a square. The corners of that square
     are zero, so a black pixel there used to come away at sRGB 25 -- a visible grey,
@@ -283,8 +283,8 @@ def test_work_inside_the_band_is_bit_for_bit_what_it_was():
     quietly become "close enough".
 
     The corpus agrees: the seven golden images, `samples/brushes.png`,
-    `samples/shapes.png` and both real paintings in `m7/repaint.py` come back byte
-    for byte identical (`m8b/README.md`).
+    `samples/shapes.png` and both real paintings of the run that took this on come
+    back byte for byte identical.
     """
     def pre_m8b(dst, src, amount):
         from easel.color import _INV_MIX_EXPONENT, _from_ks, _ks_pow, _to_ks
