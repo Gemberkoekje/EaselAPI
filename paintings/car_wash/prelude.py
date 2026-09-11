@@ -26,6 +26,7 @@ def mixtures(verbose=False):
     p["frame_lt"] = V(p.mix(cool_black, "burnt_sienna", 0.25), 0.27, n("frame_lt"))
     p["brush_dk"] = V(p.mix(cool_black, "viridian", 0.22), 0.26, n("brush_dk"))
     p["brush_lt"] = V(p.desaturate(magenta, 0.55), 0.62, n("brush_lt"))
+    p["brush_sh"] = V(p.desaturate(p.mix(teal, magenta, 0.30), 0.20), 0.32, n("brush_sh"))
     p["tunnel"]   = V(teal, 0.32, n("tunnel"))          # the wet dark beyond
     p["haze"]     = V(haze, 0.46, n("haze"))            # soap fog on the glass
     p["mag_lo"]   = V(magenta, 0.40, n("mag_lo"))

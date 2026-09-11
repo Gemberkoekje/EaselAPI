@@ -250,8 +250,10 @@ before I made them.
 # Suggestions from a second session
 
 These come from a second session: the inside of a car wash seen from the driver's seat,
-painted from `PAINTER.md` with no reference photograph, through the shell path, in 185
+painted from `PAINTER.md` with no reference photograph, through the shell path, in 206
 strokes of a 300 budget. The painting and its scripts are in `paintings/car_wash/`.
+Everything below was written at 185 strokes; the painting was then resumed, and the one
+finding that produced is guide item 8.
 
 **This session is not a clean measurement of the guide, and the difference matters.**
 The subject was chosen before anything was read, but `README.md`, `LESSONS.md` and
@@ -425,6 +427,14 @@ In the order of how many strokes each would have saved me.
    I finished with **115 of 300 strokes unspent**, having already named the weakest
    passage in my own notes and then given it four more strokes. Proposed: *"You have
    named the weakest passage. How many strokes are left? Spend them there."*
+
+   **This one was then tested rather than left as a proposal.** The painting was resumed
+   and the rule followed literally: twenty-one strokes into the passage the notes had
+   named, which is where item 8 came from. It is the only item in either session's list
+   that has been run rather than argued, and the thing it found — that the eye and
+   `compare()` each caught half of what was wrong — is not something a fourteenth
+   checklist line predicts. Worth more than my confidence in it: a fresh session should
+   still be the judge.
 5. **The lightest mass is a composition question that `compare()` answers by accident.**
    `compare()` told me the bloom was `0.12` below plan. What it was really reporting was
    that a different mass had become the brightest thing in the picture and the eye went
@@ -450,11 +460,26 @@ In the order of how many strokes each would have saved me.
    example and already carry that risk, unread. So: is `paintings/` meant to serve this,
    with the guide pointing at it — or is the sequencing meant to be worked out fresh
    every time, and the exercises deliberately abstract to keep it that way?
+8. **Form is bounded at both ends, and the guide gives only the lower bound.** The
+   `0.10` threshold appears everywhere as the point below which two masses stop reading
+   as separate, and it is right. Nothing says what happens *above* it. Measured on this
+   painting's weakest mass: flat at a range of `0.09` across its width it read as a
+   curtain rather than a cylinder, so form was laid until the range was `0.22` — at
+   which point its shadow side sat `0.09` from the mass *behind* it and the two began to
+   merge. Compressed back to about `0.15`, both separations hold. So a mass has a
+   window, not a floor: **shade it until the form clears `0.10`, and stop, because past
+   that the range is spent on the mass's separation from what it stands against.** One
+   line, and the natural home is beside the existing threshold paragraph in step 3
+   rather than as a new section.
+
+   Worth noting how it was found, because it is the case the guide's two-`compare()`
+   rhythm is not built for: the eye said the form was good, and the number said the mass
+   had stopped separating from its background. Neither would have caught it alone.
 
 ## What I would not change
 
 The plan object shared by `cost`, `preview`, `rehearse` and `paint`. It is the best
-thing in the engine: twenty-seven rehearsals, none of them charged, and a painting that
+thing in the engine: thirty-eight rehearsals, none of them charged, and a painting that
 re-runs from its own pass scripts byte for byte. Everything that went wrong in this
 painting went wrong on a copy of the canvas and cost nothing — a bloom that came back as
 a daisy, foam that came back as a row of discs, a frame that came back as stepped
