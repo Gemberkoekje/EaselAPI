@@ -390,8 +390,10 @@ one, aimed at one, or ignore it.
 
 ### Try the mark before you spend it
 
-Two tools sit between deciding on a mark and paying for it. Neither touches the
-canvas and neither writes to the log.
+Three tools sit between deciding on a mark and paying for it. They answer the three
+questions you have about a mark you have not made yet — *where does it go*, *what
+will it look like*, and *what does it cost*. None of them touches the canvas, none
+writes to the log, and all three take the same plan.
 
 ```python
 plan = [{"points": [s.pt("top_l"), (0.40, 0.62)], "brush": "liner",
@@ -399,6 +401,7 @@ plan = [{"points": [s.pt("top_l"), (0.40, 0.62)], "brush": "liner",
 
 s.preview(plan,  reference="ref.jpg", region=span("C3", "F6"), grid="fine")
 s.rehearse(plan, reference="ref.jpg", region=span("C3", "F6"))
+s.cost(plan)                                   # 1
 ```
 
 `preview` draws your intended points and the brush's *width* over both panels — at a
@@ -408,6 +411,33 @@ where the mark will go, checked against the photograph. `rehearse` paints it on 
 copy of the canvas and shows you the result — what it will look like, with its
 tooth and its edge and how it mixes with what is already there. A feature smaller
 than a cell can be tried three ways and judged before a stroke is spent.
+
+`cost` returns the number of strokes the plan would charge. For a mark that is 1 and
+you did not need to ask. **For a mass it is the number you cannot work out by hand,
+and getting it wrong is expensive**: a mass is priced on the extent of its box along
+the direction the passes stack, *and* on how many times a pass line crosses it. Both
+factors run against you on exactly the shapes worth painting.
+
+```python
+straight = ribbon([(0.20, 0.50), (0.78, 0.50)], 0.029)
+s.cost({"shape": straight, "size": 0.015})                  # 4
+
+bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)   # same width
+s.cost({"shape": bent, "size": 0.015})                      # 75 -- round a bend
+s.cost({"shape": bent, "size": 0.03})                       # 38 -- a wider brush
+
+# and the price is on the preview, beside each mass and sweep, without asking
+s.preview({"shape": bent, "size": 0.015, "label": "mass"})  # reads "mass  75 strokes"
+```
+
+Nineteen times the price for the same width of paint, because the box a bend sweeps
+out is ten times the band's own width, and because a pass line crosses a curve twice.
+That is not a defect to route around — it is what the mass costs, and the picture it
+makes is the better one. It is a number to *know* before you spend a quarter of your
+budget on it. A painter who did not know it budgeted 4 and paid 21.
+
+If the number is more than you want to pay, a wider brush or a thinner `density` is
+the lever, and `cost` will tell you what either buys before you commit to it.
 
 The plan is a list of the same arguments `s.stroke()` takes, so what you checked is
 what you paint, without rewriting it:
@@ -1161,6 +1191,7 @@ s.sketch_lines()                                   # every line drawn, as points
 s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
 s.preview(strokes, reference=, region=, grid=)     # where a mark would go
 s.rehearse(strokes, reference=, region=)           # what it would look like
+s.cost(strokes)                                    # what it would charge
 s.compare(reference, region=None)                  # per-cell value numbers
 s.prepare(reference, level="coarse")               # the reference, cut up
 s.look_areas()                                     # the map again, after merging
@@ -1417,10 +1448,16 @@ s.block_in(mass.shifted(0.5, 0.0), "bristle", "dark", size=0.10,
 s.look()
 ```
 
-Same brush, same direction, same number of passes — the passes are counted across
-the mass, not over its area, so a shape costs what its box costs. One of them is a
+Same brush, same direction, and — for these two — much the same number of passes:
+the passes are counted across the mass, not over its area. One of them is a
 rectangle and will still be a rectangle at the end of the painting; the other has a
-silhouette, and a silhouette is what a mass *is*. Then look at the ends of the
+silhouette, and a silhouette is what a mass *is*.
+
+**Do not carry "a shape costs what its box costs" any further than this pair.** It
+holds while a shape is convex and a pass crosses it once. A concave or curved one is
+crossed two or three times per pass and costs accordingly — a mass with a bite out
+of it more than its box, a curved `ribbon` many times its own width. `s.cost(...)` is the number, and it
+is on every `preview`; see *Try the mark before you spend it*. Then look at the ends of the
 passes on the shaped one: they stop at the boundary, and the brush breaks past it by
 about half its width, which is the ragged edge you want and did not have to make.
 
