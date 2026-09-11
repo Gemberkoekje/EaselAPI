@@ -54,9 +54,9 @@ of it. Cover properly before concluding a supplied colour is needed.
 `color.py`'s `0.01` reflectance floor is a separate thing and is not a floor on the
 picture. It clips the K/S *arithmetic*, where finding 5 needs it, and comes back off
 the mixture weighted by how much of each ingredient is in it, so a colour the painter
-supplies below it is laid as written -- a literal `#000000` renders as `#000000`
-(`REVIEW.md` 35). Before M8b it did floor the answer, and the number quoted here was
-`0.10` on that basis.
+supplies below it is laid as written -- a literal `#000000` renders as `#000000`.
+Before M8b it did floor the answer, and the number quoted here was `0.10` on that
+basis.
 
 `mix("ultramarine", "burnt_umber", 0.5)` reads `0.14` (`#21232d`) and is the bottom
 of your range -- darker than any single pigment, because each channel takes the
@@ -65,13 +65,13 @@ while swinging cool to warm: `0.3` is `#1f2434`, `0.7` is `#24231f`.
 
 Mixing still cannot go *below* the darkest ingredient in any one channel, so piling
 paint on does not help: eight dried passes of the darkest mix measure `0.129`
-against one pass at `0.133`, four rounds of glazing `0.132`
-(`rehearsal3/probe_value_floor.py`). If a mass is not dark enough, mix it darker.
+against one pass at `0.133`, four rounds of glazing `0.132`. If a mass is not dark
+enough, mix it darker.
 
 Before M6b these swatches were colour-chart brights rather than masstones --
 `burnt_umber` was `#4A3728` -- and the box floored at `0.23` with no mixture below
-it. That is the number the older parts of this repo quote, and `REVIEW.md`
-findings 21 and 33 are the history.
+it. That is the number any older text quotes, and `compare()`'s `unreachable` split
+is what is left of the tooling built around it.
 
 ### The value scale
 
@@ -204,8 +204,9 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 
 ### Laying a mass along its own axis
 
-Measured on the same sloping mass with `rehearsal3/probe_axis_alignment.py` (share
-of strong edges within ten degrees of horizontal or vertical — higher is squarer):
+Measured on the same sloping mass (share of strong edges within ten degrees of
+horizontal or vertical — higher is squarer; `python scripts/probe_sweep.py` computes
+it):
 
 | The same mass | Axis-aligned edges | Strokes |
 |---|---|---|
@@ -298,8 +299,7 @@ masses it was meant to lay, against 10.7% of the shaped one** — and most of th
 the right place. The axis-aligned edge share moved less, 27.5% to 25.0%, because
 most of the strong edges in either picture are the bristle comb's streaks along the
 passes rather than the boundaries of masses; read that number with the pictures, not
-instead of them. The pair is `m8/boxes.png` and `m8/shapes.png`; regenerate with
-`python m8/paint_two_ways.py`.
+instead of them.
 
 **A shape or a sweep?** They answer different questions. `block_in(shape)` fills a
 mass whose *silhouette* you can name, with straight passes cut against it.
@@ -418,7 +418,7 @@ Pressure shapes how heavily paint lands along the stroke, and on a **round** tip
 `round_hard`, `round_soft`, `liner` — how wide the mark is. `size` is the width at
 full pressure; a light touch keeps a third of it, plus a floor of 0.75 px of radius
 so a fine line thins rather than disappearing. Measured on `round_hard` at
-`size=0.06` on a 600 px canvas (`m7/probe_pressure.py`):
+`size=0.06` on a 600 px canvas:
 
 | pressure | width | paint landed |
 |---|---|---|
@@ -465,8 +465,7 @@ one stroke, not two of different sizes.
   colour and, since a round tip's width follows its pressure, at about half the
   width asked for. `dab(press=n)` stamps the same spot n times inside one mark, with
   the profile running across the stamps, so three of them press through full
-  pressure in the middle one. White at `size=0.06`, measured on three grounds
-  (`m7/probe_dab.py`):
+  pressure in the middle one. White at `size=0.06`, measured on three grounds:
 
   | stamps | on `toned_grey` | on `umber_wash` | on `warm_white` | width |
   |---|---|---|---|---|
@@ -503,7 +502,7 @@ one stroke, not two of different sizes.
 
 A bristle has a width of its own — `BRISTLE_PITCH`, 0.005 of the canvas long side —
 and the count follows the brush, so a wider brush prints more streaks rather than
-fatter ones. Measured on a 900 px canvas (`m7/probe_comb.py`):
+fatter ones. Measured on a 900 px canvas:
 
 | `size` | tip | bristles | comb pitch |
 |---|---|---|---|

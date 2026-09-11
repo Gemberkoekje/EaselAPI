@@ -11,7 +11,7 @@ the top-left, and every helper here returns one, so they compose.
 A rectangle is the shape of very little, though, and a vocabulary made only of
 rectangles turns out to steer what gets painted: told what the engine was
 mechanically good at, six fresh sessions in eight justified their subject by
-horizontal bands in as many words (``rehearsal3/unprompted/``). So a place can also
+horizontal bands in as many words. So a place can also
 be a :class:`Polygon` -- a closed shape, built with :func:`polygon`, :func:`ellipse`,
 :func:`blob`, :func:`hull` or :func:`ribbon` -- and a block-in fills one pass by
 pass, stopping at its boundary. Anything that takes a region takes a shape.
@@ -349,7 +349,7 @@ class Polygon:
     A rectangle is the shape of very little. Everything above takes one, so before
     this existed the only mass the engine filled honestly was a band -- and painters
     reasoned their way to band-shaped pictures because that was what the tool could
-    carry (``rehearsal3/unprompted/``). A shape goes anywhere a region goes:
+    carry. A shape goes anywhere a region goes:
     :meth:`~easel.session.Session.block_in` fills it pass by pass and stops at the
     boundary, ``look(region=...)`` and ``compare(region=...)`` crop to the rectangle
     around it, and :meth:`~easel.session.Session.dry` and

@@ -1,6 +1,6 @@
 """What `sweep()` costs and what it buys, measured on one shaped mass.
 
-Phase M6c replaced a fifteen-line recipe with `s.sweep()`. The claim behind both is
+`s.sweep()` replaced a fifteen-line recipe. The claim behind both is
 that a mass with a silhouette wants passes swept along its boundary, and that a box
 drawn round it is a box for good. This measures that on one arbitrary boundary,
 three ways -- a `block_in` over the bounding rectangle, a sweep, and a sweep crossed
@@ -8,9 +8,9 @@ three ways -- a `block_in` over the bounding rectangle, a sweep, and a sweep cro
 
 **Is it the shape you asked for?**
 
-* **Axis-aligned edges**, the metric from `rehearsal3/probe_axis_alignment.py`: the
-  share of strong edges running within ten degrees of horizontal or vertical.
-  Higher is squarer. It is the number behind the human's note on the M6 pass.
+* **Axis-aligned edges**: the share of strong edges running within ten degrees of
+  horizontal or vertical. Higher is squarer. It is the number behind the human's
+  note that every mass in these paintings was laid along the canvas's own axes.
 * **Paint outside the shape**: the share of painted pixels that landed more than
   half a brush on the wrong side of the boundary. A rectangle's corners are all
   outside a shape that has a silhouette, and no later work takes them out again.

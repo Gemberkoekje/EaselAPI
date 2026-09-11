@@ -18,11 +18,11 @@ If a case in `tests/test_golden.py` fails:
   2. Only once the new marks are decided to be better: `python scripts/make_golden.py <case>`,
      then commit the updated PNG(s) and `tests/golden/hashes.json`.
 A golden regenerated without looking records that a mark changed and asserts that nobody
-minded, which is worse than having no golden at all -- see REVIEW.md.
+minded, which is worse than having no golden at all -- see LESSONS.md.
 -->
 
 ## Notes for the reviewer
 
 <!-- Anything not obvious from the diff: alternatives tried and rejected, a design
-     tradeoff deliberately left open, what this does not attempt to fix. See REVIEW.md's
-     "Open, with evidence" entries for the tone this project uses for that. -->
+     tradeoff deliberately left open, what this does not attempt to fix. See
+     LESSONS.md's "What is still open" for the tone this project uses for that. -->

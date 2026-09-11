@@ -1,6 +1,6 @@
 """Property tests for the engine.
 
-Three properties matter most, and they are the ones the brief calls out:
+Three properties matter most, and they are the ones the project was specified on:
 
 * strokes never write outside the canvas,
 * undo restores exact state,
@@ -403,8 +403,7 @@ def test_a_starved_stroke_still_marks_every_surface(texture):
     different span, so on the narrow-toothed surfaces the threshold climbed clean
     off the top of the tooth: a bristle brush below about a third of its load
     deposited *nothing at all* on smooth and linen, while rough still marked. The
-    painter got a full dab count back and an unchanged canvas. See REVIEW.md
-    finding 11.
+    painter got a full dab count back and an unchanged canvas.
     """
     band = _starved_band(texture, 0.15)
     assert float((1.0 - band).sum()) > 100.0, "a starved stroke laid no paint at all"
@@ -491,7 +490,7 @@ def test_block_in_passes_alternate_direction():
 
     Paint runs out along a stroke. Passes that all start at the same edge stack
     their run-out and leave the whole mass lighter on the side they end at -- a
-    machine's signature. See REVIEW.md finding 12.
+    machine's signature.
     """
     s = Session(120, 120, ground="white", seed=6, timelapse=False)
     records = s.block_in("all", brush="bristle", color="burnt_umber",
@@ -547,8 +546,8 @@ def test_history_logs_every_mark():
 def test_signature_marks_are_free_up_to_the_allowance():
     """The guide grants five free marks to sign with; the counter must honour it.
 
-    Two REHEARSAL6 painters found that it did not, by watching `stroke_count` go past
-    the budget they were painting to, and one of them undid a finished mark to pay for
+    Two fresh painters found that it did not, by watching `stroke_count` go past the
+    budget they were painting to, and one of them undid a finished mark to pay for
     its signature. Past the allowance every signature mark is charged, so a painter
     cannot buy strokes by noting them.
     """

@@ -8,7 +8,7 @@ Pigment hex values are chosen so that no channel is zero -- see the note on the
 reflectance floor in :mod:`easel.color`. Until M8b the darks were held to a stronger
 rule, that no channel sat below that floor either, because a channel under ``0.01``
 rendered *as* ``0.01`` and a darker swatch would have stated a colour no stroke could
-lay. The floor is off the answer now (``REVIEW.md`` 35), so that rule is gone and
+lay. The floor is off the answer now, so that rule is gone and
 ``cadmium_yellow``, whose blue has always been under it, lays its own ``#FFC012``.
 What the darks are held to instead is being masstones rather than colour-chart
 swatches, which is a claim about paint and is the note below.

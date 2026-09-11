@@ -77,14 +77,15 @@ class History:
         self.records.append(record)
         return record
 
-    #: Log entries that are not marks of paint. The stroke budget in the brief's
-    #: definition of done counts paint, so drawing, erasing, drying and looking are
-    #: all free -- a painter who has to spend strokes on the underdrawing will skip
-    #: the underdrawing, which is the opposite of what M6 is for.
+    #: Log entries that are not marks of paint. The stroke budget in the painting
+    #: protocol (``LESSONS.md``) counts paint, so drawing, erasing, drying and
+    #: looking are all free -- a painter who has to spend strokes on the
+    #: underdrawing will skip the underdrawing, which is the opposite of what the
+    #: precision tools are for.
     UNPAINTED_KINDS = ("dry", "look", "pencil", "erase")
 
     #: How many marks a painter may sign with, free of the stroke budget. The guide
-    #: grants this and until REHEARSAL6 nothing honoured it: a mark noted `signature`
+    #: grants this and nothing honoured it at first: a mark noted `signature`
     #: is an ordinary stroke, so it was charged, and two painters found that out by
     #: watching the counter go past their budget. One of them undid a finished mark to
     #: pay for its signature. Past the allowance every signature mark is charged, so

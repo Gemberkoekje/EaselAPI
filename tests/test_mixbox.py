@@ -1,8 +1,8 @@
 """The optional ``pymixbox`` integration seam.
 
 Skipped unless the ``mixbox`` extra is installed (``pip install
-easel-paint[mixbox]``), which the main CI job deliberately does not do -- see
-REVIEW.md: a real coverage gap, since the call site in ``color.mix_many`` has
+easel-paint[mixbox]``), which the main CI job deliberately does not do. That was
+a real coverage gap, since the call site in ``color.mix_many`` has
 no ``try``/``except`` of its own, so a pymixbox API break there would surface
 as an uncaught crash for the one audience that opts in, with zero warning from
 CI.

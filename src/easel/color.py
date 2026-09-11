@@ -214,7 +214,8 @@ def _ks_pow(ks: np.ndarray) -> np.ndarray:
 
     Split out so ``mix_many`` and ``blend_wet`` cannot drift apart: the palette's
     number and the canvas's pixel have to be the same mixture or neither can be
-    trusted (REVIEW.md finding 16, from the other direction).
+    trusted -- the same defect, from the other side, as a measuring tool that
+    disagrees with what the painter is shown.
     """
     return np.power(ks, _MIX_EXPONENT, dtype=np.float32)
 

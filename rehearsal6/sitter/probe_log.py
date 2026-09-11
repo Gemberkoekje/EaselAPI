@@ -1,5 +1,0 @@
-L = s.log()
-print(type(L))
-txt = str(L)
-print(txt[-2200:])
-print("stroke_count:", s.stroke_count)

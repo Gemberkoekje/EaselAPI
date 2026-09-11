@@ -102,7 +102,7 @@ def reference(tmp_path):
 
 # -- it is a wrapper ------------------------------------------------------------------
 def test_every_cli_verb_is_a_tool(server):
-    """The brief asks for one tool per CLI verb, so a verb added later has to arrive here
+    """One tool per CLI verb, so a verb added later has to arrive here
     too -- which this notices and a hand-written list of tool names would not."""
     sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
     verbs = set(sub.choices)
@@ -145,7 +145,7 @@ def test_a_look_comes_back_as_a_picture(call, painting):
 
 @pytest.mark.parametrize("tool", ["look", "compare", "prepare"])
 def test_the_looking_tools_return_their_image_inline(call, painting, reference, tool):
-    """The brief's own sentence: look, preview and compare return their images."""
+    """The point of the server: look, preview and compare return their images."""
     extra = {} if tool == "look" else {"reference": reference}
     assert len(call(tool, session=painting, **extra).images) == 1
 

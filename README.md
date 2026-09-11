@@ -127,7 +127,7 @@ which takes the script as text. A place is a name, a cell, a span, a rectangle, 
 outline, or a shape builder like `{"blob": "D5", "radius": 0.12}`.
 
 `run` executes Python sent by its client, exactly as `easel run` does: launch it
-for a painter you would hand a shell to. See [`M9.md`](M9.md).
+for a painter you would hand a shell to.
 
 ## Determinism
 
@@ -150,7 +150,9 @@ carry the log, not undo snapshots.
 Golden-image tests hold this honest. `tests/golden/` stores a hash and a PNG for a
 fixed script of marks on each texture, plus the whole brush sampler; a change to
 what a mark looks like fails the suite, and the failure hands you both images to
-compare. They caught a real one on their first run — see `REVIEW.md` finding 19.
+compare. They caught a real one on their first run: the tip-mask cache was keyed on
+the rounded radius while the mask was built from the exact one, so what a script
+painted depended on what had run before it in the same process.
 
 ## Design notes
 
@@ -185,11 +187,17 @@ painted rather than generated:
 
 ## Status
 
-Early. The engine, palette, composition helpers, `look()`, history, CLI, the
-precision tools (drawing, landmarks, preview, rehearse, compare, prepare), shaped
-masses and the MCP server are working; see [`NOTES.md`](NOTES.md) for what is done,
-what is stubbed, and what is next. The server came last, by the brief's rule that
-anything changing the API lands before the thing that exposes it.
+Early, and feature-complete against what it was specified to be. The engine, palette,
+composition helpers, `look()`, history, CLI, the precision tools (drawing, landmarks,
+preview, rehearse, compare, prepare), shaped masses and the MCP server all work. The
+server came last, on the rule that anything changing the API lands before the thing
+that exposes it.
+
+Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
+painting runs and an adversarial review left behind — the method, the engine decisions
+that are load-bearing, the traps, and what is still open; read it before changing the
+engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
+most recent painting session, and nothing on it has been actioned yet.
 
 ## Licence
 

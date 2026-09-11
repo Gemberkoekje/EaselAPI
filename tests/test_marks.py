@@ -58,7 +58,7 @@ def _height(deposit: np.ndarray) -> int:
 # The comb
 # --------------------------------------------------------------------------------------
 def test_two_strokes_of_one_brush_do_not_print_the_same_comb():
-    """REHEARSAL2.md, *Still open*: every wide bristle mark printed identical streaks."""
+    """The defect this exists for: every wide bristle mark printed identical streaks."""
     b = _bare_bristle()
     first = _mark(b, 0)
     for index in (1, 2, 3):
@@ -115,7 +115,7 @@ def test_a_negative_bristle_count_explains_itself():
 # Pressure and width
 # --------------------------------------------------------------------------------------
 def test_pressure_changes_the_width_of_a_round_mark():
-    """REVIEW.md's open finding: 0.1 and 1.0 used to cover an identical bounding box."""
+    """The finding this exists for: 0.1 and 1.0 used to cover an identical bounding box."""
     b = brush("round_hard", size=0.06, jitter=0.0, size_jitter=0.0)
     heavy = _height(_mark(b, 0, (600, 400)))       # `_mark` paints at even pressure
     c = Canvas(600, 400, texture="smooth", ground="warm_white", seed=3)
@@ -195,7 +195,7 @@ def test_press_stamps_the_same_spot_and_costs_one_mark(tmp_path):
 
 
 def test_a_pressed_dab_reaches_its_colour(tmp_path):
-    """The brief's reason for `press`: one dab lands about a third of the way there."""
+    """The reason `press` exists: one dab lands about a third of the way there."""
     white = np.asarray([1.0, 1.0, 1.0], dtype=np.float32)
     reach = []
     for press in (1, 3):

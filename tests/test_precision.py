@@ -453,7 +453,7 @@ def test_comparing_a_painting_against_itself_is_zero(tmp_path, reference):
 
 
 def test_compare_reports_the_value_the_painter_can_see(tmp_path, reference):
-    """Guarding NOTES.md gotcha 0: a measurement in a space the painter cannot see.
+    """Guarding against a measurement in a space the painter cannot see.
 
     ``compare`` must speak in the same numbers as ``look(values=True)``, or the
     painter reads 0.5 off one and is told 0.21 by the other.
@@ -589,7 +589,7 @@ def test_asking_for_a_preparation_before_making_one_says_so(tmp_path):
 # The liner, and the mask cache the goldens caught
 # --------------------------------------------------------------------------------------
 def test_the_liner_draws_a_line_of_its_nominal_width(tmp_path):
-    """REHEARSAL2's eye test: lines render at their nominal width down to 3 px."""
+    """The eye test: lines render at their nominal width down to 3 px."""
     s = Session(600, 600, texture="smooth", ground="white", seed=1,
                 out_dir=tmp_path, timelapse=False)
     s.stroke([(0.2, 0.5), (0.8, 0.5)], "liner", "burnt_umber", pressure="even")
@@ -607,7 +607,7 @@ def test_the_liner_does_not_wobble():
 
 
 def test_a_tip_mask_is_a_pure_function_of_its_arguments():
-    """REVIEW.md finding 19, found by the goldens on their first run.
+    """The cache-key defect the goldens caught on their first run.
 
     The mask cache was keyed on the *rounded* radius while the mask was built from
     the exact one, so a brush at r=5.9 got whatever r=5.1 had built earlier in the
@@ -662,10 +662,10 @@ def test_undo_takes_back_the_first_line_too(tmp_path):
 
 
 # --------------------------------------------------------------------------------------
-# What the M6 final pass found: three fresh sessions, in rehearsal3/
+# What a run of three fresh painting sessions found
 # --------------------------------------------------------------------------------------
 def test_erase_takes_the_line_out_of_sketch_lines_too(tmp_path):
-    """REHEARSAL3, assisted run: erase cleared the graphite and left the record.
+    """From an assisted run: erase cleared the graphite and left the record.
 
     So a painter who rubbed a line out and then re-laid the drawing from
     ``sketch_lines()`` -- the documented way to recover a drawing a block-in has
@@ -837,7 +837,7 @@ def painted_at(mask, x, y):
 
 
 def test_sweep_gives_a_silhouette_where_block_in_gives_a_box(tmp_path):
-    """The finding this call exists for (REVIEW.md 34): `block_in` fills a rectangle,
+    """The finding this call exists for: `block_in` fills a rectangle,
     and almost nothing worth painting is one. The corner of the bounding box above
     the ridge is the difference, and it is the difference you cannot paint out."""
     swept = make(tmp_path)
@@ -860,7 +860,7 @@ def test_sweep_gives_a_silhouette_where_block_in_gives_a_box(tmp_path):
 def test_sweep_passes_alternate_direction(tmp_path):
     """Paint runs out along a stroke, so passes that all start at the same end stack
     their run-out and leave the mass a value lighter at the other. Same reason as
-    `block_in` (REVIEW.md finding 12), same behaviour."""
+    `block_in`, same behaviour."""
     s = make(tmp_path)
     records = s.sweep(RIDGE, "bristle", "burnt_umber", into="down", depth=0.26,
                       size=0.12, passes=4)
