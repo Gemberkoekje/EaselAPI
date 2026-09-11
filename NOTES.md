@@ -1,4 +1,4 @@
-# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, M7, M8's shaped masses, and M8b's floor
+# Phase notes — scaffolding, M4, the M5 rehearsal twice, M6's tools and final pass, M7, M8's shaped masses, M8b's floor, and M9's server
 
 **To understand this, start by reading `painting-api-brief.md` (the spec), then
 `REHEARSAL3.md` (the M6 final pass — the most recent *measurement*, and it says what
@@ -41,8 +41,11 @@ boundary you have read.
 in front of the server and the last entry in `REVIEW.md`'s *Open, with evidence*. The
 floor from finding 5 was clipping the *answer* and not only the mixing arithmetic, so a
 pixel with no paint landing on it still moved and a colour under the floor could not be
-laid at all; see *M8b — the floor off the answer* below. M9 (MCP) is untouched and
-correctly last, and everything before it is now done.
+laid at all; see *M8b — the floor off the answer* below. **M9 (the MCP server) is done
+too** — `M9.md` — and it is the one change in this repo that adds nothing to the engine:
+no golden moved, both samplers are byte for byte unmoved, and there was no regeneration
+to look at because nothing renders differently. Every milestone in the brief is now
+built; what is left is the guide work items 00b-00e ask for.
 
 The M5 rehearsal was run twice. The first (`REHEARSAL.md`) was run by the engine's
 author: the unprompted painting went well, the **copy did not reach a likeness**,
@@ -72,7 +75,7 @@ additions (`span()`, enlarged crops) came out of that.
 | M8b Wet-blend floor | **Done.** The K/S clip stays on the arithmetic, where finding 5 needs it, and comes back off the mixture weighted by how much of each ingredient is in it: `amount` of 0 returns the canvas and 1 lays the colour. The brief expected this to change every soft dab edge in the engine; it changes nothing inside the K/S band, so both samplers, both real paintings and all seven goldens are byte for byte identical and none was regenerated. What it buys is in `m8b/` — a dark mass built from 32 levels rather than 18, with two fifths of it no longer pinned to one value. `REVIEW.md` 35. |
 | Post-M8b adversarial code + general review | **Done.** Fourteen independent readers over every module not code-reviewed since M6 (`regions.py`'s shape/sweep code, the painting-ops half of `session.py`, M7/M8b's `brush.py`/`stroke.py`/`color.py`), plus a general pass beyond the brief's own framing: security/trust boundaries, `.github/workflows/ci.yml`, `pyproject.toml`, and whether the test suite proves what it claims to. 37 of 38 candidate findings survived independent adversarial verification; 34 fixed, 3 left open with the reasoning for why (`REVIEW.md` findings 36–66, and *Open, with evidence*). One rendering change (`draw_pencil`'s sub-pixel anchor, finding 49) judged on the `drawing` golden before regenerating it; the shape sampler's `cross` column bug (finding 66) regenerated and looked at. Every other fix is pure robustness/security/CI/test-coverage — no other golden moved. |
 | Pre-M9 engine changes | **Done** — `engine_changes/`. The brief's rule is that anything changing the API lands before the server exposes it, and `ENGINE_CHANGES.md` was that list. `blob(region, radius)` was a 4.9 : 1 horizontal sausage because the point branch and the region branch disagreed; one radius now means a circle wherever the shape is put, which moved no golden and no call in the corpus. `rehearse()` takes a `sweep` (`edge=`) as well as a `block_in` (`shape=`, which M8 had already added and the request did not know about), and the trial session now holds a *copy* of the real stream state, so a rehearsed mass is pixel-identical to the painted one — note 23 above was the thing standing in the way. `inset()`'s 2.7× report reproduces on a star and is correct erosion, documented rather than changed; the concave case underneath it was a real defect — the fold check asked whether a shape contained its own centroid, which a horseshoe does not. Every golden and both samplers byte for byte unmoved. |
-| M9 MCP server | Not started, and correctly last. |
+| M9 MCP server | **Done** — `M9.md`. Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost`, which a painter whose client speaks MCP has no other way to reach. `look`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline. The `.easel` file is still the only state, so the server, the shell and a plain script mix freely, and `test_every_cli_verb_is_a_tool` reads the CLI's own subparsers so a verb added later cannot fail to arrive here. Additive in the strongest sense the repo has managed: **no engine change at all**, seven goldens and both samplers byte for byte unmoved, nothing regenerated because nothing renders differently. The one translation it has to do — a place and a plan arrive as JSON — is checked by running it: every plan tool hands back the Python that paints what it just priced, and the test feeds that back to `run` and counts what came off the log. |
 
 ## File map
 
@@ -105,7 +108,16 @@ src/easel/
   history.py   stroke log, undo snapshots, GIF and contact-sheet time-lapse.
   session.py   the one object a painter holds. Also save/load and replay.
   cli.py       easel new / run / look / compare / prepare / mark / undo / export /
-               timelapse / log / brushes.
+               timelapse / log / brushes. From M9 it also holds the three pieces
+               both wrappers share -- `parse_size`, `reference_text` (what
+               `easel brushes` prints) and `run_script` (exec with the API in
+               scope, and the rules about what gets saved when a script raises).
+  mcp_server.py  M9: the same verbs as MCP tools, plus preview/rehearse/cost, with
+               the pictures returned inline. Imports `mcp`, which is an opt-in
+               extra -- `MCP_AVAILABLE` is the guard, as `MIXBOX_AVAILABLE` is in
+               color.py. The half worth reading is `_place`/`_plan`: a place and a
+               plan arrive as JSON, and the Python they become is handed back so
+               the plan that was priced is the plan that lands.
   __main__.py  so `python -m easel ...` works when `easel` is not on PATH, which
                on Windows is most of the time.
 
@@ -130,6 +142,15 @@ tests/test_floor.py       34 tests for M8b, and the ones that matter most assert
                           move the pixel it is not landing on, in-band work is bit
                           for bit what it was, and the identity has to survive being
                           repeated a few thousand times rather than only once.
+tests/test_mcp.py         73 tests for M9, and the load-bearing one is
+                          `test_the_quoted_price_is_what_the_echoed_python_pays`:
+                          thirteen plans over every place form, each quoted, each
+                          quote then *run*, and the charge counted off the log. The
+                          two beside it assert what the server must not break -- a
+                          rehearsed mass is still the painted one across the reload
+                          every tool call does, and three rounds of asking leave
+                          the painting that follows byte for byte unchanged.
+                          Skipped unless the `mcp` extra is installed.
 tests/test_golden.py      visual regression. `tests/golden_cases.py` holds the fixed
                           scripts; `tests/golden/*.png` are the stored renders, and
                           they are there to be *looked at* when a case fails.
@@ -869,18 +890,26 @@ found is items 00a-00e above.
 7. ~~**The wet-blend reflectance floor** (brief item 11).~~ **Done — M8b.** The one
    finding in the repo found by reading the code rather than by looking at a picture,
    and the last engine change before the server.
-8. Then M9 — the MCP server: one tool per CLI verb, plus `look`, `preview` and
-   `compare` returning their images inline. It exposes the API, so everything that
-   changes it goes first, and that list is now empty. The server's tool
-   surface has to carry shapes as arguments, which is the one new thing M8 adds to
-   its design: a place is a name, a cell, a span, a rectangle **or a list of
-   points**, and `sweep` takes the same.
+8. ~~Then M9 — the MCP server.~~ **Done — `M9.md`.** Fourteen tools and no engine
+   change: the eleven CLI verbs, plus `preview`, `rehearse` and `cost`. The shapes
+   requirement this item set is met with one form more than it asked for — a place
+   object like `{"blob": "D5", "radius": 0.12, "seed": 3}` beside the name, cell,
+   span, rectangle and point list — because the five it named leave a painter
+   writing point lists to describe a mass it can name, which is the job `regions.py`
+   exists to remove. `sweep` takes all six as its `edge`. Two things it leaves
+   behind, both in `M9.md`'s *Still open*: a look spends 1.4 s writing the session
+   back to move a counter by one (`easel look` pays the same; the fix is in the save
+   format, so it is an engine change and goes in front of a server rather than
+   inside one), and a prepared reference still does not survive a save, which the
+   server makes easier to trip over because every call is a fresh load.
 
 ## Verify the scaffold
 
 ```bash
 pip install -e ".[dev]"
-pytest -q                              # 232 tests, about 100s (the goldens repaint)
+pytest -q                              # 289 tests, about 100s (the goldens repaint)
+pip install -e ".[dev,mcp]"            # and the server's own 73, which skip without it
+pytest -q tests/test_mcp.py            # 362 collected in total, 3 skipped for mixbox
 python -m ruff check src tests scripts examples   # ruff is not on PATH here either
 python rehearsal/check_guide_blocks.py # every python block in PAINTER.md runs
 python scripts/make_brush_sampler.py   # then look at samples/brushes.png
@@ -889,6 +918,7 @@ python m8/paint_two_ways.py            # the shaped/boxed pair, and their number
 python scripts/make_golden.py          # only after looking at what changed
 python examples/exercises.py           # writes out/ex_*.png, including the M6 loop
 python -m easel brushes                # the CLI, without needing it on PATH
+python -m easel.mcp_server --help      # the MCP server, ditto
 ```
 
 And the M6 tools, end to end, against any photograph:

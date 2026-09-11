@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "Arie Hofland" }]
-keywords = ["painting", "brush", "raster", "agent", "llm", "headless"]
+keywords = ["painting", "brush", "raster", "agent", "llm", "headless", "mcp"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -26,10 +26,16 @@ dependencies = [
 
 [project.optional-dependencies]
 mixbox = ["pymixbox>=2.0"]
+# The MCP server (`easel-mcp`). Opt-in, like mixbox: nothing else in the engine
+# imports `mcp`, and a painter working from Python or the shell never needs it.
+# Held below 3 because the tool-registration API is what this pins against --
+# 2.x is where FastMCP became MCPServer, and 1.x will not import easel.mcp_server.
+mcp = ["mcp>=2.0,<3"]
 dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [project.scripts]
 easel = "easel.cli:main"
+easel-mcp = "easel.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/Gemberkoekje/EaselAPI"

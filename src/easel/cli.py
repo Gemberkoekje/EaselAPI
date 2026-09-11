@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import sys
 import traceback
+from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image as _PILImage
@@ -31,7 +32,8 @@ from easel.regions import REGION_NAMES
 from easel.session import Session
 from easel.texture import TEXTURES
 
-__all__ = ["main"]
+__all__ = ["main", "build_parser", "parse_size", "reference_text", "run_script",
+           "ScriptResult"]
 
 _REGION_HELP = (
     "a named region (" + ", ".join(REGION_NAMES) + "), a grid cell like D4, "
@@ -39,17 +41,30 @@ _REGION_HELP = (
 )
 
 
-def _parse_size(text: str) -> tuple[int, int]:
+def parse_size(text: str) -> tuple[int, int]:
+    """``"1024x768"`` as a (width, height) pair. Raises ``ValueError`` on anything else.
+
+    Shared with the MCP server, which takes the same string for the same reason:
+    one spelling of a canvas size, and one set of complaints about a bad one.
+    """
     parts = str(text).lower().replace("*", "x").split("x")
     if len(parts) != 2:
-        raise argparse.ArgumentTypeError(f"Size must look like 1024x768, got {text!r}")
+        raise ValueError(f"Size must look like 1024x768, got {text!r}")
     try:
         w, h = int(parts[0]), int(parts[1])
     except ValueError:
-        raise argparse.ArgumentTypeError(f"Size must be two integers, got {text!r}") from None
+        raise ValueError(f"Size must be two integers, got {text!r}") from None
     if w < 8 or h < 8:
-        raise argparse.ArgumentTypeError(f"Size must be at least 8x8, got {text!r}")
+        raise ValueError(f"Size must be at least 8x8, got {text!r}")
     return w, h
+
+
+def _parse_size(text: str) -> tuple[int, int]:
+    """``parse_size`` as an argparse type, so a bad --size prints usage rather than a trace."""
+    try:
+        return parse_size(text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from None
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -289,73 +304,125 @@ def _cmd_mark(session: Session, args) -> int:
     return 0
 
 
+@dataclass(frozen=True)
+class ScriptResult:
+    """What running a painting script came to, before anyone decides how to say it.
+
+    ``code`` is the process exit code the CLI returns; ``report`` is the one line
+    about what happened; ``trace`` is the traceback, or ``""``; ``save`` says whether
+    there is anything to write back. Split out from the printing because the MCP
+    server runs the same scripts and has to hand the same words back as a tool
+    result rather than print them -- and a second copy of the save-what-was-painted
+    rules is a second place for them to go wrong.
+    """
+
+    code: int
+    report: str
+    trace: str = ""
+    save: bool = True
+
+    @property
+    def text(self) -> str:
+        return f"{self.report}\n\n{self.trace}".rstrip() if self.trace else self.report
+
+
+def run_script(session: Session, source: str, name: str) -> ScriptResult:
+    """Execute a painting script with the session and the public API in scope.
+
+    ``name`` is what the script is called: a path from the CLI, a plain label from
+    the server, where the script arrives as text. Tracebacks name it in full and the
+    report names its last part, which is what the CLI has always printed.
+
+    Nothing is written here: the caller saves when :attr:`ScriptResult.save` says to,
+    because it is the caller that knows where the session file lives.
+    """
+    import easel
+
+    short = Path(name).name
+
+    namespace = {n: getattr(easel, n) for n in easel.__all__}
+    namespace.update(
+        {"s": session, "session": session, "palette": session.palette,
+         "__name__": "__easel_script__", "__file__": name}
+    )
+    try:
+        code = compile(source, name, "exec")
+    except SyntaxError:
+        # Nothing ran, so there is nothing new to save.
+        return ScriptResult(1, f"easel: {name} does not parse",
+                            traceback.format_exc(), save=False)
+
+    try:
+        exec(code, namespace)  # noqa: S102 - running the painter's own script is the point
+    except SystemExit as exc:
+        # sys.exit()/exit()/quit() raise this, not Exception, so it is not caught
+        # by the except below -- left unhandled it propagates straight out of
+        # main() and skips the save entirely. A script that exits early
+        # (deliberately, or a stray exit()/quit() copied from an interactive
+        # example) would then silently discard everything painted so far, and
+        # with code 0 the CLI would look like it had succeeded with nothing saved
+        # and no message printed at all.
+        return ScriptResult(
+            exc.code if isinstance(exc.code, int) else (1 if exc.code else 0),
+            f"easel: {short} called exit(); session saved with "
+            f"{session.stroke_count} strokes",
+        )
+    except Exception:
+        # Save what was painted before the error: a half-finished pass is still work.
+        return ScriptResult(1, f"easel: script raised, session saved with "
+                               f"{session.stroke_count} strokes", traceback.format_exc())
+
+    return ScriptResult(0, f"Ran {short}: {session.stroke_count} strokes total.")
+
+
 def _cmd_run(session: Session, args) -> int:
     """Execute a painting script with the session and the public API in scope."""
     script = Path(args.script)
     if not script.exists():
         raise FileNotFoundError(f"Script not found: {script}")
 
-    import easel
-
-    namespace = {name: getattr(easel, name) for name in easel.__all__}
-    namespace.update(
-        {"s": session, "session": session, "palette": session.palette,
-         "__name__": "__easel_script__", "__file__": str(script)}
-    )
-    try:
-        code = compile(script.read_text(encoding="utf-8"), str(script), "exec")
-    except SyntaxError:
-        print(f"easel: {script} does not parse\n", file=sys.stderr)
-        traceback.print_exc()
-        return 1
-
-    try:
-        exec(code, namespace)  # noqa: S102 - running the painter's own script is the point
-    except SystemExit as exc:
-        # sys.exit()/exit()/quit() raise this, not Exception, so it is not caught
-        # by the except below -- left unhandled here it propagates straight out
-        # of main() and skips session.save() entirely. A script that exits early
-        # (deliberately, or a stray exit()/quit() copied from an interactive
-        # example) would then silently discard everything painted so far, and
-        # with code 0 the CLI would look like it had succeeded with nothing saved
-        # and no message printed at all.
+    result = run_script(session, script.read_text(encoding="utf-8"), str(script))
+    if result.save:
         session.save(args.session)
-        print(f"easel: {script.name} called exit(); session saved with "
-              f"{session.stroke_count} strokes\n", file=sys.stderr)
-        return exc.code if isinstance(exc.code, int) else (1 if exc.code else 0)
-    except Exception:
-        # Save what was painted before the error: a half-finished pass is still work.
-        session.save(args.session)
-        print(f"easel: script raised, session saved with {session.stroke_count} strokes\n",
-              file=sys.stderr)
-        traceback.print_exc()
-        return 1
+    if result.code == 0:
+        print(result.report)
+    else:
+        print(f"{result.report}\n", file=sys.stderr)
+        if result.trace:
+            print(result.trace, file=sys.stderr, end="")
+    return result.code
 
-    session.save(args.session)
-    print(f"Ran {script.name}: {session.stroke_count} strokes total.")
-    return 0
+
+def reference_text() -> str:
+    """What ``easel brushes`` prints: every name the painter can say, in one place.
+
+    A string rather than a print, because the MCP server answers the same question
+    and two copies of this list would drift the first time a pigment was added.
+    """
+    lines = ["Brushes (session.stroke(points, brush=...)):"]
+    for name, b in BRUSHES.items():
+        lines.append(f"  {name:12s} tip={b.tip:11s} size={b.size:<5} {_brush_blurb(name)}")
+    lines.append("\nPigments (colours; mix them on the palette):")
+    for name in sorted(set(PIGMENTS)):
+        lines.append(f"  {name:16s} {PIGMENTS[name]}")
+    lines.append("\nGrounds (Session(ground=...)):")
+    for name, hexv in sorted(GROUNDS.items()):
+        lines.append(f"  {name:16s} {hexv}")
+    lines.append("\nCanvas textures: " + ", ".join(TEXTURES))
+    lines.append("\nRegions (region(...)):")
+    lines.append("  " + ", ".join(REGION_NAMES))
+    lines.append("\nGrid cells: A1 through H8, via cell('D6').")
+    lines.append("\nShapes -- a mass that is not a rectangle, for block_in(...):")
+    lines.append("  polygon(points)                 an outline you already have")
+    lines.append("  ellipse(place, rx, ry, rotate)  a round mass, or one filling a cell")
+    lines.append("  blob(place, radius, seed=)      an irregular silhouette")
+    lines.append("  hull([points])                  the mass around three or four landmarks")
+    lines.append("  ribbon(points, width)           a mass running along a line")
+    return "\n".join(lines)
 
 
 def _cmd_reference() -> int:
-    print("Brushes (session.stroke(points, brush=...)):")
-    for name, b in BRUSHES.items():
-        print(f"  {name:12s} tip={b.tip:11s} size={b.size:<5} {_brush_blurb(name)}")
-    print("\nPigments (colours; mix them on the palette):")
-    for name in sorted(set(PIGMENTS)):
-        print(f"  {name:16s} {PIGMENTS[name]}")
-    print("\nGrounds (Session(ground=...)):")
-    for name, hexv in sorted(GROUNDS.items()):
-        print(f"  {name:16s} {hexv}")
-    print("\nCanvas textures:", ", ".join(TEXTURES))
-    print("\nRegions (region(...)):")
-    print("  " + ", ".join(REGION_NAMES))
-    print("\nGrid cells: A1 through H8, via cell('D6').")
-    print("\nShapes -- a mass that is not a rectangle, for block_in(...):")
-    print("  polygon(points)                 an outline you already have")
-    print("  ellipse(place, rx, ry, rotate)  a round mass, or one filling a cell")
-    print("  blob(place, radius, seed=)      an irregular silhouette")
-    print("  hull([points])                  the mass around three or four landmarks")
-    print("  ribbon(points, width)           a mass running along a line")
+    print(reference_text())
     return 0
 
 

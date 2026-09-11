@@ -48,6 +48,9 @@ That installs an `easel` command. Pip puts it in the interpreter's scripts
 directory, which is often not on `PATH` (it warns when it is not), so
 `python -m easel ...` is always available as the same command by another name.
 
+The MCP server is an opt-in extra — `pip install -e ".[mcp]"` — because nothing
+else in the engine imports it. See *MCP server* below.
+
 ## If you are an LLM agent, read PAINTER.md
 
 [`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
@@ -106,6 +109,26 @@ executable is not on `PATH`.
 A script run by `easel run` gets the session pre-bound as `s`, with the whole public
 API already in scope — it needs no imports.
 
+## MCP server
+
+The same verbs again, for a client that speaks MCP — and the difference worth
+having is that the looking tools hand back the picture rather than a path to it.
+`look`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline, so
+the loop the guide asks for (look every five to fifteen strokes) costs one call.
+
+```bash
+pip install -e ".[mcp]"
+easel-mcp --dir ~/paintings          # or: python -m easel.mcp_server
+```
+
+Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost` — the
+three questions about a mark that has not been made yet. Marks are made by `run`,
+which takes the script as text. A place is a name, a cell, a span, a rectangle, an
+outline, or a shape builder like `{"blob": "D5", "radius": 0.12}`.
+
+`run` executes Python sent by its client, exactly as `easel run` does: launch it
+for a painter you would hand a shell to. See [`M9.md`](M9.md).
+
 ## Determinism
 
 Every session takes a seed, and the same script with the same seed produces the same
@@ -163,9 +186,10 @@ painted rather than generated:
 ## Status
 
 Early. The engine, palette, composition helpers, `look()`, history, CLI, the
-precision tools (drawing, landmarks, preview, rehearse, compare, prepare) and
-shaped masses are working; see [`NOTES.md`](NOTES.md) for what is done, what is
-stubbed, and what is next. An MCP server is deliberately last.
+precision tools (drawing, landmarks, preview, rehearse, compare, prepare), shaped
+masses and the MCP server are working; see [`NOTES.md`](NOTES.md) for what is done,
+what is stubbed, and what is next. The server came last, by the brief's rule that
+anything changing the API lands before the thing that exposes it.
 
 ## Licence
 

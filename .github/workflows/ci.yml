@@ -49,6 +49,35 @@ jobs:
           path: samples/brushes.png
           if-no-files-found: error
 
+  # The MCP server extra is opt-in too, for a different reason: nothing in the
+  # engine imports `mcp`, and a painter working from Python or the shell never
+  # needs it -- so the `test` job above installs without it, which is what proves
+  # `easel.mcp_server` degrades to a clean skip rather than an ImportError. This
+  # job is where tests/test_mcp.py actually runs. Both operating systems, unlike
+  # the mixbox job below: every tool here takes a path, and paths are the one
+  # thing that behaves differently on Windows.
+  mcp:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Install with the MCP extra
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev,mcp]"
+
+      - name: Test the MCP server
+        run: pytest -q tests/test_mcp.py
+
   # The mixbox extra (pymixbox) is opt-in -- see color.py's note on its
   # CC BY-NC licence -- so it is not part of the `test` job's install above,
   # and the KS-specific assertions in test_floor.py and the golden images
