@@ -1560,3 +1560,52 @@ easel brushes                          # the full reference, printed
 
 A script given to `easel run` has `s`, `palette`, and the whole API already in
 scope. It needs no imports.
+
+---
+
+## Or through the MCP server
+
+If your client speaks MCP, the same verbs are there as tools, and the difference
+worth having is that **the looking tools hand you the picture**. `look`, `preview`,
+`rehearse`, `compare` and `prepare` return their PNG beside the path they wrote it
+to, so looking every five to fifteen strokes costs one call instead of a call and a
+file read.
+
+Marks are still made by `run`, which takes the script as text — the same Python
+this guide teaches, with `s` and the whole API already in scope. Nothing has to be
+written to a file first.
+
+Three tools have no shell equivalent, and they are the three questions about a mark
+you have not made yet: `preview` (where does it go), `rehearse` (what will it look
+like) and `cost` (what does it charge). They take the same plan, and each hands
+back the Python that paints it — so paste that into `run` rather than retyping it.
+A plan you retype between checking it and painting it is a plan that will drift.
+
+A **place** arrives as JSON in any of six forms — a named region, a grid cell, a
+span, a rectangle, an outline, or a shape builder with its own arguments:
+
+```text
+"upper-band"                                    a named region
+"D4"                                            one grid cell
+"C3:F6"                                         a run of cells
+[0.10, 0.10, 0.45, 0.30]                        a rectangle
+[[0.2, 0.2], [0.6, 0.15], [0.7, 0.5]]           an outline you have
+{"blob": "D5", "radius": 0.12, "seed": 3}       and the builders: blob, ellipse,
+{"ribbon": [[0.2, 0.8], [0.5, 0.5]], "width": 0.09}      hull, ribbon, polygon
+```
+
+A **plan** is a list of those three kinds of thing, or one on its own. A mass is an
+object with `shape` and any `block_in` argument; a sweep is one with `edge` and any
+`sweep` argument; a mark is a list of points, or an object with `points`. A place
+on its own is a mass, and a bare list of points on its own is a mark.
+
+```json
+{"shape": {"blob": "D5", "radius": 0.12, "seed": 3},
+ "brush": "bristle", "color": "dark", "size": 0.05, "direction": "axis"}
+```
+
+Ask `cost` what that charges before you widen the brush, not after. Then `rehearse`
+it, then paste the line it gives you back into `run`.
+
+The server is `easel-mcp`, or `python -m easel.mcp_server` when the scripts
+directory is not on `PATH`. It needs one extra: `pip install easel-paint[mcp]`.

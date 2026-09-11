@@ -773,7 +773,13 @@ only the largest, matching what it already claimed to do
 
 ## Not yet reviewed
 
-The MCP server (M9 in the brief), which does not exist yet.
+The MCP server (M9 in the brief), which is now built (`M9.md`) and has not had an
+adversarial code review of its own. What such a pass should aim at: `_place` and
+`_plan` in `easel/mcp_server.py` -- the only code in the repo that turns untyped
+JSON into engine objects -- and the echoed Python beside them, where two defects
+were already found by driving the tools rather than by reading them (`M9.md` §5).
+The engine itself is untouched by the milestone, so everything reviewed below still
+stands.
 
 ---
 
