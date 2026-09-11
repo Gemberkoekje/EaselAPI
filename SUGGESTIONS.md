@@ -351,6 +351,23 @@ In the order of how many strokes each would have saved me.
    painter would make by hand, all from the same cause. "74 passes: crossed, stepping
    across 1.10 of width" would let the painter fix the call; the bare number sends you
    to redesign the shape.
+7. **Let `smudge` take an edge, the way `sweep` does.** `sweep(edge, ...)` accepts a
+   boundary — or a whole shape, and follows its own outline. `smudge(points, ...)`
+   accepts only points, so following a curve means sampling coordinates off it by hand.
+   That is the step a painter skips, and the guide's examples are what teach them to
+   skip it. `smudge(shape, ...)` walking an outline, or an `edge=` that takes what
+   `sweep` takes, would make the correct usage the default one rather than the careful
+   one.
+
+   **Strokes saved: none, and the ordering rule is wrong about this one.** My two bad
+   smudges were caught in a rehearsal and never committed, so they cost nothing at all.
+   That is the honest number and it understates the item, because what a smudge does
+   wrong is not charged in strokes — it is charged as a damaged passage. A thumbprint
+   lying across a hard edge is the expensive kind of repair: burying it means
+   repainting the mass it sits on, which buries whatever else is standing there. A
+   painter who does not rehearse pays that, not two strokes. Worth reading as a general
+   caution about this list's ordering, which prices a mistake by what it costs to make
+   and not by what it costs to live with.
 
 ## The guide
 
@@ -359,6 +376,42 @@ In the order of how many strokes each would have saved me.
    rather than adding a paragraph. It is *a worked example is an instruction* exactly —
    I followed the example's shape and not its rule, and dragged two finger-shaped lobes
    of glass into a dark mass doing it.
+
+   The rule as it stands is right and incomplete: *"Run it along a boundary, never
+   across one... Along the boundary, in short passes, it does what it is for"*, and then
+   a two-point example. Nothing says that on anything but a straight edge those two
+   sentences disagree with each other. Proposed replacement for the paragraph and its
+   block in step 5, keeping the existing first half:
+
+   > **Along means along the boundary's own shape, and only a straight boundary is two
+   > points.** Given a straight pass, a curved or sloping edge gets a mark that starts
+   > along it and ends across it — the same thumbprint, arriving more slowly. `smudge`
+   > takes as many points as you hand it, so hand it the curve; if the boundary is a
+   > shape you built, its own outline is already that path.
+   >
+   > ```python
+   > s.smudge([(0.30, 0.40), (0.38, 0.41)], size=0.04)          # a straight edge is two points
+   > s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53),
+   >           (0.73, 0.63)], size=0.04)                        # a curved one is the curve
+   > ```
+
+   Both passes register in the log, and the replacement above was applied to
+   `PAINTER.md`, checked with `scripts/check_guide_blocks.py` — 51 ok, 0 failed,
+   unchanged from baseline — and then reverted. The measurement behind it belongs in
+   `CALIBRATION.md` rather than here, under *`smudge`*, as a row beside the join-sharpness
+   table:
+
+   > - **"Along" means along the boundary's *shape*.** On an edge sloping `0.045` in y
+   >   per `0.2` in x, one pass at `size=0.040`: given two points it moved the boundary a
+   >   mean of `0.57%` of canvas height and `1.81%` at worst; given four points sampled
+   >   along the slope, `0.11%` and `1.25%` — five times less. A two-point pass on a
+   >   curve begins along the boundary and ends across it.
+
+   Two cautions on applying it. `LESSONS.md` says a guide change is a hypothesis until a
+   fresh session paints against it, and I am the session that just failed this rule, so
+   this is a proposal and not an edit — I have deliberately not touched `PAINTER.md`.
+   And if engine item 7 is taken instead, this paragraph should name that verb rather
+   than teach the hand-sampling it replaces.
 2. **`load` belongs beside `density`, not only in the repair recipe.** One clause where
    masses are laid. Measured above.
 3. **A checklist line for the tool's own shape at small scale.** *"Is any small mark a
