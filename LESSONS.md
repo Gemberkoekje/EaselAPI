@@ -327,15 +327,16 @@ The repo is LF (`.gitattributes`), even on a Windows checkout.
 
 **In the engine, with evidence.**
 
-- **`Session.load()` restores `out_dir` from the session file with no validation.** It
-  round-trips because that is how `easel look p.easel` keeps writing to the same place
-  across CLI invocations — load-bearing, not an oversight. But loading and then `look()`ing
-  a `.easel` file someone handed you writes wherever *they* set `out_dir`, silently,
-  including an absolute path outside the working directory. Rejecting absolute or
-  `..`-escaping paths outright would also reject what a user legitimately sets with
-  `--out-dir` when *creating* a session: it is the same field either way. Wants a product
-  decision (a flag to override the stored value? a warning when it differs from the cwd?),
-  not a rule a reviewer picks unilaterally.
+- ~~**`Session.load()` restores `out_dir` from the session file with no validation.**~~
+  **Settled: it warns.** The round-trip is kept, because it is how `easel look p.easel`
+  keeps writing to the same place across CLI invocations, and because the same field is
+  what a painter legitimately sets with `--out-dir` when *creating* a session —
+  rejecting it would break their setup to guard against a file they wrote themselves.
+  What changed is that it is no longer silent: loading a session whose `out_dir` is
+  neither in the working directory nor beside the session file now says so, once, and
+  names the path it is about to write to. Two places count as unsurprising rather than
+  one, because a warning that fires on almost every load is a warning nobody reads —
+  looks sitting beside the painting is the normal arrangement, not a smuggled path.
 - **`undo()`'s fast snapshot path does not rewind `Session.rng`.** So
   `s.block_in(...); s.undo(1); s.block_in(...)` draws different wobble than a fresh session
   doing the same two calls. A correct fix needs an `rng` snapshot at the same granularity
@@ -387,8 +388,21 @@ and none has been decided:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the last run found has been applied.
-`SUGGESTIONS.md` is the list from the most recent session and nothing on it has been
-actioned yet.
+`SUGGESTIONS.md` is the list from the most recent session. **Its twelve engine items
+are done**, and it records what each one became; seven of its twelve guide items are
+applied, which is the ones that were corrections to something the engine does plus the
+two the new verbs made writable. What is left there is editorial: a one-page reference,
+the exercises as a gate, a cast-shadow recipe, a calibrated soft-patch recipe, a "first
+hour" short path, and a warning about painting several similar objects to one recipe.
+
+One of that list's own measured claims did not survive being re-measured, which is the
+method working as intended. It reported that a contour pass swept along a shape's drawn
+outline "lays nothing outside the outline"; a pass centred on a line puts half its
+width either side of it, and measured on a pear-sized mass it spilled 38px against the
+ragged fill's 20px. Sweeping the contour along the *inset* outline — so the brush's
+outer half lands on the drawn line — reaches 13px, and that is what `edge="clean"`
+does. **Check the painters' numbers** applies to a painter's numbers about the engine,
+not only to the engine's about itself.
 
 ---
 

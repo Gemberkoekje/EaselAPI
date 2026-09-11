@@ -200,17 +200,45 @@ class History:
     def frame_count(self) -> int:
         return len(self._frames)
 
-    def save_gif(self, path: str | Path, fps: float = 8.0, hold_last: float = 1.5) -> Path:
-        """Write the time-lapse as an animated GIF."""
+    def save_gif(self, path: str | Path, fps: float = 8.0, hold_last: float = 1.5,
+                 every: int = 1, scale: int | None = None) -> Path:
+        """Write the time-lapse as an animated GIF.
+
+        ``every`` and ``scale`` are what keep the file small: a painting of a couple
+        of hundred marks makes a GIF of a couple of megabytes at full frame rate and
+        full thumbnail size, and most of those frames differ by one stroke.
+        """
         if not self._frames:
             raise ValueError(
                 "No time-lapse frames were recorded. Create the session with "
                 "timelapse=True, or call session.capture_frame() as you paint."
             )
+        if int(every) < 1:
+            raise ValueError(
+                f"save_gif(every={every!r}) keeps every nth frame, so it is at least 1."
+            )
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        frames = [Image.fromarray(f, mode="RGB").convert("P", palette=Image.ADAPTIVE)
-                  for f in self._frames]
+        kept = self._frames[::int(every)]
+        # The last frame is the finished painting, and a time-lapse that stops one
+        # stroke short of it is the wrong picture however small the file.
+        if not np.array_equal(kept[-1], self._frames[-1]):
+            kept = [*kept, self._frames[-1]]
+        frames = [Image.fromarray(f, mode="RGB") for f in kept]
+        if scale is not None:
+            limit = int(scale)
+            if limit < 1:
+                raise ValueError(
+                    f"save_gif(scale={scale!r}) is the long side in pixels, so it is "
+                    f"at least 1. Leave it out to keep the recorded size."
+                )
+            longest = max(frames[0].size)
+            if longest > limit:
+                f = limit / float(longest)
+                size = (max(1, int(frames[0].size[0] * f)),
+                        max(1, int(frames[0].size[1] * f)))
+                frames = [im.resize(size, Image.LANCZOS) for im in frames]
+        frames = [im.convert("P", palette=Image.ADAPTIVE) for im in frames]
         per_frame = max(20, int(round(1000.0 / max(fps, 0.1))))
         durations = [per_frame] * len(frames)
         durations[-1] = max(per_frame, int(hold_last * 1000))

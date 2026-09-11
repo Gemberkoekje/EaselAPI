@@ -189,6 +189,35 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   region blocked in at `size=0.1` comes out roughly `0.05` wider than asked on the
   sides and `0.025` taller.
 - `overhang=0` keeps the ends within a fifth of a brush of the region.
+- **`overhang` moves the ends of each pass and nothing else.** Measured on a band at
+  `x 0.2–0.8, y 0.585–0.775`, `bristle` at `size=0.11`, passes horizontal:
+
+  | `overhang` | paint spans (ends) | paint spans (sides) |
+  |---|---|---|
+  | `0` | `x 0.181–0.825` | `y 0.530–0.844` |
+  | `0.35` (default) | `x 0.145–0.854` | `y 0.530–0.844` |
+  | `1.0` | `x 0.072–0.924` | `y 0.529–0.850` |
+
+  The sides do not move: they sit about half a brush past the band whatever
+  `overhang` is, because that is the brush hanging over a pass whose *centre* stopped
+  at the boundary. To hold a mass off its neighbour at the same depth, `inset()` the
+  place by half the brush. `overhang=0` is not a substitute and never was.
+- **`edge="clean"` pulls the paint back to the drawn line**, by insetting the fill
+  half a brush and sweeping one pass along that inset outline, for one stroke more
+  than the same mass ragged. Measured on a pear-sized mass, furthest paint outside
+  the outline:
+
+  | Tip at `size=0.05` | ragged | clean |
+  |---|---|---|
+  | `round_hard` | 20.0px | 13.0px |
+  | `round_soft` | 18.4px | 12.8px |
+  | `flat` | 26.6px | 12.3px |
+  | `bristle` | 29.5px | 13.3px |
+
+  It cuts the spill on every tip, but only a *solid* tip also comes out smoother: on
+  a comb the single contour pass is stringy — one bristle pass covers about
+  three-quarters of its width — and the silhouette ends up rougher than the ragged
+  fill's, which is why asking for a clean edge with a bristle says so.
 - Successive passes run in opposite directions on their own, so a mass does not
   fade toward the side the brush ran out on.
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
@@ -549,3 +578,23 @@ times about three if crossed:
 step = 0.12 * (1 - 0.45 * 0.9)      # size=0.12, density=0.9  ->  0.071
 passes = 0.32 / step                # a mass 0.32 across       ->  about 5
 ```
+
+Or do not do the arithmetic: `s.cost(plan)` walks the same passes and returns the
+number, and `s.paint(plan)` then charges exactly it — the two go through one code
+path so a quote and a bill cannot drift apart.
+
+**The session can hold the split.** `Session(budget=300)` makes `s.spent`,
+`s.remaining` and `s.budget_line()` say where the painting is, `easel run` print it
+after every pass, and `s.cost(plan)` warn when one plan would take more than a
+quarter of what is left (`share=` moves the line, `share=0` silences it). Nothing is
+refused when the budget runs out: it goes negative and says by how much. A budget is
+the painter's plan for the picture, not a lock on the engine.
+
+**`scumble(band, a, b, n)` costs exactly `n`** on a band whose silhouette is convex,
+which is what makes a soft passage something that can be budgeted before it is laid.
+On a concave shape a pass line is cut into the pieces really inside it, the same way
+`block_in` cuts one, so it costs a little more.
+
+**`edge="clean"` costs one stroke more than the fill it replaces** — and the fill
+itself is slightly cheaper, because it is laid into the shape inset by half a brush.
+`cost()` prices both halves.

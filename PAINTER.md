@@ -34,6 +34,19 @@ s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
 Coordinates are always `0.0` to `1.0`, origin **top-left**. `(0.5, 0.5)` is the
 centre, `(0.9, 0.1)` is the top right. There are no pixels anywhere in this API.
 
+**One trap, and it is worth knowing before your first shape.** Both axes run 0–1, so
+on a canvas that is not square the same number is a different distance in each: `0.1`
+across a 1024×768 canvas is 102 pixels and `0.1` down it is 77. Brush sizes are a
+fraction of the canvas's **long side**, so a brush is round — but `ellipse(p, 0.1,
+0.1)` is an oval. A round radius `r` in x is `r * width / height` in y, and rather
+than do that arithmetic, ask the session:
+
+```python
+s.circle((0.5, 0.5), 0.09)                 # round in pixels, on any canvas
+s.circle(cell("D5"))                       # the biggest circle that fits the cell
+s.circle((0.5, 0.5), 0.09, wobble=0.25)    # round, with a silhouette nobody drew
+```
+
 Grounds: `white`, `warm_white`, `toned_grey`, `toned_warm_grey`, `burnt_sienna`,
 `umber_wash`, `cool_grey`. Textures: `smooth`, `linen`, `rough`.
 
@@ -216,11 +229,23 @@ softened, and it is the one approach three separate painters arrived at independ
 after the smudge recipe failed them:
 
 ```python
-for i in range(8):                                   # close the join with paint
+s.scumble(span("A4", "H6"), "shadow", "light", 8)    # close the join with paint
+```
+
+That is eight overlapping passes running along the band and stepping across it, one
+value step per pass, and it costs exactly the eight strokes it says. Written out, so
+you can see what it is doing and vary it:
+
+```python
+for i in range(8):                                   # the same thing, by hand
     t = i / 7
     s.stroke([(-0.05, 0.46 + t * 0.10), (1.05, 0.47 + t * 0.10)], "bristle",
              s.palette.mix("shadow", "light", t), size=0.05, opacity=0.5)
 ```
+
+The overlap is the point: the brush is wider than the step between passes, which is
+what closes the joins that stepping alone would leave. Below about five passes the
+steps start to read as steps again.
 
 **This matters more than it looks**, because a wide soft passage is where a picture's
 structure comes from. A field gradated top to bottom is a stack of horizontal bands
@@ -439,17 +464,34 @@ budget on it. A painter who did not know it budgeted 4 and paid 21.
 If the number is more than you want to pay, a wider brush or a thinner `density` is
 the lever, and `cost` will tell you what either buys before you commit to it.
 
-The plan is a list of the same arguments `s.stroke()` takes, so what you checked is
-what you paint, without rewriting it:
+**And there is a fourth verb, which paints the plan you just checked.**
 
 ```python
-for spec in plan:
-    s.stroke(**{k: v for k, v in spec.items() if k != "label"})
+s.paint(plan)
+```
+
+That is the whole point of the plan being one object: `cost`, `preview`, `rehearse`
+and `paint` all read it, so no line of it is written twice. A plan that is checked
+and then *retyped* into the call that paints it is a plan that will drift, and the
+drift arrives as paint. Marks, masses and sweeps may be mixed in one list and are
+painted in the order given:
+
+```python
+s.paint([{"shape": blob(cell("D5"), 0.12, seed=3), "brush": "bristle",
+          "color": "dark", "size": 0.07},
+         {"points": [(0.31, 0.62), (0.55, 0.58)], "brush": "liner", "size": 0.005}])
 ```
 
 The rehearsal is seeded as if these were the next strokes of the real painting, so
-what you rehearsed is what lands. This is what the scrap of canvas beside a real
-easel is for, and it is the last reason to reach for `undo`.
+what you rehearsed is what lands — rehearse a plan, paint that same plan with nothing
+in between, and it arrives pixel for pixel as it was rehearsed. This is what the scrap
+of canvas beside a real easel is for, and it is the last reason to reach for `undo`.
+
+**Rehearse the masses, not just the features.** The tools above are written around a
+mark smaller than a cell, because that is where a painter expects to need them. The
+expensive mistakes are the other way up: a `block_in` of a big mass is one call and
+twenty strokes, and it is cheap to repaint only until something else stands on it.
+**Rehearse any block-in you will not want to repaint.**
 
 ### Compare values, not colours
 
@@ -514,6 +556,33 @@ The mean colour is in the table too, coarse on purpose: it is there to catch "th
 whole passage is too warm", not to be sampled and matched. **Matching cell by cell
 is tracing**, and it produces a painting nobody would look at twice. If you find
 yourself working down the table one cell at a time, you have stopped painting.
+
+### Painting without a reference
+
+Half the tooling above assumes a photograph. If you are painting something you can
+only see in your head, everything here still applies except that *you* are the
+reference — so write the value plan down in numbers before a stroke, and measure
+against that instead:
+
+```python
+sky, sill = span("A1", "H4"), span("A5", "H8")
+s.compare({sky: 0.72, sill: 0.38})          # the same table, the same sheet
+```
+
+The keys are places and the values are what `value_of` reports, so a plan is a few
+lines written before you start and checkable after every mass. The sheet shows the
+plan, the canvas, and each planned place outlined with its miss written across it.
+Give a place a name to see it listed under one: `blob(cell("D5"), name="pear")`.
+
+The rest of the method is the same discipline without the crutch:
+
+- `print(p.value_of(mix))` for every mixture as you make it, and for the ground.
+- `p.at_value(base, target)` to *hit* a planned value rather than guess at it.
+- `look(values=True)` after every mass, read against the numbers you wrote down.
+
+The failure this prevents is the one a reference makes impossible: a value plan that
+lives only in the painter's head drifts a step per mass, and by the fourth mass the
+picture has no value structure at all — and nothing said so.
 
 ### When to stop measuring
 
@@ -684,7 +753,26 @@ of the mass's width, or `inset()` the shape by half the brush size.**
 mass = blob(span("D4", "F6"), wobble=0.3, seed=2)
 s.block_in(mass.inset(0.045), "flat", "dark", size=0.09)   # inset by half the brush
 s.block_in(mass, "flat", "dark", size=0.06)                # or keep the brush small
+s.block_in(mass, "flat", "dark", size=0.09, edge="clean")  # or ask for a drawn contour
 ```
+
+**`edge="clean"` is those two steps and a third.** It insets the fill by half the
+brush, lays it, and then sweeps one pass along the inset outline in the same colour,
+so the *outer half* of the brush lands on the line you drew. It costs one stroke more
+than the same mass ragged. Reach for it when the silhouette **is** the drawing — a
+pear, a head, a hand — and especially with a round tip on a small mass, where the
+half-brush overhang arrives as a fringe of separate discs around the shape rather
+than as a soft edge, and reads as spray. Measured on a pear-sized mass with a round
+tip at `size=0.05`: paint reaches **20px** past the outline ragged and **13px** clean,
+and the clean silhouette is the less ragged of the two.
+
+**Use a solid tip for it.** A `bristle` pulls the paint in too, but one comb pass
+along a contour covers about three-quarters of its width, so it leaves a *stringier*
+outline than the ragged fill did — and says so when you ask for it.
+
+The default, `edge="ragged"`, is right for everything else: a mass sitting behind
+other things wants the brush to break past its boundary, because that is what a brush
+does and the mass in front will cover it.
 
 **On a shape that is not convex, `inset()` takes far more than a rim, and it takes it
 out of the thin parts first.** Erosion pulls in from every boundary at once, so a lobe
@@ -786,17 +874,27 @@ paint showing between the streaks, however high you push the opacity. A `flat` o
 leaves a capsule with rounded ends. What works:
 
 ```python
-s.dry()                                                     # so new paint covers
-s.stroke([(-0.05, 0.55), (1.05, 0.58)], "flat", "corrected_colour",
-         size=0.09, load=1.0, opacity=1.0, pressure="even")
+s.cover(cell("D5"), "corrected_colour")      # the whole recipe, already set
 ```
 
-**A long stroke, a solid tip, `load=1.0`, full opacity, run along the grain of what
-is already there so that its own ends fall outside the area you are fixing.** Every
-clause earns its place: a solid tip because a comb does not cover, full load because
-a starved brush leaves a speckled film that everything after it sits on, and the ends
-outside because an oriented tip's chisel end is a straight edge you did not intend
-wherever it stops inside the picture.
+That is the repair. `cover` dries the area, then blocks it in with every clause of
+the recipe in place, and what those clauses are is worth knowing because you will
+sometimes want them on a stroke of your own:
+
+```python
+s.dry()                                                     # so new paint covers
+s.stroke([(-0.05, 0.55), (1.05, 0.58)], "flat", "corrected_colour",
+         size=0.09, load=1.0, load_falloff=0.0, opacity=1.0, pressure="even")
+```
+
+**A long stroke, a solid tip, `load=1.0`, `load_falloff=0.0`, full opacity, run along
+the grain of what is already there so that its own ends fall outside the area you are
+fixing.** Every clause earns its place: a solid tip because a comb does not cover,
+full load because a starved brush leaves a speckled film that everything after it
+sits on, `load_falloff=0.0` because a full-width stroke at `load=1.0` **still runs dry
+and speckles at its far end** without it, and the ends outside because an oriented
+tip's chisel end is a straight edge you did not intend wherever it stops inside the
+picture.
 
 **Repairing a mass that already has things standing on it is a different job, and it
 needs a method rather than a warning.** Repainting the mass buries the fine marks on
@@ -1177,8 +1275,10 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
 s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
-s.block_in(place, brush, color, direction=, density=, overhang=)    # a mass, as strokes
+s.block_in(place, brush, color, direction=, density=, overhang=, edge=)  # a mass
 s.sweep(edge, brush, color, into=, depth=, cross=, passes=)         # a mass with a shape
+s.scumble(band, color_a, color_b, n=8)             # a soft passage, as n strokes
+s.cover(place, color)                              # bury a mistake; the whole recipe
 s.smudge(points, size=)                            # move paint around
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
@@ -1192,12 +1292,17 @@ s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
 s.preview(strokes, reference=, region=, grid=)     # where a mark would go
 s.rehearse(strokes, reference=, region=)           # what it would look like
 s.cost(strokes)                                    # what it would charge
+s.paint(plan)                                      # ...and now paint that same plan
+s.scratch()                                        # a throwaway copy to try a pass on
 s.compare(reference, region=None)                  # per-cell value numbers
+s.compare({place: value, ...})                     # ...or against your own value plan
 s.prepare(reference, level="coarse")               # the reference, cut up
 s.look_areas()                                     # the map again, after merging
 s.export("painting.png")
-s.timelapse_gif("painting.gif")
-s.log()                                            # what you have done so far
+s.timelapse_gif("painting.gif", fps=8.0, every=1, scale=None)
+s.contact_sheet("sheet.png", columns=6)            # the time-lapse as a grid
+s.log(last=10)                                     # last=10_000 for the whole record
+s.spent  s.remaining  s.budget_line()              # if the session carries a budget
 ```
 
 `block_in` takes `direction=` of `"horizontal"`, `"vertical"`, `"diagonal"`,
@@ -1231,8 +1336,14 @@ rectangles** for what that costs and how to inset for it. That spill is fine for
 band and wrong for a mass that meets another at the *same* depth, where it lands on
 its neighbour. Painting back to front is the real answer — the far mass spilling into
 where the near one is going does no harm, because the near one goes on over it next.
-For two masses at the same depth, pass `overhang=0` or inset the place by half the
-brush size.
+
+**`overhang` is not the remedy: it controls the ends of each pass, not its sides.**
+Measured on a band at `x 0.2–0.8, y 0.585–0.775` with a `bristle` at `size=0.11`, the
+passes running horizontally: `overhang=0` laid paint from `x 0.181` to `0.825`, the
+default `0.35` from `0.145` to `0.854`, and `1.0` from `0.072` to `0.924` — while the
+*sides* sat at `y 0.530–0.844` in all three, about half a brush past the band either
+way, unmoved. **For two masses at the same depth, inset the place by half the brush
+size.** That is the half of the old advice that works.
 
 `compare(region=cell("D4"))` measures the tenths of one cell and labels them the
 way `grid="fine"` does.
@@ -1256,12 +1367,29 @@ above, and goes anywhere a region goes:
 ```python
 blob(place, radius, wobble=0.25, seed=0)   # an irregular silhouette
 ellipse(place, rx, ry, rotate=0)           # round, or filling the place given
+s.circle(place, r, wobble=0)               # round *in pixels* — see Getting started
 hull([p1, p2, p3])                         # the mass around three or four points
+union(a, b)                                # one silhouette round two that overlap
 ribbon(points, width, end_width=None)      # a mass running along a line
 polygon(points)                            # an outline you already have
 shape.inset(0.03)  shape.scaled(0.9)  shape.shifted(0.02, 0)   # ... as a region does
+shape.smooth()                             # cut the corners off an outline
 shape.axis   shape.area   shape.center   shape.contains(x, y)   shape.closed
 ```
+
+**`hull` and `union` are not the same join.** A hull covers everything given, but
+convexly: two circles come back as a lozenge with the waist between them filled in.
+`union` keeps the waist, which is usually the reason there were two circles. The
+shapes have to overlap, because what comes back is one silhouette:
+
+```python
+pear = union(s.circle((0.45, 0.42), 0.05), s.circle((0.45, 0.56), 0.08)).smooth()
+s.block_in(pear, "flat", "ochre", size=0.04, edge="clean")
+```
+
+`smooth()` cuts the corners off an outline, twice by default. A shape built from a
+dozen points has a dozen corners, and a round tip laid along it leaves a scalloped
+edge that reads as faceting rather than as form.
 
 `place` is a point `(x, y)` or any region — `blob(cell("D5"))` is an irregular mass
 filling that cell. `shape.closed` is the outline as a path, for `s.pencil(...)` or
@@ -1295,35 +1423,35 @@ p = s.palette
 dark = p.mix("ultramarine", "burnt_umber", 0.5)     # the darkest thing in the box
 lo, hi = p.value_of(dark), p.value_of("titanium_white")
 
-def at_value(target):                # the ratio of white that reads `target`
-    if target < lo:                  # it can only add white, so it can only go up
-        raise ValueError(f"{target:.2f} is below the darkest mix ({lo:.2f}) — "
-                         "mix a darker colour, do not ask this for it")
-    a, b = 0.0, 1.0
-    for _ in range(20):
-        mid = (a + b) / 2
-        a, b = (mid, b) if p.value_of(p.mix(dark, "titanium_white", mid)) < target else (a, mid)
-    return (a + b) / 2
-
 for i in range(9):
-    r = at_value(lo + (hi - lo) * i / 8)
+    target = lo + (hi - lo) * i / 8
     band = Region(i / 9.0, 0.15, (i + 1) / 9.0, 0.85)
-    s.block_in(band, "flat", p.mix(dark, "titanium_white", r), density=1.0, size=0.06)
-    print(f"value {lo + (hi - lo) * i / 8:.2f}  white {r:.2f}")
+    s.block_in(band, "flat", p.at_value(dark, target), density=1.0, size=0.06)
+    print(f"value {target:.2f}  reads {p.value_of(p.at_value(dark, target)):.2f}")
 s.look(values=True)     # nine even steps, 0.14 to 0.96
 ```
 
-Look at the printed ratios, not just the picture. A third of white gets you the
-first step; it takes nine tenths to reach the eighth. That curve is why a mixture
-that "should" be halfway comes out too dark, and why the fix is always to add more
-white than feels right.
+`p.at_value(base, target)` is the search: it hands back the *mixture* of `base` that
+reads at `target`. Do not interpolate toward it by hand. White is much stronger than
+its share of the mixture — a third of white gets you the first step of nine and it
+takes nine tenths to reach the eighth — and that curve is why a mixture that "should"
+be halfway comes out too dark, and why the fix is always to add more white than feels
+right.
 
-**`at_value` only goes up**, which is why it now raises rather than shrugging. It
-searches a ratio of *white*, so a target below the darkest mix has no answer and the
-bare bisection used to return `0.0` and hand back the base value without saying so — a
-painter asked it for `0.30`, got a field at `0.41`, and did not find out until
-`compare()` told it. Reach for this function to plan a range upward from your dark; to
-go lower, mix a darker colour or supply one (**Colour**, below).
+**It goes both ways.** Adding white raises a colour; to lower one it mixes in a dark,
+so you can hit a planned value from whichever side the mixture starts on, which is
+what planning values actually asks for:
+
+```python
+s.block_in(cell("D5"), "flat", p.at_value("shadow", 0.45))   # up from the dark
+s.block_in(cell("D6"), "flat", p.at_value("ochre", 0.30))    # and down from a light
+```
+
+The default dark is the blue-umber the palette is built around rather than a black it
+does not have, so lowering a value keeps a colour that still has a hue in it. Ask for
+a value the box cannot reach and it **raises rather than handing back the nearest it
+managed** — a painter who asks for `0.30`, is silently given `0.41`, and finds out
+when `compare()` says so has lost a mass, not a mixture.
 
 **2. One stroke, six pressures.** See what the profiles actually do. On the round
 brush on the left they change the *width* of the mark as well; on the `bristle` on
@@ -1546,6 +1674,7 @@ same program. Do not spend any time fixing your `PATH`.
 ```bash
 easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --seed 7
 easel run painting.easel pass1.py     # your script; `s` is already defined in it
+easel run painting.easel pass1.py --rehearse   # ...against a copy, committing nothing
 easel look painting.easel --grid
 easel look painting.easel --values
 easel look painting.easel --region D4 --fine --reference ref.jpg
@@ -1554,12 +1683,36 @@ easel compare painting.easel ref.jpg           # per-cell value numbers
 easel prepare painting.easel ref.jpg --level coarse --merge 3,7
 easel undo painting.easel 3
 easel export painting.easel painting.png
-easel timelapse painting.easel painting.gif
+easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes                          # the full reference, printed
 ```
 
 A script given to `easel run` has `s`, `palette`, and the whole API already in
 scope. It needs no imports.
+
+**Rehearse the pass, not just the mark.** `easel run --rehearse` runs the whole
+script against a copy of the session: it writes the look, says what the pass would
+cost, and leaves the session file untouched. The strokes are seeded as if they were
+the next marks of the real painting, so what you rehearse is what lands when you run
+the same file again without the flag. Working this way, a mass you dislike costs a
+look instead of a repaint — which is the difference between rehearsing being the
+guide's best advice and it being free to follow.
+
+**Keep your helpers in a prelude.** A `prelude.py` sitting beside the session file is
+run first, in the same scope, so mixtures, landmarks and helper functions do not have
+to be redefined at the top of every pass. `--prelude other.py` names a different one
+and `--no-prelude` turns it off. Auto-loading is announced, never silent.
+
+```bash
+easel new painting.easel --size 1024x768 --budget 300   # if you want it held for you
+easel run painting.easel pass1.py                       # "...142 of 300 spent, 158 left"
+```
+
+**Write the split down and let the engine hold it.** With a `--budget`, every `run`
+reports spent and remaining, and `s.cost(plan)` says so when one plan would eat more
+than a quarter of what is left. Nothing is ever refused — the budget is your plan for
+the picture, not a lock — but the number twelve strokes represents is not one a
+painter can feel, and that is exactly what an engine is for.
 
 ---
 

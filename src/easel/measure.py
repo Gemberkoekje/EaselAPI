@@ -26,7 +26,8 @@ from PIL import Image, ImageDraw
 from easel.color import linear_to_srgb, luminance, srgb_to_linear
 from easel.regions import GRID_COLS, GRID_ROWS, Region
 
-__all__ = ["CellCompare", "Comparison", "compare_images", "VALUE_THRESHOLD"]
+__all__ = ["CellCompare", "Comparison", "compare_images", "compare_plan",
+           "VALUE_THRESHOLD"]
 
 #: Two masses closer than this in value read as one. PAINTER.md's own threshold,
 #: and the definition of done for the M6 copy stage.
@@ -83,6 +84,10 @@ class Comparison:
     region: Region | None
     path: Path | None = None
     threshold: float = VALUE_THRESHOLD
+    #: What the canvas was measured against: a photograph, or the painter's own
+    #: written value plan. Only wording -- but a table that says "reference" when
+    #: there was no reference is a table that will be misread.
+    against: str = "reference"
     #: The darkest value the palette can reach. Cells whose *reference* is more than
     #: a threshold below it are out of reach of any stroke; zero disables the split.
     floor: float = 0.0
@@ -141,7 +146,8 @@ class Comparison:
         ncol = len(self.columns)
         head = "     " + "".join(f"{c:>7s}" for c in self.columns)
         lines = [
-            f"compare: value 0..1, delta = canvas - reference, threshold {self.threshold:.2f}",
+            f"compare: value 0..1, delta = canvas - {self.against}, "
+            f"threshold {self.threshold:.2f}",
             head,
         ]
         out_of_reach = {id(c) for c in self.unreachable}
@@ -156,8 +162,9 @@ class Comparison:
 
         bad, beyond = self.off, self.unreachable
         lines.append(
-            f"{len(bad)} of {len(self.cells)} cells more than {self.threshold:.2f} out"
-            f" (* above); largest {self.max_delta:.2f}."
+            f"{len(bad)} of {len(self.cells)} {'places' if self.against == 'plan' else 'cells'}"
+            f" more than {self.threshold:.2f} out (* above); "
+            f"largest {self.max_delta:.2f}."
         )
         if beyond:
             lines.append(
@@ -258,6 +265,108 @@ def compare_images(
             )
     return Comparison(cells=cells, columns=cols, rows=rows, region=region,
                       threshold=threshold, floor=floor)
+
+
+def compare_plan(
+    canvas_rgb: np.ndarray,
+    places: list[tuple[str, np.ndarray, float]],
+    threshold: float = VALUE_THRESHOLD,
+    floor: float = 0.0,
+) -> Comparison:
+    """Compare the canvas against a written value plan, one named place at a time.
+
+    :func:`compare_images` answers "where does this differ from the photograph". This
+    answers "where does this differ from what I said I would paint", which is the
+    only question available to a painter working without a reference -- and until
+    now the planned values existed only in their head and in ``value_of`` printouts,
+    with nothing checking the canvas against them.
+
+    Args:
+        canvas_rgb: the painting, as an 8-bit RGB array.
+        places: one ``(name, mask, target_value)`` per planned place. The mask is a
+            boolean array the same shape as the canvas.
+        threshold: what counts as out.
+        floor: the darkest value the palette reaches, as :func:`compare_images`.
+
+    Returns:
+        A :class:`Comparison` with one entry per place instead of one per grid cell,
+        so ``off``, ``worst()``, ``fixable`` and ``print()`` all read the same.
+    """
+    srgb = np.asarray(canvas_rgb, dtype=np.float32) / 255.0
+    value = linear_to_srgb(luminance(srgb_to_linear(srgb)))
+
+    cells: list[CellCompare] = []
+    rows: list[str] = []
+    for name, mask, target in places:
+        if not mask.any():
+            raise ValueError(
+                f"The planned place {name!r} covers no pixels of the canvas. A place "
+                f"in a value plan has to be somewhere on the painting."
+            )
+        ys, xs = np.nonzero(mask)
+        got = float(value[mask].mean())
+        rows.append(name)
+        cells.append(CellCompare(
+            label=name.strip().upper(),
+            u=float(xs.mean()) / mask.shape[1],
+            v=float(ys.mean()) / mask.shape[0],
+            ref=float(target),
+            canvas=got,
+            delta=got - float(target),
+            ref_hex=_hex(np.full(3, float(target), dtype=np.float32)),
+            canvas_hex=_hex(srgb[mask].reshape(-1, 3).mean(axis=0)),
+            threshold=threshold,
+        ))
+    return Comparison(cells=cells, columns=["value"], rows=rows, region=None,
+                      threshold=threshold, floor=floor, against="plan")
+
+
+def plan_sheet(
+    comparison: Comparison,
+    canvas_grey: Image.Image,
+    plan_grey: Image.Image,
+    outlines: list[tuple[str, list[tuple[float, float]]]],
+    width: int = 420,
+) -> Image.Image:
+    """The plan, the canvas, and what is out -- three panels at the canvas's aspect.
+
+    :func:`heat_sheet`'s counterpart for a comparison whose entries are named places
+    rather than grid cells. There is no grid to tint, so the third panel is the
+    painting with each planned place outlined and its miss written across it: the
+    same glance, keyed to the shapes the painter actually named.
+    """
+    src_w, src_h = canvas_grey.size
+    w = int(width)
+    h = max(1, int(round(w * src_h / max(src_w, 1))))
+
+    diff = canvas_grey.convert("RGB").resize((w, h), Image.LANCZOS)
+    dim = Image.new("RGB", (w, h), (22, 22, 24))
+    diff = Image.blend(diff, dim, 0.55)
+    draw = ImageDraw.Draw(diff)
+    by_label = {c.label: c for c in comparison.cells}
+    for name, points in outlines:
+        cell = by_label.get(name.strip().upper())
+        if cell is None:
+            continue
+        t = min(abs(cell.delta) / max(comparison.threshold * 3.0, 1e-6), 1.0)
+        base = _HEAT_WARM if cell.delta > 0 else _HEAT_COOL
+        ink = tuple(int(v) for v in (_HEAT_OK * (1.0 - t) + base * t))
+        draw.line([(x * w, y * h) for x, y in points], fill=ink, width=2)
+        draw.text((cell.u * w - 12, cell.v * h - 4), f"{cell.delta:+.2f}", fill=ink)
+        draw.text((cell.u * w - 12, cell.v * h + 6), name, fill=(170, 175, 185))
+
+    panels = [plan_grey.convert("RGB").resize((w, h), Image.LANCZOS),
+              canvas_grey.convert("RGB").resize((w, h), Image.LANCZOS),
+              diff]
+    gap, top = 10, 16
+    sheet = Image.new("RGB", (w * 3 + gap * 4, h + top + gap), (22, 22, 24))
+    sdraw = ImageDraw.Draw(sheet)
+    for i, (panel, label) in enumerate(zip(panels, ("plan", "canvas", "out"),
+                                           strict=True)):
+        x = gap + i * (w + gap)
+        sheet.paste(panel, (x, top))
+        sdraw.text((x + 2, 3), label, fill=(225, 225, 230))
+    return sheet
 
 
 def heat_sheet(

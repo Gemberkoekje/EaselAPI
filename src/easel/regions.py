@@ -541,6 +541,40 @@ class Polygon:
         # to pulling every point toward the centre by the same amount.
         return self._toward_centre(a)
 
+    def smooth(self, iterations: int = 2) -> Polygon:
+        """A rounder version of this outline: the corners cut, the silhouette kept.
+
+        A polygon drawn through a dozen points has a dozen corners, and a round tip
+        laid along it leaves a scalloped edge that reads as faceting rather than as
+        form. This cuts the corners off -- Chaikin's corner cutting, run on the
+        closed ring -- so a shape built from a few named points can still have a
+        silhouette a brush can follow::
+
+            pear = union(circle_top, circle_body).smooth()
+
+        Each pass replaces every corner with two points a quarter of the way along
+        each of its edges, so the outline doubles in length per iteration and pulls
+        very slightly inside the original -- a corner is cut, not rounded outward.
+        Two passes is usually enough; beyond about four a shape starts heading for
+        its own ellipse.
+
+        Args:
+            iterations: how many passes of corner cutting. ``0`` returns the shape
+                unchanged.
+
+        Returns:
+            A new :class:`Polygon`. The name and the traced mark carry over.
+        """
+        pts = np.asarray(self.points, dtype=np.float64)
+        for _ in range(max(0, int(iterations))):
+            nxt = np.roll(pts, -1, axis=0)
+            out = np.empty((len(pts) * 2, 2), dtype=np.float64)
+            out[0::2] = pts * 0.75 + nxt * 0.25
+            out[1::2] = pts * 0.25 + nxt * 0.75
+            pts = out
+        return Polygon(tuple((float(x), float(y)) for x, y in pts),
+                       name=self.name, traced=self.traced)
+
     def scaled(self, factor: float) -> Polygon:
         """Grow or shrink about the centroid. ``scaled(0.5)`` is half the size."""
         f = max(float(factor), 1e-4)
@@ -604,7 +638,8 @@ def polygon(points, name: str = "") -> Polygon:
 
 
 def ellipse(place, rx: float | None = None, ry: float | None = None,
-            rotate: float = 0.0, steps: int = 48, name: str = "") -> Polygon:
+            rotate: float = 0.0, steps: int = 48, name: str = "",
+            aspect: float | None = None) -> Polygon:
     """A round mass. Give it a centre and two radii, or a place to sit inside.
 
     ``ellipse(cell("D5"))`` fills that cell; ``ellipse((0.4, 0.6), 0.2, 0.12, 30)``
@@ -618,8 +653,12 @@ def ellipse(place, rx: float | None = None, ry: float | None = None,
         rotate: degrees, clockwise.
         steps: how many points the outline gets.
         name: shows up in the log.
+        aspect: the canvas's width over its height. Given, one radius is a shape
+            that is actually **round in pixels** rather than round in coordinates --
+            on a 4:3 canvas those are not the same thing, and ``rx == ry`` is an
+            oval. :meth:`~easel.session.Session.circle` passes this for you.
     """
-    cx, cy, dx, dy = _centre_and_radii(place, rx, ry)
+    cx, cy, dx, dy = _centre_and_radii(place, rx, ry, aspect)
     theta = np.linspace(0.0, 2.0 * np.pi, max(8, int(steps)), endpoint=False)
     return _ring(cx, cy, dx, dy, np.ones_like(theta), theta, rotate,
                  name or _place_name(place))
@@ -627,7 +666,7 @@ def ellipse(place, rx: float | None = None, ry: float | None = None,
 
 def blob(place, radius: float | None = None, ry: float | None = None,
          wobble: float = 0.22, points: int = 15, seed: int = 0,
-         rotate: float = 0.0, name: str = "") -> Polygon:
+         rotate: float = 0.0, name: str = "", aspect: float | None = None) -> Polygon:
     """An irregular closed shape -- a mass with a silhouette nobody drew by hand.
 
     The same arguments as :func:`ellipse` plus ``wobble`` (how far the outline
@@ -640,8 +679,12 @@ def blob(place, radius: float | None = None, ry: float | None = None,
     Reach for this when a mass wants a shape and the shape is nobody's business but
     the painting's -- and then *look* at it, with ``s.preview(shape)``, before
     spending twenty passes filling it.
+
+    ``aspect`` is the canvas's width over its height, as on :func:`ellipse`: given,
+    one radius is round in pixels rather than round in coordinates.
+    ``s.blob(...)`` passes it for you.
     """
-    cx, cy, dx, dy = _centre_and_radii(place, radius, ry)
+    cx, cy, dx, dy = _centre_and_radii(place, radius, ry, aspect)
     n = max(6, int(points))
     theta = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
     rng = np.random.default_rng(int(seed))
@@ -681,6 +724,71 @@ def hull(places, name: str = "") -> Polygon:
             f"of the mass first: s.mark('top', ...), then hull([s.pt('top'), ...])."
         )
     return Polygon(tuple(_convex_hull(pts)), name=name)
+
+
+def union(*shapes, resolution: int = 1024, name: str = "") -> Polygon:
+    """One shape round the outside of several overlapping ones.
+
+    :func:`hull` covers everything given but only convexly: two circles become a
+    lozenge, and the waist between them -- which is the whole reason for drawing two
+    circles -- is filled in. This keeps the waist::
+
+        pear = union(circle(top, 0.06), circle(body, 0.09)).smooth()
+
+    The shapes must overlap or touch, because what comes back is one silhouette. Two
+    masses that do not meet are two masses: block them in separately, or use
+    :func:`hull` if the thing you meant was the area covering both.
+
+    Holes are not kept. A painter blocking in a mass paints its silhouette, which is
+    what ``block_in`` and ``sweep`` both take; a shape with a hole in it is two
+    decisions, and the second one is a mass of its own in the colour behind.
+
+    Args:
+        *shapes: two or more shapes, regions, region names or 4-tuples. A single
+            sequence of them is accepted too.
+        resolution: the grid the outline is traced on. The default resolves a
+            feature about a thousandth of the canvas; raise it for a silhouette with
+            very fine detail, at the cost of a slower trace.
+        name: shows up in the log.
+
+    Returns:
+        A :class:`Polygon` outlining the lot.
+    """
+    if len(shapes) == 1 and not isinstance(shapes[0], (Polygon, Region, str)) \
+            and not _looks_like_bounds(shapes[0]):
+        shapes = tuple(shapes[0])
+    polys = [polygon(item) for item in shapes]
+    if len(polys) < 2:
+        raise ValueError(
+            f"union() needs at least two shapes, got {len(polys)}. One shape is "
+            f"already its own union."
+        )
+
+    n = max(64, int(resolution))
+    mask = np.zeros((n, n), dtype=bool)
+    for poly in polys:
+        mask |= poly.mask(n, n)
+    if not mask.any():
+        raise ValueError(
+            "union() was given shapes that cover no pixels at this resolution. "
+            "Raise resolution=, or check the shapes are on the canvas at all."
+        )
+
+    biggest = _largest_component(mask)
+    if int(biggest.sum()) < int(mask.sum()):
+        raise ValueError(
+            "union() was given shapes that do not all touch, so there is no single "
+            "silhouette round them. Block the separate masses in one at a time, or "
+            "use hull(...) for the one area that covers them all."
+        )
+
+    points = _trace_outline(mask)
+    if len(points) < 3:
+        raise ValueError(
+            "union() could not trace an outline round these shapes -- the result is "
+            "thinner than the grid it was traced on. Raise resolution=."
+        )
+    return Polygon(tuple(points), name=name or "+".join(p.name for p in polys if p.name))
 
 
 def ribbon(places, width: float, end_width: float | None = None,
@@ -819,7 +927,7 @@ def _try_polygon(pts: np.ndarray, name: str, traced: bool) -> Polygon | None:
         return None
 
 
-def _centre_and_radii(place, rx, ry) -> tuple[float, float, float, float]:
+def _centre_and_radii(place, rx, ry, aspect=None) -> tuple[float, float, float, float]:
     """A centre and two radii from either a point or a region.
 
     One radius is a circle and two are an ellipse, wherever the shape is put; give
@@ -827,17 +935,34 @@ def _centre_and_radii(place, rx, ry) -> tuple[float, float, float, float]:
     ``ry`` fall back to the region's half-height instead of to ``rx``, so
     ``blob(cell("D5"), 0.26)`` came back a sausage nearly five times wider than it
     was tall while the same radius on a point gave a circle.
+
+    ``aspect`` is the canvas's width over its height, and it is what makes "one
+    radius is a circle" true on a canvas that is not square. Coordinates are
+    normalised on both axes, so ``0.1`` across is 102 pixels on a 1024-wide canvas
+    and ``0.1`` down is 77 on a 768-high one: equal radii are an oval. Given the
+    aspect, a radius meant for x is scaled by it on the way into y. A radius the
+    caller gave explicitly is never scaled -- two radii are an ellipse on purpose.
     """
     if _looks_like_point(place):
         cx, cy = (float(place[0]), float(place[1]))
         dx = dy = 0.15
+        if aspect is not None:
+            dy = dx * float(aspect)
     else:
         r = as_region(place)
         cx, cy = r.center
         dx, dy = r.width * 0.5, r.height * 0.5
+        if aspect is not None:
+            # The biggest round shape that still fits the place, rather than the
+            # oval that fills it.
+            dx = min(dx, dy / max(float(aspect), 1e-9))
+            dy = dx * float(aspect)
     if rx is not None or ry is not None:
         dx = abs(float(rx if rx is not None else ry))
-        dy = abs(float(ry)) if ry is not None else dx
+        if ry is not None:
+            dy = abs(float(ry))
+        else:
+            dy = dx * (1.0 if aspect is None else float(aspect))
     return cx, cy, max(dx, 1e-4), max(dy, 1e-4)
 
 
@@ -888,3 +1013,116 @@ def _place_name(place) -> str:
     if isinstance(place, str):
         return as_region(place).name
     return ""
+
+
+_MOORE = ((-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1))
+
+
+def _largest_component(mask: np.ndarray) -> np.ndarray:
+    """The mask's largest 8-connected run of ``True`` pixels, alone.
+
+    An area fresh out of :func:`prepare_reference` is always one connected run,
+    but :meth:`Preparation.merge` can join two that do not touch at all (its own
+    docstring's example is one thing cut in two by another), and :meth:`Preparation.split`
+    partitions by colour with no regard for where the pieces sit. A Moore-neighbour
+    trace only ever follows one run's boundary, so it needs to be handed the one
+    the caller means -- the biggest -- rather than whichever run happens to
+    contain the mask's topmost-then-leftmost pixel.
+    """
+    h, w = mask.shape
+    visited = np.zeros_like(mask, dtype=bool)
+    best: list[tuple[int, int]] = []
+    ys_all, xs_all = np.nonzero(mask)
+    for sy, sx in zip(ys_all.tolist(), xs_all.tolist(), strict=True):
+        if visited[sy, sx]:
+            continue
+        stack = [(sy, sx)]
+        visited[sy, sx] = True
+        component = [(sy, sx)]
+        while stack:
+            y, x = stack.pop()
+            for dy, dx in _MOORE:
+                ny, nx = y + dy, x + dx
+                if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not visited[ny, nx]:
+                    visited[ny, nx] = True
+                    stack.append((ny, nx))
+                    component.append((ny, nx))
+        if len(component) > len(best):
+            best = component
+
+    out = np.zeros_like(mask)
+    if best:
+        rows, cols = zip(*best, strict=True)
+        out[rows, cols] = True
+    return out
+
+
+def _trace_outline(mask: np.ndarray, tolerance: float = 0.9) -> list[tuple[float, float]]:
+    """The area's boundary as normalised points, by Moore-neighbour tracing.
+
+    Only the outer boundary of the largest run: an area with holes in it is still
+    one shape to draw, and a painter drawing a mass draws its silhouette.
+    """
+    h, w = mask.shape
+    if not np.any(mask):
+        return []
+    mask = _largest_component(mask)
+    ys, xs = np.nonzero(mask)
+
+    # Start at the topmost-leftmost pixel: the boundary is guaranteed to pass through
+    # it, and its left neighbour is guaranteed to be outside.
+    start_y = int(ys.min())
+    start_x = int(xs[ys == start_y].min())
+
+    def inside(y: int, x: int) -> bool:
+        return 0 <= y < h and 0 <= x < w and bool(mask[y, x])
+
+    contour = [(start_y, start_x)]
+    cy, cx = start_y, start_x
+    back = 6                                   # came from the left
+    for _ in range(8 * mask.size):
+        found = False
+        for step in range(1, 9):
+            d = (back + step) % 8
+            ny, nx = cy + _MOORE[d][0], cx + _MOORE[d][1]
+            if inside(ny, nx):
+                back = (d + 5) % 8             # the direction we arrived from
+                cy, cx = ny, nx
+                contour.append((cy, cx))
+                found = True
+                break
+        if not found or (cy, cx) == (start_y, start_x) and len(contour) > 2:
+            break
+
+    pts = [(x / w, y / h) for y, x in contour]
+    return _simplify(pts, tolerance / max(w, h))
+
+
+def _simplify(points: list[tuple[float, float]], epsilon: float) -> list[tuple[float, float]]:
+    """Douglas-Peucker. A traced boundary is one point per pixel; a drawing is not."""
+    if len(points) < 3:
+        return points
+    pts = np.asarray(points, dtype=np.float64)
+    keep = np.zeros(len(pts), dtype=bool)
+    keep[0] = keep[-1] = True
+    stack = [(0, len(pts) - 1)]
+    while stack:
+        i, j = stack.pop()
+        if j <= i + 1:
+            continue
+        a, b = pts[i], pts[j]
+        ab = b - a
+        length = float(np.hypot(*ab))
+        seg = pts[i + 1:j]
+        if length < 1e-12:
+            dist = np.hypot(*(seg - a).T)
+        else:
+            # The 2-D cross product, written out: numpy 2 dropped it from np.cross.
+            rel = seg - a
+            dist = np.abs(ab[0] * rel[:, 1] - ab[1] * rel[:, 0]) / length
+        k = int(dist.argmax())
+        if float(dist[k]) > epsilon:
+            keep[i + 1 + k] = True
+            stack.append((i, i + 1 + k))
+            stack.append((i + 1 + k, j))
+    return [(float(x), float(y)) for x, y in pts[keep]]

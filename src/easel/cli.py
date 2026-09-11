@@ -81,6 +81,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("--ground", default="white", help=f"one of: {', '.join(sorted(GROUNDS))}")
     p_new.add_argument("--seed", type=int, default=0)
     p_new.add_argument("--out-dir", type=Path, default=Path("out"))
+    p_new.add_argument("--budget", type=int, default=None,
+                       help="how many strokes this painting is allowed; "
+                            "`run` then prints spent and remaining")
     p_new.add_argument("--no-timelapse", action="store_true")
     p_new.add_argument("--force", action="store_true",
                        help="overwrite an existing session file")
@@ -88,6 +91,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_run = sub.add_parser("run", help="run a painting script against a session")
     p_run.add_argument("session", type=Path)
     p_run.add_argument("script", type=Path)
+    p_run.add_argument("--rehearse", action="store_true",
+                       help="run the pass against a copy: write the look, print the "
+                            "cost, commit nothing")
+    p_run.add_argument("--prelude", type=Path, default=None,
+                       help="run this file first, in the same scope (helpers, "
+                            "mixtures, landmarks)")
+    p_run.add_argument("--no-prelude", action="store_true",
+                       help="do not auto-load prelude.py from beside the session")
 
     p_look = sub.add_parser("look", help="render a view of the canvas")
     p_look.add_argument("session", type=Path)
@@ -142,6 +153,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_tl.add_argument("session", type=Path)
     p_tl.add_argument("output", type=Path, help=".gif for animation, .png for a contact sheet")
     p_tl.add_argument("--fps", type=float, default=8.0)
+    p_tl.add_argument("--every", type=int, default=1,
+                      help="keep every nth frame (GIF only); the last frame is always kept")
+    p_tl.add_argument("--scale", type=int, default=None,
+                      help="long side in pixels (GIF only)")
 
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
@@ -187,6 +202,7 @@ def _dispatch(args) -> int:
             seed=args.seed,
             timelapse=not args.no_timelapse,
             out_dir=args.out_dir,
+            budget=args.budget,
         )
         s.save(args.session)
         print(f"Created {args.session} ({w}x{h}, {args.texture}, ground {args.ground}, "
@@ -242,7 +258,8 @@ def _dispatch(args) -> int:
     if args.command == "timelapse":
         out = Path(args.output)
         path = (session.contact_sheet(out) if out.suffix.lower() == ".png"
-                else session.timelapse_gif(out, fps=args.fps))
+                else session.timelapse_gif(out, fps=args.fps, every=args.every,
+                                           scale=args.scale))
         print(path)
         return 0
 
@@ -326,12 +343,18 @@ class ScriptResult:
         return f"{self.report}\n\n{self.trace}".rstrip() if self.trace else self.report
 
 
-def run_script(session: Session, source: str, name: str) -> ScriptResult:
+def run_script(session: Session, source: str, name: str,
+               prelude: str = "", prelude_name: str = "prelude.py") -> ScriptResult:
     """Execute a painting script with the session and the public API in scope.
 
     ``name`` is what the script is called: a path from the CLI, a plain label from
     the server, where the script arrives as text. Tracebacks name it in full and the
     report names its last part, which is what the CLI has always printed.
+
+    ``prelude`` is source run first, in the *same* scope, so a painter working from a
+    shell can keep helpers, mixtures and landmarks in one file instead of opening
+    every pass with ``exec(open("helpers.py").read())``. It is the painter's own
+    file either way -- named with ``--prelude``, or found beside the session.
 
     Nothing is written here: the caller saves when :attr:`ScriptResult.save` says to,
     because it is the caller that knows where the session file lives.
@@ -345,6 +368,20 @@ def run_script(session: Session, source: str, name: str) -> ScriptResult:
         {"s": session, "session": session, "palette": session.palette,
          "__name__": "__easel_script__", "__file__": name}
     )
+    if prelude:
+        try:
+            exec(compile(prelude, prelude_name, "exec"), namespace)  # noqa: S102
+        except SyntaxError:
+            return ScriptResult(1, f"easel: {prelude_name} does not parse",
+                                traceback.format_exc(), save=False)
+        except Exception:
+            # The prelude is meant to be helpers and mixtures. If it raised, the
+            # pass has not started, so there is nothing new to save -- and running
+            # the script on top of a half-built scope would fail somewhere less
+            # informative than here.
+            return ScriptResult(1, f"easel: {prelude_name} raised before "
+                                   f"{short} ran", traceback.format_exc(), save=False)
+
     try:
         code = compile(source, name, "exec")
     except SyntaxError:
@@ -372,7 +409,29 @@ def run_script(session: Session, source: str, name: str) -> ScriptResult:
         return ScriptResult(1, f"easel: script raised, session saved with "
                                f"{session.stroke_count} strokes", traceback.format_exc())
 
-    return ScriptResult(0, f"Ran {short}: {session.stroke_count} strokes total.")
+    if session.budget is None:
+        return ScriptResult(0, f"Ran {short}: {session.stroke_count} strokes total.")
+    return ScriptResult(0, f"Ran {short}: {session.budget_line()}.")
+
+
+def _resolve_prelude(args) -> tuple[str, str]:
+    """The prelude source to run before a pass, and what to call it.
+
+    Named with ``--prelude``, or a ``prelude.py`` sitting beside the session file --
+    which is the painter's own working directory, not anywhere this went looking.
+    Auto-loading is announced rather than silent, and ``--no-prelude`` turns it off.
+    """
+    if args.prelude is not None:
+        path = Path(args.prelude)
+        if not path.exists():
+            raise FileNotFoundError(f"Prelude not found: {path}")
+        return path.read_text(encoding="utf-8"), str(path)
+    if args.no_prelude:
+        return "", ""
+    beside = Path(args.session).resolve().parent / "prelude.py"
+    if beside.exists():
+        return beside.read_text(encoding="utf-8"), str(beside)
+    return "", ""
 
 
 def _cmd_run(session: Session, args) -> int:
@@ -381,7 +440,34 @@ def _cmd_run(session: Session, args) -> int:
     if not script.exists():
         raise FileNotFoundError(f"Script not found: {script}")
 
-    result = run_script(session, script.read_text(encoding="utf-8"), str(script))
+    prelude, prelude_name = _resolve_prelude(args)
+    if prelude and args.prelude is None:
+        print(f"Prelude: {prelude_name}")
+
+    # A rehearsal runs the pass against a copy of the session. The strokes are
+    # seeded as if they were the next marks of the real painting, so what is
+    # rehearsed is what lands when the same pass is run for real -- and because the
+    # session file is never written, it costs nothing but the look.
+    target = session.scratch() if args.rehearse else session
+
+    result = run_script(target, script.read_text(encoding="utf-8"), str(script),
+                        prelude=prelude, prelude_name=prelude_name or "prelude.py")
+
+    if args.rehearse:
+        if result.code == 0:
+            path = target.look(path=None)
+            spent = target.stroke_count
+            left = session.remaining
+            cost = (f"{spent} strokes" if left is None
+                    else f"{spent} strokes of the {left} left")
+            print(f"Rehearsed {Path(args.script).name}: {cost}. Nothing committed.")
+            print(path)
+        else:
+            print(f"{result.report}\n", file=sys.stderr)
+            if result.trace:
+                print(result.trace, file=sys.stderr, end="")
+        return result.code
+
     if result.save:
         session.save(args.session)
     if result.code == 0:

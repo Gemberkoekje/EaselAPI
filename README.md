@@ -71,12 +71,14 @@ change when the engine does. The engine is designed around one habit:
 | Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
-| Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. Any of them goes where a region goes. |
-| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
+| Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `union`, `ribbon`, `polygon`, and `s.circle()` for one that is round in pixels on any canvas. `smooth()` cuts the corners off an outline. Any of them goes where a region goes. |
+| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette, or drawing its contour with `edge="clean"`; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
+| Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
-| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like. Neither touches the canvas. |
-| Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `prepare(reference)` cuts the photograph into numbered masses. |
+| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
+| Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all. `prepare(reference)` cuts the photograph into numbered masses. |
+| Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
 
 Coordinates are always normalised `0.0–1.0` with the origin top-left. Raw pixels are
@@ -89,8 +91,9 @@ Session state lives in a single `.easel` file, so you can work in increments fro
 shell without holding a Python process open.
 
 ```bash
-easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --seed 7
+easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
 easel run painting.easel first_pass.py
+easel run painting.easel first_pass.py --rehearse   # against a copy, committing nothing
 easel look painting.easel --grid
 easel look painting.easel --values
 easel look painting.easel --region D4 --fine --reference ref.jpg
@@ -99,7 +102,7 @@ easel compare painting.easel ref.jpg
 easel prepare painting.easel ref.jpg --level coarse
 easel undo painting.easel 3
 easel export painting.easel painting.png
-easel timelapse painting.easel painting.gif
+easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
 ```
 
@@ -107,7 +110,9 @@ Every one of these also works as `python -m easel ...`, for when the `easel`
 executable is not on `PATH`.
 
 A script run by `easel run` gets the session pre-bound as `s`, with the whole public
-API already in scope — it needs no imports.
+API already in scope — it needs no imports. A `prelude.py` beside the session file is
+run first in the same scope, so helpers and mixtures survive between passes;
+`--prelude other.py` names a different one and `--no-prelude` turns it off.
 
 ## MCP server
 
@@ -123,8 +128,9 @@ easel-mcp --dir ~/paintings          # or: python -m easel.mcp_server
 
 Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
-which takes the script as text. A place is a name, a cell, a span, a rectangle, an
-outline, or a shape builder like `{"blob": "D5", "radius": 0.12}`.
+which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
+copy and commits nothing. A place is a name, a cell, a span, a rectangle, an outline,
+or a shape builder like `{"blob": "D5", "radius": 0.12}`.
 
 `run` executes Python sent by its client, exactly as `easel run` does: launch it
 for a painter you would hand a shell to.
@@ -191,13 +197,17 @@ Early, and feature-complete against what it was specified to be. The engine, pal
 composition helpers, `look()`, history, CLI, the precision tools (drawing, landmarks,
 preview, rehearse, compare, prepare), shaped masses and the MCP server all work. The
 server came last, on the rule that anything changing the API lands before the thing
-that exposes it.
+that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `union`,
+`at_value`, the stroke budget, comparison against a written value plan, and rehearsing
+a whole pass from the shell all arrived in one round after a painter used the guide
+and wrote down what the engine had cost them.
 
 Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
 painting runs and an adversarial review left behind — the method, the engine decisions
 that are load-bearing, the traps, and what is still open; read it before changing the
 engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
-most recent painting session, and nothing on it has been actioned yet.
+most recent painting session; its twelve engine items are done, and it says what each
+one became and what is left.
 
 ## Licence
 
