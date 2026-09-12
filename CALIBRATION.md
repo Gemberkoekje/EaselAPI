@@ -218,7 +218,7 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   place by half the brush. `overhang=0` is not a substitute and never was.
 - **`edge="clean"` pulls the paint back to the drawn line**, by insetting the fill
   half a brush and sweeping one pass along that inset outline, for one stroke more
-  than the same mass ragged. Measured on a pear-sized mass, furthest paint outside
+  than the same mass ragged. Measured on a mass a third of the canvas across, furthest paint outside
   the outline:
 
   | Tip at `size=0.05` | ragged | clean |

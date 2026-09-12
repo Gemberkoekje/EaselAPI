@@ -1,26 +1,32 @@
 # Suggestions for the engine and the guide, from the painting sessions
 
 Two sessions, each written by the painter who had just finished a picture. The first
-is below; the second starts at *Suggestions from a second session*. Every engine item
-on both lists is done, and the note under each says what it became.
+is below; the second starts at *Suggestions from a second session*. **Every item on
+both lists is done** — nineteen for the engine, twenty for the guide — and the note
+under each says what it became, including the four that came back different when they
+were re-measured and the two that were questions rather than requests.
+
+Done is not the same as right. An engine item has a test behind it; a guide item is a
+hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
+opens with and the reason this file keeps saying what was changed rather than that it
+worked.
 
 The first list comes from one session: a still life painted from `PAINTER.md` alone,
 with no reference photograph, through the shell path (`easel new` / `easel run`), in
-224 strokes.
-The painting and its scripts are in `paintings/windowsill_pears/`. Nothing else in the
-repository was read before painting, so this is the guide judged on its own, which is
-what it asks for.
+224 strokes. The painting and its scripts are in `paintings/windowsill_pears/`. Nothing
+else in the repository was read before painting, so this is the guide judged on its
+own, which is what it asks for.
 
 Before writing this I ran a few probes to check the claims that depend on the engine
 rather than on taste. Each claim below says whether it was measured or is an opinion.
 Where I could not settle something, it is written as a question.
 
-> **Status.** All twelve engine items are done; what each became is noted under it in
-> **bold**. Of the twelve guide items, the ones that were corrections to something the
-> engine does — the `overhang` line in 1, then 6, 7, 8 and 9 — are applied, along with
-> 3 and 12, which the new verbs made writable, and 4, whose open half a later verb
-> closed. What is still open is editorial and stands on its own: items 2, 5, 10 and 11,
-> plus the half of 1 that was not a correction — the one-page reference.
+> **Status.** All twelve engine items and all twelve guide items are done; what each
+> became is noted under it in **bold**. They landed in two rounds: the corrections to
+> something the engine does went in with the verbs that made them true, and the
+> editorial ones — the one-page reference, the exercises as a gate, the cast-shadow
+> recipe, the short path and the warning about painting several similar objects to one
+> recipe — came after, once there was nothing left to change underneath them.
 > The `overhang` claim below was re-measured before it went into the guide and it
 > holds; the claim under engine item 8 did not, and the note there says what was done
 > instead.
@@ -171,14 +177,29 @@ In the order of how many strokes each would have saved me.
    is in. A table, either at the top or as a separate file, would have saved me guesses.
    The `overhang` line should be corrected with the numbers above.
 
-   **Half done.** The `overhang` line is corrected, with the measurement repeated
-   and the table in `CALIBRATION.md`. The one-page reference is still open.
+   **Done.** The `overhang` line was corrected in the first round, with the
+   measurement in `CALIBRATION.md`; the reference is [`REFERENCE.md`](REFERENCE.md),
+   a separate file as suggested — units first, because that is where the surprises
+   are, then what counts against the budget, the verbs and what each charges, every
+   argument that means something particular with its default, the brush table, what
+   pressure does per tip family, the places and shapes, the palette, and the shell.
+   `PAINTER.md` points at it from the top and from *The rest of the API*. It is
+   checked by `tests/test_reference.py` rather than by hand: the brush table against
+   the presets, every default against the dataclass, every region, ground, texture,
+   pigment, pressure profile and `prepare` level against the source, and every `--flag`
+   against the parser — so the one thing that would make it worse than no reference,
+   drifting from the engine, fails the suite instead.
 2. **Make the exercises a gate, with the cost of skipping them.** I skipped all eight and
    went straight to the picture. The stripy curtain and the sun bars were both lessons
    the exercises teach, and together they cost more strokes than the exercises would
    have. Say that.
 
-   **Open.**
+   **Done**, as the paragraph under *Eight small exercises* — which is where a painter
+   is deciding whether to skip them — naming the two lessons that were paid for inside
+   the picture instead, and the reason an exercise is the cheap place to fail: nothing
+   is built on top of it. The guide now also opens by telling a painter to read *the
+   first hour*, do the eight, and come back for the rest, so the gate is at the front
+   as well as at the exercises.
 3. **Rehearse masses, not just features.** The guide teaches rehearsal for a feature
    smaller than a cell. The expensive mistakes are block-ins of big masses, which are
    cheap to repaint only until something stands on them. A rule such as "rehearse any
@@ -202,7 +223,14 @@ In the order of how many strokes each would have saved me.
    eight strokes: a shadow on a lit surface is a step or two below the surface, not the
    palette's dark; lay it as a tapering stroke and lose its far end.
 
-   **Open.**
+   **Done, and calibrated by painting it.** Both halves hold. On a surface at `0.60`,
+   the palette's darkest mixture lands at `0.16` and reads as a hole punched through
+   the surface; `0.50` reads as a shadow and `0.42` as a shadow with weight. And the
+   same value laid as a filled shape comes back as a slab with two hard ends — an
+   object lying on the surface rather than a shadow falling across it — where one
+   tapering stroke that loses its far end reads as a shadow, with a short darker pass
+   where the two things meet. It sits in step 3, straight after the value floor, which
+   is where a painter forms the belief that a shadow is the darkest thing they have.
 6. **Small shaped masses with a round tip.** The guide's inset rule is under "Masses that
    are not rectangles" and the pears are exactly where I forgot it. Add the dotted-fringe
    symptom to "The shape each tool leaves behind", with the inset and the single-pass
@@ -228,13 +256,28 @@ In the order of how many strokes each would have saved me.
     of about a fifth the length, pointing into the full text, would get a painter to the
     exercises sooner without losing anything.
 
-    **Open.**
+    **Done**, as *The first hour* at the top of the guide: what the engine is, the
+    setup, the one habit, the six steps of the workflow in one line each, the five
+    things a painter will get wrong, what a mark costs and the four planning verbs —
+    then a table of where to read each of them in full. The guide now opens by saying
+    to read it in two goes, with the exercises between them. Nothing was cut to make
+    room, which was the request: the long text is the same long text, and it is read
+    second instead of not at all. It came out at **a twentieth** rather than the fifth
+    you asked for, deliberately: a fifth is still 3,000 words, and the failure this is
+    against is a painter who does not finish the reading. What a fifth would have held
+    and this does not — colour, the value plan, wet paint, the shape each tool leaves —
+    is what exercises 1, 4 and 6 teach by hand ten minutes later. The repetition you noticed is left alone on purpose
+    — the depth-order rule is the one `LESSONS.md` says needs a rewrite with a
+    measurement attached rather than an edit, and thinning it by eye is exactly the
+    edit it warns against.
 11. **Warn about recipes repeated over similar objects.** One shading recipe painted all
     three of my pears, and they read as three copies. The guide warns about mechanical
     marks; it could warn about mechanical objects too: vary one thing per object on
     purpose.
 
-    **Open.**
+    **Done**, as the second half of *You will under-vary your marks* — the same fault
+    one level up, and the same fix stated as a procedure: vary one thing per object on
+    purpose, and the guide names which things are cheap to vary.
 12. **A page for painting without a reference.** Half the precision tooling assumes a
     photograph. For a painter working from a subject in their head: print `value_of` for
     every mixture and for the ground, write the value plan down as numbers, check
@@ -262,11 +305,12 @@ strokes of a 300 budget. The painting and its scripts are in `paintings/car_wash
 Everything below was written at 185 strokes; the painting was then resumed, and the one
 finding that produced is guide item 8.
 
-> **Status.** All seven engine items are done; what each became is noted under it in
-> **bold**, along with the `.gitignore` line the probes caught. Of the eight guide
-> items, the three that were corrections to something the engine does — 1, 2 and 3 —
-> are applied. What is still open is editorial and stands on its own: items 4, 5, 6,
-> 7 and 8.
+> **Status.** All seven engine items and all eight guide items are done; what each
+> became is noted under it in **bold**, along with the `.gitignore` line the probes
+> caught. Items 6 and 7 were questions rather than requests and are answered as
+> questions: yes to the pencil with no reference, in one line and narrowed by your own
+> doubt about it; and `paintings/` is the worked example, named from `README.md` and
+> deliberately not from the guide.
 >
 > Of this list's own measured claims, one did not survive being re-measured — the
 > note under guide item 1 says what was found instead — and one came back with a
@@ -537,7 +581,12 @@ In the order of how many strokes each would have saved me.
    checklist line predicts. Worth more than my confidence in it: a fresh session should
    still be the judge.
 
-   **Open.**
+   **Done**, as the last line of the closing checklist, in your words: *you have named
+   the weakest passage; how many strokes are left; spend them there* — with the reason
+   the line exists, which is that nothing above it is about finishing, and the warning
+   that the passage wanting them is the one you would apologise for rather than the one
+   you have most recently been enjoying. Your having run it rather than argued it is
+   why it went in as written.
 5. **The lightest mass is a composition question that `compare()` answers by accident.**
    `compare()` told me the bloom was `0.12` below plan. What it was really reporting was
    that a different mass had become the brightest thing in the picture and the eye went
@@ -547,7 +596,10 @@ In the order of how many strokes each would have saved me.
    checkable: *is the lightest mass in the picture the one you planned to be lightest?*
    `compare()` already holds the numbers.
 
-   **Open**, and `compare()` needs no engine change for it.
+   **Done**, as a checklist line directly under the composition question it makes
+   checkable, in your words and with both ways of answering it: `look(values=True)`, or
+   the numbers `compare()` already holds. No engine change was needed, which is what
+   you said.
 6. **Does the pencil apply with no reference? The section does not say.** *Painting
    without a reference* says you are the reference and lists three things to do, all of
    them value work. It never mentions drawing. I did not draw, and told myself the
@@ -557,7 +609,12 @@ In the order of how many strokes each would have saved me.
    because a painter with no reference has nothing to check a drawing against, which is
    half of what the pencil is for with one. A question, not a request.
 
-   **Open**, and it is a question for a fresh session rather than an edit.
+   **Answered yes, in one line**, and your doubt narrowed it usefully. The line does not
+   claim a drawing can be *checked* without a reference; it says the pencil is free and
+   that a drawing is still the cheapest place to find out that the proportions in your
+   head do not fit the canvas — which is a thing you can see the moment it is down,
+   without anything to compare it to. That is the half of the pencil that survives
+   having no reference.
 7. **A question about worked examples, which I think has no clean answer.** The guide
    has eight abstract exercises and no single small picture laid out in order, and
    sequencing was the thing I was least sure of at the start — not which call to make
@@ -568,7 +625,16 @@ In the order of how many strokes each would have saved me.
    with the guide pointing at it — or is the sequencing meant to be worked out fresh
    every time, and the exercises deliberately abstract to keep it that way?
 
-   **Open**, and it is the repo owner's to answer.
+   **Answered: `paintings/` is the worked example, and `README.md` says so while
+   `PAINTER.md` does not.** Each painting is its numbered pass scripts, its prelude,
+   its notes and an export that re-runs byte for byte, so the order it was made in is
+   readable rather than reconstructed. A painter who goes looking finds it; one who
+   reads only the guide is not handed a subject. Reading them is also what a session
+   running the measurement protocol must not do, and `README.md` says that too. The
+   trade is written up in `LESSONS.md` beside *a worked example is an instruction* —
+   where, running the noun grep your question prompted, the guide turned out to have
+   picked up one painting's subject in three examples and two of its places in a
+   fourth. Those are gone.
 8. **Form is bounded at both ends, and the guide gives only the lower bound.** The
    `0.10` threshold appears everywhere as the point below which two masses stop reading
    as separate, and it is right. Nothing says what happens *above* it. Measured on this
@@ -585,7 +651,13 @@ In the order of how many strokes each would have saved me.
    rhythm is not built for: the eye said the form was good, and the number said the mass
    had stopped separating from its background. Neither would have caught it alone.
 
-   **Open**, and it wants measuring on a second mass before it is written as a rule.
+   **Done**, beside the `0.10` threshold in step 3 as you suggested, and written as the
+   window rather than as a second floor: shading spends value range, the range is
+   shared with the mass's separation from what it stands against, so **shade until the
+   form clears `0.10` and stop**. Your numbers are in it as the measurement — flat at
+   `0.09`, turned at `0.22` with the background `0.09` away, both holding at about
+   `0.15` — and it is one mass, so it is a rule with one measurement behind it rather
+   than two. Worth re-measuring on the next painting that has a cylinder in it.
 
 ## What I would not change
 

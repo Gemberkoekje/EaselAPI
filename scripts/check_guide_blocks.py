@@ -62,6 +62,8 @@ PREAMBLE = (
     "s.palette['mid'] = s.palette['light']\n"
     "s.palette['pale'] = s.palette['light']\n"
     "s.palette['cool'] = s.palette['dark']\n"
+    # The lit surface a cast shadow lies on, named the way the guide names it.
+    "s.palette['surface'] = s.palette.at_value(s.palette['light'], 0.60)\n"
     "path = [(0.2,0.3),(0.5,0.4),(0.8,0.3)]\n"
     # The guide's landmark blocks assume marks already exist by the time a later
     # block uses s.pt(...), which is true when the guide is read in order.

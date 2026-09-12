@@ -525,7 +525,7 @@ def build_server() -> MCPServer:
                 painting, so what is rehearsed is what lands when the same pass is
                 run for real. `rehearse` (the planning tool) tries a plan; this tries
                 a script, which is what a pass actually is. Costs nothing but a look,
-                and about sixty of the pears painting's 224 strokes went on masses
+                and about sixty of one painting's 224 strokes went on masses
                 that were repainted because rehearsing meant retyping the pass.
             prelude: Python run first, in the same scope -- helpers, mixtures and
                 landmarks a pass should not have to redefine.
@@ -621,7 +621,7 @@ def build_server() -> MCPServer:
         plan a painter working from their head is told to write down in numbers.
         Each place is measured against the value it was promised, and the sheet
         shows the plan, the canvas and what is out. Give a place a name it will be
-        listed under by building it with one: `{"blob": "D5", "name": "pear"}`.
+        listed under by building it with one: `{"blob": "D5", "name": "near_mass"}`.
 
         Args:
             session: the .easel file.

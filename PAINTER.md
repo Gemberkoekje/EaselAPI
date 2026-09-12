@@ -3,9 +3,123 @@
 You are about to paint. Not draw, not render — paint. This guide assumes you have
 never seen the engine's source and do not need to.
 
-Read the whole thing once before your first stroke. The workflow section matters
-more than the API section. The measured numbers behind the rules here live in
-`CALIBRATION.md`; you do not need them to paint.
+**Read it in two goes.** *The first hour*, immediately below, is the whole workflow on
+one page and everything you need for the eight warm-up exercises at the end of this
+file. Do those exercises — they are the cheapest strokes you will ever spend. Then read
+the rest of this guide, which is the same rules with their reasons, the failures behind
+them and the numbers, before you start the painting itself. The workflow section
+matters more than the API section.
+
+Two files sit beside this one and neither is needed to paint:
+[`REFERENCE.md`](REFERENCE.md) is every fact on one page — units, defaults, what each
+argument does — for when you want to look something up rather than read a rule, and
+[`CALIBRATION.md`](CALIBRATION.md) is what was measured behind the rules here.
+
+---
+
+## The first hour
+
+One page, then go and paint the exercises. Every arrow points at a section further
+down, and that is where the reason for the line is.
+
+**What this is.** Brushes carry a finite load of paint and run out. Paint lands wet and
+mixes with what is already there. The canvas has tooth. There are no layers, and undo
+is scraping the canvas rather than a free rewind: **when something is wrong, you paint
+over it.** You work in passes and you look between them.
+
+```python
+from easel import Session, cell, span, blob, region
+
+s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7, budget=300)
+s.palette["dark"]  = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+s.palette["light"] = s.palette.tint("yellow_ochre", 0.55)
+```
+
+Coordinates run `0..1` from the top-left. A place is `cell("D5")`, `span("C3", "F6")`,
+`region("lower-half")` or a shape. Say a place; do not compute a coordinate.
+→ *Getting started*
+
+**Look every 5 to 15 strokes.** `s.look()` writes a PNG and returns the path; open it.
+`s.look(values=True)` is greyscale, and it is the one that tells you the truth.
+→ *The one habit*, *Looking*
+
+**The order. It is the whole method, and it is not optional.**
+
+1. **Big masses first, in the biggest brush you will use**, at `density` below 1 so the
+   ground breathes through. Two or three of them. Not outlines — masses. → *step 1*
+2. **Back to front.** The furthest thing goes down first and every nearer thing is
+   painted over it. Nothing is "cut around". → *step 2*
+3. **Check the values before anything else.** In greyscale, is there a clear light, a
+   clear mid and a clear dark? Two masses closer than `0.10` in value read as one.
+   → *step 3*
+4. **Then the mid-tones**, across the whole canvas rather than finishing one corner,
+   and lay each mass along *its own* axis rather than the canvas's. → *step 4*
+5. **Edges last but one.** Hard edges pull the eye; soft and lost ones let it move on.
+   Not every edge should be crisp. → *step 5*
+6. **Highlights last, smallest brush, fewest strokes.** Ten deliberate marks, not a
+   hundred. → *step 6*
+
+```python
+far  = blob(span("B2", "G4"), wobble=0.3, seed=1)
+s.block_in(far, "bristle", "dark", density=0.8, size=0.18, direction="axis")
+s.look(values=True)                                  # before anything goes on top
+s.block_in(span("A5", "H8"), "flat", "light", size=0.14, solid=True, direction=6)
+```
+
+**The five things you will get wrong.** Painters did each of these *after* reading the
+warning about it, which is why each one here comes with the thing to do instead.
+
+- **You will draw outlines and fill them.** Don't. Paint the mass with a brush wide
+  enough to cover it in a few strokes, and let the edge of the mass be the drawing.
+  A silhouette that is not crisp enough is sharpened by painting the mass on the
+  *other* side of it, never by running a line along it. → *What you are bad at*
+- **You will paint boxes.** Almost nothing is a rectangle. `blob`, `ellipse`, `hull`,
+  `ribbon`, `polygon` and `s.circle()` build a mass with a silhouette, and `block_in`
+  fills one as readily as a box. **Check the background hardest** — it is the mass
+  nobody made you draw. → *Masses that are not rectangles*
+- **You will lay parallel marks.** One direction for every pass is hatching, and a
+  surface's grain repeated thirty times is a stack of bands with a different name.
+  Vary the direction; three marks that describe a texture beat thirty that repeat it.
+  → *The angle of the mark*
+- **You will reach for `undo`.** Repairs happen with paint: `s.cover(place, color)`
+  is the whole burying recipe, already mixed. → *When something is wrong, paint over it*
+- **You will spend on detail too early.** A good painting is mostly big statements. If
+  you are 50 strokes in and painting tiny marks, you are in trouble.
+
+**What a mark costs, before you make it.** `stroke`, `dab`, `smudge` and `glaze` are
+one each. A `block_in` or a `sweep` is one *per pass* — ten to thirty for one call, and
+the number nobody can guess. Drawing, looking, drying and all four planning verbs are
+free.
+
+```python
+plan = [{"shape": blob(cell("D5"), 0.12, seed=3), "brush": "bristle",
+         "color": "dark", "size": 0.09}]
+s.cost(plan)                  # what it charges
+print(s.cost_line(plan))      # and why that number
+s.preview(plan)               # where it would go
+s.rehearse(plan)              # what it would look like
+s.paint(plan)                 # the same plan, now paid for
+```
+
+One plan object goes to all four, so nothing is retyped between checking it and
+painting it. **Rehearse any mass you would not want to repaint.** → *Try the mark
+before you spend it*
+
+**Now go and paint the eight exercises**, at the end of this file. Then come back and
+read the rest — in order, because each step assumes the one before it.
+
+| When you want | Read |
+|---|---|
+| the order of work, in full | *The workflow*, steps 1–6 |
+| to work from a photograph | *Working from a reference* |
+| to work from nothing but your own head | *Painting without a reference* |
+| to stop making the same five mistakes | *What you are bad at, and what to do instead* |
+| a colour, a mixture, a value | *Colour* |
+| to know what a brush will actually leave | *The brushes*, *The shape each tool leaves behind* |
+| to check a mark before paying for it | *Try the mark before you spend it* |
+| a fact: a unit, a default, an argument | [`REFERENCE.md`](REFERENCE.md) |
+| a number behind a rule | [`CALIBRATION.md`](CALIBRATION.md) |
+| to stop | *A checklist before you call it finished* |
 
 ---
 
@@ -184,6 +298,14 @@ way a first pass turns into mush. **If two of your three are within `0.10` of ea
 other, they will not read as separate masses** no matter how different their
 colours are.
 
+**That threshold is a floor, and a mass also has a ceiling.** Shading a mass to give
+it form spends value range, and the range is shared: past about `0.15` across one
+mass, its shadow side starts closing on whatever it stands against, and you have
+bought form by losing the separation that made it a mass at all. Measured on a mass
+that read flat at `0.09` across its width: laid up to `0.22` it turned, and its
+shadow side then sat `0.09` from the mass behind it and the two began to merge; at
+about `0.15` both hold. **Shade it until the form clears `0.10`, and stop.**
+
 **The box has no black, and it does not need one.** `mix("ultramarine",
 "burnt_umber", 0.5)` is a near-black with a colour in it, which is what a dark in a
 painting should be, and varying the ratio holds that value while swinging cool to
@@ -199,6 +321,27 @@ through. Cover properly before concluding you need a colour of your own; you can
 supply one and it lands exactly as written, black included (**Colour**, below, has the
 syntax), but mixed darks are alive and a tube black is dead. `CALIBRATION.md` has the
 arithmetic and how far it stretches.
+
+**A cast shadow is the first place you will spend that dark, and it is the wrong
+place.** A shadow lying on a lit surface is **a step or two below the surface** — not
+below the palette. Measured on a surface at `0.60`: the darkest mixture lands at
+`0.16` and reads as a hole punched through the surface, `0.50` reads as a shadow, and
+`0.42` as a shadow with weight. And it is **a tapering stroke, not a filled shape** —
+a shape comes back as a slab with two hard ends, which is an object lying on the
+surface rather than a shadow falling across it. Lose the far end, and put the dark
+where the thing meets the surface:
+
+```python
+dark = p.at_value("surface", p.value_of("surface") - 0.18)      # a step or two
+s.stroke([(0.55, 0.30), (0.66, 0.38), (0.80, 0.46)], "flat", dark,
+         size=0.085, pressure=[1.0, 0.6, 0.0])                  # and lose the far end
+s.stroke([(0.55, 0.305), (0.62, 0.35)], "flat", p.at_value(dark, 0.38),
+         size=0.05, pressure=[0.9, 0.0])     # darkest where the two things meet
+```
+
+Two strokes, and the second is optional. The one thing that is not optional is that
+the shadow belongs to the surface it lies on, so it is mixed from that surface's value
+rather than from the bottom of the box.
 
 ### 4. Refine the mid-tones
 
@@ -612,17 +755,21 @@ reference — so write the value plan down in numbers before a stroke, and measu
 against that instead:
 
 ```python
-sky, sill = span("A1", "H4"), span("A5", "H8")
-s.compare({sky: 0.72, sill: 0.38})          # the same table, the same sheet
+upper, lower = span("A1", "H4"), span("A5", "H8")
+s.compare({upper: 0.72, lower: 0.38})       # the same table, the same sheet
 ```
 
 The keys are places and the values are what `value_of` reports, so a plan is a few
 lines written before you start and checkable after every mass. The sheet shows the
 plan, the canvas, and each planned place outlined with its miss written across it.
-Give a place a name to see it listed under one: `blob(cell("D5"), name="pear")`.
+Give a place a name to see it listed under one: `blob(cell("D5"), name="near_mass")`.
 
 The rest of the method is the same discipline without the crutch:
 
+- **Draw first anyway.** The pencil is free and does not count against the budget, and
+  with nothing to check a drawing *against* it is still the cheapest place to find out
+  that the proportions in your head do not fit the canvas — which is a thing you can
+  see the moment it is down. → *The drawing*
 - `print(p.value_of(mix))` for every mixture as you make it, and for the ground.
 - `p.at_value(base, target)` to *hit* a planned value rather than guess at it.
 - `look(values=True)` after every mass, read against the numbers you wrote down.
@@ -806,10 +953,10 @@ s.block_in(mass, "flat", "dark", size=0.09, edge="clean")  # or ask for a drawn 
 **`edge="clean"` is those two steps and a third.** It insets the fill by half the
 brush, lays it, and then sweeps one pass along the inset outline in the same colour,
 so the *outer half* of the brush lands on the line you drew. It costs one stroke more
-than the same mass ragged. Reach for it when the silhouette **is** the drawing — a
-pear, a head, a hand — and especially with a round tip on a small mass, where the
-half-brush overhang arrives as a fringe of separate discs around the shape rather
-than as a soft edge, and reads as spray. Measured on a pear-sized mass with a round
+than the same mass ragged. Reach for it when the silhouette **is** the drawing, and
+especially with a round tip on a small mass, where the half-brush overhang arrives as
+a fringe of separate discs around the shape rather than as a soft edge, and reads as
+spray. Measured on a mass a third of the canvas across with a round
 tip at `size=0.05`: paint reaches **20px** past the outline ragged and **13px** clean,
 and the clean silhouette is the less ragged of the two.
 
@@ -976,6 +1123,14 @@ paintings look alive.
 direction and opacity constantly. If every stroke uses the same brush at the same
 size with the same pressure, the result will look mechanical no matter how good the
 drawing is. Change `size`, change `pressure`, change direction between passes.
+
+**And you will under-vary your *objects*, which is the same fault one level up and
+much harder to see.** Having worked out how to paint one of a thing, you will paint
+the next one with the same recipe, and a viewer reads three copies of one object
+rather than three of a kind. The fix is cheap and has to be deliberate: **vary one
+thing per object on purpose** — which way its light falls, how sharp its edge is,
+how much of it the mass in front takes away. One difference each is enough; the
+recipe repeated exactly is what gives you away.
 
 **You will use too many strokes on detail and too few on structure.** A good
 painting is mostly big statements. Budget for it: if you are 200 strokes in and
@@ -1338,6 +1493,10 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 
 ## The rest of the API
 
+What each call *is*, in the order you reach for them. What each argument means, what
+unit it is in and what it defaults to is one page in
+[`REFERENCE.md`](REFERENCE.md) — look a fact up there rather than hunting it here.
+
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
 s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
@@ -1452,8 +1611,8 @@ convexly: two circles come back as a lozenge with the waist between them filled 
 shapes have to overlap, because what comes back is one silhouette:
 
 ```python
-pear = union(s.circle((0.45, 0.42), 0.05), s.circle((0.45, 0.56), 0.08)).smooth()
-s.block_in(pear, "flat", "ochre", size=0.04, edge="clean")
+lobed = union(s.circle((0.45, 0.42), 0.05), s.circle((0.45, 0.56), 0.08)).smooth()
+s.block_in(lobed, "flat", "ochre", size=0.04, edge="clean")
 ```
 
 `smooth()` cuts the corners off an outline, twice by default. A shape built from a
@@ -1475,6 +1634,15 @@ below, above, left_of, right_of, between, blob, ellipse, hull, ribbon, polygon`.
 
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
+
+**They are a gate, and here is what going round it costs.** A painter who skipped all
+eight met two of the lessons inside the picture instead: a wide soft passage laid as
+four hard bars — exercise 5 and *step 4* — and a surface whose grain came out as a row
+of parallel stripes, which is *The angle of the mark*. Between them they cost more
+strokes than the eight exercises would have, and they cost them at the worst moment,
+with the rest of the picture already standing on the masses that had to be repainted.
+That is the whole argument: an exercise is the one place in this engine where a
+mistake has nothing built on top of it. **Do the eight. Then start.**
 
 **1. A value scale.** Nine even steps from the darkest mix to white. This
 calibrates your sense of what the palette reaches, and it teaches the one thing
@@ -1683,6 +1851,10 @@ about half its width, which is the ragged edge you want and did not have to make
 - **Is the thing you measured most carefully still attached to the picture?** Cover
   it and look at what is left: if the rest is unresolved, you spent your precision in
   one place and the painting somewhere else.
+- **Is the lightest mass in the picture the one you planned to be lightest?** The same
+  question in value terms, and this one is checkable: `look(values=True)`, or read it
+  off the numbers `compare()` already holds. A mass that has quietly become the
+  brightest thing takes the eye whatever the picture is about.
 - Was it painted back to front? An edge you had to cut carefully around something
   is a mass that went on in the wrong order.
 - **Anything with an inside — is its far edge under its contents, and its contents
@@ -1693,6 +1865,11 @@ about half its width, which is the ragged edge you want and did not have to make
 - Is there pencil still showing where you did not mean it to? `s.erase()` takes
   it out; `s.export(path, sketch=False)` hides all of it at once, but a drawing
   showing through thin paint is a good thing and worth keeping.
+- **You have named the weakest passage. How many strokes are left? Spend them there.**
+  Nothing above this line is about *finishing*, and a painter who stops with a third
+  of the budget unspent has left the picture short on purpose without deciding to.
+  The passage you would apologise for is the one that wants them — not the one you
+  have most recently been enjoying.
 
 If you have a reference, look at them side by side one last time:
 

@@ -55,10 +55,14 @@ else in the engine imports it. See *MCP server* below.
 
 [`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
-last — rather than listing functions. The measured numbers behind its rules
-(graphite survival, wetness decay, the value floor, load windows) are kept apart in
-[`CALIBRATION.md`](CALIBRATION.md), so the guide stays short and the numbers can
-change when the engine does. The engine is designed around one habit:
+last — rather than listing functions, and it opens with *the first hour*: the whole
+method on one page, so the eight warm-up exercises come before the long read rather
+than after it. The facts it would otherwise have to stop and list — units, defaults,
+what each argument does — are on one page in [`REFERENCE.md`](REFERENCE.md), and the
+measured numbers behind its rules (graphite survival, wetness decay, the value floor,
+load windows) are kept apart in [`CALIBRATION.md`](CALIBRATION.md), so the guide stays
+a guide and both can change when the engine does. The engine is designed around one
+habit:
 
 > Look every five to fifteen strokes. A stroke you did not look at was a guess.
 
@@ -212,13 +216,32 @@ round tip, a clean edge that stops insetting at the canvas frame, rehearsals num
 apart from the painting's looks, `cost_line` saying *why* a number is large, and
 `smudge` taking the boundary it is meant to run along.
 
-Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
-painting runs and an adversarial review left behind — the method, the engine decisions
-that are load-bearing, the traps, and what is still open; read it before changing the
-engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
-painting sessions; every engine item on it is done, and it says what each one became.
-What is left there is editorial — a one-page reference, a short path through the
-guide, two recipes and a warning — and it says so item by item.
+## The worked examples
+
+[`paintings/`](paintings) holds the paintings those sessions made, and each is an
+end-to-end worked example rather than a gallery: the numbered pass scripts that built
+it, the `prelude.py` of helpers and mixtures beside them, `NOTES.md` in the painter's
+own words, and the finished PNG and time-lapse. The scripts re-run from a fresh session
+at the same seed and reproduce the export byte for byte, so the order a painting was
+made in is readable rather than reconstructed — which is the one thing the guide cannot
+teach abstractly, and the thing a first-time painter is least sure of.
+
+**`PAINTER.md` deliberately does not point here**, and that is the trade: a worked
+example names a subject, a named subject leaks, and six of six fresh sessions once
+painted a noun the guide had merely listed. A painter who goes looking finds these; one
+who only reads the guide is not handed a picture to paint. If you are about to run the
+measurement protocol in `LESSONS.md`, do not read them first.
+
+## Where the rest of it is written down
+
+Four documents sit behind this one. [`PAINTER.md`](PAINTER.md) is the guide a painter
+reads and the project's actual deliverable, and [`REFERENCE.md`](REFERENCE.md) is every
+fact on one page beside it — units, defaults, what each argument does — for looking up
+rather than reading. [`LESSONS.md`](LESSONS.md) is what six measured painting runs and
+an adversarial review left behind: the method, the engine decisions that are
+load-bearing, the traps, and what is still open; read it before changing the engine or
+the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the painting
+sessions, every item of which is now done, and it says what each one became.
 
 ## Licence
 

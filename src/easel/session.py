@@ -383,7 +383,8 @@ class Session:
                 Reach for it on a small mass whose silhouette is the drawing -- a
                 round tip lays its half-brush overhang as separate discs, and at that
                 size they read as a fringe of dots around the shape rather than as a
-                soft edge. Measured on a pear-sized mass, round tip at ``size=0.05``:
+                soft edge. Measured on a mass a third of the canvas across, round tip at
+                ``size=0.05``:
                 paint reaches 20px past the outline ragged and 13px clean, and the
                 clean silhouette is the less ragged of the two. **Use a solid tip.**
                 Clean pulls the paint in on a comb too, but one bristle pass along a
@@ -460,7 +461,7 @@ class Session:
         if edge == "clean":
             # The contour pass runs along the *inset* outline, not the drawn one, so
             # that the outer half of the brush lands on the drawn line rather than
-            # half a brush past it. Measured on a pear-sized mass with a round tip at
+            # half a brush past it. Measured on a mass a third of the canvas across,
             # size 0.05: paint reaches 20px past the outline blocked in ragged, 38px
             # with the contour laid along the drawn line, and 13px this way -- and
             # this way also leaves the least ragged silhouette of the three.
@@ -1608,7 +1609,7 @@ class Session:
         is written twice::
 
             plan = [{"shape": blob(cell("D5")), "brush": "bristle", "color": "dark"},
-                    {"edge": sill, "into": "down", "depth": 0.2, "color": "shadow"},
+                    {"edge": ridge, "into": "down", "depth": 0.2, "color": "shadow"},
                     {"points": [(0.2, 0.6), (0.6, 0.55)], "brush": "liner"}]
 
             s.cost(plan)                    # 34 -- what it charges
@@ -2012,7 +2013,7 @@ class Session:
         told to put down in numbers -- and it measures each named place against the
         value it was promised, with the same table and the same sheet::
 
-            s.compare({"sky": 0.72, sill: 0.38, pear: 0.30})
+            s.compare({"upper-band": 0.72, lower: 0.38, near_mass: 0.30})
 
         The keys are places (a name, a region, a shape) and the values are what
         :meth:`~easel.palette.Palette.value_of` reports, so a plan can be written
@@ -2057,7 +2058,7 @@ class Session:
             raise ValueError(
                 "compare({}) was given an empty plan. A value plan is at least one "
                 "place and the value you mean to paint it: "
-                "s.compare({'sky': 0.72, sill: 0.38})."
+                "s.compare({'upper-band': 0.72, 'D5': 0.38})."
             )
         w, h = self.canvas.width, self.canvas.height
         places: list[tuple[str, np.ndarray, float]] = []
@@ -2073,7 +2074,7 @@ class Session:
                     f"The keys of a value plan are places -- a cell like 'D5', a "
                     f"span like 'C3:F6', a Region, or a shape. To see a name of your "
                     f"own in the table, build the shape with one: "
-                    f"blob(cell('D5'), name='pear')."
+                    f"blob(cell('D5'), name='near_mass')."
                 ) from exc
             poly = place if isinstance(place, Polygon) else polygon(place)
             name = (place.name or poly.name
