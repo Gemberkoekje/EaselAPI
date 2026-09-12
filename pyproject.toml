@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "easel-paint"
-version = "0.1.0"
+version = "0.1.0.dev1"
 description = "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture."
 readme = "README.md"
 requires-python = ">=3.12"
