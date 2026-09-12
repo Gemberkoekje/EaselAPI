@@ -24,6 +24,7 @@ from pathlib import Path
 
 from PIL import Image as _PILImage
 
+from easel import guide
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
 from easel.palette import PIGMENTS
@@ -164,6 +165,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub.add_parser("brushes", help="list brushes, pigments, grounds and regions")
 
+    p_guide = sub.add_parser(
+        "guide",
+        help="print the painting guide that ships with the engine",
+        description="Print PAINTER.md, the guide this engine is written around. "
+                    "With no arguments: `The first hour`, which is the whole "
+                    "method in under a thousand words and enough to start.",
+    )
+    g_which = p_guide.add_mutually_exclusive_group()
+    g_which.add_argument("--full", action="store_true",
+                         help="the whole guide, not just its first page")
+    g_which.add_argument("--reference", action="store_true",
+                         help="REFERENCE.md instead: units, defaults, every argument")
+    g_which.add_argument("--calibration", action="store_true",
+                         help="CALIBRATION.md instead: the measured numbers behind the rules")
+    p_guide.add_argument("--path", action="store_true",
+                         help="print where the document is, rather than what it says")
+
     return parser
 
 
@@ -184,9 +202,32 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
 
+def _cmd_guide(args) -> int:
+    """`easel guide`: hand the painter the method, not just the brush.
+
+    A session that installed from PyPI has no repository to read, and the guide
+    is the half of this project that the measured runs say matters. So it is in
+    the package, and this is how it is read without leaving the shell.
+    """
+    name = ("reference" if args.reference
+            else "calibration" if args.calibration
+            else "guide")
+
+    if args.path:
+        print(guide.document_path(name))
+        return 0
+
+    text = guide.read(name) if (args.full or name != "guide") else guide.front_page()
+    guide.write(text)
+    return 0
+
+
 def _dispatch(args) -> int:
     if args.command == "brushes":
         return _cmd_reference()
+
+    if args.command == "guide":
+        return _cmd_guide(args)
 
     if args.command == "new":
         if args.session.exists() and not args.force:

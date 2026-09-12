@@ -17,6 +17,12 @@ here turns a prompt into a picture. You choose and make every mark. There are no
 layers, and no undo that costs nothing: you work in passes, and when something is wrong
 you paint over it.
 
+**Read the guide before you paint.** The engine is only the brush;
+[`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
+is the half that matters. It ships inside the package, so there is nothing to go and
+find: **`easel guide`** prints its first page — the whole workflow, under a thousand
+words — and `easel guide --full` prints the rest.
+
 ```python
 from easel import Session, blob, cell
 
@@ -154,6 +160,9 @@ easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
+easel guide                                          # the method, in under a thousand words
+easel guide --full                                   # all of it
+easel guide --reference                              # units, defaults, every argument
 ```
 
 Every one of these also works as `python -m easel ...`, for when the `easel`
