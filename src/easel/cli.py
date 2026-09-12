@@ -178,6 +178,10 @@ def build_parser() -> argparse.ArgumentParser:
     g_which = p_guide.add_mutually_exclusive_group()
     g_which.add_argument("--full", action="store_true",
                          help="the whole guide, not just its first page")
+    g_which.add_argument("--painting", action="store_true",
+                         help="PAINTING.md instead: the reasons under the rules, read once")
+    g_which.add_argument("--recipes", action="store_true",
+                         help="RECIPES.md instead: the calls, in order, for particular things")
     g_which.add_argument("--reference", action="store_true",
                          help="REFERENCE.md instead: units, defaults, every argument")
     g_which.add_argument("--calibration", action="store_true",
@@ -212,7 +216,9 @@ def _cmd_guide(args) -> int:
     is the half of this project that the measured runs say matters. So it is in
     the package, and this is how it is read without leaving the shell.
     """
-    name = ("reference" if args.reference
+    name = ("painting" if args.painting
+            else "recipes" if args.recipes
+            else "reference" if args.reference
             else "calibration" if args.calibration
             else "guide")
 

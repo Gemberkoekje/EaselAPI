@@ -825,12 +825,23 @@ def build_server() -> MCPServer:
         words, written to be read on its own and enough to start from.
 
         Args:
-            document: "guide" (PAINTER.md, the method), "reference"
-                (REFERENCE.md -- units, defaults, what each argument does) or
-                "calibration" (CALIBRATION.md -- the measured numbers behind the
-                rules, which you do not need in order to paint).
+            document: which of the five to return.
+                "guide" (PAINTER.md) -- the method: the order of work, the
+                    mistakes, eight warm-up exercises, the closing checklist.
+                    Required reading, and the only one that is.
+                "painting" (PAINTING.md) -- the same rules with their reasons:
+                    colour, wet paint, the brushes, working from a reference or
+                    from nothing, and the rest of the API. Read once, after the
+                    exercises.
+                "recipes" (RECIPES.md) -- the calls, in order, for a particular
+                    kind of thing, each with what it looks like when it goes
+                    wrong. Read one when you are about to paint that thing.
+                "reference" (REFERENCE.md) -- units, defaults, what each
+                    argument does.
+                "calibration" (CALIBRATION.md) -- the measured numbers behind
+                    the rules, which you do not need in order to paint.
             full: for "guide", the whole of it rather than its first page. The
-                other two documents always come back whole.
+                other documents always come back whole.
         """
         if document != "guide":
             return _guide.read(document)

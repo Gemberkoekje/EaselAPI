@@ -11,10 +11,12 @@ load-bearing, the traps that cost real time, and what is still open. It is the f
 read before changing the engine or the guide. It is not a changelog, and a new finding
 does not get a paragraph here just for being true.
 
-The two things beside it: [`PAINTER.md`](PAINTER.md) is the guide a fresh painter reads
-and the project's actual deliverable; [`CALIBRATION.md`](CALIBRATION.md) holds the
-measured numbers behind it. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the open request list
-from the most recent painting session and is the newest input in the repo.
+The files beside it: [`PAINTER.md`](PAINTER.md) is the guide a fresh painter reads and
+the project's actual deliverable, with [`PAINTING.md`](PAINTING.md) holding the reasons
+under its rules, [`RECIPES.md`](RECIPES.md) the procedures,
+[`REFERENCE.md`](REFERENCE.md) the facts and [`CALIBRATION.md`](CALIBRATION.md) the
+measured numbers. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
+painting sessions — what each painter found, and what was done about it.
 
 ---
 
@@ -41,6 +43,34 @@ warning, which is why a painter could count four instances of a rule it had igno
 times. Repetition is what a document does instead of having an answer. When a rule keeps
 failing, the fix is a procedure, not a louder warning.
 
+### A separate file of warnings is the fourth copy, and it does not work either
+
+Asked directly whether the warnings should be gathered into their own file for a painter
+to keep in context, the third session answered no, and its evidence is its own painting.
+It had every warning in context for the whole session — the guide never left its
+window — and laid a glow as a solid disc, planes as slabs stuck to a hull, and a picture
+in almost nothing but two brushes regardless. The front page lists the mistakes, the
+checklist repeats them, and this file records that a rule correct, well placed and
+repeated three times still failed every run. **A fourth copy is precisely the thing
+that does not work.**
+
+What did catch those mistakes was never a sentence. It was a rehearsal looked at, and
+the one line `easel run` prints after a pass. So the form the idea should take is **a
+check the tool runs over the pass it just painted**, printed beside the budget line —
+every input is already in the log, which carries brush, size, path, colour and load per
+record. Candidates, all of them rules that currently only exist as prose: every mark in
+this pass used one brush at one size; *n* passes ran at the same angle; *n* marks under
+`size=0.02` before stroke 60; a `bristle` under `size=0.025`; the subject's share of
+strokes so far against the share the plan says. **Each rule that becomes a check can
+leave the guide**, which is the growth rule paying for itself. Not built; the honest way
+to start is to replay a finished painting's log pass by pass and print what each rule
+would have fired on.
+
+The one form of the file idea with a real mechanism is **a short rules card kept where a
+`CLAUDE.md` is kept**, which survives a context compaction where the guide does not.
+That only matters for a session that actually gets compacted, and none of the three was,
+so there is no evidence either way and it is not written.
+
 ### A new finding never adds a paragraph to the guide
 
 It **replaces** an existing rule, **becomes a checklist line**, or **goes to
@@ -52,15 +82,58 @@ finishes. The test for a candidate paragraph: strip the measurement and the reas
 and see what is left. If one line is left, that line is the rule and it goes in the guide,
 and the measurement goes to `CALIBRATION.md`. If nothing is left, it was not a rule.
 
-**That test bounds how fast the guide grows and does not stop it growing.** It is now
-about 17,000 words, and a painter who read it said the honest thing: the essay is what
-made the rules stick, and the operational facts were hard to find inside it. So the
-answer taken was structural rather than more cutting — *the first hour* at the top, one
-page that is the whole workflow and ends by sending the painter to the exercises, and
-[`REFERENCE.md`](REFERENCE.md) beside the guide for the facts, so looking one up is not
-a reason to skim the essay. Whether that is enough is a question for a fresh session,
-like every other guide change: **the two-goes instruction is a hypothesis until someone
-paints against it**, and the thing to measure is whether the exercises get done.
+**That test bounds how fast the guide grows and it did not stop it growing.** The rule
+was written when the guide was 8,600 words and the guide reached 17,000 under it, every
+addition correct and none of them refused. A rule nothing enforces is a preference.
+
+### The essay is finished at its size. Split by function; never cut
+
+Three sessions each said the same two things about the guide and both are true: it is
+long, and the essay is what made the rules stick. Every attempt to shrink it by editing
+has failed, and the reason is not editorial skill — **the rule you would cut is the one
+some painter needed.** Nor is the cost what it looks like: reading the guide, the
+reference, the calibration file and two paintings' notes cost one session a few minutes
+and about thirty thousand tokens, against far more spent looking at its own rehearsals.
+The cost of length is that a rule read once at the start is not in the painter's hand
+at the moment it applies, and cutting cannot fix that.
+
+So the answer taken is **a file boundary rather than an instruction, and a move rather
+than a cut**:
+
+| | |
+|---|---|
+| [`PAINTER.md`](PAINTER.md) | the method — the order of work, *What you are bad at*, the checklist, the exercises. Held in the painter's head, and **held to a word budget by `tests/test_guide.py`** |
+| [`PAINTING.md`](PAINTING.md) | the essay — colour, wet paint, the brushes, working from a reference, the rest of the API. Read once, after the exercises |
+| [`RECIPES.md`](RECIPES.md) | the procedures — the calls in order for a kind of thing, with what it looks like when it goes wrong |
+| [`REFERENCE.md`](REFERENCE.md) | the facts — units, defaults, every argument |
+| [`CALIBRATION.md`](CALIBRATION.md) | the numbers |
+
+Nothing was deleted in making that split; every word of the old guide is in one of the
+first two files. **The standing rule from here on: a finding goes to the engine, to the
+recipes, to the reference or to the calibration file. It never adds a paragraph to
+`PAINTER.md`**, and if it must, something else in that file is cut in the same commit —
+which the budget now forces rather than asks.
+
+**The budget is 10,000 words and not the 5,000–6,000 a painter proposed.** That figure
+was never costed against the contents the same list asked the file to keep: the order of
+work, *What you are bad at*, the checklist and the exercises come to about 8,500 words
+between them, so reaching 6,000 would mean cutting them, which every other item on that
+list forbids. A budget that cannot be met on the day it is written enforces nothing.
+The honest claim is halving, not fifthing: 17,600 words to 9,400.
+
+**The best shrinking is still the engine absorbing a rule**, and that is the only kind
+that has ever removed a paragraph outright: `solid=True` took the load warnings,
+`scumble` took the gradient-tool warning, `cost_line` took the arithmetic, `cover` took
+the burying recipe, and the inward scumble's own brush-size warning took a paragraph of
+guidance about ring steps. **One engine change per paragraph, the paragraph leaving in
+the same commit.**
+
+**The split is a hypothesis, like every other guide change.** The test that would settle
+it is two fresh sessions under the protocol below: one given only `PAINTER.md`,
+`RECIPES.md` and `REFERENCE.md`, one given everything. The prediction, written down so
+it can be wrong: the first paints the masses as well and improvises worse, because the
+essay is where the judgement came from when no recipe existed. Nothing above depends on
+the result except how firmly `PAINTING.md` is recommended.
 
 ### A worked example is an instruction, whatever the prose beside it says
 
@@ -100,13 +173,27 @@ fourth.
 **So where does an end-to-end example live?** A painter asked for one: the guide has
 eight abstract exercises and no single small picture laid out in order, and sequencing
 was the thing they were least sure of at the start — not which call to make but which to
-make first. The answer taken is that `paintings/` **is** that example, and that
-`README.md` says so while `PAINTER.md` does not. Each painting has its numbered pass
-scripts, its prelude, its notes and an export that re-runs byte for byte, so the order
-is readable rather than reconstructed. A painter who goes looking finds it; one who
-reads only the guide is not handed a subject. It is the whole trade in one sentence: an
-end-to-end example leaks its subject harder than any fragment can, and the cost of
-hiding it is paid by the painter who would have benefited most.
+make first. The answer taken is that `paintings/` **is** that example. Each painting has
+its numbered pass scripts, its prelude, its notes and an export that re-runs byte for
+byte, so the order is readable rather than reconstructed. A later session confirmed the
+value from the other side: the pass-script convention and the prelude of masses as
+functions came from reading them, and it said it would not have arrived at either from
+the guide.
+
+**For a year the trade was to hide them, and that was resolved the wrong way round.**
+`README.md` pointed at `paintings/` and `PAINTER.md` deliberately did not, on the
+grounds that a worked example leaks its subject — so the cost of hiding it was paid by
+the painter who would have benefited most, and paid silently. **The
+decide-then-read protocol dissolves it**: a painter who chose the subject before opening
+the repository cannot be steered by a noun in a worked example, and one who has not
+chosen can be. So the front page now points at them *with the condition attached* — if
+you have decided what to paint, these are yours; if you have not, do not open them — and
+`PAINTINGS.md` and `README.md` say the same thing in the same words. The condition is
+the protocol, which makes it checkable rather than a matter of taste.
+
+The no-nouns discipline inside the guide itself stays, because it is for the reader who
+did not follow the protocol. `RECIPES.md` is written under it too: a recipe says what a
+shape of paint *does*, never what it is *of*.
 
 ### Never change the engine while a measurement is running
 
@@ -399,6 +486,16 @@ and none has been decided:
   median structure score was `+0.53` against a baseline where all six first unprompted
   paintings sit between `+8.12` and `+23.83`. That is a different measurement and a better
   one: it measures what the painter chooses rather than what the guide retrieves.
+
+  **But deciding first measures the prior, not the painter, and the lever for that is
+  order rather than content.** Across the four decide-then-read runs, the two asked cold
+  produced the most-painted subjects in the corpus; the one given a single sentence of
+  resistance produced a memory instead. The default is one instruction deep. So if the
+  stage is meant to test the painter, ask for *two* subjects and paint the second, or
+  ask it to name the obvious choice and then not paint that — both are nudges away from
+  the default rather than toward anything, which is the property a named subject lacks.
+  **Whichever was used has to be recorded with the run**, because the four above are not
+  comparable with each other and nothing says so on their face.
 - **The structure probe is partly measuring "has a sky".** It is the variance of the row
   means over the variance of the column means, so it cannot separate a smooth vertical
   gradient from a stack of slabs: a three-step gradient with its joins smudged scores
@@ -412,19 +509,32 @@ and none has been decided:
 `17.5%`, `16.3%`, `13.2%` against a best of `0.1%` — and stating the rule, giving it a
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
-rather than an edit. Everything else the last run found has been applied.
-`SUGGESTIONS.md` holds the lists from the two painting sessions, and **every item on
-both is now done** — nineteen for the engine, twenty for the guide — with a note under
-each saying what it became. Nothing on either list is outstanding.
+rather than an edit. Everything else the runs found has been applied.
+[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from three painting sessions and the
+synthesis across them, and **every item is now done** — twenty-five for the engine,
+thirty-seven for the documentation — each with a note saying what it became.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints
-against one. The guide ones landing in this round that are most worth watching, because
-they are the ones that changed how the guide is *read* rather than what it says: the
-two-goes instruction and *the first hour* at the top, the exercises stated as a gate
-with the cost of skipping them, and `REFERENCE.md` beside the essay. If the next fresh
-session still skips the exercises, that is the finding, and repeating the instruction
-louder is not the fix — see *Warning is not method*.
+against one. The ones most worth watching are the ones that changed how the guide is
+*read* rather than what it says: **the split into five files**, the exercises stated as
+a gate with the cost of skipping them, *rehearse everything* replacing *rehearse what
+you would not want to repaint*, and the closing checklist now asking for the subject's
+share of strokes as a number rather than as a question. If the next fresh session still
+skips the exercises, or still stops with a third of its budget unspent, that is the
+finding — and repeating the instruction louder is not the fix, see *Warning is not
+method*.
+
+**One data point on the two-goes instruction exists and it is not a clean one.** The
+third session read the whole guide *and* the reference before doing the exercises, then
+did all eight, then painted — the wrong order, and the exercises still paid: the edge
+study showed it the smudge's thumbprint before it could lay one in the picture, the load
+study showed it the speckle a starved bristle leaves, and the wet-versus-dry pair is why
+every later pass went on dry paint. **So the gate held even when the reading ran past
+it**, which is an argument for the exercises and says nothing either way about the
+order. Whether the essay gets finished by a painter who does the exercises first is
+still unmeasured; it is now a file boundary rather than an instruction, which is the
+thing to test.
 
 Three of those lists' own measured claims were re-measured before anything was written
 down on them, and two did not survive it. That is the method working as intended.
@@ -480,14 +590,17 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 457 passed; the mcp and mixbox tests
+pytest -q                              # 508 passed; the mcp and mixbox tests
                                        # skip unless their extras are installed
-ruff check src tests scripts examples
-python scripts/check_guide_blocks.py   # every python block in PAINTER.md runs: 58 ok
+ruff check src tests scripts examples mcpb
+python scripts/check_guide_blocks.py   # every python block in the guide's three
+                                       # files runs (74 ok), and PAINTER.md is
+                                       # inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
 python examples/exercises.py           # the guide's warm-ups, writes out/ex_*.png
 ```
 
-The first two are what CI runs. The last four are the ones that have actually found
-things.
+The first two are what CI runs, and `tests/test_guide.py` carries the word budget so
+that half of the third is enforced there too. The last four are the ones that have
+actually found things.

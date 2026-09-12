@@ -25,8 +25,9 @@ s.export("painting.png")
 What to know before reading further:
 
 - The guide ships inside the package: `easel guide` prints its first page, which is
-  the whole method in under a thousand words, and `easel guide --full` prints the rest.
-  Nothing below has to be fetched over the network if you have installed it.
+  the whole method in under a thousand words, and `easel guide --full`, `--painting`,
+  `--recipes`, `--reference` and `--calibration` print the rest of it. Nothing below has
+  to be fetched over the network if you have installed it.
 - Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
   are never exposed, because they are what a language model is worst at.
 - The engine is built around one habit: **look every five to fifteen strokes**. A stroke
@@ -34,10 +35,11 @@ What to know before reading further:
 - Nothing here turns a prompt into a picture. There is no model inside Easel. You choose
   and make every mark, and the engine only decides what paint does.
 - There are no layers and no free undo. You work in passes and paint over mistakes.
-- If you are here to paint rather than to evaluate: read `PAINTER.md` first, and leave
-  the worked examples below until you have a subject of your own. Each of them names
-  one, and a named subject leaks — six of six fresh sessions once painted a noun the
-  guide had merely listed.
+- If you are here to paint rather than to evaluate: read `PAINTER.md` first, and decide
+  what you are painting before you open the worked examples below. Each of them names a
+  subject, and a named subject chooses for you — six of six fresh sessions once painted
+  a noun the guide had merely listed in passing. Once you have chosen, they are the best
+  thing here.
 - Brushes: `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`.
   Grounds: `white`, `warm_white`, `toned_grey`, `toned_warm_grey`, `burnt_sienna`,
   `umber_wash`, `cool_grey`. Textures: `smooth`, `linen`, `rough`.
@@ -47,24 +49,27 @@ What to know before reading further:
 
 ## Start here
 
-- [README](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/README.md): what the engine is, how to install it, the full verb list, the command line, the MCP server, and the design decisions that make output look painted rather than generated. ~2,300 words.
-- [PAINTER.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTER.md): the guide written for the agent doing the painting. It teaches the workflow — tone the ground, paint back to front, check values, refine, edges and highlights last — rather than listing functions. It is meant to be read in two goes: *the first hour* at the top is the whole method on one page and everything the eight warm-up exercises need, and the rest is the same rules with their reasons. ~17,300 words in total, the longest file here, but the first page is enough to start.
-- [REFERENCE.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/REFERENCE.md): every fact on one page — the units (and that is where the surprises are), the defaults, and what each argument does. For looking up while holding a brush rather than reading. ~2,000 words. Nothing in it is a rule about painting; the rules are all in the guide, and a fact looked up without its rule is how a painting comes out correct and dead.
+- [README](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/README.md): what the engine is, how to install it, the full verb list, the command line, the MCP server, and the design decisions that make output look painted rather than generated. ~3,400 words.
+- [PAINTER.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTER.md): **the guide written for the agent doing the painting, and the one file here that is required.** It teaches the workflow — tone the ground, paint back to front, check values, refine, edges and highlights last — rather than listing functions, and it is the method only: the order of work, the five mistakes you will make anyway, eight warm-up exercises and a closing checklist. Meant to be held in your head while painting, and held to a word budget by the test suite so it stays that way. ~9,400 words, and *the first hour* at the top is enough to start.
+- [PAINTING.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTING.md): the same rules with their reasons, the failures behind them and the numbers — colour, wet paint, the brushes, working from a reference or from nothing, and the rest of the API. Read once, after the exercises. ~10,400 words. It is long because nothing was cut when the guide was split; you are meant to have read it, not to hold it.
+- [RECIPES.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/RECIPES.md): the procedures — the calls in order for a plane, a form that turns, a mass built of planes, a glow, a small irregular mark, a lost edge — each with what it looks like when it goes wrong. Collected out of three painters' pass scripts. ~3,100 words. Read one when you are about to paint that thing.
+- [REFERENCE.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/REFERENCE.md): every fact on one page — the units (and that is where the surprises are), the defaults, and what each argument does. For looking up while holding a brush rather than reading. ~2,400 words. Nothing in it is a rule about painting; the rules are all in the guide, and a fact looked up without its rule is how a painting comes out correct and dead.
 
 ## Worked examples
 
-- [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/NOTES.md): a full painting by a model that had read only `PAINTER.md`, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. Read it to see how the engine is actually used, not to choose what to paint.
+- [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/NOTES.md): a full painting, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. Read it to see how the engine is actually used, not to choose what to paint.
 - [Its nineteen pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/car_wash): the painting itself, in order, as ordinary Python. Run against a fresh session they reproduce the PNG byte for byte.
-- [Painting three pears: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/NOTES.md): a second painting under the same rules, and the source of the engine's most recent round of changes.
+- [Painting three pears: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/NOTES.md): a second painting under the same rules, and the one that started the request list the engine has been answering since.
+- [Painting a lighthouse at dusk: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/lighthouse_dusk/NOTES.md): a third, in 184 strokes of a 300 budget with eighteen rehearsals and no stroke spent on repainting anything. Its [ten pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/lighthouse_dusk) rebuild the PNG byte for byte, and most of `RECIPES.md` came out of them.
 - [examples/exercises.py](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/examples/exercises.py): abstract warm-ups straight from the guide — a value scale, pressure profiles, wet-into-wet — deliberately not pictures of anything.
 
 ## Evidence
 
-- [PAINTINGS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTINGS.md): both finished paintings at full size, the rules they were made under, what they cost, and an honest reading of how good they are.
+- [PAINTINGS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTINGS.md): all three finished paintings at full size, the rules they were made under, what they cost, and an honest reading of how good they are.
 
 ## Optional
 
 - [CALIBRATION.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/CALIBRATION.md): the measured numbers behind the guide's rules — graphite survival, wetness decay, the value floor, load windows. You do not need these to paint.
 - [LESSONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/LESSONS.md): what six measured painting runs and an adversarial review left behind. Read it before changing the engine or the guide, not before painting.
-- [SUGGESTIONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/SUGGESTIONS.md): the request list a painter wrote after using the guide, and what each item became.
+- [SUGGESTIONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/SUGGESTIONS.md): what three painters asked for after using the guide — what was wrong, and what was done about it. Every item is done.
 - [Source](https://github.com/Gemberkoekje/EaselAPI/tree/main/src/easel): the engine. `session.py` is the object you hold, `color.py` the Kubelka-Munk pigment mixing, `stroke.py` the paint load and tooth model, `mcp_server.py` the MCP tools.

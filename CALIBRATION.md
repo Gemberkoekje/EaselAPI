@@ -1,13 +1,28 @@
 # Calibration: the engine's measured numbers
 
-`PAINTER.md` tells you how to paint with Easel. This file holds the numbers behind
-its rules — what was measured, on the engine as it is now. You do not need any of
-it to paint. Come here when a rule in the guide makes you want to know *how much*,
-or when a mark did not do what you expected and you want to know whether that is
+[`PAINTER.md`](PAINTER.md) tells you how to paint with Easel, and
+[`PAINTING.md`](PAINTING.md) says why each of its rules is a rule. This file holds the
+numbers behind them — what was measured, on the engine as it is now. You do not need
+any of it to paint. Come here when a rule in the guide makes you want to know *how
+much*, or when a mark did not do what you expected and you want to know whether that is
 you or the engine.
 
 Every figure here is a measurement of the current engine and will move when the
 engine changes. Trust the picture in front of you over a number in this file.
+
+**Every number here states what it was measured on: the brush, the size, and the canvas
+at least, plus whatever else the number depends on.** That is a rule rather than a
+habit, and it was bought. A fall-off recipe here was measured on a patch whose size
+nobody wrote down; a painter applied it to a large one, got a solid disc with a rim of
+gradient round it, and spent three rehearsals discovering that the number had a range
+it did not carry. The table it came from had the same defect visible in its own figures
+and was read as a fall-off for a year. **A number without its conditions is not a
+measurement, it is a rumour**, and sessions treat this file as ground truth.
+
+The same rule's other half: **a claim about the engine's behaviour with no test behind
+it says so.** Most of what is here is re-measurable from the scripts in `scripts/`;
+where a figure comes from a painter's own report and has not been re-measured, the line
+says that too.
 
 ---
 
@@ -173,6 +188,25 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   `load=1.0, load_falloff=0.0` as a pair of defaults, so an explicit `load=` beside
   it still wins. The painter who found this laid a whole near mass speckled and only
   saw it by cropping into it.
+- **`solid=True` is as even as this engine gets, and it is not perfectly even.** What
+  is left is the pass structure itself, and it does not move with `opacity` or with
+  `pressure`. A `flat` at `size=0.03`, `density=1.0`, `solid=True`, over a region on a
+  512×384 `toned_grey` canvas, interior sampled a brush in from the edges:
+
+  | | interior sd | row-mean peak to peak |
+  |---|---|---|
+  | `opacity=0.85`, `pressure="taper"` | `0.0092` | `0.033` |
+  | `opacity=0.85`, `pressure="even"` | `0.0088` | `0.029` |
+  | `opacity=1.0`, `pressure="taper"` | `0.0090` | `0.027` |
+  | `opacity=1.0`, `pressure="even"` | `0.0093` | `0.025` |
+
+  About `0.03` of value, at every combination. That is a quarter of the `0.10` that
+  separates two masses, so it is invisible on anything with a form in it and visible as
+  faint striping on a large flat plane at feature scale. **A bigger brush or a broken
+  one hides it; an argument does not.** This one contradicts what the painter who asked
+  for the measurement believed while painting — its planes came out striped at `0.85`
+  and clean at `1.0`, and what had actually changed between those two rehearsals was
+  the brush size and the shapes.
 - **`opacity` does not thin a long stroke, it only slows it down.** Consecutive dabs
   overlap by more than 90%, so a low opacity accumulates back to nearly full colour
   along the mark. A rehearsal run laid grain at `opacity=0.08` expecting a whisper and
@@ -486,18 +520,52 @@ of radius `0.20`, bristle at `0.13`:
 
 ---
 
+## `glaze`
+
+A thin film that adds no paint height. One mark, and the only argument that does
+anything much is `opacity`.
+
+**A glaze is strong in proportion to its distance from what it lands on — in hue as
+well as in value.** Measured on a 512×384 canvas: a warm light mixture (`0.62`) glazed
+over a solid cool dark mass (`0.30`), `flat` at `size=0.18`, `pressure="even"`, sampled
+over the middle of the film:
+
+| `opacity` | value under it | change | hex, before → after |
+|---|---|---|---|
+| `0.05` | `0.310` → `0.338` | `+0.028` | `#4d4c6d` → `#5c5459` |
+| `0.07` | `0.310` → `0.351` | `+0.041` | `#4d4c6d` → `#625754` |
+| `0.10` | `0.310` → `0.371` | `+0.061` | `#4d4c6d` → `#6b5c4e` |
+| `0.14` | `0.310` → `0.397` | `+0.087` | `#4d4c6d` → `#776247` |
+| `0.20` | `0.310` → `0.433` | `+0.123` | `#4d4c6d` → `#876940` |
+
+Read the hex column rather than the value column. By `0.05` the underlying violet is
+already gone and the glaze's own warmth has not arrived — the film is a neutral grey,
+which is the *complement* doing what complements do. By `0.14` the value has moved
+`0.087`, within a hundredth of the `0.10` that makes two masses separate, so a film
+meant to shift a passage has instead made a new one.
+
+**There is no usable opacity for a glaze far from what it lands on**, which is the
+`knife`'s rule — keep it close in value to what it sits on — arriving through hue. Mix
+the glaze close first, then choose an opacity. A painter rehearsed one twice at `0.14`
+and `0.07`, got a saturated stripe and then nothing, and dropped the mark.
+
+---
+
 ## `scumble`
 
 What closes a join a smudge only softened: `n` overlapping passes at closely spaced
 values, charged as `n`.
 
-**The default grades edge to edge, which is a band and not a glow.** Nine passes over
-the same round patch, `bristle` at `size=0.07`, read off the values view:
+**The default grades edge to edge, which is a band and not a glow.** Nine passes
+`0.20`→`0.90` over a **round patch of radius `0.16`** on a 512×384 canvas, `bristle`,
+`opacity=0.7`, read off the values view at five points across the patch and five down
+it:
 
 | nine passes over one patch | across it | down its middle |
 |---|---|---|
-| `direction="axis"` (a band) | `0.90, 0.56, 0.51, 0.23, 0.17` | flat to within `0.01` |
-| `direction="inward"` | `0.20, 0.41, 0.91, 0.32, 0.17` | `0.30, 0.42, 0.86, 0.91` |
+| `direction="axis"`, `size=0.07` (a band) | `0.79, 0.65, 0.41, 0.30, 0.24` | `0.47, 0.48, 0.41, 0.42, 0.50` — flat |
+| `direction="inward"`, `size=0.07` | `0.32, 0.59, 0.89, 0.61, 0.31` | `0.48, 0.83, 0.89, 0.81, 0.53` |
+| `direction="inward"`, no `size=` | `0.30, 0.57, 0.86, 0.60, 0.31` | `0.46, 0.79, 0.86, 0.81, 0.49` |
 
 So a band is one ramp and a centred passage is a fall-off from the middle in every
 direction — which is what a glow, a bloom or a lit patch on a surface is, and what
@@ -506,19 +574,39 @@ part-brush at a time from its boundary toward its centre, in `sweep`'s geometry;
 first ring lands on the boundary, so `color_a` is the value the patch meets its
 surroundings at.
 
+**The patch's radius is part of the measurement, which is why it is stated here now.**
+The rings step `depth / n`, so on this patch they are `0.0178` apart and the `size=0.07`
+above is 3.9 of them. That is already past the point where the last rings begin burying
+the first; the row is legible as a fall-off because the patch is small enough to carry
+it, and on a larger one the same brush lays a flat middle. The third row is what the
+verb picks for itself (`3 × depth / n`, `0.0533` here) and it is the smoother of the
+two. Hand it `size=0.07` today and it warns, naming the number of steps.
+
 A ring is two or three times the length of a pass across the same patch and has no
 far end to run dry at, so a centred scumble defaults to `load_falloff=0.0`; without
 it the brush starves half way round and the glow comes out bright on one side. An
 explicit `load_falloff=` still wins.
 
-**Read the inward row's inner half again: `0.86, 0.91` is not a fall-off, it is
-flat.** That is the last rings burying the first, because `size=0.07` here is about
-four of the `depth / n` the rings step by. The verb now picks its own brush at about
-three steps when no `size=` is given, and warns when the one it is handed is wider —
-so the numbers above are what an explicit `0.07` still lays, not what the example
-lays. On an ellipse `0.72 × 0.24` at `n=7`, opacity `0.5`, the share of the patch
-sitting within `0.06` of the centre value runs **44%** at the bristle's own `0.11`,
-**12%** at `0.05`, and **0.2%** at `0.03`.
+**Where it stops being a fall-off, measured on a patch big enough to show it.** An
+ellipse `0.72 × 0.24` on a 512×384 canvas, `n=7`, `opacity=0.5`, bristle, `0.45` at the
+edge to `0.75` at the centre — so the rings step `0.017` apart. The second column is the
+share of the patch sitting within `0.06` of the centre value, which is the measure of
+how much of it has gone flat:
+
+| brush | flat at the centre value | profile, edge → centre |
+|---|---|---|
+| `0.09` (five steps) | **44%** | `0.52 0.55 0.62 0.69 0.70 0.69 0.71` |
+| `0.05` (three steps) | 12% | `0.49 0.49 0.59 0.61 0.64 0.69 0.65` |
+| `0.03` | 0.2% | `0.49 0.50 0.55 0.58 0.61 0.63 0.62` |
+| `0.02` | 0% | `0.50 0.53 0.53 0.57 0.54 0.55 0.61` |
+| `round_soft 0.09` | 42% | `0.50 0.56 0.60 0.66 0.71 0.72 0.72` |
+
+At five steps nearly half the patch is one flat colour with a rim of ramp round it —
+a disc, not a glow — and at one step the centre never reaches its colour at all,
+because at `opacity=0.5` nothing lands there more than twice. **About three steps is
+the usable middle**, and that is what the verb picks when no `size=` is given. A
+preset's own default is `0.11` here, five steps wide, which is why the example in the
+guide carries no `size=`.
 
 ---
 

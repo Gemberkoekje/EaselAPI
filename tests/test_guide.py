@@ -64,9 +64,34 @@ def test_an_unknown_document_says_what_there_is() -> None:
     assert "reference" in str(excinfo.value)
 
 
+def test_the_front_page_stays_inside_its_word_budget() -> None:
+    """`PAINTER.md` is the file a session is asked to hold in its head.
+
+    `LESSONS.md` has said since early on that a finding never adds a paragraph to
+    the guide, and under that rule the guide doubled -- from 8,600 words to 17,000
+    -- because nothing enforced it. A stroke budget works because the engine holds
+    it; this is the same arrangement for the same reason. Over budget, the fix is
+    to move something to `PAINTING.md`, `RECIPES.md`, `REFERENCE.md` or
+    `CALIBRATION.md`, not to raise the number.
+    """
+    words = len(guide.read("guide").split())
+    assert words <= guide.FRONT_PAGE_WORDS, (
+        f"PAINTER.md is {words} words, over its {guide.FRONT_PAGE_WORDS}-word budget "
+        f"by {words - guide.FRONT_PAGE_WORDS}. Move a section out rather than raising this."
+    )
+
+
+def test_the_essay_is_where_the_length_went() -> None:
+    """The split was a move, not a cut. If `PAINTING.md` ever becomes a stub, the
+    front page's budget has stopped being paid for and started being a deletion."""
+    assert len(guide.read("painting").split()) > 5_000
+
+
 @pytest.mark.parametrize("argv", [
     ["guide"],
     ["guide", "--full"],
+    ["guide", "--painting"],
+    ["guide", "--recipes"],
     ["guide", "--reference"],
     ["guide", "--calibration"],
     ["guide", "--path"],

@@ -35,7 +35,7 @@ s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
 s.export("painting.png")
 ```
 
-## Two paintings, made this way
+## Three paintings, made this way
 
 ![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom
 of white light down the tunnel, a red stop light, and a foam-covered side brush
@@ -51,18 +51,26 @@ enamel mug behind them and a half-drawn curtain at the right](https://raw.github
 *[**Three pears on a kitchen windowsill**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/windowsill_pears/NOTES.md) — 224
 strokes, 1024×768 linen, no reference photograph.*
 
-Both were painted by a language model working from [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) alone,
+![A lighthouse on a rocky headland at dusk: a white tower with a red band standing in
+dark rock on the left, its lamp lit, an orange afterglow along the right-hand horizon
+reflected in a calm sea, and a crescent moon in the upper right](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/lighthouse_dusk/painting.png)
+
+*[**A lighthouse on a rocky headland at dusk**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/lighthouse_dusk/NOTES.md) — 184
+strokes of a 300 budget, 1024×768 linen, no reference photograph. Eighteen rehearsals,
+none of them charged; the ten pass scripts beside it reproduce that PNG byte for byte.*
+
+All three were painted by a language model working from [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md),
 one call to this API at a time, with no human hand on the canvas and nothing traced.
-Every stroke is in the log, both time-lapses were rebuilt from it, and the notes beside
+Every stroke is in the log, every time-lapse was rebuilt from it, and the notes beside
 each painting say what went wrong as well as what went right.
 [`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) gathers the record, and *The worked examples* below
 says what each one is made of.
 
-**If you are about to paint from the guide yourself, skip the two pictures above.** A
-worked example names a subject and a named subject leaks: six of six fresh sessions
-once painted a noun the guide had merely listed. They are here for a reader deciding
-whether the engine can do this at all, which is a different question from what to
-paint.
+**If you are about to paint from the guide yourself: have you decided what to paint?**
+If you have, these are yours to study and the scripts beside them are the best thing
+here. If you have not, do not look — a worked example names a subject and a named
+subject chooses for you, as six of six fresh sessions once demonstrated by painting a
+noun the guide had merely listed in passing. Decide first, then look.
 
 ## The brushes themselves
 
@@ -103,13 +111,22 @@ See *MCP server* below.
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
-method on one page, so the eight warm-up exercises come before the long read rather
-than after it. The facts it would otherwise have to stop and list — units, defaults,
-what each argument does — are on one page in [`REFERENCE.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/REFERENCE.md), and the
-measured numbers behind its rules (graphite survival, wetness decay, the value floor,
-load windows) are kept apart in [`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md), so the guide stays
-a guide and both can change when the engine does. The engine is designed around one
-habit:
+method on one page, so the eight warm-up exercises come before anything else.
+
+It is one file of five, split by what you do with each rather than by subject, because
+three painters each said the same two things — the guide is long, and the essay in it is
+what made the rules stick. Nothing was cut to shorten it; it was moved, and `PAINTER.md`
+is now held to a word budget by the test suite.
+
+| | |
+|---|---|
+| [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) | the method: the order of work, the mistakes, the exercises, the checklist. Held in your head |
+| [`PAINTING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTING.md) | the reasons: colour, wet paint, the brushes, working from a reference. Read once |
+| [`RECIPES.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/RECIPES.md) | the procedures: the calls in order for a kind of thing, and what it looks like when it goes wrong |
+| [`REFERENCE.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/REFERENCE.md) | the facts: units, defaults, what each argument does |
+| [`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md) | the numbers behind the rules, each with what it was measured on |
+
+The engine is designed around one habit:
 
 > Look every five to fifteen strokes. A stroke you did not look at was a guess.
 
@@ -162,7 +179,9 @@ easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
 easel guide                                          # the method, in under a thousand words
-easel guide --full                                   # all of it
+easel guide --full                                   # all of PAINTER.md
+easel guide --painting                               # the reasons under the rules
+easel guide --recipes                                # the calls, in order, for a thing
 easel guide --reference                              # units, defaults, every argument
 ```
 
@@ -279,12 +298,26 @@ that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `uni
 a whole pass from the shell all arrived in one round after a painter used the guide
 and wrote down what the engine had cost them.
 
-A second painter did the same thing and probed every claim before making it, which is
-where this round came from: a centred fall-off for a glow, `solid=True` because
-density spaces the passes rather than filling them, a silhouette of its own for a
-round tip, a clean edge that stops insetting at the canvas frame, rehearsals numbered
-apart from the painting's looks, `cost_line` saying *why* a number is large, and
-`smudge` taking the boundary it is meant to run along.
+A second painter did the same thing and probed every claim before making it: a centred
+fall-off for a glow, `solid=True` because density spaces the passes rather than filling
+them, a silhouette of its own for a round tip, a clean edge that stops insetting at the
+canvas frame, rehearsals numbered apart from the painting's looks, `cost_line` saying
+*why* a number is large, and `smudge` taking the boundary it is meant to run along.
+
+A third measured seven claims against the engine before writing any of them down, and
+the round after it is the smallest and the most specific: the inward scumble sizing its
+own brush from its ring step (and warning when handed a wider one), several pass scripts
+rehearsed together against one copy, a rehearsal carrying the painting's last look so
+`look(diff=True)` tints what the pass *would* change, a pressure list read in canvas
+order so a passage can brighten toward one side in a single call, `s.sample(place)` for
+painting with a colour that is already on the canvas, and `sweep(wander=)` — because the
+contour of a clean edge should be the line you drew. Two of those landed differently
+from how they were asked for, and the reasons are in
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md).
+
+The documentation round after **that** is the current one: the guide split into method,
+reasons, recipes, facts and numbers, with a word budget on the first of them that CI
+holds.
 
 ## The worked examples
 
@@ -296,26 +329,29 @@ at the same seed and reproduce the export byte for byte, so the order a painting
 made in is readable rather than reconstructed — which is the one thing the guide cannot
 teach abstractly, and the thing a first-time painter is least sure of.
 
-**`PAINTER.md` deliberately does not point here**, and that is the trade: a worked
-example names a subject, a named subject leaks, and six of six fresh sessions once
-painted a noun the guide had merely listed. A painter who goes looking finds these; one
-who only reads the guide is not handed a picture to paint. If you are about to run the
-measurement protocol in `LESSONS.md`, do not read them first.
+**`PAINTER.md` points here with a condition attached**, and the condition is the whole
+trade: *if you chose your subject before opening this repository, these are yours; if
+you have not chosen, they will choose for you.* A worked example names a subject and a
+named subject leaks — but a painter who decided first cannot be steered by a noun, so
+the cost of hiding these no longer has to be paid by the painter who would most benefit
+from them. If you are about to run the measurement protocol in `LESSONS.md`, that rule
+is the protocol, not a suggestion.
 
-[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) is the same two paintings read from the outside rather
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) is the same three paintings read from the outside rather
 than from the painter's seat: what they cost, what failed, and how good they actually
 are.
 
 ## Where the rest of it is written down
 
-Four documents sit behind this one. [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the guide a painter
-reads and the project's actual deliverable, and [`REFERENCE.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/REFERENCE.md) is every
-fact on one page beside it — units, defaults, what each argument does — for looking up
-rather than reading. [`LESSONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/LESSONS.md) is what six measured painting runs and
-an adversarial review left behind: the method, the engine decisions that are
-load-bearing, the traps, and what is still open; read it before changing the engine or
-the guide. [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the request list from the painting
-sessions, every item of which is now done, and it says what each one became.
+The guide's own five files are in the table above. Two more sit behind them, for
+somebody working on the project rather than painting with it.
+[`LESSONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/LESSONS.md) is what six measured painting runs and an adversarial
+review left behind: the method, the engine decisions that are load-bearing, the traps,
+and what is still open — **read it before changing the engine or the guide**, because it
+is also where the rules about *how* the guide may change are written down.
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what three painters asked for
+after using the guide: what was wrong, and what was done about it, one pair of lines
+each. Every item on it is done.
 
 ## Licence
 

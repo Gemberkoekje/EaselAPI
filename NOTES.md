@@ -1,116 +1,135 @@
-# Phase notes: the third session's engine list
+# Phase notes: the documentation round
 
-*To understand this, start by reading `SUGGESTIONS.md` from "Suggestions from a third
-session" (line ~686) — the six engine items and the **bold** note under each saying
-what it became — then `tests/test_requests.py` from its third-session banner, which is
-one test per item, and then the three changed methods in `src/easel/session.py`:
-`scumble`, `sweep` and `block_in`.*
+*To understand this, start by reading [`SUGGESTIONS.md`](SUGGESTIONS.md) — now a
+register of what was wrong and what was done rather than a request list — then the new
+[`PAINTER.md`](PAINTER.md) preamble and its file table, then
+[`LESSONS.md`](LESSONS.md)'s new section **The essay is finished at its size. Split by
+function; never cut**, which is where the rules governing all of this now live.*
 
-All six engine items on the lighthouse session's list are done, including the one that
-was a question. The guide list under it is still open, and so is the synthesis after it.
+Every open documentation item from three painting sessions, the synthesis across them
+and the owner's two questions is done. No engine behaviour changed. The only Python
+touched was the plumbing that ships and checks the documents.
 
-## What each item became
+## The shape of it
 
-| # | Item | Where |
+**The guide was split into five files by function, moving rather than cutting.** Three
+sessions each said the same two things — the guide is long, and the essay in it is what
+made the rules stick — and three attempts to shrink it by editing had failed. Nothing
+was deleted: the 17,625-word `PAINTER.md` became a 9,463-word `PAINTER.md` plus a
+10,354-word `PAINTING.md`, and the ~2,200-word difference is new material the sessions
+asked for.
+
+| File | What it is | Words |
 |---|---|---|
-| 1 | Inward scumble sizes its brush from its ring step, and warns when handed a wider one | `session.py`: `_inward_size`, `_check_inward_brush`, `_inward_depth` |
-| 2 | `easel run p.easel a.py b.py [--rehearse]` runs passes in order against one session or one copy | `cli.py`: `run_scripts`, `_cmd_run` |
-| 3 | A rehearsal carries the painting's last look, so `look(diff=True)` tints what the pass would change | `session.py`: `_trial_session` |
-| 4 | A pressure list (and an asymmetric named profile) is read in canvas order on every pass | `session.py`: `_canvas_order_pressure`, threaded through the path generators |
-| 5 | `s.sample(place)` returns the colour already there, as the engine's own array | `session.py`: `Session.sample` |
-| 6 | The contour of `edge="clean"` does not wander; `sweep` takes `wander=` | `session.py`: `sweep`, `_sweep_paths`, `_sweep_wobble` |
+| `PAINTER.md` | the method: the order of work, *What you are bad at*, the exercises, the checklist | 9,463 |
+| `PAINTING.md` | **new** — the reasons: colour, wet paint, the brushes, working from a reference, *Masses that are not rectangles*, the rest of the API | 10,354 |
+| `RECIPES.md` | **new** — fourteen procedures collected out of the paintings' own pass scripts | 3,121 |
+| `REFERENCE.md` | the facts, unchanged in role | 2,577 |
+| `CALIBRATION.md` | the numbers | 7,699 |
+
+`PAINTER.md` is now held to a **10,000-word budget asserted by
+`tests/test_guide.py`**, because the no-growth rule in `LESSONS.md` was a preference and
+the guide doubled under it. `easel.guide.FRONT_PAGE_WORDS` is the one number;
+`scripts/check_guide_blocks.py` prints it and CI enforces it through the test.
 
 ## Decisions worth knowing
 
-**Everything was re-measured before it was built.** `scripts/probe_third_session.py`
-reproduced all seven of the session's findings exactly, so the list was taken as
-accurate and the work went into acting on it rather than re-litigating it.
+**The 5,000–6,000 word target was not met, on purpose, and the reason is in three
+files.** The synthesis asked for that figure *and* listed the contents the file should
+keep. Those contents are about 8,500 words on their own, so the target was only
+reachable by cutting them — which items 1, 2 and 4 of the same list explicitly forbid.
+The budget is 10,000 and the honest claim is halving, not fifthing. Written down in
+`guide.py`'s docstring for `FRONT_PAGE_WORDS`, in `LESSONS.md`, and in `SUGGESTIONS.md`,
+so the next session can overrule it knowing why.
 
-**Item 4 was asked for two ways and got the better one.** The item offered
-`alternate=False` as an alternative. Turning the alternation off would stack every
-pass's run-out along one edge — which is the thing the alternation exists to prevent,
-and is written down as such in `_block_paths`' own docstring. So the paint still
-alternates and only the *pressure* is reversed to compensate. It was extended to
-`sweep`, which had the same defect for the same reason; the item only named `block_in`
-and `scumble`.
+**"Read it in two goes" became a file boundary.** That instruction was tried and the
+third session read straight past it. A boundary cannot be read past.
 
-**Item 6 was a question, and the answer contradicts the fix it proposed.** The item
-guessed `jitter=0` on the brush. Measured over ten seeds, the brush's jitter moves the
-contour's accuracy not at all (seed-to-seed spread 3.45px against 3.32px); the sweep's
-own wobble moves it from 3.32px to 1.14px. The lever is `sweep(wander=)`, not the tip.
+**The worked-example trade was resolved rather than maintained.** `paintings/` was
+pointed at from `README.md` and deliberately not from the guide, so the cost of hiding
+it was paid silently by the painter who would most have benefited. The
+decide-then-read protocol dissolves it: a painter who chose a subject before opening the
+repository cannot be steered by a noun. All three of `PAINTER.md`, `PAINTINGS.md` and
+`README.md` now point there with the same condition attached, in the same words.
 
-## Pitfalls hit, and what they cost
+**Everything factual here was checked against the engine before it was written down**,
+rather than copied out of the session reports — which is `LESSONS.md`'s *check the
+painters' numbers*, applied to a documentation round. All of it held, and two of the
+results are numbers the documentation did not previously have. The probes were scratch
+scripts and are not kept; each is a dozen lines and the conditions are stated in
+`CALIBRATION.md`, which is the point of the new rule there.
 
-- **Replay stability is the binding constraint on this codebase.** Goldens are hashed
-  (`tests/test_golden.py`) and the paintings in `paintings/` rebuild from their own
-  scripts to a matching sha256. Three choices fall out of it:
-  - `_canvas_order_pressure` passes `taper`, `even` and `swell` through **untouched**
-    rather than reversing them into an equal-but-differently-computed array. Every
-    painting here was laid at `taper`; reversing it numerically would have moved every
-    stored hash by ~1e-5 for no gain.
-  - `_sweep_wobble(wander=False)` still **takes its draw from the generator** and
-    discards it. Skipping the draw would shift the stream under every mark laid after
-    the contour.
-  - Nothing that existed used a pressure list on `block_in`/`scumble`/`sweep`, or
-    `direction="inward"` without an explicit `size=` — both checked before changing
-    defaults. That is why items 1 and 4 could land as behaviour rather than as flags.
-- **Multi-script `run` had to be provably equivalent to running the scripts one at a
-  time**, or it would be a second, subtly different way to paint. Each script therefore
-  gets a **fresh scope with the prelude re-run in front of it** — the canvas carries
-  over between passes, the namespace does not. `test_running_two_passes_together_is_
-  running_them_one_after_the_other` asserts the two paths pixel for pixel.
-- **The path generators now yield `(path, flipped)`** rather than a bare path
-  (`_shape_paths`, `_angled_paths`, `_block_paths`, and `(kind, path, flipped)` /
-  `(k, path, flipped)` for `_sweep_paths` and `_ring_paths`). The cost counters consume
-  them as `sum(1 for _ in ...)` and were unaffected, but any new consumer must unpack.
-- **Measuring a silhouette needs a before/after diff of `canvas.rgb`, not a threshold
-  against a corner pixel.** The ground's own texture varies with the seed, so a
-  "painted or not" test anchored on one pixel reported 85px contour errors that were
-  canvas grain. Cost about twenty minutes of chasing a non-existent bug.
-- `Session.sample` reads `canvas.rgb` (the paint), not `composite()` (the view). The
-  relief shading `look` draws is light on the surface, not pigment in it; mixing it in
-  would bake a highlight into the sampled colour.
+| Claim | Result |
+|---|---|
+| Where a pass stack starts | Confirmed. `0`/`"horizontal"`/`"axis"` → top; `90`/`"vertical"` → right; `45` → upper right |
+| `solid=True`'s pass structure is ~`0.03` at any opacity/pressure | Confirmed: sd `0.009`, row peak-to-peak `0.025`–`0.033` across four combinations |
+| The inward scumble's fall-off | Reproduced, **on a stated patch radius this time** — that was the whole point of the item |
+| A glaze is strong in proportion to its distance in hue | **New measurement.** At `opacity=0.14` a distant glaze moves the value `+0.087`; at `0.05` the underlying hue is already neutral |
+| The recipes' code | All 74 python blocks across the three guide files execute |
 
-## Deliberately not done
+**`CALIBRATION.md` gained a standing rule at the top**: every number states the brush,
+the size and the canvas it was measured on, and a claim with no test behind it says so.
+That rule was bought — a fall-off table measured on an unstated patch was read as a
+fall-off for a year, applied to a larger patch, and cost three rehearsals.
 
-- **The MCP `run` tool still takes one script.** Item 2 is about the shell path, and a
-  server client can already concatenate. If it is wanted there, `run_scripts` in
-  `cli.py` is the shared entry point and takes `(source, name)` pairs.
-- **`parse_color`'s reading of a raw `(r, g, b)` triple as sRGB is unchanged.** It is
-  consistent with how a hex string is read, and item 5 gives the painter a way to never
-  need the conversion. Only the documentation of it changed.
-- **The third session's guide list** (recipes page, the two-goes data point, the glaze
-  and colour note, and the rest) and the synthesis section after it. Those are guide
-  items, not engine ones. The guide changes made here are only the ones the engine
-  changes made *wrong*: the inward-scumble rule in `PAINTER.md`, the flat-middle
-  reading in `CALIBRATION.md`, and the `wander` / `size` / pressure / `sample` /
-  multi-script rows in `REFERENCE.md`.
+## Pitfalls hit
 
-## What this moved in `paintings/`
+- **The split had to conserve every word, and that was checked arithmetically** rather
+  than by reading: the slice script printed 8,209 + 8,137 + 1,279 = 17,625, the original
+  total. Do the same if this is ever re-split; a section silently dropped in a move is
+  invisible in review.
+- **`check_guide_blocks.py` needed `textwrap.dedent`.** A fenced block nested under a
+  list item carries the list's indentation — valid markdown, `IndentationError` to
+  `exec`. The new checklist block is the first one in the guide to be nested.
+- **The subject-noun grep caught two leaks in material I had just written**, exactly as
+  `LESSONS.md` predicts it will: a multi-script example using two of a painting's pass
+  filenames, and `RECIPES.md`'s own paragraph about not naming subjects naming one as a
+  counter-example. Run the grep over `PAINTER.md`, `PAINTING.md`, `RECIPES.md` and
+  `REFERENCE.md` — never over `README.md` or `PAINTINGS.md`, which name subjects on
+  purpose.
+- **`PAINTINGS.md` claimed all three paintings were made having read only the guide.**
+  Two had read three and five other files, and both said so in their own reports. Fixed
+  per painting, because the difference is what makes their agreement worth anything.
 
-Item 6 changes pixels wherever `block_in(edge="clean")` was used, which is four masses
-in the lighthouse and two in the car wash. Measured by rebuilding each painting from
-its own scripts on the engine before and after:
+## What changed, by file
 
-| | committed vs **old** engine | committed vs **new** engine | old vs new (this change) |
-|---|---|---|---|
-| lighthouse | 0.15% of pixels, none by more than `1` | 8.89%, 1.57% by >`8` | 8.79%, 1.57% by >`8` |
-| car wash | **42.19%**, 15.37% by >`8` | 41.44%, 15.13% by >`8` | 9.35%, 1.15% by >`8` |
+**New:** `PAINTING.md`, `RECIPES.md`.
 
-So the lighthouse *did* reproduce byte for byte (the 0.15% is numpy rounding a handful
-of pixels by 1, which is what `golden_cases.close_enough` exists for), and this change
-is what moved it. Its `NOTES.md` now says so; the PNG has **not** been re-rendered,
-because the painting is somebody's finished picture and re-rendering it is a separate
-decision from changing the engine.
+**Documentation:** `PAINTER.md` (split, plus the four-mistakes table, the *rehearse
+everything* rule, two checklist lines, the `solid=True` note, the boxes bridge, the file
+table and the paintings pointer) · `REFERENCE.md` (where a stack starts; the new
+documents and flags) · `CALIBRATION.md` (the measured-on rule; a `glaze` section; the
+solid pass-structure table; the scumble tables restated with their patch) ·
+`LESSONS.md` (the split and its rules; the warnings-file answer; the worked-example
+resolution; the unprompted-stage note; current test and check counts) · `README.md`
+(three paintings; the five-file table; the third engine round; the decide-first
+condition) · `PAINTINGS.md` (what each session actually read; the decide-first framing) ·
+`llms.txt` (the map) · `SUGGESTIONS.md` (rewritten as a register: 81 KB → 26 KB).
 
-**The car wash was already stale before any of this**, by 42% of its pixels, and its
-`NOTES.md` claims 206 strokes where its scripts now lay 211 — on the old engine too.
-That predates this work (most likely `db49e2e`, which changed `edge="clean"` and
-`solid` after the painting was made) and is left alone here rather than quietly folded
-into an unrelated change.
+**Code, plumbing only:** `src/easel/guide.py` (`DOCUMENTS` gains two entries;
+`FRONT_PAGE_WORDS`) · `src/easel/cli.py` (`easel guide --painting` / `--recipes`) ·
+`src/easel/mcp_server.py` (the `guide` tool's document list) · `pyproject.toml` (the
+wheel force-include) · `tests/test_guide.py` (the word budget, and that the essay is
+where the length went) · `scripts/check_guide_blocks.py` (all three guide files;
+dedent; the budget line).
 
 ## State
 
-`498 passed, 79 skipped` (was `485 passed, 79 skipped`); `ruff check` clean. The
-thirteen new tests are all in `tests/test_requests.py` under the third-session banner,
-and each was verified to **fail** with its fix reverted.
+`508 passed, 79 skipped` (was `498 passed, 79 skipped`); `tests/test_mcp.py` `76
+passed` with the extra installed; `ruff check src tests scripts examples mcpb` clean;
+`check_guide_blocks.py` `74 ok, 0 failed, 12 skipped` and `PAINTER.md` 537 words inside
+budget; the wheel builds and carries all five documents at `easel/docs/`.
+
+## Deliberately not done
+
+- **The pass linter** — `Session.report()` or `easel run --check`, the thing that should
+  exist instead of a warnings file. It is an engine change, it is specified in
+  `LESSONS.md` with its candidate rules and a way to prototype it against a finished
+  painting's log, and every rule that becomes a check can then leave the guide.
+- **The rules card for a compacted session.** No session has been compacted, so there is
+  nothing to judge it against.
+- **The split's own measurement.** Two fresh sessions under the protocol, one given only
+  the method, the recipes and the reference. The prediction is written down in
+  `LESSONS.md` so it can be wrong.
+- **The depth-order rewrite**, which has failed three runs and is still the oldest open
+  item in `LESSONS.md`. It needs a design with a measurement attached, not an edit.

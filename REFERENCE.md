@@ -3,8 +3,10 @@
 [`PAINTER.md`](PAINTER.md) teaches the workflow and is the file to read first. This is
 the other half of it: the arguments, the units, the defaults, and what each one does —
 the things you otherwise have to find inside an essay while you are holding a brush.
-The measured numbers behind the rules are in [`CALIBRATION.md`](CALIBRATION.md); this
-page says what a thing *is*, not how much of it there is.
+The reasons under the rules are in [`PAINTING.md`](PAINTING.md), the procedures in
+[`RECIPES.md`](RECIPES.md), and the measured numbers behind them all in
+[`CALIBRATION.md`](CALIBRATION.md); this page says what a thing *is*, not how much of it
+there is.
 
 Nothing here is a rule about painting. Every rule is in the guide, and a fact looked up
 here without the rule beside it is how a painting comes out correct and dead.
@@ -76,7 +78,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `solid` | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass |
 | `overhang` | `0.35` box, `0` shape | how far each pass runs **past the ends** of the place, in brush widths. Not its sides |
 | `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline. The contour does not wander: the line is the drawing |
-| `direction` | `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"` |
+| `direction` | `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"`. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
@@ -96,6 +98,27 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 
 Any **brush field** is also an override on any painting call, per mark and per mass:
 `s.block_in(place, "flat", "dark", hardness=0.9, jitter=0.05)`.
+
+### Where a stack of passes starts
+
+Passes stack across the place, and reading the call does not tell you from which side.
+It matters whenever the passes differ from each other — a `scumble`'s two colours, a
+`pressure` list, a `density` that leaves the ground showing at one end. Measured on a
+wider-than-tall place, `flat` at `size=0.08`, five passes:
+
+| `direction` | the **first** pass — where `color_a` lands |
+|---|---|
+| `0`, `"horizontal"`, `"axis"` on a wide place | along the **top** edge |
+| `90`, `"vertical"` | along the **right** edge |
+| `45` | the upper **right** corner |
+
+So `scumble(place, a, b, direction=90)` puts `a` on the right and `b` on the left,
+which is the opposite of what reading it left-to-right suggests. A `Polygon` behaves
+the same as a `Region`. If a passage comes back lit on the wrong side, this is why, and
+swapping the two colours is the fix.
+
+Consecutive passes run in opposite directions (see *Pressure*), so this is the first
+pass's side and not every pass's.
 
 ---
 
@@ -259,7 +282,7 @@ easel undo p.easel 3
 easel export p.easel painting.png
 easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
 easel brushes
-easel guide [--full | --reference | --calibration] [--path]
+easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]
 ```
 
 A script run by `easel run` gets the session as `s`, with the whole public API already
