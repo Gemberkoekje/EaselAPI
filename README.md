@@ -166,7 +166,7 @@ run first in the same scope, so helpers and mixtures survive between passes;
 
 ## MCP server
 
-<!-- mcp-name: io.github.gemberkoekje/easel -->
+<!-- mcp-name: io.github.Gemberkoekje/easel -->
 
 The same verbs again, for a client that speaks MCP — and the difference worth
 having is that the looking tools hand back the picture rather than a path to it.
