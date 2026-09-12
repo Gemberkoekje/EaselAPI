@@ -775,3 +775,287 @@ def test_a_smudge_along_a_curve_moves_the_boundary_less_than_its_chord(tmp_path)
     along = moved([(float(x), float(_bend_y(x)))
                    for x in np.linspace(_BEND_X0, _BEND_X1, 4)])
     assert along < chord * 0.6, f"the curve moved the boundary {along}, the chord {chord}"
+
+
+# ======================================================================================
+# The third session: a lighthouse at dusk. A painter who had read the repo and both
+# earlier paintings, and who probed every claim on a 512x384 canvas before writing it
+# down. Their list is ordered by how many rehearsals each item would have saved, and
+# so is this one: none of their strokes went on repainting, but eighteen rehearsals
+# went on finding out what the verbs do.
+# ======================================================================================
+
+# -- scumble(direction="inward"): the brush comes from the ring step -------------------
+def _flat_share(s, place, value, window=0.06):
+    """The share of a patch sitting within ``window`` of one value: how much of a
+    fall-off has been buried flat by rings wider than the step between them."""
+    v = s.canvas.values() / 255.0
+    mask = place.mask(s.canvas.width, s.canvas.height)
+    return float(((np.abs(v - value) < window) & mask).sum() / mask.sum())
+
+
+def test_a_centred_scumble_sizes_its_own_brush_from_its_ring_step(tmp_path):
+    """The rings step ``depth / n`` apart and each is laid over the ones before it, so
+    a brush much wider than the step buries the first rings under the last: the middle
+    comes back one flat colour with a rim of ramp round it, which is a sun and not a
+    glow. The guide's example gives no ``size=``, so it ran at the bristle's default
+    0.11 -- five steps wide on any patch a painter would call a glow. Three rehearsals,
+    and the verb was abandoned for hand-rolled strokes that do less than it could."""
+    patch = make(tmp_path).circle((0.5, 0.5), 0.2)
+
+    picked = make(tmp_path)
+    picked.scumble(patch, "burnt_umber", "titanium_white", 7, direction="inward")
+    preset = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        preset.scumble(patch, "burnt_umber", "titanium_white", 7, direction="inward",
+                       size=0.11)
+
+    lit = Palette().value_of("titanium_white")
+    assert _flat_share(preset, patch, lit) > _flat_share(picked, patch, lit) * 1.5, (
+        "the picked brush buried as much of the patch as the preset's default did"
+    )
+
+
+def test_a_centred_scumble_says_when_the_brush_it_was_given_will_fill(tmp_path):
+    """It still lays what it was asked for -- an explicit size is a painter's choice --
+    but the choice is no longer silent. The same shape of warning ``cost()`` gives a
+    plan that would eat the budget."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="ring"):
+        s.scumble(s.circle((0.5, 0.5), 0.2), "burnt_umber", "titanium_white", 7,
+                  direction="inward", size=0.11)
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")            # a brush inside the step is silent
+        s.scumble(s.circle((0.5, 0.5), 0.2), "burnt_umber", "titanium_white", 7,
+                  direction="inward", size=0.03)
+
+
+# -- easel run: several passes in order, against one copy ------------------------------
+def _two_passes(tmp_path):
+    a = tmp_path / "a.py"
+    a.write_text('s.block_in("C3", "flat", "burnt_umber", size=0.06)\n')
+    b = tmp_path / "b.py"
+    b.write_text('s.stroke([(0.3, 0.6), (0.7, 0.62)], "flat", "titanium_white",'
+                 ' size=0.05)\n')
+    return a, b
+
+
+def test_running_two_passes_together_is_running_them_one_after_the_other(tmp_path):
+    """A pass that goes on top of another pass has to be judged on it, and the wrapper
+    that did it -- a script that ``exec()``s each file -- was in nobody's log. Worth
+    having only if it is the same painting either way, so that is what is asserted."""
+    a, b = _two_passes(tmp_path)
+    together, apart = tmp_path / "one.easel", tmp_path / "two.easel"
+    for path in (together, apart):
+        assert main(["new", str(path), "--size", "320x240", "--seed", "5",
+                     "--out-dir", str(tmp_path / "out")]) == 0
+
+    assert main(["run", str(together), str(a), str(b)]) == 0
+    assert main(["run", str(apart), str(a)]) == 0
+    assert main(["run", str(apart), str(b)]) == 0
+
+    one, two = Session.load(together), Session.load(apart)
+    assert one.stroke_count == two.stroke_count
+    assert np.array_equal(one.canvas.rgb, two.canvas.rgb), (
+        "two passes run together did not land where they land run separately"
+    )
+
+
+def test_rehearsing_several_passes_lays_them_on_one_copy(tmp_path, capsys):
+    """The sea and the rocks were rehearsed together five times, and the three
+    finishing passes once. One copy, in order, and nothing committed."""
+    a, b = _two_passes(tmp_path)
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--budget", "60"]) == 0
+
+    assert main(["run", str(session), str(a), str(b), "--rehearse"]) == 0
+    out = capsys.readouterr().out
+    assert "a.py, b.py" in out and "Nothing committed" in out
+    assert Session.load(session).stroke_count == 0
+
+    # The count is both passes, not just the last one.
+    rehearsed = int(out.split("Rehearsed")[1].split(" strokes")[0].split(":")[1])
+    assert main(["run", str(session), str(a), str(b)]) == 0
+    assert Session.load(session).stroke_count == rehearsed
+
+
+def test_a_pass_that_fails_keeps_what_the_passes_before_it_painted(tmp_path, capsys):
+    """The rule a single pass already follows -- a half-finished pass is still work --
+    reaching across the sequence, and saying which one stopped it."""
+    a, _ = _two_passes(tmp_path)
+    bad = tmp_path / "bad.py"
+    bad.write_text("def (\n")                      # does not parse: nothing of its own
+    session = tmp_path / "p.easel"
+    main(["new", str(session), "--size", "320x240", "--out-dir", str(tmp_path / "out")])
+
+    assert main(["run", str(session), str(a), str(bad)]) == 1
+    assert "after a.py" in capsys.readouterr().err
+    assert Session.load(session).stroke_count > 0
+
+
+# -- a rehearsal can be diffed against the painting ------------------------------------
+def test_a_rehearsal_diffs_against_the_painting_it_is_a_copy_of(tmp_path):
+    """``look(diff=True)`` inside a rehearsal had nothing to diff against: the copy's
+    last look was empty, so the one question a rehearsal exists to answer -- what would
+    this pass change -- could not be asked of it as a tint."""
+    s = make(tmp_path)
+    s.block_in("C3", "flat", "burnt_umber", size=0.06)
+    s.look()
+
+    trial = s.scratch()
+    assert trial._last_look is not None
+    trial.block_in("F6", "flat", "titanium_white", size=0.06)
+
+    tinted = np.asarray(Image.open(trial.look(diff=True)).convert("RGB"),
+                        dtype=np.float32)
+    plain = np.asarray(Image.open(trial.look()).convert("RGB"), dtype=np.float32)
+
+    def redness(img, place):
+        x0, y0, x1, y1 = s.canvas.region_px(cell(place))
+        crop = img[y0:y1, x0:x1]
+        return float((crop[..., 0] - 0.5 * (crop[..., 1] + crop[..., 2])).mean())
+
+    # What the trial laid is tinted; what was already there when the look was taken
+    # is knocked back instead.
+    assert redness(tinted, "F6") > redness(plain, "F6") + 8
+    assert redness(tinted, "C3") < redness(plain, "C3") + 8
+
+
+# -- a pressure list reads the same way on every pass ----------------------------------
+def _pass_ends(s, y0, y1):
+    """How much paint landed at each end of a horizontal band."""
+    rgb = np.asarray(s.canvas.rgb, dtype=np.float64)
+    h, w = rgb.shape[:2]
+    band = rgb[int(y0 * h):int(y1 * h), :, 0]
+    return float(band[:, :int(0.12 * w)].mean()), float(band[:, int(0.88 * w):].mean())
+
+
+def test_a_pressure_list_lands_the_same_way_round_on_every_pass(tmp_path):
+    """Consecutive passes run in opposite directions, which is what keeps a stack from
+    stacking all its run-out along one edge -- but the pressure profile went with them,
+    so ``pressure=[0.0, 1.0]`` landed heavy at alternating ends: measured at 0.35/0.56,
+    0.52/0.33, 0.35/0.57, 0.56/0.34. A passage meant to brighten toward one side could
+    not be laid with the verb at all; six strokes of one painting's afterglow are
+    hand-written for exactly this, and they are the strokes most likely to be wanted
+    again."""
+    s = make(tmp_path)
+    s.scumble((0.1, 0.25, 0.9, 0.75), "cadmium_red", "cadmium_red", 4, brush="flat",
+              size=0.08, direction=0, opacity=1.0, pressure=[0.0, 1.0])
+
+    heavy_ends = []
+    for i in range(4):
+        lo, hi = _pass_ends(s, 0.26 + i * 0.125, 0.355 + i * 0.125)
+        heavy_ends.append("right" if hi > lo else "left")
+    assert heavy_ends == ["right"] * 4, heavy_ends
+
+
+def test_a_mirrored_profile_lands_the_same_way_round_on_every_pass(tmp_path):
+    """The same defect wearing a name: ``press_in`` is a pressure list with a word
+    for it, and it flipped the same way. ``press_in`` and ``lift_off`` are each
+    other's mirror, so the fix is to swap them rather than to reverse a curve."""
+    s = make(tmp_path)
+    s.scumble((0.1, 0.25, 0.9, 0.75), "cadmium_red", "cadmium_red", 4, brush="flat",
+              size=0.08, direction=0, opacity=1.0, pressure="press_in")
+
+    heavy_ends = []
+    for i in range(4):
+        lo, hi = _pass_ends(s, 0.26 + i * 0.125, 0.355 + i * 0.125)
+        heavy_ends.append("right" if hi > lo else "left")
+    assert heavy_ends == ["right"] * 4, heavy_ends
+
+
+def test_the_default_profile_is_left_exactly_as_it_was(tmp_path):
+    """``taper`` is its own mirror image, so it goes through untouched rather than
+    being reversed into an equal-but-differently-computed array. Every painting made
+    here before this was laid at ``taper``, and they all still replay."""
+    def lay(pressure):
+        s = make(tmp_path)
+        s.block_in((0.1, 0.25, 0.9, 0.75), "flat", "burnt_umber", size=0.08,
+                   direction="horizontal", pressure=pressure)
+        return np.array(s.canvas.rgb)
+
+    assert np.array_equal(lay("taper"), lay("taper"))
+    assert not np.array_equal(lay("taper"), lay("press_in"))
+
+
+# -- sample(): the colour that is already there ----------------------------------------
+def test_sampling_the_canvas_gives_a_colour_the_palette_takes_as_itself(tmp_path):
+    """The canvas holds linear light and a plain (r, g, b) tuple is read as sRGB, so a
+    mean read off ``s.canvas.rgb`` and handed back as a tuple comes back a different
+    colour: a toned_grey ground reads 0.53, its own mean as a tuple reads 0.25. It cost
+    one painter a rehearsal -- a halo's outer rings, meant to be the sky's own colour,
+    landed near black."""
+    s = make(tmp_path)
+    p = s.palette
+    ground = p.value_of(s.sample())
+
+    lin = np.asarray(s.canvas.rgb, dtype=np.float64).reshape(-1, 3).mean(axis=0)
+    p["by_tuple"] = tuple(float(v) for v in lin)
+    p["by_sample"] = s.sample()
+
+    assert p.value_of("by_sample") == pytest.approx(ground, abs=0.005)
+    assert abs(p.value_of("by_tuple") - ground) > 0.2       # the trap it replaces
+
+
+def test_sampling_reads_the_place_it_was_given(tmp_path):
+    s = make(tmp_path)
+    s.block_in("C3", "flat", "titanium_white", size=0.06, solid=True)
+    s.block_in("F6", "flat", "burnt_umber", size=0.06, solid=True)
+    p = s.palette
+    assert p.value_of(s.sample(cell("C3"))) > p.value_of(s.sample())
+    assert p.value_of(s.sample(cell("F6"))) < p.value_of(s.sample())
+
+
+def test_sampling_a_shape_reads_the_shape_and_not_its_box(tmp_path):
+    """A halo ring, a moon's dark side and a repair are all shapes, and the box round
+    a shape is mostly what the shape is not."""
+    s = make(tmp_path)
+    dark = s.circle((0.5, 0.5), 0.18)
+    s.block_in(dark, "flat", "burnt_umber", size=0.05, solid=True)
+    assert s.palette.value_of(s.sample(dark)) < s.palette.value_of(s.sample(dark.box))
+
+
+# -- a clean edge draws the line the painter drew --------------------------------------
+def test_the_contour_of_a_clean_edge_does_not_wander(tmp_path):
+    """The bargain of ``edge="clean"`` is that the outer half of the brush lands on the
+    line the painter drew, and a wander carried by three draws moves whole sections of
+    the contour off it at once. One painter filled a ridge clean, got a row of rounded
+    knobs along the top, and could not tell whether it was the wander or the outline's
+    own corners under a wide brush. It is the wander: the brush's ``jitter``, which is
+    what they reached for, does not move this at all."""
+    ridge = polygon([(-0.05, 0.40), (0.15, 0.36), (0.35, 0.42), (0.55, 0.34),
+                     (0.75, 0.40), (1.05, 0.36), (1.05, 1.05), (-0.05, 1.05)])
+
+    def top_line(seed, wander):
+        # Its own seed each time: what the wander costs is how far the contour moves
+        # off the drawn line when nothing but the draw behind it has changed.
+        s = Session(320, 240, texture="linen", ground="toned_grey", seed=seed,
+                    out_dir=tmp_path, timelapse=False)
+        before = np.array(s.canvas.rgb)
+        if wander:                       # what the contour used to get
+            real = s._sweep_wobble
+
+            def wobble(at, length, step, ring, _on=True):
+                return real(at, length, step, ring, True)
+
+            s._sweep_wobble = wobble
+        s.block_in(ridge, "flat", "burnt_umber", size=0.08, density=1.0, solid=True,
+                   direction="horizontal", edge="clean")
+        painted = np.abs(np.asarray(s.canvas.rgb) - before).sum(axis=2) > 0.01
+        h, w = painted.shape
+        tops = []
+        for x in range(int(0.1 * w), int(0.9 * w)):
+            rows = np.flatnonzero(painted[:, x])
+            tops.append(float(rows[0]) if len(rows) else np.nan)
+        return float(np.nanmean(tops))
+
+    def drift(wander):
+        """How far the whole contour sits off the drawn line, seed to seed."""
+        return float(np.std([top_line(seed, wander) for seed in range(6)]))
+
+    assert drift(False) < drift(True) * 0.6, (
+        f"the contour still wanders: {drift(False)} against {drift(True)}"
+    )

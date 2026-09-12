@@ -34,7 +34,7 @@ from easel.session import Session
 from easel.texture import TEXTURES
 
 __all__ = ["main", "build_parser", "parse_size", "reference_text", "run_script",
-           "ScriptResult"]
+           "run_scripts", "ScriptResult"]
 
 _REGION_HELP = (
     "a named region (" + ", ".join(REGION_NAMES) + "), a grid cell like D4, "
@@ -89,9 +89,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("--force", action="store_true",
                        help="overwrite an existing session file")
 
-    p_run = sub.add_parser("run", help="run a painting script against a session")
+    p_run = sub.add_parser("run", help="run one or more painting scripts against a session")
     p_run.add_argument("session", type=Path)
-    p_run.add_argument("script", type=Path)
+    p_run.add_argument("script", type=Path, nargs="+",
+                       help="one or more scripts, run in the order given against the "
+                            "same session -- with --rehearse, against one copy, so a "
+                            "pass that goes on top of another is judged on it")
     p_run.add_argument("--rehearse", action="store_true",
                        help="run the pass against a copy: write the look, print the "
                             "cost, commit nothing")
@@ -455,6 +458,51 @@ def run_script(session: Session, source: str, name: str,
     return ScriptResult(0, f"Ran {short}: {session.budget_line()}.")
 
 
+def run_scripts(session: Session, scripts, prelude: str = "",
+                prelude_name: str = "prelude.py") -> ScriptResult:
+    """Run several painting scripts in order against one session.
+
+    ``scripts`` is a sequence of ``(source, name)`` pairs. Each is run by
+    :func:`run_script` in a **fresh** scope with the prelude re-executed in front
+    of it, so that running two passes together is the same thing as running them
+    one after the other -- it is the canvas that carries over between passes, not
+    the namespace, and a pass that quietly depended on the last one's leftover
+    variables would paint differently depending on how it was invoked.
+
+    A pass that goes on top of another pass has to be judged on it, and a rehearsal
+    of one pass alone cannot show that. ``easel run p.easel p2.py p3.py --rehearse``
+    lays them on one copy in order, which is what the alternative -- a wrapper that
+    ``exec()``s each file -- was doing in nobody's log.
+
+    Stops at the first script that fails, and reports which one. What the scripts
+    before it painted is still work: the result says to save it.
+    """
+    pairs = list(scripts)
+    if not pairs:  # pragma: no cover - argparse requires at least one
+        raise ValueError("run_scripts needs at least one script.")
+
+    done: list[str] = []
+    for source, name in pairs:
+        result = run_script(session, source, name, prelude=prelude,
+                            prelude_name=prelude_name)
+        if result.code != 0:
+            # Anything an earlier script painted is committed even though this one
+            # failed -- the same rule run_script applies within a single pass.
+            report = result.report
+            if done:
+                report = f"{report} (after {', '.join(done)})"
+            return ScriptResult(result.code, report, result.trace,
+                                save=result.save or bool(done))
+        done.append(Path(name).name)
+
+    if len(done) == 1:
+        return result
+    ran = ", ".join(done)
+    if session.budget is None:
+        return ScriptResult(0, f"Ran {ran}: {session.stroke_count} strokes total.")
+    return ScriptResult(0, f"Ran {ran}: {session.budget_line()}.")
+
+
 def _resolve_prelude(args) -> tuple[str, str]:
     """The prelude source to run before a pass, and what to call it.
 
@@ -476,10 +524,14 @@ def _resolve_prelude(args) -> tuple[str, str]:
 
 
 def _cmd_run(session: Session, args) -> int:
-    """Execute a painting script with the session and the public API in scope."""
-    script = Path(args.script)
-    if not script.exists():
-        raise FileNotFoundError(f"Script not found: {script}")
+    """Execute one or more painting scripts with the session and API in scope."""
+    scripts = [Path(s) for s in args.script]
+    missing = [s for s in scripts if not s.exists()]
+    if missing:
+        # All of them up front: finding the third one missing after the first two
+        # have already been painted into the session is a worse place to find out.
+        raise FileNotFoundError(
+            "Script not found: " + ", ".join(str(s) for s in missing))
 
     prelude, prelude_name = _resolve_prelude(args)
     if prelude and args.prelude is None:
@@ -488,11 +540,15 @@ def _cmd_run(session: Session, args) -> int:
     # A rehearsal runs the pass against a copy of the session. The strokes are
     # seeded as if they were the next marks of the real painting, so what is
     # rehearsed is what lands when the same pass is run for real -- and because the
-    # session file is never written, it costs nothing but the look.
+    # session file is never written, it costs nothing but the look. Several scripts
+    # share the one copy, in order, so a pass is judged on the pass under it.
     target = session.scratch() if args.rehearse else session
 
-    result = run_script(target, script.read_text(encoding="utf-8"), str(script),
-                        prelude=prelude, prelude_name=prelude_name or "prelude.py")
+    result = run_scripts(
+        target,
+        [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
+        prelude=prelude, prelude_name=prelude_name or "prelude.py",
+    )
 
     if args.rehearse:
         if result.code == 0:
@@ -501,7 +557,8 @@ def _cmd_run(session: Session, args) -> int:
             left = session.remaining
             cost = (f"{spent} strokes" if left is None
                     else f"{spent} strokes of the {left} left")
-            print(f"Rehearsed {Path(args.script).name}: {cost}. Nothing committed.")
+            names = ", ".join(s.name for s in scripts)
+            print(f"Rehearsed {names}: {cost}. Nothing committed.")
             print(path)
         else:
             print(f"{result.report}\n", file=sys.stderr)
