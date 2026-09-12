@@ -1,10 +1,15 @@
 name: CI
 
+# The push trigger is filtered to main; the pull_request one deliberately is not.
+# A pull request based on another pull request's branch -- which is how a change
+# that depends on an unmerged one gets reviewed -- has a base that is not main, and
+# with a `branches:` filter here it would run no checks whatsoever. Silently: the
+# checks do not fail, they simply never appear. That is the thing publish.yml's
+# build job already exists to prevent, arrived at from the other direction.
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 # Least privilege: every job here only reads the checkout and uploads a build
 # artifact, so the default (frequently broader) GITHUB_TOKEN scope is unneeded.
@@ -16,9 +21,19 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      # ubuntu sweeps every supported version; windows brackets the range rather
+      # than covering it. The two axes are testing different things -- a version
+      # bump is a language and dependency risk, and windows is a *path* risk, per
+      # the mcp job's note below -- and a bug that needs both the newest windows
+      # and the middle interpreter to appear is not one this project has ever had.
+      # Windows runs the slowest jobs here, so that exclusion is what keeps adding
+      # an interpreter cheap.
       matrix:
         os: [ubuntu-latest, windows-latest]
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.12", "3.13", "3.14"]
+        exclude:
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -56,19 +71,26 @@ jobs:
   # job is where tests/test_mcp.py actually runs. Both operating systems, unlike
   # the mixbox job below: every tool here takes a path, and paths are the one
   # thing that behaves differently on Windows.
+  #
+  # Bracketed over interpreters as well as operating systems, because this is
+  # where the compiled dependencies live: `mcp` pulls in pydantic, and a wheel
+  # that does not exist yet for a new interpreter is the way a new Python breaks
+  # this package. It is also the extra the desktop bundle installs. These are the
+  # two fastest jobs in the file, so the second interpreter is nearly free.
   mcp:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python-version: ["3.12", "3.14"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install with the MCP extra
         run: |
