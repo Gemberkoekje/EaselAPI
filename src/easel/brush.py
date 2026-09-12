@@ -50,6 +50,12 @@ BRISTLE_PITCH = 0.005
 #: being a comb and becomes aliasing noise, which is worse than no comb at all.
 _MIN_BRISTLE_PX = 1.2
 
+#: How far a fully wobbled round tip reaches off its own radius, either way. The
+#: stamp is built this much larger so the outline has room to swell into, and the
+#: silhouette is drawn to the same figure so a wobbled mark keeps the *size* it was
+#: asked for on average rather than quietly shrinking below it.
+_WOBBLE_REACH = 0.35
+
 
 @dataclass(frozen=True)
 class Brush:
@@ -92,6 +98,14 @@ class Brush:
         bristle_seed: fixes the striation pattern for a given brush. The comb is
             also varied per *stroke* (see :func:`easel.stroke.paint_stroke`); this
             seed is what the variation is drawn around.
+        tip_wobble: how far the tip's own silhouette wanders off a disc, as a
+            fraction of its radius. ``0``, the default, is the disc every round mark
+            in every painting made before this was. Above it the outline is redrawn
+            **per stroke**, the way the bristle comb is, so five marks are five
+            silhouettes rather than five copies of one -- which is what a small
+            irregular mark is, and what the box otherwise has exactly one tip for.
+            Only the round tips take it: a ``flat`` or a ``knife`` is a chisel, and
+            its rectangle is the mass it lays.
     """
 
     name: str = "round"
@@ -114,6 +128,7 @@ class Brush:
     bristle_count: int = 0
     bristle_pitch: float = BRISTLE_PITCH
     bristle_seed: int = 0
+    tip_wobble: float = 0.0
     meta: dict = field(default_factory=dict, compare=False, repr=False)
 
     def __post_init__(self) -> None:
@@ -130,6 +145,11 @@ class Brush:
             )
         if self.bristle_pitch <= 0.0:
             raise ValueError(f"bristle_pitch must be > 0, got {self.bristle_pitch}")
+        if not 0.0 <= self.tip_wobble <= 1.0:
+            raise ValueError(
+                f"tip_wobble is how far the tip's silhouette wanders off a disc, as "
+                f"a fraction of its radius: 0 to 1, got {self.tip_wobble}."
+            )
 
     def scaled(self, factor: float) -> Brush:
         """A copy of this brush at a different size. ``scaled(0.5)`` is half as wide."""
@@ -148,6 +168,7 @@ class Brush:
         frac_y: float = 0.0,
         comb: int = 0,
         count: int | None = None,
+        wobble_seed: int = 0,
     ) -> np.ndarray:
         """The tip stamp for this brush at a given radius, direction and sub-pixel phase.
 
@@ -158,6 +179,9 @@ class Brush:
             count: how many bristles across the tip. A stroke works this out once
                 from the brush's nominal size; left out, it is derived here from
                 the radius asked for.
+            wobble_seed: which silhouette to print, for a round tip carrying
+                :attr:`tip_wobble`. Drawn once per stroke, like ``comb``, and for
+                the same reason: a brush picked up again is not the brush it was.
         """
         return tip_mask(
             tip=self.tip,
@@ -174,6 +198,8 @@ class Brush:
             frac_x=frac_x,
             frac_y=frac_y,
             comb=comb,
+            wobble=self.tip_wobble,
+            wobble_seed=wobble_seed,
         )
 
     def bristles(self, diameter_px: float) -> int:
@@ -210,6 +236,8 @@ def tip_mask(
     frac_x: float = 0.0,
     frac_y: float = 0.0,
     comb: int = 0,
+    wobble: float = 0.0,
+    wobble_seed: int = 0,
 ) -> np.ndarray:
     """Build (and cache) a tip stamp as a float32 array in 0..1.
 
@@ -224,14 +252,23 @@ def tip_mask(
     sit across the tip, and which of them are missing. It is part of the cache key,
     so a stroke that draws one comb and holds it prints the same striations from
     end to end while the next stroke prints different ones.
+
+    ``wobble`` and ``wobble_seed`` are the same idea for a round tip's outline: how
+    far it wanders off a disc, and which wander. Both are in the key, and at
+    ``wobble=0`` -- every preset in the box -- the stamp is the disc it always was.
     """
     # Quantise the radius *before* anything is computed from it, so that the mask is
     # a pure function of the cache key. A quarter of a pixel is finer than the
     # sub-pixel phase, so nothing visible is given up.
     r_steps = max(_RADIUS_STEPS, int(round(float(radius_px) * _RADIUS_STEPS)))
     r = r_steps / _RADIUS_STEPS
-    ri = int(math.ceil(r))
     is_round = tip in ("round_soft", "round_hard")
+    # A wobbled silhouette swells as well as bites, so the stamp is built with room
+    # for the swell. Without it the far side of the outline would be cut off square
+    # by the edge of its own array, which is a chisel end on a mark that exists to
+    # not have one.
+    wob = float(np.clip(wobble, 0.0, 1.0)) if is_round else 0.0
+    ri = int(math.ceil(r * (1.0 + _WOBBLE_REACH * wob)))
     # Round tips are rotation-invariant, so collapse their angle to one cache entry.
     if is_round:
         angle_bucket = 0
@@ -253,6 +290,8 @@ def tip_mask(
         int(bristle_count),
         int(bristle_seed),
         int(comb),
+        round(wob, 3),
+        int(wobble_seed) if wob > 0.0 else 0,
     )
     cached = _MASK_CACHE.get(key)
     if cached is not None:
@@ -276,7 +315,8 @@ def tip_mask(
 
     if is_round:
         d = np.sqrt(u * u + v * v)
-        mask = _falloff(d, 1.0, edge)
+        limit = 1.0 if wob <= 0.0 else _wobbled_edge(u, v, wob, wobble_seed)
+        mask = _falloff(d, limit, edge)
     elif tip == "knife":
         # A blade: thin rectangle with almost no give at the edges.
         blade_edge = max(0.06 * (1.0 - hard) + 0.02, 1.0 / r)
@@ -307,6 +347,32 @@ def _falloff(dist: np.ndarray, limit: float, edge: float) -> np.ndarray:
     t = (limit - dist) / max(edge, 1e-5)
     t = np.clip(t, 0.0, 1.0)
     return (t * t * (3.0 - 2.0 * t)).astype(np.float32)
+
+
+def _wobbled_edge(u: np.ndarray, v: np.ndarray, wobble: float, seed: int) -> np.ndarray:
+    """Where a round tip's outline sits, angle by angle: a disc that has been handled.
+
+    Three low harmonics round the tip, drawn from ``seed``. Low, because what is
+    wanted is a silhouette with a couple of lobes and a flat side -- the shape of a
+    loaded brush set down once -- and not a crinkle, which at the size these marks
+    are made reads as noise on the edge rather than as a shape.
+
+    It swells as far as it bites, so the mark keeps its nominal size: the alternative
+    is an outline that only ever takes radius away, and then a painter who asks for
+    an irregular mark gets a smaller one and has to find that out by measuring it.
+    """
+    rng = np.random.default_rng([7717, int(seed)])
+    ang = np.arctan2(v, u)
+    harm = np.zeros_like(ang)
+    for k in (1, 2, 3):
+        amplitude = float(rng.uniform(0.4, 1.0))
+        phase = float(rng.uniform(0.0, 2.0 * math.pi))
+        harm += amplitude * np.sin(k * ang + phase)
+    # Three sines of amplitude up to one sum to at most three and typically to about
+    # half that; scaled here so the usual wander fills the reach and an occasional
+    # one is clipped by it rather than running past the stamp it is drawn in.
+    harm = np.clip(harm / 1.6, -1.0, 1.0)
+    return (1.0 + _WOBBLE_REACH * float(wobble) * harm).astype(np.float32)
 
 
 def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.ndarray:

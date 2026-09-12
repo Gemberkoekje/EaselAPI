@@ -388,21 +388,38 @@ and none has been decided:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the last run found has been applied.
-`SUGGESTIONS.md` is the list from the most recent session. **Its twelve engine items
-are done**, and it records what each one became; seven of its twelve guide items are
-applied, which is the ones that were corrections to something the engine does plus the
-two the new verbs made writable. What is left there is editorial: a one-page reference,
-the exercises as a gate, a cast-shadow recipe, a calibrated soft-patch recipe, a "first
-hour" short path, and a warning about painting several similar objects to one recipe.
+`SUGGESTIONS.md` holds the lists from the two painting sessions. **Every engine item
+on both is done** — twelve from the first, seven from the second — and it records what
+each one became. The guide items applied are the ones that were corrections to
+something the engine does, plus the few the new verbs made writable. What is left
+there is editorial: a one-page reference, the exercises as a gate, a cast-shadow
+recipe, a "first hour" short path, a warning about painting several similar objects to
+one recipe, a composition check `compare()` could answer, a question about the pencil
+with no reference, a question about worked examples, and the upper bound on a mass's
+value range.
 
-One of that list's own measured claims did not survive being re-measured, which is the
-method working as intended. It reported that a contour pass swept along a shape's drawn
-outline "lays nothing outside the outline"; a pass centred on a line puts half its
-width either side of it, and measured on a pear-sized mass it spilled 38px against the
-ragged fill's 20px. Sweeping the contour along the *inset* outline — so the brush's
-outer half lands on the drawn line — reaches 13px, and that is what `edge="clean"`
-does. **Check the painters' numbers** applies to a painter's numbers about the engine,
-not only to the engine's about itself.
+Three of those lists' own measured claims were re-measured before anything was written
+down on them, and two did not survive it. That is the method working as intended.
+
+- The first reported that a contour pass swept along a shape's drawn outline "lays
+  nothing outside the outline"; a pass centred on a line puts half its width either
+  side of it, and measured on a pear-sized mass it spilled 38px against the ragged
+  fill's 20px. Sweeping the contour along the *inset* outline — so the brush's outer
+  half lands on the drawn line — reaches 13px, and that is what `edge="clean"` does.
+- The second reported that a two-point smudge on a *sloping* boundary moves it five
+  times as far as one given four points along the slope. On a straight slope the two
+  are the same pass to the pixel — the spline through collinear points is the line —
+  so that number cannot have come from a slope. On a boundary that **bends** the
+  effect is real and larger: mean `0.51%` of canvas height against `0.01%`. The rule
+  survived its evidence and got sharper: *only a straight boundary is two points*.
+- The one that held is the same session's solid mass, and it came back nine times
+  more even rather than fourteen — a differently sized mass, measured in the values
+  view rather than however they measured it. The claim was right and its ratio was
+  the instrument's, which is the usual shape of a re-measurement that passes.
+
+**Check the painters' numbers** applies to a painter's numbers about the engine, not
+only to the engine's about itself — and a claim that survives the check is usually
+worth more afterwards, because the re-measurement says what it is really about.
 
 ---
 
@@ -435,10 +452,10 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 286 passed; the mcp and mixbox tests
+pytest -q                              # 353 passed; the mcp and mixbox tests
                                        # skip unless their extras are installed
 ruff check src tests scripts examples
-python scripts/check_guide_blocks.py   # every python block in PAINTER.md runs: 44 ok
+python scripts/check_guide_blocks.py   # every python block in PAINTER.md runs: 54 ok
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
 python examples/exercises.py           # the guide's warm-ups, writes out/ex_*.png

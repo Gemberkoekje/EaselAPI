@@ -75,6 +75,13 @@ s.block_in(blob(cell("D5"), 0.26, wobble=0.3, seed=2), brush="bristle", color="d
            density=0.7, size=0.2, direction="axis")
 ```
 
+**`density` spaces the passes; it does not fill them.** Every pass runs dry along its
+own length whatever the spacing, so `density=1.0` looks like a request for solid paint
+and is not one — it lays a mottled mass with a twentieth of the ground still showing.
+When a mass has to be solid, because it is near, or because fine marks are going to
+stand on it, say so: `solid=True`, which costs nothing and no extra passes. Not for
+these first masses, though — they want the ground breathing through them.
+
 A place can be a rectangle — `cell("D5")`, `span("E5", "H8")`, `region("lower-half")`
 — or a **shape**: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. `block_in` fills
 either, and a shape's passes stop at its own silhouette. Most masses are shapes; see
@@ -247,6 +254,23 @@ The overlap is the point: the brush is wider than the step between passes, which
 what closes the joins that stepping alone would leave. Below about five passes the
 steps start to read as steps again.
 
+**A passage that is light in the *middle* is the same verb turned inward.** That band
+grades edge to edge, which is a band and not a glow: a lit patch, a bloom, light
+falling on a surface goes dark at every edge. `direction="inward"` lays that — the
+passes go round the place instead of across it, the first along its boundary and each
+one after it a part-brush further in, so the colours arrive from the edge to the
+centre. **Do not lay it as strokes radiating out from the centre**, which is the
+obvious answer and draws a daisy: strokes that all start in one place draw the petals
+of one.
+
+```python
+s.scumble(patch, "shadow", "light", 8, direction="inward")   # 8 strokes, lit in the middle
+```
+
+The first ring lands *on* the boundary, so the colour you give it is the value the
+patch meets what it sits in at: the surrounding value melts the two together, and
+anything darker draws a rim round your glow.
+
 **This matters more than it looks**, because a wide soft passage is where a picture's
 structure comes from. A field gradated top to bottom is a stack of horizontal bands
 until its joins are gone — and a stack of bands is a composition, which your quiet
@@ -274,10 +298,19 @@ and rehearse anything bigger; `CALIBRATION.md` has the window.
 the light mass into the dark one and what you get is a visible finger-shaped
 thumbprint — the tool's own geometry, in a place you were trying to make quiet. That
 failed for three separate painters in one run, on the exact usage the line above
-demonstrates. Along the boundary, in short passes, it does what it is for:
+demonstrates.
+
+**And *along* means along the boundary's own shape — only a straight boundary is two
+points.** Given two, a boundary that bends gets a pass that starts along it and ends
+across it: the same thumbprint, arriving more slowly. `smudge` takes as many points
+as you hand it, so hand it the curve — and if the boundary belongs to a mass you
+built, hand it the mass and it walks that outline itself:
 
 ```python
-s.smudge([(0.30, 0.40), (0.38, 0.41)], size=0.04)   # along the edge, not across it
+s.smudge([(0.30, 0.40), (0.38, 0.41)], size=0.04)   # a straight edge is two points
+s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53),
+          (0.73, 0.63)], size=0.04)                 # a curved one is the curve
+s.smudge(mass, size=0.04)                           # a shape is already that curve
 ```
 
 And it is one pass, not three — see *what one smudge buys you* in step 4. If the
@@ -463,6 +496,20 @@ budget on it. A painter who did not know it budgeted 4 and paid 21.
 
 If the number is more than you want to pay, a wider brush or a thinner `density` is
 the lever, and `cost` will tell you what either buys before you commit to it.
+
+**And `cost_line` says *why* the number is what it is**, which is the difference
+between fixing the call and redesigning the mass. There are only three answers — the
+passes crossed a second direction, they stepped across a bounding box much bigger than
+the mass, or a concave outline cut each one into pieces — and each names its own lever:
+
+```python
+print(s.cost_line({"shape": bent, "size": 0.015}))
+# 75 strokes -- 25% of the 300 left of a 300-stroke budget
+#   75  42 passes stepping across 0.34 of the canvas, each cut into 1.8 pieces by the outline
+```
+
+The same sentence rides on the budget warning, so a plan that would eat what is left
+says what it is spending it on.
 
 **And there is a fourth verb, which paints the plan you just checked.**
 
@@ -770,6 +817,10 @@ and the clean silhouette is the less ragged of the two.
 along a contour covers about three-quarters of its width, so it leaves a *stringier*
 outline than the ragged fill did — and says so when you ask for it.
 
+Where your outline runs off the canvas the inset is dropped, because there is no drawn
+line out there for the brush to land on and **a mass that meets the frame should run
+off it** — so draw it past the edge and let it.
+
 The default, `edge="ragged"`, is right for everything else: a mass sitting behind
 other things wants the brush to break past its boundary, because that is what a brush
 does and the mass in front will cover it.
@@ -1073,6 +1124,7 @@ chose. What each one leaves when you are not watching:
 |---|---|
 | `flat` / `knife`, short | a rectangle with chisel ends |
 | `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
+| `round_hard` or `liner`, several small marks | **one disc, printed over and over.** A round tip draws the same silhouette every time, so five small marks are five copies — unless you give the tip an outline of its own with `tip_wobble=0.7`, which redraws it per mark |
 | `bristle` below `size≈0.025` | a comb: a woven strap across a band, or a ladder of evenly spaced ticks along an edge |
 | `sweep` round a closed shape | **concentric rings**, because the passes step inward from the boundary |
 | several overlapping `blob`s | a dome — blobs of similar size average to a circle and the irregularities cancel |
@@ -1169,7 +1221,18 @@ what `glaze()` is for.
 brush — one of the best tools you have for making a surface look worked. But pass
 `load=1.0` explicitly for anything that has to read as a *solid* mass, a correction
 included; a pass laid low because it sounded painterly leaves a speckled film that
-everything after it sits on.
+everything after it sits on. On a mass, `solid=True` is that clause, together with the
+`load_falloff=0.0` that keeps the far end of each pass from running dry as well.
+
+**`tip_wobble` gives a round tip a silhouette of its own**, redrawn for every mark the
+way a bristle's comb is, so a handful of small marks are not a handful of copies of one
+disc. `0` is the disc; `0.35` is a brush set down once; `0.7` and up is a clot. Only
+the round tips take it — a `flat` or a `knife` is a chisel, and its rectangle is the
+mass it lays.
+
+```python
+s.dab(0.42, 0.36, "round_hard", "light", size=0.016, press=3, tip_wobble=0.7)
+```
 
 **A loaded brush runs dry along a stroke**, so where a long stroke ends is where its
 texture is loudest — and if every stroke in a field runs the same way, one side of the
@@ -1253,9 +1316,12 @@ With a reference, a `region=` crop crops **both** panels to the same place,
 greyscale on the same scale — every view is a like-for-like comparison.
 
 Each look writes a numbered PNG under `out/` — `out/look_001.png`, `out/look_002.png`
-and so on — and returns the path. Print it and open that file. The numbering belongs
-to the session, so a second session started in the same directory begins again at
-`look_001.png` and writes over the first one's; copy anything you want to keep.
+and so on — and returns the path. Print it and open that file. Rehearsals have their
+own run of numbers, `rehearse_001.png` upward, and each takes the next free name: that
+is what lets you rehearse a pass three ways and put the three side by side, which is
+most of what rehearsing is for. The look numbering belongs to the session, so a second
+session started in the same directory begins again at `look_001.png` and writes over
+the first one's; copy anything you want to keep.
 **This bites hardest when you paint more than one picture**: a second painting in the
 same directory silently overwrites the first painting's entire record of itself, looks
 and rehearsals alike. Give each painting its own directory, or copy out the frames
@@ -1275,11 +1341,13 @@ usually an opacity of zero, or a glaze into paint that is still soaking wet.
 ```python
 s.stroke(points, brush, color, pressure="taper", size=None, opacity=None, note="")
 s.dab(x, y, brush, color, size=..., press=1)       # one mark; press stamps it again
-s.block_in(place, brush, color, direction=, density=, overhang=, edge=)  # a mass
+s.block_in(place, brush, color, direction=, density=, overhang=, edge=, solid=)  # a mass
 s.sweep(edge, brush, color, into=, depth=, cross=, passes=)         # a mass with a shape
 s.scumble(band, color_a, color_b, n=8)             # a soft passage, as n strokes
+s.scumble(patch, a, b, n, direction="inward")      # ...falling off from its middle
 s.cover(place, color)                              # bury a mistake; the whole recipe
-s.smudge(points, size=)                            # move paint around
+s.smudge(edge, size=)                              # move paint along a boundary:
+                                                   # points, or a shape's own outline
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
 s.undo(n)                                          # scraping, not free
@@ -1292,6 +1360,7 @@ s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
 s.preview(strokes, reference=, region=, grid=)     # where a mark would go
 s.rehearse(strokes, reference=, region=)           # what it would look like
 s.cost(strokes)                                    # what it would charge
+s.cost_line(strokes)                               # ...and why it charges it
 s.paint(plan)                                      # ...and now paint that same plan
 s.scratch()                                        # a throwaway copy to try a pass on
 s.compare(reference, region=None)                  # per-cell value numbers
@@ -1600,6 +1669,9 @@ about half its width, which is the ragged edge you want and did not have to make
 - Are the highlights few and deliberate?
 - Is anything mechanically repeated — evenly spaced marks, identical parallel
   strokes, a perfectly straight line?
+- **Is any small mark a disc, a capsule or a rectangle — the tool's own shape rather
+  than the thing's?** Crop into them and look. A round tip prints one silhouette
+  however many times you set it down.
 - If you had a reference, look at the painting once *without* it beside you. A
   shape that only makes sense with the photograph next to it is not painted yet.
 - Is every mass laid along its own axis, or are the big shapes stacks of horizontal

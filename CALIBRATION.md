@@ -159,6 +159,20 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - A pass laid at `0.5` because it sounded painterly leaves a speckled film that
   everything after it sits on. Anything meant to read as a solid mass wants
   `load=1.0`.
+- **`density` spaces the passes; it does not fill them.** `density=1.0` reads as a
+  request for solid paint and is not one — each pass still runs dry along its own
+  length. Measured on 38 passes of a `flat` at `size=0.030` over `umber_wash`,
+  sampling the interior a brush in from the edges:
+
+  | 38 passes at `density=1.0` | interior sd | within `0.05` of bare ground |
+  |---|---|---|
+  | as laid | `0.063` | `4.4%` |
+  | `solid=True` | `0.007` | `0.0%` |
+
+  Nine times more even for the same 38 strokes and the same money. `solid=True` is
+  `load=1.0, load_falloff=0.0` as a pair of defaults, so an explicit `load=` beside
+  it still wins. The painter who found this laid a whole near mass speckled and only
+  saw it by cropping into it.
 - **`opacity` does not thin a long stroke, it only slows it down.** Consecutive dabs
   overlap by more than 90%, so a low opacity accumulates back to nearly full colour
   along the mark. A rehearsal run laid grain at `opacity=0.08` expecting a whisper and
@@ -218,6 +232,20 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   a comb the single contour pass is stringy — one bristle pass covers about
   three-quarters of its width — and the silhouette ends up rougher than the ragged
   fill's, which is why asking for a clean edge with a bristle says so.
+- **The inset stops at the canvas frame.** Where an outline runs off the canvas there
+  is no drawn line for the brush's outer half to land on, and holding the fill half a
+  brush inside the frame leaves a strip of bare ground along it. Measured on a
+  full-width mass drawn from `y 0.70` past the bottom to `1.05`, a `flat` at
+  `size=0.09`, laid solid so that what is measured is where the fill stopped:
+
+  | bottom row of the canvas | left unpainted |
+  |---|---|
+  | inset all the way round | `15.1%` |
+  | ragged | `3.6%` |
+  | inset except at the frame | `0.3%` |
+
+  Better than ragged, because the contour pass runs along the frame too. A mass that
+  meets the frame should run off it: draw it past the edge and let it.
 - Successive passes run in opposite directions on their own, so a mass does not
   fade toward the side the brush ran out on.
 - `direction=` takes `"horizontal"`, `"vertical"`, `"diagonal"` (45°), `"cross"`,
@@ -437,7 +465,51 @@ of radius `0.20`, bristle at `0.13`:
 - **It works along a boundary and fails across one.** Dragged across, it pulls a lobe
   of the lighter mass into the darker and leaves a finger-shaped thumbprint; run along
   the boundary in short passes it does what it is for.
+- **"Along" means along the boundary's *shape*, and only a straight boundary is two
+  points.** On a straight sloping edge, two points and four along it are the same pass
+  to the pixel — the spline through collinear points is the line. On a boundary that
+  *bends*, they are not. One pass at `size=0.040` over a 1024×768 canvas, boundary
+  position measured per column before and after:
+
+  | one pass along a bend | boundary moved, mean | worst |
+  |---|---|---|
+  | its two ends (the chord) | `0.51%` of canvas height | `2.9%` |
+  | four points along the curve | `0.01%` | `0.7%` |
+  | eight points | `0.01%` | `0.5%` |
+
+  A two-point pass on a curve begins along the boundary and ends across it. The
+  session that found this had believed the tool could not follow a curve at all; it
+  can, and had been given two points because every example in the guide had two.
+  `smudge` also takes a shape or a region and walks its own outline, which is the
+  sampling-by-hand step a painter skips.
 - It counts against `s.stroke_count`, as `glaze` does.
+
+---
+
+## `scumble`
+
+What closes a join a smudge only softened: `n` overlapping passes at closely spaced
+values, charged as `n`.
+
+**The default grades edge to edge, which is a band and not a glow.** Nine passes over
+the same round patch, `bristle` at `size=0.07`, read off the values view:
+
+| nine passes over one patch | across it | down its middle |
+|---|---|---|
+| `direction="axis"` (a band) | `0.90, 0.56, 0.51, 0.23, 0.17` | flat to within `0.01` |
+| `direction="inward"` | `0.20, 0.41, 0.91, 0.32, 0.17` | `0.30, 0.42, 0.86, 0.91` |
+
+So a band is one ramp and a centred passage is a fall-off from the middle in every
+direction — which is what a glow, a bloom or a lit patch on a surface is, and what
+the guide had no recipe for. The rings run **round** the place, stepping in a
+part-brush at a time from its boundary toward its centre, in `sweep`'s geometry; the
+first ring lands on the boundary, so `color_a` is the value the patch meets its
+surroundings at.
+
+A ring is two or three times the length of a pass across the same patch and has no
+far end to run dry at, so a centred scumble defaults to `load_falloff=0.0`; without
+it the brush starves half way round and the glow comes out bright on one side. An
+explicit `load_falloff=` still wins.
 
 ---
 
@@ -560,6 +632,25 @@ bristles in, so only the missing ones show — two to seven streaks across a mar
 any size. The comb shows at its own scale where the stroke is starved or the tooth
 is biting. `bristle_count` still pins a comb if you want a fixed one.
 
+**The round tips repeat themselves, and `tip_wobble` is the same idea for them.** Two
+`dab(press=3)` marks at `size=0.05`, each silhouette cropped to its own box and laid
+over the other, as a share of the area either covers:
+
+| `round_hard`, two marks | silhouettes shared |
+|---|---|
+| as it is | `97%` |
+| `tip_wobble=0.35` | `87%` |
+| `tip_wobble=0.7` | `76%` |
+| `tip_wobble=1.0` | `67%` |
+
+So five small round marks are five copies of one disc unless something redraws the
+outline, which is what a painter who wanted a small irregular mark fifteen times ran
+into — and answered by inventing a short fat stroke from a starved bristle. The
+wobble is three low harmonics round the tip, drawn per *stroke* the way the comb is,
+and it swells as far as it bites so the mark keeps the size it asked for. Do not
+compare tips with this instrument: a thin tip's overlap falls faster for the same
+jitter, so it ranks thinness as much as repetition.
+
 ---
 
 ## Budget
@@ -593,7 +684,26 @@ the painter's plan for the picture, not a lock on the engine.
 **`scumble(band, a, b, n)` costs exactly `n`** on a band whose silhouette is convex,
 which is what makes a soft passage something that can be budgeted before it is laid.
 On a concave shape a pass line is cut into the pieces really inside it, the same way
-`block_in` cuts one, so it costs a little more.
+`block_in` cuts one, so it costs a little more. `direction="inward"` costs `n` too —
+`n` rings stepping in from the boundary — less any that folded in on themselves past
+the middle.
+
+**Crossing a direction is where a price runs away, and it is one cause wearing three
+hats.** The same shape, one direction against crossed, `bristle` at `size=0.05`: a
+thin full-width band **5 → 41**; a small concave shape **12 → 32**. And a ribbon
+`0.032` wide at `size=0.015`: **4** straight, **75** with a bend in it. All three are
+the same thing — the passes step across the *bounding box*, once per direction, and
+each pass line comes back as however many pieces of it lie inside the shape.
+`s.cost_line(plan)` says which of the three a number is:
+
+```
+75 strokes -- 25% of the 300 left of a 300-stroke budget
+  75  42 passes stepping across 0.34 of the canvas, each cut into 1.8 pieces by the outline
+```
+
+The same sentence rides on the budget warning, naming the entry that dominates the
+plan. A painter who has the number but not the cause redesigns the mass; the levers
+are a wider brush, a thinner `density`, and one direction instead of two.
 
 **`edge="clean"` costs one stroke more than the fill it replaces** — and the fill
 itself is slightly cheaper, because it is laid into the shape inset by half a brush.

@@ -286,6 +286,13 @@ def paint_stroke(
     comb = int(rng.integers(1, 1 << 31)) if brush.tip == "bristle" else 0
     bristles = brush.bristles(diameter) if brush.tip == "bristle" else 0
     width_follows_press = brush.tip in _ROUND_TIPS
+    # And the silhouette a wobbled round tip prints, drawn the same way and for the
+    # same reason: held along this stroke, so the mark has one outline rather than a
+    # different one per dab, and redrawn for the next, so a row of small marks is not
+    # a row of copies. Only drawn when a brush asks for it, so the stream a painting
+    # without one runs on is untouched.
+    wobble_seed = (int(rng.integers(1, 1 << 31))
+                   if width_follows_press and brush.tip_wobble > 0.0 else 0)
 
     # Per-dab randomness, drawn once so the stroke is reproducible.
     #
@@ -345,7 +352,7 @@ def paint_stroke(
         ix = math.floor(cx)
         iy = math.floor(cy)
         mask = brush.mask(r, float(angles[i]), cx - ix, cy - iy,
-                          comb=comb, count=bristles or None)
+                          comb=comb, count=bristles or None, wobble_seed=wobble_seed)
 
         if brush.smudge > 0.0:
             sampled = canvas.sample(float(ix), float(iy), mask)

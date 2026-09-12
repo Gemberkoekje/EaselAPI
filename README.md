@@ -68,15 +68,15 @@ change when the engine does. The engine is designed around one habit:
 |---|---|
 | `Session` | The one object you hold. Canvas, palette, seed, history, `look()`. |
 | `Canvas` | Linear-light RGB plus `wetness`, `thickness`, `sketch` (graphite) and canvas `height` (tooth). |
-| Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
+| Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips, and `tip_wobble` gives a round one a silhouette of its own, redrawn per mark. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
 | Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `union`, `ribbon`, `polygon`, and `s.circle()` for one that is round in pixels on any canvas. `smooth()` cuts the corners off an outline. Any of them goes where a region goes. |
-| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette, or drawing its contour with `edge="clean"`; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
-| Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. |
+| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette, or drawing its contour with `edge="clean"`; `solid=True` when it has to be solid paint, because density spaces the passes rather than filling them. `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
+| Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint — and `direction="inward"` runs them round a patch instead of across it, for a value falling off from a centre. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. `smudge(edge, ...)` loses an edge along its own shape: points, or a mass whose outline it walks. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
-| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
+| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
 | Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all. `prepare(reference)` cuts the photograph into numbered masses. |
 | Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
@@ -185,7 +185,10 @@ painted rather than generated:
   streaks scale with the brush, so a big mass prints stripes wider than anything in
   the picture and a small mark carries the brush's signature instead of the
   feature's. So spacing, phase and the missing bristles are redrawn each stroke, and
-  the count follows the brush's size.
+  the count follows the brush's size. The same reasoning reaches the round tips
+  through `tip_wobble`, which is off by default: a disc is the right silhouette for
+  most marks and the wrong one for fifteen small marks in a row, where it prints one
+  shape fifteen times.
 - **Width follows pressure on the round tips.** Pressure that changes only how much
   paint lands is invisible once an opaque colour saturates, and it means a mark that
   tapers — a lid, a brow, a lash, a twig — is two strokes at two sizes. The oriented
@@ -202,12 +205,20 @@ that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `uni
 a whole pass from the shell all arrived in one round after a painter used the guide
 and wrote down what the engine had cost them.
 
+A second painter did the same thing and probed every claim before making it, which is
+where this round came from: a centred fall-off for a glow, `solid=True` because
+density spaces the passes rather than filling them, a silhouette of its own for a
+round tip, a clean edge that stops insetting at the canvas frame, rehearsals numbered
+apart from the painting's looks, `cost_line` saying *why* a number is large, and
+`smudge` taking the boundary it is meant to run along.
+
 Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
 painting runs and an adversarial review left behind — the method, the engine decisions
 that are load-bearing, the traps, and what is still open; read it before changing the
 engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
-most recent painting session; its twelve engine items are done, and it says what each
-one became and what is left.
+painting sessions; every engine item on it is done, and it says what each one became.
+What is left there is editorial — a one-page reference, a short path through the
+guide, two recipes and a warning — and it says so item by item.
 
 ## Licence
 

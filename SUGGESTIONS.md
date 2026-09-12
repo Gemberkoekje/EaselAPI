@@ -1,7 +1,12 @@
 # Suggestions for the engine and the guide, from the painting sessions
 
-These come from one session: a still life painted from `PAINTER.md` alone, with no
-reference photograph, through the shell path (`easel new` / `easel run`), in 224 strokes.
+Two sessions, each written by the painter who had just finished a picture. The first
+is below; the second starts at *Suggestions from a second session*. Every engine item
+on both lists is done, and the note under each says what it became.
+
+The first list comes from one session: a still life painted from `PAINTER.md` alone,
+with no reference photograph, through the shell path (`easel new` / `easel run`), in
+224 strokes.
 The painting and its scripts are in `paintings/windowsill_pears/`. Nothing else in the
 repository was read before painting, so this is the guide judged on its own, which is
 what it asks for.
@@ -13,9 +18,9 @@ Where I could not settle something, it is written as a question.
 > **Status.** All twelve engine items are done; what each became is noted under it in
 > **bold**. Of the twelve guide items, the ones that were corrections to something the
 > engine does — the `overhang` line in 1, then 6, 7, 8 and 9 — are applied, along with
-> 3 and 12, which the new verbs made writable. What is still open is editorial and
-> stands on its own: items 2, 5, 10 and 11, plus the halves of 1 and 4 that were not
-> corrections — the one-page reference, and a calibrated recipe for a soft patch.
+> 3 and 12, which the new verbs made writable, and 4, whose open half a later verb
+> closed. What is still open is editorial and stands on its own: items 2, 5, 10 and 11,
+> plus the half of 1 that was not a correction — the one-page reference.
 > The `overhang` claim below was re-measured before it went into the guide and it
 > holds; the claim under engine item 8 did not, and the note there says what was done
 > instead.
@@ -187,9 +192,11 @@ In the order of how many strokes each would have saved me.
    opacity) was better than the first and still shows its pass ends. I do not know the
    right recipe; a calibrated one is worth a section.
 
-   **Half done.** `scumble()` is the verb, with its cost, and the guide's soft-passage
-   section is written round it. The calibrated recipe for a glow or a lit patch is a
-   measurement job and is still open.
+   **Done**, in two rounds. `scumble()` was the verb for the join, with its cost, and
+   the guide's soft-passage section is written round it; the glow was the half it did
+   not cover, and the second session asked for that half again as its own engine item
+   1. `scumble(..., direction="inward")` is it, with the measured profile in
+   `CALIBRATION.md` and the recipe in the same section of the guide.
 5. **A recipe for a cast shadow.** My first shadows were capsule-shaped slugs at the
    palette's darkest value; the second were still heavy. Two sentences would have saved
    eight strokes: a shadow on a lit surface is a step or two below the surface, not the
@@ -255,6 +262,18 @@ strokes of a 300 budget. The painting and its scripts are in `paintings/car_wash
 Everything below was written at 185 strokes; the painting was then resumed, and the one
 finding that produced is guide item 8.
 
+> **Status.** All seven engine items are done; what each became is noted under it in
+> **bold**, along with the `.gitignore` line the probes caught. Of the eight guide
+> items, the three that were corrections to something the engine does — 1, 2 and 3 —
+> are applied. What is still open is editorial and stands on its own: items 4, 5, 6,
+> 7 and 8.
+>
+> Of this list's own measured claims, one did not survive being re-measured — the
+> note under guide item 1 says what was found instead — and one came back with a
+> different number, under engine item 2. The rest held. Every figure in the guide and
+> in `CALIBRATION.md` is the re-measured one rather than the one here, because the
+> engine these were taken on is no longer this engine.
+
 **This session is not a clean measurement of the guide, and the difference matters.**
 The subject was chosen before anything was read, but `README.md`, `LESSONS.md` and
 `CALIBRATION.md` were then all read before the first stroke. So where this agrees with
@@ -313,6 +332,8 @@ failure. Where I could not settle something it is written as a question.
   `paintings/**/rehearse_*.png`; the engine writes `look_`, `preview_` and `compare_`,
   and `compare_` is the one not listed. Harmless while looks live in `out/`, which is
   ignored wholesale, and wrong the moment someone points `--out-dir` at the painting.
+  **Fixed from both ends**: engine item 5 makes `rehearse_` a name that is written, and
+  `compare_` and `prepare_` were added to the list.
 - What the guide says and I can confirm: the signature exemption is free and per-record;
   `cost()` matched what was charged every time; and rehearsal really is pixel-exact —
   re-running the fourteen pass scripts into a fresh session reproduced the export with
@@ -330,10 +351,31 @@ In the order of how many strokes each would have saved me.
    obvious hand-rolled answer and the wrong one. The first session asked for a
    calibrated recipe for a glow and got `scumble`; this is the half of that request the
    verb did not cover.
+
+   **Done.** `s.scumble(patch, color_a, color_b, n, direction="inward")`. The passes go
+   *round* the place instead of across it — the first along its boundary and each one
+   after it a part-brush further in — so `color_a` sits on the edge and `color_b`
+   arrives at the centre, and nothing radiates from a point. It is `sweep`'s geometry
+   with the colour stepping as it goes in, beside that walk rather than through it, so
+   a ring that folds in on itself past the middle is dropped without compressing the
+   ramp. Charged as `n`, like the band. A ring is two or three times the length of a
+   pass across the same patch and has no far end to run dry at, so it defaults to
+   `load_falloff=0.0`; an explicit one still wins. The measurement is re-run in
+   `CALIBRATION.md` under *`scumble`*.
 2. **`block_in` should lay a solid mass when asked for one.** Either `density=1.0`
    implies `load=1.0, load_falloff=0.0`, or there is a `solid=True`. Measured above:
    fourteen times more even at no extra cost. I laid the entire near frame speckled and
    only found out by cropping into it; it reads as ash rather than moulded plastic.
+
+   **Done, as `solid=True`** rather than through `density`, because `density=1.0` is
+   the default and changing what it lays would move every painting ever made and every
+   golden image with them. `block_in(..., solid=True)` sets `load=1.0,
+   load_falloff=0.0` as a pair of *defaults*, so `load=` beside it still wins, and
+   `cover()` is the same clauses for a repair. Re-measured on this engine: 38 passes of
+   a `flat` at `size=0.030`, `density=1.0`, interior **sd 0.063** and **4.4%** within
+   `0.05` of bare ground, against **sd 0.007** and **0.0%** solid — nine times more
+   even rather than fourteen, for the same 38 strokes. The claim holds; the ratio is
+   the instrument's.
 3. **A small irregular mark.** The probe says the box has exactly one tip that does not
    repeat itself and it is a comb. Either give the round tips a per-mark silhouette
    wobble — `block_in` already has per-pass wander, and the reasoning in *Design notes*
@@ -341,18 +383,51 @@ In the order of how many strokes each would have saved me.
    a verb for a clot. I wanted a small irregular bright mark about fifteen times, laid
    dabs twice, got a row of discs twice, and ended up inventing "a short fat stroke from
    a starved bristle". The probe says that was the only answer in the box.
+
+   **Done, as the per-mark silhouette** rather than as a verb, since the reasoning did
+   apply word for word. `tip_wobble=0..1` on a round tip draws its outline from three
+   low harmonics with a seed drawn *per stroke*, exactly as the comb is, and it swells
+   as far as it bites so the mark keeps the size it asked for. Off by default, so no
+   existing mark moves. Two `round_hard` dabs at `size=0.05` share **97%** of their
+   silhouette as they are and **76%** at `tip_wobble=0.7`. `easel brushes` names it, so
+   it is findable without reading the guide first.
 4. **Do not inset a clean edge across the canvas boundary.** Clamp the inset where the
    outline leaves the canvas. Measured above; it cost me a repair pass and two strokes,
    and the repair then left a chisel end I had to fix as well.
+
+   **Done.** The inset is dropped, per coordinate, on any side the outline reaches:
+   a point on the bottom frame keeps its `y` and takes the inset `x`. A `Polygon`
+   clamps its points to the canvas, so "the outline is at the frame" and "the outline
+   ran off it" are the same test, and it is the right one either way. Re-measured on a
+   full-width mass drawn past the bottom, a `flat` at `size=0.09`: **15.1%** of the
+   bottom row unpainted before, **0.3%** now, against ragged's **3.6%** — better than
+   ragged, because the contour pass runs along the frame too.
 5. **Number a rehearsal's looks in their own sequence.** `rehearse_NNN.png` would do
    it — `.gitignore` already expects that name. Six rehearsals of one pass and I could
    never put two of them side by side, which is what a scrap of canvas beside an easel
    is for.
+
+   **Done**, and numbered from what is already on disk rather than from a counter,
+   because there is nowhere to keep a counter: a rehearsal runs on a copy of the
+   session and the copy is thrown away. Each one takes the next free
+   `rehearse_NNN.png`, in the shell and from `s.scratch().look()` alike. The
+   `.gitignore` line that named a prefix nothing wrote now names one that is written,
+   and `compare_` and `prepare_` were added beside it.
 6. **Let `cost()` say *why* a number is large.** It already warns at a share of the
    remaining budget. Three of my calls came in at four to twelve times the estimate a
    painter would make by hand, all from the same cause. "74 passes: crossed, stepping
    across 1.10 of width" would let the painter fix the call; the bare number sends you
    to redesign the shape.
+
+   **Done.** `s.cost_line(plan)` prints the total and a line per entry — *"2
+   directions, 20 passes each stepping across 1.00 of the canvas"*, *"42 passes
+   stepping across 0.34 of the canvas, each cut into 1.8 pieces by the outline"* — and
+   the same sentence rides on the budget warning, naming the entry that dominates, and
+   on the MCP `cost` tool's echoed Python, in its own comment so the echo stays
+   pasteable. `s.cost_of(plan)` is the breakdown as data. The reason comes off the same
+   walk the price is counted from, so it describes the passes that were actually
+   counted. It says "of the canvas" rather than "of width": a coordinate is a fraction
+   of the width in x and of the height in y, and the extent mixes them.
 7. **Let `smudge` take an edge, the way `sweep` does.** `sweep(edge, ...)` accepts a
    boundary — or a whole shape, and follows its own outline. `smudge(points, ...)`
    accepts only points, so following a curve means sampling coordinates off it by hand.
@@ -370,6 +445,12 @@ In the order of how many strokes each would have saved me.
    painter who does not rehearse pays that, not two strokes. Worth reading as a general
    caution about this list's ordering, which prices a mistake by what it costs to make
    and not by what it costs to live with.
+
+   **Done.** `s.smudge(edge, ...)` takes what it always took — points, used exactly as
+   given — and also a shape or a region, whose own outline it walks, resampled the way
+   `sweep` resamples a boundary. One mark either way, in the log and against the
+   budget. The guide's two-point example is replaced rather than supplemented, and it
+   names this rather than teaching the hand-sampling it replaces.
 
 ## The guide
 
@@ -414,13 +495,33 @@ In the order of how many strokes each would have saved me.
    this is a proposal and not an edit — I have deliberately not touched `PAINTER.md`.
    And if engine item 7 is taken instead, this paragraph should name that verb rather
    than teach the hand-sampling it replaces.
+
+   **Done, and the measurement behind it was wrong.** Engine item 7 was taken, so the
+   paragraph names `s.smudge(shape)` as well as the curve. But re-measuring it first:
+   on a *straight* sloping edge, two points and four along it are the same pass to the
+   pixel — the spline through collinear points is the line — so the `0.57%` against
+   `0.11%` cannot have come from a slope. It comes from a **bend**, and there it is
+   larger than reported: on a boundary that curves, the chord between its ends moved
+   the boundary a mean of `0.51%` of canvas height and `2.9%` at worst, against `0.01%`
+   and `0.7%` for four points along the curve. The rule survives its evidence and is
+   sharper for it: *only a straight boundary is two points*. That is what went into the
+   guide, with the numbers in `CALIBRATION.md` under *`smudge`*.
 2. **`load` belongs beside `density`, not only in the repair recipe.** One clause where
    masses are laid. Measured above.
+
+   **Done**, in step 1 where the first masses are laid, as the rule with the numbers
+   stripped out: *density spaces the passes; it does not fill them*, and a mass that
+   has to be solid says `solid=True`. The measurement is in `CALIBRATION.md` under
+   *Load and run-out*.
 3. **A checklist line for the tool's own shape at small scale.** *"Is any small mark a
    disc, a capsule or a rectangle — the tool's shape rather than the thing's?"* The
    warning exists in prose and in the *shape each tool leaves behind* table, I read
    both, and laid a row of discs twice anyway. The probe gives the number to put behind
    it.
+
+   **Done**, as that line in the closing checklist, with a row in *the shape each tool
+   leaves behind* that names `tip_wobble` as the remedy — because a checklist line that
+   only names the fault is the warning-without-method `LESSONS.md` is about.
 4. **A checklist line about stopping.** The closing checklist has fourteen lines and
    none of them is about finishing. The guide warns at length about spending too much on
    detail and about reaching the subject too late; it says nothing about stopping early.
@@ -435,6 +536,8 @@ In the order of how many strokes each would have saved me.
    `compare()` each caught half of what was wrong — is not something a fourteenth
    checklist line predicts. Worth more than my confidence in it: a fresh session should
    still be the judge.
+
+   **Open.**
 5. **The lightest mass is a composition question that `compare()` answers by accident.**
    `compare()` told me the bloom was `0.12` below plan. What it was really reporting was
    that a different mass had become the brightest thing in the picture and the eye went
@@ -443,6 +546,8 @@ In the order of how many strokes each would have saved me.
    question and it is one line, late, in a long section. In value terms it is cheap and
    checkable: *is the lightest mass in the picture the one you planned to be lightest?*
    `compare()` already holds the numbers.
+
+   **Open**, and `compare()` needs no engine change for it.
 6. **Does the pencil apply with no reference? The section does not say.** *Painting
    without a reference* says you are the reference and lists three things to do, all of
    them value work. It never mentions drawing. I did not draw, and told myself the
@@ -451,6 +556,8 @@ In the order of how many strokes each would have saved me.
    rehearsals — **but I am not sure that is a recommendation rather than hindsight**,
    because a painter with no reference has nothing to check a drawing against, which is
    half of what the pencil is for with one. A question, not a request.
+
+   **Open**, and it is a question for a fresh session rather than an edit.
 7. **A question about worked examples, which I think has no clean answer.** The guide
    has eight abstract exercises and no single small picture laid out in order, and
    sequencing was the thing I was least sure of at the start — not which call to make
@@ -460,6 +567,8 @@ In the order of how many strokes each would have saved me.
    example and already carry that risk, unread. So: is `paintings/` meant to serve this,
    with the guide pointing at it — or is the sequencing meant to be worked out fresh
    every time, and the exercises deliberately abstract to keep it that way?
+
+   **Open**, and it is the repo owner's to answer.
 8. **Form is bounded at both ends, and the guide gives only the lower bound.** The
    `0.10` threshold appears everywhere as the point below which two masses stop reading
    as separate, and it is right. Nothing says what happens *above* it. Measured on this
@@ -475,6 +584,8 @@ In the order of how many strokes each would have saved me.
    Worth noting how it was found, because it is the case the guide's two-`compare()`
    rhythm is not built for: the eye said the form was good, and the number said the mass
    had stopped separating from its background. Neither would have caught it alone.
+
+   **Open**, and it wants measuring on a second mass before it is written as a rule.
 
 ## What I would not change
 
