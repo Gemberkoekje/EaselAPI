@@ -121,6 +121,29 @@ def test_the_reference_is_the_one_the_cli_prints(call, capsys):
     assert call("brushes").text == printed == reference_text()
 
 
+def test_the_guide_tool_hands_back_the_same_method_the_shell_prints(call):
+    """The point of this tool: a client that reached the engine over MCP has no
+    repository to read, so the method has to come back through the wire. One
+    source for it, or the two drift the first time the guide is edited."""
+    from easel import guide
+
+    assert call("guide").text == guide.front_page()
+    assert call("guide", full=True).text == guide.read("guide")
+    assert call("guide", document="reference").text == guide.read("reference")
+
+
+def test_the_guide_tool_is_reachable_without_a_session(server):
+    """It takes no session, like `brushes` -- a painter has to be able to read the
+    method before there is a canvas to read it against."""
+    tool = next(t for t in asyncio.run(server.list_tools()) if t.name == "guide")
+    assert "session" not in (tool.input_schema.get("properties") or {})
+
+
+def test_the_server_instructions_send_a_client_to_the_guide_tool(server):
+    """They used to say to read PAINTER.md, which a client over MCP cannot open."""
+    assert "`guide`" in server.instructions
+
+
 def test_the_session_file_is_the_only_state(tmp_path, call, painting):
     """Painted through the server, read by the library -- and the other way round."""
     call("run", session=painting,

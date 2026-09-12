@@ -199,7 +199,7 @@ is listed in the official MCP registry as `io.github.Gemberkoekje/easel`;
 [`server.json`](https://github.com/Gemberkoekje/EaselAPI/blob/main/server.json) at
 the repository root is what is published there.
 
-Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost` — the
+Fifteen tools: the twelve CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
 which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
 copy and commits nothing. A place is a name, a cell, a span, a rectangle, an outline,

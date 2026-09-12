@@ -4,7 +4,7 @@
   "display_name": "Easel",
   "version": "0.0.0",
   "description": "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture.",
-  "long_description": "Easel is a painting engine, not a drawing API. A brush carries a finite load of paint that runs out along the stroke, picks up what is already wet on the canvas, and drags against the tooth of the ground. The tools are the eleven CLI verbs plus `preview`, `rehearse` and `cost` -- the three questions about a mark that has not been made yet -- and the looking tools hand the picture back inline, so the loop the guide asks for (look every five to fifteen strokes) costs one call.\n\nRead PAINTER.md before painting. It teaches the workflow, which matters more than the tool list.",
+  "long_description": "Easel is a painting engine, not a drawing API. A brush carries a finite load of paint that runs out along the stroke, picks up what is already wet on the canvas, and drags against the tooth of the ground. The tools are the twelve CLI verbs plus `preview`, `rehearse` and `cost` -- the three questions about a mark that has not been made yet -- and the looking tools hand the picture back inline, so the loop the guide asks for (look every five to fifteen strokes) costs one call.\n\nCall `guide` before painting. It returns the method, which matters more than the tool list, and the guide ships inside the package so there is nothing to go and find.",
   "author": {
     "name": "Arie Hofland",
     "url": "https://github.com/Gemberkoekje"
