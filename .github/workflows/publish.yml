@@ -1,8 +1,12 @@
 name: Publish
 
-# A release is cut by pushing a tag: `git tag v0.1.0 && git push origin v0.1.0`.
-# `workflow_dispatch` is here for the first publish and for re-running a release
-# whose upload failed after the build had already passed.
+# Two ways in, and they land in different places:
+#
+#   workflow_dispatch  ->  TestPyPI, a rehearsal
+#   a v* tag           ->  PyPI, the real thing
+#
+# so a rehearsal cannot spend a real version number by accident. A release is cut
+# by pushing a tag: `git tag v0.1.0 && git push origin v0.1.0`.
 on:
   push:
     tags: ["v*"]
@@ -68,16 +72,50 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  # The rehearsal. TestPyPI is a separate instance with its own accounts and its
+  # own trusted publisher -- a PyPI login does not work there -- and it burns a
+  # version number exactly as PyPI does. `skip-existing` is what keeps a second
+  # rehearsal of the same version a no-op rather than a failure; to genuinely
+  # re-test a changed README, bump the version in pyproject.toml to a dev release
+  # like 0.1.0.dev2 first, because the upload that already happened is immutable.
+  testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/easel-paint
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download the distributions
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: dist
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
   # Trusted publishing: PyPI accepts an OIDC token minted for this repository,
   # this workflow *file name* and this environment, so there is no API token
   # anywhere in the repo or its secrets. Renaming this file or the environment
   # breaks the match, and the publisher configured on PyPI has to be edited to
-  # agree again.
+  # agree again. The job name is not part of that match, only the file and the
+  # environment.
   #
   # This job deliberately does not check the repository out. Naming `permissions`
   # here replaces the file-level default rather than adding to it, so the token
   # it runs with can mint an OIDC assertion and do nothing else.
-  publish:
+  #
+  # No `skip-existing` here, unlike the rehearsal above: on the real index a
+  # version that is already taken is something to stop for, not to shrug at.
+  pypi:
+    if: startsWith(github.ref, 'refs/tags/')
     needs: build
     runs-on: ubuntu-latest
     environment:
