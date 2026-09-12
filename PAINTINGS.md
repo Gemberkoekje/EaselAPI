@@ -1,6 +1,6 @@
 # What Easel has painted
 
-> Three pictures, each painted by a language model working from the guide — no reference
+> Four pictures, each painted by a language model working from the guide — no reference
 > photograph, no human hand on the canvas, nothing traced. Every mark is a call to this
 > API and every one of them is in the log. This file is the record: what was painted,
 > what it cost, what failed, and how good the results actually are.
@@ -9,7 +9,7 @@ The engine's claim is that a model can paint rather than generate, so the engine
 worth what has been painted with it. These are those paintings, at full size, with the
 parts that did not work left in.
 
-**If you are about to paint from the guide: have you decided what to paint?** All three
+**If you are about to paint from the guide: have you decided what to paint?** All four
 pictures here name a subject, and a named subject chooses for you — six of six fresh
 sessions once painted a noun the guide had merely listed in passing. **Decide first,
 then read this page.** A painter who chose before opening the repository cannot be
@@ -21,19 +21,21 @@ Having decided, read them: the pass scripts beside each painting are the end-to-
 worked example the guide cannot be, and the third painter here said it would not have
 arrived at their convention on its own.
 
-## The rules all three were made under
+## The rules all four were made under
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
   towards what the engine happens to be good at.
 - **How much else was read varies, and it matters.** The pears session read
   `PAINTER.md` and nothing else in the repository, which makes it the only clean
   measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
-  `CALIBRATION.md` first; the lighthouse read those, `PAINTINGS.md`, and both earlier
-  paintings' notes and scripts, and took its pass-script convention, its prelude of
-  masses as functions and its `compare()` plan sheet from them rather than from the
-  guide. So where the three agree, that is three painters finding the same thing with
-  increasing context — and where they disagree, it may be the context talking. Each
-  painting's notes say which it was.
+  `CALIBRATION.md` first; the lighthouse at dusk read those, `PAINTINGS.md`, and both
+  earlier paintings' notes and scripts, and took its pass-script convention, its prelude
+  of masses as functions and its `compare()` plan sheet from them rather than from the
+  guide; the greenhouse read the four guide files and that lighthouse's prelude and
+  notes, and took the same convention from it at one further remove. So where they
+  agree, that is four painters finding the same thing with increasing context — and
+  where they disagree, it may be the context talking. Each painting's notes say which
+  it was.
 - No reference photograph, so `prepare`, `sketch`, `ref_shape` and `ref_outline` were
   unavailable and nothing was traced. Every mass is a `polygon`, `blob` or region
   written by hand.
@@ -120,6 +122,39 @@ handed to the palette is read as sRGB rather than linear, and a vertical pass st
 starts at the right-hand edge. Both are documented now: the first has a verb of its own,
 `s.sample(place)`, and the second is a table in [`REFERENCE.md`](REFERENCE.md).
 
+## A lighthouse half way through becoming a greenhouse
+
+![A lighthouse in thick fog, half converted into a greenhouse: the lamp room at the top
+is packed with dark tomato vine pressing against the glass, terracotta pots stand on the
+turns of the outside stair spiralling down the tower, and the lamp still throws a
+green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/painting.png)
+
+Somebody is growing tomatoes in the lantern. The vine fills the glass and presses
+against it, pots come down the outside stair, a creeper has gone up the shaft on its
+own — and the lamp is still turning, so the beam that crosses the fog comes out through
+the leaves and arrives green.
+
+| | |
+|---|---|
+| Canvas | 1120×860, linen, `toned_warm_grey` ground, seed 41 |
+| Spent | 296 strokes of a 300 budget, plus one signature mark that did not count |
+| Rehearsed and thrown away | Every pass, most of them three or four times; 92 rehearsal images, none charged |
+| Reproducible | Eleven pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
+| Files | [`paintings/lighthouse_greenhouse/`](paintings/lighthouse_greenhouse) — [notes](paintings/lighthouse_greenhouse/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/painting.gif) |
+
+This one had the beam the earlier lighthouse rehearsed twice and dropped, and got it for
+the same reason that one could not: a beam over clear sky has only a glaze, and a beam
+in fog is a mass of lit air. What it cost was two rehearsals spent discovering that the
+green the subject asks for, mixed straight, is a chartreuse searchlight that owns the
+picture — the fix being hue, not opacity, which the calibration says plainly and a
+painter believed only after seeing it. The [notes](paintings/lighthouse_greenhouse/NOTES.md)
+also record three flat slabs where a cylinder should have turned, a `flat` tip
+staircasing down every sloping plane edge it was given, ten pots that came back as ten
+bricks until each got a rim, a lit band held a hair inside its silhouette so that the
+dark left over read as a drawn outline, and `direction` left off two shaped block-ins —
+which would have been charged 44 and 57 passes against the 9 and 9 they were costed at.
+All eight places of its value plan finished inside `0.10`.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -156,10 +191,12 @@ golden-image tests in CI.
   `PAINTER.md`, and the standing rule from them is in
   [`LESSONS.md`](LESSONS.md): *a guide change is a hypothesis until a fresh session
   paints against it.*
-- None of the three is finished in the sense a painter would mean. The car wash left 94
+- None of the four is finished in the sense a painter would mean. The car wash left 94
   strokes unspent and names the passage it did not know how to solve; the pears left
-  three rims that are three similar yellow stripes; the lighthouse stopped with 116
-  unspent on purpose and says which passage they should have gone to if that was wrong.
+  three rims that are three similar yellow stripes; the lighthouse at dusk stopped with
+  116 unspent on purpose and says which passage they should have gone to if that was
+  wrong; the greenhouse spent all but four of its budget and still names its rock as a
+  passage made better rather than good, and says why the fault was upstream of the paint.
 
 ## Further
 
