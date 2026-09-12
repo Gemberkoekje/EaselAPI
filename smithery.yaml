@@ -1,0 +1,36 @@
+# Smithery listing for the Easel MCP server.
+#
+# One caveat, recorded here rather than left to be discovered: this file follows
+# the stdio form of `smithery.yaml` as used by other Python MCP servers, not
+# Smithery's own current documentation -- smithery.ai was not reachable from the
+# machine that added it. Check it against https://smithery.ai/docs before relying
+# on the listing, and expect to add a Dockerfile if Smithery wants to build and
+# host the server rather than describe how to launch it.
+#
+# The server is an opt-in extra of the `easel-paint` package, because nothing
+# else in the engine imports `mcp`:
+#
+#     pip install "easel-paint[mcp]"
+#
+# That installs an `easel-mcp` command as well, but pip puts console scripts in
+# the interpreter's scripts directory, which is frequently not on PATH. The
+# module form below is the same command by a name that always resolves.
+
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      dir:
+        type: string
+        description: >-
+          Directory the server reads and writes .easel session files, looks and
+          exported PNGs in. Defaults to the working directory.
+    required: []
+  commandFunction: |-
+    (config) => ({
+      command: 'python',
+      args: ['-m', 'easel.mcp_server'].concat(config.dir ? ['--dir', config.dir] : [])
+    })
+  exampleConfig:
+    dir: ./paintings

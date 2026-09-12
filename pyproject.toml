@@ -10,14 +10,23 @@ readme = "README.md"
 requires-python = ">=3.12"
 license = { file = "LICENSE" }
 authors = [{ name = "Arie Hofland" }]
-keywords = ["painting", "brush", "raster", "agent", "llm", "headless", "mcp"]
+keywords = [
+    "painting", "paint", "brush", "brushes", "brush-strokes", "strokes",
+    "canvas", "pigment", "raster", "art",
+    "agent", "ai-agents", "llm", "headless",
+    "mcp", "model-context-protocol",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Graphics :: Editors :: Raster-Based",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
     "numpy>=1.26",
@@ -39,6 +48,9 @@ easel-mcp = "easel.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/Gemberkoekje/EaselAPI"
+Documentation = "https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md"
+Repository = "https://github.com/Gemberkoekje/EaselAPI"
+Paintings = "https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md"
 Issues = "https://github.com/Gemberkoekje/EaselAPI/issues"
 
 [tool.hatch.build.targets.wheel]

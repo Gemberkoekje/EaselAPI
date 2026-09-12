@@ -1,15 +1,21 @@
 # Easel
 
-A headless painting engine for agents that can look at their own work.
+**Can an LLM paint with real brush strokes, rather than draw with pixels? Yes — this is
+the API for it.**
 
-Not a drawing library and not a rasteriser. Brushes carry a finite load of paint and
-run out along a stroke. Paint lands wet and mixes with what is already there, in a
-pigment model where blue and yellow make green rather than grey. The canvas has
-tooth, and a brush low on paint catches only the high points — so dry brush is not a
-special effect, it is what happens when you run out of paint on rough canvas.
+Easel is a headless painting engine for AI agents: brushes, paint load, wet blending
+and canvas texture, driven from Python, from a shell, or over MCP. A brush carries a
+finite load of paint and runs out along a stroke. Paint lands wet and mixes with what
+is already there, in a pigment model where blue and yellow make green rather than grey.
+The canvas has tooth, and a brush low on paint catches only the high points — so dry
+brush is not a special effect, it is what happens when you run out of paint on rough
+canvas. Between strokes you look at your own work, which is the whole point: the engine
+is built for an agent that can see what it just did.
 
-There are no layers, and no undo that costs nothing. You work in passes, and when
-something is wrong you paint over it.
+It is not a drawing library, not a rasteriser, and not an image generator — nothing
+here turns a prompt into a picture. You choose and make every mark. There are no
+layers, and no undo that costs nothing: you work in passes, and when something is wrong
+you paint over it.
 
 ```python
 from easel import Session, blob, cell
@@ -23,13 +29,37 @@ s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
 s.export("painting.png")
 ```
 
-![Brush sampler: every brush at three sizes and three pressure profiles, on smooth, linen and rough canvas](samples/brushes.png)
+## Two paintings, made this way
+
+![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom
+of white light down the tunnel, a red stop light, and a foam-covered side brush
+swinging in from the right, past a steering wheel and rear-view mirror](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/painting.png)
+
+*[**Inside a car wash, from the driver's seat**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/car_wash/NOTES.md) — 206
+strokes of a 300 budget, 1152×720 linen, no reference photograph. The nineteen pass
+scripts beside it reproduce that PNG byte for byte.*
+
+![Three ripe pears on a kitchen windowsill in late-afternoon light, a chipped blue
+enamel mug behind them and a half-drawn curtain at the right](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/painting.png)
+
+*[**Three pears on a kitchen windowsill**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/windowsill_pears/NOTES.md) — 224
+strokes, 1024×768 linen, no reference photograph.*
+
+Both were painted by a language model working from [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) alone,
+one call to this API at a time, with no human hand on the canvas and nothing traced.
+Every stroke is in the log, both time-lapses were rebuilt from it, and the notes beside
+each painting say what went wrong as well as what went right.
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) gathers the record.
+
+## The brushes themselves
+
+![Brush sampler: every brush at three sizes and three pressure profiles, on smooth, linen and rough canvas](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/samples/brushes.png)
 
 *Every brush, size and pressure profile, on each canvas texture. Regenerate with
 `python scripts/make_brush_sampler.py` — this sheet is the project's primary test
 artefact, and looking at it catches what the test suite cannot.*
 
-![Shape sampler: five ways to build a mass, each filled along four sweep directions, with the bounding box in the last column](samples/shapes.png)
+![Shape sampler: five ways to build a mass, each filled along four sweep directions, with the bounding box in the last column](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/samples/shapes.png)
 
 *A mass does not have to be a rectangle. Each row is one way of building a shape,
 each column a way of sweeping it; the last column is the box that mass would have
@@ -41,26 +71,35 @@ Requires Python 3.12 or newer. Only numpy and Pillow — nothing that is painful
 build on Windows.
 
 ```bash
-pip install -e .
+pip install easel-paint          # the engine, the CLI and the Python API
+pip install "easel-paint[mcp]"   # and the MCP server
 ```
 
-That installs an `easel` command. Pip puts it in the interpreter's scripts
+From a checkout, `pip install -e .` and `pip install -e ".[mcp]"` do the same two
+things.
+
+Either installs an `easel` command. Pip puts it in the interpreter's scripts
 directory, which is often not on `PATH` (it warns when it is not), so
 `python -m easel ...` is always available as the same command by another name.
 
-The MCP server is an opt-in extra — `pip install -e ".[mcp]"` — because nothing
-else in the engine imports it. See *MCP server* below.
+The MCP server is an opt-in extra because nothing else in the engine imports it.
+See *MCP server* below.
 
 ## If you are an LLM agent, read PAINTER.md
 
-[`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
+[`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions. The measured numbers behind its rules
 (graphite survival, wetness decay, the value floor, load windows) are kept apart in
-[`CALIBRATION.md`](CALIBRATION.md), so the guide stays short and the numbers can
+[`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md), so the guide stays short and the numbers can
 change when the engine does. The engine is designed around one habit:
 
 > Look every five to fifteen strokes. A stroke you did not look at was a guess.
+
+[`llms.txt`](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/llms.txt) is
+the same signpost in the format a model fetching this repository is increasingly told
+to look for: the summary, what to know before reading further, and where each document
+is, in about 700 words.
 
 ## What is in the box
 
@@ -115,6 +154,8 @@ run first in the same scope, so helpers and mixtures survive between passes;
 `--prelude other.py` names a different one and `--no-prelude` turns it off.
 
 ## MCP server
+
+<!-- mcp-name: io.github.gemberkoekje/easel -->
 
 The same verbs again, for a client that speaks MCP — and the difference worth
 having is that the looking tools hand back the picture rather than a path to it.
@@ -202,18 +243,21 @@ that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `uni
 a whole pass from the shell all arrived in one round after a painter used the guide
 and wrote down what the engine had cost them.
 
-Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) is the record of what has actually been painted with
+it, and the honest reading of how good those pictures are.
+
+Two further documents sit behind this one. [`LESSONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/LESSONS.md) is what six measured
 painting runs and an adversarial review left behind — the method, the engine decisions
 that are load-bearing, the traps, and what is still open; read it before changing the
-engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
+engine or the guide. [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the request list from the
 most recent painting session; its twelve engine items are done, and it says what each
 one became and what is left.
 
 ## Licence
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](https://github.com/Gemberkoekje/EaselAPI/blob/main/LICENSE).
 
 The optional [Mixbox](https://github.com/scrtwpns/mixbox) pigment model gives better
 mixing than the built-in one, but its reference implementation is CC BY-NC. It is
-therefore an opt-in extra (`pip install -e ".[mixbox]"`), not a dependency — check
+therefore an opt-in extra (`pip install "easel-paint[mixbox]"`), not a dependency — check
 that its licence suits your use before enabling it.
