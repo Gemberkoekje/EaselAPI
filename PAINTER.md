@@ -414,6 +414,14 @@ The first ring lands *on* the boundary, so the colour you give it is the value t
 patch meets what it sits in at: the surrounding value melts the two together, and
 anything darker draws a rim round your glow.
 
+**Leave `size` off here.** The rings step `depth / n` apart — `depth` being half the
+patch's shorter extent — and each is laid over the ones before it, so the brush and
+the step are one mechanism and not two settings. A brush much wider than about three
+steps buries the first rings under the last, and the middle comes back one flat colour
+with a rim of ramp round it: a sun, not a glow. A preset's own default is five steps
+wide on a patch this size, which is why the verb now picks its brush from the step
+when you do not, and says so when the one you gave it will fill.
+
 **This matters more than it looks**, because a wide soft passage is where a picture's
 structure comes from. A field gradated top to bottom is a stack of horizontal bands
 until its joins are gone — and a stack of bands is a composition, which your quiet
@@ -1946,6 +1954,10 @@ the next marks of the real painting, so what you rehearse is what lands when you
 the same file again without the flag. Working this way, a mass you dislike costs a
 look instead of a repaint — which is the difference between rehearsing being the
 guide's best advice and it being free to follow.
+
+Name several scripts and they run in the order you gave them, and with `--rehearse`
+they go on **one** copy: `easel run p.easel p2_sea.py p3_rocks.py --rehearse`. A pass
+that goes on top of another pass has to be judged on it, not on bare ground.
 
 **Keep your helpers in a prelude.** A `prelude.py` sitting beside the session file is
 run first, in the same scope, so mixtures, landmarks and helper functions do not have

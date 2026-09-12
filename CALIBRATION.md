@@ -511,6 +511,15 @@ far end to run dry at, so a centred scumble defaults to `load_falloff=0.0`; with
 it the brush starves half way round and the glow comes out bright on one side. An
 explicit `load_falloff=` still wins.
 
+**Read the inward row's inner half again: `0.86, 0.91` is not a fall-off, it is
+flat.** That is the last rings burying the first, because `size=0.07` here is about
+four of the `depth / n` the rings step by. The verb now picks its own brush at about
+three steps when no `size=` is given, and warns when the one it is handed is wider —
+so the numbers above are what an explicit `0.07` still lays, not what the example
+lays. On an ellipse `0.72 × 0.24` at `n=7`, opacity `0.5`, the share of the patch
+sitting within `0.06` of the centre value runs **44%** at the bristle's own `0.11`,
+**12%** at `0.05`, and **0.2%** at `0.03`.
+
 ---
 
 ## Pressure

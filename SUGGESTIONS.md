@@ -2,13 +2,14 @@
 
 Three sessions, each written by the painter who had just finished a picture. The first
 is below; the second starts at *Suggestions from a second session*, and the third at
-*Suggestions from a third session*. **Every item on the first two lists is done** —
-nineteen for the engine, twenty for the guide — and the note under each says what it
-became, including the four that came back different when they were re-measured and the
-two that were questions rather than requests. **The third list is open.** After it, a
-synthesis of the documentation points that more than one session raised, and then the
-third session's answers to two questions about the guide's length and a warnings file,
-turned into actionable items.
+*Suggestions from a third session*. **Every engine item on all three lists is done** —
+twenty-five of them — and the note under each says what it became, including the four
+that came back different when they were re-measured and the three that were questions
+rather than requests. The first two sessions' guide items are done too, twenty of them.
+**The third session's guide list is open**, and so is the synthesis after it: the
+documentation points more than one session raised, and the third session's answers to
+two questions about the guide's length and a warnings file, turned into actionable
+items.
 
 Done is not the same as right. An engine item has a test behind it; a guide item is a
 hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
@@ -686,9 +687,17 @@ And every row of *the shape each tool leaves behind* survived being measured.
 
 These come from a third session: a lighthouse on a rocky headland at dusk, painted from
 `PAINTER.md` with no reference photograph, through the shell path, in 184 strokes of a
-300 budget. The painting and its scripts are in `paintings/lighthouse_dusk/`. Nothing
-here is done yet; the items are open, and the note format the two lists above use is
-left for whoever closes them.
+300 budget. The painting and its scripts are in `paintings/lighthouse_dusk/`. **All six
+engine items are done**, including the one that was a question; what each became is
+noted under it in **bold**, and each has a test in `tests/test_requests.py`. The guide
+list below is open.
+
+Two of them landed differently from how they were asked for. The pressure item offered
+a keyword, `alternate=False`, and got the other half of its own sentence instead —
+turning the alternation off would have stacked every pass's run-out along one edge,
+which is what the alternation is for. The contour question proposed `jitter=0` and was
+measured to the wrong lever: it is the sweep's wander, and the brush's jitter does not
+move it at all.
 
 **This session is not a clean measurement of the guide either.** The subject was chosen
 before anything was read, but `README.md`, `LESSONS.md`, `CALIBRATION.md`,
@@ -712,7 +721,10 @@ canvas. Where I could not settle something it is written as a question.
   and so does the mean encoded to a hex string first. So there are two working ways to
   hand a sampled colour back and the guide documents a third that does not work. It
   cost me one rehearsal: the halo's outer rings, meant to be the sky's own colour,
-  landed near black.
+  landed near black. **Answered from the engine side** (engine item 5): `s.sample(place)`
+  hands back the array, so there is now one way to ask rather than three encodings to
+  choose between. `REFERENCE.md` says what a triple is; the guide item below still
+  stands for `PAINTER.md`.
 - **Where the first pass of a stack lands.** A five-pass scumble red→blue over a
   square, `flat` at `size=0.08`, full opacity: with `direction=0`, `"horizontal"` or
   `"axis"` on a wide place, colour `a` is along the **top** edge; with `90` or
@@ -726,7 +738,9 @@ canvas. Where I could not settle something it is written as a question.
   the right end of one pass and the left end of the next. Measured on four horizontal
   passes: paint at the two ends `0.35 / 0.56`, `0.52 / 0.33`, `0.35 / 0.57`,
   `0.56 / 0.34`. A passage that is meant to brighten toward one side cannot be laid
-  with the verb; I laid the afterglow as six hand-written strokes instead.
+  with the verb; I laid the afterglow as six hand-written strokes instead. **Fixed**
+  (engine item 4): the paint still alternates, the pressure is read in canvas order,
+  and the same probe now prints the heavy end at the right on all four passes.
 - **The inward scumble fills solid when the brush is wider than about twice the ring
   step, and the default brush always is.** The rings step `depth / n` apart, where
   `depth` is half the patch's shorter extent, and each ring is laid over the ones
@@ -753,6 +767,10 @@ canvas. Where I could not settle something it is written as a question.
   own table shows the same thing on its patch — the inner half of the fall-off reads
   `0.86, 0.91`, flat — and reads it as a fall-off. A round patch of radius `0.10`
   with a `0.05` brush comes out right: `0.49 0.51 0.57 0.64 0.69 0.68 0.62`, 2.4% flat.
+  **Fixed** (engine item 1): with no `size=` the verb now picks `3 × depth / n`, so
+  the guide's example runs at the usable middle rather than at the preset's `0.11`,
+  and an explicit wider brush is warned about as it is laid. `CALIBRATION.md` now
+  reads its own row as the rim-round-a-flat-middle it is.
 - **`solid=True` is as even as it gets, and opacity does not change it.** A `flat` at
   `size=0.03`, `density=1.0`, `solid=True` over a region: interior sd `0.009` and a
   row-mean peak-to-peak of `0.028`–`0.030` at every combination of opacity `0.85` or
@@ -774,7 +792,8 @@ canvas. Where I could not settle something it is written as a question.
 - **`look(diff=True)` inside a rehearsal has nothing to diff against.**
   `_trial_session` sets the copy's `_last_look` to `None`, and the look it writes is
   the plain copy. So the one question a rehearsal exists to answer — what would this
-  pass change — cannot be asked of it as a tint.
+  pass change — cannot be asked of it as a tint. **Fixed** (engine item 3): the trial
+  carries the painting's last look, and the diff tints what the pass would change.
 - What the guide says and I can confirm: the ten pass scripts rebuilt the export from a
   fresh session with a matching sha256; `at_value` was asked for nineteen values and
   landed every one to the hundredth; `cost()` matched what was charged; the signature
@@ -792,30 +811,79 @@ went on repainting.
    at the bristle's default size the verb lays a solid patch with a rim of gradient
    round it, on any patch a painter would call a glow. Three rehearsals, and the verb
    was abandoned for hand-rolled strokes that do less than it could.
+
+   **Done, both halves.** With no `size=`, `scumble(direction="inward")` now takes its
+   brush from its own ring step — `3 × depth / n`, the session's own "usable middle" —
+   and with one, it warns when the brush is wider than that and says how many steps
+   wide it is, in the shape `cost()` warns about a budget. `depth` is computed in one
+   place now, so the step a size is derived from and the step the rings are laid on
+   cannot drift. On the ellipse above the picked brush comes out at `0.0514` against
+   the preset's `0.11`.
 2. **Rehearse several scripts in order from the shell.** `easel run p.easel p2.py
    p3.py --rehearse`, running them in sequence against one copy. I rehearsed the sea
    and rocks together five times, and the three finishing passes together once, by
    writing a wrapper that `exec()`s each file, because a pass that goes on top of
    another pass has to be judged on it. The wrapper is in nobody's log.
+
+   **Done.** `easel run p.easel p2.py p3.py` runs them in order against one session,
+   and with `--rehearse` against one copy. Each gets a fresh scope with the prelude
+   re-run in front of it, so running two passes together is *the same painting* as
+   running them one at a time — asserted pixel for pixel, because a feature that
+   quietly repaints differently depending on how it was invoked is worse than the
+   wrapper. A pass that fails names itself and what ran before it, and what those
+   passes painted is still saved.
 3. **Carry the last look into a rehearsal.** Copy `_last_look` into the trial session
    so that `look(diff=True)` in a rehearsed pass tints what the pass would change. It
    is one assignment, and it turns the rehearsal into the before-and-after it is for.
+
+   **Done**, and it was one assignment. The trial shares the painting's last look
+   rather than copying it: `render_look` reads it, `look` replaces it, neither writes
+   into it, and the trial is thrown away regardless.
 4. **Apply a pressure list in canvas order on `block_in` and `scumble` passes**, or
    take a keyword for it (`alternate=False`), so a passage that lands light on one
    side and heavy on the other is one call. Measured above. Six strokes of the afterglow
    are hand-written for exactly this reason, and they are the strokes in the painting
    most likely to be wanted again.
+
+   **Done as the first of the two, not the keyword.** `alternate=False` would have
+   stacked every pass's run-out along one edge, which is the thing the alternation
+   exists to prevent — so the *paint* still alternates and the *pressure* is read in
+   canvas order. It applies to `sweep` as well, which had the same defect for the same
+   reason. A named profile is a list with a word for it, so `press_in` and `lift_off`
+   swap on a reversed pass; `taper`, `even` and `swell` are their own mirror and are
+   passed through untouched rather than reversed into an equal-but-differently-computed
+   array, so every painting made before this replays byte for byte.
 5. **A way to sample the canvas into the palette.** Something like
    `s.palette["sky_here"] = s.sample(place)` returning the engine's own array, so a
    halo ring, a moon's dark side or a repair can match what is already there without
    the painter knowing which of three encodings the palette will assume. Until then the
    working recipe is to assign the `float32` array straight from `s.canvas.rgb`.
+
+   **Done, spelled as asked.** `s.sample(place)` returns the engine's own linear
+   `float32` array, which every colour argument takes untouched. A shape is averaged
+   over the shape and not its bounding box. It samples the paint rather than the view
+   of it: the relief shading `look` draws is light on the surface, not pigment in it,
+   and mixing it in would bake a highlight into the mixture.
 6. **Question: should the contour pass of `edge="clean"` wander?** The headland's ridge,
    filled clean with a `flat` at `size=0.08` along an unsmoothed eleven-point outline,
    came back with a row of rounded knobs along the top edge. I did not measure whether
    that is the contour pass's wander or the outline's corners under a wide brush, and I
    painted a strip over it. If it is the wander, a contour pass with `jitter=0` would
    draw the line the painter drew.
+
+   **Answered by measuring, and the answer is the wander — but not through `jitter`.**
+   Over ten seeds on an eleven-point ridge, `flat` at `size=0.08`: the contour sits a
+   mean `10.8px` past the drawn line either way, but how far varies from seed to seed
+   by **3.3px** with the wander and **1.1px** without, and its departure along its own
+   length falls from `3.98px` to `3.30px`. Setting the brush's `jitter=0` instead —
+   the fix this item proposed — moves neither number (`3.45` and `3.89`): it is the
+   sweep's own wobble, whose three draws carry whole sections of the contour off the
+   line at once, and not the tip. So `sweep` takes `wander=`, and the clean contour is
+   laid with it off: the wander exists to stop a *stack* of passes reading as parallel
+   rules, and a single pass has no parallel to break. It still takes its draw from the
+   generator and discards it, so turning it off moves the contour and nothing painted
+   after it. The remaining `3.30px` is the corners under a wide brush, which is the
+   other half of the question and is the outline doing what it was drawn to do.
 
 ## The guide
 

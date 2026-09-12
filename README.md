@@ -150,6 +150,7 @@ shell without holding a Python process open.
 easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
 easel run painting.easel first_pass.py
 easel run painting.easel first_pass.py --rehearse   # against a copy, committing nothing
+easel run painting.easel p2_sea.py p3_rocks.py --rehearse   # ...both passes, one copy
 easel look painting.easel --grid
 easel look painting.easel --values
 easel look painting.easel --region D4 --fine --reference ref.jpg

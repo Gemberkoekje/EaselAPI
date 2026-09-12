@@ -6,6 +6,13 @@ scumble fills solid at the default brush size, the flat's wander by jitter, whet
 opacity changes a solid block-in, whether a pressure list flips on alternate passes,
 and whether a rehearsal copy can diff against the painting's last look.
 
+Two of them now measure something the engine has since been changed about, and say
+so as they print: a pressure list is read in canvas order, and a rehearsal carries
+the painting's last look. The other five print what they always printed -- the
+inward scumble's brush is picked from its ring step now rather than left at a
+preset's, so this probe passes its sizes explicitly and the engine warns about the
+wide ones as it lays them, which is the same finding arriving from the other side.
+
     python scripts/probe_third_session.py            # writes out/probe_third_*.png
 """
 
@@ -147,6 +154,7 @@ def probe_solid() -> None:
 
 def probe_pressure_list() -> None:
     print("\n== a pressure list on the passes of a scumble ==")
+    print("  (read in canvas order now, so every pass lands the same way round)")
     s = new(ground="white")
     s.scumble(Region(0.1, 0.3, 0.9, 0.7), "ultramarine", "ultramarine", 4, brush="flat",
               size=0.05, opacity=1.0, load=1.0, load_falloff=0.0, direction=0,
@@ -170,8 +178,10 @@ def probe_diff_in_rehearsal() -> None:
     s.look(path=OUT / "probe_third_before.png")
     t = s.scratch()
     t.stroke([(0.2, 0.75), (0.8, 0.75)], "flat", "cadmium_yellow", size=0.1)
-    print(f"  the copy's _last_look is {t._last_look!r}, so the diff has nothing to tint "
-          f"against; wrote {t.look(diff=True, path=OUT / 'probe_third_rehearsal_diff.png')}")
+    carried = t._last_look is not None
+    path = t.look(diff=True, path=OUT / "probe_third_rehearsal_diff.png")
+    print(f"  the copy carries the painting's last look: {carried}; the diff tints what "
+          f"the pass would change. Wrote {path}")
 
 
 def main() -> None:

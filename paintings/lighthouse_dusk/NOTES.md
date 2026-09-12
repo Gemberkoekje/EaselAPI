@@ -16,6 +16,16 @@ its left side goes cool; the lamp lit, and its light in the air around the lante
   --ground burnt_sienna --seed 31 --budget 300` those ten passes reproduce
   `painting.png` **byte for byte** — verified by sha256. `p0_plan.py`, `check.py` and
   `p11_export.py` paint nothing and are not part of that sequence.
+- **That was true of the engine this was painted on, and the engine has since moved.**
+  Answering this session's own engine question 6, the contour of `block_in(edge="clean")`
+  no longer wanders off the outline it was given. Four masses here are filled clean —
+  the headland, the tower, the boulders and the rock finish — so a rebuild today draws
+  those four silhouettes where they were drawn rather than up to a few pixels off, and
+  differs from the committed `painting.png` in **8.8%** of its pixels, **1.6%** of them
+  by more than `8` of `255`. Same 184 strokes, same everything else. The scripts remain
+  the source; the PNG is the artefact of the engine of the day, and has not been
+  re-rendered. All eleven passes now run in one command:
+  `easel run painting.easel p0_plan.py p1_sky.py … p11_export.py`.
 
 ## No assisted modes
 

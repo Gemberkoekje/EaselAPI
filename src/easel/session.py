@@ -48,7 +48,13 @@ from easel.regions import (
     ellipse,
     polygon,
 )
-from easel.stroke import catmull_rom, draw_pencil, paint_stroke, press_width
+from easel.stroke import (
+    catmull_rom,
+    draw_pencil,
+    paint_stroke,
+    press_width,
+    pressure_curve,
+)
 
 __all__ = ["Session"]
 
@@ -379,7 +385,8 @@ class Session:
                 sitting behind other things wants. ``"clean"`` gives the mass a drawn
                 contour instead: the shape is inset by half the brush, filled, and
                 then one pass is swept along that inset outline in the same colour,
-                so the **outer half of the brush lands on the line you drew**.
+                so the **outer half of the brush lands on the line you drew** --
+                and that contour does not wander, because the line is the drawing.
                 Reach for it on a small mass whose silhouette is the drawing -- a
                 round tip lays its half-brush overhang as separate discs, and at that
                 size they read as a fringe of dots around the shape rather than as a
@@ -447,13 +454,14 @@ class Session:
                 stacklevel=2,
             )
 
-        for pass_dir, path in self._block_in_paths(fill, b, direction, density, overhang):
+        for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
+                                                            density, overhang):
             records.append(
                 self.stroke(
                     path,
                     brush=b,
                     color=color,
-                    pressure=pressure,
+                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                     note=note or (f"block-in {place.name or ('shape' if shaped else 'region')} "
                                   f"{pass_dir}{traced}"),
                 )
@@ -468,7 +476,7 @@ class Session:
             records.extend(self.sweep(
                 fill if isinstance(fill, Polygon) else polygon(fill),
                 brush=b, color=color, passes=1, depth=max(b.size * 0.5, 1e-3),
-                pressure=pressure,
+                pressure=pressure, wander=False,
                 note=note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
                               f"{traced}"),
             ))
@@ -495,8 +503,8 @@ class Session:
             angle = place.axis if pass_dir == "axis" else pass_dir
             paths = (self._shape_paths(place, angle, band, b.size * over) if shaped
                      else self._block_paths(place, angle, band, b.size * over))
-            for path in paths:
-                yield pass_dir, path
+            for path, flipped in paths:
+                yield pass_dir, path, flipped
 
     def _shape_paths(self, poly: Polygon, degrees, band: float, over: float):
         """Sweep a shape at an angle, every pass cut against its own outline.
@@ -530,7 +538,7 @@ class Session:
                                   oy + dy * (a + z) * 0.5 + ny * wob[1]),
                     _canvas_point(ox + dx * z + nx * wob[2], oy + dy * z + ny * wob[2]),
                 ]
-                yield path if i % 2 == 0 else path[::-1]
+                yield (path, False) if i % 2 == 0 else (path[::-1], True)
 
     def _angled_paths(self, r: Region, degrees: float, band: float, over: float):
         """Sweep a region at an arbitrary angle, stepping along the sweep's normal.
@@ -577,7 +585,7 @@ class Session:
                 ),
                 _canvas_point(ox + dx * t1 + nx * wob[2], oy + dy * t1 + ny * wob[2]),
             ]
-            yield path if i % 2 == 0 else path[::-1]
+            yield (path, False) if i % 2 == 0 else (path[::-1], True)
 
     def _block_paths(self, r: Region, direction, band: float, over: float):
         if not isinstance(direction, str):
@@ -601,7 +609,7 @@ class Session:
                     ((r.x0 + r.x1) * 0.5, float(np.clip(y + wob[1], 0.0, 1.0))),
                     (min(r.x1 + over, 1.0), float(np.clip(y + wob[2], 0.0, 1.0))),
                 ]
-                yield path if i % 2 == 0 else path[::-1]
+                yield (path, False) if i % 2 == 0 else (path[::-1], True)
         elif direction == "vertical":
             n = max(1, int(round(r.width / band)))
             for i in range(n):
@@ -612,7 +620,7 @@ class Session:
                     (float(np.clip(x + wob[1], 0.0, 1.0)), (r.y0 + r.y1) * 0.5),
                     (float(np.clip(x + wob[2], 0.0, 1.0)), min(r.y1 + over, 1.0)),
                 ]
-                yield path if i % 2 == 0 else path[::-1]
+                yield (path, False) if i % 2 == 0 else (path[::-1], True)
         elif direction == "diagonal":
             h = r.height
             span = r.width + h
@@ -642,7 +650,7 @@ class Session:
                     )
                     for u, w in zip((lo, (lo + hi) * 0.5, hi), wob, strict=True)
                 ]
-                yield path if i % 2 == 0 else path[::-1]
+                yield (path, False) if i % 2 == 0 else (path[::-1], True)
         else:
             raise ValueError(
                 f"Unknown direction {direction!r}. "
@@ -662,6 +670,7 @@ class Session:
         closed: bool | None = None,
         density: float = 1.0,
         pressure="taper",
+        wander: bool = True,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -714,6 +723,20 @@ class Session:
             density: as ``block_in``: 1.0 covers, below 1 spaces the passes out and
                 leaves what is underneath showing through.
             pressure: pressure profile for each pass.
+            wander: whether each pass wanders a little off the offset curve, so that
+                a stack of them is not a set of parallel rules. That is what it is
+                for, and a stack is the usual case -- but a **single** pass has no
+                parallel to break, and the wander then only moves the line off the
+                one the painter drew. Three draws carry the whole pass, so what it
+                moves is a whole section of it at once. Measured on an eleven-point
+                ridge, ``flat`` at ``size=0.08``, over ten seeds: the contour sits
+                a mean ``10.8px`` past the drawn line either way, but how far varies
+                from seed to seed by **3.3px** with the wander and **1.1px** without
+                it, and its departure along its own length falls from ``3.98px`` to
+                ``3.30px``. (Setting the brush's ``jitter=0`` instead does nothing
+                here: ``3.45px`` and ``3.89px``. It is this, not the tip.) Off for
+                the contour of :meth:`block_in`'s ``edge="clean"``, whose whole
+                bargain is landing on the line.
             note: recorded in the log.
 
         Returns:
@@ -732,12 +755,13 @@ class Session:
         depth, step, n_passes, cross = self._sweep_passes(b, depth, passes, cross, density)
 
         records: list[StrokeRecord] = []
-        for kind, path in self._sweep_paths(edge, step, n_passes, depth, cross,
-                                            into, closed):
+        for kind, path, flipped in self._sweep_paths(edge, step, n_passes, depth,
+                                                     cross, into, closed, wander):
             records.append(
                 self.stroke(
                     path,
-                    brush=b, color=color, pressure=pressure,
+                    brush=b, color=color,
+                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                     note=note or kind,
                 )
             )
@@ -789,7 +813,7 @@ class Session:
         return depth, step, n_passes, cross
 
     def _sweep_paths(self, edge, step: float, n_passes: int, depth: float,
-                     cross, into, closed):
+                     cross, into, closed, wander: bool = True):
         """Every pass ``sweep`` would lay, as geometry, before any of it is paint.
 
         :meth:`_block_in_paths`' counterpart, and split out for the same reason: a
@@ -808,32 +832,41 @@ class Session:
         length = float(cum[-1])
 
         for k in range(n_passes):
-            off = k * step + self._sweep_wobble(cum, length, step, ring)
+            off = k * step + self._sweep_wobble(cum, length, step, ring, wander)
             path = _drop_folds(spine + normals * off[:, None], spine, step)
             if path is None:
                 continue                      # this pass folded in on itself: past the middle
-            yield "sweep", (path if k % 2 == 0 else path[::-1])
+            yield ("sweep", path, False) if k % 2 == 0 else ("sweep", path[::-1], True)
 
         if cross is None:
             return
 
         for i, (us, vs) in enumerate(_cross_lines(length, depth, step, cross, spacing)):
             base = _band_points(spine, normals, cum, us, np.zeros_like(vs))
-            wob = self._sweep_wobble(us, length, step, False)
+            wob = self._sweep_wobble(us, length, step, False, wander)
             path = _drop_folds(_band_points(spine, normals, cum, us, vs + wob), base, step)
             if path is None:
                 continue
-            yield "sweep cross", (path if i % 2 == 0 else path[::-1])
+            yield (("sweep cross", path, False) if i % 2 == 0
+                   else ("sweep cross", path[::-1], True))
 
-    def _sweep_wobble(self, at, length: float, step: float, ring: bool) -> np.ndarray:
+    def _sweep_wobble(self, at, length: float, step: float, ring: bool,
+                      wander: bool = True) -> np.ndarray:
         """A smooth wander along a pass, so a sweep is not a set of parallel rules.
 
         Three draws interpolated along the pass, not noise per point: independent
         per-point noise clumps and gaps, which reads as an artefact rather than as a
         hand. A closed edge gets the same value at both ends
         so the seam does not step.
+
+        ``wander=False`` returns no offset -- but *takes the draw anyway*, so that
+        turning it off moves the pass it is turned off for and nothing else. Skipping
+        the draw would shift the generator's stream under every mark laid after it,
+        and a painting reruns from its own scripts.
         """
         wob = self.rng.normal(0.0, step * 0.3, size=3)
+        if not wander:
+            return np.zeros(np.shape(at))
         if ring:
             wob[-1] = wob[0]
         return np.interp(at, [0.0, length * 0.5, length], wob)
@@ -954,6 +987,14 @@ class Session:
 
             s.scumble(patch, "shadow", "lit", 8, direction="inward")   # 8 strokes
 
+        The rings step ``depth / n`` apart, where ``depth`` is half the patch's
+        shorter extent, and each is laid over the ones before it -- so the brush and
+        the step are one mechanism, not two settings. Leave ``size`` off and it is
+        picked from the step (about three of them). Give a brush much wider than
+        that and the last rings bury the first: the middle comes back one flat
+        colour with a rim of ramp round it, which is a sun and not a glow, and it
+        says so.
+
         Reach for it instead of strokes radiating out from a centre -- which is the
         obvious answer and gives you a daisy, because strokes that all start in one
         place draw the petals of one.
@@ -975,8 +1016,16 @@ class Session:
             n: how many passes. Below about five the steps start to read; the guide's
                 own recipe uses eight.
             brush: preset name or brush.
-            size: brush size override. The default brush is wider than the step, and
-                that overlap is the point -- a much smaller brush leaves the bands.
+            size: brush size override. On a band the default brush is wider than the
+                step, and that overlap is the point -- a much smaller brush leaves
+                the bands. On ``direction="inward"`` leave it off: the verb sizes
+                the brush from its own ring step, because a preset's default is
+                five steps wide on a patch a painter would call a glow and fills it
+                flat. Measured on an ellipse ``0.72x0.24`` at ``n=7``, opacity
+                ``0.5``, bristle -- the share of the patch within ``0.06`` of the
+                centre value: **44%** at the preset's ``0.11``, **12%** at
+                ``0.05``, **0.2%** at ``0.03``. Three ring steps is the usable
+                middle and is what it picks.
             opacity: each pass is laid part-transparent so that the passes blend
                 into each other rather than replacing one another.
             direction: which way the passes run. ``"axis"``, the default, runs them
@@ -1008,8 +1057,14 @@ class Session:
             # Left to the usual falloff the brush starves half way round and the glow
             # comes out bright on one side, which is not a fall-off from a centre. A
             # default, not an override: `load_falloff=` beside it still wins.
+            # The brush comes from the ring step unless the painter named one. A
+            # `Brush` handed in carries a size somebody chose, so it counts as named;
+            # a preset's name does not, and a preset's default is what fills the patch.
+            if size is None and not isinstance(brush, Brush):
+                size = _inward_size(place, n)
             b = self._resolve_brush(brush, size, opacity,
                                     {"load_falloff": 0.0, **brush_overrides})
+            _check_inward_brush(place, b, n)
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note)
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
@@ -1020,11 +1075,11 @@ class Session:
 
         records: list[StrokeRecord] = []
         laid = 0
-        for path in paths:
+        for path, flipped in paths:
             t = laid / max(n - 1, 1)
             records.append(self.stroke(
                 path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
-                pressure=pressure,
+                pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                 note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
             ))
             laid += 1
@@ -1052,13 +1107,13 @@ class Session:
         outline = place.closed if isinstance(place, Polygon) else polygon(place).closed
         # In to the middle: half the shorter extent, which is the radius of a round
         # patch and the half-width of a long one, where the ramp lands on its spine.
-        depth = max(0.5 * min(place.width, place.height), b.size * 0.5)
+        depth = _inward_depth(place, b.size)
         records: list[StrokeRecord] = []
-        for k, path in self._ring_paths(outline, depth / n, n):
+        for k, path, flipped in self._ring_paths(outline, depth / n, n):
             records.append(self.stroke(
                 path, brush=b,
                 color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
-                pressure=pressure,
+                pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                 note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
             ))
         return records
@@ -1082,7 +1137,7 @@ class Session:
             path = _drop_folds(spine + normals * off[:, None], spine, step)
             if path is None:
                 continue            # this ring folded in on itself: past the middle
-            yield k, (path if k % 2 == 0 else path[::-1])
+            yield (k, path, False) if k % 2 == 0 else (k, path[::-1], True)
 
     def pencil(
         self,
@@ -1839,7 +1894,13 @@ class Session:
         trial.timelapse = False
         trial._is_trial = True
         trial._look_counter = 0
-        trial._last_look = None
+        # The painting's own last look, so `look(diff=True)` inside a rehearsed pass
+        # tints what the pass would change. A trial starting with none could only
+        # diff a rehearsal against itself, which is to say against nothing -- and
+        # what a pass would change is the one question a rehearsal exists to answer.
+        # Shared rather than copied: `render_look` reads it and `look` replaces it,
+        # neither writes into it, and the trial is thrown away regardless.
+        trial._last_look = self._last_look
         trial.marks = self.marks
         trial._preparation = self._preparation
         trial.assisted = []
@@ -1971,6 +2032,57 @@ class Session:
                 "label": str(spec.get("label", spec.get("note", "") or index + 1))}
 
     # -- measuring --------------------------------------------------------------
+    def sample(self, place=None) -> np.ndarray:
+        """The colour already on the canvas at a place, ready to paint with.
+
+        Returns the engine's own linear ``float32`` array, which is what the palette
+        and every colour argument take untouched::
+
+            s.palette["sky_here"] = s.sample(halo_ring)      # matches what is there
+            s.stroke(path, "round_soft", s.sample(cell("B2")))
+
+        A halo's outer ring meant to be the sky's own colour, a moon's dark side, a
+        repair that has to disappear into what it lands on: each needs the colour
+        that is *there*, not the one that was mixed for it eight passes ago and has
+        since been scumbled over.
+
+        Reading it back by hand is where this goes wrong, and quietly. The canvas
+        holds linear light; a plain ``(r, g, b)`` tuple handed to the palette is read
+        as sRGB, the same as a hex string is -- so a mean sampled off ``s.canvas.rgb``
+        and passed back as a tuple comes back a different colour. Measured on a
+        ``toned_grey`` ground, which reads ``0.53``: its own mean, assigned as a
+        tuple, reads **0.25**. This hands back the array, which passes through as
+        itself.
+
+        The paint is what is sampled, not the view of it: the relief shading that
+        ``look`` draws is light on the surface, not pigment in it, and mixing it
+        into a colour would bake a highlight into the mixture.
+
+        Args:
+            place: a name, a region, a 4-tuple or a shape. A shape is averaged over
+                the shape itself, not its bounding box. Omitted, the whole canvas.
+
+        Returns:
+            A linear ``float32`` array of shape ``(3,)``.
+        """
+        rgb = self.canvas.rgb
+        if place is None:
+            return rgb.reshape(-1, 3).mean(axis=0).astype(np.float32)
+
+        spot = as_place(place)
+        x0, y0, x1, y1 = self.canvas.region_px(spot)
+        window = rgb[y0:y1, x0:x1]
+        # Duck-typed on `mask`, the way the canvas itself decides whether a place is
+        # a shape or a rectangle.
+        maker = getattr(spot, "mask", None)
+        if maker is not None:
+            inside = maker(self.canvas.width, self.canvas.height)[y0:y1, x0:x1]
+            if inside.any():
+                return window[inside].mean(axis=0).astype(np.float32)
+            # A shape thinner than a pixel, or one drawn entirely off the canvas:
+            # its bounding box is the honest answer and is never empty.
+        return window.reshape(-1, 3).mean(axis=0).astype(np.float32)
+
     def compare(
         self,
         reference: str | Path | Image.Image,
@@ -2584,6 +2696,114 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+#: Named pressure profiles that are their own mirror image, and so mean the same
+#: thing whichever end of a pass is laid first. Listed rather than derived so that
+#: a pass laid at ``taper`` -- the default, and the great majority of every painting
+#: ever made here -- goes through :func:`_canvas_order_pressure` untouched and lands
+#: byte-for-byte where it always did.
+_SYMMETRIC_PRESSURES = ("taper", "even", "swell")
+
+#: The asymmetric profiles that mirror onto each other exactly.
+_MIRRORED_PRESSURES = {"press_in": "lift_off", "lift_off": "press_in"}
+
+
+def _canvas_order_pressure(pressure):
+    """The same pressure profile, for a pass that is laid the other way round.
+
+    Consecutive passes of a mass run in opposite directions -- the way a hand comes
+    back across the canvas, and the reason a stack of passes does not stack all its
+    run-out along one edge. A pressure profile, though, is applied along the path's
+    own order, so on every second pass an asymmetric one arrives mirrored: measured
+    on four horizontal passes at ``pressure=[0.0, 1.0]``, the paint at the two ends
+    came back ``0.35 / 0.56``, ``0.52 / 0.33``, ``0.35 / 0.57``, ``0.56 / 0.34``.
+    A passage meant to brighten toward one side could not be laid with the verb at
+    all; it had to be hand-written as six separate strokes.
+
+    So the profile is reversed for the passes that are, which leaves the *paint*
+    alternating -- which is what it is for -- and the *pressure* reading the same
+    way across the canvas on every pass.
+
+    Symmetric profiles and scalars are returned unchanged rather than reversed into
+    an equal-but-differently-computed array, so that nothing already painted moves.
+    """
+    if isinstance(pressure, str):
+        name = pressure.lower()
+        if name in _SYMMETRIC_PRESSURES:
+            return pressure
+        if name in _MIRRORED_PRESSURES:
+            return _MIRRORED_PRESSURES[name]
+        # `dab` is the one asymmetric profile with no named mirror; an unknown name
+        # raises here with pressure_curve's own complaint, as it would anyway.
+        return pressure_curve(pressure, 64)[::-1]
+    arr = np.atleast_1d(np.asarray(pressure, dtype=np.float32))
+    return pressure if arr.size < 2 else arr[::-1]
+
+
+def _inward_depth(place, brush_size: float = 0.0) -> float:
+    """How far a centred scumble steps in: half the patch's shorter extent.
+
+    The radius of a round patch and the half-width of a long one, which is where
+    the ramp lands on its spine. Floored at half a brush so a patch smaller than
+    the brush still gets a step to walk.
+
+    One place, so the ring step a brush size is *derived* from and the ring step
+    the rings are actually laid on cannot drift apart.
+    """
+    return max(0.5 * min(place.width, place.height), brush_size * 0.5)
+
+
+#: How many ring steps wide a centred scumble's brush should be. Below about two
+#: the rings stop overlapping and the ramp comes back as stripes; above about four
+#: the last rings bury the first and the middle goes flat. Measured on an ellipse
+#: 0.72x0.24 at ``n=7``, opacity 0.5, bristle -- the share of the patch sitting
+#: within 0.06 of the centre value: 44% at five steps wide, 12% at three, 0.2% at
+#: under two. Three is the usable middle, and the one this picks.
+_INWARD_STEPS = 3.0
+
+
+def _inward_size(place, n: int) -> float:
+    """The brush a centred scumble wants: about three of its own ring steps.
+
+    ``scumble(direction="inward")`` steps its rings ``depth / n`` apart and lays
+    each over the ones before it, so the brush and the step are one mechanism and
+    not two settings. Left to the preset's default the bristle is ``0.11`` -- five
+    steps wide on the patch above, wide enough that the last rings bury the first
+    and nearly half the patch comes back one flat colour with a rim of ramp round
+    it. That is the solid sun a painter rehearses three times and then abandons the
+    verb for.
+
+    So with no ``size=`` the verb sizes its own brush. An explicit ``size=``, or a
+    :class:`~easel.brush.Brush` carrying one, is a painter's choice and is left
+    alone -- :func:`_check_inward_brush` says so when it is wide enough to fill.
+    """
+    step = _inward_depth(place) / max(n, 1)
+    # The Brush constructor takes (0, 1]; a large `n` on a small patch would
+    # otherwise derive its way to zero and raise from somewhere unhelpful.
+    return float(min(max(_INWARD_STEPS * step, 0.01), 1.0))
+
+
+def _check_inward_brush(place, b: Brush, n: int) -> None:
+    """Warn when a centred scumble's brush is wide enough to fill the patch flat.
+
+    The same shape of warning ``cost()`` gives for a plan that would eat the
+    budget: the verb still does what it was asked, and says what it will look
+    like. Silence here cost one painter three rehearsals and the verb.
+    """
+    step = _inward_depth(place, b.size) / max(n, 1)
+    widest = _INWARD_STEPS * step
+    if b.size <= widest * 1.05:
+        return
+    warnings.warn(
+        f"scumble(direction='inward') with a brush {b.size:.3g} wide on a patch "
+        f"whose rings step {step:.3g} apart: {b.size / step:.1f} steps. The last "
+        f"rings bury the first, so the middle comes back one flat colour with a "
+        f"rim of ramp round it rather than a fall-off. Keep the brush under about "
+        f"three ring steps -- size={widest:.3g} here -- or leave size= off and it "
+        f"is picked for you.",
+        stacklevel=3,
+    )
+
+
 def _normal_extent(place, degrees: float) -> float:
     """How far a place reaches across a sweep at ``degrees``, along that sweep's normal.
 

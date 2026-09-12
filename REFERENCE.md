@@ -75,13 +75,14 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
 | `solid` | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass |
 | `overhang` | `0.35` box, `0` shape | how far each pass runs **past the ends** of the place, in brush widths. Not its sides |
-| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline |
+| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline. The contour does not wander: the line is the drawing |
 | `direction` | `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"` |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
 | `load_falloff` | the brush's | how fast it spends. `0` never runs dry |
-| `size` | the brush's | tip diameter, as a fraction of the canvas long side |
+| `size` | the brush's | tip diameter, as a fraction of the canvas long side. On `scumble(direction="inward")`, left off, it is picked from the ring step: `3 × depth / n` |
+| `wander` (sweep) | `True` | whether each pass wanders off the offset curve, so a stack is not parallel rules. A **single** pass has no parallel to break and the wander only moves it off the line drawn; off for the contour of `edge="clean"` |
 | `tip_wobble` | `0.0` | a round tip's own silhouette, redrawn per mark. `0.35` a brush set down once, `0.7`+ a clot |
 | `press` | `1` | for a one-point mark, how many times to stamp it. One mark either way |
 | `glaze` | `False` | lay colour without building paint height |
@@ -122,6 +123,12 @@ Every other `Brush` field, with its default: `spacing 0.12`, `jitter 0.02`,
 
 `"taper"` (the default), `"press_in"`, `"lift_off"`, `"even"`, `"swell"`, `"dab"` — or a
 number, or a list interpolated along the stroke.
+
+Consecutive passes of a mass run in **opposite** directions, so that a stack does not
+stack all its run-out along one edge. The pressure profile does not go with them: a
+list, or an asymmetric named profile, is read in **canvas order** on every pass, so
+`pressure=[0.0, 1.0]` across a `block_in`, `scumble` or `sweep` lands light at one side
+of the place and heavy at the other, once, rather than alternating.
 
 | Tip family | What pressure changes |
 |---|---|
@@ -183,6 +190,17 @@ p.value_of(c)               # what look(values=True) will show
 p.darkest_value             # about 0.13: the floor of the box
 ```
 
+A colour is a pigment name, a mixed slot's name, a `#rrggbb` string, an `(r, g, b)`
+triple **read as sRGB, the same as the hex string is**, or a `float32` array the engine
+made, which is linear light and passes through as itself. The triple is the trap: a
+colour read off the canvas and handed back as one comes back darker — a `toned_grey`
+ground reads `0.53`, its own mean as a triple reads `0.25`. To match what is already
+there, ask for it and pass it straight on:
+
+```python
+p["sky_here"] = s.sample(halo_ring)     # the engine's own array, no conversion
+```
+
 Grounds for `Session(ground=...)`: `white`, `warm_white`, `toned_grey`,
 `toned_warm_grey`, `cool_grey`, `umber_wash`, `burnt_sienna` — or any colour.
 Textures: `smooth`, `linen`, `rough`.
@@ -199,6 +217,7 @@ s.cost(plan)        s.cost_line(plan)           # what it charges, and why
 s.paint(plan)                                   # the same plan, now paid for
 s.compare("ref.jpg", region=, threshold=0.10)   # per-cell value of both, and the miss
 s.compare({place: value, ...})                  # ...against your own value plan
+s.sample(place=None)                            # the colour already there, to paint with
 s.prepare("ref.jpg", level="coarse")            # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
 s.export("painting.png", impasto=True, sketch=True)
@@ -231,7 +250,7 @@ s.save(path)       Session.load(path)
 
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
-easel run p.easel pass.py [--rehearse] [--prelude other.py] [--no-prelude]
+easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--prelude other.py] [--no-prelude]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
 easel compare p.easel ref.jpg [--region D4]
@@ -246,6 +265,10 @@ easel guide [--full | --reference | --calibration] [--path]
 A script run by `easel run` gets the session as `s`, with the whole public API already
 in scope and no imports needed. A `prelude.py` beside the session file runs first in the
 same scope, so helpers, mixtures and landmarks survive between passes.
+
+Several scripts run in the order given, each in its own scope with the prelude in front
+of it — the same painting as running them one at a time, and with `--rehearse` they go
+on **one** copy, so a pass that lands on top of another pass is judged on it.
 
 The same verbs are available over MCP (`easel-mcp`), where the looking tools hand back
 the picture rather than a path to it. See [`README.md`](README.md).
