@@ -1,6 +1,6 @@
 # What Easel has painted
 
-> Three pictures, each painted by a language model working from the guide — no reference
+> Every picture here was painted by a language model working from the guide — no reference
 > photograph, no human hand on the canvas, nothing traced. Every mark is a call to this
 > API and every one of them is in the log. This file is the record: what was painted,
 > what it cost, what failed, and how good the results actually are.
@@ -9,8 +9,12 @@ The engine's claim is that a model can paint rather than generate, so the engine
 worth what has been painted with it. These are those paintings, at full size, with the
 parts that did not work left in.
 
-**If you are about to paint from the guide: have you decided what to paint?** All three
-pictures here name a subject, and a named subject chooses for you — six of six fresh
+**One section below per directory under [`paintings/`](paintings).** Nothing in this
+file counts them, on purpose: a painting is added by committing its directory and
+writing its section, and no sentence elsewhere has to be corrected to match.
+
+**If you are about to paint from the guide: have you decided what to paint?** Every
+picture here names a subject, and a named subject chooses for you — six of six fresh
 sessions once painted a noun the guide had merely listed in passing. **Decide first,
 then read this page.** A painter who chose before opening the repository cannot be
 steered by a noun in a worked example, and one who has not chosen can be; that is the
@@ -21,7 +25,7 @@ Having decided, read them: the pass scripts beside each painting are the end-to-
 worked example the guide cannot be, and the third painter here said it would not have
 arrived at their convention on its own.
 
-## The rules all three were made under
+## The rules they were all made under
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
   towards what the engine happens to be good at.
@@ -31,9 +35,11 @@ arrived at their convention on its own.
   `CALIBRATION.md` first; the lighthouse read those, `PAINTINGS.md`, and both earlier
   paintings' notes and scripts, and took its pass-script convention, its prelude of
   masses as functions and its `compare()` plan sheet from them rather than from the
-  guide. So where the three agree, that is three painters finding the same thing with
-  increasing context — and where they disagree, it may be the context talking. Each
-  painting's notes say which it was.
+  guide. The laundromat read `PAINTING.md`, `RECIPES.md` and `REFERENCE.md` but never
+  opened `CALIBRATION.md`, and of the earlier paintings read one prelude and one
+  planning pass and nothing else. So where they agree, that is several painters finding
+  the same thing with increasing context — and where they disagree, it may be the
+  context talking. Each painting's notes say which it was.
 - No reference photograph, so `prepare`, `sketch`, `ref_shape` and `ref_outline` were
   unavailable and nothing was traced. Every mass is a `polygon`, `blob` or region
   written by hand.
@@ -90,7 +96,8 @@ redone quiet and grey, a sill too orange and its top edge twice, cast shadows th
 on as black slugs, and four hard-edged bars of sunlight buried and redone as one
 soft-edged region. This painting is also the one that started
 [`SUGGESTIONS.md`](SUGGESTIONS.md) — the register of what each painter asked for after
-using the guide, which all three have since added to and every item of which is done.
+using the guide, which every session since has added to, and every item of which is
+done.
 
 ## A lighthouse on a rocky headland at dusk
 
@@ -119,6 +126,44 @@ also record two things the engine did that the guide did not say — a raw RGB t
 handed to the palette is read as sRGB rather than linear, and a vertical pass stack
 starts at the right-hand edge. Both are documented now: the first has a verb of its own,
 `s.sample(place)`, and the second is a table in [`REFERENCE.md`](REFERENCE.md).
+
+## A laundromat at night, from across the street
+
+![A laundromat at night seen from the sidewalk opposite: a wide lit shopfront window set
+in a dark building, a row of washing machines with round doors inside it, one person
+sitting alone at the right-hand end, and the window's light broken into streaks down a
+wet road in the foreground](paintings/laundromat_night/painting.png)
+
+One lit window in a dark street. The shopfront is the only light in the picture except a
+sodium lamp off-canvas to the right; inside it a run of machines, a folding table and a
+single figure sitting backlit against the wall; outside, the light lies on the sidewalk
+and breaks into streaks down the wet road. The ground is the first custom one here — no
+preset goes below `umber_wash` at `0.425`, and all seven are too light for night, so
+every mass would have been a hole in one.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, a custom ground at value `0.32`, seed 11 |
+| Spent | 286 strokes of a 300 budget, plus two signature marks that did not count |
+| Rehearsed and thrown away | 56 rehearsal runs, none of them charged |
+| Reproducible | Fourteen pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
+| Files | [`paintings/laundromat_night/`](paintings/laundromat_night) — [notes](paintings/laundromat_night/NOTES.md), [time-lapse](paintings/laundromat_night/painting.gif) |
+
+The [notes](paintings/laundromat_night/NOTES.md) record a lit interior that came back a
+venetian blind and then a slab, a reflection that flooded the whole foreground, four
+smudges that dragged pale finger-shaped lobes out of the glow, a window frame beaded
+into chains of blocks by a default jitter wider than its own members, and a rim light
+that put a white cap on the head of the one figure the picture is aimed at. Not one mass
+was repainted and `undo` was never called: every bit of that was found on a copy.
+
+They also record something none of the others do. Six of its findings became engine
+requests and **two did not survive being re-measured** — including the one it led with —
+so the notes keep both struck through in place with the measurement that overturned
+them. The rendered view does not lift a solid mass off its planned value; a `0.25` band
+against a `0.17` wall merely looks like it does, because contrast is local, and the
+painter invented a mechanism rather than believe a number it had already sampled
+correctly. Both were the items it had marked *observed* rather than *measured*, which is
+the distinction earning its keep.
 
 ## The log
 
@@ -156,19 +201,21 @@ golden-image tests in CI.
   `PAINTER.md`, and the standing rule from them is in
   [`LESSONS.md`](LESSONS.md): *a guide change is a hypothesis until a fresh session
   paints against it.*
-- None of the three is finished in the sense a painter would mean. The car wash left 94
+- None of them is finished in the sense a painter would mean. The car wash left 94
   strokes unspent and names the passage it did not know how to solve; the pears left
   three rims that are three similar yellow stripes; the lighthouse stopped with 116
-  unspent on purpose and says which passage they should have gone to if that was wrong.
+  unspent on purpose and says which passage they should have gone to if that was wrong;
+  the laundromat spent all but 14 and still calls its own composition — a frontal
+  elevation that is a stack of horizontal bands — the thing it would change first.
 
 ## Further
 
 - [`README.md`](README.md) — what the engine is and how to install it.
-- [`PAINTER.md`](PAINTER.md) — the guide all three painters read: the method, in one
+- [`PAINTER.md`](PAINTER.md) — the guide every painter here read: the method, in one
   file meant to be held in the head.
 - [`PAINTING.md`](PAINTING.md) — the same rules with their reasons, the failures behind
   them and the numbers.
-- [`RECIPES.md`](RECIPES.md) — the procedures these three paintings produced, collected:
+- [`RECIPES.md`](RECIPES.md) — the procedures these paintings produced, collected:
   the calls in order, and what each looks like when it goes wrong.
 - [`REFERENCE.md`](REFERENCE.md) — every fact on one page: units, defaults, and what
   each argument does.
