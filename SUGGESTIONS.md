@@ -1,10 +1,14 @@
 # Suggestions for the engine and the guide, from the painting sessions
 
-Two sessions, each written by the painter who had just finished a picture. The first
-is below; the second starts at *Suggestions from a second session*. **Every item on
-both lists is done** — nineteen for the engine, twenty for the guide — and the note
-under each says what it became, including the four that came back different when they
-were re-measured and the two that were questions rather than requests.
+Three sessions, each written by the painter who had just finished a picture. The first
+is below; the second starts at *Suggestions from a second session*, and the third at
+*Suggestions from a third session*. **Every item on the first two lists is done** —
+nineteen for the engine, twenty for the guide — and the note under each says what it
+became, including the four that came back different when they were re-measured and the
+two that were questions rather than requests. **The third list is open.** After it, a
+synthesis of the documentation points that more than one session raised, and then the
+third session's answers to two questions about the guide's length and a warnings file,
+turned into actionable items.
 
 Done is not the same as right. An engine item has a test behind it; a guide item is a
 hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
@@ -675,3 +679,458 @@ on; back to front and the inside-of-a-hollow-thing rule, which is the reason a s
 wheel reads as a ring rather than a hole; and the habit of putting a measured number
 behind a rule. The numbers changed what I did in a way the prose beside them did not.
 And every row of *the shape each tool leaves behind* survived being measured.
+
+---
+
+# Suggestions from a third session
+
+These come from a third session: a lighthouse on a rocky headland at dusk, painted from
+`PAINTER.md` with no reference photograph, through the shell path, in 184 strokes of a
+300 budget. The painting and its scripts are in `paintings/lighthouse_dusk/`. Nothing
+here is done yet; the items are open, and the note format the two lists above use is
+left for whoever closes them.
+
+**This session is not a clean measurement of the guide either.** The subject was chosen
+before anything was read, but `README.md`, `LESSONS.md`, `CALIBRATION.md`,
+`PAINTINGS.md` and both earlier paintings' notes and scripts were all read before the
+first stroke. The pass-script convention, the prelude of masses as functions and the
+`compare()` plan sheet were copied from `paintings/`, not worked out from the guide. So
+where this agrees with the two sessions above it is a third painter with more context,
+and where it disagrees it may be the context talking.
+
+Every claim below says whether it was measured or is an opinion. The measured ones are
+`scripts/probe_third_session.py`, which prints the numbers quoted here on a 512×384
+canvas. Where I could not settle something it is written as a question.
+
+## What the probes found
+
+- **A raw `(r, g, b)` triple handed to the palette is read as sRGB, not linear.** The
+  guide (*Colour*, "Supplying a colour of your own") and `REFERENCE.md` both say linear.
+  Measured: a `toned_grey` ground reads `0.53`; its own mean, taken from `s.canvas.rgb`
+  and assigned as a tuple, reads **`0.25`**. The same mean assigned as a `float32`
+  array reads `0.53`, because `parse_color` passes an engine array through untouched,
+  and so does the mean encoded to a hex string first. So there are two working ways to
+  hand a sampled colour back and the guide documents a third that does not work. It
+  cost me one rehearsal: the halo's outer rings, meant to be the sky's own colour,
+  landed near black.
+- **Where the first pass of a stack lands.** A five-pass scumble red→blue over a
+  square, `flat` at `size=0.08`, full opacity: with `direction=0`, `"horizontal"` or
+  `"axis"` on a wide place, colour `a` is along the **top** edge; with `90` or
+  `"vertical"` it is along the **right**; with `45` it is in the upper right. A
+  `polygon` behaves the same as a `Region`. So `scumble(place, a, b, direction=90)`
+  puts `a` on the side away from the left, which is the opposite of what reading the
+  call suggests, and nothing says so. It cost me two rehearsals and the tower's lit
+  face went on the wrong side once.
+- **A pressure list flips on alternate passes.** `_angled_paths` yields every odd
+  path reversed, so a `pressure=[0.0, 1.0]` on a scumble or a block-in lands heavy at
+  the right end of one pass and the left end of the next. Measured on four horizontal
+  passes: paint at the two ends `0.35 / 0.56`, `0.52 / 0.33`, `0.35 / 0.57`,
+  `0.56 / 0.34`. A passage that is meant to brighten toward one side cannot be laid
+  with the verb; I laid the afterglow as six hand-written strokes instead.
+- **The inward scumble fills solid when the brush is wider than about twice the ring
+  step, and the default brush always is.** The rings step `depth / n` apart, where
+  `depth` is half the patch's shorter extent, and each ring is laid over the ones
+  before it. Measured on an ellipse `0.72 × 0.24`, `n=7`, opacity `0.5`, bristle,
+  colours `0.45` at the edge and `0.75` at the centre; the second column is the share
+  of the patch within `0.06` of the centre value, the profile is read from the top
+  edge to the middle:
+
+  | brush | flat at the centre value | profile, edge → centre |
+  |---|---|---|
+  | `0.09` | **44%** | `0.52 0.55 0.62 0.69 0.70 0.69 0.71` |
+  | `0.05` | 12% | `0.49 0.49 0.59 0.61 0.64 0.69 0.65` |
+  | `0.03` | 0.2% | `0.49 0.50 0.55 0.58 0.61 0.63 0.62` |
+  | `0.02` | 0% | `0.50 0.53 0.53 0.57 0.54 0.55 0.61` |
+  | `round_soft 0.09` | 42% | `0.50 0.56 0.60 0.66 0.71 0.72 0.72` |
+
+  The ring step here is `0.017`. At `0.09` the brush is five steps wide and the last
+  rings bury the first: nearly half the patch is one flat colour with a rim of ramp
+  round it, which is the solid yellow sun I rehearsed three times. At `0.03` the
+  ramp is smooth and the centre never reaches its colour, because at opacity `0.5`
+  nothing lands there more than twice. `0.05`, about three steps, is the usable
+  middle. The guide's example gives no `size=`, so it runs at the bristle's default
+  `0.11`, which fills any patch under about half a canvas across. `CALIBRATION.md`'s
+  own table shows the same thing on its patch — the inner half of the fall-off reads
+  `0.86, 0.91`, flat — and reads it as a fall-off. A round patch of radius `0.10`
+  with a `0.05` brush comes out right: `0.49 0.51 0.57 0.64 0.69 0.68 0.62`, 2.4% flat.
+- **`solid=True` is as even as it gets, and opacity does not change it.** A `flat` at
+  `size=0.03`, `density=1.0`, `solid=True` over a region: interior sd `0.009` and a
+  row-mean peak-to-peak of `0.028`–`0.030` at every combination of opacity `0.85` or
+  `1.0` and pressure `"taper"` or `"even"`. *This contradicts what I believed after my
+  own rock planes came out striped at opacity `0.85` and clean at `1.0`: the
+  measurement says the pass structure is `0.03` of value at any opacity, and what
+  changed between those two rehearsals was the shapes and the brush size, not the
+  opacity.* On a flat plane at feature scale `0.03` is visible; it is hidden by a
+  bigger brush or a broken one, not by an argument.
+- **The flat's wander has a middle setting, and it is two brush fields.** One
+  horizontal `flat` stroke, `size=0.1` (51 px on this canvas), top edge measured along
+  its length: default `jitter=0.02, size_jitter=0.06` wanders sd `1.2` px, peak to
+  peak `6` px; `jitter=0.01, size_jitter=0.03` halves both; `jitter=0.005,
+  size_jitter=0` is `1` px; zero is ruled. It scales with the brush, so at the
+  `size=0.13` I used for the sky the scallops were about twice this. I rehearsed only
+  the default and zero, found the default scalloped and zero ruled, and kept the
+  scallops; I did not go back and lay the sky at the halved setting, so whether it
+  reads better there is not measured.
+- **`look(diff=True)` inside a rehearsal has nothing to diff against.**
+  `_trial_session` sets the copy's `_last_look` to `None`, and the look it writes is
+  the plain copy. So the one question a rehearsal exists to answer — what would this
+  pass change — cannot be asked of it as a tint.
+- What the guide says and I can confirm: the ten pass scripts rebuilt the export from a
+  fresh session with a matching sha256; `at_value` was asked for nineteen values and
+  landed every one to the hundredth; `cost()` matched what was charged; the signature
+  was not charged; the rehearsal counter now runs apart from the painting's, and none
+  of seventy-two rehearsal looks overwrote another.
+
+## The engine
+
+In the order of how many rehearsals each would have saved me, since none of my strokes
+went on repainting.
+
+1. **Derive the inward scumble's brush from its ring step.** Default `size` to about
+   three times `depth / n` when `direction="inward"`, or warn when the brush given is
+   wider than that, the way `cost()` warns about a share of the budget. Measured above:
+   at the bristle's default size the verb lays a solid patch with a rim of gradient
+   round it, on any patch a painter would call a glow. Three rehearsals, and the verb
+   was abandoned for hand-rolled strokes that do less than it could.
+2. **Rehearse several scripts in order from the shell.** `easel run p.easel p2.py
+   p3.py --rehearse`, running them in sequence against one copy. I rehearsed the sea
+   and rocks together five times, and the three finishing passes together once, by
+   writing a wrapper that `exec()`s each file, because a pass that goes on top of
+   another pass has to be judged on it. The wrapper is in nobody's log.
+3. **Carry the last look into a rehearsal.** Copy `_last_look` into the trial session
+   so that `look(diff=True)` in a rehearsed pass tints what the pass would change. It
+   is one assignment, and it turns the rehearsal into the before-and-after it is for.
+4. **Apply a pressure list in canvas order on `block_in` and `scumble` passes**, or
+   take a keyword for it (`alternate=False`), so a passage that lands light on one
+   side and heavy on the other is one call. Measured above. Six strokes of the afterglow
+   are hand-written for exactly this reason, and they are the strokes in the painting
+   most likely to be wanted again.
+5. **A way to sample the canvas into the palette.** Something like
+   `s.palette["sky_here"] = s.sample(place)` returning the engine's own array, so a
+   halo ring, a moon's dark side or a repair can match what is already there without
+   the painter knowing which of three encodings the palette will assume. Until then the
+   working recipe is to assign the `float32` array straight from `s.canvas.rgb`.
+6. **Question: should the contour pass of `edge="clean"` wander?** The headland's ridge,
+   filled clean with a `flat` at `size=0.08` along an unsmoothed eleven-point outline,
+   came back with a row of rounded knobs along the top edge. I did not measure whether
+   that is the contour pass's wander or the outline's corners under a wide brush, and I
+   painted a strip over it. If it is the wander, a contour pass with `jitter=0` would
+   draw the line the painter drew.
+
+## The guide
+
+1. **Say what a triple is.** Under *Colour*, "a hex string or a linear RGB triple"
+   should read "a hex string, or an sRGB triple `0.0–1.0` as a hex string is; a
+   `float32` array from the engine itself is linear and passes through." The same row
+   in `REFERENCE.md`. And, beside it, the one line a painter reaches for this section
+   for: how to hand a colour sampled from the canvas back — assign the array, do not
+   round-trip it through a tuple.
+2. **Say where a stack starts.** In `REFERENCE.md` under `direction`: the first pass
+   is at the top for `0`, at the right for `90`, and every second pass runs the other
+   way, so a pressure list alternates. One row of a table.
+3. **A page of recipes that worked, one line and one code block each.** The guide is
+   strong on what not to do and has no recipe for the things a subject is made of; ten
+   of my eighteen rehearsals were spent finding these, and each is now a pass script
+   in `paintings/lighthouse_dusk/`:
+   - *a cylinder*: the mass solid in the shadow colour, the lit side as a second shape
+     laid on it, one half-strength stroke down the join (`p4_tower.py`). A pass ramp
+     across the whole width came out flat twice.
+   - *a rock*: not marks on a mass but the planes the mass is made of, as three or four
+     shapes tiling it, each at one value, the block-in's dark left as the shadow
+     (`p3_rocks.py`). Facets laid on the mass read as things stuck to it twice.
+   - *a brightening toward one side*: strokes all run the same way with
+     `pressure=[0.0, 0.55, 1.0]`, one value step apart (`p1_sky.py`).
+   - *a straight horizon*: one `flat` stroke with `jitter=0, size_jitter=0`; the only
+     ruled line a seascape needs (`p2_sea.py`).
+   - *a crescent*: one tapered arc on the round tip, `pressure=[0.05, 0.6, 1.0, 0.6,
+     0.05]` (`p6_moon_beam.py`). A disc with a disc bitten out of it leaves a ghost.
+   - *a small round thing*: a `dab(press=3)` is right when the thing **is** a disc,
+     and the guide's warning against discs reads as if it never is.
+   Opinion, all of it; each one is a recipe that worked once.
+4. **Give the inward scumble example a `size=` and a rule**, "keep the brush under
+   about three ring steps, `3 * depth / n`", and have `CALIBRATION.md` state the patch's
+   radius and read its own table as a rim of gradient round a flat middle. Measured
+   above.
+5. **"Rehearse any mass you would not want to repaint" is too weak.** Eighteen of
+   eighteen rehearsals changed something, none was charged, and no stroke in the
+   painting went on repainting anything. The line should say: rehearse every pass, it
+   costs a look. Opinion, with that one number behind it.
+6. **A line under `solid=True`**: the pass structure of a solid flat block-in is about
+   `0.03` of value at any opacity and pressure, which shows on a flat plane at feature
+   scale; hide it with a bigger brush or a bristle, not with `opacity`. Measured above,
+   and the opposite of what I believed while painting.
+7. **A line about glazes and colour.** A gold glaze at `opacity=0.14` across a violet
+   sky landed as a saturated stripe; at `0.07` it landed as nothing. The knife's rule,
+   "keep it close in value to what it lands on", seems to apply to a glaze's *hue* as
+   well, and the glaze line says only "thin transparent film". Observed twice, not
+   measured; the two rehearsals are in the notes and the beam is not in the painting.
+8. **Under *Painting without a reference*: re-check the plan sheet's places after
+   moving a silhouette.** My left-horizon place was written before the ridge was
+   raised and made jagged; it ended half rock and reported a `-0.16` miss that was not
+   one. `compare()` cannot know that a place has changed meaning; one line can.
+9. **The two-goes instruction, as a data point.** I read the whole guide and the
+   reference before doing the exercises, then did all eight, then painted. The
+   exercises still paid: the edge study showed me the smudge's thumbprint before I
+   could lay it in the picture, the load study showed the speckle a starved bristle
+   leaves, and the wet-versus-dry pair is why every sea pass was laid on dry sky. So
+   the gate held even when read in the wrong order. Whether the essay is finished by a
+   painter who does the exercises first, I cannot say; I did not.
+
+## What I would not change
+
+Rehearsal, seeded as the next real strokes: eighteen runs, nothing charged, and every
+one of the pictures' failures — a sun instead of a glow, a hull instead of a rock, a
+dark cloud instead of a halo, a mustard stripe instead of a beam — happened on a copy.
+`at_value`, which turned a value plan into nineteen mixtures without one guess.
+`compare({place: value})`, which measured the picture against the plan before and after
+the block-in and once at the end. The shape builders, `s.circle` doing the aspect
+arithmetic, and `edge="clean"`, which is why the tower has a silhouette. The worked
+examples in `paintings/`: the prelude of masses as functions and the numbered passes are
+the reason the painting re-runs from its own scripts, and I would not have arrived at
+that convention from the guide. And the eight exercises, which cost two minutes and
+were repaid inside the first pass.
+
+---
+
+# Documentation suggestions, synthesised across painting sessions
+
+Scope: documentation only. Engine findings (glow as a ramp not rings, sRGB/linear
+triples, `solid=True`, bristle below 0.025, flat jitter middle setting, pass-stack
+start side) are in the individual session reports and are not repeated here.
+
+Sources: the windowsill-pears session, the car-wash session (two sittings), the
+lighthouse session, and the four rehearsals before them. A point is listed only if
+more than one session raised it independently.
+
+## The three findings every session made
+
+**1. Strong on what not to do, thin on what to do.**
+Pears: "warning without procedure." Car wash: "there is no recipe for a small
+irregular bright mark, and I needed one four times." Lighthouse: "no recipe for a
+cylinder's form, a glow at size, or a rock mass — ten of my rehearsals were spent
+discovering those. One page of recipes would have halved my rehearsal count."
+
+Add `RECIPES.md`: one page, each recipe is the calls in order, the rehearsal count
+it took to find, and one line on what it looks like when it goes wrong. The
+painters have already written these in their rehearsal logs; collect, don't
+compose. Starting list, all requested by name:
+- a cylinder's form (lit face, terminator, reflected light)
+- a glow at size (currently fails above a small patch)
+- a rock mass that isn't slabs
+- a plane that is a plane (opacity 1.0, even pressure — currently discovered by hand)
+- a small irregular bright mark (the "short fat starved bristle smear" workaround)
+- a hollow thing, in depth order (far rim, inside, near rim)
+- a lost edge that is actually lost (car wash: "the two I lost are barely perceptible")
+- a quiet gradient without a gradient tool
+- a mark that crosses a boundary, for when a smudge isn't enough
+
+Keep recipes noun-free in the same way the guide is: "a cylinder," not "a tower."
+
+**2. Everyone underspends on the subject, after reading that they will.**
+Pears: 59% of strokes before the subject began. Car wash: worst passage named in
+its own notes, 115 strokes unspent. Lighthouse: 24% on the subject against a
+planned 32%. Each painter quotes the guide's warning while doing it.
+
+This is no longer a documentation gap; the prose has been tried three times. What
+documentation can still do: make the checklist read the ledger rather than the
+painter's intent. Replace "did you spend enough on the subject?" with "run
+`s.log()` (or the plan sheet) and write down the subject's share of strokes
+against the share you planned. If it is lower, you are not finished." A number the
+painter has to write down is harder to wave through than a question.
+
+**3. Rules known in prose are not known in the hand.**
+Car wash: made the floating-disc mistake twice after reading the warning and its
+measured table. Lighthouse: used only flat and round after the warning about
+exactly that, and read everything instead of following the two-goes instruction.
+Pears: skipped the exercises and blamed the curtain on it. Every session: "it
+predicted my mistake and I made it anyway."
+
+Consequences:
+- Keep the eight exercises. The one session that skipped them regretted it in
+  writing; the one that did them called them "two minutes well spent" and said the
+  edge study showed it the smudge thumbprint before it could make it. They are the
+  only part of the guide that teaches the hand.
+- Add a short list at the top of "What you are bad at": *the four mistakes every
+  painter so far has made after being warned*, each with its fix procedure on the
+  same line. Floating discs, capsule shadows, the stack of bars, brushwork that is
+  all flat and round. A warning the reader will violate anyway is only useful if
+  the repair is next to it.
+- Prefer cheap rules that are always followed over wise rules that are sometimes
+  followed (see 5).
+
+## Structure
+
+**4. Length: 17,000 words, read once, before the first stroke.**
+It was 8,600 when first reviewed, 10,800 after the subject-leak fix, and is now
+17,300. Every session says it is long; every session says the essay is what made
+the rules stick; both are true. "The first hour" front page is the right answer,
+but it sits at the top of a file whose length still signals "read all of this."
+
+Make the split physical. `PAINTER.md` becomes the front page, the order of work,
+"What you are bad at," the checklist, and the exercises — a target of 5,000 to
+6,000 words that a session can hold in its head. Everything else moves, unchanged,
+to a companion: `PAINTING.md` for the essay (colour, wet paint, edges, looking,
+the reasoning behind each rule), `REFERENCE.md` for facts about tools (already
+exists; the brush chapter belongs there), `RECIPES.md` for procedures. The
+two-goes instruction then stops being an instruction and becomes the file
+boundary. A session that reads everything anyway loses nothing; a session that
+reads only `PAINTER.md` gets the whole method.
+
+Standing rule for the guide, worth writing into `LESSONS.md`: a new finding
+either replaces an existing rule, becomes a checklist line, or goes to
+CALIBRATION, RECIPES or LESSONS. It never adds a paragraph to `PAINTER.md`.
+The file has grown by one paragraph per rehearsal; at the tenth rehearsal
+nobody reads to the end.
+
+**5. "Rehearse any mass you would not want to repaint" is too weak.**
+Car wash: 27 rehearsals in the first sitting, "every bad idea cost nothing."
+Lighthouse: 18 rehearsals, "changed something every time, none cost a stroke,"
+and "the true rule was rehearse everything, and it never failed to pay." Change
+the rule to *rehearse everything*. It is cheap, it is always followed, and the
+guide's own numbers say it pays.
+
+**6. The checklist is read as "done"; it means "may stop."**
+Car wash: "the checklist passing and me taking the exit," 115 strokes unspent.
+Lighthouse: stopped at 184 "partly a decision I can defend and partly wariness of
+making it worse." One sentence beside the checklist: passing it means the
+painting is not wrong, not that it is finished. The finished question is the
+subject-share number from point 2 and the worst passage named in your own notes.
+
+**7. Measured claims should state what they were measured on.**
+Lighthouse found the glow recipe "measured on a patch of unstated size" and it
+failed on a large one; the linear-triple claim was wrong in two documents. A
+documentation rule, cheap to apply: every number in CALIBRATION or REFERENCE
+carries the size, brush and canvas it was measured at, and a claim about the
+engine's behaviour that has no test behind it is marked as such. Sessions treat
+these numbers as ground truth; two of them were.
+
+## Worked examples and leakage
+
+**8. Point at the paintings, under the protocol.**
+Car wash: "no end-to-end worked example; the pears painting is effectively that
+and the guide never points at it." Lighthouse: "the worked examples in
+`paintings/` gave me the whole pass-script convention, and without them I would
+have invented a worse one." So they help, and `PAINTINGS.md` is right that they
+leak a subject.
+
+The decide-then-read protocol resolves this: a painter who chose the subject
+before opening the repository cannot be steered by a noun in a worked example.
+Say so in `PAINTINGS.md` and in the front page — "if you chose your subject
+before reading, these are yours to study; if you did not, they will choose it for
+you" — instead of keeping the examples unreferenced. The no-nouns discipline in
+the guide itself stays; it is for the reader who did not follow the protocol.
+
+## What not to change
+
+Every session, unprompted, defended the same things: the order of work; no layers,
+no free undo, no black; rehearsal seeded as the next real strokes; `at_value`;
+the place vocabulary; the values view as "the one that tells you the truth"; the
+signature rule of choose-the-mark-first-explain-after. None of these should be
+touched to make room for the above.
+
+## A note on the unprompted stage, for LESSONS.md
+
+Four decide-then-read runs: pears (cold), car wash ("not a standard subject"),
+lighthouse (cold), sunset (older guide). Cold runs produce the most-painted subjects
+in the corpus; one sentence of resistance produces a memory instead. The default is
+one instruction deep. If the protocol wants to test the painter rather than the
+prior without naming a subject, the lever is order, not content: ask for two
+subjects and paint the second, or ask it to name the obvious choice and then not
+paint it. Both are nudges away from the default rather than toward anything, and
+the difference should be recorded when the run is.
+
+---
+
+# On the guide's length, and on a warnings file: two answers as actionable items
+
+Two questions the repository's owner put to the third session's painter after its list
+was written, with the answers turned into items. Each says whether it is measured or an
+opinion; the numbers are the third session's and are in
+`paintings/lighthouse_dusk/NOTES.md`.
+
+**The question on length.** Every session says `PAINTER.md` is too long, every session
+says the essay is what made the rules stick, and each attempt to shrink it has not
+substantially shortened it. What should be done with it?
+
+1. **Stop shrinking the essay, and say so in `LESSONS.md`.** Reading the guide, the
+   reference, the calibration, the lessons and both earlier paintings' notes cost the
+   third session a few minutes and roughly thirty thousand tokens, against a session
+   that spent far more looking at its own rehearsals; every session that called the
+   guide long read all of it and then credited it. The cost of length is not reading
+   time. It is that a rule read once at the start is not present at the moment it is
+   needed, and cutting cannot fix that, because the rule cut is the one some painter
+   needed. Opinion, with that one number behind it. *Action: an entry in `LESSONS.md`
+   under the growth rule: the essay is finished at its size, and a finding goes to the
+   engine, the reference, the recipes or the calibration file, never to the essay.*
+2. **Split by function, not by length, and move rather than cut.** `PAINTER.md` keeps
+   the first hour, the six steps, *What you are bad at*, the checklist and the eight
+   exercises, and nothing else. The essay — colour, wet paint, the brushes, the shape
+   each tool leaves behind, the angle of the mark, looking, and the reasons under every
+   rule — moves whole to its own file with one instruction at its top: read it once,
+   after the exercises and before the painting. Procedures go to the `RECIPES.md` the
+   synthesis above asks for. Nothing is deleted. The length then stops being a
+   complaint, because nobody is asked to hold the essay in their head, only to have
+   read it, and the two-goes instruction stops being an instruction and becomes the
+   file boundary. Opinion. *Action: the move.*
+3. **Give the front page a word budget that CI holds.** The no-growth rule is already
+   in `LESSONS.md` and the guide doubled under it, from 8,600 words to 17,000; the
+   third session's own list above asks for four more lines in it. A stroke budget works
+   because the engine holds it, so hold this one the same way: `scripts/check_guide_blocks.py`,
+   which CI already runs over the guide, fails when `PAINTER.md` is over its budget —
+   five to six thousand words after the split, which is the synthesis's target. Any
+   addition then has to be paid for by a cut, which is the rule the file already
+   states and nobody has kept, the third session included. Opinion. *Action: the
+   count in the check script, and the third list's four guide additions routed to the
+   essay, the reference or the recipes instead.*
+4. **Move rules into the engine, and delete their paragraphs in the same commit.**
+   The only shrinking that has ever worked here is the engine absorbing a rule:
+   `solid=True` took the load warnings, `scumble` took the gradient-tool warning,
+   `cost_line` took the arithmetic, `cover` took the burying recipe. The next three,
+   all already asked for above: the inward scumble warning when the brush is wider
+   than three ring steps (engine item 1 of the third list, measured); a bristle laid
+   under `size=0.025` saying it is a comb; and the subject's share of strokes printed
+   against the plan (item 7 below). A rule the tool states at the moment of the call
+   is method; the paragraph that only warned about it can go. *Action: one engine
+   change per paragraph, the paragraph leaving in the same commit.*
+5. **Test the split before believing it.** Two fresh sessions under the protocol in
+   `LESSONS.md`: one given only the front page, the recipes and the reference, one
+   given everything. The third session's guess, written down so it can be wrong: the
+   first paints the masses as well and improvises worse, because the essay is where
+   the judgement came from when no recipe existed for a rock or a cylinder — masses
+   not marks, back to front, the tool leaves its own shape. *Action: the run and its
+   write-up. Nothing in items 1–4 depends on the result except how firmly the essay
+   is recommended.*
+
+**The question on a warnings file.** Would a separate file of the warnings a painter
+must keep in context help?
+
+6. **Not as a file read at the start.** The third session had every warning in
+   context for the whole painting — the guide never left its window — and laid a glow
+   as a solid egg, facets as slabs and a picture in almost nothing but flat and round
+   regardless. The front page lists the five mistakes, the checklist repeats them, and
+   `LESSONS.md` records that a rule correct, well placed and repeated three times still
+   failed every run. A fourth copy is the thing that file says does not work. Measured
+   in the sense that the failures are in the session's notes. *Action: none. Do not
+   add it.*
+7. **A post-pass check in `easel run` instead: the warnings said by the tool, at the
+   moment they apply, computed from the log.** What caught the third session's
+   mistakes was never a sentence. It was a rehearsal looked at, and the one line `run`
+   prints after every pass, the budget. That line can carry the rules the log can
+   check: every mark in this pass used one brush at one size; `n` passes in this pass
+   ran at the same angle; `n` marks under `size=0.02` before stroke 60; a bristle under
+   `0.025`; the subject's share of strokes so far against the share in the plan, which
+   needs the plan sheet to say which places are the subject. A linter for a pass, in
+   other words, and each rule that becomes a check can leave the guide. Opinion about
+   the mechanism; every input is already in the log — brush, size, path, colour and
+   load per record. *Action: a `Session.report()` over the last pass, or `--check` on
+   `run`, printed beside the budget line. Prototype it against
+   `paintings/lighthouse_dusk/` by replaying its log pass by pass and printing what
+   each would have triggered; the painter's own prediction is that it fires on
+   one-brush brushwork in passes 3 to 5 and on the subject's share from pass 6 on.*
+8. **A rules card in the system prompt, only if sessions run long enough to be
+   summarised.** This is the one form of the file idea with a real mechanism: a
+   session whose context is compacted loses the guide first, and a card of a few
+   hundred words kept where a `CLAUDE.md` is kept survives compaction where the guide
+   does not. The third session was never compacted, so it cannot say whether this
+   happens. *Action: check the session transcripts for compaction before writing the
+   card. If none was compacted, item 6 applies to this too.*
