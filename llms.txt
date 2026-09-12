@@ -24,6 +24,9 @@ s.export("painting.png")
 
 What to know before reading further:
 
+- The guide ships inside the package: `easel guide` prints its first page, which is
+  the whole method in under a thousand words, and `easel guide --full` prints the rest.
+  Nothing below has to be fetched over the network if you have installed it.
 - Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
   are never exposed, because they are what a language model is worst at.
 - The engine is built around one habit: **look every five to fifteen strokes**. A stroke

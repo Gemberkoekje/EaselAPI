@@ -17,6 +17,12 @@ here turns a prompt into a picture. You choose and make every mark. There are no
 layers, and no undo that costs nothing: you work in passes, and when something is wrong
 you paint over it.
 
+**Read the guide before you paint.** The engine is only the brush;
+[`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
+is the half that matters. It ships inside the package, so there is nothing to go and
+find: **`easel guide`** prints its first page — the whole workflow, under a thousand
+words — and `easel guide --full` prints the rest.
+
 ```python
 from easel import Session, blob, cell
 
@@ -154,6 +160,9 @@ easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
+easel guide                                          # the method, in under a thousand words
+easel guide --full                                   # all of it
+easel guide --reference                              # units, defaults, every argument
 ```
 
 Every one of these also works as `python -m easel ...`, for when the `easel`
@@ -190,7 +199,7 @@ is listed in the official MCP registry as `io.github.Gemberkoekje/easel`;
 [`server.json`](https://github.com/Gemberkoekje/EaselAPI/blob/main/server.json) at
 the repository root is what is published there.
 
-Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost` — the
+Fifteen tools: the twelve CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
 which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
 copy and commits nothing. A place is a name, a cell, a span, a rectangle, an outline,

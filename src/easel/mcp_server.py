@@ -47,6 +47,7 @@ from typing import Any
 
 from PIL import Image as _PILImage
 
+from easel import guide as _guide
 from easel import regions as _regions
 from easel.brush import Brush
 from easel.cli import parse_size, reference_text, run_script
@@ -445,7 +446,7 @@ def build_server() -> MCPServer:
         version=__import__("easel").__version__,
         instructions=(
             "A headless painting engine. Paint, look, repeat.\n\n"
-            "Read PAINTER.md before painting: it teaches the workflow, which matters "
+            "Call `guide` before painting: it returns the method, which matters "
             "more than the tool list. The short version -- tone the ground, establish "
             "the big value shapes with a large brush, check them with look(values=True), "
             "then mid-tones, then edges, and highlights last with the smallest brush "
@@ -461,7 +462,7 @@ def build_server() -> MCPServer:
         ),
     )
 
-    # -- the eleven CLI verbs ------------------------------------------------------
+    # -- the twelve CLI verbs ------------------------------------------------------
     @server.tool()
     @_tool
     def new(session: str, size: str = "1024x768", texture: str = "linen",
@@ -810,6 +811,30 @@ def build_server() -> MCPServer:
         """Every name that can be said: brushes, pigments, grounds, textures, regions
         and the shape builders. The same reference `easel brushes` prints."""
         return reference_text()
+
+    @server.tool()
+    @_tool
+    def guide(document: str = "guide", full: bool = False) -> str:
+        """The method this engine is built around, returned as text.
+
+        Read this before painting. The engine is only the brush; this is how to
+        use it, the workflow matters more than the tool list, and a client that
+        reached the engine over MCP has no repository to go and read.
+
+        The default is *The first hour*: the whole workflow in under a thousand
+        words, written to be read on its own and enough to start from.
+
+        Args:
+            document: "guide" (PAINTER.md, the method), "reference"
+                (REFERENCE.md -- units, defaults, what each argument does) or
+                "calibration" (CALIBRATION.md -- the measured numbers behind the
+                rules, which you do not need in order to paint).
+            full: for "guide", the whole of it rather than its first page. The
+                other two documents always come back whole.
+        """
+        if document != "guide":
+            return _guide.read(document)
+        return _guide.read("guide") if full else _guide.front_page()
 
     # -- the three questions about a mark that has not been made yet ---------------
     @server.tool()

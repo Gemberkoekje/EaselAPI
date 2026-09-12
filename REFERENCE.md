@@ -240,6 +240,7 @@ easel undo p.easel 3
 easel export p.easel painting.png
 easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
 easel brushes
+easel guide [--full | --reference | --calibration] [--path]
 ```
 
 A script run by `easel run` gets the session as `s`, with the whole public API already

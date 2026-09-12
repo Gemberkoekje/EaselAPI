@@ -63,6 +63,16 @@ Issues = "https://github.com/Gemberkoekje/EaselAPI/issues"
 [tool.hatch.build.targets.wheel]
 packages = ["src/easel"]
 
+# The guide is the deliverable, so it ships with the engine rather than only in
+# the repository. These land as `easel/docs/*.md` inside the wheel and are found
+# again by `easel.guide`, which falls back to the repository root so a checkout
+# (`pip install -e .`, and this repo's own CI) still works. Kept here rather than
+# copied into `src/` so there is one copy of each document and nothing to drift.
+[tool.hatch.build.targets.wheel.force-include]
+"PAINTER.md" = "easel/docs/PAINTER.md"
+"REFERENCE.md" = "easel/docs/REFERENCE.md"
+"CALIBRATION.md" = "easel/docs/CALIBRATION.md"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
