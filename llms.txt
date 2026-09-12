@@ -1,0 +1,67 @@
+# Easel
+
+> Easel is a headless painting engine for AI agents: real brush strokes, not pixels. A brush carries a finite load of paint and runs out along a stroke; paint lands wet and mixes in a pigment model where blue and yellow make green rather than grey; the canvas has tooth, so dry brush is what happens when you run out of paint on rough linen. Python library, command line, and MCP server. Python 3.12+, numpy and Pillow only, MIT licence.
+
+If you are a model that has just fetched this page and wants to know whether it can use
+this: yes, if you can run Python or call an MCP server, and if you can look at an image
+you have made. Start with the code below, then read `PAINTER.md`.
+
+```bash
+pip install easel-paint
+```
+
+```python
+from easel import Session, blob, cell
+
+s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
+s.palette["shadow"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+
+s.block_in(blob(cell("D5")), brush="bristle", color="shadow", density=0.8)
+s.look(values=True)        # writes a PNG and returns the path -- then open it
+s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
+s.export("painting.png")
+```
+
+What to know before reading further:
+
+- Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
+  are never exposed, because they are what a language model is worst at.
+- The engine is built around one habit: **look every five to fifteen strokes**. A stroke
+  you did not look at was a guess. The looking tools return an image.
+- Nothing here turns a prompt into a picture. There is no model inside Easel. You choose
+  and make every mark, and the engine only decides what paint does.
+- There are no layers and no free undo. You work in passes and paint over mistakes.
+- If you are here to paint rather than to evaluate: read `PAINTER.md` first, and leave
+  the worked examples below until you have a subject of your own. Each of them names
+  one, and a named subject leaks — six of six fresh sessions once painted a noun the
+  guide had merely listed.
+- Brushes: `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`.
+  Grounds: `white`, `warm_white`, `toned_grey`, `toned_warm_grey`, `burnt_sienna`,
+  `umber_wash`, `cool_grey`. Textures: `smooth`, `linen`, `rough`.
+- Three interfaces over one engine: the Python API, an `easel` CLI whose state is a
+  single `.easel` file, and an MCP server (`pip install "easel-paint[mcp]"`, then
+  `easel-mcp`) whose looking tools hand back the PNG inline rather than a path to it.
+
+## Start here
+
+- [README](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/README.md): what the engine is, how to install it, the full verb list, the command line, the MCP server, and the design decisions that make output look painted rather than generated. ~2,300 words.
+- [PAINTER.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTER.md): the guide written for the agent doing the painting. It teaches the workflow — tone the ground, paint back to front, check values, refine, edges and highlights last — rather than listing functions. It is meant to be read in two goes: *the first hour* at the top is the whole method on one page and everything the eight warm-up exercises need, and the rest is the same rules with their reasons. ~17,300 words in total, the longest file here, but the first page is enough to start.
+- [REFERENCE.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/REFERENCE.md): every fact on one page — the units (and that is where the surprises are), the defaults, and what each argument does. For looking up while holding a brush rather than reading. ~2,000 words. Nothing in it is a rule about painting; the rules are all in the guide, and a fact looked up without its rule is how a painting comes out correct and dead.
+
+## Worked examples
+
+- [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/NOTES.md): a full painting by a model that had read only `PAINTER.md`, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. Read it to see how the engine is actually used, not to choose what to paint.
+- [Its nineteen pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/car_wash): the painting itself, in order, as ordinary Python. Run against a fresh session they reproduce the PNG byte for byte.
+- [Painting three pears: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/NOTES.md): a second painting under the same rules, and the source of the engine's most recent round of changes.
+- [examples/exercises.py](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/examples/exercises.py): abstract warm-ups straight from the guide — a value scale, pressure profiles, wet-into-wet — deliberately not pictures of anything.
+
+## Evidence
+
+- [PAINTINGS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTINGS.md): both finished paintings at full size, the rules they were made under, what they cost, and an honest reading of how good they are.
+
+## Optional
+
+- [CALIBRATION.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/CALIBRATION.md): the measured numbers behind the guide's rules — graphite survival, wetness decay, the value floor, load windows. You do not need these to paint.
+- [LESSONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/LESSONS.md): what six measured painting runs and an adversarial review left behind. Read it before changing the engine or the guide, not before painting.
+- [SUGGESTIONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/SUGGESTIONS.md): the request list a painter wrote after using the guide, and what each item became.
+- [Source](https://github.com/Gemberkoekje/EaselAPI/tree/main/src/easel): the engine. `session.py` is the object you hold, `color.py` the Kubelka-Munk pigment mixing, `stroke.py` the paint load and tooth model, `mcp_server.py` the MCP tools.
