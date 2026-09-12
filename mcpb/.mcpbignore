@@ -1,0 +1,6 @@
+# uv builds its environment on the installing machine, so anything it leaves here
+# during a local test is a per-machine artefact that must not reach the bundle.
+.venv/
+uv.lock
+__pycache__/
+*.pyc

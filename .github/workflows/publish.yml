@@ -52,7 +52,7 @@ jobs:
           echo "Publishing $version."
 
       - name: Lint
-        run: ruff check src tests scripts examples
+        run: ruff check src tests scripts examples mcpb
 
       - name: Test
         run: pytest -q
@@ -65,11 +65,25 @@ jobs:
       - name: Check the distributions
         run: python -m twine check dist/*
 
+      # Packing here rather than in the job that publishes it, because packing is
+      # the half that can fail on a mistake -- a manifest that does not validate,
+      # a renamed placeholder -- and this job runs on a rehearsal too. The bundle
+      # is only *installable* once its pinned version is on PyPI, which is why
+      # publishing it waits for the `pypi` job below.
+      - name: Pack the desktop bundle
+        run: python scripts/pack_mcpb.py
+
+      # dist/ now holds the sdist, the wheel and easel.mcpb. The staging copy
+      # pack_mcpb.py works in is next to them and is not worth carrying, and
+      # `dist/*` in the pattern list would sweep it in.
       - name: Upload the distributions
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dist
-          path: dist/
+          path: |
+            dist/*.tar.gz
+            dist/*.whl
+            dist/easel.mcpb
           if-no-files-found: error
 
   # The rehearsal. TestPyPI is a separate instance with its own accounts and its
@@ -94,6 +108,9 @@ jobs:
         with:
           name: dist
           path: dist/
+
+      - name: Set the bundle aside
+        run: rm -f dist/easel.mcpb
 
       - name: Publish to TestPyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
@@ -131,8 +148,81 @@ jobs:
           name: dist
           path: dist/
 
+      # The bundle rides in the same artifact but is not a Python distribution,
+      # and the upload action would refuse the whole directory over it.
+      - name: Set the bundle aside
+        run: rm -f dist/easel.mcpb
+
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+
+  # The bundle is the one artefact here with nowhere else to go. PyPI takes
+  # distributions and the registry takes metadata; a .mcpb is neither, and a
+  # one-click install file is useless without a stable public URL. So this is the
+  # first job in this repository to cut a GitHub release -- a tag that used to be
+  # only a tag now carries notes and an asset.
+  #
+  # It waits on `pypi` for the reason the registry job does. The bundle contains
+  # no engine, only a pin, and an install resolves that pin from PyPI; published
+  # any earlier it would be a file on the internet that cannot install yet, or at
+  # all if the upload failed.
+  bundle:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # cutting the release, and attaching the bundle to it
+
+    steps:
+      - name: Download the distributions
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: dist
+          path: dist/
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Pinned like everything else on the release path. uv is not a build input
+      # here -- it is the thing being rehearsed, since `uv run` is literally the
+      # command the manifest tells a host to use.
+      - name: Install uv
+        run: python -m pip install "uv==0.12.13"
+
+      # The step that makes this more than a zip upload. `mcpb unpack` plus
+      # `uv run` is exactly what an installing host does, so a bundle that cannot
+      # resolve its own pin fails here rather than in front of whoever downloads
+      # it -- and nothing else in CI installs a desktop extension.
+      #
+      # The retry is the same PyPI propagation allowance the registry job makes: a
+      # version can be accepted by the upload and not yet be visible to a resolver.
+      - name: Check the bundle installs
+        run: |
+          npx --yes @anthropic-ai/mcpb@2.1.2 unpack dist/easel.mcpb unpacked
+          for delay in 0 15 30 60; do
+            if [ "$delay" -gt 0 ]; then
+              echo "Retrying in ${delay}s -- PyPI may not have propagated yet."
+              sleep "$delay"
+            fi
+            if uv run --directory unpacked src/server.py --help; then
+              exit 0
+            fi
+          done
+          echo "::error::The bundle did not resolve easel-paint from PyPI." >&2
+          exit 1
+
+      # `create` only if the tag has no release yet, and `--clobber` on the upload,
+      # so re-running this after a failure replaces the asset instead of colliding
+      # with the one the failed run already attached.
+      - name: Attach the bundle to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --generate-notes
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/easel.mcpb --clobber
 
   # The MCP registry stores metadata, not artefacts, and it stores it pinned to a
   # version: nothing in it updates itself when a new release reaches PyPI, so
