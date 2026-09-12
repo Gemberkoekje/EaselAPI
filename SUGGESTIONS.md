@@ -5,7 +5,8 @@ is below; the second starts at *Suggestions from a second session*, and the thir
 *Suggestions from a third session*. **Every item on the first two lists is done** —
 nineteen for the engine, twenty for the guide — and the note under each says what it
 became, including the four that came back different when they were re-measured and the
-two that were questions rather than requests. **The third list is open.**
+two that were questions rather than requests. **The third list is open.** After it, a
+synthesis of the documentation points that more than one session raised closes the file.
 
 Done is not the same as right. An engine item has a test behind it; a guide item is a
 hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
@@ -886,3 +887,152 @@ examples in `paintings/`: the prelude of masses as functions and the numbered pa
 the reason the painting re-runs from its own scripts, and I would not have arrived at
 that convention from the guide. And the eight exercises, which cost two minutes and
 were repaid inside the first pass.
+
+---
+
+# Documentation suggestions, synthesised across painting sessions
+
+Scope: documentation only. Engine findings (glow as a ramp not rings, sRGB/linear
+triples, `solid=True`, bristle below 0.025, flat jitter middle setting, pass-stack
+start side) are in the individual session reports and are not repeated here.
+
+Sources: the windowsill-pears session, the car-wash session (two sittings), the
+lighthouse session, and the four rehearsals before them. A point is listed only if
+more than one session raised it independently.
+
+## The three findings every session made
+
+**1. Strong on what not to do, thin on what to do.**
+Pears: "warning without procedure." Car wash: "there is no recipe for a small
+irregular bright mark, and I needed one four times." Lighthouse: "no recipe for a
+cylinder's form, a glow at size, or a rock mass — ten of my rehearsals were spent
+discovering those. One page of recipes would have halved my rehearsal count."
+
+Add `RECIPES.md`: one page, each recipe is the calls in order, the rehearsal count
+it took to find, and one line on what it looks like when it goes wrong. The
+painters have already written these in their rehearsal logs; collect, don't
+compose. Starting list, all requested by name:
+- a cylinder's form (lit face, terminator, reflected light)
+- a glow at size (currently fails above a small patch)
+- a rock mass that isn't slabs
+- a plane that is a plane (opacity 1.0, even pressure — currently discovered by hand)
+- a small irregular bright mark (the "short fat starved bristle smear" workaround)
+- a hollow thing, in depth order (far rim, inside, near rim)
+- a lost edge that is actually lost (car wash: "the two I lost are barely perceptible")
+- a quiet gradient without a gradient tool
+- a mark that crosses a boundary, for when a smudge isn't enough
+
+Keep recipes noun-free in the same way the guide is: "a cylinder," not "a tower."
+
+**2. Everyone underspends on the subject, after reading that they will.**
+Pears: 59% of strokes before the subject began. Car wash: worst passage named in
+its own notes, 115 strokes unspent. Lighthouse: 24% on the subject against a
+planned 32%. Each painter quotes the guide's warning while doing it.
+
+This is no longer a documentation gap; the prose has been tried three times. What
+documentation can still do: make the checklist read the ledger rather than the
+painter's intent. Replace "did you spend enough on the subject?" with "run
+`s.log()` (or the plan sheet) and write down the subject's share of strokes
+against the share you planned. If it is lower, you are not finished." A number the
+painter has to write down is harder to wave through than a question.
+
+**3. Rules known in prose are not known in the hand.**
+Car wash: made the floating-disc mistake twice after reading the warning and its
+measured table. Lighthouse: used only flat and round after the warning about
+exactly that, and read everything instead of following the two-goes instruction.
+Pears: skipped the exercises and blamed the curtain on it. Every session: "it
+predicted my mistake and I made it anyway."
+
+Consequences:
+- Keep the eight exercises. The one session that skipped them regretted it in
+  writing; the one that did them called them "two minutes well spent" and said the
+  edge study showed it the smudge thumbprint before it could make it. They are the
+  only part of the guide that teaches the hand.
+- Add a short list at the top of "What you are bad at": *the four mistakes every
+  painter so far has made after being warned*, each with its fix procedure on the
+  same line. Floating discs, capsule shadows, the stack of bars, brushwork that is
+  all flat and round. A warning the reader will violate anyway is only useful if
+  the repair is next to it.
+- Prefer cheap rules that are always followed over wise rules that are sometimes
+  followed (see 5).
+
+## Structure
+
+**4. Length: 17,000 words, read once, before the first stroke.**
+It was 8,600 when first reviewed, 10,800 after the subject-leak fix, and is now
+17,300. Every session says it is long; every session says the essay is what made
+the rules stick; both are true. "The first hour" front page is the right answer,
+but it sits at the top of a file whose length still signals "read all of this."
+
+Make the split physical. `PAINTER.md` becomes the front page, the order of work,
+"What you are bad at," the checklist, and the exercises — a target of 5,000 to
+6,000 words that a session can hold in its head. Everything else moves, unchanged,
+to a companion: `PAINTING.md` for the essay (colour, wet paint, edges, looking,
+the reasoning behind each rule), `REFERENCE.md` for facts about tools (already
+exists; the brush chapter belongs there), `RECIPES.md` for procedures. The
+two-goes instruction then stops being an instruction and becomes the file
+boundary. A session that reads everything anyway loses nothing; a session that
+reads only `PAINTER.md` gets the whole method.
+
+Standing rule for the guide, worth writing into `LESSONS.md`: a new finding
+either replaces an existing rule, becomes a checklist line, or goes to
+CALIBRATION, RECIPES or LESSONS. It never adds a paragraph to `PAINTER.md`.
+The file has grown by one paragraph per rehearsal; at the tenth rehearsal
+nobody reads to the end.
+
+**5. "Rehearse any mass you would not want to repaint" is too weak.**
+Car wash: 27 rehearsals in the first sitting, "every bad idea cost nothing."
+Lighthouse: 18 rehearsals, "changed something every time, none cost a stroke,"
+and "the true rule was rehearse everything, and it never failed to pay." Change
+the rule to *rehearse everything*. It is cheap, it is always followed, and the
+guide's own numbers say it pays.
+
+**6. The checklist is read as "done"; it means "may stop."**
+Car wash: "the checklist passing and me taking the exit," 115 strokes unspent.
+Lighthouse: stopped at 184 "partly a decision I can defend and partly wariness of
+making it worse." One sentence beside the checklist: passing it means the
+painting is not wrong, not that it is finished. The finished question is the
+subject-share number from point 2 and the worst passage named in your own notes.
+
+**7. Measured claims should state what they were measured on.**
+Lighthouse found the glow recipe "measured on a patch of unstated size" and it
+failed on a large one; the linear-triple claim was wrong in two documents. A
+documentation rule, cheap to apply: every number in CALIBRATION or REFERENCE
+carries the size, brush and canvas it was measured at, and a claim about the
+engine's behaviour that has no test behind it is marked as such. Sessions treat
+these numbers as ground truth; two of them were.
+
+## Worked examples and leakage
+
+**8. Point at the paintings, under the protocol.**
+Car wash: "no end-to-end worked example; the pears painting is effectively that
+and the guide never points at it." Lighthouse: "the worked examples in
+`paintings/` gave me the whole pass-script convention, and without them I would
+have invented a worse one." So they help, and `PAINTINGS.md` is right that they
+leak a subject.
+
+The decide-then-read protocol resolves this: a painter who chose the subject
+before opening the repository cannot be steered by a noun in a worked example.
+Say so in `PAINTINGS.md` and in the front page — "if you chose your subject
+before reading, these are yours to study; if you did not, they will choose it for
+you" — instead of keeping the examples unreferenced. The no-nouns discipline in
+the guide itself stays; it is for the reader who did not follow the protocol.
+
+## What not to change
+
+Every session, unprompted, defended the same things: the order of work; no layers,
+no free undo, no black; rehearsal seeded as the next real strokes; `at_value`;
+the place vocabulary; the values view as "the one that tells you the truth"; the
+signature rule of choose-the-mark-first-explain-after. None of these should be
+touched to make room for the above.
+
+## A note on the unprompted stage, for LESSONS.md
+
+Four decide-then-read runs: pears (cold), car wash ("not a standard subject"),
+lighthouse (cold), sunset (older guide). Cold runs produce the most-painted subjects
+in the corpus; one sentence of resistance produces a memory instead. The default is
+one instruction deep. If the protocol wants to test the painter rather than the
+prior without naming a subject, the lever is order, not content: ask for two
+subjects and paint the second, or ask it to name the obvious choice and then not
+paint it. Both are nudges away from the default rather than toward anything, and
+the difference should be recorded when the run is.
