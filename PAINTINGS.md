@@ -1,28 +1,39 @@
 # What Easel has painted
 
-> Three pictures, each painted by a language model working from [`PAINTER.md`](PAINTER.md)
-> alone — no reference photograph, no human hand on the canvas, nothing traced. Every
-> mark is a call to this API and every one of them is in the log. This file is the
-> record: what was painted, what it cost, what failed, and how good the results actually
-> are.
+> Three pictures, each painted by a language model working from the guide — no reference
+> photograph, no human hand on the canvas, nothing traced. Every mark is a call to this
+> API and every one of them is in the log. This file is the record: what was painted,
+> what it cost, what failed, and how good the results actually are.
 
 The engine's claim is that a model can paint rather than generate, so the engine is only
 worth what has been painted with it. These are those paintings, at full size, with the
 parts that did not work left in.
 
-**If you are about to paint from the guide, this is the wrong page to be on.** All three
-pictures here name a subject, and a named subject leaks: six of six fresh sessions once
-painted a noun the guide had merely listed. `PAINTER.md` deliberately does not point at
-them, and if you are running the measurement protocol in [`LESSONS.md`](LESSONS.md) you
-should not read them first. This page is for the other reader — the one deciding
-whether the engine can do this at all.
+**If you are about to paint from the guide: have you decided what to paint?** All three
+pictures here name a subject, and a named subject chooses for you — six of six fresh
+sessions once painted a noun the guide had merely listed in passing. **Decide first,
+then read this page.** A painter who chose before opening the repository cannot be
+steered by a noun in a worked example, and one who has not chosen can be; that is the
+whole of the rule, and it is the protocol in [`LESSONS.md`](LESSONS.md) rather than a
+matter of taste. `PAINTER.md` points here on exactly the same condition.
+
+Having decided, read them: the pass scripts beside each painting are the end-to-end
+worked example the guide cannot be, and the third painter here said it would not have
+arrived at their convention on its own.
 
 ## The rules all three were made under
 
-- Nothing in the repository was read before painting except `PAINTER.md`. Not the
-  source, not the calibration numbers, not the other paintings.
 - The subject was chosen **before** the guide was read, so the picture was not steered
   towards what the engine happens to be good at.
+- **How much else was read varies, and it matters.** The pears session read
+  `PAINTER.md` and nothing else in the repository, which makes it the only clean
+  measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
+  `CALIBRATION.md` first; the lighthouse read those, `PAINTINGS.md`, and both earlier
+  paintings' notes and scripts, and took its pass-script convention, its prelude of
+  masses as functions and its `compare()` plan sheet from them rather than from the
+  guide. So where the three agree, that is three painters finding the same thing with
+  increasing context — and where they disagree, it may be the context talking. Each
+  painting's notes say which it was.
 - No reference photograph, so `prepare`, `sketch`, `ref_shape` and `ref_outline` were
   unavailable and nothing was traced. Every mass is a `polygon`, `blob` or region
   written by hand.
@@ -77,9 +88,9 @@ half-drawn curtain at the right, the sun coming in low through the window.
 Five masses were repainted while nothing stood on them yet: a stripy saturated curtain
 redone quiet and grey, a sill too orange and its top edge twice, cast shadows that went
 on as black slugs, and four hard-edged bars of sunlight buried and redone as one
-soft-edged region. This painting is also the one that produced
-[`SUGGESTIONS.md`](SUGGESTIONS.md) — the request list a painter wrote after using the
-guide, whose twelve engine items are now done.
+soft-edged region. This painting is also the one that started
+[`SUGGESTIONS.md`](SUGGESTIONS.md) — the register of what each painter asked for after
+using the guide, which all three have since added to and every item of which is done.
 
 ## A lighthouse on a rocky headland at dusk
 
@@ -104,9 +115,10 @@ The [notes](paintings/lighthouse_dusk/NOTES.md) record an afterglow that came ba
 solid yellow sun three times before it was laid as passes with no outline, a headland
 built three times before it was built from the planes rock is made of, a halo that
 arrived as a dark cloud with a bulb in it, and a beam rehearsed twice and dropped. They
-also record two things the engine does that the guide does not say: a raw RGB triple
+also record two things the engine did that the guide did not say — a raw RGB triple
 handed to the palette is read as sRGB rather than linear, and a vertical pass stack
-starts at the right-hand edge.
+starts at the right-hand edge. Both are documented now: the first has a verb of its own,
+`s.sample(place)`, and the second is a table in [`REFERENCE.md`](REFERENCE.md).
 
 ## The log
 
@@ -152,9 +164,12 @@ golden-image tests in CI.
 ## Further
 
 - [`README.md`](README.md) — what the engine is and how to install it.
-- [`PAINTER.md`](PAINTER.md) — the guide both painters read, and the only thing they
-  read. Its first page is the whole method; the rest is the same rules with their
-  reasons.
+- [`PAINTER.md`](PAINTER.md) — the guide all three painters read: the method, in one
+  file meant to be held in the head.
+- [`PAINTING.md`](PAINTING.md) — the same rules with their reasons, the failures behind
+  them and the numbers.
+- [`RECIPES.md`](RECIPES.md) — the procedures these three paintings produced, collected:
+  the calls in order, and what each looks like when it goes wrong.
 - [`REFERENCE.md`](REFERENCE.md) — every fact on one page: units, defaults, and what
   each argument does.
 - [`LESSONS.md`](LESSONS.md) — what six measured runs and an adversarial review left

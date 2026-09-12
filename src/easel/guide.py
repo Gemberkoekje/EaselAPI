@@ -12,6 +12,13 @@ pyproject.toml), and this module finds them again -- from an installed package,
 or from a checkout, where that directory does not exist because nothing has been
 built yet. Both have to work: the repository itself is used through
 `pip install -e .`, which is a checkout.
+
+There are five of them now rather than three. The guide was split by function --
+method, reasons, procedures, facts, numbers -- when three painters in a row said
+the same two things about it: that it was long, and that its essay was what made
+its rules stick. Nothing was cut; it was moved, and `PAINTER.md` is held to
+:data:`FRONT_PAGE_WORDS` so that it stays the file a painter can hold in their
+head. `LESSONS.md` has the reasoning.
 """
 
 from __future__ import annotations
@@ -25,14 +32,34 @@ from pathlib import Path
 #: that lives outside Python and would otherwise drift on its own.
 DOCUMENTS = {
     "guide": "PAINTER.md",
+    "painting": "PAINTING.md",
+    "recipes": "RECIPES.md",
     "reference": "REFERENCE.md",
     "calibration": "CALIBRATION.md",
 }
 
-#: The heading of the section the guide means to be read on its own. `PAINTER.md`
-#: says to read it in two goes; this is the first, and at under a thousand words
-#: it is the whole workflow. It ends where the next `##` heading begins.
+#: The heading of the section the guide means to be read on its own: the whole
+#: workflow in under a thousand words, and enough to start. It ends where the next
+#: `##` heading begins.
 FRONT_PAGE = "## The first hour"
+
+#: A hard ceiling on `PAINTER.md`, asserted by `tests/test_guide.py` and printed by
+#: `scripts/check_guide_blocks.py`.
+#:
+#: `LESSONS.md` has carried a no-growth rule since early on -- a finding replaces a
+#: rule, becomes a checklist line, or goes elsewhere -- and under it the guide went
+#: from 8,600 words to 17,000, because a rule nothing enforces is a preference. The
+#: stroke budget works precisely because the engine holds it, so this one is held the
+#: same way. The split into `PAINTER.md` / `PAINTING.md` / `RECIPES.md` moved the
+#: essay out rather than cutting it, which is what makes a ceiling here affordable:
+#: material turned away from this file has somewhere to go.
+#:
+#: 10,000 rather than the 5,000-6,000 a painter proposed, because that figure was
+#: never costed against the contents it asked for -- the order of work, *What you are
+#: bad at*, the checklist and the exercises come to about 8,500 words on their own,
+#: and reaching 6,000 would mean cutting them, which every other item on the same
+#: list forbids. A budget nobody can meet on the day it is written holds nothing.
+FRONT_PAGE_WORDS = 10_000
 
 _PACKAGED = Path(__file__).resolve().parent / "docs"
 _CHECKOUT = Path(__file__).resolve().parents[2]

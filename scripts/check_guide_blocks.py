@@ -1,8 +1,18 @@
-"""Execute every python block in PAINTER.md, the way a fresh reader would.
+"""Execute every python block in the guide, the way a fresh reader would.
 
 The guide is the deliverable, and a code block in it that does not run is worse
 than no code block: the fresh session copies it, gets a traceback, and spends its
 first ten minutes debugging the manual instead of painting.
+
+The guide is three files -- `PAINTER.md` is the method, `PAINTING.md` the reasons
+and `RECIPES.md` the procedures -- and all three are checked here, because a block
+is just as wrong in whichever of them it happens to sit.
+
+It also reports `PAINTER.md`'s word count against its budget. That file is the one
+a session is asked to hold in its head, and the guide grew from 8,600 words to
+17,000 under a no-growth rule that nothing enforced. The budget is asserted in
+`tests/test_guide.py`, which is what CI actually runs; it is printed here too
+because this is the script somebody runs while editing the guide.
 
 Self-contained. It writes its own reference photograph, so it runs anywhere rather
 than only on the machine of whoever wrote the guide.
@@ -13,12 +23,15 @@ from __future__ import annotations
 
 import re
 import sys
+import textwrap
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+
+from easel.guide import FRONT_PAGE_WORDS  # noqa: E402  (after the sys.path insert)
 
 OUT = ROOT / "out" / "_check"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -45,9 +58,16 @@ def make_reference(path: Path) -> Path:
 
 REFERENCE = make_reference(OUT / "ref.png")
 
-text = (ROOT / "PAINTER.md").read_text(encoding="utf-8")
-blocks = re.findall(r"```python\n(.*?)```", text, re.S)
-print(f"{len(blocks)} python blocks\n")
+DOCUMENTS = ("PAINTER.md", "PAINTING.md", "RECIPES.md")
+
+blocks: list[tuple[str, str]] = []
+for name in DOCUMENTS:
+    found = re.findall(r"```python\n(.*?)```", (ROOT / name).read_text(encoding="utf-8"), re.S)
+    # A fenced block nested under a list item carries the list's indentation, which
+    # is valid markdown and an IndentationError to `exec`.
+    blocks += [(name, textwrap.dedent(b)) for b in found]
+    print(f"{len(found):>3} python blocks in {name}")
+print()
 
 PREAMBLE = (
     "from easel import Session, Region, region, cell, span, horizon, below, above\n"
@@ -82,13 +102,14 @@ PREAMBLE = (
     "bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)\n"
 )
 ok = bad = skipped = 0
-for i, b in enumerate(blocks, 1):
+for i, (doc, b) in enumerate(blocks, 1):
     head = b.strip().splitlines()[0][:60]
+    where = f"{doc.removesuffix('.md').lower():<8}"
     if re.search(r"^\s*s\.\w+\(.*[=,]\s*(brush|color|points|region|reference|strokes)\b", b, re.M) \
        or re.search(r"\.\.\.", b):
         # signature listings and elided pseudo-code
         skipped += 1
-        print(f"  {i:>2} SKIP (pseudo-code)  {head}")
+        print(f"  {i:>3} {where} SKIP (pseudo-code)  {head}")
         continue
     src = b.replace('"ref.jpg"', repr(str(REFERENCE)))
     for name in ("painting.png", "painting.gif"):          # the guide's export block
@@ -96,9 +117,15 @@ for i, b in enumerate(blocks, 1):
     try:
         exec(compile(PREAMBLE + src, f"<block {i}>", "exec"), {})
         ok += 1
-        print(f"  {i:>2} ok               {head}")
+        print(f"  {i:>3} {where} ok               {head}")
     except Exception as e:
         bad += 1
-        print(f"  {i:>2} FAIL             {head}\n       {type(e).__name__}: {e}")
+        print(f"  {i:>3} {where} FAIL             {head}\n       {type(e).__name__}: {e}")
 print(f"\nok {ok}  failed {bad}  skipped {skipped}")
-sys.exit(1 if bad else 0)
+
+# The front page's word budget, the other thing that keeps the guide usable.
+words = len((ROOT / "PAINTER.md").read_text(encoding="utf-8").split())
+budget = FRONT_PAGE_WORDS
+verdict = "over budget" if words > budget else f"{budget - words} to spare"
+print(f"PAINTER.md {words} words against a budget of {budget} -- {verdict}")
+sys.exit(1 if bad or words > budget else 0)

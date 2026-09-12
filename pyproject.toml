@@ -70,6 +70,8 @@ packages = ["src/easel"]
 # copied into `src/` so there is one copy of each document and nothing to drift.
 [tool.hatch.build.targets.wheel.force-include]
 "PAINTER.md" = "easel/docs/PAINTER.md"
+"PAINTING.md" = "easel/docs/PAINTING.md"
+"RECIPES.md" = "easel/docs/RECIPES.md"
 "REFERENCE.md" = "easel/docs/REFERENCE.md"
 "CALIBRATION.md" = "easel/docs/CALIBRATION.md"
 
