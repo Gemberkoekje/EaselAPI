@@ -62,6 +62,8 @@ PREAMBLE = (
     "s.palette['mid'] = s.palette['light']\n"
     "s.palette['pale'] = s.palette['light']\n"
     "s.palette['cool'] = s.palette['dark']\n"
+    # The lit surface a cast shadow lies on, named the way the guide names it.
+    "s.palette['surface'] = s.palette.at_value(s.palette['light'], 0.60)\n"
     "path = [(0.2,0.3),(0.5,0.4),(0.8,0.3)]\n"
     # The guide's landmark blocks assume marks already exist by the time a later
     # block uses s.pt(...), which is true when the guide is read in order.
@@ -72,6 +74,12 @@ PREAMBLE = (
     # ...and the same for the plan that preview, rehearse and the paint block share.
     "plan = [{'points': [(0.335, 0.315), (0.40, 0.62)], 'brush': 'liner',\n"
     "         'size': 0.006, 'color': 'light', 'label': 'edge'}]\n"
+    # ...and for the masses the guide points at by name once it has built one: a
+    # shape to smudge round, a patch to light from the middle, and the bent ribbon
+    # the costing blocks weigh against its straight twin.
+    "mass = blob(span('D4', 'F6'), 0.22, wobble=0.3, seed=2)\n"
+    "patch = ellipse(span('D4', 'F5'))\n"
+    "bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)\n"
 )
 ok = bad = skipped = 0
 for i, b in enumerate(blocks, 1):

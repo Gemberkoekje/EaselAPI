@@ -52,6 +52,16 @@ finishes. The test for a candidate paragraph: strip the measurement and the reas
 and see what is left. If one line is left, that line is the rule and it goes in the guide,
 and the measurement goes to `CALIBRATION.md`. If nothing is left, it was not a rule.
 
+**That test bounds how fast the guide grows and does not stop it growing.** It is now
+about 17,000 words, and a painter who read it said the honest thing: the essay is what
+made the rules stick, and the operational facts were hard to find inside it. So the
+answer taken was structural rather than more cutting — *the first hour* at the top, one
+page that is the whole workflow and ends by sending the painter to the exercises, and
+[`REFERENCE.md`](REFERENCE.md) beside the guide for the facts, so looking one up is not
+a reason to skim the essay. Whether that is enough is a question for a fresh session,
+like every other guide change: **the two-goes instruction is a hypothesis until someone
+paints against it**, and the thing to measure is whether the exercises get done.
+
 ### A worked example is an instruction, whatever the prose beside it says
 
 A fresh session reads the code blocks as if they were the whole document, because to it
@@ -81,7 +91,22 @@ Grep the guide for the references' nouns before every run — and then **read th
 end to end and name the subject yourself**, because the grep only catches words already
 known to be in a reference. That check is two minutes and it is the only one that catches
 a noun the guide invented. It has caught its own author: three leaks were introduced by
-the very edits that wrote the rule down.
+the very edits that wrote the rule down — and then four more, found by running the grep
+while doing something else entirely, a year of runs after the rule was written. The
+paintings in `paintings/` are references now, so their nouns are in the list: the guide
+had picked up one painting's subject in three examples and two of its places in a
+fourth.
+
+**So where does an end-to-end example live?** A painter asked for one: the guide has
+eight abstract exercises and no single small picture laid out in order, and sequencing
+was the thing they were least sure of at the start — not which call to make but which to
+make first. The answer taken is that `paintings/` **is** that example, and that
+`README.md` says so while `PAINTER.md` does not. Each painting has its numbered pass
+scripts, its prelude, its notes and an export that re-runs byte for byte, so the order
+is readable rather than reconstructed. A painter who goes looking finds it; one who
+reads only the guide is not handed a subject. It is the whole trade in one sentence: an
+end-to-end example leaks its subject harder than any fragment can, and the cost of
+hiding it is paid by the painter who would have benefited most.
 
 ### Never change the engine while a measurement is running
 
@@ -388,21 +413,41 @@ and none has been decided:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the last run found has been applied.
-`SUGGESTIONS.md` is the list from the most recent session. **Its twelve engine items
-are done**, and it records what each one became; seven of its twelve guide items are
-applied, which is the ones that were corrections to something the engine does plus the
-two the new verbs made writable. What is left there is editorial: a one-page reference,
-the exercises as a gate, a cast-shadow recipe, a calibrated soft-patch recipe, a "first
-hour" short path, and a warning about painting several similar objects to one recipe.
+`SUGGESTIONS.md` holds the lists from the two painting sessions, and **every item on
+both is now done** — nineteen for the engine, twenty for the guide — with a note under
+each saying what it became. Nothing on either list is outstanding.
 
-One of that list's own measured claims did not survive being re-measured, which is the
-method working as intended. It reported that a contour pass swept along a shape's drawn
-outline "lays nothing outside the outline"; a pass centred on a line puts half its
-width either side of it, and measured on a pear-sized mass it spilled 38px against the
-ragged fill's 20px. Sweeping the contour along the *inset* outline — so the brush's
-outer half lands on the drawn line — reaches 13px, and that is what `edge="clean"`
-does. **Check the painters' numbers** applies to a painter's numbers about the engine,
-not only to the engine's about itself.
+That is not the same as those items being *right*. Every engine change has a test and a
+measurement behind it; every guide change is a hypothesis until a fresh session paints
+against one. The guide ones landing in this round that are most worth watching, because
+they are the ones that changed how the guide is *read* rather than what it says: the
+two-goes instruction and *the first hour* at the top, the exercises stated as a gate
+with the cost of skipping them, and `REFERENCE.md` beside the essay. If the next fresh
+session still skips the exercises, that is the finding, and repeating the instruction
+louder is not the fix — see *Warning is not method*.
+
+Three of those lists' own measured claims were re-measured before anything was written
+down on them, and two did not survive it. That is the method working as intended.
+
+- The first reported that a contour pass swept along a shape's drawn outline "lays
+  nothing outside the outline"; a pass centred on a line puts half its width either
+  side of it, and measured on a mass a third of the canvas across it spilled 38px
+  against the ragged fill's 20px. Sweeping the contour along the *inset* outline — so the brush's outer
+  half lands on the drawn line — reaches 13px, and that is what `edge="clean"` does.
+- The second reported that a two-point smudge on a *sloping* boundary moves it five
+  times as far as one given four points along the slope. On a straight slope the two
+  are the same pass to the pixel — the spline through collinear points is the line —
+  so that number cannot have come from a slope. On a boundary that **bends** the
+  effect is real and larger: mean `0.51%` of canvas height against `0.01%`. The rule
+  survived its evidence and got sharper: *only a straight boundary is two points*.
+- The one that held is the same session's solid mass, and it came back nine times
+  more even rather than fourteen — a differently sized mass, measured in the values
+  view rather than however they measured it. The claim was right and its ratio was
+  the instrument's, which is the usual shape of a re-measurement that passes.
+
+**Check the painters' numbers** applies to a painter's numbers about the engine, not
+only to the engine's about itself — and a claim that survives the check is usually
+worth more afterwards, because the re-measurement says what it is really about.
 
 ---
 
@@ -435,10 +480,10 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 286 passed; the mcp and mixbox tests
+pytest -q                              # 457 passed; the mcp and mixbox tests
                                        # skip unless their extras are installed
 ruff check src tests scripts examples
-python scripts/check_guide_blocks.py   # every python block in PAINTER.md runs: 44 ok
+python scripts/check_guide_blocks.py   # every python block in PAINTER.md runs: 58 ok
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
 python examples/exercises.py           # the guide's warm-ups, writes out/ex_*.png

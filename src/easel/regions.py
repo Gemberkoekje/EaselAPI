@@ -550,7 +550,7 @@ class Polygon:
         closed ring -- so a shape built from a few named points can still have a
         silhouette a brush can follow::
 
-            pear = union(circle_top, circle_body).smooth()
+            lobed = union(circle_top, circle_body).smooth()
 
         Each pass replaces every corner with two points a quarter of the way along
         each of its edges, so the outline doubles in length per iteration and pulls
@@ -733,7 +733,7 @@ def union(*shapes, resolution: int = 1024, name: str = "") -> Polygon:
     lozenge, and the waist between them -- which is the whole reason for drawing two
     circles -- is filled in. This keeps the waist::
 
-        pear = union(circle(top, 0.06), circle(body, 0.09)).smooth()
+        lobed = union(circle(top, 0.06), circle(body, 0.09)).smooth()
 
     The shapes must overlap or touch, because what comes back is one silhouette. Two
     masses that do not meet are two masses: block them in separately, or use

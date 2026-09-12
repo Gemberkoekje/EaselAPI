@@ -133,7 +133,8 @@ _PLAN_HELP = (
     "A plan is a list of entries, or one entry on its own. A mark is a list of "
     "points, or an object with 'points' and any stroke argument. A mass is an "
     "object with 'shape' (a place) and any block_in argument -- 'brush', 'color', "
-    "'size', 'direction', 'density', and 'edge': \"clean\" for a drawn contour. "
+    "'size', 'direction', 'density', 'edge': \"clean\" for a drawn contour, and "
+    "'solid': true for paint with no ground showing through it. "
     "A sweep is an object with 'edge' (a place, or "
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
     "'passes', 'closed'. A bare place on its own is a mass."
@@ -524,7 +525,7 @@ def build_server() -> MCPServer:
                 painting, so what is rehearsed is what lands when the same pass is
                 run for real. `rehearse` (the planning tool) tries a plan; this tries
                 a script, which is what a pass actually is. Costs nothing but a look,
-                and about sixty of the pears painting's 224 strokes went on masses
+                and about sixty of one painting's 224 strokes went on masses
                 that were repainted because rehearsing meant retyping the pass.
             prelude: Python run first, in the same scope -- helpers, mixtures and
                 landmarks a pass should not have to redefine.
@@ -620,7 +621,7 @@ def build_server() -> MCPServer:
         plan a painter working from their head is told to write down in numbers.
         Each place is measured against the value it was promised, and the sheet
         shows the plan, the canvas and what is out. Give a place a name it will be
-        listed under by building it with one: `{"blob": "D5", "name": "pear"}`.
+        listed under by building it with one: `{"blob": "D5", "name": "near_mass"}`.
 
         Args:
             session: the .easel file.
@@ -905,9 +906,16 @@ def build_server() -> MCPServer:
         """
         s = Session.load(session)
         specs, lines = _plan(plan)
-        priced = [(s.cost(spec), line) for spec, line in zip(specs, lines, strict=True)]
-        total = sum(n for n, _ in priced)
-        body = "\n".join(f"{line}  # {n}" for n, line in priced)
+        # Why, not only how much: a number four to twelve times what a painter would
+        # have guessed is a crossed direction, a bounding box much bigger than the
+        # mass, or a concave outline cutting every pass -- and all three are cheap to
+        # fix once named. It rides in the echoed line's own comment so that what
+        # comes back is still Python to paste into `run`.
+        priced = [(n, why, line) for (n, why), line
+                  in zip(s.cost_of(specs), lines, strict=True)]
+        total = sum(n for n, _, _ in priced)
+        body = "\n".join(f"{line}  # {n}{': ' + why if why else ''}"
+                          for n, why, line in priced)
         left = "" if s.remaining is None else f" {s.budget_line()}."
         return f"{total} stroke(s).{left} Paints as:\n\n{body}"
 

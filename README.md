@@ -55,10 +55,14 @@ else in the engine imports it. See *MCP server* below.
 
 [`PAINTER.md`](PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
-last — rather than listing functions. The measured numbers behind its rules
-(graphite survival, wetness decay, the value floor, load windows) are kept apart in
-[`CALIBRATION.md`](CALIBRATION.md), so the guide stays short and the numbers can
-change when the engine does. The engine is designed around one habit:
+last — rather than listing functions, and it opens with *the first hour*: the whole
+method on one page, so the eight warm-up exercises come before the long read rather
+than after it. The facts it would otherwise have to stop and list — units, defaults,
+what each argument does — are on one page in [`REFERENCE.md`](REFERENCE.md), and the
+measured numbers behind its rules (graphite survival, wetness decay, the value floor,
+load windows) are kept apart in [`CALIBRATION.md`](CALIBRATION.md), so the guide stays
+a guide and both can change when the engine does. The engine is designed around one
+habit:
 
 > Look every five to fifteen strokes. A stroke you did not look at was a guess.
 
@@ -68,15 +72,15 @@ change when the engine does. The engine is designed around one habit:
 |---|---|
 | `Session` | The one object you hold. Canvas, palette, seed, history, `look()`. |
 | `Canvas` | Linear-light RGB plus `wetness`, `thickness`, `sketch` (graphite) and canvas `height` (tooth). |
-| Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips. |
+| Brushes | `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`. Procedural tips, and `tip_wobble` gives a round one a silhouette of its own, redrawn per mark. |
 | `Palette` | A limited pigment set with no black. Mix, tint, shade, and name your mixes. |
 | Regions | `region("top-left")`, `cell("D6")`, `horizon(0.4)`, `below(...)`, `between(...)`. |
 | Shapes | A mass that is not a box: `blob`, `ellipse`, `hull`, `union`, `ribbon`, `polygon`, and `s.circle()` for one that is round in pixels on any canvas. `smooth()` cuts the corners off an outline. Any of them goes where a region goes. |
-| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette, or drawing its contour with `edge="clean"`; `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
-| Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. |
+| Masses | `block_in(place, ...)` fills a rectangle *or a shape* with overlapping passes, stopping at the silhouette, or drawing its contour with `edge="clean"`; `solid=True` when it has to be solid paint, because density spaces the passes rather than filling them. `sweep(edge, ...)` lays a mass as passes along its own boundary, stepped inward. Both emit ordinary strokes. |
+| Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint — and `direction="inward"` runs them round a patch instead of across it, for a value falling off from a centre. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. `smudge(edge, ...)` loses an edge along its own shape: points, or a mass whose outline it walks. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
-| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
+| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
 | Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all. `prepare(reference)` cuts the photograph into numbered masses. |
 | Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
@@ -185,7 +189,10 @@ painted rather than generated:
   streaks scale with the brush, so a big mass prints stripes wider than anything in
   the picture and a small mark carries the brush's signature instead of the
   feature's. So spacing, phase and the missing bristles are redrawn each stroke, and
-  the count follows the brush's size.
+  the count follows the brush's size. The same reasoning reaches the round tips
+  through `tip_wobble`, which is off by default: a disc is the right silhouette for
+  most marks and the wrong one for fifteen small marks in a row, where it prints one
+  shape fifteen times.
 - **Width follows pressure on the round tips.** Pressure that changes only how much
   paint lands is invisible once an opaque colour saturates, and it means a mark that
   tapers — a lid, a brow, a lash, a twig — is two strokes at two sizes. The oriented
@@ -202,12 +209,39 @@ that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `uni
 a whole pass from the shell all arrived in one round after a painter used the guide
 and wrote down what the engine had cost them.
 
-Two documents sit behind this one. [`LESSONS.md`](LESSONS.md) is what six measured
-painting runs and an adversarial review left behind — the method, the engine decisions
-that are load-bearing, the traps, and what is still open; read it before changing the
-engine or the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the
-most recent painting session; its twelve engine items are done, and it says what each
-one became and what is left.
+A second painter did the same thing and probed every claim before making it, which is
+where this round came from: a centred fall-off for a glow, `solid=True` because
+density spaces the passes rather than filling them, a silhouette of its own for a
+round tip, a clean edge that stops insetting at the canvas frame, rehearsals numbered
+apart from the painting's looks, `cost_line` saying *why* a number is large, and
+`smudge` taking the boundary it is meant to run along.
+
+## The worked examples
+
+[`paintings/`](paintings) holds the paintings those sessions made, and each is an
+end-to-end worked example rather than a gallery: the numbered pass scripts that built
+it, the `prelude.py` of helpers and mixtures beside them, `NOTES.md` in the painter's
+own words, and the finished PNG and time-lapse. The scripts re-run from a fresh session
+at the same seed and reproduce the export byte for byte, so the order a painting was
+made in is readable rather than reconstructed — which is the one thing the guide cannot
+teach abstractly, and the thing a first-time painter is least sure of.
+
+**`PAINTER.md` deliberately does not point here**, and that is the trade: a worked
+example names a subject, a named subject leaks, and six of six fresh sessions once
+painted a noun the guide had merely listed. A painter who goes looking finds these; one
+who only reads the guide is not handed a picture to paint. If you are about to run the
+measurement protocol in `LESSONS.md`, do not read them first.
+
+## Where the rest of it is written down
+
+Four documents sit behind this one. [`PAINTER.md`](PAINTER.md) is the guide a painter
+reads and the project's actual deliverable, and [`REFERENCE.md`](REFERENCE.md) is every
+fact on one page beside it — units, defaults, what each argument does — for looking up
+rather than reading. [`LESSONS.md`](LESSONS.md) is what six measured painting runs and
+an adversarial review left behind: the method, the engine decisions that are
+load-bearing, the traps, and what is still open; read it before changing the engine or
+the guide. [`SUGGESTIONS.md`](SUGGESTIONS.md) is the request list from the painting
+sessions, every item of which is now done, and it says what each one became.
 
 ## Licence
 
