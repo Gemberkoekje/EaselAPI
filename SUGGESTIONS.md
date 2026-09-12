@@ -1,10 +1,11 @@
 # Suggestions for the engine and the guide, from the painting sessions
 
-Two sessions, each written by the painter who had just finished a picture. The first
-is below; the second starts at *Suggestions from a second session*. **Every item on
-both lists is done** — nineteen for the engine, twenty for the guide — and the note
-under each says what it became, including the four that came back different when they
-were re-measured and the two that were questions rather than requests.
+Three sessions, each written by the painter who had just finished a picture. The first
+is below; the second starts at *Suggestions from a second session*, and the third at
+*Suggestions from a third session*. **Every item on the first two lists is done** —
+nineteen for the engine, twenty for the guide — and the note under each says what it
+became, including the four that came back different when they were re-measured and the
+two that were questions rather than requests. **The third list is open.**
 
 Done is not the same as right. An engine item has a test behind it; a guide item is a
 hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
@@ -675,3 +676,213 @@ on; back to front and the inside-of-a-hollow-thing rule, which is the reason a s
 wheel reads as a ring rather than a hole; and the habit of putting a measured number
 behind a rule. The numbers changed what I did in a way the prose beside them did not.
 And every row of *the shape each tool leaves behind* survived being measured.
+
+---
+
+# Suggestions from a third session
+
+These come from a third session: a lighthouse on a rocky headland at dusk, painted from
+`PAINTER.md` with no reference photograph, through the shell path, in 184 strokes of a
+300 budget. The painting and its scripts are in `paintings/lighthouse_dusk/`. Nothing
+here is done yet; the items are open, and the note format the two lists above use is
+left for whoever closes them.
+
+**This session is not a clean measurement of the guide either.** The subject was chosen
+before anything was read, but `README.md`, `LESSONS.md`, `CALIBRATION.md`,
+`PAINTINGS.md` and both earlier paintings' notes and scripts were all read before the
+first stroke. The pass-script convention, the prelude of masses as functions and the
+`compare()` plan sheet were copied from `paintings/`, not worked out from the guide. So
+where this agrees with the two sessions above it is a third painter with more context,
+and where it disagrees it may be the context talking.
+
+Every claim below says whether it was measured or is an opinion. The measured ones are
+`scripts/probe_third_session.py`, which prints the numbers quoted here on a 512×384
+canvas. Where I could not settle something it is written as a question.
+
+## What the probes found
+
+- **A raw `(r, g, b)` triple handed to the palette is read as sRGB, not linear.** The
+  guide (*Colour*, "Supplying a colour of your own") and `REFERENCE.md` both say linear.
+  Measured: a `toned_grey` ground reads `0.53`; its own mean, taken from `s.canvas.rgb`
+  and assigned as a tuple, reads **`0.25`**. The same mean assigned as a `float32`
+  array reads `0.53`, because `parse_color` passes an engine array through untouched,
+  and so does the mean encoded to a hex string first. So there are two working ways to
+  hand a sampled colour back and the guide documents a third that does not work. It
+  cost me one rehearsal: the halo's outer rings, meant to be the sky's own colour,
+  landed near black.
+- **Where the first pass of a stack lands.** A five-pass scumble red→blue over a
+  square, `flat` at `size=0.08`, full opacity: with `direction=0`, `"horizontal"` or
+  `"axis"` on a wide place, colour `a` is along the **top** edge; with `90` or
+  `"vertical"` it is along the **right**; with `45` it is in the upper right. A
+  `polygon` behaves the same as a `Region`. So `scumble(place, a, b, direction=90)`
+  puts `a` on the side away from the left, which is the opposite of what reading the
+  call suggests, and nothing says so. It cost me two rehearsals and the tower's lit
+  face went on the wrong side once.
+- **A pressure list flips on alternate passes.** `_angled_paths` yields every odd
+  path reversed, so a `pressure=[0.0, 1.0]` on a scumble or a block-in lands heavy at
+  the right end of one pass and the left end of the next. Measured on four horizontal
+  passes: paint at the two ends `0.35 / 0.56`, `0.52 / 0.33`, `0.35 / 0.57`,
+  `0.56 / 0.34`. A passage that is meant to brighten toward one side cannot be laid
+  with the verb; I laid the afterglow as six hand-written strokes instead.
+- **The inward scumble fills solid when the brush is wider than about twice the ring
+  step, and the default brush always is.** The rings step `depth / n` apart, where
+  `depth` is half the patch's shorter extent, and each ring is laid over the ones
+  before it. Measured on an ellipse `0.72 × 0.24`, `n=7`, opacity `0.5`, bristle,
+  colours `0.45` at the edge and `0.75` at the centre; the second column is the share
+  of the patch within `0.06` of the centre value, the profile is read from the top
+  edge to the middle:
+
+  | brush | flat at the centre value | profile, edge → centre |
+  |---|---|---|
+  | `0.09` | **44%** | `0.52 0.55 0.62 0.69 0.70 0.69 0.71` |
+  | `0.05` | 12% | `0.49 0.49 0.59 0.61 0.64 0.69 0.65` |
+  | `0.03` | 0.2% | `0.49 0.50 0.55 0.58 0.61 0.63 0.62` |
+  | `0.02` | 0% | `0.50 0.53 0.53 0.57 0.54 0.55 0.61` |
+  | `round_soft 0.09` | 42% | `0.50 0.56 0.60 0.66 0.71 0.72 0.72` |
+
+  The ring step here is `0.017`. At `0.09` the brush is five steps wide and the last
+  rings bury the first: nearly half the patch is one flat colour with a rim of ramp
+  round it, which is the solid yellow sun I rehearsed three times. At `0.03` the
+  ramp is smooth and the centre never reaches its colour, because at opacity `0.5`
+  nothing lands there more than twice. `0.05`, about three steps, is the usable
+  middle. The guide's example gives no `size=`, so it runs at the bristle's default
+  `0.11`, which fills any patch under about half a canvas across. `CALIBRATION.md`'s
+  own table shows the same thing on its patch — the inner half of the fall-off reads
+  `0.86, 0.91`, flat — and reads it as a fall-off. A round patch of radius `0.10`
+  with a `0.05` brush comes out right: `0.49 0.51 0.57 0.64 0.69 0.68 0.62`, 2.4% flat.
+- **`solid=True` is as even as it gets, and opacity does not change it.** A `flat` at
+  `size=0.03`, `density=1.0`, `solid=True` over a region: interior sd `0.009` and a
+  row-mean peak-to-peak of `0.028`–`0.030` at every combination of opacity `0.85` or
+  `1.0` and pressure `"taper"` or `"even"`. *This contradicts what I believed after my
+  own rock planes came out striped at opacity `0.85` and clean at `1.0`: the
+  measurement says the pass structure is `0.03` of value at any opacity, and what
+  changed between those two rehearsals was the shapes and the brush size, not the
+  opacity.* On a flat plane at feature scale `0.03` is visible; it is hidden by a
+  bigger brush or a broken one, not by an argument.
+- **The flat's wander has a middle setting, and it is two brush fields.** One
+  horizontal `flat` stroke, `size=0.1` (51 px on this canvas), top edge measured along
+  its length: default `jitter=0.02, size_jitter=0.06` wanders sd `1.2` px, peak to
+  peak `6` px; `jitter=0.01, size_jitter=0.03` halves both; `jitter=0.005,
+  size_jitter=0` is `1` px; zero is ruled. It scales with the brush, so at the
+  `size=0.13` I used for the sky the scallops were about twice this. I rehearsed only
+  the default and zero, found the default scalloped and zero ruled, and kept the
+  scallops; I did not go back and lay the sky at the halved setting, so whether it
+  reads better there is not measured.
+- **`look(diff=True)` inside a rehearsal has nothing to diff against.**
+  `_trial_session` sets the copy's `_last_look` to `None`, and the look it writes is
+  the plain copy. So the one question a rehearsal exists to answer — what would this
+  pass change — cannot be asked of it as a tint.
+- What the guide says and I can confirm: the ten pass scripts rebuilt the export from a
+  fresh session with a matching sha256; `at_value` was asked for nineteen values and
+  landed every one to the hundredth; `cost()` matched what was charged; the signature
+  was not charged; the rehearsal counter now runs apart from the painting's, and none
+  of seventy-two rehearsal looks overwrote another.
+
+## The engine
+
+In the order of how many rehearsals each would have saved me, since none of my strokes
+went on repainting.
+
+1. **Derive the inward scumble's brush from its ring step.** Default `size` to about
+   three times `depth / n` when `direction="inward"`, or warn when the brush given is
+   wider than that, the way `cost()` warns about a share of the budget. Measured above:
+   at the bristle's default size the verb lays a solid patch with a rim of gradient
+   round it, on any patch a painter would call a glow. Three rehearsals, and the verb
+   was abandoned for hand-rolled strokes that do less than it could.
+2. **Rehearse several scripts in order from the shell.** `easel run p.easel p2.py
+   p3.py --rehearse`, running them in sequence against one copy. I rehearsed the sea
+   and rocks together five times, and the three finishing passes together once, by
+   writing a wrapper that `exec()`s each file, because a pass that goes on top of
+   another pass has to be judged on it. The wrapper is in nobody's log.
+3. **Carry the last look into a rehearsal.** Copy `_last_look` into the trial session
+   so that `look(diff=True)` in a rehearsed pass tints what the pass would change. It
+   is one assignment, and it turns the rehearsal into the before-and-after it is for.
+4. **Apply a pressure list in canvas order on `block_in` and `scumble` passes**, or
+   take a keyword for it (`alternate=False`), so a passage that lands light on one
+   side and heavy on the other is one call. Measured above. Six strokes of the afterglow
+   are hand-written for exactly this reason, and they are the strokes in the painting
+   most likely to be wanted again.
+5. **A way to sample the canvas into the palette.** Something like
+   `s.palette["sky_here"] = s.sample(place)` returning the engine's own array, so a
+   halo ring, a moon's dark side or a repair can match what is already there without
+   the painter knowing which of three encodings the palette will assume. Until then the
+   working recipe is to assign the `float32` array straight from `s.canvas.rgb`.
+6. **Question: should the contour pass of `edge="clean"` wander?** The headland's ridge,
+   filled clean with a `flat` at `size=0.08` along an unsmoothed eleven-point outline,
+   came back with a row of rounded knobs along the top edge. I did not measure whether
+   that is the contour pass's wander or the outline's corners under a wide brush, and I
+   painted a strip over it. If it is the wander, a contour pass with `jitter=0` would
+   draw the line the painter drew.
+
+## The guide
+
+1. **Say what a triple is.** Under *Colour*, "a hex string or a linear RGB triple"
+   should read "a hex string, or an sRGB triple `0.0–1.0` as a hex string is; a
+   `float32` array from the engine itself is linear and passes through." The same row
+   in `REFERENCE.md`. And, beside it, the one line a painter reaches for this section
+   for: how to hand a colour sampled from the canvas back — assign the array, do not
+   round-trip it through a tuple.
+2. **Say where a stack starts.** In `REFERENCE.md` under `direction`: the first pass
+   is at the top for `0`, at the right for `90`, and every second pass runs the other
+   way, so a pressure list alternates. One row of a table.
+3. **A page of recipes that worked, one line and one code block each.** The guide is
+   strong on what not to do and has no recipe for the things a subject is made of; ten
+   of my eighteen rehearsals were spent finding these, and each is now a pass script
+   in `paintings/lighthouse_dusk/`:
+   - *a cylinder*: the mass solid in the shadow colour, the lit side as a second shape
+     laid on it, one half-strength stroke down the join (`p4_tower.py`). A pass ramp
+     across the whole width came out flat twice.
+   - *a rock*: not marks on a mass but the planes the mass is made of, as three or four
+     shapes tiling it, each at one value, the block-in's dark left as the shadow
+     (`p3_rocks.py`). Facets laid on the mass read as things stuck to it twice.
+   - *a brightening toward one side*: strokes all run the same way with
+     `pressure=[0.0, 0.55, 1.0]`, one value step apart (`p1_sky.py`).
+   - *a straight horizon*: one `flat` stroke with `jitter=0, size_jitter=0`; the only
+     ruled line a seascape needs (`p2_sea.py`).
+   - *a crescent*: one tapered arc on the round tip, `pressure=[0.05, 0.6, 1.0, 0.6,
+     0.05]` (`p6_moon_beam.py`). A disc with a disc bitten out of it leaves a ghost.
+   - *a small round thing*: a `dab(press=3)` is right when the thing **is** a disc,
+     and the guide's warning against discs reads as if it never is.
+   Opinion, all of it; each one is a recipe that worked once.
+4. **Give the inward scumble example a `size=` and a rule**, "keep the brush under
+   about three ring steps, `3 * depth / n`", and have `CALIBRATION.md` state the patch's
+   radius and read its own table as a rim of gradient round a flat middle. Measured
+   above.
+5. **"Rehearse any mass you would not want to repaint" is too weak.** Eighteen of
+   eighteen rehearsals changed something, none was charged, and no stroke in the
+   painting went on repainting anything. The line should say: rehearse every pass, it
+   costs a look. Opinion, with that one number behind it.
+6. **A line under `solid=True`**: the pass structure of a solid flat block-in is about
+   `0.03` of value at any opacity and pressure, which shows on a flat plane at feature
+   scale; hide it with a bigger brush or a bristle, not with `opacity`. Measured above,
+   and the opposite of what I believed while painting.
+7. **A line about glazes and colour.** A gold glaze at `opacity=0.14` across a violet
+   sky landed as a saturated stripe; at `0.07` it landed as nothing. The knife's rule,
+   "keep it close in value to what it lands on", seems to apply to a glaze's *hue* as
+   well, and the glaze line says only "thin transparent film". Observed twice, not
+   measured; the two rehearsals are in the notes and the beam is not in the painting.
+8. **Under *Painting without a reference*: re-check the plan sheet's places after
+   moving a silhouette.** My left-horizon place was written before the ridge was
+   raised and made jagged; it ended half rock and reported a `-0.16` miss that was not
+   one. `compare()` cannot know that a place has changed meaning; one line can.
+9. **The two-goes instruction, as a data point.** I read the whole guide and the
+   reference before doing the exercises, then did all eight, then painted. The
+   exercises still paid: the edge study showed me the smudge's thumbprint before I
+   could lay it in the picture, the load study showed the speckle a starved bristle
+   leaves, and the wet-versus-dry pair is why every sea pass was laid on dry sky. So
+   the gate held even when read in the wrong order. Whether the essay is finished by a
+   painter who does the exercises first, I cannot say; I did not.
+
+## What I would not change
+
+Rehearsal, seeded as the next real strokes: eighteen runs, nothing charged, and every
+one of the pictures' failures — a sun instead of a glow, a hull instead of a rock, a
+dark cloud instead of a halo, a mustard stripe instead of a beam — happened on a copy.
+`at_value`, which turned a value plan into nineteen mixtures without one guess.
+`compare({place: value})`, which measured the picture against the plan before and after
+the block-in and once at the end. The shape builders, `s.circle` doing the aspect
+arithmetic, and `edge="clean"`, which is why the tower has a silhouette. The worked
+examples in `paintings/`: the prelude of masses as functions and the numbered passes are
+the reason the painting re-runs from its own scripts, and I would not have arrived at
+that convention from the guide. And the eight exercises, which cost two minutes and
+were repaid inside the first pass.
