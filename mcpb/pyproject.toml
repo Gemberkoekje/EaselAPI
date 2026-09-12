@@ -1,0 +1,19 @@
+# What `uv run` reads to build the environment the server runs in, and nothing
+# else: there is no build-system table, so uv treats this as a virtual project and
+# installs the dependencies without trying to build anything here.
+#
+# Both 0.0.0s are placeholders. scripts/pack_mcpb.py writes the released version
+# into them from the root pyproject.toml, which is the one place a version is
+# written by hand, and refuses to pack if it finds nothing to replace.
+[project]
+name = "easel-mcpb"
+version = "0.0.0"
+description = "The MCPB bundle's dependency declaration: it installs easel-paint from PyPI."
+# The upper bound is not pessimism, it is the CI matrix: ci.yml tests 3.12 and
+# 3.13, and left open uv installs on whatever is newest -- it picked 3.14 the
+# first time this was run. An install should get an interpreter the engine has
+# actually been tested on. Widen this when the matrix widens.
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "easel-paint[mcp]==0.0.0",
+]

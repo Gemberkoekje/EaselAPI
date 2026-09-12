@@ -1,0 +1,52 @@
+{
+  "manifest_version": "0.4",
+  "name": "easel",
+  "display_name": "Easel",
+  "version": "0.0.0",
+  "description": "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture.",
+  "long_description": "Easel is a painting engine, not a drawing API. A brush carries a finite load of paint that runs out along the stroke, picks up what is already wet on the canvas, and drags against the tooth of the ground. The tools are the eleven CLI verbs plus `preview`, `rehearse` and `cost` -- the three questions about a mark that has not been made yet -- and the looking tools hand the picture back inline, so the loop the guide asks for (look every five to fifteen strokes) costs one call.\n\nRead PAINTER.md before painting. It teaches the workflow, which matters more than the tool list.",
+  "author": {
+    "name": "Arie Hofland",
+    "url": "https://github.com/Gemberkoekje"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gemberkoekje/EaselAPI.git"
+  },
+  "homepage": "https://github.com/Gemberkoekje/EaselAPI",
+  "documentation": "https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md",
+  "support": "https://github.com/Gemberkoekje/EaselAPI/issues",
+  "server": {
+    "type": "uv",
+    "entry_point": "src/server.py",
+    "mcp_config": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "${__dirname}",
+        "src/server.py",
+        "--dir",
+        "${user_config.paintings_dir}"
+      ]
+    }
+  },
+  "user_config": {
+    "paintings_dir": {
+      "type": "directory",
+      "title": "Paintings directory",
+      "description": "Where .easel session files, looks and exported PNGs are written. Every tool takes a path relative to this, so a painting stays where you put it rather than wherever the client happened to start.",
+      "required": true,
+      "default": "${HOME}/Documents"
+    }
+  },
+  "tools_generated": true,
+  "keywords": ["painting", "paint", "brush", "canvas", "art", "mcp"],
+  "license": "MIT",
+  "compatibility": {
+    "platforms": ["darwin", "linux", "win32"],
+    "runtimes": {
+      "python": ">=3.12,<3.14"
+    }
+  }
+}
