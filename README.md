@@ -174,9 +174,21 @@ having is that the looking tools hand back the picture rather than a path to it.
 the loop the guide asks for (look every five to fifteen strokes) costs one call.
 
 ```bash
-pip install -e ".[mcp]"
+pip install "easel-paint[mcp]"
 easel-mcp --dir ~/paintings          # or: python -m easel.mcp_server
 ```
+
+Or without installing anything, which is the form a client configures:
+
+```bash
+uvx --from "easel-paint[mcp]" easel-mcp --dir ~/paintings
+```
+
+Both halves of that are named because both are needed: the server is an opt-in
+extra, and its console script is `easel-mcp` rather than `easel-paint`. The server
+is listed in the official MCP registry as `io.github.Gemberkoekje/easel`;
+[`server.json`](https://github.com/Gemberkoekje/EaselAPI/blob/main/server.json) at
+the repository root is what is published there.
 
 Fourteen tools: the eleven CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
