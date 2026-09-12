@@ -133,3 +133,74 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
+
+  # The MCP registry stores metadata, not artefacts, and it stores it pinned to a
+  # version: nothing in it updates itself when a new release reaches PyPI, so
+  # without this job the entry silently goes on advertising whatever was last
+  # published by hand.
+  #
+  # It runs after `pypi` rather than beside it, and that ordering is the whole
+  # trick: the registry proves the namespace is ours by reading the `mcp-name:`
+  # marker out of the *published* package description, so the release has to
+  # exist on PyPI before this can succeed.
+  #
+  # If this job fails, the PyPI release is still done and good -- only the
+  # registry entry is stale, and `mcp-publisher publish` from a checkout fixes it.
+  registry:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read    # server.json is the thing being published
+      id-token: write   # GitHub Actions OIDC, so there is no token to store
+
+    env:
+      # Pinned rather than `latest`, because this binary runs in the one job that
+      # can mint an OIDC token in the maintainer's name. v1.8.1 is commit
+      # f52dc8525a441a3abf5fedc9912152d95af5aab1, which is what a locally
+      # installed `mcp-publisher --version` reports.
+      MCP_PUBLISHER_VERSION: v1.8.1
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # The one thing here named by version rather than by digest, because it is
+      # a release asset rather than a git ref -- so the checksum is verified out
+      # of the same release. The asset names are goreleaser's, from the config at
+      # that tag: archives are `mcp-publisher_{{ .Os }}_{{ .Arch }}` and the
+      # checksum file takes the default name. `-f` on both curls matters: without
+      # it a 404 page is written to the file and the checksum fails confusingly
+      # instead of the download failing plainly.
+      #
+      # Further hardening available and not taken: goreleaser also cosign-signs
+      # both the archive and the checksums file into `.sigstore.json` bundles,
+      # which would catch a re-cut tag as this does not. That needs the release
+      # workflow's certificate identity, which should be read rather than guessed.
+      - name: Install mcp-publisher
+        run: |
+          base="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl -fsSL "$base/mcp-publisher_linux_amd64.tar.gz" -o mcp-publisher_linux_amd64.tar.gz
+          curl -fsSL "$base/checksums.txt" -o checksums.txt
+          grep ' mcp-publisher_linux_amd64.tar.gz$' checksums.txt | sha256sum -c -
+          tar xzf mcp-publisher_linux_amd64.tar.gz mcp-publisher
+          ./mcp-publisher --version
+
+      - name: Authenticate with the registry
+        run: ./mcp-publisher login github-oidc
+
+      # PyPI's description is fetched by the registry server-side and is not
+      # always visible the instant the upload returns. Failing the release over
+      # that would be failing a release that has already succeeded, so it gets a
+      # few tries before it counts as broken.
+      - name: Publish to the MCP Registry
+        run: |
+          for delay in 0 15 30 60; do
+            if [ "$delay" -gt 0 ]; then
+              echo "Retrying in ${delay}s -- PyPI may not have propagated yet."
+              sleep "$delay"
+            fi
+            if ./mcp-publisher publish; then
+              exit 0
+            fi
+          done
+          echo "::error::mcp-publisher publish did not succeed. The PyPI release is unaffected; re-run it from a checkout." >&2
+          exit 1
