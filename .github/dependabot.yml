@@ -27,8 +27,10 @@ updates:
           - "minor"
           - "patch"
 
-  # The actions .github/workflows/ci.yml runs (actions/checkout,
-  # actions/setup-python, actions/upload-artifact). Left unmanaged these drift
+  # The actions the workflows run: ci.yml uses actions/checkout,
+  # actions/setup-python and actions/upload-artifact; publish.yml adds
+  # actions/download-artifact and pypa/gh-action-pypi-publish, and every one of
+  # them is pinned by commit SHA. Left unmanaged these drift
   # quietly rather than failing loudly -- CI's own logs already warn that
   # actions/checkout@v4 and actions/setup-python@v5 are pinned to a Node
   # version GitHub is deprecating.
