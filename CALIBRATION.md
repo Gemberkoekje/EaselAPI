@@ -130,6 +130,72 @@ is always more white than feels right.
 
 ---
 
+## The paint and the view of it
+
+There are two surfaces here, and it is worth knowing that they agree before spending a
+rehearsal on the possibility that they do not.
+
+- **The paint**: what `sample()` hands back, what `compare()` measures, and what
+  `look(values=True)` renders. Pigment in the canvas.
+- **The view**: what `look()` draws in colour and what `export()` writes. The same
+  pigment with the paint's own height shaded as low relief, lit from the upper left,
+  plus whatever graphite the paint has not buried.
+
+**Over a mass the two report the same value.** Measured on 512×384 linen, a mass
+`0.60 × 0.20` laid over a solid wall, `flat` at `size=0.030`, sampled over its middle
+`0.56 × 0.16`:
+
+| mixed at | at the default load | laid `solid=True` |
+|---|---|---|
+| `0.215` | paint `0.269`, view `0.269` | paint `0.241`, view `0.241` |
+| `0.26` | paint `0.311`, view `0.311` | paint `0.284`, view `0.284` |
+| `0.33` | paint `0.372`, view `0.372` | paint `0.350`, view `0.350` |
+| `0.50` | paint `0.508`, view `0.508` | paint `0.504`, view `0.504` |
+
+The gap is `0.000` to three places in every row, and the worst *single pixel* anywhere
+on the canvas is `0.038`, at a step in paint height. **The relief is a gradient**: it
+brightens the upper-left side of every ridge of paint and darkens the lower-right by
+the same amount, so it cancels over any area bigger than a ridge and it has nothing to
+work with inside a mass of even thickness. `look()` at 720px, `look()` at full
+resolution, `look(values=True)`, `export()` and `export(impasto=False)` all read `0.314`
+on the same mass.
+
+**So `solid=True` costs nothing in the view.** That is the row a session asked for —
+how far a solid field at a stated value moves in the rendered view against the same
+value at default load — and the answer is that it does not move. What `solid=True`
+*does* move is the paint: a mass reads about `0.03` darker laid solid than at the
+default load, because the passes no longer run dry and let the ground show through. See
+`block_in` below.
+
+Two things really do differ between the two surfaces, and neither is large:
+
+- **Graphite the paint has not covered.** A pencilled area under one thin pass reads
+  `0.395` as paint and `0.390` as the view of it — the drawing showing through.
+- **Where the average is taken.** `sample()` averages pigment in *linear* light and
+  hands back a colour to mix with; `compare()` and the values view encode each pixel
+  first and average the values a painter can see. On a broken passage that is worth
+  `0.002` to `0.005`, the linear mean reading the darker of the two. It is why
+  `value_of(s.sample(place))` and `compare({place: v})` can disagree in the third
+  decimal, and they disagree in no other way.
+
+You can ask for the second number rather than believing either:
+
+```python
+s.palette.value_of(s.sample(mass))                   # the paint
+s.palette.value_of(s.sample(mass, rendered=True))    # the view of it
+```
+
+`compare()`'s own table names the surface it measured, for the same reason.
+
+**A mass that looks lighter than the number it was mixed at is not the view lifting
+it.** Look for the value it stands against instead: `0.10` separates two masses at any
+point on the scale, and the same step reads far louder at the dark end — `0.17` against
+`0.26` is 43 against 66 in eight-bit grey, half as bright again, where `0.63` against
+`0.72` is 161 against 184. A fascia `0.09` above its wall is inside the threshold and
+still the brightest thing in a dark picture.
+
+---
+
 ## Graphite under paint
 
 Paint buries the pencil in proportion to how much paint actually lands. On a pencil
@@ -250,6 +316,30 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   `overhang` is, because that is the brush hanging over a pass whose *centre* stopped
   at the boundary. To hold a mass off its neighbour at the same depth, `inset()` the
   place by half the brush. `overhang=0` is not a substitute and never was.
+- **"The ends" turn with `direction`, and that is two masses' worth of surprise.** The
+  same argument reaches past the left and right of a mass swept horizontally and past
+  the top and bottom — off the foot of the mass, onto whatever it stands on — of one
+  swept vertically, which is what `"axis"` picks as soon as the mass is taller than it
+  is wide. Measured on a shape `0.40 × 0.30`, bristle at `size=0.030` (19px on a
+  640×480 canvas), laid solid; furthest paint past each edge:
+
+  | passes | `overhang` | left | right | top | bottom |
+  |---|---|---|---|---|---|
+  | horizontal | `0` | 3px | 2px | 7px | 6px |
+  | horizontal | `0.35` | 9px | 9px | 7px | 6px |
+  | horizontal | `1.0` | 22px | 20px | 7px | 6px |
+  | vertical | `0` | 8px | 3px | 4px | 2px |
+  | vertical | `0.35` | 9px | 3px | 9px | 7px |
+  | vertical | `1.0` | 8px | 3px | 18px | 17px |
+
+  Half a brush is 9px, and that is what the two edges it does not lengthen keep
+  throughout. **A mass never stops dead at its own outline**, whatever this is set to.
+- **`overhang=0` does not leave a boundary bare.** The half-brush strip inside the pass
+  ends comes back `0.0%` unpainted on the shape above laid solid, at every setting. At
+  the *default* load it comes back `8.7%` bare at `overhang=0` and `4.2%` at `1.0` —
+  but the strip inside the **sides**, where `overhang` does nothing at all, is barer
+  still at `14%`. What that measures is the comb's own texture and the brush running
+  dry, not a boundary the passes failed to reach: `solid=True` removes all of it.
 - **`edge="clean"` pulls the paint back to the drawn line**, by insetting the fill
   half a brush and sweeping one pass along that inset outline, for one stroke more
   than the same mass ragged. Measured on a mass a third of the canvas across, furthest paint outside
@@ -478,11 +568,38 @@ of radius `0.20`, bristle at `0.13`:
 - **It is much stronger than "moves paint around" suggests, and it is not symmetric**:
   it pulls the *lighter* mass into the darker one more than the reverse, so a smudge
   run along a light/dark boundary walks the boundary into the dark side.
-- At `size=0.10` it drags finger-shaped lobes several cells long and reads as a
-  thumbprint through the paint. **`0.035`–`0.045` behaves**; anything larger wants a
-  `rehearse()` first. A rehearsal run lost a whole mass to seven smudges at `0.10`.
-- **Inside that window it removes about 40% of a join, once, and repetition undoes it.**
-  The steepest value step across a hard join, per 1% of canvas height:
+- **What `size` buys stops at about `0.02`; what it costs does not.** One pass along a
+  step from `0.78` down to `0.17`, both masses solid, 640×480 linen, `flat` at
+  `size=0.030`, the pass laid along the boundary the two masses actually met on. The
+  join's sharpness is the steepest value step across it per 1% of canvas height (a bare
+  join reads `1.207`); the reach is how far the pass carried the light mass into the
+  dark, as a share of canvas height:
+
+  | `size` | join sharpness | softened by | carried into the dark |
+  |---|---|---|---|
+  | `0.008` | `1.233` | nothing | `0.4%` |
+  | `0.011` | `1.191` | nothing | `0.6%` |
+  | `0.016` | `0.651` | `−46%` | `1.0%` |
+  | **`0.020`** (the default) | `0.581` | `−52%` | `1.3%` |
+  | `0.024` | `0.614` | `−49%` | `1.5%` |
+  | `0.028` | `0.608` | `−50%` | `1.7%` |
+  | `0.032` | `0.493` | `−59%` | `1.9%` |
+  | `0.040` | `0.376` | `−69%` | `2.3%` |
+  | `0.070` | `0.215` | `−82%` | `4.4%` |
+
+  Three things are in that table. Below about `0.014` the tip is too small to straddle
+  the join and **the pass does nothing at all** — which is worth knowing before
+  concluding that a small smudge is a safe one. From `0.016` the softening arrives
+  almost at once and then flattens off, while the reach goes on growing with the brush
+  in a straight line. And the old default of `0.07` is off the bottom of the table: it
+  takes `82%` off the join and drags the light mass `4.4%` of the canvas height into
+  the dark, which is the pale finger-shaped lobe four sessions have described.
+  **`0.02` is the knee and is the default since 0.2.0**; past `0.03` the call says so.
+- **It removes about half of a join, once, and repetition undoes it.** The steepest
+  value step across a hard join, per 1% of canvas height. *This table's canvas, brush
+  and step were not recorded when it was measured*, which is what the rule at the top
+  of this file exists to prevent; the row above is the one to trust for absolute
+  numbers, and this one for what a second and third pass do:
 
   | | join sharpness |
   |---|---|
@@ -607,6 +724,55 @@ because at `opacity=0.5` nothing lands there more than twice. **About three step
 the usable middle**, and that is what the verb picks when no `size=` is given. A
 preset's own default is `0.11` here, five steps wide, which is why the example in the
 guide carries no `size=`.
+
+### The band, and the brush that closes its joins
+
+The same mechanism as the rings, one direction over: the passes step `extent / n` apart
+whatever brush is on them, so the brush has to be wider than the step or the passes
+never meet. Measured on a band `0.80 × 0.40` at `n=8` — a step of `0.050` — bristle at
+`opacity=0.5`, 640×480 linen on a ground reading `0.53`, grading `0.20` to `0.70`. The
+ripple is the standard deviation of the across-band profile's own one-step wobble, which
+is what a stack of bars measures as; the span is what the ramp actually delivered:
+
+| brush | in steps | ripple | delivered |
+|---|---|---|---|
+| `0.025` | 0.5 | `0.004` | `0.50`–`0.54` — the ground, barely painted |
+| `0.038` | 0.75 | `0.009` | `0.39`–`0.54` |
+| `0.050` | 1 | `0.014` | `0.31`–`0.59` |
+| `0.075` | 1.5 | `0.015` | `0.27`–`0.63` |
+| `0.100` | 2 | `0.008` | `0.25`–`0.62` |
+| **`0.150`** | **3** | `0.007` | `0.26`–`0.63` |
+| `0.200` | 4 | `0.005` | `0.28`–`0.64` |
+| `0.300` | 6 | `0.006` | `0.36`–`0.63` — the last passes burying the first |
+
+**The worst place is one to one and a half steps**, which is where a preset's own
+default lands on an ordinary band, and it is the venetian blind a session abandoned the
+verb over. Under a step the passes stop meeting at all and most of the band is still
+ground. Past about five the ramp stops reaching its own ends. **Three steps is the
+middle of the window and is what the verb picks with no `size=`** — the same figure the
+inward case picks, for the same reason. Hand it under two and it says so.
+
+### Opacity does not make a passage quieter
+
+The passes overlap, so a low opacity accumulates back toward full colour instead of
+thinning what arrives. Eight passes from `0.30` to `0.62` over a solid `0.22` ground,
+brush picked from the step, 640×480 linen:
+
+| `opacity` | the passage's mean | span |
+|---|---|---|
+| `0.15` | `0.34` | `0.22`–`0.50` |
+| `0.25` | `0.38` | `0.22`–`0.56` |
+| `0.40` | `0.41` | `0.22`–`0.59` |
+| `0.60` | `0.44` | `0.22`–`0.60` |
+| `0.80` | `0.45` | `0.22`–`0.60` |
+| `1.00` | `0.45` | `0.22`–`0.61` |
+
+From `0.40` up it is the same passage — `0.04` between half opacity and full. Even at
+`0.15`, a fifth of the way, it still lands within `0.12` of full colour. **To make a
+passage quiet, mix `color_a` and `color_b` closer together**; that is what the two
+arguments are for. This is *"`opacity` does not thin a long stroke, it only slows it
+down"* arriving on the verb where a painter reaches for a low opacity to keep a passage
+down, which is where one of them met it.
 
 ---
 

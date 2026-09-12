@@ -58,7 +58,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 |---|---|---|
 | `stroke(points, brush, color, ...)` | one mark along a path | 1 |
 | `dab(x, y, brush, color, press=1)` | one mark at a point; `press` stamps it again | 1 |
-| `smudge(edge, size=0.07)` | drags what is on the canvas, along a path **or a shape's own outline** | 1 |
+| `smudge(edge, size=0.02)` | drags what is on the canvas, along a path **or a shape's own outline** | 1 |
 | `glaze(points, color, opacity=0.18)` | a thin film that adds no height | 1 |
 | `block_in(place, ...)` | a mass, as overlapping passes | one per pass |
 | `sweep(edge, ..., into=, depth=)` | a mass, as passes along its boundary stepped inward | one per pass |
@@ -75,19 +75,19 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | Argument | Default | What it does |
 |---|---|---|
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass |
-| `overhang` | `0.35` box, `0` shape | how far each pass runs **past the ends** of the place, in brush widths. Not its sides |
+| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass. It costs nothing in the rendered view — see `CALIBRATION.md`, *The paint and the view of it* |
+| `overhang` (`block_in`, `scumble`, `cover`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths — and **which two edges those are turns with `direction`**: swept horizontally it reaches past the left and right, swept vertically past the top and bottom, and off the foot of the mass. The two it does not lengthen still get half a brush, so a mass never stops dead at its outline. The box/shape defaults differ because a rectangle stopping short of its corners reads as cropped, while a shape's outline **is the drawing** |
 | `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline. The contour does not wander: the line is the drawing |
 | `direction` | `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"`. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
 | `load_falloff` | the brush's | how fast it spends. `0` never runs dry |
-| `size` | the brush's | tip diameter, as a fraction of the canvas long side. On `scumble(direction="inward")`, left off, it is picked from the ring step: `3 × depth / n` |
+| `size` | the brush's | tip diameter, as a fraction of the canvas long side. On **either** direction of `scumble`, left off, it is picked from that verb's own step: `3 × depth / n` inward, `3 × extent / n` on a band. Named too narrow, both say so |
 | `wander` (sweep) | `True` | whether each pass wanders off the offset curve, so a stack is not parallel rules. A **single** pass has no parallel to break and the wander only moves it off the line drawn; off for the contour of `edge="clean"` |
 | `tip_wobble` | `0.0` | a round tip's own silhouette, redrawn per mark. `0.35` a brush set down once, `0.7`+ a clot |
 | `press` | `1` | for a one-point mark, how many times to stamp it. One mark either way |
-| `glaze` | `False` | lay colour without building paint height |
+| `glaze` (`stroke`) | `False` | lay colour without building paint height. `s.glaze(points, color)` is the verb; a mass cannot be laid as one |
 | `smooth` | `True` | fit a spline through the points; off gives hard corners |
 | `into` (sweep) | — | which side the mass is on: a compass word, degrees, or a point inside it. A closed edge needs none |
 | `depth` (sweep) | `0.2` | how far into the mass to sweep, in canvas units |
@@ -132,7 +132,7 @@ pass's side and not every pass's.
 | `round_soft` | round | `0.06` | `0.75` | `0.20` | `1.0` | `0.35` | blending and soft edges; above `size≈0.05` it airbrushes |
 | `round_hard` | round | `0.045` | `0.95` | `0.85` | `1.0` | `0.50` | deliberate marks, accents, small shapes |
 | `liner` | round | `0.005` | `0.95` | `1.00` | `1.0` | `0.18` | fine lines at feature scale; no jitter, holds its load |
-| `smudge` | round | `0.07` | `0.60` | `0.25` | `1.0` | `0.00` | carries no paint; moves what is already there |
+| `smudge` | round | `0.07` | `0.60` | `0.25` | `1.0` | `0.00` | carries no paint; moves what is already there. **The `smudge()` verb passes `0.02`** unless you name a size — this row is the preset a `stroke()` would get |
 
 Every other `Brush` field, with its default: `spacing 0.12`, `jitter 0.02`,
 `size_jitter 0.06`, `angle_follow True`, `angle 0.0`, `aspect 1.0`, `wetness 0.85`,
@@ -193,7 +193,9 @@ shape.box  shape.area  shape.axis  shape.center  shape.closed  shape.contains(x,
 ```
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
-on — worth looking at before blocking in anything long and curved.
+on — worth looking at before blocking in anything long and curved. It is a `Region`,
+with `.x0/.y0/.x1/.y1` and `.width/.height/.center`, and it **unpacks**:
+`x0, y0, x1, y1 = shape.box`, the same four numbers as `shape.bounds`.
 
 ---
 
@@ -224,6 +226,12 @@ there, ask for it and pass it straight on:
 p["sky_here"] = s.sample(halo_ring)     # the engine's own array, no conversion
 ```
 
+`sample` reads the **paint**. `sample(place, rendered=True)` reads the *view* of it —
+the relief and any graphite the paint has not buried — so the two can be put side by
+side in one line instead of believed. Measured, they agree over a mass to within
+`0.001`: see `CALIBRATION.md`, *The paint and the view of it*. `compare()` reports the
+paint too, and its table now says so.
+
 Grounds for `Session(ground=...)`: `white`, `warm_white`, `toned_grey`,
 `toned_warm_grey`, `cool_grey`, `umber_wash`, `burnt_sienna` — or any colour.
 Textures: `smooth`, `linen`, `rough`.
@@ -240,7 +248,7 @@ s.cost(plan)        s.cost_line(plan)           # what it charges, and why
 s.paint(plan)                                   # the same plan, now paid for
 s.compare("ref.jpg", region=, threshold=0.10)   # per-cell value of both, and the miss
 s.compare({place: value, ...})                  # ...against your own value plan
-s.sample(place=None)                            # the colour already there, to paint with
+s.sample(place=None, rendered=False)            # the colour already there, to paint with
 s.prepare("ref.jpg", level="coarse")            # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
 s.export("painting.png", impasto=True, sketch=True)

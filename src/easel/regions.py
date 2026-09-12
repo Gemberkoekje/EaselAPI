@@ -72,6 +72,18 @@ class Region:
     def bounds(self) -> tuple[float, float, float, float]:
         return (self.x0, self.y0, self.x1, self.y1)
 
+    def __iter__(self):
+        """Unpack as ``x0, y0, x1, y1`` -- the obvious thing to do with a rectangle.
+
+        ``shape.box`` is documented as "the rectangle a mass is priced on", and a
+        painter handed a rectangle writes ``x0, y0, x1, y1 = shape.box``. That
+        raised ``TypeError: 'Region' object is not iterable``, which says nothing
+        about where the four numbers actually are. They are here, in the order any
+        other 4-tuple of bounds is in, and :attr:`bounds` is the same four for code
+        that would rather say so.
+        """
+        return iter(self.bounds)
+
     @property
     def width(self) -> float:
         return self.x1 - self.x0

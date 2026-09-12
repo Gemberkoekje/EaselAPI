@@ -19,7 +19,7 @@ painter read straight through it.
 | [`PAINTING.md`](PAINTING.md) | the reasons: colour, wet paint, the brushes, working from a reference, the rest of the API | once, after the exercises |
 | [`RECIPES.md`](RECIPES.md) | the procedures: how a thing that is made of planes gets painted, what a glow is laid as | when you are about to paint one of them |
 | [`REFERENCE.md`](REFERENCE.md) | every fact on one page: units, defaults, what each argument does | when you want to look something up |
-| [`CALIBRATION.md`](CALIBRATION.md) | the measured numbers behind the rules | when a rule makes you want to know *how much* |
+| [`CALIBRATION.md`](CALIBRATION.md) | the measured numbers behind the rules | **when a rehearsal is about to be spent finding a number that is already in there.** The rules below cite it by section where one exists |
 
 Only this file and the exercises are required. Everything else is there for when you
 want it, and **nothing has been cut to make this file short** — it was moved.
@@ -227,14 +227,22 @@ these first masses, though — they want the ground breathing through them.
 read as faint striping on a large flat plane, invisible on anything with a form. That
 number does not move with `opacity` or with `pressure`; a painter believed its planes
 came out striped at `0.85` and clean at `1.0`, measured it, and found what had actually
-changed was the brush. **So hide the passes with a bigger brush or a broken one, never
-with an argument** — or leave them, because a plane with no incident in it at all is
+changed was the brush. (`CALIBRATION.md`, *`block_in`*, has it at every opacity and pressure.) **So hide the
+passes with a bigger brush or a broken one, never with an argument** — or leave them, because a plane with no incident in it at all is
 the flatter-looking mistake.
 
 A place can be a rectangle — `cell("D5")`, `span("E5", "H8")`, `region("lower-half")`
 — or a **shape**: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. `block_in` fills
 either, and a shape's passes stop at its own silhouette. Most masses are shapes; see
 *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md).
+
+**Draw the arrangement before you commit paint to it, even with nothing to copy.**
+`s.pencil()` is free — it costs no strokes and paint buries it — and `preview()` is
+not a substitute, because the two answer different questions: `preview` checks a mark
+against a plan, and the pencil checks *the plan*. A painter who worked from typed
+coordinates through `preview` alone never saw its composition as a composition until
+the picture was finished, and by then the fault was the picture. Put the big shapes
+down in graphite, look, and move them while moving them is free.
 
 Resist detail here. If you can already name what you are painting, you have gone
 too far too early.
@@ -396,7 +404,7 @@ paint the gradient as **steps and then lose the joins**:
 steps = [(cell("D4"), "dark"), (cell("D5"), "shadow"), (cell("D6"), "light")]
 for place, value in steps:
     s.block_in(place, "flat", value, pressure="even", size=0.03)
-s.smudge([(0.42, 0.50), (0.46, 0.62)], size=0.04)   # walk each join once, while wet
+s.smudge([(0.42, 0.50), (0.46, 0.62)])              # walk each join once, while wet
 ```
 
 Three or four steps read as a gradient once the joins are softened; two read as two
@@ -474,13 +482,16 @@ it move on.** Decide where you want attention, make those edges hard, and lose t
 others — let two masses merge with no boundary at all in places.
 
 ```python
-s.smudge([(0.3, 0.4), (0.45, 0.44)], size=0.06)     # soften an edge
+s.smudge([(0.3, 0.4), (0.45, 0.44)])                # soften an edge
 s.stroke([(0.6, 0.3), (0.62, 0.5)], "round_hard", "dark", size=0.02)  # sharpen one
 ```
 
 **`smudge` is far stronger than "move paint around" suggests**, and it walks a
-light/dark boundary into the dark side rather than blurring it evenly. Keep it small
-and rehearse anything bigger; `CALIBRATION.md` has the window.
+light/dark boundary into the dark side rather than blurring it evenly. Leave `size`
+off. Measured, what it buys stops at about `0.02` — the default — and what it costs
+does not: at `0.07` one pass drags the light mass `4.4%` of the canvas height into the
+dark, against `1.3%` at the default, for a join no softer than one pass ever gets. Past
+`0.03` the call says so. The table is in `CALIBRATION.md` under `smudge`.
 
 **Run it *along* a boundary, never across one.** Dragged across, it pulls a lobe of
 the light mass into the dark one and what you get is a visible finger-shaped
@@ -495,10 +506,10 @@ as you hand it, so hand it the curve — and if the boundary belongs to a mass y
 built, hand it the mass and it walks that outline itself:
 
 ```python
-s.smudge([(0.30, 0.40), (0.38, 0.41)], size=0.04)   # a straight edge is two points
+s.smudge([(0.30, 0.40), (0.38, 0.41)])             # a straight edge is two points
 s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53),
-          (0.73, 0.63)], size=0.04)                 # a curved one is the curve
-s.smudge(mass, size=0.04)                           # a shape is already that curve
+          (0.73, 0.63)])                            # a curved one is the curve
+s.smudge(mass)                                     # a shape is already that curve
 ```
 
 And it is one pass, not three — see *what one smudge buys you* in step 4. If the
@@ -825,7 +836,7 @@ s.dry()
 s.block_in(left,  "bristle", s.palette.tint("burnt_umber", 0.6), density=1.0, size=0.1)
 s.stroke([(0.02, 0.5), (0.31, 0.5)], "round_hard",
          s.palette.tint("burnt_umber", 0.6), size=0.03)      # hard
-s.smudge([(0.35, 0.3), (0.35, 0.7)], size=0.09)              # soft
+s.smudge([(0.35, 0.3), (0.35, 0.7)])                         # soft
 s.look()
 ```
 
@@ -922,6 +933,12 @@ are the ones to answer slowly.
   shape that only makes sense with the photograph next to it is not painted yet.
 - Is every mass laid along its own axis, or are the big shapes stacks of horizontal
   and vertical bars? Turn the picture on its side if you cannot tell.
+- **And are the bands in the marks, or in the subject you chose?** A frontal elevation
+  is a layer cake before a brush is picked, and no amount of angled brushwork gets it
+  back. Count the horizontal bands in the arrangement *before the first mass*: more
+  than three, and find something that crosses them — or a viewpoint that is not square
+  on. One painter spent fifteen strokes fighting a problem it had chosen in the first
+  thirty seconds.
 - Is any mass a rectangle that should have been a shape? A box is a decision, and
   it is the wrong one everywhere except a band or a flat plane. **Check the
   background hardest** — it is the mass you never had to draw, and the one most
@@ -960,8 +977,12 @@ are the ones to answer slowly.
   print(f"{len(on_it)} of {len(paid)} marks — {len(on_it) / max(len(paid), 1):.0%}")
   ```
 
-  **If it is under what you planned, you are not finished.** `note=` costs nothing and
-  is the only way the engine can hold this for you.
+  **Measure it at the moment the subject is finished, not at the end**, and if it is
+  under what you planned then, you are not finished. After that the number is *meant*
+  to fall: the last third goes on the surroundings, which is the rule two lines down,
+  and a subject at 45% when it was done and 41% after two surroundings passes has
+  obeyed both. `note=` costs nothing and is the only way the engine can hold this for
+  you.
 - **You have named the weakest passage. How many strokes are left? Spend them there.**
   Nothing above this line is about *finishing*, and a painter who stops with a third
   of the budget unspent has left the picture short on purpose without deciding to.

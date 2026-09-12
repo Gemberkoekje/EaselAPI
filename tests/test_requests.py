@@ -22,7 +22,18 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from easel import Session, blob, cell, hull, polygon, ribbon, span, union
+from easel import (
+    Region,
+    Session,
+    blob,
+    brush,
+    cell,
+    hull,
+    polygon,
+    ribbon,
+    span,
+    union,
+)
 from easel.cli import main, run_script
 from easel.palette import Palette
 
@@ -699,6 +710,10 @@ def test_the_breakdown_adds_up_to_what_cost_says(tmp_path):
 
 
 # -- smudge follows a boundary, and a shape is one -------------------------------------
+# 0.04 is the size the bend measurement in CALIBRATION.md was taken at, and these
+# three tests are about *which points* a pass is given rather than how wide it is, so
+# they keep it and ignore the advice the engine now gives about anything over 0.03.
+@pytest.mark.filterwarnings(r"ignore:smudge\(size=:UserWarning")
 def test_a_smudge_walks_a_shape_s_own_outline(tmp_path):
     """Following a curve meant sampling coordinates off it by hand, which is the step
     a painter skips -- and the guide's examples, every one of them two points, are
@@ -711,6 +726,7 @@ def test_a_smudge_walks_a_shape_s_own_outline(tmp_path):
     assert all(mass.box.inset(-0.05).bounds[0] <= x for x, _ in record.points)
 
 
+@pytest.mark.filterwarnings(r"ignore:smudge\(size=:UserWarning")
 def test_a_run_of_points_is_still_used_exactly_as_given(tmp_path):
     """Every smudge ever made with two points still lands where it landed."""
     s = make(tmp_path)
@@ -759,6 +775,7 @@ def _boundary_line(s):
     return np.array(out)
 
 
+@pytest.mark.filterwarnings(r"ignore:smudge\(size=:UserWarning")
 def test_a_smudge_along_a_curve_moves_the_boundary_less_than_its_chord(tmp_path):
     """Two points on a bend give a pass that starts along the boundary and ends across
     it: the same thumbprint, arriving more slowly. On a straight edge the two are the
@@ -933,6 +950,9 @@ def _pass_ends(s, y0, y1):
     return float(band[:, :int(0.12 * w)].mean()), float(band[:, int(0.88 * w):].mean())
 
 
+# A deliberately narrow brush: these two measure where each pass runs *heavy*, which
+# needs the passes to be separable, so they take the bars the verb now warns about.
+@pytest.mark.filterwarnings(r"ignore:scumble\(\) with a brush:UserWarning")
 def test_a_pressure_list_lands_the_same_way_round_on_every_pass(tmp_path):
     """Consecutive passes run in opposite directions, which is what keeps a stack from
     stacking all its run-out along one edge -- but the pressure profile went with them,
@@ -952,6 +972,7 @@ def test_a_pressure_list_lands_the_same_way_round_on_every_pass(tmp_path):
     assert heavy_ends == ["right"] * 4, heavy_ends
 
 
+@pytest.mark.filterwarnings(r"ignore:scumble\(\) with a brush:UserWarning")
 def test_a_mirrored_profile_lands_the_same_way_round_on_every_pass(tmp_path):
     """The same defect wearing a name: ``press_in`` is a pressure list with a word
     for it, and it flipped the same way. ``press_in`` and ``lift_off`` are each
@@ -1059,3 +1080,229 @@ def test_the_contour_of_a_clean_edge_does_not_wander(tmp_path):
     assert drift(False) < drift(True) * 0.6, (
         f"the contour still wanders: {drift(False)} against {drift(True)}"
     )
+
+
+# ======================================================================================
+# The fourth session: a night street. 286 strokes of 300, 56 rehearsals, no repainted
+# mass and no undo -- so its list is six things the engine could have held rather than
+# six damaged passages. Two of its six carried a measurement; the other four were
+# observed in rehearsal, and re-measuring them first is why two of the tests below
+# guard an answer that is not the one the request asked for.
+# ======================================================================================
+
+# -- the paint and the view of it: one number, and it says which one it is --------------
+def _lit_mass(tmp_path, **kw):
+    """A mass laid over a wall, both solid, on a canvas big enough to average over."""
+    s = Session(512, 384, texture="linen", ground="toned_grey", seed=5,
+                out_dir=tmp_path, timelapse=False)
+    s.palette["wall"] = s.palette.at_value("burnt_umber", 0.17)
+    s.palette["fascia"] = s.palette.at_value("burnt_umber", 0.26)
+    s.block_in((0.0, 0.0, 1.0, 1.0), "flat", "wall", size=0.05, solid=True)
+    s.dry()
+    s.block_in(Region(0.20, 0.35, 0.80, 0.55, name="fascia"), "flat", "fascia",
+               size=0.030, **kw)
+    return s, Region(0.22, 0.37, 0.78, 0.53, name="fascia")
+
+
+def test_the_view_and_the_paint_report_the_same_value(tmp_path):
+    """The request was for the two instruments to stop disagreeing about a solid mass.
+    Measured, they never did: the relief is a *gradient*, so it lifts one side of every
+    ridge of paint and drops the other by as much, and that cancels over any area larger
+    than the ridge. What the session actually lacked was a way to ask -- so the repair is
+    that the question is now one line, and the answer to it is *no difference*."""
+    for solid in (False, True):
+        s, inner = _lit_mass(tmp_path, solid=solid)
+        paint = s.palette.value_of(s.sample(inner))
+        view = s.palette.value_of(s.sample(inner, rendered=True))
+        assert abs(view - paint) < 0.005, (
+            f"solid={solid}: the view reads {view:.3f} against the paint's {paint:.3f}"
+        )
+
+
+def test_a_solid_mass_lands_where_it_was_mixed_in_the_view_too(tmp_path):
+    """The same finding from the other side, and the one that matters to a value plan:
+    ``solid=True`` sets maximum paint height, and maximum height is the case the request
+    expected to read lightest in the view. It does not -- the exported picture and the
+    values view agree to the thousandth."""
+    s, inner = _lit_mass(tmp_path, solid=True)
+    x0, y0, x1, y1 = s.canvas.region_px(inner)
+    with_relief = s.canvas.to_srgb8(impasto=True)[y0:y1, x0:x1]
+    without = s.canvas.to_srgb8(impasto=False)[y0:y1, x0:x1]
+    assert abs(float(with_relief.mean()) - float(without.mean())) / 255.0 < 0.002
+
+
+def test_compare_says_which_of_the_two_surfaces_it_measured(tmp_path):
+    """A value plan that reads clean while the picture looks wrong is a table nobody can
+    argue with, because it does not say what it measured. Now it does, and it names the
+    call that reports the other one."""
+    s, inner = _lit_mass(tmp_path, solid=True)
+    table = s.compare({inner: 0.26}).table()
+    assert "the paint" in table
+    assert "rendered=True" in table
+
+
+# -- a banded scumble sizes its own brush, the way the centred one does ----------------
+def _band_ripple(s, band):
+    """The across-band profile's own one-step ripple: what a stack of bars measures as."""
+    v = s.canvas.values() / 255.0
+    x0, y0, x1, y1 = s.canvas.region_px(band)
+    inset = int(0.12 * (x1 - x0))
+    profile = v[y0:y1, x0 + inset:x1 - inset].mean(axis=1)
+    step_px = max(3, int(round(band.height / 8 * s.canvas.height)))
+    smooth = np.convolve(profile, np.ones(step_px) / step_px, mode="same")
+    core = slice(step_px, len(profile) - step_px)
+    return float(np.abs(profile - smooth)[core].std())
+
+
+def _scumbled(tmp_path, band, **kw):
+    s = Session(640, 480, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    s.palette["a"] = s.palette.at_value("burnt_umber", 0.20)
+    s.palette["b"] = s.palette.at_value("titanium_white", 0.70)
+    records = s.scumble(band, "a", "b", 8, **kw)
+    return s, records
+
+
+def test_a_banded_scumble_sizes_its_own_brush_from_its_pass_step(tmp_path):
+    """The centred case has picked its brush off its ring step since the third session;
+    the banded case had the same failure and kept the preset's default, which is one to
+    one and a half steps on an ordinary band -- the worst place on the curve. A painter
+    lost the brightest mass in a painting to it twice and abandoned the verb."""
+    band = Region(0.10, 0.30, 0.90, 0.70, name="band")
+    s, records = _scumbled(tmp_path, band)
+    step = band.height / 8
+    assert records[0].params["size"] == pytest.approx(3.0 * step, rel=1e-6)
+
+    with warnings.catch_warnings():         # the bars, on purpose, to measure them
+        warnings.simplefilter("ignore", UserWarning)
+        narrow, _ = _scumbled(tmp_path, band, size=step)
+    assert _band_ripple(s, band) < _band_ripple(narrow, band) * 0.75, (
+        "the brush it picks is no better than the one that left the bars"
+    )
+
+
+def test_a_banded_scumble_says_when_the_brush_it_was_given_will_stripe(tmp_path):
+    """Named, the size is the painter's and is left alone -- with the same warning the
+    centred case gives for the opposite mistake, because silence is what cost the
+    rehearsals."""
+    band = Region(0.10, 0.30, 0.90, 0.70, name="band")
+    with pytest.warns(UserWarning, match="do not overlap"):
+        _scumbled(tmp_path, band, size=0.02)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        _scumbled(tmp_path, band, size=0.15)
+
+
+def test_a_brush_handed_in_whole_is_still_the_painters_choice(tmp_path):
+    """A ``Brush`` carries a size somebody chose. A preset's *name* does not, which is
+    the distinction the centred case already draws."""
+    band = Region(0.10, 0.30, 0.90, 0.70, name="band")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        _, records = _scumbled(tmp_path, band, brush=brush("flat", size=0.06))
+    assert records[0].params["size"] == pytest.approx(0.06)
+
+
+# -- a smudge softens a join; past a measured width it drags a lobe ---------------------
+def test_a_smudge_defaults_to_a_width_that_softens_rather_than_drags(tmp_path):
+    """What ``size`` buys stops at about 0.02 and what it costs does not, so the default
+    sat four times past the knee of its own curve -- and the guide's examples followed
+    it. Four of five smudges in one pass arrived as pale finger-shaped lobes."""
+    s = make(tmp_path)
+    assert s.smudge([(0.30, 0.50), (0.60, 0.50)]).params["size"] == pytest.approx(0.020)
+
+
+def test_a_wide_smudge_says_what_it_will_look_like(tmp_path):
+    """It still does exactly what it was asked. The guide warns about this at length and
+    correctly; a warning at the call is what the length was standing in for."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="dragging a lobe"):
+        s.smudge([(0.30, 0.40), (0.60, 0.40)], size=0.06)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.smudge([(0.30, 0.60), (0.60, 0.60)], size=0.02)
+
+
+def test_a_narrower_smudge_carries_less_of_the_light_mass_into_the_dark(tmp_path):
+    """The measurement the window is drawn from, in one line: the reach past a steep
+    boundary grows with the brush while the softening stops improving."""
+    def reach(size):
+        s = Session(640, 480, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+        s.palette["lit"] = s.palette.at_value("titanium_white", 0.78)
+        s.palette["wall"] = s.palette.at_value("burnt_umber", 0.17)
+        s.block_in(polygon([(-0.05, 0.02), (1.05, 0.02), (1.05, 0.50), (-0.05, 0.50)]),
+                   "flat", "lit", size=0.030, solid=True)
+        s.block_in(polygon([(-0.05, 0.50), (1.05, 0.50), (1.05, 0.98), (-0.05, 0.98)]),
+                   "flat", "wall", size=0.030, solid=True)
+        s.dry()
+        before = s.canvas.values() / 255.0
+        h, w = before.shape
+        columns = slice(int(0.42 * w), int(0.58 * w))
+        middle = before[:, columns].mean(axis=1)
+        edge = int(np.argmax(np.abs(np.diff(middle))[int(0.35 * h):int(0.65 * h)]))
+        edge += int(0.35 * h)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            s.smudge([(0.30, (edge + 0.5) / h), (0.70, (edge + 0.5) / h)], size=size)
+        lifted = ((s.canvas.values() / 255.0)[:, columns].mean(axis=1) - middle)[edge:]
+        into_the_dark = np.flatnonzero(lifted > 0.03)
+        return (int(into_the_dark.max()) + 1) / h if len(into_the_dark) else 0.0
+
+    assert reach(0.020) < reach(0.070) * 0.5
+
+
+# -- three documented surfaces that raised, and what they say now ----------------------
+def test_solid_and_glaze_name_the_call_that_takes_them(tmp_path):
+    """*Any brush field is also an override on any painting call* is true, and it means
+    a keyword belonging to a neighbouring call lands in ``**brush_overrides`` and comes
+    back as ``Brush.__init__() got an unexpected keyword argument`` -- a class the
+    painter never mentioned. Both of these are real arguments one call over, and the
+    reference lists them without saying which call takes them."""
+    s = make(tmp_path)
+    with pytest.raises(TypeError, match=r"block_in\(\) argument"):
+        s.scumble("upper-half", "burnt_umber", "titanium_white", 4, solid=True)
+    with pytest.raises(TypeError, match=r"stroke\(\) argument"):
+        s.block_in("upper-half", "flat", "burnt_umber", glaze=True)
+    with pytest.raises(TypeError, match="Did you mean load"):
+        s.block_in("upper-half", "flat", "burnt_umber", lode=1.0)
+
+
+def test_a_shapes_box_unpacks_like_any_other_rectangle(tmp_path):
+    """``shape.box`` is documented as the rectangle a mass is priced on, and unpacking a
+    rectangle is the obvious thing to do with one. It raised."""
+    mass = blob(cell("D5"), wobble=0.2, name="mass")
+    x0, y0, x1, y1 = mass.box
+    assert (x0, y0, x1, y1) == mass.bounds
+    assert tuple(mass.box) == mass.box.bounds
+
+
+# -- overhang lengthens the passes, and which edges that is turns with direction -------
+def test_overhang_reaches_past_the_ends_of_the_pass_not_the_sides(tmp_path):
+    """*How far each pass runs past the ends of the place* is accurate and cost a painter
+    two masses: which two edges the "ends" are turns with ``direction``, so the same
+    argument that keeps a horizontal mass off its own left edge runs a vertical one down
+    off its foot and onto whatever it is standing on."""
+    shape = polygon([(0.30, 0.30), (0.70, 0.30), (0.70, 0.60), (0.30, 0.60)], name="lit")
+
+    def reach(direction, overhang):
+        s = Session(640, 480, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+        before = np.array(s.canvas.rgb)
+        s.block_in(shape, "bristle", "titanium_white", size=0.030, solid=True,
+                   direction=direction, overhang=overhang)
+        painted = np.abs(np.asarray(s.canvas.rgb) - before).sum(axis=2) > 0.01
+        h, w = painted.shape
+        sideways = np.flatnonzero(painted[int(0.35 * h):int(0.55 * h), :].any(axis=0))
+        updown = np.flatnonzero(painted[:, int(0.35 * w):int(0.65 * w)].any(axis=1))
+        return (0.30 * w - float(sideways.min()), 0.30 * h - float(updown.min()))
+
+    flat_sides, flat_top = reach("horizontal", 0.0)
+    long_sides, long_top = reach("horizontal", 1.0)
+    assert long_sides > flat_sides + 8, "overhang did not lengthen a horizontal pass"
+    assert abs(long_top - flat_top) <= 2, "it moved an edge the passes do not end on"
+
+    up_sides, up_top = reach("vertical", 0.0)
+    down_sides, down_top = reach("vertical", 1.0)
+    assert down_top > up_top + 8, "the same argument did nothing to a vertical pass"
+    assert abs(down_sides - up_sides) <= 2, "and it moved the sides instead"

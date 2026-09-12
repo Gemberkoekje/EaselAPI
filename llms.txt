@@ -71,5 +71,6 @@ What to know before reading further:
 
 - [CALIBRATION.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/CALIBRATION.md): the measured numbers behind the guide's rules — graphite survival, wetness decay, the value floor, load windows. You do not need these to paint.
 - [LESSONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/LESSONS.md): what six measured painting runs and an adversarial review left behind. Read it before changing the engine or the guide, not before painting.
-- [SUGGESTIONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/SUGGESTIONS.md): what three painters asked for after using the guide — what was wrong, and what was done about it. Every item is done.
+- [SUGGESTIONS.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/SUGGESTIONS.md): what four painters asked for after using the guide — what was wrong, and what was done about it. Every item is done, including two answered by measuring them and finding nothing to fix.
+- [CHANGELOG.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/CHANGELOG.md): the same history cut by release — what changed in each version and which defaults moved, which is what a script that leaves an argument off will paint differently after an upgrade.
 - [Source](https://github.com/Gemberkoekje/EaselAPI/tree/main/src/easel): the engine. `session.py` is the object you hold, `color.py` the Kubelka-Munk pigment mixing, `stroke.py` the paint load and tooth model, `mcp_server.py` the MCP tools.

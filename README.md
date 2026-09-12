@@ -315,9 +315,20 @@ contour of a clean edge should be the line you drew. Two of those landed differe
 from how they were asked for, and the reasons are in
 [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md).
 
-The documentation round after **that** is the current one: the guide split into method,
-reasons, recipes, facts and numbers, with a word budget on the first of them that CI
-holds.
+The documentation round after **that** split the guide into method, reasons, recipes,
+facts and numbers, with a word budget on the first of them that CI holds.
+
+A fourth painter — a night street, 286 strokes of 300, 56 rehearsals, nothing repainted
+— produced the current round, and two of its six requests are in the repository as
+*measurements that came out the other way*. The engine now lets a painter ask what the
+rendered view makes of a mass (`sample(rendered=True)`) rather than believe it; both
+directions of `scumble` size their own brush from their own step; `smudge`'s default is
+the knee of its own measured curve instead of four times past it; and a keyword that
+belongs to a neighbouring call says so by name. What did *not* change, because measuring
+it first said not to, is in
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md)
+beside the request, and the release itself is in
+[`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md).
 
 ## The worked examples
 
@@ -349,9 +360,14 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what three painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what four painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Every item on it is done.
+each. Every item on it is done — including the two that were answered by measuring them
+and finding nothing to fix, which say so.
+[`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
+same history cut by release rather than by painter: what changed in each version, which
+defaults moved, and what a script that leaves an argument off will paint differently
+after upgrading.
 
 ## Licence
 

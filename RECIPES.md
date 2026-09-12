@@ -308,8 +308,8 @@ a soft edge; an absent one. It is the step that separates a painting from a diag
 and the one most often done by halves.
 
 ```python
-s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53), (0.73, 0.63)], size=0.04)
-s.smudge(mass, size=0.04)                            # or hand it the mass's own outline
+s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53), (0.73, 0.63)])
+s.smudge(mass)                                       # or hand it the mass's own outline
 s.stroke([(0.42, 0.30), (0.47, 0.35), (0.45, 0.43)], "bristle", "mid",
          size=0.028, load=0.60, opacity=0.55, pressure="taper")   # then paint across it
 ```

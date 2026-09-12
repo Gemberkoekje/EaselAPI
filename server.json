@@ -3,7 +3,7 @@
   "name": "io.github.Gemberkoekje/easel",
   "title": "Easel",
   "description": "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "websiteUrl": "https://github.com/Gemberkoekje/EaselAPI#mcp-server",
   "repository": {
     "url": "https://github.com/Gemberkoekje/EaselAPI",
@@ -14,7 +14,7 @@
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "easel-paint",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
