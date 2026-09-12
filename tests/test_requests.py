@@ -1,9 +1,10 @@
-"""The engine changes the pears session asked for, and what each one is for.
+"""The engine changes the painting sessions asked for, and what each one is for.
 
-One painter took the guide at its word, painted a still life from it with no
-reference, and wrote down what the engine had cost them. Every test here guards one
-item from that list, so the reason for each is the same shape: a painter spent
-strokes, or spent attention, on something the engine could have held.
+Two painters took the guide at its word, painted from it with no reference, and
+wrote down what the engine had cost them: a still life, then the inside of a car
+wash. Every test here guards one item from those lists, so the reason for each is
+the same shape: a painter spent strokes, or spent attention, on something the engine
+could have held.
 
 Two of them are really about arithmetic agreeing with itself -- ``cost`` quoting what
 ``paint`` charges, a rehearsal landing where the painting lands -- and those matter
@@ -21,7 +22,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from easel import Session, blob, cell, hull, span, union
+from easel import Session, blob, cell, hull, polygon, ribbon, span, union
 from easel.cli import main, run_script
 from easel.palette import Palette
 
@@ -458,3 +459,319 @@ def test_a_prelude_that_raises_stops_before_the_pass_starts(tmp_path):
     assert result.code == 1
     assert not result.save
     assert session.stroke_count == 0
+
+
+# ======================================================================================
+# The second session: the car wash. A painter who had read the repo, painting through
+# the shell, who probed every claim before writing it down -- and whose probes caught
+# one of the first session's numbers as well as six of the engine's own.
+# ======================================================================================
+
+# -- scumble(direction="inward"): a value falling off from a point ---------------------
+def _values_at(s, points):
+    v = s.canvas.values() / 255.0
+    h, w = v.shape
+    return [float(v[int(y * h), int(x * w)]) for x, y in points]
+
+
+def test_a_centred_scumble_falls_off_from_the_middle_in_both_directions(tmp_path):
+    """The band version grades edge to edge, which is a band and not a glow. A lit
+    patch goes dark at every edge, and the hand-rolled answer -- strokes radiating
+    from a shared centre -- comes back as a daisy."""
+    s = make(tmp_path)
+    patch = s.circle((0.5, 0.5), 0.22, wobble=0.1, seed=2)
+    s.scumble(patch, "burnt_umber", "titanium_white", 9, direction="inward", size=0.07)
+
+    left, centre, right = _values_at(s, [(0.32, 0.5), (0.5, 0.5), (0.68, 0.5)])
+    top, bottom = _values_at(s, [(0.5, 0.32), (0.5, 0.68)])
+    assert centre > left and centre > right, "it did not fall off across the patch"
+    assert centre > top and centre > bottom, "it did not fall off down the patch"
+
+
+def test_a_centred_scumble_costs_the_passes_it_was_asked_for(tmp_path):
+    """Charged as n, the same as the band version, so a glow can be budgeted."""
+    s = make(tmp_path)
+    assert len(s.scumble(s.circle((0.5, 0.5), 0.2), "burnt_umber", "titanium_white",
+                         8, direction="inward", size=0.06)) == 8
+
+
+def test_a_centred_scumble_ends_on_the_colour_it_was_given(tmp_path):
+    """color_a on the boundary and color_b in the middle, whichever way round the
+    painter wants the light."""
+    s = make(tmp_path)
+    records = s.scumble(s.circle((0.5, 0.5), 0.2), "burnt_umber", "titanium_white", 6,
+                        direction="inward", size=0.06)
+    values = [Palette().value_of(r.color_hex) for r in records]
+    assert values == sorted(values)
+    assert records[0].color_hex.lower() == Palette().hex("burnt_umber").lower()
+
+
+# -- block_in(solid=True): density spaces the passes, it does not fill them ------------
+def _interior(s, place, margin):
+    v = s.canvas.values() / 255.0
+    h, w = v.shape
+    x0, y0, x1, y1 = place.bounds
+    return v[int((y0 + margin) * h):int((y1 - margin) * h),
+             int((x0 + margin) * w):int((x1 - margin) * w)]
+
+
+def test_a_solid_block_in_is_solid_and_costs_the_same(tmp_path):
+    """density=1.0 looks like a request for a solid mass and is not one: the passes
+    still run dry along their length. Measured, the interior goes from sd 0.063 with
+    4.4% of it still within 0.05 of bare ground to sd 0.007 and none, for the same
+    passes and the same money."""
+    place = span("B2", "G6")
+    kw = dict(brush="flat", color="burnt_umber", size=0.030, density=1.0)
+    speckled, solid = make(tmp_path), make(tmp_path)
+    ground = _interior(speckled, place, 0.030).copy()
+    n_speckled = len(speckled.block_in(place, **kw))
+    n_solid = len(solid.block_in(place, solid=True, **kw))
+
+    assert n_solid == n_speckled, "solid paint is not more passes"
+    assert _interior(solid, place, 0.030).std() < _interior(speckled, place, 0.030).std() / 4
+    bare = np.abs(_interior(solid, place, 0.030) - ground) < 0.05
+    assert not bare.any(), "solid paint left bare ground inside the mass"
+
+
+def test_asking_for_a_starved_brush_beside_it_still_gets_one(tmp_path):
+    """`solid` is a pair of defaults, not an override. A painter who says load=0.2
+    means it."""
+    s = make(tmp_path)
+    records = s.block_in(cell("D5"), "flat", "burnt_umber", size=0.06, solid=True,
+                         load=0.2)
+    assert records[0].params["load"] == pytest.approx(0.2)
+    assert records[0].params["load_falloff"] == pytest.approx(0.0)
+
+
+# -- the round tips stop repeating themselves -----------------------------------------
+def _silhouettes(s, tip, **kw):
+    """Two marks of the same tip, each cropped to its own box."""
+    out = []
+    for x in (0.3, 0.7):
+        before = s.canvas.rgb.copy()
+        s.dab(x, 0.5, tip, "titanium_white", size=0.05, press=3, **kw)
+        changed = np.abs(s.canvas.rgb - before).max(axis=2) > 0.01
+        ys, xs = np.nonzero(changed)
+        out.append(changed[ys.min():ys.max() + 1, xs.min():xs.max() + 1])
+    return out
+
+
+def _overlap(a, b):
+    h, w = max(a.shape[0], b.shape[0]), max(a.shape[1], b.shape[1])
+    pads = []
+    for m in (a, b):
+        pad = np.zeros((h, w), bool)
+        oy, ox = (h - m.shape[0]) // 2, (w - m.shape[1]) // 2
+        pad[oy:oy + m.shape[0], ox:ox + m.shape[1]] = m
+        pads.append(pad)
+    return float((pads[0] & pads[1]).sum() / max((pads[0] | pads[1]).sum(), 1))
+
+
+def test_a_wobbled_round_tip_does_not_print_the_same_mark_twice(tmp_path):
+    """Five round dabs are five copies of one disc, and a painter who wants a small
+    irregular mark lays them, looks, and lays them again. The comb is redrawn per
+    stroke for exactly this reason; so is this."""
+    plain = _overlap(*_silhouettes(make(tmp_path), "round_hard"))
+    wobbled = _overlap(*_silhouettes(make(tmp_path), "round_hard", tip_wobble=0.7))
+    assert plain > 0.9, "two plain dabs should be near enough the same disc"
+    assert wobbled < plain - 0.1, "the wobbled marks repeated themselves"
+
+
+def test_the_disc_is_still_there_when_nothing_asks_for_a_wobble(tmp_path):
+    """Every painting made before this one replays as it was: the default is 0, and
+    at 0 the stamp is the disc it always was."""
+    a, b = make(tmp_path), make(tmp_path)
+    a.dab(0.5, 0.5, "round_hard", "titanium_white", size=0.05, press=3)
+    b.dab(0.5, 0.5, "round_hard", "titanium_white", size=0.05, press=3, tip_wobble=0.0)
+    assert np.array_equal(a.canvas.rgb, b.canvas.rgb)
+
+
+def test_a_wobble_is_a_fraction_of_the_radius(tmp_path):
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match="0 to 1"):
+        s.dab(0.5, 0.5, "round_hard", "titanium_white", tip_wobble=1.4)
+
+
+# -- a clean edge does not inset across the canvas frame -------------------------------
+def _bottom_row_unpainted(session, shape, **kw):
+    """How much of the canvas's last row the mass left as bare ground."""
+    ground = session.canvas.values()[-1] / 255.0
+    session.block_in(shape, solid=True, **kw)
+    return float(np.mean(np.abs(session.canvas.values()[-1] / 255.0 - ground) < 0.02))
+
+
+def test_a_clean_edge_still_runs_off_the_canvas(tmp_path):
+    """The inset is there so the brush's outer half lands on the drawn line. Where the
+    outline leaves the canvas there is no line to land on, and insetting it anyway
+    holds the mass half a brush off the frame: the same mass, filled clean with the
+    inset applied all the way round, leaves 17% of the bottom row as bare ground.
+
+    Laid solid, so that what is being measured is where the fill stopped and not a
+    pass running dry at its far end.
+    """
+    mass = polygon([(-0.05, 0.70), (0.50, 0.73), (1.05, 0.70), (1.05, 1.05), (-0.05, 1.05)])
+    kw = dict(brush="flat", color="burnt_umber", size=0.16)
+    assert _bottom_row_unpainted(make(tmp_path), mass, edge="ragged", **kw) == 0.0
+    assert _bottom_row_unpainted(make(tmp_path), mass, edge="clean", **kw) == 0.0
+
+
+def test_a_mass_inside_the_canvas_is_inset_exactly_as_before(tmp_path):
+    """The frame rule fires on an outline that reaches the frame and nowhere else."""
+    shape = make(tmp_path).circle((0.5, 0.5), 0.16)
+    from easel.session import _clean_fill
+    assert _clean_fill(shape, 0.03).points == shape.inset(0.03).points
+
+
+def test_a_clean_edge_at_the_frame_is_priced_as_it_is_painted(tmp_path):
+    """The quote walks the same inset the paint does, frame and all."""
+    mass = polygon([(0.05, 0.70), (0.95, 0.72), (0.95, 1.05), (0.05, 1.05)])
+    spec = {"shape": mass, "brush": "flat", "color": "burnt_umber",
+            "size": 0.06, "edge": "clean"}
+    s = make(tmp_path)
+    assert len(s.paint(spec)) == make(tmp_path).cost(spec)
+
+
+# -- a rehearsal's looks are numbered apart from the painting's ------------------------
+def test_two_rehearsals_can_be_put_side_by_side(tmp_path, capsys):
+    """Rehearsing is what a painter does repeatedly, to compare versions of one pass.
+    The look counter restarted on every rehearsal, so each one wrote over the last --
+    and over the painting's own look_001.png before that."""
+    session = tmp_path / "p.easel"
+    out = tmp_path / "out"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir", str(out)]) == 0
+    script = tmp_path / "pass.py"
+    script.write_text('s.block_in("D5", "flat", "burnt_umber", size=0.06)\n')
+
+    main(["run", str(session), str(script)])
+    main(["look", str(session)])
+    capsys.readouterr()
+    main(["run", str(session), str(script), "--rehearse"])
+    main(["run", str(session), str(script), "--rehearse"])
+
+    printed = capsys.readouterr().out
+    assert "rehearse_001.png" in printed and "rehearse_002.png" in printed
+    assert sorted(p.name for p in out.glob("*.png")) == [
+        "look_001.png", "rehearse_001.png", "rehearse_002.png"]
+
+
+def test_a_scrap_of_canvas_does_not_write_over_the_painting_in_python_either(tmp_path):
+    """`easel run --rehearse` is `scratch()` from the shell, and the same defect."""
+    s = make(tmp_path)
+    s.look()
+    assert s.scratch().look().name == "rehearse_001.png"
+    assert (tmp_path / "look_001.png").exists()
+
+
+# -- cost() says why a number is large -------------------------------------------------
+def test_cost_names_the_crossing_that_doubled_it(tmp_path):
+    s = make(tmp_path)
+    spec = {"shape": span("A4", "H5"), "brush": "bristle", "size": 0.05}
+    assert "directions" not in s.cost_line(spec)
+    crossed = s.cost_line(dict(spec, direction="cross"))
+    assert "2 directions" in crossed
+    assert s.cost(dict(spec, direction="cross")) > s.cost(spec)
+
+
+def test_cost_names_the_box_the_passes_step_across(tmp_path):
+    """A ribbon pays for the box its bend sweeps out, not for its own width, and the
+    number alone sends a painter off to redesign the shape."""
+    s = make(tmp_path)
+    bent = ribbon([(0.15, 0.8), (0.5, 0.35), (0.9, 0.75)], 0.032)
+    line = s.cost_line({"shape": bent, "brush": "bristle", "size": 0.015})
+    assert "stepping across" in line and "pieces by the outline" in line
+
+
+def test_the_budget_warning_says_what_the_big_entry_is_doing(tmp_path):
+    s = make(tmp_path, budget=60)
+    with pytest.warns(UserWarning, match="directions"):
+        s.cost({"shape": span("A4", "H5"), "brush": "bristle", "size": 0.05,
+                "direction": "cross"})
+
+
+def test_the_breakdown_adds_up_to_what_cost_says(tmp_path):
+    s = make(tmp_path)
+    plan = [{"shape": s.circle((0.5, 0.5), 0.16), "brush": "flat", "size": 0.06},
+            {"edge": [(0.05, 0.75), (0.5, 0.72), (0.95, 0.78)], "into": "down",
+             "depth": 0.12, "size": 0.05},
+            {"points": [(0.2, 0.3), (0.6, 0.35)]}]
+    assert sum(n for n, _ in s.cost_of(plan)) == s.cost(plan)
+    assert [bool(why) for _, why in s.cost_of(plan)] == [True, True, False]
+
+
+# -- smudge follows a boundary, and a shape is one -------------------------------------
+def test_a_smudge_walks_a_shape_s_own_outline(tmp_path):
+    """Following a curve meant sampling coordinates off it by hand, which is the step
+    a painter skips -- and the guide's examples, every one of them two points, are
+    what teaches them to skip it."""
+    s = make(tmp_path)
+    mass = s.circle((0.5, 0.5), 0.2)
+    s.block_in(mass, "flat", "burnt_umber", size=0.08)
+    record = s.smudge(mass, size=0.04)
+    assert len(record.points) > 8, "a shape came back as a straight pass"
+    assert all(mass.box.inset(-0.05).bounds[0] <= x for x, _ in record.points)
+
+
+def test_a_run_of_points_is_still_used_exactly_as_given(tmp_path):
+    """Every smudge ever made with two points still lands where it landed."""
+    s = make(tmp_path)
+    points = [(0.30, 0.40), (0.38, 0.41)]
+    assert np.allclose(s.smudge(points, size=0.04).points, points, atol=1e-6)
+
+
+#: A boundary with a bend in it: light above, dark below, and a curve that a painter
+#: reading two points off it would flatten into the chord between its ends.
+_BEND_X0, _BEND_X1 = 0.30, 0.70
+
+
+def _bend_y(x):
+    t = (x - _BEND_X0) / (_BEND_X1 - _BEND_X0)
+    return 0.40 + 0.09 * t + 0.06 * np.sin(np.pi * t)
+
+
+def _with_a_bent_boundary(tmp_path):
+    """Two masses meeting along that curve, dry, on a canvas big enough to measure."""
+    s = Session(640, 480, texture="linen", ground="toned_grey", seed=7,
+                timelapse=False, out_dir=tmp_path)
+    xs = np.linspace(-0.05, 1.05, 24)
+    edge = [(float(x), float(_bend_y(np.clip(x, _BEND_X0, _BEND_X1))
+                            + 0.225 * (x - np.clip(x, _BEND_X0, _BEND_X1))))
+            for x in xs]
+    s.block_in(polygon([(-0.05, 0.05), (1.05, 0.05), *edge[::-1]]), "flat",
+               "titanium_white", size=0.10, solid=True)
+    s.block_in(polygon([*edge, (1.05, 0.98), (-0.05, 0.98)]), "flat",
+               "burnt_umber", size=0.10, solid=True)
+    s.dry()
+    return s
+
+
+def _boundary_line(s):
+    """Where the light meets the dark, column by column, as a fraction of the height."""
+    v = s.canvas.values() / 255.0
+    h, w = v.shape
+    out = []
+    for column in range(int((_BEND_X0 + 0.02) * w), int((_BEND_X1 - 0.02) * w)):
+        lo = int((_bend_y(column / w) - 0.09) * h)
+        hi = int((_bend_y(column / w) + 0.09) * h)
+        strip = v[lo:hi, column]
+        middle = 0.5 * (float(strip[:6].mean()) + float(strip[-6:].mean()))
+        crossings = np.nonzero((strip[:-1] - middle) * (strip[1:] - middle) <= 0)[0]
+        out.append((lo + float(crossings[0])) / h if len(crossings) else np.nan)
+    return np.array(out)
+
+
+def test_a_smudge_along_a_curve_moves_the_boundary_less_than_its_chord(tmp_path):
+    """Two points on a bend give a pass that starts along the boundary and ends across
+    it: the same thumbprint, arriving more slowly. On a straight edge the two are the
+    same pass to the pixel, which is why every two-point example in the guide read as
+    permission to flatten a curve."""
+    def moved(points):
+        s = _with_a_bent_boundary(tmp_path)
+        before = _boundary_line(s)
+        s.smudge(points, size=0.04)
+        return float(np.nanmean(np.abs(_boundary_line(s) - before)))
+
+    ends = [(_BEND_X0, float(_bend_y(_BEND_X0))), (_BEND_X1, float(_bend_y(_BEND_X1)))]
+    chord = moved(ends)
+    along = moved([(float(x), float(_bend_y(x)))
+                   for x in np.linspace(_BEND_X0, _BEND_X1, 4)])
+    assert along < chord * 0.6, f"the curve moved the boundary {along}, the chord {chord}"

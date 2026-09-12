@@ -488,6 +488,11 @@ def reference_text() -> str:
     lines = ["Brushes (session.stroke(points, brush=...)):"]
     for name, b in BRUSHES.items():
         lines.append(f"  {name:12s} tip={b.tip:11s} size={b.size:<5} {_brush_blurb(name)}")
+    lines.append("  " + "-" * 62)
+    lines.append("  Any brush field can be overridden per mark: size, opacity, load,")
+    lines.append("  load_falloff, spacing, jitter... and on the round tips,")
+    lines.append("  tip_wobble=0..1 -- an irregular silhouette, redrawn per mark, for")
+    lines.append("  a small mark that should not read as the brush's own disc.")
     lines.append("\nPigments (colours; mix them on the palette):")
     for name in sorted(set(PIGMENTS)):
         lines.append(f"  {name:16s} {PIGMENTS[name]}")

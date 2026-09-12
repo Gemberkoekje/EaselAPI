@@ -42,3 +42,5 @@ paintings/**/out_*/
 paintings/**/look_*.png
 paintings/**/preview_*.png
 paintings/**/rehearse_*.png
+paintings/**/compare_*.png
+paintings/**/prepare_*.png

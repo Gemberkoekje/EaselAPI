@@ -31,6 +31,10 @@ What to know before reading further:
 - Nothing here turns a prompt into a picture. There is no model inside Easel. You choose
   and make every mark, and the engine only decides what paint does.
 - There are no layers and no free undo. You work in passes and paint over mistakes.
+- If you are here to paint rather than to evaluate: read `PAINTER.md` first, and leave
+  the worked examples below until you have a subject of your own. Each of them names
+  one, and a named subject leaks — six of six fresh sessions once painted a noun the
+  guide had merely listed.
 - Brushes: `round_soft`, `round_hard`, `liner`, `flat`, `bristle`, `knife`, `smudge`.
   Grounds: `white`, `warm_white`, `toned_grey`, `toned_warm_grey`, `burnt_sienna`,
   `umber_wash`, `cool_grey`. Textures: `smooth`, `linen`, `rough`.
@@ -41,11 +45,12 @@ What to know before reading further:
 ## Start here
 
 - [README](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/README.md): what the engine is, how to install it, the full verb list, the command line, the MCP server, and the design decisions that make output look painted rather than generated. ~2,300 words.
-- [PAINTER.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTER.md): the guide written for the agent doing the painting. It teaches the workflow — tone the ground, paint back to front, check values, refine, edges and highlights last — rather than listing functions. Read it once before your first stroke. ~14,700 words, and the longest file here.
+- [PAINTER.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/PAINTER.md): the guide written for the agent doing the painting. It teaches the workflow — tone the ground, paint back to front, check values, refine, edges and highlights last — rather than listing functions. It is meant to be read in two goes: *the first hour* at the top is the whole method on one page and everything the eight warm-up exercises need, and the rest is the same rules with their reasons. ~17,300 words in total, the longest file here, but the first page is enough to start.
+- [REFERENCE.md](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/REFERENCE.md): every fact on one page — the units (and that is where the surprises are), the defaults, and what each argument does. For looking up while holding a brush rather than reading. ~2,000 words. Nothing in it is a rule about painting; the rules are all in the guide, and a fact looked up without its rule is how a painting comes out correct and dead.
 
 ## Worked examples
 
-- [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/NOTES.md): a full painting by a model that had read only `PAINTER.md`, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. The most useful single document if you are about to paint.
+- [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/NOTES.md): a full painting by a model that had read only `PAINTER.md`, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. Read it to see how the engine is actually used, not to choose what to paint.
 - [Its nineteen pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/car_wash): the painting itself, in order, as ordinary Python. Run against a fresh session they reproduce the PNG byte for byte.
 - [Painting three pears: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/NOTES.md): a second painting under the same rules, and the source of the engine's most recent round of changes.
 - [examples/exercises.py](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/examples/exercises.py): abstract warm-ups straight from the guide — a value scale, pressure profiles, wet-into-wet — deliberately not pictures of anything.

@@ -10,6 +10,13 @@ The engine's claim is that a model can paint rather than generate, so the engine
 worth what has been painted with it. These are those paintings, at full size, with the
 parts that did not work left in.
 
+**If you are about to paint from the guide, this is the wrong page to be on.** Both
+pictures here name a subject, and a named subject leaks: six of six fresh sessions once
+painted a noun the guide had merely listed. `PAINTER.md` deliberately does not point at
+them, and if you are running the measurement protocol in [`LESSONS.md`](LESSONS.md) you
+should not read them first. This page is for the other reader — the one deciding
+whether the engine can do this at all.
+
 ## The rules both were made under
 
 - Nothing in the repository was read before painting except `PAINTER.md`. Not the
@@ -118,7 +125,10 @@ golden-image tests in CI.
 
 - [`README.md`](README.md) — what the engine is and how to install it.
 - [`PAINTER.md`](PAINTER.md) — the guide both painters read, and the only thing they
-  read.
+  read. Its first page is the whole method; the rest is the same rules with their
+  reasons.
+- [`REFERENCE.md`](REFERENCE.md) — every fact on one page: units, defaults, and what
+  each argument does.
 - [`LESSONS.md`](LESSONS.md) — what six measured runs and an adversarial review left
   behind.
 - [`CALIBRATION.md`](CALIBRATION.md) — the measured numbers behind the guide's rules.
