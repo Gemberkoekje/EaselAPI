@@ -88,6 +88,14 @@ class Comparison:
     #: written value plan. Only wording -- but a table that says "reference" when
     #: there was no reference is a table that will be misread.
     against: str = "reference"
+    #: Which surface the canvas column was read off. There are two -- the paint, and
+    #: the view of it that ``look()`` and ``export()`` draw with the relief shaded in
+    #: -- and this table reports the first. Wording again, and bought the same way as
+    #: :attr:`against`: a painter whose masses looked lighter than the values they
+    #: were mixed at had this table call the plan clean throughout, and no line of it
+    #: said which of the two numbers it was reporting. See ``CALIBRATION.md``, *The
+    #: paint and the view of it*, for how far apart the two actually are.
+    measured_on: str = "the paint"
     #: The darkest value the palette can reach. Cells whose *reference* is more than
     #: a threshold below it are out of reach of any stroke; zero disables the split.
     floor: float = 0.0
@@ -148,6 +156,8 @@ class Comparison:
         lines = [
             f"compare: value 0..1, delta = canvas - {self.against}, "
             f"threshold {self.threshold:.2f}",
+            f"canvas measured on {self.measured_on}, the surface look(values=True) "
+            f"shows; s.sample(place, rendered=True) is the view of it",
             head,
         ]
         out_of_reach = {id(c) for c in self.unreachable}

@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -87,8 +88,13 @@ def paint_marks(s: Session) -> None:
     s.dry()
     s.glaze([(0.55, 0.12), (0.90, 0.26)], "ultramarine", opacity=0.22)
 
-    # Smudge drags what is on the canvas rather than adding paint.
-    s.smudge([(0.62, 0.50), (0.78, 0.62)], size=0.06)
+    # Smudge drags what is on the canvas rather than adding paint. Pinned at 0.06,
+    # which is past the size a smudge is now advised to stay under: a golden case is
+    # a fixture of what the engine does with a given call, and moving it would move
+    # every reference image with it. The advice is checked in test_requests.py.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        s.smudge([(0.62, 0.50), (0.78, 0.62)], size=0.06)
 
     # A single dab, the smallest thing the engine makes.
     s.dab(0.5, 0.5, brush="round_hard", color="titanium_white", size=0.03)

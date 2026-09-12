@@ -1,18 +1,19 @@
 # What the painters asked for, and what was done
 
-Three sessions painted a picture from the guide and then wrote down what the engine and
-the documentation had cost them, a fourth pass synthesised the points more than one of
+Four sessions painted a picture from the guide and then wrote down what the engine and
+the documentation had cost them, a fifth pass synthesised the points more than one of
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything on it is done** — 25 engine items and 37 documentation items. The long
+**Everything on it is done** — 31 engine items and 42 documentation items. The long
 arguments that produced each one have been cut, because a request list is worth keeping
 only while somebody still has to act on it. What survives is the finding, because a
-finding is still true after the fix, and the handful of places where the answer
-differed from the request.
+finding is still true after the fix, and the handful of places where the answer differed
+from the request.
 
-**Done is not the same as right.** An engine item has a test behind it. A documentation
-item is a hypothesis until a fresh session paints against it, which is the rule
+**Done is not the same as right, and four times now it has meant *measured and there was
+nothing to fix*.** An engine item has a test behind it. A documentation item is a
+hypothesis until a fresh session paints against it, which is the rule
 [`LESSONS.md`](LESSONS.md) opens with and the reason every line below says what was
 changed rather than that it worked.
 
@@ -22,11 +23,49 @@ changed rather than that it worked.
 | Second session — an interior, 206 strokes of 300, `paintings/car_wash/` | 7 | 8 |
 | Third session — a landscape at dusk, 184 strokes of 300, `paintings/lighthouse_dusk/` | 6 | 9 |
 | The synthesis across all three, and two questions from the owner | — | 8 |
+| Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
 
 Only the first session is a clean measurement of the guide on its own; the second read
-three other files first and the third read five. Where they agree, that is three
-painters finding the same thing with increasing context. Where they disagree, it may be
-the context talking.
+three other files first and the third read five. Where they agree, that is painters
+finding the same thing with increasing context. Where they disagree, it may be the
+context talking.
+
+The fourth read four — `PAINTER.md`, the exercises, then `PAINTING.md`, `RECIPES.md` and
+`REFERENCE.md`, in that order — and never opened `CALIBRATION.md` at all, which is worth
+knowing before trusting any of its numbers: where a calibrated figure would have settled
+one of its findings, it measured the thing again itself instead. It also read
+`paintings/car_wash/prelude.py` and `p0_plan.py`, and nothing else under `paintings/`.
+So it is the most-read session but not the widest-read one, and its agreement with the
+third should be discounted accordingly.
+
+---
+
+## Still open, and what the fourth session says about each
+
+**The split is a hypothesis, and the fourth session is the "given everything" arm.** The
+third painter's prediction was that a session given only the method, the recipes and the
+reference would paint the masses as well and improvise worse. The fourth had the essay,
+and its own account of where that paid was not in laying masses — those followed the
+method — but in two moments of improvisation where no recipe applied: abandoning
+`scumble` for the lit field and rebuilding it as a solid block-in plus graded strokes,
+and rewriting a whole edges pass as paint after the smudges failed. Both are *the smudge
+softens; the paint is what removes* and *hide the passes with a bigger brush, never with
+an argument* applied to situations neither sentence was written about. That is one
+painter's introspection about its own reasoning and is worth what such a report is
+usually worth — but it is the arm the prediction was about, and it points the same way.
+**The other arm has not been run.**
+
+**The post-pass check is still not built, and it is still the cheapest thing on the
+list.** `LESSONS.md` has it as the next engine step — a check over the pass just
+painted, printed beside the budget line, from inputs already in the log. Scored against
+the fourth session: *n passes at the same angle* catches the road's banded scumble; *one
+brush at one size for a whole pass* catches the first façade attempt; *the subject's
+share against the plan* catches the drift to 41% at the moment it happened rather than
+at the end. The fourth rule that session proposed for it — *a mass laid solid whose
+planned and rendered values differ by more than `0.10`* — **is not worth building**, and
+knowing that is what measuring the gap bought: the two values agree to `0.000`, so the
+check would never fire. Every rule that becomes a check can then leave the guide, which
+is the growth rule paying for itself.
 
 ---
 
@@ -78,6 +117,43 @@ what it costs to make, not by what it costs to live with.**
 | A `pressure` list flipped on alternate passes, so a passage meant to brighten toward one side could not be laid with the verb. Six strokes were hand-written for it. | The **paint** still alternates and the **pressure** is read in canvas order — not the `alternate=False` the item offered, which would have stacked every pass's run-out along one edge, the thing the alternation exists to prevent. Extended to `sweep`, which had the same defect. |
 | Three encodings for handing a sampled colour back, one of which the documentation named and none of which the guide explained. | `s.sample(place)` returns the engine's own linear `float32` array, averaged over a shape rather than its box. It samples the paint, not the view of it: the relief shading `look` draws is light on the surface, not pigment in it. |
 | *A question:* should the contour of `edge="clean"` wander? A ridge filled clean came back with a row of rounded knobs. | **Measured, and the answer is the wander — but not the lever the question proposed.** The brush's `jitter=0` moves the contour's seed-to-seed spread not at all (3.45px against 3.32px); the sweep's own wobble moves it from 3.3px to 1.1px. So `sweep` takes `wander=`, and the clean contour is laid with it off. The remaining error is the outline's own corners under a wide brush. |
+
+### What the fourth session found
+
+A night street: a laundromat window seen from across a wet road, 286 strokes of 300,
+56 rehearsals, no repainted mass and no `undo`. Notes and pass scripts in
+`laundromat_night/`. It read four documents and never opened `CALIBRATION.md`, which is
+the last row of its own documentation list arriving as evidence.
+
+**Two of its six engine items were answered by measuring them, and the answer was that
+there was nothing to fix.** Both were *observed* rather than measured when they were
+written, and both say so. That is `LESSONS.md`'s *check the painters' numbers* doing
+what it is for — it has now overturned four claims across two rounds — and it is why
+this session cost the engine less than its predecessors while being the most detailed
+list yet. The measurements are in `scripts/probe_fourth_session.py` and the numbers in
+`CALIBRATION.md`.
+
+| What was wrong | What was done |
+|---|---|
+| **The view and the measurement disagree about value**, and only one of them is what a viewer sees: `sample()` and `compare()` report pigment, `look()` and `export()` render the impasto relief. Four masses came back as bright bars against walls they were `0.03`–`0.09` above, and `compare()` called the value plan clean throughout. | **Measured first, and they do not disagree.** Over a mass the rendered view and the sampled paint are the same to `0.000` at every load, value and ground tried; the relief is a *gradient*, so it lifts one side of every ridge of paint and drops the other by as much, and the worst single pixel anywhere is `0.038`. `look()`, `look(values=True)`, `export()` and `export(impasto=False)` all read the same mass at `0.314`. So the repair is the one the item asked for minus the premise: **`s.sample(place, rendered=True)`** samples the view, so the question is a line rather than a belief, and `compare()`'s table now names the surface it measured and the call that reports the other. The section is in `CALIBRATION.md` as *The paint and the view of it*, with what a `0.09` step actually looks like at the dark end of the range, which is the likelier account of four bright bars. |
+| **`solid=True` is the argument that moves a mass furthest from its planned value** — maximum paint height, hence maximum relief, hence maximum lift in the view. The row asked for was how far a solid field moves in the rendered view. | **The row is a row of zeroes, and it is in `CALIBRATION.md` anyway**, because a number nobody has to wonder about again is worth its four lines. Laid solid, a mass reads the same in the view as in the paint to three decimal places. What `solid=True` *does* move is the paint — about `0.03` darker than the same mixture at the default load, because the passes stop running dry — and that was already documented one section up. `REFERENCE.md`'s `solid` row says both. |
+| **`overhang` rotates with the pass direction, and its default differs between a box and a shape**, and both surprises cost a mass: at `0` the passes stopped dead on the window's boundary, and at `0.6` on a door — whose passes run *vertically*, because its axis does — they ran the glass over its own kick panel and onto the sidewalk. | **Said, in those words, with the measurement.** `REFERENCE.md`, `PAINTING.md` and the docstring now state that "the ends" are the ends of the *pass* and turn with `direction`, and the box/shape defaults have their own clause saying why they differ — a rectangle stopping short of its corners reads as cropped, a shape's outline *is* the drawing. Measured on a shape `0.40 × 0.30`: swept horizontally, `overhang` takes the paint from 3px to 22px past the left edge while top and bottom stay at 6px; swept vertically it moves the top and bottom instead. **The warning was not built**, because measuring its condition found nothing to warn about: laid solid, the strip inside the pass ends is `0%` bare at every setting, and at the default load the strip inside the *sides* — where `overhang` does nothing — is barer than the ends. That is the comb and the brush running dry, and its condition is `block_in`'s own defaults. |
+| **`scumble` fails in both directions on the linear case**, and it already knows how to prevent one of them: at `size=0.050` on a `0.034` step the passes left gaps and the brightest mass in the painting came back a venetian blind; widened to `0.095` the centre closed. Three rehearsals, and the verb was abandoned. | **The band picks its own brush now, `3 × extent / n`** — the mechanism `direction="inward"` has used since the third session, now on both directions — and warns when handed one under two steps. Measured on a band `0.80 × 0.40` at `n=8`: the profile's one-step ripple runs `0.014` at one step and `0.015` at one and a half, which is where a preset's default lands, against `0.007` at three; under a step the band is barely painted, and past five the last passes bury the first. The painter's own two numbers — 1.5 steps bad, 2.8 steps good — reproduce exactly. **And the accumulation is the second half**: `opacity` is documented on `scumble` itself now, with the table. From `0.40` up it is the same passage to within `0.04`, because overlapping passes accumulate; to make a passage quiet, mix its two colours closer together. |
+| **`smudge` at documented sizes drags a lobe instead of softening a join.** Four of five failed in one pass at `size=0.024`–`0.032`, and the sizes came from the guide's own examples. *The suspect is the default.* | **It was the default.** Measured on a steep join: below `0.014` the pass does nothing at all, the softening arrives at `0.016` and then flattens at about half the join, while the reach goes on growing in a straight line — `1.3%` of canvas height at `0.020`, `2.3%` at `0.040`, `4.4%` at `0.070`, which was the default. **So the default is `0.02`, the knee of its own curve**, and past `0.03` the call says what it will look like. The window is a table in `CALIBRATION.md` with its canvas, brush and step stated; the guide's examples, which all ran at `0.04`–`0.09`, now leave `size` off. The old *"`0.035`–`0.045` behaves"* line was measured on a canvas nobody recorded, and it measured only what a smudge buys. |
+| **Three documented surfaces do not behave as the documentation's own promise implies**: `scumble(solid=True)` and `block_in(glaze=True)` raise about `Brush.__init__()`, and `shape.box` — "the rectangle a mass is priced on" — is not iterable. | All three, as asked, and it cost an afternoon. A keyword that is not a brush field now raises naming the call that takes it (`solid=` is `block_in`'s, `glaze=` is `stroke`'s, and a misspelling gets the nearest field); `Region` unpacks as `x0, y0, x1, y1`, which is what anybody does with a rectangle. **The promise itself was the problem** — *any brush field is also an override on any painting call* is true, and it means a neighbouring call's keyword lands in `**brush_overrides` and comes back as a message about a class the painter never mentioned. `REFERENCE.md` now names the owning call beside `solid`, `glaze`, `overhang`, `density` and the rest. |
+
+**Its five documentation items are done too**, and four of them were one line each: the
+checklist says at which moment the subject's share is compared against the plan (when
+the subject is finished, not at the end — after which the last-third rule is *meant* to
+pull it down, and the arithmetic is written out in `PAINTING.md`); a checklist line asks
+whether the bands are in the marks or in the subject that was chosen, to be counted
+before the first mass; step 1 says what the pencil buys that `preview` does not —
+*`preview` checks a mark against a plan, and the pencil checks the plan*; and
+`CALIBRATION.md` is cited from the rules that have a number in it rather than only from
+the contents table, whose *when* was a curiosity rather than a moment. The fifth is the
+first engine row above: what the guide has to say about a planned value and a seen value
+turned out to be that they are the same number, which is a shorter thing to say than the
+warning that was asked for.
 
 ---
 
@@ -214,11 +290,24 @@ repaid inside the first pass; and the habit of putting a measured number behind 
 
 Every row of *the shape each tool leaves behind* survived being measured.
 
+**The fourth session defended the same list**, unprompted and before being asked for an
+opinion, and adds two notes to it. `at_value` was asked for about twenty-five planned
+values and landed every one to the hundredth, including the ones approached from above.
+And the plan object plus seeded rehearsal is the reason that session has six findings
+rather than six damaged passages: **every one of the failures described above was caught
+in a rehearsal and cost nothing** — the venetian-blind interior, the pale-slab
+reflection, the four smudge lobes, the beaded frame, the white cap on the figure's head,
+the amoeba puddle and the black-domino drain were all found, rewritten and found again
+without a stroke being charged for any of them. 56 rehearsals, no repainted mass, no
+`undo` called once. That is the same result the first three sessions reported, from a
+fourth painter who was told to expect it and still had not guessed which passes would
+go wrong.
+
 ---
 
 ## Where the arguments went
 
-Three sessions' worth of reasoning, probe output and proposal text was cut from this file
+Four sessions' worth of reasoning, probe output and proposal text was cut from this file
 when the work was finished. What was worth keeping outlived it:
 
 - the measurements are in [`CALIBRATION.md`](CALIBRATION.md), each with what it was
@@ -229,11 +318,20 @@ when the work was finished. What was worth keeping outlived it:
   change, are in [`LESSONS.md`](LESSONS.md);
 - the paintings, their notes and their pass scripts are in
   [`paintings/`](paintings), read from the outside in [`PAINTINGS.md`](PAINTINGS.md);
-- each engine item has a test in `tests/test_requests.py`, named for the request.
+- each engine item has a test in `tests/test_requests.py`, named for the request, and
+  the probes behind the third and fourth rounds are `scripts/probe_third_session.py`
+  and `scripts/probe_fourth_session.py`;
+- the releases are cut by version in [`CHANGELOG.md`](CHANGELOG.md), which is where to
+  look for *which defaults moved*.
 
-**Three of the painters' own measured claims were re-measured before anything was built
-on them, and two did not survive.** Both are recorded above where the fix is — the clean
-contour spilling further than the ragged fill it replaced, and the smudge on a slope
-that turned out to be a smudge on a bend. That is `LESSONS.md`'s *check the painters'
-numbers* working as intended, and a claim that survives the check is usually worth more
-afterwards, because the re-measurement says what it is really about.
+**Seven of the painters' own claims have been re-measured before anything was built on
+them, and four did not survive.** All four are recorded above where the fix is — the
+clean contour spilling further than the ragged fill it replaced, the smudge on a slope
+that turned out to be a smudge on a bend, the rendered view that turned out not to lift
+a solid mass at all, and the bare boundary at `overhang=0` that turned out to be the
+comb and the brush running dry. That is `LESSONS.md`'s *check the painters' numbers*
+working as intended, and it is worth noticing **what kind** of claim fails it: every one
+of the four was reported as *observed* — a rehearsal showed it plainly and no number was
+taken — and reasoned back to a mechanism that sounded right. A claim that survives the
+check is usually worth more afterwards, because the re-measurement says what it is
+really about.

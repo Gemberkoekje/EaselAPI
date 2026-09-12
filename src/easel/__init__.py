@@ -76,7 +76,7 @@ from easel.texture import TEXTURES, make_texture
 
 #: Checked against pyproject.toml by tests/test_version.py, which is the only
 #: thing keeping these two in step -- see that file for what it cost last time.
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     # the main entry point

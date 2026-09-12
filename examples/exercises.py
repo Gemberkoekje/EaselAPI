@@ -117,7 +117,7 @@ def edge_study() -> None:
     light = s.palette.tint("burnt_umber", 0.6)
     s.block_in(thirds[0], "bristle", light, density=1.0, size=0.1)
     s.stroke([(0.02, 0.5), (0.31, 0.5)], "round_hard", light, size=0.03)  # hard
-    s.smudge([(0.35, 0.3), (0.35, 0.7)], size=0.09)                       # soft
+    s.smudge([(0.35, 0.3), (0.35, 0.7)])                                  # soft
     s.export(OUT / "ex_edges.png")
 
 

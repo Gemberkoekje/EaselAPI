@@ -34,6 +34,21 @@ well-placed, repeated three times and in the closing checklist, and still fail e
 Stating a rule is a *proposal*. The measurement is a session that has never seen the repo
 painting a picture and then being read.
 
+### A default is worth more than a warning, and a measurement decides which
+
+Three of the fourth session's six engine items came down to a **default** that sat
+outside its own usable window — `smudge`'s `size` four times past the knee of its measured
+curve, and `scumble`'s brush left to a preset on both directions of the verb. In every
+case the documentation was already correct and already emphatic, and painters followed
+the examples rather than the warnings. *When a document has to warn this hard, the
+suspect is the default* is the session's own phrasing and it is a good test.
+
+The order matters, though: **measure the curve, then move the default, then warn about
+the far end.** The measurement is what tells you where the knee is, and twice here it
+also said the default was fine and the request was about something else. A warning is
+what is left for the painter who means it — it must still do exactly what was asked, and
+say what it will look like, which is the shape `cost()` uses for a budget.
+
 ### Warning is not method
 
 The largest single finding across all the runs, and the one that generalises furthest.
@@ -66,9 +81,17 @@ leave the guide**, which is the growth rule paying for itself. Not built; the ho
 to start is to replay a finished painting's log pass by pass and print what each rule
 would have fired on.
 
+**A fourth session scored its own painting against those candidates and three of the five
+would have caught something it did.** It proposed a sixth — *a mass laid solid whose
+planned and rendered values differ by more than the `0.10` that separates two masses* —
+and that one is **not worth building**: measuring the gap first found it to be `0.000`,
+so the check could never fire. Which is the general rule for this list. A check earns its
+line by firing on a real pass of a real painting, and the cheapest way to find out is to
+measure the condition before writing the rule, not after a painter reports the symptom.
+
 The one form of the file idea with a real mechanism is **a short rules card kept where a
 `CLAUDE.md` is kept**, which survives a context compaction where the guide does not.
-That only matters for a session that actually gets compacted, and none of the three was,
+That only matters for a session that actually gets compacted, and none of the four was,
 so there is no evidence either way and it is not written.
 
 ### A new finding never adds a paragraph to the guide
@@ -205,6 +228,27 @@ compared with each other.
 
 A painter reporting on its own painting is not a measurement. Every figure in the run
 write-ups was re-measured from the exported PNGs. They were mostly right and not entirely.
+
+**Seven claims have now been re-measured before anything was built on them, and four did
+not survive** — the clean contour that was supposed to spill less than a ragged fill, the
+smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift a
+solid mass off its planned value (it does not move it at all), and the boundary said to
+be left bare at `overhang=0` (it is the comb and the brush running dry, and the *sides*,
+which `overhang` cannot touch, come back barer than the ends).
+
+**They have a shape.** Every one of the four was reported as *observed* — a rehearsal
+showed the failure plainly, no number was taken, and the painter reasoned back to a
+mechanism that sounded right. The failures were all real; the *causes* were invented, and
+a cause invented from a real failure is the most convincing kind of wrong claim there is,
+because the evidence for it is genuine. The two that carried a measurement both held.
+
+So: **when a request names a mechanism, measure the mechanism and not the failure.** It
+is cheap — the four above cost an afternoon between them — and it changes what gets
+built. Twice here it turned a requested warning into a requested *instrument*: nothing
+was wrong with `sample()`'s number, and what the session actually lacked was a way to ask
+it the question, which is now `sample(rendered=True)` and a label on `compare()`'s table.
+A warning that cannot fire is worse than no warning, because it is read as a promise that
+the condition is being watched for.
 
 ### The measurement can be right and the instrument still wrong
 
@@ -590,11 +634,11 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 508 passed; the mcp and mixbox tests
+pytest -q                              # 596 passed; the mcp and mixbox tests
                                        # skip unless their extras are installed
 ruff check src tests scripts examples mcpb
 python scripts/check_guide_blocks.py   # every python block in the guide's three
-                                       # files runs (74 ok), and PAINTER.md is
+                                       # files runs (75 ok), and PAINTER.md is
                                        # inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png

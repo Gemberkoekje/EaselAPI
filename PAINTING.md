@@ -396,6 +396,14 @@ the surroundings, and the last few marks for the picture: an accent, an incident
 edge thrown away on purpose. A painter that has to spend its last marks on the score has
 already lost the picture.
 
+**That settles the order and not the arithmetic, so here is the arithmetic.** If the
+last third goes on the surroundings, the subject's share *has* to end lower than it was
+when the subject was finished — so the share is compared against the plan **at the
+moment the subject is done**, and after that it is expected to fall. Checked at the end
+instead, a painter who followed the last-third rule correctly is told by the checklist
+that they are not finished, which is the fastest way to teach somebody to stop reading
+a checklist.
+
 ### Letting the reference be cut up for you (optional)
 
 `s.prepare("ref.jpg")` quantises the photograph and hands back its masses,
@@ -491,6 +499,23 @@ untouched, and it averages over a shape rather than over the shape's box. It sam
 the **paint**, not the view of it: the relief shading `look()` draws is light falling
 on the surface, not pigment in it. That is what to reach for when a mark has to meet
 what is already there — a halo's outer ring, a repair, the far side of a lost edge.
+
+`s.sample(place, rendered=True)` is the other one — the surface `look()` and `export()`
+draw, relief and unburied graphite and all — so the question *is my mass darker than it
+looks?* is one line rather than a belief:
+
+```python
+s.palette.value_of(s.sample(mass))                  # the paint
+s.palette.value_of(s.sample(mass, rendered=True))   # the view of it
+```
+
+**The answer is normally that they agree.** Measured over a mass they are the same to
+`0.001` at every load and every value tried, because the relief is a gradient: it lifts
+one side of each ridge of paint and drops the other by as much. `compare()` measures
+the paint too, and says so in its own table. A mass that looks lighter than the number
+you mixed it at is telling you about the value it stands against, not about the view —
+the numbers are in [`CALIBRATION.md`](CALIBRATION.md) under *The paint and the view of
+it*.
 
 **A list of 0–255 integers is not one of the forms**, and it does not raise — it
 clamps, so `[13, 12, 16]` gives you white. If you supply a colour, print
@@ -965,8 +990,10 @@ s.block_in(place, brush, color, direction=, density=, overhang=, edge=, solid=) 
 s.sweep(edge, brush, color, into=, depth=, cross=, passes=)         # a mass with a shape
 s.scumble(band, color_a, color_b, n=8)             # a soft passage, as n strokes
 s.scumble(patch, a, b, n, direction="inward")      # ...falling off from its middle
+                                                   # leave size off on both: the verb
+                                                   # picks it from its own step
 s.cover(place, color)                              # bury a mistake; the whole recipe
-s.smudge(edge, size=)                              # move paint along a boundary:
+s.smudge(edge, size=0.02)                          # move paint along a boundary:
                                                    # points, or a shape's own outline
 s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
@@ -1033,6 +1060,16 @@ default `0.35` from `0.145` to `0.854`, and `1.0` from `0.072` to `0.924` — wh
 *sides* sat at `y 0.530–0.844` in all three, about half a brush past the band either
 way, unmoved. **For two masses at the same depth, inset the place by half the brush
 size.** That is the half of the old advice that works.
+
+**And "the ends" are the ends of the *pass*, which turn with `direction`.** The same
+number that keeps a horizontally-swept mass clear of its own left and right edges runs
+a vertically-swept one down off its foot and onto whatever it is standing on — and
+`"axis"` picks vertical the moment a mass is taller than it is wide. Measured on a shape
+`0.40 × 0.30`, bristle at `size=0.030`: swept horizontally, `overhang` takes the paint
+from 3px to 22px past the left edge while the top and bottom stay at 6px; swept
+vertically, the same settings move the top and bottom from 4px to 18px and leave the
+sides where they were. Two masses in one painting were spoiled learning this, one at
+each end of the range.
 
 `compare(region=cell("D4"))` measures the tenths of one cell and labels them the
 way `grid="fine"` does.

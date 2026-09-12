@@ -19,6 +19,7 @@ import warnings
 import zipfile
 from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
+from difflib import get_close_matches
 from pathlib import Path
 
 import numpy as np
@@ -65,6 +66,19 @@ __all__ = ["Session"]
 #: Format 1, 2 and 3 files still load -- they simply have less in them.
 _EASEL_FORMAT = 4
 _READABLE_FORMATS = (1, 2, 3, 4)
+
+#: The width of a smudge, as a fraction of the canvas long side, when the painter
+#: does not name one. The knee of the measured curve in :meth:`Session.smudge`: the
+#: softening a single pass buys has arrived by here and stops improving, while the
+#: distance the pass carries the lighter mass into the darker goes on growing with
+#: the brush. It was ``0.07`` through 0.1.x, which is four times this and off the
+#: top of that table.
+SMUDGE_SIZE = 0.020
+
+#: Past this a smudge says what it will look like. ``0.03`` is where the reach of a
+#: single pass passes ``1.8%`` of canvas height while the join is no softer than it
+#: was at ``0.02`` -- a lobe bought for nothing.
+SMUDGE_MAX = 0.030
 
 
 class Session:
@@ -284,7 +298,7 @@ class Session:
         """
         return self.stroke([(x, y)], brush=brush, color=color, press=press, **kw)
 
-    def smudge(self, edge, size: float = 0.07, pressure="even", **kw):
+    def smudge(self, edge, size: float = SMUDGE_SIZE, pressure="even", **kw):
         """Drag what is already on the canvas, rather than adding paint.
 
         Run it **along** a boundary, never across one -- and *along* means along the
@@ -307,6 +321,36 @@ class Session:
         On a *straight* sloping edge the two are the same pass to the pixel, which is
         the whole of the rule: only a straight boundary is two points.
 
+        **What ``size`` buys stops at about ``0.02``, and what it costs does not.**
+        Measured on a step from ``0.78`` to ``0.17``, one pass along the boundary,
+        640x480 linen -- the join's steepest value step, and how far the pass walked
+        the light mass into the dark:
+
+        ============  ==================  ============================
+        ``size``      join softened by    light carried into the dark
+        ============  ==================  ============================
+        ``0.008``     nothing             ``0.4%`` of canvas height
+        ``0.011``     nothing             ``0.6%``
+        ``0.016``     ``-46%``            ``1.0%``
+        ``0.020``     ``-52%``            ``1.3%``
+        ``0.028``     ``-50%``            ``1.7%``
+        ``0.040``     ``-69%``            ``2.3%``
+        ``0.070``     ``-82%``            ``4.4%``
+        ============  ==================  ============================
+
+        Below about ``0.014`` the tip is too small to straddle the join and the pass
+        does nothing at all. From ``0.016`` the softening arrives all at once and
+        then flattens, while the reach goes on growing with the brush -- so past
+        ``0.02`` you are paying in lobe for a join that is already as soft as one
+        pass will make it. **The default is the knee of that curve**, and anything
+        past ``0.03`` says so as it lays it. It was ``0.07`` until 0.2.0, which is
+        off the end of the table: four of five smudges in one painting arrived as
+        pale finger-shaped lobes, at sizes the guide's own examples used.
+
+        And this is one pass. Repetition undoes it -- three passes at ``0.040``
+        leave a join *sharper* than one does. When once is not enough the answer is
+        paint, not another smudge.
+
         One mark either way, in the log and against the budget.
 
         Args:
@@ -314,10 +358,11 @@ class Session:
                 :class:`~easel.regions.Polygon` or region, whose own outline is
                 walked. Points are used as given; an outline is resampled fine
                 enough to follow itself.
-            size: the width of the drag.
+            size: the width of the drag. See the table above before raising it.
             pressure: pressure profile along the pass.
             **kw: any other :meth:`stroke` argument.
         """
+        _check_smudge_size(size)
         return self.stroke(_smudge_path(edge, size), brush="smudge",
                            color="titanium_white", pressure=pressure, size=size, **kw)
 
@@ -374,12 +419,31 @@ class Session:
                 run dry as they go whatever their spacing.
             pressure: pressure profile for each pass.
             size: brush size override.
-            overhang: how far each pass runs past the edge, as a fraction of the
-                brush width. Defaults to ``0.35`` for a rectangle, where some
-                overhang keeps the block from looking cropped, and to ``0`` for a
-                shape, where the edge is the drawing. (Either way the brush is wider
-                than the step between passes, so paint still breaks past the
-                boundary; it is the pass *centres* that stop.)
+            overhang: how far each pass runs past the **ends of the pass**, as a
+                fraction of the brush width -- and **which two edges those are turns
+                with** ``direction``. It lengthens each pass along its own line, so
+                on a mass swept horizontally it reaches past the left and right
+                edges, and on the same mass swept vertically -- which is what
+                ``"axis"`` picks when the mass is taller than it is wide -- it
+                reaches past the top and the bottom, and off the foot of the mass
+                onto whatever the mass is standing on. Measured on a shape
+                ``0.40x0.30``, bristle at ``size=0.030`` (19px), 640x480: swept
+                horizontally the paint reaches 3px past the left edge at ``0`` and
+                22px at ``1.0``, while top and bottom stay at 6px throughout; swept
+                vertically the same numbers move on the top and bottom instead
+                (4px to 18px) and the sides stay put. **The edges it does not
+                lengthen still get half a brush**, because the brush is wider than
+                the step between passes: it is the pass *centres* that stop at the
+                boundary. So a mass never stops dead at its own outline, whatever
+                this is set to.
+
+                It defaults to ``0.35`` for a rectangle and to ``0`` for a shape.
+                They differ because the two places mean different things: a
+                rectangle is a *region of canvas* and a block that stops short of
+                its own corners reads as cropped, while a shape's outline **is the
+                drawing**, and paint run past it is the silhouette being spoiled by
+                an argument. Raising it on a shape is worth doing deliberately and
+                worth rehearsing.
             edge: ``"ragged"``, the default -- the passes stop at the boundary and
                 the brush breaks past it, which is what a brush does, and what a mass
                 sitting behind other things wants. ``"clean"`` gives the mass a drawn
@@ -976,7 +1040,22 @@ class Session:
         The passes run **along** the band and step **across** it, from ``color_a`` at
         one edge to ``color_b`` at the other, mixing one step per pass. They overlap:
         the brush is wider than the step between them, which is what closes the
-        joins that stepping alone would leave.
+        joins that stepping alone would leave. **The step is ``extent / n``, and with
+        no ``size=`` the brush is picked from it** -- about three steps, the same
+        mechanism the ``inward`` case uses, because the brush and the step are one
+        thing and not two settings. A preset's own default is usually one to one and
+        a half steps here, which is the worst place on the curve: the passes clear
+        each other and the passage comes back a venetian blind. Hand it a narrower
+        brush than that on purpose and it says so.
+
+        **Opacity does not make a passage quieter; it slows the passes down.** The
+        passes overlap, so a low opacity accumulates back toward full colour rather
+        than thinning what arrives. Measured on a band of 8 passes from ``0.30`` to
+        ``0.62`` over a ``0.22`` ground, 640x480: the passage delivers a mean of
+        ``0.45`` at ``opacity=1.0``, ``0.44`` at ``0.60`` and ``0.41`` at ``0.40``.
+        Only below about ``0.4`` does it move at all, and at ``0.15`` it still
+        arrives within ``0.12`` of full colour. **To make a passage quiet, mix the
+        two colours closer together** -- that is what the two arguments are for.
 
         **That grades edge to edge, which is a band and not a glow.** A lit patch, a
         bloom, a light falling off a surface goes dark at *every* edge and bright in
@@ -1016,9 +1095,14 @@ class Session:
             n: how many passes. Below about five the steps start to read; the guide's
                 own recipe uses eight.
             brush: preset name or brush.
-            size: brush size override. On a band the default brush is wider than the
-                step, and that overlap is the point -- a much smaller brush leaves
-                the bands. On ``direction="inward"`` leave it off: the verb sizes
+            size: brush size override. **Leave it off on either direction and the
+                verb sizes its own brush from its own step.** On a band that is
+                ``3 x extent / n``; measured on a band ``0.80x0.40`` at ``n=8``, a
+                step of ``0.050``, the profile's one-step ripple runs ``0.014`` at
+                one step and ``0.015`` at one and a half -- the bars -- against
+                ``0.008`` at two steps and ``0.007`` at three, and past about five
+                steps the last passes bury the first and the ramp stops reaching its
+                own ends. On ``direction="inward"`` leave it off: the verb sizes
                 the brush from its own ring step, because a preset's default is
                 five steps wide on a patch a painter would call a glow and fills it
                 flat. Measured on an ellipse ``0.72x0.24`` at ``n=7``, opacity
@@ -1027,15 +1111,18 @@ class Session:
                 ``0.05``, **0.2%** at ``0.03``. Three ring steps is the usable
                 middle and is what it picks.
             opacity: each pass is laid part-transparent so that the passes blend
-                into each other rather than replacing one another.
+                into each other rather than replacing one another. It is not a
+                quietness dial -- see above; overlapping passes accumulate.
             direction: which way the passes run. ``"axis"``, the default, runs them
                 along the band's own long axis so a wide low band is swept the wide
                 way. ``"inward"`` runs them *round* the place, stepping toward its
                 centre, which is the centred fall-off above -- a value falling off
                 from a point rather than across an edge. Otherwise as
                 :meth:`block_in`: a name or a number of degrees.
-            overhang: how far past the band each pass runs, in brush widths. A
-                centred passage has no ends to run past, so it ignores this.
+            overhang: how far past the band each pass runs, in brush widths -- past
+                the **ends of the pass**, which turn with ``direction`` exactly as
+                they do in :meth:`block_in`. A centred passage has no ends to run
+                past, so ``"inward"`` ignores this.
             pressure: pressure profile for each pass. ``"even"`` by default: a taper
                 at both ends of every pass would print the band's own edges back
                 into the passage.
@@ -1066,9 +1153,18 @@ class Session:
                                     {"load_falloff": 0.0, **brush_overrides})
             _check_inward_brush(place, b, n)
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note)
-        b = self._resolve_brush(brush, size, opacity, brush_overrides)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
         step = _normal_extent(place, degrees) / n
+        # The same mechanism as the inward case, and for the same reason: the passes
+        # step `extent / n` apart whatever brush is on them, so the brush and the step
+        # are one thing. Left to a preset's default the bristle is whatever it is --
+        # 1.5 steps on the band that came back a venetian blind -- and 1 to 1.5 steps
+        # is the worst place on the curve. Named, either as `size=` or as a `Brush`
+        # carrying one, it is the painter's and is left alone.
+        if size is None and not isinstance(brush, Brush):
+            size = _linear_size(step)
+        b = self._resolve_brush(brush, size, opacity, brush_overrides)
+        _check_linear_brush(b, step, n)
         shaped = isinstance(place, Polygon)
         paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
                  else self._angled_paths(place, degrees, step, b.size * overhang))
@@ -2032,7 +2128,7 @@ class Session:
                 "label": str(spec.get("label", spec.get("note", "") or index + 1))}
 
     # -- measuring --------------------------------------------------------------
-    def sample(self, place=None) -> np.ndarray:
+    def sample(self, place=None, rendered: bool = False) -> np.ndarray:
         """The colour already on the canvas at a place, ready to paint with.
 
         Returns the engine's own linear ``float32`` array, which is what the palette
@@ -2058,14 +2154,33 @@ class Session:
         ``look`` draws is light on the surface, not pigment in it, and mixing it
         into a colour would bake a highlight into the mixture.
 
+        ``rendered=True`` samples the view instead -- the relief and whatever
+        graphite the paint has not buried, the surface ``look()`` and ``export()``
+        draw. It is there so the question can be *asked*: a painter whose mass looks
+        lighter than the number they mixed it at can put the two side by side in one
+        line rather than believing one of them.
+
+            s.palette.value_of(s.sample(mass))                   # the paint
+            s.palette.value_of(s.sample(mass, rendered=True))    # the view of it
+
+        **Measured, and the answer is that they agree**: over a mass the two are the
+        same to within `0.001` at every combination of load, ground and passage tried
+        -- the relief is a *gradient*, so it lifts one side of every ridge and drops
+        the other by as much, and that cancels over any area larger than the ridge.
+        The numbers and what they were measured on are in ``CALIBRATION.md`` under
+        *The paint and the view of it*. Do not reach for this to explain a mass that
+        came out wrong; reach for it once, to rule the view out.
+
         Args:
             place: a name, a region, a 4-tuple or a shape. A shape is averaged over
                 the shape itself, not its bounding box. Omitted, the whole canvas.
+            rendered: sample the surface as it is drawn -- relief and graphite --
+                rather than the pigment. Never what you want for *mixing*.
 
         Returns:
             A linear ``float32`` array of shape ``(3,)``.
         """
-        rgb = self.canvas.rgb
+        rgb = self.canvas.composite(impasto=True, sketch=True) if rendered else self.canvas.rgb
         if place is None:
             return rgb.reshape(-1, 3).mean(axis=0).astype(np.float32)
 
@@ -2674,6 +2789,7 @@ class Session:
     # -- internals --------------------------------------------------------------
     def _resolve_brush(self, brush, size, opacity, overrides: dict) -> Brush:
         b = brush if isinstance(brush, Brush) else get_brush(str(brush))
+        _check_brush_overrides(overrides)
         changes = dict(overrides)
         if size is not None:
             changes["size"] = float(size)
@@ -2696,6 +2812,91 @@ class Session:
 # --------------------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------------------
+#: Arguments that are real somewhere in this API, are not :class:`~easel.brush.Brush`
+#: fields, and are therefore swallowed by a painting call's ``**brush_overrides`` and
+#: handed to ``Brush.with_()`` -- which raises about a keyword argument, from a class
+#: the painter did not name, naming nothing they can act on. The value is what to say
+#: instead. The guide's own promise is *"any brush field is also an override on any
+#: painting call"*, so a painter who reads ``solid`` and ``glaze`` in an argument table
+#: with no call named beside them has every reason to try this.
+_NOT_BRUSH_FIELDS = {
+    "solid": (
+        "solid= is a block_in() argument, not a brush field. It is a pair of brush "
+        "defaults, so pass the pair here: load=1.0, load_falloff=0.0."
+    ),
+    "glaze": (
+        "glaze= is a stroke() argument, not a brush field, and s.glaze(points, color) "
+        "is the verb for one. A mass cannot be laid as a glaze -- a glaze is a film "
+        "over paint that is already there: lay the mass, s.dry(), then glaze it."
+    ),
+    "edge": (
+        "edge= is a block_in() argument ('ragged' or 'clean'), not a brush field, and "
+        "sweep() takes the boundary itself as its first argument."
+    ),
+    "density": (
+        "density= is a block_in(), sweep() and cover() argument -- how far apart the "
+        "passes run -- not a brush field."
+    ),
+    "overhang": (
+        "overhang= is a block_in(), scumble() and cover() argument -- how far each "
+        "pass runs past the ends of the place -- not a brush field."
+    ),
+    "pressure": (
+        "pressure= is an argument of every painting call, not a brush field: it is a "
+        "profile along one stroke rather than a property of the brush."
+    ),
+}
+
+
+def _check_smudge_size(size: float) -> None:
+    """Warn when a smudge is wide enough to drag a lobe instead of softening a join.
+
+    The same shape as the scumble's two warnings: the verb still does exactly what it
+    was asked, and says what it is about to look like. The measurement it is reading
+    off is in :meth:`Session.smudge` -- past about ``0.02`` a single pass buys no more
+    softening and goes on reaching further into the dark mass, and four of five
+    smudges in one painting arrived as pale finger-shaped lobes at ``0.024``-``0.032``.
+    """
+    if float(size) <= SMUDGE_MAX:
+        return
+    warnings.warn(
+        f"smudge(size={float(size):.3g}) is past the {SMUDGE_MAX:.3g} where one pass "
+        f"stops softening a join and starts dragging a lobe. Measured on a steep "
+        f"step, one pass carries the lighter mass 1.3% of the canvas height into the "
+        f"darker at {SMUDGE_SIZE:.3g}, 2.3% at 0.040 and 4.4% at 0.070 -- for a join "
+        f"no softer than {SMUDGE_SIZE:.3g} already leaves it. Rehearse it, or use "
+        f"size={SMUDGE_SIZE:.3g} and put the rest in with paint.",
+        stacklevel=3,
+    )
+
+
+def _check_brush_overrides(overrides: dict) -> None:
+    """Reject a keyword that is not a brush field, naming the call that does take it.
+
+    Every painting call ends its signature with ``**brush_overrides`` and hands them
+    to :meth:`~easel.brush.Brush.with_`, which is what makes *any brush field is also
+    an override on any painting call* true. The cost is that a keyword belonging to a
+    *different* call lands there too, and ``dataclasses.replace`` reports it as
+    ``Brush.__init__() got an unexpected keyword argument``: a class the painter never
+    mentioned, and no hint that ``solid`` is real and lives one call over.
+    """
+    if not overrides:
+        return
+    fields = {f.name for f in dataclass_fields(Brush)}
+    for key in overrides:
+        if key in fields:
+            continue
+        known = _NOT_BRUSH_FIELDS.get(key)
+        if known is None:
+            near = get_close_matches(key, sorted(fields), n=1)
+            known = (f"{key}= is not a brush field."
+                     + (f" Did you mean {near[0]}=?" if near else ""))
+        raise TypeError(
+            f"{known}\nThe brush fields an override may set are: "
+            f"{', '.join(sorted(fields - {'meta'}))}."
+        )
+
+
 #: Named pressure profiles that are their own mirror image, and so mean the same
 #: thing whichever end of a pass is laid first. Listed rather than derived so that
 #: a pass laid at ``taper`` -- the default, and the great majority of every painting
@@ -2800,6 +3001,60 @@ def _check_inward_brush(place, b: Brush, n: int) -> None:
         f"rim of ramp round it rather than a fall-off. Keep the brush under about "
         f"three ring steps -- size={widest:.3g} here -- or leave size= off and it "
         f"is picked for you.",
+        stacklevel=3,
+    )
+
+
+#: How many pass steps wide a banded scumble's brush should be. The passes step
+#: ``extent / n`` apart and overlap, and the overlap is what closes the joins
+#: stepping alone would leave. Measured on a band ``0.80x0.40`` at ``n=8`` (a step of
+#: ``0.050``), bristle, opacity ``0.5``, 640x384 linen, ground ``0.53`` -- the sd of
+#: the across-band profile's own one-step ripple, and the value span the ramp
+#: actually delivered against the ``0.20``-to-``0.70`` it was asked for:
+#:
+#: | brush | ripple | delivered |
+#: |---|---|---|
+#: | 0.5 steps | 0.004 | 0.50..0.54 -- the ground, barely painted |
+#: | 1 step | 0.014 | 0.31..0.59 |
+#: | 1.5 steps | 0.015 | 0.27..0.63 |
+#: | 2 steps | 0.008 | 0.25..0.62 |
+#: | 3 steps | 0.007 | 0.26..0.63 |
+#: | 4 steps | 0.005 | 0.28..0.64 |
+#: | 6 steps | 0.006 | 0.36..0.63 -- the last passes burying the first |
+#:
+#: So the ripple is worst at one to one and a half steps, which is where a preset's
+#: default usually lands, and the ramp starts collapsing past about five. Three is
+#: the middle of the window, and the same figure the inward case picks.
+_LINEAR_STEPS = 3.0
+
+#: Below this many steps the passes stop overlapping and the passage comes back as
+#: stripes with the ground showing between them.
+_LINEAR_MIN_STEPS = 2.0
+
+
+def _linear_size(step: float) -> float:
+    """The brush a banded scumble wants: about three of its own pass steps."""
+    return float(min(max(_LINEAR_STEPS * step, 0.01), 1.0))
+
+
+def _check_linear_brush(b: Brush, step: float, n: int) -> None:
+    """Warn when a banded scumble's brush is too narrow to close its own joins.
+
+    The inward case has warned about a brush wider than its rings since the third
+    session; this is the same failure at the other end of the same curve, on the
+    other direction of the same verb. A painter who hands it a brush narrower than
+    the step gets the thing the verb exists to prevent -- a wide quiet passage laid
+    as a stack of bars -- and got it silently.
+    """
+    steps = b.size / max(step, 1e-9)
+    if steps >= _LINEAR_MIN_STEPS:
+        return
+    warnings.warn(
+        f"scumble() with a brush {b.size:.3g} wide on a band whose {n} passes step "
+        f"{step:.3g} apart: {steps:.1f} steps. The passes do not overlap, so the "
+        f"passage comes back as bars with the ground showing between them. Use about "
+        f"three steps -- size={_LINEAR_STEPS * step:.3g} here -- or leave size= off "
+        f"and it is picked for you.",
         stacklevel=3,
     )
 
