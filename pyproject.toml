@@ -4,7 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "easel-paint"
-version = "0.1.0"
+# The source of truth for the released version. A tag never sets this: a `v*` tag
+# triggers .github/workflows/publish.yml and is *checked against* this line. So
+# edit the version, commit, merge, and only then tag that commit -- `v0.1.0` has
+# to point at a commit that already says 0.1.0 here, or the build fails on
+# purpose rather than publishing the mismatch. Running that workflow by hand
+# instead rehearses to TestPyPI, which is what a .devN version is for.
+version = "0.1.0.dev1"
 description = "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture."
 readme = "README.md"
 requires-python = ">=3.12"
