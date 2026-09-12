@@ -6,7 +6,9 @@ is below; the second starts at *Suggestions from a second session*, and the thir
 nineteen for the engine, twenty for the guide — and the note under each says what it
 became, including the four that came back different when they were re-measured and the
 two that were questions rather than requests. **The third list is open.** After it, a
-synthesis of the documentation points that more than one session raised closes the file.
+synthesis of the documentation points that more than one session raised, and then the
+third session's answers to two questions about the guide's length and a warnings file,
+turned into actionable items.
 
 Done is not the same as right. An engine item has a test behind it; a guide item is a
 hypothesis until a fresh session paints against it, which is the rule `LESSONS.md`
@@ -1036,3 +1038,99 @@ prior without naming a subject, the lever is order, not content: ask for two
 subjects and paint the second, or ask it to name the obvious choice and then not
 paint it. Both are nudges away from the default rather than toward anything, and
 the difference should be recorded when the run is.
+
+---
+
+# On the guide's length, and on a warnings file: two answers as actionable items
+
+Two questions the repository's owner put to the third session's painter after its list
+was written, with the answers turned into items. Each says whether it is measured or an
+opinion; the numbers are the third session's and are in
+`paintings/lighthouse_dusk/NOTES.md`.
+
+**The question on length.** Every session says `PAINTER.md` is too long, every session
+says the essay is what made the rules stick, and each attempt to shrink it has not
+substantially shortened it. What should be done with it?
+
+1. **Stop shrinking the essay, and say so in `LESSONS.md`.** Reading the guide, the
+   reference, the calibration, the lessons and both earlier paintings' notes cost the
+   third session a few minutes and roughly thirty thousand tokens, against a session
+   that spent far more looking at its own rehearsals; every session that called the
+   guide long read all of it and then credited it. The cost of length is not reading
+   time. It is that a rule read once at the start is not present at the moment it is
+   needed, and cutting cannot fix that, because the rule cut is the one some painter
+   needed. Opinion, with that one number behind it. *Action: an entry in `LESSONS.md`
+   under the growth rule: the essay is finished at its size, and a finding goes to the
+   engine, the reference, the recipes or the calibration file, never to the essay.*
+2. **Split by function, not by length, and move rather than cut.** `PAINTER.md` keeps
+   the first hour, the six steps, *What you are bad at*, the checklist and the eight
+   exercises, and nothing else. The essay — colour, wet paint, the brushes, the shape
+   each tool leaves behind, the angle of the mark, looking, and the reasons under every
+   rule — moves whole to its own file with one instruction at its top: read it once,
+   after the exercises and before the painting. Procedures go to the `RECIPES.md` the
+   synthesis above asks for. Nothing is deleted. The length then stops being a
+   complaint, because nobody is asked to hold the essay in their head, only to have
+   read it, and the two-goes instruction stops being an instruction and becomes the
+   file boundary. Opinion. *Action: the move.*
+3. **Give the front page a word budget that CI holds.** The no-growth rule is already
+   in `LESSONS.md` and the guide doubled under it, from 8,600 words to 17,000; the
+   third session's own list above asks for four more lines in it. A stroke budget works
+   because the engine holds it, so hold this one the same way: `scripts/check_guide_blocks.py`,
+   which CI already runs over the guide, fails when `PAINTER.md` is over its budget —
+   five to six thousand words after the split, which is the synthesis's target. Any
+   addition then has to be paid for by a cut, which is the rule the file already
+   states and nobody has kept, the third session included. Opinion. *Action: the
+   count in the check script, and the third list's four guide additions routed to the
+   essay, the reference or the recipes instead.*
+4. **Move rules into the engine, and delete their paragraphs in the same commit.**
+   The only shrinking that has ever worked here is the engine absorbing a rule:
+   `solid=True` took the load warnings, `scumble` took the gradient-tool warning,
+   `cost_line` took the arithmetic, `cover` took the burying recipe. The next three,
+   all already asked for above: the inward scumble warning when the brush is wider
+   than three ring steps (engine item 1 of the third list, measured); a bristle laid
+   under `size=0.025` saying it is a comb; and the subject's share of strokes printed
+   against the plan (item 7 below). A rule the tool states at the moment of the call
+   is method; the paragraph that only warned about it can go. *Action: one engine
+   change per paragraph, the paragraph leaving in the same commit.*
+5. **Test the split before believing it.** Two fresh sessions under the protocol in
+   `LESSONS.md`: one given only the front page, the recipes and the reference, one
+   given everything. The third session's guess, written down so it can be wrong: the
+   first paints the masses as well and improvises worse, because the essay is where
+   the judgement came from when no recipe existed for a rock or a cylinder — masses
+   not marks, back to front, the tool leaves its own shape. *Action: the run and its
+   write-up. Nothing in items 1–4 depends on the result except how firmly the essay
+   is recommended.*
+
+**The question on a warnings file.** Would a separate file of the warnings a painter
+must keep in context help?
+
+6. **Not as a file read at the start.** The third session had every warning in
+   context for the whole painting — the guide never left its window — and laid a glow
+   as a solid egg, facets as slabs and a picture in almost nothing but flat and round
+   regardless. The front page lists the five mistakes, the checklist repeats them, and
+   `LESSONS.md` records that a rule correct, well placed and repeated three times still
+   failed every run. A fourth copy is the thing that file says does not work. Measured
+   in the sense that the failures are in the session's notes. *Action: none. Do not
+   add it.*
+7. **A post-pass check in `easel run` instead: the warnings said by the tool, at the
+   moment they apply, computed from the log.** What caught the third session's
+   mistakes was never a sentence. It was a rehearsal looked at, and the one line `run`
+   prints after every pass, the budget. That line can carry the rules the log can
+   check: every mark in this pass used one brush at one size; `n` passes in this pass
+   ran at the same angle; `n` marks under `size=0.02` before stroke 60; a bristle under
+   `0.025`; the subject's share of strokes so far against the share in the plan, which
+   needs the plan sheet to say which places are the subject. A linter for a pass, in
+   other words, and each rule that becomes a check can leave the guide. Opinion about
+   the mechanism; every input is already in the log — brush, size, path, colour and
+   load per record. *Action: a `Session.report()` over the last pass, or `--check` on
+   `run`, printed beside the budget line. Prototype it against
+   `paintings/lighthouse_dusk/` by replaying its log pass by pass and printing what
+   each would have triggered; the painter's own prediction is that it fires on
+   one-brush brushwork in passes 3 to 5 and on the subject's share from pass 6 on.*
+8. **A rules card in the system prompt, only if sessions run long enough to be
+   summarised.** This is the one form of the file idea with a real mechanism: a
+   session whose context is compacted loses the guide first, and a card of a few
+   hundred words kept where a `CLAUDE.md` is kept survives compaction where the guide
+   does not. The third session was never compacted, so it cannot say whether this
+   happens. *Action: check the session transcripts for compaction before writing the
+   card. If none was compacted, item 6 applies to this too.*
