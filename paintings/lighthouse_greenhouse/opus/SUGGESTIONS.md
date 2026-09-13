@@ -1,31 +1,45 @@
-# What this session would change
+# What this painting would change
 
-A fifth painter, a lighthouse being converted into a greenhouse, 296 strokes of
-300, in [`paintings/lighthouse_greenhouse/opus/`](.). This is that session's
-list, in the shape the repository's own [`SUGGESTIONS.md`](../../../SUGGESTIONS.md)
-keeps: **what was wrong, and what I would do about it.** Nothing here is done —
-that file is a register of completed work and this is a request against it.
+The Opus attempt at the greenhouse subject, 296 strokes of 300, in
+[`paintings/lighthouse_greenhouse/opus/`](.). This is its list, in the shape the
+repository's own [`SUGGESTIONS.md`](../../../SUGGESTIONS.md) keeps: **what was
+wrong, and what I would do about it.** Nothing here is done — that file is a
+register of completed work and this is a request against it, left beside the
+painting for whoever next updates it rather than merged into it.
+
+**Two differences from the protocol, stated up front rather than left to be
+discovered.** The subject was **given whole**, not chosen — so this painting is
+not evidence about what a painter reaches for, only about what one does with a
+sentence somebody else wrote. And the root `SUGGESTIONS.md` and `LESSONS.md` were
+read **after** the painting was finished, at the request that produced this file,
+so nothing below was written to match them; where they already cover a finding it
+is said outright. The [Sonnet attempt](../sonnet/SUGGESTIONS.md) at the same
+subject states the same two differences, and arrived at them independently.
 
 It is short on purpose. Thirty-one engine items and forty-two documentation items
 are already closed, and most of what I would have asked for on a blank sheet is
 in that list with a test behind it. What is below is what survived checking
 against it.
 
-**Which claims are measured.** `LESSONS.md`'s standing rule is that a claim with
-no test behind it says so, and the register notes that every one of the four
-painters' claims that has failed re-measurement so far was reported as
-*observed*. So: items 1, 2 and 3 are **measured**, by
+**Which claims are measured.** `CALIBRATION.md`'s standing rule is that every
+number states what it was measured on — *a number without its conditions is not a
+measurement, it is a rumour* — and `LESSONS.md`'s is to check the painters' own
+numbers before building on them. Seven claims have been re-measured under that
+rule and **four did not survive; every one of the four was reported as
+*observed***. So: items 1, 2 and 3 are **measured**, by
 [`probe.py`](probe.py) beside this file, which prints every number quoted here.
 Items 4, 5 and 6 are **not measured** — 4 and 5 are one painting's experience and
 6 is an opinion about scope. They are marked as such and should be discounted
-accordingly.
+accordingly. Item 2 has a second, independent painter behind it and says where.
 
-**What I read**, because the register says it matters and the split is still an
-open hypothesis: `PAINTER.md`, the eight exercises, then `PAINTING.md`,
-`RECIPES.md`, `REFERENCE.md`, the sections of `CALIBRATION.md` the rules cite, and
-`lighthouse_dusk`'s prelude and notes. That is the **"given everything" arm again**
-— the same arm the fourth session was. *The other arm still has not been run*, and
-nothing in this file is evidence about it.
+**What I read before painting**, because the register says it matters and the
+split is still an open hypothesis: `PAINTER.md`, the eight exercises, then
+`PAINTING.md`, `RECIPES.md`, `REFERENCE.md`, the sections of `CALIBRATION.md` the
+rules cite, and `lighthouse_dusk`'s prelude and notes. That is the **"given
+everything" arm again** — the arm the laundromat session was, and the arm the
+Sonnet greenhouse very nearly was, differing only in never opening
+`CALIBRATION.md`. *The arm given only the method, the recipes and the reference
+still has not been run*, and nothing in this file is evidence about it.
 
 ---
 
@@ -95,6 +109,18 @@ Half the mass, on three of six, and the corners go first. `PAINTING.md` warns th
 `inset()` on a **concave** shape eats the thin parts first, and gives the 62.7% /
 76.2% measurement for it. Every shape in the table above is convex, and three of
 them lose more than that warning's worst case.
+
+**And the Sonnet attempt at this subject hit the same call from the other end.**
+On a sharply tapering tower it got not a rounded corner but a full overshooting
+arch above the flat top, several percent of the shape's height, nowhere in the
+polygon — and dropping `edge="clean"` removed it outright. Two painters, one
+subject, two different shapes, the same call, neither finding it in the guide.
+We disagree about the trigger: that attempt proposes the distance between two
+consecutive outline corners relative to the brush, this one proposes the brush's
+share of the shape's shorter extent. **They are probably the same condition seen
+twice** — a corner is where the offset curve turns hardest, and a shape whose
+shorter extent is a couple of brushes is all corner. Worth measuring as one
+question rather than two.
 
 **What I would do.** `edge="clean"` should warn, in the same shape as the warning
 `scumble` already gives when its brush is under two steps:

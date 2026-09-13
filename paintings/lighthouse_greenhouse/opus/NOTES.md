@@ -5,8 +5,12 @@ terracotta pots come down the outside stair, and the beam still sweeps across a
 foggy sea — but it comes out through the leaves, so what crosses the fog is
 green.
 
-The subject was fixed before a line of this repository was read. Everything else
-here was read first: `PAINTER.md`, then `PAINTING.md`, `RECIPES.md`,
+The subject was **given whole** and was fixed before a line of this repository was
+read — so it satisfies what the decide-first rule is for, since no noun in a worked
+example could have steered it, but it was not this painter's choice and is not
+evidence about what one reaches for. The [Sonnet attempt](../sonnet/NOTES.md) at
+the same subject was given the same sentence. Everything else here was read
+first: `PAINTER.md`, then `PAINTING.md`, `RECIPES.md`,
 `REFERENCE.md`, the parts of `CALIBRATION.md` the rules cite, and the
 `lighthouse_dusk` prelude and notes, from which this painting took its
 convention of a prelude of masses-as-functions, a written `compare()` value plan
