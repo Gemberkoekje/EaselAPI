@@ -127,7 +127,7 @@ starts at the right-hand edge. Both are documented now: the first has a verb of 
 ![A lighthouse in thick fog, half converted into a greenhouse: the lamp room at the top
 is packed with dark tomato vine pressing against the glass, terracotta pots stand on the
 turns of the outside stair spiralling down the tower, and the lamp still throws a
-green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/painting.png)
+green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/opus/painting.png)
 
 Somebody is growing tomatoes in the lantern. The vine fills the glass and presses
 against it, pots come down the outside stair, a creeper has gone up the shaft on its
@@ -140,14 +140,14 @@ the leaves and arrives green.
 | Spent | 296 strokes of a 300 budget, plus one signature mark that did not count |
 | Rehearsed and thrown away | Every pass, most of them three or four times; 92 rehearsal images, none charged |
 | Reproducible | Eleven pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`paintings/lighthouse_greenhouse/`](paintings/lighthouse_greenhouse) — [notes](paintings/lighthouse_greenhouse/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/painting.gif) |
+| Files | [`paintings/lighthouse_greenhouse/opus/`](paintings/lighthouse_greenhouse/opus) — [notes](paintings/lighthouse_greenhouse/opus/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/opus/painting.gif), [what it would change](paintings/lighthouse_greenhouse/opus/SUGGESTIONS.md) |
 
 This one had the beam the earlier lighthouse rehearsed twice and dropped, and got it for
 the same reason that one could not: a beam over clear sky has only a glaze, and a beam
 in fog is a mass of lit air. What it cost was two rehearsals spent discovering that the
 green the subject asks for, mixed straight, is a chartreuse searchlight that owns the
 picture — the fix being hue, not opacity, which the calibration says plainly and a
-painter believed only after seeing it. The [notes](paintings/lighthouse_greenhouse/NOTES.md)
+painter believed only after seeing it. The [notes](paintings/lighthouse_greenhouse/opus/NOTES.md)
 also record three flat slabs where a cylinder should have turned, a `flat` tip
 staircasing down every sloping plane edge it was given, ten pots that came back as ten
 bricks until each got a rim, a lit band held a hair inside its silhouette so that the
