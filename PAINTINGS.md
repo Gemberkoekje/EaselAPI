@@ -29,7 +29,7 @@ arrived at their convention on its own.
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
   towards what the engine happens to be good at. **That holds for every picture here,
-  including the two of one subject**: the greenhouse brief was written down before any
+  including those of one subject**: the greenhouse brief was written down before any
   of it was read and then handed to more than one painter unchanged, which is the rule
   satisfied twice over — no painter could be steered by a noun in a worked example, and
   none of them picked the brief either.
@@ -41,9 +41,12 @@ arrived at their convention on its own.
   masses as functions and its `compare()` plan sheet from them rather than from the
   guide. The laundromat read `PAINTING.md`, `RECIPES.md` and `REFERENCE.md` but never
   opened `CALIBRATION.md`, and of the earlier paintings read one prelude and one
-  planning pass and nothing else. Both greenhouse painters read the four guide files
-  and one earlier painting's scripts, and differ in one place: the Sonnet attempt never
-  opened `CALIBRATION.md`, the Opus one read the sections its rules cite. So where they
+  planning pass and nothing else. The greenhouse painters all read the four guide
+  files. The Sonnet and Opus attempts each read one earlier painting's scripts and
+  differ in one place — Sonnet never opened `CALIBRATION.md`, Opus read the sections its
+  rules cite — and the Fable attempt read every earlier painting's notes and the dusk
+  painting's scripts, and opened `CALIBRATION.md` and `LESSONS.md` only after its
+  picture was finished. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -231,6 +234,33 @@ sloping plane edge it was given, ten pots that were ten bricks until each got a 
 passes against the 9 and 9 they were costed at. All eight places of its value plan
 finished inside `0.10`.
 
+### Fable
+
+![A lighthouse in grey sea fog, half converted into a greenhouse: a pale tapered tower
+on the right standing in dark rock, its glass lamp room packed with green vine and red
+tomatoes, a handrailed stair spiralling down the outside with terracotta pots on the
+treads, a vine trailing down from the gallery, and a soft green beam leaving the lamp
+room leftward into the fog over a grey sea](paintings/lighthouse_greenhouse/fable/painting.png)
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 47 |
+| Spent | 284 strokes of a 300 budget, plus one signature mark that did not count |
+| Rehearsed and thrown away | 20 rehearsal runs, none of them charged |
+| Reproducible | Fourteen pass scripts rebuild the PNG **byte for byte**, verified by sha256 from three fresh sessions |
+| Files | [`fable/`](paintings/lighthouse_greenhouse/fable) — [notes](paintings/lighthouse_greenhouse/fable/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/fable/painting.gif), [what it would change](paintings/lighthouse_greenhouse/fable/SUGGESTIONS.md) |
+
+The beam was built five times before it was three glazes mixed close to the fog — a
+bristle wedge came back a ribbed slab, five flat rays a fan of ribbons, and the first
+glazes were lime and brightest at the far end, because a round tip's width and its paint
+both follow pressure. Its [notes](paintings/lighthouse_greenhouse/fable/NOTES.md) also
+record a tower whose clean contour rose off its top as an arch, a stair that read as a
+hose wound round the tower until it got a handrail, and an `undo`, taken on purpose
+and then measured: the working session drifted `1.06%` of
+its pixels from a clean rebuild of the same scripts, so the committed PNG is the rebuild.
+Its [suggestions](paintings/lighthouse_greenhouse/fable/SUGGESTIONS.md) carry a probe
+for each engine claim, and two of the session's own claims did not survive them.
+
 ### Where they agree
 
 Both hit `edge="clean"` on a shape too narrow for the brush it was given, from opposite
@@ -241,6 +271,15 @@ warning, and they disagree about which number should trigger it — the distance
 two outline corners, or the brush's share of the shape's shorter extent. Two independent
 painters converging on one call is the strongest single thing to come out of painting
 one subject more than once.
+
+The Fable painting hit the same call a third time and put a number under it: its clean
+contour stood **65px** above the polygon's top edge where the ragged fill stopped at 3px;
+the same call on the dusk example's own four-cornered tower arches **45px** on today's
+engine; and subdividing each side into six points brings it to 9px. So the trigger is
+neither of the two numbers proposed above but the spline the contour is swept along,
+bowing through sparse corners — which is why a tapering tower gets a pointed arch and a
+shallow cap loses its corners. The measurement is
+[`fable/probes/probe_clean_contour.py`](paintings/lighthouse_greenhouse/fable/probes/probe_clean_contour.py).
 
 Both also arrived at *the tool has a geometry and it will choose if you do not* by a
 different route: Sonnet through a `pressure` list that did nothing to a chisel's width,

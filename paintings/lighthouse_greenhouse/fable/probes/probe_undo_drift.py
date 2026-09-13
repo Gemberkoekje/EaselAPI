@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 import tempfile
+
 import numpy as np
 from PIL import Image
 
@@ -59,8 +60,8 @@ def build(name, cwd):
                     "--ground", "toned_warm_grey", "--seed", "47", "--budget", "300"],
                    cwd=cwd, capture_output=True)
     out = os.path.join(cwd, name + ".png")
-    exp = os.path.join(cwd, "exp_%s.py" % name)
-    open(exp, "w").write('print(s.export(%r))\n' % out)
+    exp = os.path.join(cwd, f"exp_{name}.py")
+    open(exp, "w").write(f"print(s.export({out!r}))\n")
     if name == "clean":
         run(ef, EARLY + LATE, cwd)
     elif name == "plan":

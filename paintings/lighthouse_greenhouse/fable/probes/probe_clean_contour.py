@@ -8,12 +8,13 @@ Run: .venv/bin/python probes/probe_clean_contour.py
 """
 import numpy as np
 from PIL import Image
+
 from easel import Session, polygon
 
 
 def subdivide(points, n=6):
     out = []
-    for (x0, y0), (x1, y1) in zip(points, points[1:] + points[:1]):
+    for (x0, y0), (x1, y1) in zip(points, points[1:] + points[:1], strict=True):
         for i in range(n):
             t = i / n
             out.append((x0 + (x1 - x0) * t, y0 + (y1 - y0) * t))

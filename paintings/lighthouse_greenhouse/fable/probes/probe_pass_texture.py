@@ -9,8 +9,10 @@ band, at ~0.11 -- the flat brush's wander scalloping the band, a texture cost th
 Run: .venv/bin/python probes/probe_pass_texture.py
 """
 import os
+
 import numpy as np
 from PIL import Image
+
 from easel import Session
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -29,7 +31,8 @@ def profile(img, x0, x1, y0, y1, axis, value_of):
 if __name__ == "__main__":
     img = np.asarray(Image.open(PNG).convert("RGB")).astype(float) / 255.0
     pal = Session(64, 48, seed=1).palette
-    value_of = lambda c: pal.value_of("#%02x%02x%02x" % tuple(int(round(x * 255)) for x in c))
+    def value_of(c):
+        return pal.value_of("#" + "".join(f"{int(round(x * 255)):02x}" for x in c))
     cases = [
         ("tower lit face  (solid flat block-in), across", 0.617, 0.647, 0.645, 0.685, 0),
         ("tower shadow side (solid flat block-in), across", 0.668, 0.695, 0.645, 0.685, 0),
