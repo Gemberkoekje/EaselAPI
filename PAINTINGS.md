@@ -28,7 +28,11 @@ arrived at their convention on its own.
 ## The rules they were all made under
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
-  towards what the engine happens to be good at.
+  towards what the engine happens to be good at. **That holds for every picture here,
+  including the two of one subject**: the greenhouse brief was written down before any
+  of it was read and then handed to more than one painter unchanged, which is the rule
+  satisfied twice over — no painter could be steered by a noun in a worked example, and
+  none of them picked the brief either.
 - **How much else was read varies, and it matters.** The pears session read
   `PAINTER.md` and nothing else in the repository, which makes it the only clean
   measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
@@ -37,9 +41,12 @@ arrived at their convention on its own.
   masses as functions and its `compare()` plan sheet from them rather than from the
   guide. The laundromat read `PAINTING.md`, `RECIPES.md` and `REFERENCE.md` but never
   opened `CALIBRATION.md`, and of the earlier paintings read one prelude and one
-  planning pass and nothing else. So where they agree, that is several painters finding
-  the same thing with increasing context — and where they disagree, it may be the
-  context talking. Each painting's notes say which it was.
+  planning pass and nothing else. Both greenhouse painters read the four guide files
+  and one earlier painting's scripts, and differ in one place: the Sonnet attempt never
+  opened `CALIBRATION.md`, the Opus one read the sections its rules cite. So where they
+  agree, that is several painters finding the same thing with increasing context — and
+  where they disagree, it may be the context talking. Each painting's notes say which
+  it was.
 - No reference photograph, so `prepare`, `sketch`, `ref_shape` and `ref_outline` were
   unavailable and nothing was traced. Every mass is a `polygon`, `blob` or region
   written by hand.
@@ -165,6 +172,80 @@ painter invented a mechanism rather than believe a number it had already sampled
 correctly. Both were the items it had marked *observed* rather than *measured*, which is
 the distinction earning its keep.
 
+## A lighthouse half way through becoming a greenhouse
+
+The one subject in this collection that more than one painter was given, and the only
+place the pass scripts can be read side by side against the same brief: a lighthouse being
+converted into a greenhouse, the lamp room packed with tomato vine pressing against the
+glass, terracotta pots down the outside stair, and the beam still sweeping a foggy sea,
+tinted green through the leaves. The brief was written before any of the guide was read
+and then given to each painter unchanged — so it is the one place in this collection
+where the subject is held still, and the differences below are the painters'.
+
+### Sonnet
+
+![A lighthouse mid-conversion into a greenhouse, in fog: a pale tower standing in dark
+rock, a black zig-zag switchback stair crossing it with round orange-and-green pots on
+the treads, green growth trailing down the shaft, a glazed lamp room full of green at
+the top, and a broad pale beam going up to the
+right](paintings/lighthouse_greenhouse/sonnet/painting.png)
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `cool_grey` ground, seed 74 |
+| Spent | 274 strokes of a 340 budget, plus one signature mark that did not count |
+| Reproducible | Nine pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
+| Files | [`sonnet/`](paintings/lighthouse_greenhouse/sonnet) — [notes](paintings/lighthouse_greenhouse/sonnet/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/sonnet/painting.gif), [what it would change](paintings/lighthouse_greenhouse/sonnet/SUGGESTIONS.md) |
+
+No pencil at all: the composition was checked with `preview()` and `cost()` against the
+grid instead of graphite, on the argument that a rejected polygon is a one-line edit and
+a rejected pencil line is an `erase()`. Its [notes](paintings/lighthouse_greenhouse/sonnet/NOTES.md)
+record a switchback stair drawn as one bent `ribbon` that `cost()` priced at 141 strokes
+of a 340 budget before one was spent — and came in at five once it was cut into straight
+flights, which is the guide's own worked example reproduced almost exactly, caught for
+free.
+
+### Opus
+
+![A lighthouse in thick fog, half converted into a greenhouse: the lamp room at the top
+is packed with dark tomato vine pressing against the glass, terracotta pots stand on the
+turns of the outside stair spiralling down the tower, and the lamp still throws a
+green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/opus/painting.png)
+
+| | |
+|---|---|
+| Canvas | 1120×860, linen, `toned_warm_grey` ground, seed 41 |
+| Spent | 296 strokes of a 300 budget, plus one signature mark that did not count |
+| Rehearsed and thrown away | Every pass, most three or four times; 92 rehearsal images, none charged |
+| Reproducible | Eleven pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
+| Files | [`opus/`](paintings/lighthouse_greenhouse/opus) — [notes](paintings/lighthouse_greenhouse/opus/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/opus/painting.gif), [what it would change](paintings/lighthouse_greenhouse/opus/SUGGESTIONS.md) |
+
+This one got the beam the earlier lighthouse rehearsed twice and dropped, and for the
+reason that one could not: a beam over clear sky has only a glaze, and a beam in fog is a
+mass of lit air. It cost two rehearsals to find that the green the brief asks for, mixed
+straight, is a chartreuse searchlight that owns the picture — the fix being hue, not
+opacity. Its [notes](paintings/lighthouse_greenhouse/opus/NOTES.md) also record three
+flat slabs where a cylinder should have turned, a chisel tip staircasing down every
+sloping plane edge it was given, ten pots that were ten bricks until each got a rim, and
+`direction` left off two shaped block-ins — which would have been charged 44 and 57
+passes against the 9 and 9 they were costed at. All eight places of its value plan
+finished inside `0.10`.
+
+### Where they agree
+
+Both hit `edge="clean"` on a shape too narrow for the brush it was given, from opposite
+ends: Sonnet on a sharply tapering tower, where the contour drew a pointed arch that is
+nowhere in the polygon, and Opus on a cap `0.036` deep, where the half-brush inset ate
+half the mass and rounded its corners off. Neither found it in the guide, both propose a
+warning, and they disagree about which number should trigger it — the distance between
+two outline corners, or the brush's share of the shape's shorter extent. Two independent
+painters converging on one call is the strongest single thing to come out of painting
+one subject more than once.
+
+Both also arrived at *the tool has a geometry and it will choose if you do not* by a
+different route: Sonnet through a `pressure` list that did nothing to a chisel's width,
+Opus through a chisel's pass ends stacking into a staircase.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -206,7 +287,10 @@ golden-image tests in CI.
   three rims that are three similar yellow stripes; the lighthouse stopped with 116
   unspent on purpose and says which passage they should have gone to if that was wrong;
   the laundromat spent all but 14 and still calls its own composition — a frontal
-  elevation that is a stack of horizontal bands — the thing it would change first.
+  elevation that is a stack of horizontal bands — the thing it would change first; and
+  of the two greenhouse attempts, one names nine pots that read closer to fruit than to
+  terracotta and the other names a rock that took a quarter of its budget to end up
+  adequate.
 
 ## Further
 

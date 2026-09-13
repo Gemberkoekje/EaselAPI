@@ -1,5 +1,13 @@
 """`PAINTINGS.md` against the paintings it claims to list.
 
+A *painting* is a directory holding a `painting.png` and the rest of what the page
+links to. Usually that is a directory directly under `paintings/`; where one subject
+has been painted more than once it is `paintings/<subject>/<painter>/`, and the
+subject's directory is a container. The page's promise is still one section per
+directory — a subject painted twice gets one section with a part for each painter —
+but what has to be linked is one set of files per *painting*, which is what the checks
+below count.
+
 The page says *one section below per directory under `paintings/`*, and it says that
 instead of counting them on purpose: adding a painting should be adding a directory and
 writing a section, not correcting a number in eight other sentences. Before this, the
@@ -25,10 +33,36 @@ ROOT = Path(__file__).resolve().parents[1]
 PAGE = ROOT / "PAINTINGS.md"
 PAINTINGS = ROOT / "paintings"
 
-DIRECTORIES = sorted(p.name for p in PAINTINGS.iterdir() if p.is_dir())
-
 # What a painting's directory owes the page, and the page owes the reader.
 LINKED = ("painting.png", "painting.gif", "NOTES.md")
+
+# What marks a directory as a painting rather than a container. A directory that
+# holds one of these owes all of LINKED; a directory that holds none of them is
+# either not a painting or is a subject painted more than once, and the paintings
+# are one level in.
+MARKS = LINKED + ("prelude.py",)
+
+
+def _paintings(under: Path, depth: int = 1) -> list[str]:
+    """Every painting under `paintings/`, as a path relative to it.
+
+    One *subject* may have been painted more than once -- `paintings/<subject>/
+    <painter>/` -- so a directory under `paintings/` is a painting if it looks
+    like one, and a container to descend into if it does not. Before the
+    greenhouse was painted twice this was a flat listing of `paintings/*`, and
+    a nested painting was invisible to every check below while making the
+    container fail all of them.
+    """
+    found = []
+    for d in sorted(p for p in under.iterdir() if p.is_dir()):
+        if any((d / m).exists() for m in MARKS):
+            found.append(d.relative_to(PAINTINGS).as_posix())
+        elif depth:
+            found.extend(_paintings(d, depth - 1))
+    return found
+
+
+DIRECTORIES = _paintings(PAINTINGS)
 
 
 @pytest.mark.parametrize("name", DIRECTORIES)
@@ -56,7 +90,7 @@ def test_every_painting_has_a_section_on_the_page(name: str) -> None:
 def test_the_page_links_to_no_painting_that_is_not_there() -> None:
     """The other direction, which is the one that shows up as a broken image."""
     text = PAGE.read_text(encoding="utf-8")
-    linked = {m for m in re.findall(r"paintings/([A-Za-z0-9_\-]+)/", text)}
+    linked = set(re.findall(r"paintings/([A-Za-z0-9_\-]+(?:/[A-Za-z0-9_\-]+)?)/", text))
     missing = sorted(name for name in linked if not (PAINTINGS / name).is_dir())
     assert not missing, f"PAINTINGS.md links to directories that do not exist: {missing}"
 
