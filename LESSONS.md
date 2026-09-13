@@ -650,11 +650,11 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 596 passed; the mcp and mixbox tests
-                                       # skip unless their extras are installed
+pytest -q                              # 652 passed with the mcp extra installed;
+                                       # the mcp and mixbox tests skip without theirs
 ruff check src tests scripts examples mcpb
 python scripts/check_guide_blocks.py   # every python block in the guide's three
-                                       # files runs (75 ok), and PAINTER.md is
+                                       # files runs (80 ok), and PAINTER.md is
                                        # inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
