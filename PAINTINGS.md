@@ -28,11 +28,11 @@ arrived at their convention on its own.
 ## The rules they were all made under
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
-  towards what the engine happens to be good at. **The two greenhouse paintings are the
-  exception and are marked as such below**: their subject was handed to them whole. That
-  still satisfies what the rule is for — neither painter could be steered by a noun in
-  a worked example — but it was not their choice, and a subject nobody chose is not
-  evidence about what a painter reaches for.
+  towards what the engine happens to be good at. **That holds for every picture here,
+  including the two of one subject**: the greenhouse brief was written down before any
+  of it was read and then handed to more than one painter unchanged, which is the rule
+  satisfied twice over — no painter could be steered by a noun in a worked example, and
+  none of them picked the brief either.
 - **How much else was read varies, and it matters.** The pears session read
   `PAINTER.md` and nothing else in the repository, which makes it the only clean
   measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
@@ -178,8 +178,9 @@ The one subject in this collection that more than one painter was given, and the
 place the pass scripts can be read side by side against the same brief: a lighthouse being
 converted into a greenhouse, the lamp room packed with tomato vine pressing against the
 glass, terracotta pots down the outside stair, and the beam still sweeping a foggy sea,
-tinted green through the leaves. Nobody chose it, so this says nothing about what a painter
-reaches for — and everything about what different painters do with one sentence.
+tinted green through the leaves. The brief was written before any of the guide was read
+and then given to each painter unchanged — so it is the one place in this collection
+where the subject is held still, and the differences below are the painters'.
 
 ### Sonnet
 

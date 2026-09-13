@@ -7,14 +7,16 @@ wrong, and what I would do about it.** Nothing here is done — that file is a
 register of completed work and this is a request against it, left beside the
 painting for whoever next updates it rather than merged into it.
 
-**Two differences from the protocol, stated up front rather than left to be
-discovered.** The subject was **given whole**, not chosen — so this painting is
-not evidence about what a painter reaches for, only about what one does with a
-sentence somebody else wrote. And the root `SUGGESTIONS.md` and `LESSONS.md` were
-read **after** the painting was finished, at the request that produced this file,
-so nothing below was written to match them; where they already cover a finding it
-is said outright. The [Sonnet attempt](../sonnet/SUGGESTIONS.md) at the same
-subject states the same two differences, and arrived at them independently.
+**How this one was run, stated up front rather than left to be discovered.** The
+subject was written down before any of the guide was read and then handed to more
+than one model unchanged — so the decide-first rule holds, and holds harder than
+usual: no painter could be steered by a noun in a worked example, and none of them
+picked the brief either. What differs between the two greenhouse paintings is
+therefore the painter. The root `SUGGESTIONS.md` and `LESSONS.md` were read
+**after** the painting was finished, at the request that produced this file, so
+nothing below was written to match them; where they already cover a finding it is
+said outright. The [Sonnet attempt](../sonnet/SUGGESTIONS.md) at the same subject
+says the same about its own reading order, and arrived at it independently.
 
 It is short on purpose. Thirty-one engine items and forty-two documentation items
 are already closed, and most of what I would have asked for on a blank sheet is
