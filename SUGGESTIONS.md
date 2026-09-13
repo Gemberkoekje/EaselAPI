@@ -5,11 +5,13 @@ the documentation had cost them, a fifth pass synthesised the points more than o
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything on it is done** — 31 engine items and 42 documentation items. The long
-arguments that produced each one have been cut, because a request list is worth keeping
-only while somebody still has to act on it. What survives is the finding, because a
-finding is still true after the fix, and the handful of places where the answer differed
-from the request.
+**Everything in the tables below is done** — 31 engine items and 42 documentation
+items. The long arguments that produced each one have been cut, because a request list
+is worth keeping only while somebody still has to act on it. What survives is the
+finding, because a finding is still true after the fix, and the handful of places where
+the answer differed from the request. **Three further sessions then painted one shared
+subject and left requests that are *not* done**; those are gathered under *Still open*,
+deduplicated, and counted nowhere in the done totals.
 
 **Done is not the same as right, and four times now it has meant *measured and there was
 nothing to fix*.** An engine item has a test behind it. A documentation item is a
@@ -24,6 +26,7 @@ changed rather than that it worked.
 | Third session — a landscape at dusk, 184 strokes of 300, `paintings/lighthouse_dusk/` | 6 | 9 |
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
+| Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | *open* | *open* |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -66,6 +69,80 @@ planned and rendered values differ by more than `0.10`* — **is not worth build
 knowing that is what measuring the gap bought: the two values agree to `0.000`, so the
 check would never fire. Every rule that becomes a check can then leave the guide, which
 is the growth rule paying for itself.
+
+### The greenhouse sessions: three painters on one subject
+
+One brief — a lighthouse mid-conversion into a greenhouse — was written down before any
+of the guide was read and handed to three painters unchanged
+(`paintings/lighthouse_greenhouse/{sonnet,opus,fable}/`). Their suggestion files sit
+beside each painting; what follows is those requests, deduplicated and left here for
+whoever next actions the register. **Nothing below is done.** Each item names its
+painter(s) and whether the number behind it was re-measured here or is the session's own
+report — which, by this file's own rule, is a hypothesis until checked. Only the
+`edge="clean"` arch and the three Fable items carry a probe re-run here
+(`fable/probes/`); the Opus and Sonnet numbers are their sessions' own and should be
+checked before anything is built on them.
+
+**Action first — `edge="clean"` fails on a mass narrow relative to its brush, found by all three.**
+This is the strongest signal the collection has produced: three painters, three
+different shapes, one call, none of them finding it in the guide. Sonnet got a pointed
+arch above a sharply tapering tower; Opus got a small cap eaten to 51% of its area,
+corners first (measured on six of its own masses); Fable got a 65px arch on a tall
+tower and isolated it (re-measured here) to the **contour spline bowing through sparse
+corners** — ragged stops correctly at 3px, subdividing the sides to six points brings it
+to 9px, and the dusk example's own four-cornered `tower()` arches 45px on today's
+engine, so the regression is already latent in a committed painting. It picks up exactly the
+residual the third session's `edge="clean"` item left noted — *the outline's own corners
+under a wide brush* — and root-causes it. The three
+disagree on the trigger — distance between outline corners, the brush's share of the
+shape's shorter extent, or the spline itself — and Fable's probe argues these are one
+condition seen three ways: the offset curve turns hardest exactly where corners are
+sparse, and a mass whose shorter extent is a couple of brushes is all corner. **Do
+both:** warn before the pass from `size / min(box.w, box.h)` (and corner spacing), and
+sweep the clean contour along the polygon's own edges rather than a spline. Probe:
+`fable/probes/probe_clean_contour.py`.
+
+**Engine, the rest.** Measured-by column: *here* = re-run in this repo, *session* = that
+painter's own number, unverified.
+
+| What was found | Painter(s) | Measured | Request |
+|---|---|---|---|
+| A chisel tip (`flat`/`knife`) staircases a mass whose boundary is not parallel to its passes: 13–17% of edges land within 10° of horizontal on a mass with no horizontal feature, against 3–4% for `bristle`/`round_hard`. One dimension over from *a shallow shape → its bounding box*, and not in that table. | Opus | session | a row in *the shape each tool leaves behind*, repair beside it: lay the plane with a comb, put the core back with one solid stroke down its middle. |
+| Oriented tips ignore a `pressure` width taper — every pot a chisel-ended rectangle, the exact passage the painter had read. | Sonnet, Opus | docs already say so | an engine warning, in the shape `smudge`/`cost` already use: *pressure=[…] on flat/bristle/knife changes paint, not width — round_hard tapers width.* A post-pass-check candidate. |
+| A shaped `block_in` with `direction` left off costs 3–11× its axis price (mid plane 3.9×, lit band 11×), because the default steps down the whole height. | Opus | session | post-pass-check candidate: when pass count exceeds ~2.5× the axis cost, say so and name `direction="axis"`. Met by real passes, twice in one painting. |
+| `scumble`'s `3×extent/n` auto-size (the fourth session's fix) blooms at the narrow end of a shape whose width varies ~9× along the stepping axis. | Sonnet | session (observed) | teach the auto-size or its warning to read the width at both ends, or add that sentence beside *leave size off* in `RECIPES.md`. |
+| `compare({place: value})` scores each place but never the gap *between* two places, which is what `0.10` actually means; a sheet finished all-green with two masses planned `0.00` apart, and they merged on the canvas. | Opus | session (arithmetic exact) | at plan time, print the pairs of planned places within `0.10` and ask *do these two touch?* |
+| CLI `easel undo` is not reliably lossless: the painting's undo detour drifted 1.06% of pixels from a clean rebuild, confined to marks after the undo, and resisted minimization (in-process undo and simple CLI cases restore exactly). | Fable | here | practice note — rebuild from edited scripts or undo in-process, not CLI mid-run; and maintainer instrumentation to root-cause. Probe: `fable/probes/probe_undo_drift.py`. |
+| Free planning verbs (`look`/`preview`/`rehearse`/`cost`/`compare`) leave the RNG stream untouched — the property that makes *rehearse everything* free of side effects; `pencil` is the exception and advances it. | Fable | here | assert the guarantee in a test; one line that `pencil` shifts the texture of every later stroke. Probe: `fable/probes/probe_rng.py`. |
+| A saturated mixture reads more vivid in this picture's very low-chroma field than `value_of` predicts; two mixtures each needed a third desaturation pass found only at real scale. | Sonnet | session (observed twice, mechanism a guess) | measure simultaneous contrast first; if it holds, a `palette.chroma_of()` instrument beside `value_of`, not a guide rule. |
+| A lone one-script `--rehearse` on an already-painted session reports `stroke_count`/`remaining` as `0`/full budget *inside the script*, while its `compare()`/`look()` see the real canvas. | Sonnet | session (not root-caused) | check whether the one-script rehearsal copy carries the budget/stroke-count state the way it copies the canvas and RNG; if intended, one line in `REFERENCE.md`'s budget section. |
+
+**Documentation and recipes.**
+
+| Gap | Painter(s) | Request |
+|---|---|---|
+| No recipe for a **volume of lit air** — a beam, a shaft, a halo seen from outside — as opposed to *a passage light in the middle*, which is light on a surface. | Fable (and reached unaided by the car-wash and dusk sessions for haze/halo) | a named recipe: mix the glaze close to the field, lay it with the soft round tip along the axis, taper by pressure, brightest at the source. It earns the one place the guide warns off that brush. |
+| No recipe for a small **compound** object — a container plus something growing from it, in three marks or fewer; the pots read as fruit. | Sonnet | a slot in `RECIPES.md`'s noun-free convention (*a small container with something spilling from it*); no working calls to propose yet. |
+| *Draw the planes with the silhouette.* *A mass built of planes* does not say **when** the tiling is decided: designed before the block-in the tower turned; invented in the pass the rock became the weakest passage (67 strokes of a planned 28). | Opus | one clause in the recipe and step 1 — the second drawing is not the finish; planes decided after the mass is down arrive as things laid *on* a hull, the failure the recipe already names. |
+| *Look every 5 to 15 strokes* is written for the held Python loop; under `easel run` the atom is a pass (10–50 strokes in one call), looked at when it returns. | Fable | state the cadence in passes for the shell workflow: rehearse before every pass, look after it. |
+| An exercise calibrates value; none calibrates hue, where the mixing surprises live (blue + yellow = green when you wanted grey, in prose only). | Fable | a ninth exercise: lay the planned mixtures as a swatch strip and look, before the first mass. |
+| `cost_line()` names the mechanism (*cut into N pieces by the outline*) but not the remedy. | Sonnet | name the fix in the same breath — straight segments as strokes, or a wider brush — as the `smudge` warning already says what a smaller size would look like. |
+| Composition is the one thing painters need with no procedure: the guide has a single (excellent) rule and nothing on how much of the canvas the subject takes or what to do with an empty half. | Opus (opinion, not a finding) | eventually a few `RECIPES.md` entries collected across paintings, not a `PAINTER.md` section; cannot be written from one painting. |
+
+**Logged as working as intended — evidence, not requests.** `cost()` caught a bent-`ribbon`
+stair at 141 of 340 before a stroke was spent; cut into straight flights it cost five —
+`PAINTING.md`'s own worked example reproduced and caught for free (Sonnet). And two
+correct, already-written rules failed anyway: a value-plan place going stale when its
+silhouette moved (a fourth instance on record), and a `pressure` list ignored on a
+chisel tip (*warning is not method* reproduced). Both argue for building the post-pass
+check over adding a sentence.
+
+**On the split hypothesis:** all three greenhouse painters are *given everything* arms —
+they read the four guide files and at least one earlier painting — so none is the
+missing *method-plus-recipes-plus-reference-only* arm. Opus and Fable each named essay
+passages that did work no other file could (the glaze table, *the shape each tool leaves
+behind*, *masses that are not rectangles*), the same kind of evidence the fourth session
+gave, pointing the same way. **The other arm still has not been run.**
 
 ---
 
