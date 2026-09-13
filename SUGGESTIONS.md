@@ -1,13 +1,15 @@
 # What the painters asked for, and what was done
 
-Seven sessions painted a picture from the guide and then wrote down what the engine and
+Eight sessions painted a picture from the guide and then wrote down what the engine and
 the documentation had cost them, a synthesis pass gathered the points more than one of
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything in the tables below is done** — 42 engine items and 50 documentation
-items. The long arguments that produced each one have been cut, because a request list
-is worth keeping only while somebody still has to act on it. What survives is the
+**Everything in the tables below is done — except the last round, which is open and
+says so** — 42 engine items and 50 documentation items closed, and 3 engine and 5
+documentation items open from the eighth session. The long arguments that produced each
+one have been cut, because a request list is worth keeping only while somebody still has
+to act on it. What survives is the
 finding, because a finding is still true after the fix, and the handful of places where
 the answer differed from the request. The last three sessions painted one shared
 subject; their lists were deduplicated into one round, and every number they took was
@@ -27,6 +29,7 @@ changed rather than that it worked.
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
 | Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | 11 | 8 |
+| Eighth session — a pool at night, 221 strokes of 300, `pool_night/` | 3 open | 5 open |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -41,9 +44,14 @@ one of its findings, it measured the thing again itself instead. It also read
 So it is the most-read session but not the widest-read one, and its agreement with the
 third should be discounted accordingly.
 
+The eighth read **three** — `PAINTER.md` with its nine exercises, then `RECIPES.md` and
+`REFERENCE.md` — and nothing else: not `PAINTING.md`, not `CALIBRATION.md`, nothing
+under `paintings/`. It is the split test's other arm, and the only session on this page
+whose items were raised without the essay or the numbers to check them against.
+
 ---
 
-## Still open, and what the fourth session says about each
+## The two long-standing items, and how they closed
 
 **The split is a hypothesis, and the fourth session is the "given everything" arm.** The
 third painter's prediction was that a session given only the method, the recipes and the
@@ -56,7 +64,8 @@ softens; the paint is what removes* and *hide the passes with a bigger brush, ne
 an argument* applied to situations neither sentence was written about. That is one
 painter's introspection about its own reasoning and is worth what such a report is
 usually worth — but it is the arm the prediction was about, and it points the same way.
-**The other arm has not been run.**
+**The other arm has now been run: the eighth session, below.** It did not settle the
+prediction so much as re-describe what the deficit is.
 
 **The post-pass check is built.** It was the cheapest thing on the list for two rounds:
 a check over the pass just painted, printed beside the budget line, from inputs already
@@ -72,8 +81,13 @@ and rendered values differ — is still not in it, for the reason given then: th
 `0.000`. The seventh rule the greenhouse round added, a shaped mass at the default
 direction costing over 2.5× its axis, needs the shape and fires at the call instead.
 Every rule that becomes a check can now leave the guide, which is the growth rule
-paying for itself; none has left it yet, because the check is a hypothesis until a
-fresh session paints against it.
+paying for itself; none has left it yet, and the check has now had its first outing
+against a session that had never seen it — see the eighth session below, where it fired
+on twelve horizontal passes in the painting's very first mass, on a bristle under
+`0.025` four times and on pressure lists on a chisel tip twice, and every one of those
+was acted on in the rehearsal it fired in. What it has not yet shown is that a
+rule it holds can safely leave the guide, which needs a session painting against a guide
+the rule has left.
 
 ### The greenhouse sessions: three painters on one subject
 
@@ -92,8 +106,110 @@ they read the four guide files and at least one earlier painting — so none is 
 missing *method-plus-recipes-plus-reference-only* arm. Opus and Fable each named essay
 passages that did work no other file could (the glaze table, *the shape each tool leaves
 behind*, *masses that are not rectangles*), the same kind of evidence the fourth session
-gave, pointing the same way. **The other arm still has not been run**, and it is the
-one thing left open on this page that the engine cannot close.
+gave, pointing the same way. **The other arm has now been run** — the eighth session,
+immediately below — and the one thing left open on this page that the engine could not
+close is closed.
+
+---
+
+## The eighth session: the arm that had not been run
+
+Restricted to `PAINTER.md` and its nine exercises, then `RECIPES.md` and
+`REFERENCE.md`. Subject chosen and written down before the repository was opened: a
+municipal pool at night lit from underwater, `pool_night/`, **221 of 300 strokes**,
+about forty rehearsals, subject share 39% at the moment the subject was finished against
+a planned 40%, and a nine-value plan that `at_value` landed to the hundredth. It then
+wrote an unprompted critique of the engine, the documentation and its own painting, and
+only after that was shown the four withheld files and asked what each would have
+changed. The order matters: everything in its critique was written without them.
+
+**The prediction was that this arm paints the masses as well and improvises worse.**
+
+The first half held and is not interesting. The masses followed the method, back to
+front held throughout with no mass cut around anything, the value plan was numbers
+before the first mark, and the greyscale view has its three separated values. Nothing in
+the picture's structure wanted the essay.
+
+**The second half did not hold in the form it was written**, and the reason is the
+useful part. The one genuinely improvisational moment — that the water had to be mostly
+the dark room reflected, with the lamps coming up through the gaps, rather than a lit
+plane — came off no recipe, was arrived at by looking at a rehearsal, and is the thing
+that makes the picture read at all. What the arm failed at was not improvising without a
+recipe. It was **three lookups it could not make**, and only one of them is in the essay:
+
+1. **It picked the wrong recipe and then blamed the verb.** An underwater lamp is *a
+   volume of lit air* — light in a medium — and the session read it as *a passage light
+   in the middle*, which is a bloom on a surface. Four rehearsals on an inward `scumble`
+   that cannot lay it, converging to within a mark on the two glazes plus a core that
+   `paintings/lighthouse_dusk/NOTES.md` records reaching twice. Both entries were in the
+   file it had; the sentence that separates them is inside the second one. Its written
+   critique called this a gap in the engine, which was wrong, and it said so once it had
+   read the other painting.
+2. **It could not know which numbers existed.** `PAINTER.md` points at
+   `CALIBRATION.md` *"when a rehearsal is about to be spent finding a number that is
+   already in there"* — an instruction that requires knowing the number is in there.
+   Three it spent rehearsals on instead: a glaze's strength being distance in **hue** as
+   well as in value, met as an orange sign's reflection that was a solid bar at one
+   opacity and invisible at the next, which is the two-opacity failure the file already
+   records; `opacity` not quieting a scumble, which is the fix it eventually found for a
+   contour-ringed glow by narrowing the two colours' span, and believed it had invented;
+   and `inset()` by half the brush to hold a mass off its neighbour, which it re-derived
+   as a hand-shifted polygon edge on one side only.
+3. **It never ran `compare({place: value})` on the empty canvas.** This is the expensive
+   one. Its worst structural fault — the coping reaching `0.50` against water at
+   `0.45`–`0.55`, the frame as bright as the subject — is exactly what the pairs
+   question exists to ask, and it was found at stroke 137 with `sample()` instead.
+   `REFERENCE.md`'s one-line entry was read and not acted on; *Painting without a
+   reference*, where the reason lives, is in `PAINTING.md`.
+
+**So the essay's contribution to this arm was one section, and it is a section about a
+tool rather than about judgement.** Of what the session could name as saveable —
+roughly twelve to fifteen rehearsals and about twenty-five committed strokes, the latter
+almost all one repainted deck — **the largest single item is not in the essay at all.**
+It is in `paintings/laundromat_night/NOTES.md`: a custom ground at `0.32`, and the
+reason, *no preset goes below `umber_wash` at `0.425`, which is far too light for a
+night picture*. The eighth session took `cool_grey` at `0.53`, knew by its third pass it
+was wrong, and talked itself out of a restart that would have cost 21 strokes.
+
+**What this arm cannot answer.** The painting is timid. Six of its twenty-five passes
+exist to take something back rather than to put something down, four of those in the
+last third; it stopped at 221 with 79 strokes in hand, and its own verdict is that the picture is illustrative rather than painterly —
+that the coping is four bands generated from a normal vector and a for-loop, and that
+the one passage it likes is the one where a starved bristle did something it had not
+designed. Whether that is the missing essay or this painter is not separable from one
+run, and the run is n=1 against six of the other arm. **The honest claim is narrower
+than the prediction: the deficit this arm showed was lookup, not judgement** — and two
+of the three lookups were in files the split does not vary.
+
+**One claim this session made that did not survive its own reading.** Before being shown
+the withheld files it wrote that the guide's repetition "seems not to have noticed its
+own cost", and `LESSONS.md` opens with the measurement that a rule correct, well placed
+and repeated three times still failed every run. Fair as a description of reading it,
+wrong about the cause — which is the same shape as the four re-measured claims at the
+foot of this page: an observation reasoned back to a mechanism that sounded right.
+
+### What it asks for, and none of it is done
+
+**This is the first round on this page that is open.** It is filed rather than held
+back, because the session that raised it is the split test's other arm and these items
+are worth reading beside the account above. Each says whether its numbers were
+*measured* or *observed*, which the foot of this page says is what decides which claims
+survive re-measurement — and one is offered as an opinion with no measurement at all,
+marked so.
+
+| The engine | What is proposed |
+|---|---|
+| **A glaze's usable opacity is a function of its distance from the field, and there is no instrument for it.** `CALIBRATION.md` measures the problem — at `0.14` a film moves the value `0.087`, within a hundredth of the `0.10` that makes a new mass, and at `0.05` the underlying hue is already dead — and the guide's answer is *mix the glaze close, then choose an opacity*, which is a two-step search run by rehearsal. Six of this painting's rehearsals went on it, and one glaze was rehearsed three times and dropped. (Measured by the file; the cost observed here.) | `glaze(points, color, to_value=0.62)`, solving for opacity the way `at_value` solves a mixture for a value. `at_value` is the single most defended thing on this page across seven sessions, and the same instrument does not exist for a film — which is the other place a painter aims at a value and cannot hit it. |
+| **The inward `scumble`'s usable `n` is bounded by the patch, and the verb warns from only one side.** The brush is `3 × depth / n` and the post-pass check's comb floor is `0.025`, so `n ≤ 120 × depth`: on a patch shallower than about `0.07` there is no `n` giving both enough rings to avoid contour banding and a brush that is a brush. This session met it at `n=12` on `depth=0.075`, read the resulting bristle warning as an unrelated complaint, and spent two further rehearsals. (Arithmetic exact; the banding observed.) | The verb says when the brush is too *wide* for the patch and nothing when the patch cannot carry the `n` asked for. It should say so from the narrow side too — and where no `n` fits, name *a volume of lit air*, which is what lays it. |
+| **`direction=` given a sequence is priced far above any single angle in it.** Measured on one mass, same brush, same density, same call: `"axis"` **4** strokes, a single `-17°` **7**, `"cross"` **15**, a ten-angle sequence **51**. `cost()` gives the number and nothing gives the mechanism; the greenhouse round's 2.5× price walk fires on `direction` *left off*, not on a sequence. (Costs measured. The mechanism — that the stack is sized for the steepest angle in the list — is **observed and offered as a guess**, which this page's own record suggests is the half most likely to be wrong.) | Either the price walk covers a sequence, or one row in `CALIBRATION.md` under `block_in`. The guide tells a painter to vary direction between passes to break a comb, so a painter following that advice reaches for the sequence first; `"cross"` at 15 was the affordable answer and nothing pointed at it. |
+
+| The documentation | What is proposed |
+|---|---|
+| **The two glow recipes cannot be told apart at the moment of choosing.** *A passage light in the middle* and *a volume of lit air* are the right pair, and the sentence that separates them — *an inward scumble is a bloom **on** something* — sits inside the second entry, where it is read by a painter who has already chosen correctly. Four sessions have now reached the glaze answer the hard way, and one of them had the recipe open. | One clause in the first entry and in the index table at the head of `RECIPES.md`: on a surface, versus in a medium. The index is where a recipe is chosen, and it is the one place in that file with room for a distinction rather than a procedure. |
+| **`compare({place: value})` is unreachable from the method file.** `PAINTER.md` step 3 is where the value plan is made and it teaches the plan as printed numbers; the pairs question lives in `PAINTING.md`, and `REFERENCE.md` carries the signature without the reason. This session wrote a nine-value plan, checked the separations by hand against the `0.10` rule, satisfied itself, and still shipped a coping that reached the subject's own value — the exact failure the pairs table was built for. | Two lines in step 3 beside *plan those three as numbers*: run it on the empty canvas, and read the pairs. It carried three pictures with no photograph for the greenhouse painters, and the arm without the essay never ran it once. |
+| **No preset ground suits a low-key picture, and the guide's ground advice is silently wrong for one.** *Start on a toned ground, not white* is right for a mid-key picture. The lowest preset is `umber_wash` at `0.425`; this session took `cool_grey` at `0.53`, after which every dark mass had to be laid `solid=True` to cover it — which cost strokes, removed the ground-breathing-through the same page values, and left the deck repaint as the one mass this painter had to lay twice. The fourth session solved this and wrote the reason only in its own notes. | One sentence under *Getting started*, where the presets are listed: a picture whose masses sit below the presets wants a ground of its own — `Session(ground="#5a5045")` — and `value_of` it before the first mass. The mechanism is already there, since a ground takes any colour; no rule points a painter at it. |
+| **A painter placing marks *inside* a shaped mass needs point-in-shape constantly, and nothing says so.** This session hand-rolled edge-intersection arithmetic about fifteen times to check that a ripple, a lamp or a glaze fell inside its pool, with `shape.contains(x, y)` listed in the file it had open. Every mark laid *in* a mass rather than *as* one wants it, and this painting is mostly such marks. | A line where `RECIPES.md` lays small marks into a larger mass. A list of methods answers *what exists*; it does not answer *what you are about to need*, and the shapes list is read once at the start rather than at the moment a mark is placed. |
+| **The worked examples may prime toward one kind of picture.** Three of the four finished paintings are low-light scenes with a single light source, and most of the guide's illustrative passages are drawn from them. The named-subject priming is measured and guarded against; this is not. (**Opinion, unmeasured, and offered as one.** This session chose a low-light subject before opening anything, so it is a data point for the hypothesis and cannot test it.) | Nothing yet. If the next brief is written for a high-key or flatly-lit subject, that is the measurement — and the brief has to be written before anyone reads `paintings/`, which is the protocol the subject rule already uses. |
 
 ---
 
@@ -384,6 +500,24 @@ raised when asked for a value under the floor; and `compare({place: value})`, wh
 carried three pictures with no photograph and finished all their places inside `0.10`.
 One of them leaned on determinism hard enough to prove the `undo` finding with it: three
 independent clean rebuilds of its painting are byte-identical.
+
+**The eighth session defended the same list**, in a critique written before it was shown
+the files it had not been given — and its list is the more interesting one, because it
+is the arm with the least context and it defended the same things anyway. The seeded
+rehearsal above everything: about forty of them, none charged, and every failure in its
+own account was found on a copy — a staircased pool, a combed roof, a rake of bristle
+marks where reflections should have been, a scumble that came back a contour map, a
+mute glaze that read as a dark post and was dropped rather than committed. `at_value`,
+which landed a nine-value plan to the hundredth and **raised** when asked for `0.135`
+against a floor of `0.136`, which that session named as the right behaviour unprompted.
+The values view, the one plan object, and the post-pass check, whose six rules it
+described as "a linter for painting that fires at the moment you can still act" and
+which it acted on every time it fired.
+
+It is also the first session in four rounds to repaint a mass, and its account says why
+without being asked: it chose a ground too light for the picture and found out at pass
+three, which is the one item on its open list that was already solved in a painting it
+had not been allowed to read.
 
 ---
 
