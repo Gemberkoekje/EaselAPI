@@ -49,7 +49,13 @@ class StrokeRecord:
 
     def to_json(self) -> dict:
         d = asdict(self)
-        d["points"] = [[round(float(x), 5), round(float(y), 5)] for x, y in self.points]
+        # Exact, not rounded. The points are float32 and a double holds one exactly,
+        # so what is written is what was painted; rounded to five decimals -- which
+        # this did until 0.2.0, for a tidier file -- a wobbled pass came back from
+        # disk a hair off its line, and a replay from a saved log (which is what
+        # `easel undo` is) was no longer the painting. Hand-written coordinates
+        # never showed it, because they are short decimals to begin with.
+        d["points"] = [[float(x), float(y)] for x, y in self.points]
         if isinstance(d["pressure"], np.ndarray):  # pragma: no cover - defensive
             d["pressure"] = [float(v) for v in d["pressure"]]
         return d

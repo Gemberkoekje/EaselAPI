@@ -45,7 +45,9 @@ height` in `y` — or use `s.circle(place, r)`, which is round in pixels, and
 
 `s.stroke_count` is the tally, `s.spent` and `s.remaining` are it against a
 `Session(budget=...)`, and `s.budget_line()` prints both. The first five marks whose
-`note` contains `signature` are free; every one after that is charged.
+`note` contains `signature` are free; every one after that is charged. Inside a
+rehearsed pass — `s.scratch()`, or `easel run --rehearse` — all three **continue the
+painting's own numbers**; what the copy itself laid is `s.history.stroke_count`.
 
 **Before a mass, not after**: `s.cost(plan)` walks the passes without laying them and
 returns the number, and `s.cost_line(plan)` says *why* it is that number.
@@ -77,13 +79,13 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
 | `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass. It costs nothing in the rendered view — see `CALIBRATION.md`, *The paint and the view of it* |
 | `overhang` (`block_in`, `scumble`, `cover`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths — and **which two edges those are turns with `direction`**: swept horizontally it reaches past the left and right, swept vertically past the top and bottom, and off the foot of the mass. The two it does not lengthen still get half a brush, so a mass never stops dead at its outline. The box/shape defaults differ because a rectangle stopping short of its corners reads as cropped, while a shape's outline **is the drawing** |
-| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline. The contour does not wander: the line is the drawing |
-| `direction` | `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"`. **Where the stack starts** is below |
+| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview` |
+| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"`. **Left off on a shape**, `block_in` and `cost` say so when horizontal passes cost over 2.5× what `"axis"` would. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
 | `load_falloff` | the brush's | how fast it spends. `0` never runs dry |
-| `size` | the brush's | tip diameter, as a fraction of the canvas long side. On **either** direction of `scumble`, left off, it is picked from that verb's own step: `3 × depth / n` inward, `3 × extent / n` on a band. Named too narrow, both say so |
+| `size` | the brush's | tip diameter, as a fraction of the canvas long side. On **either** direction of `scumble`, left off, it is picked from that verb's own step: `3 × depth / n` inward, `3 × extent / n` on a band. Named too narrow, both say so — and on a shape whose width varies along the stepping axis, so that the brush is wider than the passes at one end, the band case says so too, naming both lengths |
 | `wander` (sweep) | `True` | whether each pass wanders off the offset curve, so a stack is not parallel rules. A **single** pass has no parallel to break and the wander only moves it off the line drawn; off for the contour of `edge="clean"` |
 | `tip_wobble` | `0.0` | a round tip's own silhouette, redrawn per mark. `0.35` a brush set down once, `0.7`+ a clot |
 | `press` | `1` | for a one-point mark, how many times to stamp it. One mark either way |
@@ -156,7 +158,7 @@ of the place and heavy at the other, once, rather than alternating.
 | Tip family | What pressure changes |
 |---|---|
 | `round_soft`, `round_hard`, `liner` | **width and paint.** `size` is the width at full pressure; a light touch keeps about a third of it, never thinner than about a pixel and a half |
-| `flat`, `bristle`, `knife` | **paint only.** The chisel keeps the width you asked for, because that width is the mass it lays |
+| `flat`, `bristle`, `knife` | **paint only.** The chisel keeps the width you asked for, because that width is the mass it lays — and a short hand-laid mark given a list says so, since a list on a short chisel mark can only have been asking for a taper |
 
 ---
 
@@ -212,6 +214,7 @@ p["shadow"] = p.mix("ultramarine", "burnt_umber", 0.45)   # named, and it persis
 p.tint(c, 0.3)   p.shade(c, 0.3)   p.desaturate(c, 0.3)
 p.at_value(base, 0.62)      # that colour, moved to that value, from either side
 p.value_of(c)               # what look(values=True) will show
+p.chroma_of(c)              # how coloured: 0 for a grey, 0.20 for cadmium_red
 p.darkest_value             # about 0.13: the floor of the box
 ```
 
@@ -232,6 +235,13 @@ side in one line instead of believed. Measured, they agree over a mass to within
 `0.001`: see `CALIBRATION.md`, *The paint and the view of it*. `compare()` reports the
 paint too, and its table now says so.
 
+`chroma_of` is `value_of`'s counterpart for *how coloured*: the Oklab chroma, `0` for
+any grey, about `0.02` for the grounds and `burnt_umber`, `0.12` for `yellow_ochre`,
+`0.20` for `cadmium_red`. The engine lays the chroma it is given — a solid plane reads
+back at the mixture's chroma or a little under, never above — so a mixture that comes
+back more vivid than its number is the eye judging it against the field, and
+`p.chroma_of(mix)` beside `p.chroma_of(s.sample(field))` is the number that predicts it.
+
 Grounds for `Session(ground=...)`: `white`, `warm_white`, `toned_grey`,
 `toned_warm_grey`, `cool_grey`, `umber_wash`, `burnt_sienna` — or any colour.
 Textures: `smooth`, `linen`, `rough`.
@@ -247,8 +257,10 @@ s.rehearse(plan, reference=, region=)           # what it would look like
 s.cost(plan)        s.cost_line(plan)           # what it charges, and why
 s.paint(plan)                                   # the same plan, now paid for
 s.compare("ref.jpg", region=, threshold=0.10)   # per-cell value of both, and the miss
-s.compare({place: value, ...})                  # ...against your own value plan
+s.compare({place: value, ...})                  # ...against your own value plan, and
+                                                # the pairs it puts within 0.10: do they touch?
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
+s.report(since=None, subject_share=None)        # the post-pass check, read off the log
 s.prepare("ref.jpg", level="coarse")            # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
 s.export("painting.png", impasto=True, sketch=True)
@@ -264,6 +276,16 @@ Looks are written to `out_dir` and numbered: `look_001.png`, `preview_002.png`,
 `compare_003.png` in one run of numbers belonging to the session, and rehearsals in
 their own — `rehearse_001.png` upward, each taking the next free name.
 
+`report()` is the check `easel run` prints beside the budget line after every pass:
+six rules read off the log — one brush at one size for a whole pass of two or more
+calls; twelve or more long marks within six degrees of one angle, from two or more
+calls; a bristle under `size=0.025`; eight or more marks under `size=0.02` inside the
+painting's first sixty; a pressure list on a short chisel mark; and the subject's share
+of the marks so far, wherever a mark is noted `subject`, against `subject_share` if
+given. `since=` is the log index the pass began at (`len(s.history.records)` before it);
+left off, the whole painting. A seventh rule — a shaped `block_in` with `direction`
+left off costing over 2.5× its axis — needs the shape and fires at the call.
+
 ---
 
 ## The session, and the shell
@@ -273,15 +295,15 @@ Session(width=1024, height=768, texture="linen", ground="white", seed=0,
         timelapse=True, out_dir="out", texture_strength=1.0, budget=None)
 s.size   s.aspect   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
-s.scratch()        # a throwaway copy: the painter's scrap of canvas
-s.undo(n)          # log entries, not marks you paid for
+s.scratch()        # a throwaway copy: the painter's scrap of canvas, counting on
+s.undo(n)          # log entries, not marks you paid for; puts the stream back too
 s.replay(upto=None)
 s.save(path)       Session.load(path)
 ```
 
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
-easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--prelude other.py] [--no-prelude]
+easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
 easel compare p.easel ref.jpg [--region D4]
@@ -289,6 +311,7 @@ easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3
 easel export p.easel painting.png
 easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
+easel log p.easel [-n 20] [--check]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]
 ```
@@ -300,6 +323,10 @@ same scope, so helpers, mixtures and landmarks survive between passes.
 Several scripts run in the order given, each in its own scope with the prelude in front
 of it — the same painting as running them one at a time, and with `--rehearse` they go
 on **one** copy, so a pass that lands on top of another pass is judged on it.
+
+After every pass, rehearsed or committed, `run` prints the budget line and then the
+post-pass check over that pass; `--check` runs it over the whole painting instead, and
+`easel log --check` does the same without painting anything.
 
 The same verbs are available over MCP (`easel-mcp`), where the looking tools hand back
 the picture rather than a path to it. See [`README.md`](README.md).

@@ -103,6 +103,9 @@ def build_parser() -> argparse.ArgumentParser:
                             "mixtures, landmarks)")
     p_run.add_argument("--no-prelude", action="store_true",
                        help="do not auto-load prelude.py from beside the session")
+    p_run.add_argument("--check", action="store_true",
+                       help="run the post-pass check over the whole painting rather "
+                            "than over this pass alone")
 
     p_look = sub.add_parser("look", help="render a view of the canvas")
     p_look.add_argument("session", type=Path)
@@ -165,6 +168,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
     p_log.add_argument("-n", type=int, default=20)
+    p_log.add_argument("--check", action="store_true",
+                       help="run the post-pass check over the whole painting instead")
 
     sub.add_parser("brushes", help="list brushes, pigments, grounds and regions")
 
@@ -316,7 +321,7 @@ def _dispatch(args) -> int:
     if args.command == "log":
         print(f"{session.stroke_count} strokes, seed {session.seed}, "
               f"{session.size[0]}x{session.size[1]}")
-        print(session.log(args.n))
+        print(session.report() if args.check else session.log(args.n))
         return 0
 
     return 1
@@ -549,22 +554,31 @@ def _cmd_run(session: Session, args) -> int:
     # session file is never written, it costs nothing but the look. Several scripts
     # share the one copy, in order, so a pass is judged on the pass under it.
     target = session.scratch() if args.rehearse else session
+    before = len(target.history.records)
 
     result = run_scripts(
         target,
         [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
         prelude=prelude, prelude_name=prelude_name or "prelude.py",
     )
+    # The post-pass check, beside the budget line: what the pass just laid would be
+    # warned about, read off the log. Over the pass alone unless asked for the whole
+    # painting -- and a rehearsal is checked too, because that is where a pass gets
+    # changed for free.
+    check = target.report() if args.check else target.report(since=before)
 
     if args.rehearse:
         if result.code == 0:
             path = target.look(path=None)
-            spent = target.stroke_count
+            # What the pass itself laid: the copy's own log. Its `stroke_count`
+            # continues the painting's, which is what a script inside it wants.
+            spent = target.history.stroke_count
             left = session.remaining
             cost = (f"{spent} strokes" if left is None
                     else f"{spent} strokes of the {left} left")
             names = ", ".join(s.name for s in scripts)
             print(f"Rehearsed {names}: {cost}. Nothing committed.")
+            print(check)
             print(path)
         else:
             print(f"{result.report}\n", file=sys.stderr)
@@ -576,6 +590,7 @@ def _cmd_run(session: Session, args) -> int:
         session.save(args.session)
     if result.code == 0:
         print(result.report)
+        print(check)
     else:
         print(f"{result.report}\n", file=sys.stderr)
         if result.trace:

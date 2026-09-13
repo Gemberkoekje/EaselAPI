@@ -550,18 +550,23 @@ def build_server() -> MCPServer:
 
         s = Session.load(session)
         target = s.scratch() if rehearse else s
+        before = len(target.history.records)
         result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
+        # The post-pass check the CLI prints beside the budget line, here too: the
+        # same words for the same pass, whichever way the pass was run.
+        check = target.report(since=before)
         if rehearse:
             if result.code != 0:
                 return result.text
             left = s.remaining
-            cost = (f"{target.stroke_count} strokes" if left is None
-                    else f"{target.stroke_count} strokes of the {left} left")
+            laid = target.history.stroke_count      # the copy's own log: this pass
+            cost = (f"{laid} strokes" if left is None
+                    else f"{laid} strokes of the {left} left")
             return (f"Rehearsed {Path(name).name}: {cost}. Nothing committed.\n"
-                    f"{target.look()}")
+                    f"{check}\n{target.look()}")
         if result.save:
             s.save(session)
-        return result.text
+        return result.text if result.code != 0 else f"{result.text}\n{check}"
 
     @server.tool()
     @_tool

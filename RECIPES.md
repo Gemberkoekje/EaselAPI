@@ -1,9 +1,9 @@
 # Recipes: the calls, in order, for things that have caught a painter out
 
 [`PAINTER.md`](PAINTER.md) is strong on what not to do. This file is the other half:
-what to lay *instead*, as the actual calls, for the kinds of thing three painters had
+what to lay *instead*, as the actual calls, for the kinds of thing six painters had
 to find by rehearsing. Ten of one painting's eighteen rehearsals went on discovering
-six of the recipes below.
+six of the recipes below, and three painters handed one subject arrived at two more.
 
 **Read a recipe when you are about to paint one of these, not before.** It is not a
 reading document and there is nothing here you need in your head.
@@ -22,10 +22,11 @@ are shapes of.
 | | |
 |---|---|
 | **Surfaces** | [a plane that is a plane](#a-plane-that-is-a-plane) · [a form that turns](#a-form-that-turns) · [a mass built of planes](#a-mass-built-of-planes) |
-| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a quiet gradient](#a-quiet-gradient) |
-| **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a tapered arc](#a-tapered-arc) · [the one ruled line](#the-one-ruled-line) |
+| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) · [a volume of lit air](#a-volume-of-lit-air) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a quiet gradient](#a-quiet-gradient) |
+| **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a small container with something spilling from it](#a-small-container-with-something-spilling-from-it) · [a tapered arc](#a-tapered-arc) · [the one ruled line](#the-one-ruled-line) |
 | **Edges** | [an edge that is actually lost](#an-edge-that-is-actually-lost) · [a mark that crosses a boundary](#a-mark-that-crosses-a-boundary) |
 | **Order** | [a hollow thing](#a-hollow-thing) · [a repair under things that are standing on it](#a-repair-under-things-that-are-standing-on-it) |
+| **Composition** | [a subject that is one thing against a ground](#a-subject-that-is-one-thing-against-a-ground) · [a picture with an empty half](#a-picture-with-an-empty-half) |
 
 ---
 
@@ -123,6 +124,16 @@ punctuation. Keep each plane a brush's half-width inside the silhouette so nothi
 fringes past it, and give the planes different brush sizes — they are different sizes
 of thing.
 
+**Draw the planes with the silhouette.** A mass like this has two drawings in it, and
+the second one is not the finish: decide the tiling *before* the block-in, as polygons
+beside the outline, the way `faces` sits beside `whole` above. Decided after the mass
+is down, the planes arrive as things laid *on* a hull — the failure this recipe already
+names, one level up. One painter drew a tower's three planes with its silhouette and
+the tower turns; drew a rock's silhouette with the same care, invented its planes in
+the pass, and the rock is the weakest passage in the picture by a distance: 67 strokes
+against a budget of 28, six of them repairs of its own paint. Same recipe, same
+painter, one pass apart.
+
 **Goes wrong as:** slabs stuck on a smooth shape (planes laid as marks rather than as
 tiles), or as a woven surface (bristle streaks used instead of planes). One painter got
 both, in that order, before laying it this way.
@@ -156,6 +167,51 @@ petals); or as a rim with nothing in the middle (first ring darker than what it 
 
 *Found in three rehearsals in one painting and four in another; it is the single most
 rehearsed thing in the repository.*
+
+---
+
+## A volume of lit air
+
+A beam, a shaft, a halo seen from outside: light *in* the air rather than light on a
+surface. It has no surface and no edge anywhere, which is why the recipe above does not
+lay it — an inward scumble is a bloom **on** something. Three glazes along the axis of
+the light, with the one brush the guide otherwise warns you off masses, because this is
+not a mass.
+
+```python
+field = s.sample(span("A2", "H4"))                 # what the air will sit in
+v = p.value_of(field)
+p["air_far"]  = p.at_value(p.mix(field, "light", 0.5), v + 0.06)
+p["air_body"] = p.at_value(p.mix("light", field, 0.35), v + 0.10)
+p["air_core"] = p.at_value(p.mix("light", field, 0.25), v + 0.14)
+source, far = (0.64, 0.24), (-0.08, 0.42)
+s.dry()
+s.glaze([source, (0.30, 0.335), far], "air_far", opacity=0.09, size=0.20,
+        pressure=[0.4, 0.8, 1.0])                  # wide and faint: widest at the far end
+s.glaze([source, (0.30, 0.33), (-0.08, 0.41)], "air_body", opacity=0.15, size=0.11,
+        pressure=[1.0, 0.8, 0.4])                  # the body, thinning away from the source
+s.glaze([source, (0.42, 0.295), (0.18, 0.355)], "air_core", opacity=0.17, size=0.06,
+        pressure=[1.0, 0.7, 0.12])                 # the core: brightest at the source
+```
+
+**Mix the glazes close to the field, in value and in hue** — a step or two above it,
+leaning toward its own colour — because a glaze far from what it lands on has no usable
+opacity: one setting is a stripe and the next is invisible. Lay them with the soft round
+tip along the axis, and **taper by pressure**: a round tip's width follows pressure, so
+`[1.0, ..., 0.1]` is narrow-and-bright at the source and wide-and-gone at the far end,
+which is what a cone of lit fog is. The wide faint one runs the other way, so the cone
+opens as it travels. `dry()` first, so the film sits on the field rather than mixing
+into it.
+
+**Goes wrong as:** a ribbed slab (a `bristle` block-in of the wedge); a fan of ribbons
+(five `flat` rays); a searchlight that owns the picture (the glaze mixed to the light's
+own colour rather than close to the field — the fix is hue, not opacity); or a beam
+brightest at the *wrong* end, which is what the taper does when the list runs the other
+way. One painter rehearsed five wrong answers to this before arriving at three glazes;
+two earlier paintings had reached the same thing for haze and a halo and never wrote it
+down.
+
+*Found in five rehearsals, and in two other paintings' notes.*
 
 ---
 
@@ -198,7 +254,23 @@ s.scumble(span("A4", "H6"), "shadow", "light", 8)      # 8 strokes, and it costs
 
 Eight passes along the band, stepping across it, one value step per pass. Below about
 five passes the steps read as steps again. The overlap is the whole mechanism: the
-brush is wider than the step between passes.
+brush is wider than the step between passes. **Leave `size` off** and the verb picks a
+brush from its own step — about three steps — which is the middle of the window it
+measures.
+
+**That works on a band, and a band is a shape whose passes are all about one length.**
+On a wedge — a beam, anything whose width changes a lot along the direction the passes
+step — one brush cannot serve both ends: picked for the step, it is wider than the whole
+narrow end, the passes there are dabs, and the paint blooms past the outline. The verb
+says so, naming both pass lengths. Lay a wedge as two or three bands each sized to its
+own width, or hand it `size=` for the end that matters, before rehearsing the wrong
+one. One painter rehearsed it once, then hand-built the passage in five pieces.
+
+**And a `flat` scallops a wide band.** Measured on a finished painting, a far sea laid
+with a `flat` over a wide band ran `0.11` peak to peak down the band, against `0.03` for
+a solid `flat` block-in on the same canvas — the flat's own wander printing the passes.
+A `bristle`'s comb reads as incident rather than as banding; if it has to be a flat,
+halve `jitter` and `size_jitter`, as *the one ruled line* below says.
 
 **Do not reach for a second smudge instead.** Measured on a hard join, the bare step is
 `0.330`, one smudge pass takes it to `0.184`, and three passes take it back to `0.280`
@@ -249,6 +321,44 @@ did not register at all.
 
 **Goes wrong as:** several of them. One disc is a thing; five discs are the brush. If
 you want five, vary at least one thing per mark, or use the recipe above.
+
+---
+
+## A small container with something spilling from it
+
+Two or three parts, each of which has to read as a different kind of thing, in three
+marks or fewer — at a size where the recipes above give you a single accent. Nine of
+these in one painting read as small round fruit; nine in another read as bricks until
+each got a rim.
+
+```python
+x, y, r = 0.46, 0.58, 0.02
+s.stroke([(x - r * 0.8, y), (x + r * 0.8, y)], "flat", "mid", size=r * 1.55,
+         opacity=1.0, load=1.0, load_falloff=0.0, pressure="even")      # the body
+s.stroke([(x - r, y - r * 0.52), (x + r, y - r * 0.52)], "flat", "pale",
+         size=r * 0.6, opacity=1.0, load=1.0, load_falloff=0.0,
+         pressure="even")                                              # the rim, on it
+s.stroke([(x - r * 0.45, y - r * 0.95), (x + r * 0.35, y - r * 2.0),
+          (x + r * 0.9, y - r * 3.0)], "bristle", "cool", size=r * 0.9,
+         load=0.7, opacity=0.9, pressure="swell")                      # what spills
+```
+
+The body is **one chisel mark, and a rectangle on purpose** — the one place a tool's
+own geometry is allowed to stand for the thing, because a `flat`'s chisel really is that
+shape. The rim is a second, narrower chisel mark, *wider* than the body and lighter,
+sitting on its top edge; it is what makes a block a container. What spills is one
+starved stroke going up and over: a `bristle` above `size≈0.025`, and below that
+`round_hard` with `pressure="lift_off"`, because a comb that small is four streaks.
+Then vary one thing per container — the tilt, which side the spill falls, whether there
+is a rim at all.
+
+**Goes wrong as:** a small round fruit (the body laid with a round tip under a pressure
+taper, which is the natural first attempt and reads as a bulb); a brick (the body
+alone); or a bite or a frown (a dark arc at the rim, tried twice as a repair, which
+reads as damage rather than as a rim).
+
+*Found in two paintings of the same subject, one of which got it and one of which did
+not.*
 
 ---
 
@@ -392,12 +502,91 @@ recipe already mixed — see *When something is wrong, paint over it* in
 
 ---
 
+## A subject that is one thing against a ground
+
+Composition is the one thing painters need with no procedure: the guide has a single
+rule about it — *count the horizontal bands before the first mass* — and nothing on how
+much of the frame the subject takes or what to do with the rest. These two entries are
+what four paintings' notes record having done about it. They are the most speculative
+things in this file and carry the standing caveat twice over.
+
+A tower in a seascape, a figure on a street, a bottle on a sill: a layer cake before a
+brush is picked. **Count the bands, then give the subject something that crosses them,
+twice** — the subject itself, upright, and one more thing on the diagonal that does
+compositional work as well as saying what the picture is about: a beam, a shadow, a
+road, a fall of light.
+
+```python
+sea  = polygon([(0.0, 0.62), (1.0, 0.55), (1.0, 0.76), (0.0, 0.76)])   # a band
+rock = polygon([(0.0, 0.76), (0.55, 0.80), (1.0, 1.0), (0.0, 1.0)])    # cut to a wedge
+s.block_in(sea, "flat", "mid", size=0.10, direction="axis")
+s.block_in(rock, "flat", "dark", size=0.08, direction="axis")
+s.stroke([(0.34, 0.62), (0.70, 0.60), (1.05, 0.58)], "flat", "pale",
+         size=0.012, opacity=0.6, pressure=[0.0, 0.7, 1.0])            # a horizon found late
+```
+
+Then take the bands out of the ground itself: run one edge of a ground mass off a corner
+so it is a wedge rather than a band, and let the horizon start from nothing part of the
+way across so that over the subject's third of the picture there is no horizontal at
+all. **How much of the frame the subject takes is the bands' question in disguise**: a
+subject that crosses every band can be a fifth of the canvas and own it; one that sits
+inside a band has to be half the canvas to be seen.
+
+**Two things that both want to be the subject** is the same fault in value: one
+painting's foam had quietly become the brightest thing in it and the eye went to the
+foam. The fix was not to move anything — concentrate the light's core with a second
+inward scumble, and lay whatever stands in front of the light *again*, so it is in
+front. The closing checklist's *is the lightest mass the one you planned?* is this,
+checkable.
+
+**Goes wrong as:** a stack of bands with a subject standing in one of them; or a
+horizon ruled across the whole picture, which cuts the subject at the waist.
+
+*Collected from three paintings' notes; the horizon clause from one.*
+
+---
+
+## A picture with an empty half
+
+The subject took one side and the other side is fog, wall, water. **The empty half is
+the ground's job, and the wrong repair is to put a thing there.** What has worked twice
+is a second, fainter instance of the subject's own light, laid into the empty side at a
+value inside the field's own range:
+
+```python
+field = s.sample(span("E1", "H4"))
+p["far_light"] = p.at_value(p.mix(field, "light", 0.4), p.value_of(field) + 0.05)
+s.dry()
+s.glaze([(0.69, 0.245), (0.90, 0.262), (1.08, 0.285)], "far_light", opacity=0.07,
+        size=0.15, pressure=[0.4, 0.8, 1.0])
+s.glaze([(0.69, 0.245), (0.88, 0.26), (1.08, 0.28)], "far_light", opacity=0.10,
+        size=0.07, pressure=[1.0, 0.7, 0.35])
+```
+
+Two glazes off to the other side say the light is turning rather than fixed, and they
+fill the one empty corner without competing with anything: the empty half stays a field,
+now with a reason. **Rehearse it on its own, so it can be dropped**, and it should be
+close enough in value to the field that dropping it would be a decision rather than a
+rescue. A painter with a third of its budget unspent and one corner already busy found
+every mark it could name was a correction to that corner, and left the rest empty on
+purpose — which is the other answer, and the checklist's last line is where it is
+decided.
+
+**Goes wrong as:** a second subject (the thing put there was a thing); or as a
+correction — the busy corner corrected again while the empty one stays empty.
+
+*Collected from two paintings' notes.*
+
+---
+
 ## Where these came from
 
 Every recipe above was taken out of a pass script of a painting in
-[`paintings/`](paintings), along with the painter's own note on what it replaced. Those
-scripts are the fuller version of this file: the calls in the order they were actually
-made, with the rehearsals that failed described in the comments above each pass.
+[`paintings/`](paintings), along with the painter's own note on what it replaced — the
+two composition entries out of the notes rather than the scripts, which is why they are
+the least certain things here. Those scripts are the fuller version of this file: the
+calls in the order they were actually made, with the rehearsals that failed described
+in the comments above each pass.
 
 **They name their subjects, so the decide-first rule applies to them and not to this
 file.** If you chose what to paint before opening this repository, go and read them. If

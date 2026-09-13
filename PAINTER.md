@@ -5,7 +5,7 @@ never seen the engine's source and do not need to.
 
 **This file is the whole method and it is meant to stay in your head.** The order of
 work, the mistakes you are going to make, the exercises and the checklist. Read it,
-paint the eight exercises at the end, then read [`PAINTING.md`](PAINTING.md) once — the
+paint the nine exercises at the end, then read [`PAINTING.md`](PAINTING.md) once — the
 same rules with their reasons, the failures behind them and the numbers — and start.
 Come back here while you paint; you are not expected to come back to that one.
 
@@ -131,7 +131,7 @@ one of the eighteen changed something, and not one of them was charged.** The pa
 who rehearsed nothing spent about 60 of its 224 strokes repainting masses it had laid
 once and disliked. → *Try the mark before you spend it* *(reasons)*
 
-**Now go and paint the eight exercises**, at the end of this file. Then read
+**Now go and paint the nine exercises**, at the end of this file. Then read
 [`PAINTING.md`](PAINTING.md) once, and start.
 
 | When you want | Read |
@@ -160,6 +160,10 @@ s.look()                 # writes a PNG, returns the path — then open it
 You are good at judging an image you can see and bad at predicting one you cannot.
 The whole engine is built around closing that loop. If you take one thing from this
 guide, take this.
+
+That count is for a held Python session. Under `easel run` the atom is a **pass**, so
+the habit there is **rehearse before every pass, look after it**, and read the check
+`run` prints beside the budget line.
 
 ---
 
@@ -243,6 +247,10 @@ against a plan, and the pencil checks *the plan*. A painter who worked from type
 coordinates through `preview` alone never saw its composition as a composition until
 the picture was finished, and by then the fault was the picture. Put the big shapes
 down in graphite, look, and move them while moving them is free.
+
+**And draw the planes of anything built from them with its silhouette**, not after the
+mass is down: planes decided in the pass arrive as things laid *on* a hull
+(*a mass built of planes*, [`RECIPES.md`](RECIPES.md)).
 
 Resist detail here. If you can already name what you are painting, you have gone
 too far too early.
@@ -710,20 +718,20 @@ tiny marks, you are in trouble.
 
 ---
 
-## Eight small exercises
+## Nine small exercises
 
 Run these before painting anything real. They take a minute each and will teach you
 the engine's feel faster than reading will.
 
-**They are a gate, and here is what going round it costs.** A painter who skipped all
-eight met two of the lessons inside the picture instead: a wide soft passage laid as
+**They are a gate, and here is what going round it costs.** A painter who skipped them
+all met two of the lessons inside the picture instead: a wide soft passage laid as
 four hard bars — exercise 5 and *step 4* — and a surface whose grain came out as a row
 of parallel stripes, which is *The angle of the mark* in
 [`PAINTING.md`](PAINTING.md). Between them they cost more
-strokes than the eight exercises would have, and they cost them at the worst moment,
+strokes than the exercises would have, and they cost them at the worst moment,
 with the rest of the picture already standing on the masses that had to be repainted.
 That is the whole argument: an exercise is the one place in this engine where a
-mistake has nothing built on top of it. **Do the eight. Then start.**
+mistake has nothing built on top of it. **Do the nine. Then start.**
 
 **1. A value scale.** Nine even steps from the darkest mix to white. This
 calibrates your sense of what the palette reaches, and it teaches the one thing
@@ -898,6 +906,28 @@ Same brush, same direction, and — for these two — much the same number of pa
 the passes are counted across the mass, not over its area. One of them is a
 rectangle and will still be a rectangle at the end of the painting; the other has a
 silhouette, and a silhouette is what a mass *is*.
+
+**9. A swatch strip.** Exercise 1 calibrates value; this calibrates *hue*, where the
+mixing surprises live. Lay every mixture you plan to use side by side and look, before
+the first mass: a painter who trusted its `at_value` numbers laid a whole fog green.
+
+```python
+from easel import Session, Region
+
+s = Session(900, 200, ground="toned_grey", seed=9)
+p = s.palette
+plan = {"fog": p.at_value(p.mix("cerulean", "titanium_white", 0.8), 0.64),
+        "sea": p.at_value(p.mix("cerulean", "burnt_umber", 0.4), 0.40),
+        "rock": p.at_value(p.mix("burnt_umber", "viridian", 0.3), 0.20),
+        "lit": p.at_value(p.mix("yellow_ochre", "titanium_white", 0.6), 0.78)}
+for i, (name, colour) in enumerate(plan.items()):
+    band = Region(0.05 + i * 0.225, 0.15, 0.25 + i * 0.225, 0.85)
+    s.block_in(band, "flat", colour, size=0.08, solid=True)
+    print(f"{name:5s} value {p.value_of(colour):.2f}  chroma {p.chroma_of(colour):.2f}")
+s.look()            # the hues beside each other, which the numbers cannot show
+```
+
+`chroma_of` is *how coloured*, beside `value_of` for how light.
 
 **Do not carry "a shape costs what its box costs" any further than this pair.** It
 holds while a shape is convex and a pass crosses it once. A concave or curved one is

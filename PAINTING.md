@@ -199,8 +199,12 @@ s.paint(plan)
 That is the whole point of the plan being one object: `cost`, `preview`, `rehearse`
 and `paint` all read it, so no line of it is written twice. A plan that is checked
 and then *retyped* into the call that paints it is a plan that will drift, and the
-drift arrives as paint. Marks, masses and sweeps may be mixed in one list and are
-painted in the order given:
+drift arrives as paint. (The pass scripts in `paintings/` write bare `s.block_in(...)`
+calls rather than plans, and that is the same guarantee one size up: a pass script is
+rehearsed whole with `--rehearse` and then run *unchanged*, so the script is the
+checked object. What drifts is a call costed one way and written another — which is
+why a shaped mass with `direction=` left off now says what the axis would have cost.)
+Marks, masses and sweeps may be mixed in one list and are painted in the order given:
 
 ```python
 s.paint([{"shape": blob(cell("D5"), 0.12, seed=3), "brush": "bristle",
@@ -313,6 +317,16 @@ The keys are places and the values are what `value_of` reports, so a plan is a f
 lines written before you start and checkable after every mass. The sheet shows the
 plan, the canvas, and each planned place outlined with its miss written across it.
 Give a place a name to see it listed under one: `blob(cell("D5"), name="near_mass")`.
+
+**Run it once on the empty canvas, and read the pairs.** The table scores each place
+against its own target, and what `0.10` *means* is a statement about a pair — two
+masses closer than that read as one where they meet — so the table also lists every
+pair of places the plan itself puts within `0.10` of each other, and asks: *do these
+two touch?* One plan finished all-green with the sea and the tower planned `0.00`
+apart, and they were the two that met on the canvas; the tower's foot dissolved into
+the water exactly there. Three of that plan's four close pairs were fine, because
+those masses never met. It is a question, and the moment to answer it is before the
+first stroke.
 
 The rest of the method is the same discipline without the crutch:
 
@@ -471,6 +485,7 @@ s.stroke([...], "bristle", "shadow")     # refer to it by name later
 | `shade(c, amount)` | Darker, by adding umber — never black. |
 | `desaturate(c, amount)` | Knocks a colour back without changing how light it reads. |
 | `value_of(c)` | How light it reads, `0.0`–`1.0`. Useful for planning values. |
+| `chroma_of(c)` | How *coloured* it is: `0` for a grey, `0.20` for `cadmium_red`. The number beside `value_of` for a mixture that comes back more vivid than it looked — the engine lays the chroma it is given, and the eye judges it against the field, so compare it with `chroma_of(s.sample(field))`. |
 | `hex(c)` | The sRGB hex, for your own notes. |
 
 **Supplying a colour of your own.** A slot takes a hex string, or an `(r, g, b)` triple
@@ -631,6 +646,7 @@ chose. What each one leaves when you are not watching:
 | Reach for | and if you are not watching, you get |
 |---|---|
 | `flat` / `knife`, short | a rectangle with chisel ends |
+| `flat` / `knife` filling a mass whose boundary is not parallel to the passes | **a staircase down that boundary** — each pass ends in a chisel square to its travel, and where the boundary slopes the ends stop at different heights and stack |
 | `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
 | `round_hard` or `liner`, several small marks | **one disc, printed over and over.** A round tip draws the same silhouette every time, so five small marks are five copies — unless you give the tip an outline of its own with `tip_wobble=0.7`, which redraws it per mark |
 | `bristle` below `size≈0.025` | a comb: a woven strap across a band, or a ladder of evenly spaced ticks along an edge |
@@ -640,7 +656,19 @@ chose. What each one leaves when you are not watching:
 | any loop or generator you write | its own statistical signature: one density, one mark length, no clumps and no holes |
 | repair laid on repair, always additive | horizontal strata, one visible edge per repaint |
 
-Two of those need more than a row.
+Three of those need more than a row.
+
+**The staircase is the shallow-shape row one dimension over, and it is measured.** A
+mass `0.06 × 0.64` whose sides slope three degrees off vertical, filled with vertical
+passes and laid solid, has no horizontal feature in it at all — so every horizontal edge
+in it is the tool's. As the share of its strong edges running within ten degrees of
+horizontal: `flat` at `0.020` **13%**, `flat` at `0.010` **17%**, `knife` **16%**;
+`bristle` at `0.022` 4%, at `0.012` 7%; `round_hard` 3%. Three to four times as many
+from a chisel, and a *smaller* chisel is worse, because there are more pass ends. A
+painter spent two rehearsals smoothing the polygon before finding it was the tip. **The
+repair costs one stroke: lay the plane with a comb, and put the core back with a single
+solid stroke down its middle.** A `bristle` will not lay a solid plane and a `flat` will
+not lay a sloping one; the two together do. (`CALIBRATION.md`, *The chisel staircase*.)
 
 **The shallow-shape one is not covered by the brush-width rule.** An ellipse
 `0.256 × 0.128` filled with a `flat` at `0.022` — a twelfth of the mass's width, well
@@ -999,6 +1027,7 @@ s.glaze(points, color, opacity=)                   # thin transparent film
 s.dry(amount=1.0, region=None)
 s.undo(n)                                          # scraping, not free
 s.look(...)
+s.report(since=None, subject_share=None)           # the post-pass check, off the log
 
 s.pencil(points, pressure=0.55)                    # graphite; not a stroke
 s.erase(region=None)                               # rub the drawing out
@@ -1045,6 +1074,31 @@ and finding out.
 and also **`smudge` and `glaze`** — those two are marks like any other. What is free:
 `pencil`, `erase`, `mark`, `look`, `preview`, `rehearse` and `compare`. Do not
 discover the first list with three strokes left.
+
+**Free is not the same as invisible.** `look`, `preview`, `rehearse`, `cost` and
+`compare` leave nothing behind: a stroke laid after any of them is the stroke laid
+with none of them, to the pixel, which is the property *rehearse everything* rests on
+and is asserted by a test. `pencil`, `dry` and `erase` are free but **logged**, and a
+mark's texture is seeded from its place in the log — so adding or removing an
+underdrawing line, a `dry()` or an `erase()` before a mark shifts the texture of every
+mark after it. Deterministic, so a painting still rebuilds from its scripts; but a
+buried pencil line is not nothing.
+
+**`undo` puts the stream back too.** A mass draws its pass wander from the session's
+own random stream, and undoing one used to leave the stream *past* it, so the next mass
+drew wander a clean rebuild never had; a CLI `undo`, which rebuilds from the saved log,
+handed back a stream sitting at the seed. Every mark now carries the state its call
+began from, and the log keeps its points exactly, so after an `undo` the painting is
+where a clean rebuild of the remaining scripts has it, in-process or through the file.
+The mechanism was found by a painter who measured its working session drifting `1.06%`
+of its pixels from a rebuild and committed the rebuild.
+
+**And after every pass, `easel run` prints a check** — the guide's standing warnings
+read off the log rather than repeated: one brush at one size for a whole pass, a stack
+of passes at one angle, a bristle under `size=0.025`, small marks before the masses,
+a pressure list asking a chisel for a width, and the subject's share of the marks so
+far. `s.report(since=n)` is the same lines in Python; `--check` widens it to the
+painting.
 
 **`block_in` paints past a rectangle** by a fraction of a brush on every side, and
 past a *shape* by up to three-quarters of a brush — see **Masses that are not

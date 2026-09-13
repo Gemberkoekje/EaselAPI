@@ -21,7 +21,7 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
-## [0.2.0] — 2026-09-12
+## [0.2.0] — 2026-09-13
 
 The fourth painting session's six engine requests, the guide split by function, the
 third session's engine round, and the package finally carrying the guide it is useless
@@ -29,8 +29,46 @@ without. Two of the six requests **did not survive being re-measured**, and the 
 below say so where that is the case — checking a painter's numbers before building on
 them is the rule in `LESSONS.md`, and it changed what was built twice here.
 
+And, cut into the same release before it shipped, **the greenhouse round**: three
+painters handed one subject left three request lists, deduplicated into eleven engine
+items and eight documentation items, plus the post-pass check that had been the cheapest
+open item on the register for two rounds. Every number the three painters took
+reproduced; two of the mechanisms they proposed did not, and the entries say which.
+
 ### Added
 
+- **The post-pass check.** `s.report(since=)` reads the guide's standing warnings off
+  the log instead of repeating them: one brush at one size for a whole pass, a stack of
+  passes at one angle, a bristle under `size=0.025`, small marks before the masses are
+  down, a pressure list on a short chisel mark, and the subject's share of the marks so
+  far. `easel run` prints it beside the budget line after every pass, rehearsed or
+  committed; `--check` widens it to the painting, `easel log --check` reads it without
+  painting, and the MCP `run` tool hands it back.
+- **Four warnings, in the shape the `smudge` and `scumble` warnings have** — the call
+  still does what it was asked and says what it will look like: a pressure list on a
+  short hand-laid mark with a `flat`, `bristle` or `knife` (it changes the paint, not
+  the width); a shaped `block_in` with `direction` left off costing over 2.5× what
+  `"axis"` would, from `cost` and from the call; `edge="clean"` on a mass whose shorter
+  extent is under four brushes, from `block_in` and `preview`; and a banded `scumble`
+  whose auto-sized brush is wider than its passes at one end, naming both lengths.
+- `compare({place: value})` lists every pair of planned places the plan itself puts
+  within the threshold of each other and asks whether they touch — the check the sheet
+  never ran: a plan finished all-green with two masses planned `0.00` apart.
+  `Comparison.pairs` is it as data.
+- `palette.chroma_of(color)` — how *coloured* a colour is, beside `value_of` for how
+  light. Measured, the engine lays the chroma it is given, so what reads more vivid
+  than its number is the eye judging it against the field, and this is the number that
+  predicts it.
+- Every log record carries the random stream's state at the start of the call that
+  made it (`params["rng"]`) and the mass verb that laid it (`params["via"]`). No format
+  bump: older files load, and older builds read the new ones.
+- A ninth exercise, the swatch strip: every planned mixture laid side by side before
+  the first mass, printing value and chroma. In the guide and `examples/exercises.py`.
+- Four recipes: *a volume of lit air* (a beam, a shaft, a halo seen from outside), *a
+  small container with something spilling from it*, and two composition entries
+  collected from the paintings' notes — *a subject that is one thing against a ground*
+  and *a picture with an empty half*.
+- `scripts/probe_greenhouse_session.py` — the measurements behind this round, runnable.
 - `s.sample(place, rendered=True)` — sample the surface `look()` and `export()` draw
   (relief, and graphite the paint has not buried) instead of the pigment, so *is my mass
   darker than it looks?* is one line rather than a belief.
@@ -57,6 +95,31 @@ them is the rule in `LESSONS.md`, and it changed what was built twice here.
 
 ### Changed
 
+- **The contour of `edge="clean"` is swept along the polygon's own edges**, not a
+  spline through its corners. Through two sparse corners the spline bowed outward, and
+  three painters met it on three shapes: a pointed arch above a tapering tower, a cap
+  eaten to a mushroom, and a 65px arch standing off a four-cornered tower. Measured on
+  that tower the contour goes from 65px above the top edge to 4px, the ragged fill's own
+  half-brush; the dusk example's `tower()` goes from 45px to 4px. **A behaviour change
+  for every clean mass**: a script with one paints differently after this, and every
+  committed painting with a clean edge rebuilds with its silhouettes where they were
+  drawn. The draw from the stream is unchanged, so nothing laid after a clean mass
+  moves.
+- **A rehearsal copy counts on from the painting.** Inside `s.scratch()` or `easel run
+  --rehearse`, `stroke_count`, `spent`, `remaining` and `budget_line()` are the
+  painting's own numbers plus what the pass laid; they read `0` and the whole budget
+  before, while `compare()` in the same script saw the painted canvas. What the copy
+  itself laid is `s.history.stroke_count`, which is what the *Rehearsed* line reports.
+- `block_in`'s `direction` defaults to `None`, which means horizontal exactly as before,
+  so the engine can tell *left off* from *chosen*.
+- `cost_line()` names the remedy beside the mechanism: *cut into N pieces by the outline
+  — lay the straight stretches as strokes, or use a wider brush*.
+- The log writes every point exactly rather than rounded to five decimals. Session files
+  are a little larger; a replay from one is the painting.
+- *The shape each tool leaves behind* has a row for the chisel staircase — a `flat` or
+  `knife` filling a mass whose boundary is not parallel to its passes — with the
+  measurement (13–17% of strong edges horizontal against 3–4% for a comb or a round tip)
+  and the one-stroke repair beside it.
 - **`smudge()`'s default `size` is `0.02`, was `0.07`**, and anything past `0.03` now
   warns. Measured on a steep join: what `size` buys stops at about `0.02` (a single pass
   takes roughly half the join out and no more) while what it costs keeps growing — at
@@ -90,6 +153,20 @@ them is the rule in `LESSONS.md`, and it changed what was built twice here.
 
 ### Fixed
 
+- **`undo` puts the random stream back**, in-process and through the session file. A
+  mass draws its pass wander from the session's stream between the strokes it records,
+  so undoing one left the stream past it, and `easel undo` — which rebuilds from the log
+  — handed back a stream sitting at the seed; the next mass then drew wander a clean
+  rebuild never had. A painter measured its working session drifting `1.06%` of its
+  pixels from a rebuild and committed the rebuild. Every record now carries the state its
+  call began from, `undo` restores it on both paths, and `replay(upto=)` puts the rebuilt
+  session's stream where the kept painting stood.
+- **A replay from a saved log is byte-identical to the painting.** It was not: the log
+  rounded every point to five decimals, so every wobbled pass came back from disk a hair
+  off its line — the half of the drift above that no toy case could show, because
+  hand-written coordinates are short decimals to begin with.
+- `easel run --rehearse` with a single script reported `stroke_count` `0` and the whole
+  budget *inside* the script. See *Changed*.
 - `block_in`'s `overhang` is documented as what it is: it lengthens each pass past **the
   ends of the pass**, and which two edges those are turns with `direction` — so on a mass
   swept vertically it runs the paint down off the mass's foot. Measured, with the
@@ -105,8 +182,27 @@ them is the rule in `LESSONS.md`, and it changed what was built twice here.
 
 ### Measured, and not changed
 
-Two requests were acted on by measuring them first, and the measurement said no:
+Five requests were acted on by measuring them first, and the measurement said no:
 
+- **The engine does not make a mixture more vivid than it was mixed.** Two mixtures
+  came back far more saturated in a low-chroma field than their numbers suggested. A
+  solid plane reads back at the mixture's own chroma or a little *under* it, in the paint
+  and in the rendered view alike; what moved was the eye, judging a colour against its
+  field. So no rule and no fix — `chroma_of` is the instrument that lets the question be
+  asked as a number.
+- **Neither trigger proposed for the clean-edge failure was the trigger.** The distance
+  between two outline corners and the brush's share of the shorter extent were two views
+  of the contour's spline, which is gone. The share survives as a real second finding —
+  the corners of a narrow clean mass go past about a quarter — and that is what the new
+  warning reads.
+- **The default direction stays horizontal.** `"axis"` would be right nearly always,
+  and moving it would move every painting ever made; the price walk says so instead.
+- **`pencil`, `dry` and `erase` shift the texture of every mark laid after them**, and
+  that is left as it is: it is the log index, not the stream — a mark's texture is seeded
+  from its place in the log — and seeding from the paint marks alone would move every
+  painting with an underdrawing. Documented, with the property the planning verbs do
+  have asserted by a test: `look`, `preview`, `rehearse`, `cost` and `compare` leave
+  nothing behind.
 - **The view does not lift a solid mass off the value it was mixed at.** A session
   priced this as its most expensive item — four masses laid at planned values that came
   back as bright bars while `compare()` reported the plan clean. Over a mass the rendered

@@ -1306,3 +1306,396 @@ def test_overhang_reaches_past_the_ends_of_the_pass_not_the_sides(tmp_path):
     down_sides, down_top = reach("vertical", 1.0)
     assert down_top > up_top + 8, "the same argument did nothing to a vertical pass"
     assert abs(down_sides - up_sides) <= 2, "and it moved the sides instead"
+
+
+# ======================================================================================
+# The greenhouse sessions: one subject, three painters. Each left a request list beside
+# its painting, and the strongest signal the collection has produced came from all
+# three hitting one call -- edge="clean" on a mass narrow relative to its brush -- from
+# three different shapes. Two of the three re-measured their own claims before making
+# them; the third's are checked here before anything is built on them, which is
+# LESSONS.md's rule, and it held every one this time.
+# ======================================================================================
+
+# -- the contour of a clean edge follows the polygon's own edges -----------------------
+def _paint_above(s: Session, shape, top_edge: float) -> float:
+    """Pixels of paint standing above a shape's top edge, in its own x-band."""
+    ground = s.canvas.rgb[:4].reshape(-1, 3).mean(axis=0)
+    on = np.abs(s.canvas.rgb - ground).sum(axis=2) > 0.03
+    w, h = s.canvas.width, s.canvas.height
+    band = on[:, int(shape.box.x0 * w):int(shape.box.x1 * w)]
+    return (top_edge - np.nonzero(band.any(axis=1))[0].min() / h) * h
+
+
+def test_the_clean_contour_stops_where_the_fill_stops(tmp_path):
+    """Three painters, three shapes, one call: a pointed arch above a tapering tower, a
+    cap eaten to a mushroom, and a 65px arch over a four-cornered tower, which the third
+    isolated to the contour's spline bowing through two sparse corners. The fill is cut
+    against the polygon's straight sides, so the contour now runs along the same line
+    -- and the dusk example's own tower, which arched 45px, stops at its top edge."""
+    tower = polygon([(0.30, 0.90), (0.40, 0.90), (0.38, 0.20), (0.32, 0.20)])
+    above = {}
+    for edge in ("ragged", "clean"):
+        s = Session(1024, 768, texture="linen", ground="toned_grey", seed=3,
+                    out_dir=tmp_path, timelapse=False)
+        s.block_in(tower, "flat", "burnt_umber", size=0.02, solid=True, direction=90,
+                   edge=edge)
+        above[edge] = _paint_above(s, tower, 0.20)
+    assert above["clean"] < 8, f"the contour stands {above['clean']:.0f}px above the top edge"
+    assert abs(above["clean"] - above["ragged"]) < 4, "clean and ragged disagree on the top"
+
+
+def test_a_clean_edge_says_when_its_brush_is_a_large_share_of_a_narrow_mass(tmp_path):
+    """The cap: 0.036 deep, a flat at 0.016 -- the half-brush inset keeps half of it and
+    the corners go first. The number that predicts it is the brush's share of the
+    shorter extent, in the brush's own unit, and past a quarter the call says so.
+    ``preview`` says the same, because the guide already says to preview the inset
+    shape and this is that sentence with a number on it."""
+    cap = polygon([(0.148, 0.114), (0.362, 0.114), (0.302, 0.078), (0.208, 0.078)],
+                  name="cap")
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="of the shorter extent"):
+        s.block_in(cap, "flat", "burnt_umber", size=0.016, edge="clean", direction="axis")
+    with pytest.warns(UserWarning, match="of the shorter extent"):
+        s.preview({"shape": cap, "brush": "flat", "size": 0.016, "edge": "clean"})
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.block_in(cap, "flat", "burnt_umber", size=0.005, edge="clean", direction="axis")
+        s.block_in(cap, "flat", "burnt_umber", size=0.016, direction="axis")   # ragged
+
+
+# -- a pressure list on a chisel tip -------------------------------------------------------
+def test_a_pressure_list_on_a_chisel_tip_says_it_changes_paint_not_width(tmp_path):
+    """Two painters read that an oriented tip keeps its chisel under a pressure list and
+    laid every pot as a rectangle with chisel ends anyway. So the engine says it at the
+    call -- on a short mark, where a list can only have been asking for a taper. A list
+    on a long pass of a flat is how a passage brightens toward one side, and a list on
+    the passes of a mass is the canvas-order feature; neither is a mistake."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="changes the paint, not the width"):
+        s.stroke([(0.50, 0.50), (0.52, 0.56)], "flat", "burnt_umber", size=0.03,
+                 pressure=[1.0, 0.35])
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.stroke([(0.10, 0.50), (0.90, 0.55)], "flat", "burnt_umber", size=0.06,
+                 pressure=[0.0, 0.55, 1.0])                              # a long pass
+        s.stroke([(0.50, 0.50), (0.52, 0.56)], "round_hard", "burnt_umber", size=0.03,
+                 pressure=[1.0, 0.35])                                   # width follows
+        s.stroke([(0.50, 0.50), (0.52, 0.56)], "flat", "burnt_umber", size=0.03,
+                 pressure="taper")                                       # the engine's own
+        s.block_in(cell("D5"), "flat", "burnt_umber", size=0.02, pressure=[0.0, 1.0])
+
+
+# -- a shaped block_in with direction left off ------------------------------------------------
+def _lit_band():
+    return polygon([(0.303, 0.268), (0.307, 0.400), (0.311, 0.540), (0.318, 0.680),
+                    (0.330, 0.820), (0.344, 0.905), (0.398, 0.940), (0.384, 0.820),
+                    (0.368, 0.680), (0.357, 0.540), (0.348, 0.400), (0.340, 0.258)],
+                   name="lit band").smooth(3)
+
+
+def test_a_shaped_block_in_with_direction_left_off_says_when_the_axis_is_cheaper(tmp_path):
+    """Costed at 9 and 9 with ``direction=90``, written without it, charged 43 and 55:
+    the default steps down the whole height. The default does not move -- that would
+    move every painting ever made -- but the price walk, which has the number, says
+    it, from ``cost`` and from the call alike, and stays quiet on a mass wider than
+    it is tall and on a direction the painter chose."""
+    s = Session(560, 430, texture="linen", ground="toned_warm_grey", seed=41,
+                out_dir=tmp_path, timelapse=False)
+    plan = {"shape": _lit_band(), "brush": "flat", "size": 0.022}
+    with pytest.warns(UserWarning, match="direction= left off"):
+        left_off = s.cost(plan, share=0)
+    along = s.cost(dict(plan, direction="axis"), share=0)
+    assert left_off > 2.5 * along
+    with pytest.warns(UserWarning, match="direction= left off"):
+        s.block_in(_lit_band(), "flat", "burnt_umber", size=0.022)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.cost(dict(plan, direction="horizontal"), share=0)          # chosen, not left off
+        s.cost({"shape": polygon([(0.19, 0.13), (0.32, 0.13), (0.32, 0.22), (0.19, 0.22)]),
+                "brush": "flat", "size": 0.03}, share=0)               # wider than tall
+
+
+# -- a banded scumble across a wedge ---------------------------------------------------------
+def test_a_banded_scumble_says_when_its_brush_is_wider_than_the_passes_at_one_end(tmp_path):
+    """The auto-sized brush closes the joins between passes, which is right on a band and
+    wrong on a wedge: picked for the step, it is wider than the whole narrow end, and
+    the paint blooms past the outline there. The warning names both pass lengths.
+    A band -- the case the fix was tuned on -- says nothing."""
+    s = make(tmp_path)
+    wedge = polygon([(0.64, 0.28), (0.64, 0.325), (0.0, 0.62), (0.0, 0.20)], name="beam")
+    with pytest.warns(UserWarning, match="width varies"):
+        s.scumble(wedge, "burnt_umber", "titanium_white", 8, direction="vertical")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.scumble(Region(0.10, 0.30, 0.90, 0.70), "burnt_umber", "titanium_white", 8)
+
+
+# -- the pairs inside a value plan ---------------------------------------------------------
+def test_a_value_plan_names_the_pairs_planned_within_the_threshold(tmp_path):
+    """Every place inside tolerance and two of them planned 0.00 apart: the sheet scored
+    each against its own target and never the gap *between* two, which is what 0.10
+    means. It asks now -- a question, because three of that painting's four close
+    pairs were masses that never met."""
+    s = make(tmp_path)
+    result = s.compare({Region(0.0, 0.0, 1.0, 0.3, name="sea"): 0.40,
+                        Region(0.4, 0.3, 0.6, 0.9, name="tower"): 0.40,
+                        Region(0.0, 0.9, 1.0, 1.0, name="rock"): 0.21})
+    assert result.pairs == [("sea", "tower", pytest.approx(0.0))]
+    table = result.table()
+    assert "do these two touch" in table and "sea / tower, 0.00 apart" in table
+    apart = s.compare({Region(0.0, 0.0, 1.0, 0.3, name="sea"): 0.40,
+                       Region(0.0, 0.9, 1.0, 1.0, name="rock"): 0.21})
+    assert apart.pairs == [] and "do these two touch" not in apart.table()
+
+
+# -- undo puts the generator back where a clean rebuild has it ------------------------------
+def _three_masses(tmp_path, detour):
+    """A mass, a detour that is undone, and a third mass -- hashed against no detour."""
+    shape = polygon([(0.1, 0.1), (0.6, 0.15), (0.5, 0.7), (0.15, 0.6)])
+
+    def start():
+        s = Session(160, 120, seed=5, timelapse=False, out_dir=tmp_path)
+        s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+        s.block_in(shape, "flat", "c", size=0.06)
+        return s
+
+    def finish(s):
+        s.block_in(shape, "bristle", "c", size=0.05, direction="axis")
+        return np.array(s.canvas.rgb)
+
+    clean = finish(start())
+    s = start()
+    s = detour(s, shape) or s
+    return clean, finish(s)
+
+
+def test_undoing_a_mass_puts_the_generator_back_before_it(tmp_path):
+    """A mass draws its pass wander from the session's stream, so undoing one used to
+    leave the stream past it and the next mass drew wander a clean rebuild never had.
+    Every record now carries the state its call began from -- taken once, before the
+    first draw, because a mass draws *between* the strokes it records."""
+    def undo_a_mass(s, shape):
+        n = len(s.block_in(shape, "knife", "c", size=0.06))
+        assert s.undo(n) == n
+
+    clean, after = _three_masses(tmp_path, undo_a_mass)
+    assert np.array_equal(clean, after)
+
+
+def test_undo_through_the_session_file_is_the_painting(tmp_path):
+    """``easel undo`` loads, undoes and saves, and the undo rebuilds from the log. A
+    painter measured the working session drifting 1.06% of its pixels from a clean
+    rebuild of the same scripts and committed the rebuild instead. Two things were
+    wrong: the rebuilt stream sat at the seed, and the log rounded every point to five
+    decimals, so a wobbled pass came back a hair off its line."""
+    def cli_undo(s, shape):
+        s.stroke([(0.2, 0.2), (0.8, 0.8)], "bristle", "c")
+        path = tmp_path / "p.easel"
+        s.save(path)
+        t = Session.load(path)
+        assert t.undo(1) == 1
+        t.save(path)
+        return Session.load(path)
+
+    clean, after = _three_masses(tmp_path, cli_undo)
+    assert np.array_equal(clean, after)
+
+
+def test_a_saved_log_replays_the_painting_exactly(tmp_path):
+    """The half of the undo finding that had nothing to do with undo: a replay from a
+    saved log is what `easel undo` is, and it was not the painting."""
+    s = make(tmp_path)
+    s.block_in(blob(cell("D5"), 0.2, seed=2), "flat", "burnt_umber", size=0.05)
+    s.save(tmp_path / "p.easel")
+    again = Session.load(tmp_path / "p.easel").replay()
+    assert np.array_equal(again.canvas.rgb, s.canvas.rgb)
+
+
+def test_a_log_written_without_the_stream_still_loads_and_undoes(tmp_path):
+    """A log from before 0.2.0 carries no state. It loads, it undoes, and the stream is
+    left where the old undo left it -- the one thing that cannot be recovered."""
+    s = make(tmp_path)
+    s.block_in(cell("C3"), "flat", "burnt_umber", size=0.06)
+    s.stroke([(0.2, 0.6), (0.8, 0.6)], "bristle", "titanium_white")
+    for r in s.history.records:
+        r.params.pop("rng", None)
+    s.save(tmp_path / "old.easel")
+    old = Session.load(tmp_path / "old.easel")
+    assert old.undo(1) == 1
+    assert old.stroke_count == s.stroke_count - 1
+    assert not old._restore_stream(old.history.records[0])
+
+
+def test_a_pass_of_a_mass_says_which_verb_laid_it(tmp_path):
+    """The log could not tell a pass of a mass from a mark laid by hand, and the
+    post-pass check needs to. A hand mark carries no such note."""
+    s = make(tmp_path)
+    passes = s.block_in(cell("C3"), "flat", "burnt_umber", size=0.06)
+    hand = s.stroke([(0.2, 0.6), (0.8, 0.6)], "bristle", "titanium_white")
+    assert all(r.params["via"] == "block_in" for r in passes)
+    assert "via" not in hand.params
+    assert len({r.params["rng"]["state"] for r in passes}) == 1, (
+        "the passes of one call do not share the state the call began from"
+    )
+
+
+# -- the planning verbs leave the stream untouched ------------------------------------------
+def test_the_planning_verbs_change_nothing_laid_after_them(tmp_path):
+    """The property *rehearse everything* rests on, asserted rather than assumed: a
+    bristle stroke laid after each free verb is the stroke laid with no verb before
+    it. ``pencil``, ``dry`` and ``erase`` are the documented exceptions -- they are
+    logged, and a mark's texture is seeded from its place in the log."""
+    def build(pre):
+        s = make(tmp_path)
+        plan = [{"points": [(0.1, 0.5), (0.9, 0.5)], "brush": "bristle",
+                 "color": "burnt_umber", "size": 0.08}]
+        {"none": lambda: None, "look": lambda: s.look(),
+         "values": lambda: s.look(values=True), "preview": lambda: s.preview(plan),
+         "rehearse": lambda: s.rehearse(plan), "cost": lambda: s.cost(plan),
+         "compare": lambda: s.compare({"all": 0.3}),
+         "pencil": lambda: s.pencil([(0.1, 0.1), (0.9, 0.9)]),
+         "dry": lambda: s.dry()}[pre]()
+        s.stroke([(0.1, 0.5), (0.9, 0.5)], "bristle", "burnt_umber", size=0.08)
+        return np.array(s.canvas.rgb)
+
+    base = build("none")
+    for verb in ("look", "values", "preview", "rehearse", "cost", "compare"):
+        assert np.array_equal(build(verb), base), f"{verb}() changed the stroke after it"
+    for verb in ("pencil", "dry"):
+        assert not np.array_equal(build(verb), base), f"{verb}() is logged: it should shift"
+
+
+# -- a rehearsal copy carries the painting's count -------------------------------------------
+def test_a_rehearsed_pass_sees_the_paintings_own_count(tmp_path, capsys):
+    """Inside a lone ``easel run --rehearse`` a script read ``stroke_count`` 0 and the
+    whole budget, while its ``compare()`` plainly saw the painted canvas. The copy now
+    continues the painting's numbers; what it laid itself is its own log, which is
+    what the shell's line reports."""
+    s = make(tmp_path, budget=100)
+    s.block_in(cell("C3"), "flat", "burnt_umber", size=0.06)
+    laid = s.spent
+    trial = s.scratch()
+    assert (trial.stroke_count, trial.remaining) == (laid, 100 - laid)
+    trial.stroke([(0.2, 0.6), (0.8, 0.6)], "bristle", "titanium_white")
+    assert (trial.spent, trial.remaining) == (laid + 1, 100 - laid - 1)
+    assert trial.history.stroke_count == 1
+    assert trial.budget_line() == f"{laid + 1} of 100 strokes spent, {100 - laid - 1} left"
+
+    session = tmp_path / "p.easel"
+    s.save(session)
+    script = tmp_path / "pass.py"
+    script.write_text('print("inside:", s.stroke_count, s.remaining)\n'
+                      's.stroke([(0.3, 0.6), (0.7, 0.62)], "flat", "titanium_white")\n')
+    assert main(["run", str(session), str(script), "--rehearse"]) == 0
+    out = capsys.readouterr().out
+    assert f"inside: {laid} {100 - laid}" in out
+    assert f"Rehearsed pass.py: 1 strokes of the {100 - laid} left" in out
+
+
+# -- chroma_of: how vivid, beside how light -----------------------------------------------------
+def test_chroma_is_zero_for_a_grey_and_the_engine_lays_what_it_was_given(tmp_path):
+    """A mixture read more vivid on the canvas than its numbers suggested, twice. The
+    engine side of that, measured, is nothing: a solid plane reads back at the
+    mixture's own chroma in the paint and in the view. What moves is the eye, judging
+    it against the field -- so the instrument is the mixture's chroma beside the
+    field's, which is what ``chroma_of`` is for."""
+    p = Palette()
+    assert p.chroma_of("#808080") == pytest.approx(0.0, abs=1e-4)
+    assert p.chroma_of("cadmium_red") > p.chroma_of("yellow_ochre") > p.chroma_of("burnt_umber")
+    assert p.chroma_of(p.desaturate("cadmium_red", 0.5)) < p.chroma_of("cadmium_red")
+
+    s = Session(512, 384, texture="linen", ground="toned_warm_grey", seed=5,
+                out_dir=tmp_path, timelapse=False)
+    s.palette["m"] = s.palette.mix("yellow_ochre", "viridian", 0.30)
+    s.block_in((0.20, 0.35, 0.80, 0.65), "flat", "m", size=0.03, solid=True)
+    inner = (0.23, 0.38, 0.77, 0.62)
+    mixed = s.palette.chroma_of("m")
+    assert abs(s.palette.chroma_of(s.sample(inner)) - mixed) < 0.01
+    assert abs(s.palette.chroma_of(s.sample(inner, rendered=True)) - mixed) < 0.01
+
+
+# -- cost_line names the remedy in the same breath -----------------------------------------------
+def test_cost_line_names_the_fix_beside_the_cut(tmp_path):
+    """A stair drawn as one bent ribbon cost 141 of 340; cut into straight flights it
+    cost five. ``cost_line`` said the outline cut the passes and not what to do about
+    it, which is the one thing the guide's worked example does say."""
+    s = make(tmp_path)
+    bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)
+    line = s.cost_line({"shape": bent, "brush": "bristle", "size": 0.015})
+    assert "pieces by the outline -- lay the straight stretches as strokes" in line
+    assert "wider brush" in line
+
+
+# -- the post-pass check ---------------------------------------------------------------------
+def _stack(s):
+    s.block_in(Region(0.1, 0.1, 0.9, 0.4, name="far"), "flat", "burnt_umber", size=0.04)
+    s.block_in(Region(0.1, 0.5, 0.9, 0.8, name="near"), "flat", "burnt_umber", size=0.04)
+
+
+def test_the_check_reads_a_stack_of_bars_off_the_log(tmp_path):
+    """Two masses, every pass horizontal: the loudest tell in every painting made here.
+    One mass alone is one decision and says nothing; two at one angle is the fault."""
+    s = make(tmp_path)
+    before = len(s.history.records)
+    _stack(s)
+    report = s.report(since=before)
+    assert "long marks run within 6 degrees of horizontal, from 2 calls" in report
+    assert "one brush at one size" in report          # both flat at 0.04, two calls
+
+    one = make(tmp_path)
+    one.block_in(Region(0.1, 0.1, 0.9, 0.4, name="far"), "flat", "burnt_umber", size=0.04)
+    assert "nothing to report" in one.report()
+
+
+def test_the_check_reads_small_combs_and_asked_for_tapers_off_the_log(tmp_path):
+    """A bristle under 0.025 is four streaks with gaps, and a pressure list on a short
+    chisel mark is a taper that was never going to happen -- both real passes of real
+    paintings, and both counted rather than repeated as prose."""
+    s = make(tmp_path)
+    for i in range(3):
+        s.stroke([(0.2 + i * 0.1, 0.45), (0.22 + i * 0.1, 0.47)], "bristle", "burnt_umber",
+                 size=0.012)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.stroke([(0.5, 0.5), (0.52, 0.56)], "flat", "burnt_umber", size=0.03,
+                 pressure=[1.0, 0.35])
+    report = s.report()
+    assert "3 marks with a bristle under size=0.025" in report
+    assert "1 short mark with a pressure list on a flat tip" in report
+
+
+def test_the_check_counts_the_subjects_share_against_the_plan(tmp_path):
+    """The checklist asks for the number written down; the check writes it down."""
+    s = make(tmp_path)
+    s.stroke([(0.2, 0.5), (0.8, 0.5)], "bristle", "burnt_umber", note="subject")
+    s.stroke([(0.2, 0.6), (0.8, 0.6)], "bristle", "burnt_umber")
+    assert "subject: 1 of 2 marks so far (50%)" in s.report()
+    assert "against 32% planned" in s.report(subject_share=0.32)
+    assert "behind" in s.report(subject_share=0.60)
+    assert "subject:" not in make(tmp_path).report()
+
+
+def test_the_check_is_printed_beside_the_budget_line(tmp_path, capsys):
+    """Where it was asked for: after every pass, over that pass; ``--check`` widens it
+    to the painting, and ``easel log --check`` reads it without painting anything."""
+    a = tmp_path / "a.py"
+    a.write_text('s.block_in(Region(0.1, 0.1, 0.9, 0.4), "flat", "burnt_umber", size=0.04)\n'
+                 's.block_in(Region(0.1, 0.5, 0.9, 0.8), "flat", "burnt_umber", size=0.04)\n')
+    b = tmp_path / "b.py"
+    b.write_text('s.stroke([(0.3, 0.6), (0.7, 0.62)], "round_hard", "titanium_white",'
+                 ' size=0.05)\n')
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--budget", "60"]) == 0
+    assert main(["run", str(session), str(a), "--rehearse"]) == 0
+    assert "check over this pass" in capsys.readouterr().out
+    assert main(["run", str(session), str(a)]) == 0
+    out = capsys.readouterr().out
+    assert "of 60 strokes spent" in out and "from 2 calls" in out
+    assert main(["run", str(session), str(b)]) == 0
+    assert "check over this pass, 1 mark: nothing to report" in capsys.readouterr().out
+    assert main(["run", str(session), str(b), "--check"]) == 0
+    assert "check over the painting" in capsys.readouterr().out
+    assert main(["log", str(session), "--check"]) == 0
+    assert "long marks run within 6 degrees of horizontal" in capsys.readouterr().out

@@ -111,7 +111,7 @@ See *MCP server* below.
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
-method on one page, so the eight warm-up exercises come before anything else.
+method on one page, so the nine warm-up exercises come before anything else.
 
 It is one file of five, split by what you do with each rather than by subject, because
 three painters each said the same two things — the guide is long, and the essay in it is
@@ -150,7 +150,8 @@ is, in about 850 words.
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
 | Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
-| Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all. `prepare(reference)` cuts the photograph into numbered masses. |
+| Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all — and names the pairs the plan itself puts within `0.10` of each other. `prepare(reference)` cuts the photograph into numbered masses. `palette.chroma_of` is *how coloured*, beside `value_of` for how light. |
+| The check | `report()` reads the guide's standing warnings off the log — one brush at one size for a whole pass, a stack of passes at one angle, a bristle too small to be a brush, detail before the masses, a pressure list asking a chisel for a width, the subject's share of the marks — and `run` prints it beside the budget line after every pass. |
 | Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
 
@@ -168,6 +169,7 @@ easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --s
 easel run painting.easel first_pass.py
 easel run painting.easel first_pass.py --rehearse   # against a copy, committing nothing
 easel run painting.easel p2_sea.py p3_rocks.py --rehearse   # ...both passes, one copy
+easel run painting.easel p4_tower.py --check         # the post-pass check over the whole painting
 easel look painting.easel --grid
 easel look painting.easel --values
 easel look painting.easel --region D4 --fine --reference ref.jpg
@@ -330,6 +332,19 @@ it first said not to, is in
 beside the request, and the release itself is in
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md).
 
+Then three painters were handed one subject — a lighthouse half way through becoming a
+greenhouse — and all three hit the same call on three different shapes: `edge="clean"`
+was sweeping its contour along a spline that bowed 65px off a four-cornered tower. That
+round is in the same release: the contour follows the polygon's own edges; `undo` puts
+the random stream back and a replay from a saved log is the painting, which one painter
+had measured drifting 1.06% and committed the rebuild instead; four warnings in the
+shape the earlier ones have; `compare` asks whether two places planned `0.00` apart
+touch; `chroma_of` beside `value_of`; and **the post-pass check** — the guide's standing
+warnings read off the log and printed beside the budget line after every pass, which
+had been the cheapest open item on the register for two rounds. Every number the three
+painters took reproduced; two of the mechanisms they proposed did not, and
+`SUGGESTIONS.md` says which.
+
 ## The worked examples
 
 [`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings) holds the paintings those sessions made, and each is an
@@ -348,7 +363,7 @@ the cost of hiding these no longer has to be paid by the painter who would most 
 from them. If you are about to run the measurement protocol in `LESSONS.md`, that rule
 is the protocol, not a suggestion.
 
-[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) is the same three paintings read from the outside rather
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md) is the same paintings read from the outside rather
 than from the painter's seat: what they cost, what failed, and how good they actually
 are.
 
@@ -360,9 +375,9 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what four painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what seven painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Every item on it is done — including the two that were answered by measuring them
+each. Every item on it is done — including the five that were answered by measuring them
 and finding nothing to fix, which say so.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
