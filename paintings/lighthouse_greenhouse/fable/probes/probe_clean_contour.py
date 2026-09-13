@@ -5,6 +5,11 @@ corners the spline bows outward. ragged (which has no contour pass) stops correc
 half a brush. Subdividing the sides gives the spline collinear points and fixes it.
 
 Run: .venv/bin/python probes/probe_clean_contour.py
+
+Update, 0.2.0: the engine now sweeps the clean contour along the polygon's own edges
+rather than a spline through its corners, so all three rows print about 4px. The
+numbers below are what this probe measured on the engine the painting was made with;
+scripts/probe_greenhouse_session.py prints the before and the after side by side.
 """
 import numpy as np
 from PIL import Image

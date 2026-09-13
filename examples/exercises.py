@@ -176,10 +176,32 @@ def a_box_and_a_shape() -> None:
     s.look(path=OUT / "ex8_box_and_shape.png")
 
 
+def swatch_strip() -> None:
+    """9. The planned mixtures side by side, before the first mass.
+
+    Exercise 1 calibrates value; this calibrates hue, which is where the mixing
+    surprises live. A painter who trusted its hexes and its ``at_value`` numbers
+    laid a whole fog green, and a strip like this caught it in one look. The
+    printed chroma is the number beside the value: how coloured, beside how light.
+    """
+    s = Session(900, 200, ground="toned_grey", seed=9, out_dir=OUT)
+    p = s.palette
+    plan = {"fog": p.at_value(p.mix("cerulean", "titanium_white", 0.8), 0.64),
+            "sea": p.at_value(p.mix("cerulean", "burnt_umber", 0.4), 0.40),
+            "rock": p.at_value(p.mix("burnt_umber", "viridian", 0.3), 0.20),
+            "lit": p.at_value(p.mix("yellow_ochre", "titanium_white", 0.6), 0.78)}
+    for i, (name, colour) in enumerate(plan.items()):
+        band = Region(0.05 + i * 0.225, 0.15, 0.25 + i * 0.225, 0.85)
+        s.block_in(band, "flat", colour, size=0.08, solid=True)
+        print(f"  {name:5s} value {p.value_of(colour):.2f}  chroma {p.chroma_of(colour):.2f}")
+    s.export(OUT / "ex9_swatches.png")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for fn in (value_scale, pressure_profiles, paint_running_out,
-               wet_versus_dry, edge_study, draw_try_paint, a_box_and_a_shape):
+               wet_versus_dry, edge_study, draw_try_paint, a_box_and_a_shape,
+               swatch_strip):
         print(f"{fn.__name__} ...")
         fn()
     print("mixing:")

@@ -70,24 +70,33 @@ repeated three times still failed every run. **A fourth copy is precisely the th
 that does not work.**
 
 What did catch those mistakes was never a sentence. It was a rehearsal looked at, and
-the one line `easel run` prints after a pass. So the form the idea should take is **a
-check the tool runs over the pass it just painted**, printed beside the budget line —
-every input is already in the log, which carries brush, size, path, colour and load per
-record. Candidates, all of them rules that currently only exist as prose: every mark in
-this pass used one brush at one size; *n* passes ran at the same angle; *n* marks under
-`size=0.02` before stroke 60; a `bristle` under `size=0.025`; the subject's share of
-strokes so far against the share the plan says. **Each rule that becomes a check can
-leave the guide**, which is the growth rule paying for itself. Not built; the honest way
-to start is to replay a finished painting's log pass by pass and print what each rule
-would have fired on.
+the one line `easel run` prints after a pass. So the form the idea takes is **a check
+the tool runs over the pass it just painted**, printed beside the budget line — every
+input is already in the log, which carries brush, size, path, colour and load per
+record. **Built, in the greenhouse round, as `Session.report()` and the lines `easel
+run` prints after every pass** (`--check` widens it to the painting, `easel log --check`
+reads it cold). Six rules, each of which a real pass of a real painting tripped: one
+brush at one size for a whole pass of two or more calls; twelve or more long marks
+within six degrees of one angle from two or more calls; a `bristle` under `size=0.025`;
+eight or more marks under `size=0.02` inside the first sixty; a pressure list on a short
+chisel mark; and the subject's share of the marks so far, against the plan's number when
+it is given. A seventh — a shaped `block_in` with `direction` left off costing over 2.5×
+its axis — needs the shape and fires at the call. **Each rule that becomes a check can
+leave the guide**, which is the growth rule paying for itself; none has left it yet,
+because a check is a hypothesis until a fresh session paints against it.
 
-**A fourth session scored its own painting against those candidates and three of the five
+**A fourth session scored its own painting against the candidates and three of the five
 would have caught something it did.** It proposed a sixth — *a mass laid solid whose
 planned and rendered values differ by more than the `0.10` that separates two masses* —
-and that one is **not worth building**: measuring the gap first found it to be `0.000`,
-so the check could never fire. Which is the general rule for this list. A check earns its
-line by firing on a real pass of a real painting, and the cheapest way to find out is to
+and that one was **not built**: measuring the gap first found it to be `0.000`, so the
+check could never fire. Which is the general rule for this list. A check earns its line
+by firing on a real pass of a real painting, and the cheapest way to find out is to
 measure the condition before writing the rule, not after a painter reports the symptom.
+The two rules the greenhouse painters added were both met by real passes — a pressure
+list on a chisel, twice, in two paintings; a shaped mass laid at the default direction,
+twice in one pass — and the log could not tell a pass of a mass from a mark laid by
+hand until it was made to (`params["via"]`), which is the kind of thing a check needs
+that prose never does.
 
 The one form of the file idea with a real mechanism is **a short rules card kept where a
 `CLAUDE.md` is kept**, which survives a context compaction where the guide does not.
@@ -229,12 +238,18 @@ compared with each other.
 A painter reporting on its own painting is not a measurement. Every figure in the run
 write-ups was re-measured from the exported PNGs. They were mostly right and not entirely.
 
-**Seven claims have now been re-measured before anything was built on them, and four did
-not survive** — the clean contour that was supposed to spill less than a ragged fill, the
-smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift a
-solid mass off its planned value (it does not move it at all), and the boundary said to
-be left bare at `overhang=0` (it is the comb and the brush running dry, and the *sides*,
-which `overhang` cannot touch, come back barer than the ends).
+**Sixteen claims have now been re-measured before anything was built on them, and four
+did not survive** — the clean contour that was supposed to spill less than a ragged fill,
+the smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift
+a solid mass off its planned value (it does not move it at all), and the boundary said
+to be left bare at `overhang=0` (it is the comb and the brush running dry, and the
+*sides*, which `overhang` cannot touch, come back barer than the ends). The nine from
+the greenhouse round all held, to the percentage point where a painter had taken a
+number — and two of them had the *mechanism* wrong while the finding was right: the
+pencil said to advance the random stream advances the log index, and the CLI undo said
+to lose "the random stream or the wet layer" was losing the stream *and* five decimals
+of every point in the saved log. A claim that comes with a probe is a claim that can be
+wrong in a useful way.
 
 **They have a shape.** Every one of the four was reported as *observed* — a rehearsal
 showed the failure plainly, no number was taken, and the painter reasoned back to a
@@ -493,16 +508,17 @@ The repo is LF (`.gitattributes`), even on a Windows checkout.
   names the path it is about to write to. Two places count as unsurprising rather than
   one, because a warning that fires on almost every load is a warning nobody reads —
   looks sitting beside the painting is the normal arrangement, not a smuggled path.
-- **`undo()`'s fast snapshot path does not rewind `Session.rng`.** So
-  `s.block_in(...); s.undo(1); s.block_in(...)` draws different wobble than a fresh session
-  doing the same two calls. A correct fix needs an `rng` snapshot at the same granularity
-  as the canvas snapshot, but `block_in`/`sweep` draw their wobble from lazily-evaluated
-  generators interleaved *between* the per-path `stroke()` calls that push each snapshot —
-  so by the time a stroke's snapshot is pushed, that path's wobble has already been drawn.
-  Snapshotting there would leave the stream advanced past the undone stroke rather than
-  rewound to before it, which is subtly wrong in a way a quick fix is more likely to get
-  wrong than right. Only that sequence is affected; `stroke()`, `pencil()`, `dry()` and
-  `erase()` never touch `self.rng`.
+- ~~**`undo()`'s fast snapshot path does not rewind `Session.rng`.**~~ **Settled**, once
+  a painter measured it: `easel undo` drifted its working session 1.06% of the canvas
+  from a clean rebuild. The granularity problem this entry described was real — a mass
+  draws its wobble *between* the `stroke()` calls that push each snapshot, so a state
+  taken per record is one draw past the undone mark — and the answer was to take the
+  state once, at the start of the painting *call*, and write it on every record the
+  call makes (`params["rng"]`). Undo restores it on both paths, and `replay(upto=)`
+  puts the rebuilt session's stream where the kept painting stood. The other half of
+  the drift was the log rounding its points to five decimals, so a replay from disk was
+  never quite the painting; it is exact now. Both are in `CALIBRATION.md` under *The
+  log, undo, and the stream*, with a test each.
 - **Residual dab-frequency ripple** on `flat` and `knife` at large sizes. Much reduced, and
   at this level it reads as ridging from a loaded brush rather than machine stripes. Worth
   another pass if it ever reads as mechanical in a real painting.
@@ -554,9 +570,9 @@ and none has been decided:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the runs found has been applied.
-[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from three painting sessions and the
-synthesis across them, and **every item is now done** — twenty-five for the engine,
-thirty-seven for the documentation — each with a note saying what it became.
+[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from seven painting sessions and the
+synthesis across them, and **every item is now done** — forty-two for the engine, fifty
+for the documentation — each with a note saying what it became.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints

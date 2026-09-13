@@ -479,3 +479,15 @@ def test_a_plan_is_one_entry_or_a_list_of_them(call, painting):
     """Both are natural to write, so both are taken -- as the Python API takes them."""
     one = {"shape": {"blob": "D5", "radius": 0.12}, "size": 0.06}
     assert (_plan(one)[1]) == _plan([one])[1]
+
+
+def test_run_hands_back_the_post_pass_check(call, painting):
+    """The line `easel run` prints beside the budget line, through the wire too -- the
+    same words for the same pass, whichever way the pass was run."""
+    reply = call("run", session=painting,
+                 script="s.stroke([(0.1, 0.5), (0.9, 0.5)], 'flat', 'ochre')")
+    assert "check over this pass" in reply.text
+    reply = call("run", session=painting, rehearse=True,
+                 script="s.block_in(Region(0.1, 0.1, 0.9, 0.4), 'flat', 'ochre', size=0.04)\n"
+                        "s.block_in(Region(0.1, 0.5, 0.9, 0.8), 'flat', 'ochre', size=0.04)\n")
+    assert "Nothing committed" in reply.text and "from 2 calls" in reply.text

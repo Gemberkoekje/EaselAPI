@@ -16,9 +16,11 @@ swatches, which is a claim about paint and is the note below.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
-from easel.color import linear_to_srgb, luminance, mix, mix_many, parse_color
+from easel.color import linear_to_oklab, linear_to_srgb, luminance, mix, mix_many, parse_color
 
 __all__ = ["PIGMENTS", "Palette"]
 
@@ -232,6 +234,36 @@ class Palette:
         """
         lin = float(luminance(parse_color(self._resolve(color))))
         return float(linear_to_srgb(np.float32(lin)))
+
+    def chroma_of(self, color) -> float:
+        """How vivid the colour is: ``0`` for any grey, rising with saturation.
+
+        The Oklab chroma -- the distance from the neutral axis in a perceptual
+        colour space -- so that two colours the same distance from grey read as
+        equally vivid whatever their hue. :meth:`value_of` is the instrument for
+        *how light*; this is its counterpart for *how coloured*, and it exists for
+        one question a value cannot answer: a mixture that reads quiet on its own
+        can come back vivid on the canvas, because the eye judges chroma against
+        the field a colour sits in. Measured, the engine lays the chroma it was
+        given: a solid plane of a mixture reads back at the mixture's own chroma
+        or a little under it (within ``0.015``, and never above -- the ground
+        showing through the first passes pulls it down, not up), and the rendered
+        view reads the same as the paint. So what moves is the eye, and the number
+        that predicts it is the mixture's chroma beside the field's::
+
+            p.chroma_of(mix)                      # the colour you are about to lay
+            p.chroma_of(s.sample(field))          # what it will sit in
+            p.chroma_of(p.desaturate(mix, 0.3))   # what a step toward grey buys
+
+        For scale: the greys and grounds sit under ``0.02``; ``burnt_umber`` is
+        ``0.02``, ``viridian`` ``0.06``, ``ultramarine`` ``0.09``, ``yellow_ochre``
+        ``0.12``, ``cadmium_yellow`` ``0.17``, and ``cadmium_red`` at ``0.20`` is as
+        vivid as the box gets. A mixture at several times the chroma of the field
+        around it is the one that will surprise you, and the fix is
+        :meth:`desaturate`, not opacity.
+        """
+        lab = linear_to_oklab(parse_color(self._resolve(color)))
+        return float(math.hypot(float(lab[1]), float(lab[2])))
 
     @property
     def darkest_value(self) -> float:

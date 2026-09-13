@@ -17,6 +17,7 @@ import os
 import tempfile
 import warnings
 import zipfile
+from contextlib import contextmanager
 from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
 from difflib import get_close_matches
@@ -64,6 +65,11 @@ __all__ = ["Session"]
 #: Bumped to 4: and a stroke budget, so the split a painter writes down survives
 #: being closed and reopened between ``easel run`` calls.
 #: Format 1, 2 and 3 files still load -- they simply have less in them.
+#: Since 0.2.0 every record also carries the generator's state at the start of the
+#: call that made it (``params["rng"]``), which is what lets ``undo`` and ``replay``
+#: put the stream back where the painting's was. Not a bump: an older build reads the
+#: extra key without noticing it, and a log written without it still loads here --
+#: it simply cannot have its stream restored, and ``undo`` says so.
 _EASEL_FORMAT = 4
 _READABLE_FORMATS = (1, 2, 3, 4)
 
@@ -150,14 +156,32 @@ class Session:
         # rehearsal continues from the real session's count, so what is tried on the
         # scrap of canvas is the mark that lands when it is painted for real.
         self._index_base = 0
+        # The generator's state at the start of the painting call in progress, held
+        # so that every record the call makes carries the same one -- see
+        # :meth:`_one_call`. ``None`` between calls.
+        self._stream_mark: dict | None = None
+        self._call_verb = ""
+        # Marks charged before this session's own log began: zero for a painting,
+        # and the painting's own count on a rehearsal copy, so that ``spent`` and
+        # ``remaining`` inside a rehearsed pass are the painting's numbers.
+        self._spent_base = 0
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
 
     # -- properties -------------------------------------------------------------
     @property
     def stroke_count(self) -> int:
-        """How many marks have been made so far."""
-        return self.history.stroke_count
+        """How many marks have been made so far.
+
+        On a rehearsal copy this continues the painting's own count rather than
+        starting again from nought: a pass run with ``--rehearse`` sees the same
+        ``stroke_count``, :attr:`spent` and :attr:`remaining` it will see when it is
+        run for real, which is the number a painter inside the pass is asking for.
+        What the copy itself laid is ``s.history.stroke_count``. (It read ``0`` and
+        the whole budget until 0.2.0, while ``compare()`` and ``look()`` in the same
+        script plainly saw the painted canvas.)
+        """
+        return self._spent_base + self.history.stroke_count
 
     @property
     def size(self) -> tuple[int, int]:
@@ -167,7 +191,7 @@ class Session:
     def spent(self) -> int:
         """Strokes charged so far. The same number as :attr:`stroke_count`, named
         for the budget rather than for the log."""
-        return self.history.stroke_count
+        return self.stroke_count
 
     @property
     def remaining(self) -> int | None:
@@ -241,6 +265,10 @@ class Session:
         try:
             index = self._index_base + len(self.history.records)
             pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+            if self._stream_mark is None:
+                # A mark the painter laid by hand rather than a pass of a mass: the
+                # one place a pressure list is likely to be asking for a *width*.
+                _check_pressure_on_tip(b, pressure, pts, self.canvas)
             result = paint_stroke(
                 self.canvas,
                 pts,
@@ -264,7 +292,10 @@ class Session:
                     dabs=result.dabs,
                     paint=result.paint,
                     note=note,
-                    params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps),
+                    params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps,
+                                         rng=self._stream_state(),
+                                         **({"via": self._call_verb} if self._call_verb
+                                            else {})),
                 )
             )
         except Exception:
@@ -375,7 +406,7 @@ class Session:
         region,
         brush: str | Brush = "bristle",
         color="burnt_umber",
-        direction: str = "horizontal",
+        direction=None,
         density: float = 1.0,
         pressure="taper",
         size: float | None = None,
@@ -410,7 +441,13 @@ class Session:
                 pass each. Vary this between passes so the marks are not parallel --
                 and prefer the angle the *subject* runs at. A hillside swept at its
                 own angle stops being a stack of horizontal bars, which is the single
-                loudest tell that nobody chose the direction.
+                loudest tell that nobody chose the direction. **Left off, the passes
+                run horizontally**, and on a shape that is not wider than it is tall
+                that is the expensive way round: the passes step down its whole
+                height. A painter costed two planes at 9 and 9 with ``direction=90``,
+                wrote the calls without it, and the rehearsal charged 43 and 55. So a
+                shape laid with this left off says so when it costs more than about
+                2.5x what ``"axis"`` would, and names the number.
             density: how close together the passes run. 1.0 steps them a part-brush
                 apart, which covers the place; below 1 spaces them out and leaves
                 the ground showing through, which is usually what you want for a
@@ -518,33 +555,65 @@ class Session:
                 stacklevel=2,
             )
 
-        for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
-                                                            density, overhang):
-            records.append(
-                self.stroke(
-                    path,
-                    brush=b,
-                    color=color,
-                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    note=note or (f"block-in {place.name or ('shape' if shaped else 'region')} "
-                                  f"{pass_dir}{traced}"),
+        if shaped and direction is None:
+            _check_default_direction(self, fill, b, density, overhang, stacklevel=3)
+        if edge == "clean" and shaped:
+            _check_clean_size(place, b, self.canvas, stacklevel=3)
+
+        with self._one_call("block_in"):
+            for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
+                                                                density, overhang):
+                records.append(
+                    self.stroke(
+                        path,
+                        brush=b,
+                        color=color,
+                        pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                        note=note or (f"block-in "
+                                      f"{place.name or ('shape' if shaped else 'region')} "
+                                      f"{pass_dir}{traced}"),
+                    )
                 )
-            )
-        if edge == "clean":
-            # The contour pass runs along the *inset* outline, not the drawn one, so
-            # that the outer half of the brush lands on the drawn line rather than
-            # half a brush past it. Measured on a mass a third of the canvas across,
-            # size 0.05: paint reaches 20px past the outline blocked in ragged, 38px
-            # with the contour laid along the drawn line, and 13px this way -- and
-            # this way also leaves the least ragged silhouette of the three.
-            records.extend(self.sweep(
-                fill if isinstance(fill, Polygon) else polygon(fill),
-                brush=b, color=color, passes=1, depth=max(b.size * 0.5, 1e-3),
-                pressure=pressure, wander=False,
-                note=note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
-                              f"{traced}"),
-            ))
+            if edge == "clean":
+                records.extend(self._clean_contour(
+                    fill, b, color, pressure,
+                    note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
+                             f"{traced}"),
+                ))
         return records
+
+    def _clean_contour(self, fill, b: Brush, color, pressure, note: str) -> list[StrokeRecord]:
+        """The one pass ``edge="clean"`` lays along the inset outline.
+
+        Along the *inset* outline, not the drawn one, so that the outer half of the
+        brush lands on the drawn line rather than half a brush past it. Measured on a
+        mass a third of the canvas across, size 0.05: paint reaches 20px past the
+        outline blocked in ragged, 38px with the contour laid along the drawn line,
+        and 13px this way -- and this way also leaves the least ragged silhouette of
+        the three.
+
+        And along the outline's **own edges**, not a spline through its corners. A
+        sweep smooths the boundary it is given before offsetting it, which is right
+        for a boundary read off the grid and wrong for a drawn polygon: through two
+        sparse corners the spline bows outward, and on a tall four-cornered tower the
+        contour stood **65px** above the top edge the ragged fill stopped 3px short
+        of -- a pointed arch nobody drew, found by three painters on three shapes.
+        The fill is cut against the polygon's straight sides, so the contour now
+        follows the same line the fill stops at. Same draw from the stream as the
+        sweep it replaces, so nothing painted after a clean mass moves.
+        """
+        outline = fill.closed if isinstance(fill, Polygon) else polygon(fill).closed
+        depth = max(b.size * 0.5, 1e-3)
+        out: list[StrokeRecord] = []
+        for _kind, path, flipped in self._sweep_paths(outline, depth, 1, depth, None,
+                                                       None, None, wander=False,
+                                                       smooth=False):
+            out.append(self.stroke(
+                path, brush=b, color=color,
+                pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                note=note,
+            ))
+        return out
 
     def _block_in_paths(self, place, b: Brush, direction, density: float, overhang):
         """Every pass ``block_in`` would lay, as geometry, before any of it is paint.
@@ -563,7 +632,7 @@ class Session:
         shaped = isinstance(place, Polygon)
         over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
         band = _pass_step(b.size, density)
-        for pass_dir in _pass_directions(direction):
+        for pass_dir in _pass_directions("horizontal" if direction is None else direction):
             angle = place.axis if pass_dir == "axis" else pass_dir
             paths = (self._shape_paths(place, angle, band, b.size * over) if shaped
                      else self._block_paths(place, angle, band, b.size * over))
@@ -819,16 +888,17 @@ class Session:
         depth, step, n_passes, cross = self._sweep_passes(b, depth, passes, cross, density)
 
         records: list[StrokeRecord] = []
-        for kind, path, flipped in self._sweep_paths(edge, step, n_passes, depth,
-                                                     cross, into, closed, wander):
-            records.append(
-                self.stroke(
-                    path,
-                    brush=b, color=color,
-                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    note=note or kind,
+        with self._one_call("sweep"):
+            for kind, path, flipped in self._sweep_paths(edge, step, n_passes, depth,
+                                                         cross, into, closed, wander):
+                records.append(
+                    self.stroke(
+                        path,
+                        brush=b, color=color,
+                        pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                        note=note or kind,
+                    )
                 )
-            )
         return records
 
     def _sweep_passes(self, b: Brush, depth, passes, cross, density: float):
@@ -877,7 +947,7 @@ class Session:
         return depth, step, n_passes, cross
 
     def _sweep_paths(self, edge, step: float, n_passes: int, depth: float,
-                     cross, into, closed, wander: bool = True):
+                     cross, into, closed, wander: bool = True, smooth: bool = True):
         """Every pass ``sweep`` would lay, as geometry, before any of it is paint.
 
         :meth:`_block_in_paths`' counterpart, and split out for the same reason: a
@@ -887,10 +957,12 @@ class Session:
 
         Yields the log note for each pass beside its path, because the two sets of
         passes are named differently in the log and a caller that only counts them
-        does not care which is which.
+        does not care which is which. ``smooth=False`` follows the edge's own
+        corners instead of a spline through them -- what the contour of a clean
+        block-in wants, and nothing else so far.
         """
         spacing = max(step * 0.6, 0.008)
-        spine, ring = _sweep_spine(edge, closed, spacing)
+        spine, ring = _sweep_spine(edge, closed, spacing, smooth)
         normals = _sweep_normals(spine, into, ring)
         cum = _arc_length(spine)
         length = float(cum[-1])
@@ -1003,13 +1075,14 @@ class Session:
                 f"at any opacity. Use 'flat', 'knife' or 'round_hard'.",
                 stacklevel=2,
             )
-        if dry_first:
-            self.dry(1.0, target)
-        return self.block_in(
-            target, brush=b, color=color, direction=direction, density=density,
-            pressure="even", overhang=overhang,
-            note=note or f"cover {target.name or 'area'}",
-        )
+        with self._one_call("cover"):
+            if dry_first:
+                self.dry(1.0, target)
+            return self.block_in(
+                target, brush=b, color=color, direction=direction, density=density,
+                pressure="even", overhang=overhang,
+                note=note or f"cover {target.name or 'area'}",
+            )
 
     def scumble(
         self,
@@ -1165,20 +1238,22 @@ class Session:
             size = _linear_size(step)
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
         _check_linear_brush(b, step, n)
+        _check_scumble_ends(place, degrees, b, n, stacklevel=3)
         shaped = isinstance(place, Polygon)
         paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
                  else self._angled_paths(place, degrees, step, b.size * overhang))
 
         records: list[StrokeRecord] = []
         laid = 0
-        for path, flipped in paths:
-            t = laid / max(n - 1, 1)
-            records.append(self.stroke(
-                path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
-                pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
-            ))
-            laid += 1
+        with self._one_call("scumble"):
+            for path, flipped in paths:
+                t = laid / max(n - 1, 1)
+                records.append(self.stroke(
+                    path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
+                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                    note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
+                ))
+                laid += 1
         return records
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
@@ -1205,13 +1280,14 @@ class Session:
         # patch and the half-width of a long one, where the ramp lands on its spine.
         depth = _inward_depth(place, b.size)
         records: list[StrokeRecord] = []
-        for k, path, flipped in self._ring_paths(outline, depth / n, n):
-            records.append(self.stroke(
-                path, brush=b,
-                color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
-                pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
-            ))
+        with self._one_call("scumble"):
+            for k, path, flipped in self._ring_paths(outline, depth / n, n):
+                records.append(self.stroke(
+                    path, brush=b,
+                    color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
+                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                    note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
+                ))
         return records
 
     def _ring_paths(self, outline, step: float, n: int):
@@ -1286,7 +1362,8 @@ class Session:
                     dabs=result.dabs,
                     paint=result.paint,
                     note=note,
-                    params={"width": float(width), "smooth": bool(smooth)},
+                    params={"width": float(width), "smooth": bool(smooth),
+                            "rng": self._stream_state()},
                 )
             )
         except Exception:
@@ -1313,7 +1390,7 @@ class Session:
                 index=self._index_base + len(self.history.records),
                 kind="erase",
                 note=note or ("erase" + (f" {place}" if place is not None else " all")),
-                params=_place_params(place),
+                params={**_place_params(place), "rng": self._stream_state()},
             )
         )
         if self.timelapse:
@@ -1454,7 +1531,8 @@ class Session:
                 index=self._index_base + len(self.history.records),
                 kind="dry",
                 note=f"dry {amount:.2f}" + (f" in {place}" if place is not None else ""),
-                params={"amount": float(amount), **_place_params(place)},
+                params={"amount": float(amount), **_place_params(place),
+                        "rng": self._stream_state()},
             )
         )
 
@@ -1472,6 +1550,11 @@ class Session:
             snap = self.history.pop_snapshots(n)
             if snap is not None:
                 self.canvas.restore(snap)
+                # And the generator, to where it stood before the first undone mark's
+                # call began. The undone marks may have been the passes of a mass, and
+                # a mass draws its wander from the stream: left where it was, the next
+                # mass drew from a stream a clean rebuild never produces.
+                self._restore_stream(undone[0])
                 if self.timelapse:
                     # Every record kind that pushes a snapshot except "dry" also
                     # adds a time-lapse frame (dry() only touches wetness, which
@@ -1930,9 +2013,14 @@ class Session:
             clean = spec.get("edge", "ragged") == "clean"
             place = spec["place"]
             fill = _clean_fill(place, b.size * 0.5) if clean else place
-            direction = spec.get("direction", "horizontal")
+            direction = spec.get("direction")
             laid = sum(1 for _ in trial._block_in_paths(
                 fill, b, direction, density, spec.get("overhang")))
+            if direction is None:
+                # The same line block_in gives, from the same walk: a rehearsal that
+                # comes back charging 124 for a pass budgeted at 40 should say why.
+                _check_default_direction(trial, fill, b, density, spec.get("overhang"),
+                                         stacklevel=5)
             return laid + int(clean), _mass_reason(fill, b, direction, density, laid)
 
         # A sweep works its pass count out from the depth before any geometry is
@@ -2001,6 +2089,9 @@ class Session:
         trial._preparation = self._preparation
         trial.assisted = []
         trial._index_base = self._index_base + len(self.history.records)
+        trial._stream_mark = None
+        trial._call_verb = ""
+        trial._spent_base = self.spent
         return trial
 
     def _stroke_specs(self, strokes) -> list[dict]:
@@ -2109,6 +2200,10 @@ class Session:
                         (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
         label = str(spec.get("label", spec.get("note") or place.name
                               or f"mass {index + 1}"))
+        if spec.get("edge") == "clean" and isinstance(place, Polygon):
+            # The same line block_in gives, here too: the guide already says to
+            # preview the inset shape, and this is that sentence with a number on it.
+            _check_clean_size(place, b, self.canvas, stacklevel=4)
         return {"points": points, "width": b.size, "fill": True,
                 "label": self._priced("mass", spec, label)}
 
@@ -2321,6 +2416,17 @@ class Session:
         canvas_rgb = self.canvas.to_srgb8(impasto=False)
         result = compare_plan(canvas_rgb, places, threshold=threshold,
                               floor=self.palette.darkest_value)
+        # The pairs the plan itself puts within a threshold of each other. Read off
+        # the plan rather than the canvas, so the question is asked at plan time, on
+        # the empty canvas, which is the one run the guide already tells a painter
+        # to make and the moment it is free to answer.
+        result.pairs = sorted(
+            ((a, b, abs(va - vb))
+             for i, (a, _, va) in enumerate(places)
+             for (b, _, vb) in places[i + 1:]
+             if abs(va - vb) < threshold),
+            key=lambda t: t[2],
+        )
         plan_grey = Image.fromarray(
             np.clip(planned * 255.0 + 0.5, 0, 255).astype(np.uint8), mode="L")
         sheet = plan_sheet(result, canvas_grey=_grey(canvas_rgb),
@@ -2519,6 +2625,79 @@ class Session:
         """Record a time-lapse frame by hand, when ``timelapse`` is off."""
         self.history.add_frame(self.canvas.thumbnail_srgb8())
 
+    def report(self, since: int | None = None, subject_share: float | None = None) -> str:
+        """The post-pass check: what the marks just laid would be warned about, off the log.
+
+        ``easel run`` prints this beside the budget line after every pass, and
+        ``--check`` widens it to the whole painting. It is the form the guide's
+        standing warnings take once they can be checked rather than repeated --
+        three painters made the same mistakes *after* reading the warnings about
+        them, and what did catch a mistake was never a sentence but a line printed
+        after a pass. Every input is already in the log, which carries brush, size,
+        path, pressure and note per mark. Six rules, each of which a real pass of a
+        real painting would have tripped:
+
+        - **one brush at one size** for a whole pass of two or more calls;
+        - **a stack of passes at one angle** -- twelve or more long marks within six
+          degrees of each other, from two or more calls, and most of the long marks
+          in the pass;
+        - **a bristle under ``size=0.025``**, which is a comb of four streaks with
+          gaps rather than a brush;
+        - **small marks before the masses are down** -- eight or more under
+          ``size=0.02`` inside the first sixty marks of the painting;
+        - **a pressure list on a chisel tip**, on a hand-laid mark short enough to
+          have been asking for a taper;
+        - **the subject's share** of the marks so far, whenever a mark is noted
+          ``subject``, against ``subject_share`` if the plan's number is given. The
+          share to measure at the moment the subject is finished, and meant to fall
+          afterwards.
+
+        A seventh -- a shaped ``block_in`` with ``direction`` left off costing over
+        2.5x its axis price -- needs the shape, so it fires at the call instead. Each
+        rule that lives here can leave the guide, which is the growth rule paying
+        for itself.
+
+        Args:
+            since: the log index the pass began at -- ``len(s.history.records)``
+                before the pass -- so the check covers the pass alone. Omitted, the
+                whole log.
+            subject_share: the share of the marks the plan gave the subject, ``0..1``.
+
+        Returns:
+            The lines to print. Never empty: a pass with nothing to report says so.
+
+        Example::
+
+            before = len(s.history.records)
+            lay_the_rocks()
+            print(s.budget_line())
+            print(s.report(since=before, subject_share=0.32))
+        """
+        records = self.history.records
+        start = 0 if since is None else max(0, min(int(since), len(records)))
+        marks = [r for r in records[start:] if r.kind not in History.UNPAINTED_KINDS]
+        earlier = sum(1 for r in records[:start] if r.kind not in History.UNPAINTED_KINDS)
+        findings = _pass_findings(marks, earlier, self.canvas)
+        scope = "this pass" if since is not None else "the painting"
+        head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
+        if findings:
+            head += f"{len(findings)} thing{'s' if len(findings) != 1 else ''} to look at"
+        else:
+            head += "nothing to report"
+        lines = [head] + [f"  - {line}" for line in findings]
+        paid = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        on_it = [r for r in paid if "subject" in str(r.note).lower()]
+        if on_it:
+            share = len(on_it) / max(len(paid), 1)
+            line = f"  subject: {len(on_it)} of {len(paid)} marks so far ({share:.0%})"
+            if subject_share is not None:
+                planned = float(subject_share)
+                line += f", against {planned:.0%} planned"
+                if share < planned - 0.005:
+                    line += " -- behind, if the subject is finished"
+            lines.append(line)
+        return "\n".join(lines)
+
     def _note_assisted(self, what: str) -> None:
         """Record an assisted mode, once. See :attr:`assisted`."""
         if what not in self.assisted:
@@ -2632,6 +2811,9 @@ class Session:
                 s.assisted = [str(a) for a in meta.get("assisted", [])]
                 s._index_base = 0
                 s._is_trial = False
+                s._stream_mark = None
+                s._call_verb = ""
+                s._spent_base = 0
 
                 canvas = Canvas.__new__(Canvas)
                 canvas.width = int(meta["width"])
@@ -2740,53 +2922,128 @@ class Session:
         fresh._last_look = self._last_look
         fresh._preparation = self._preparation
 
+        # Inside one call context, so the marks are laid without the warnings a
+        # hand-laid mark gets: a replay is not a painter reaching for a pressure list.
+        # The state and the verb each record carries are put back below regardless.
+        with fresh._one_call("replay"):
+            fresh._replay_records(records)
+        # Where the generator is put. A replay lays every mark from its own per-index
+        # seed and never draws the pass wander a mass draws, so left alone the fresh
+        # session's stream would still sit at the seed -- a state a painting is only
+        # ever in before its first mass, and the reason a CLI ``undo`` (which comes
+        # through here) used to drift by 1.06% of the canvas against a clean rebuild
+        # of the same scripts. The first record *not* replayed carries the state its
+        # call began from, which is exactly where the kept painting stood; a whole
+        # replay is this session as it stands, stream included.
+        cut = self.history.records[upto:upto + 1] if upto is not None else []
+        if cut:
+            fresh._restore_stream(cut[0])
+        else:
+            fresh.rng.bit_generator.state = self.rng.bit_generator.state
+        return fresh
+
+    def _replay_records(self, records) -> None:
+        """Lay a log's records on this session, one call each, carrying their own account."""
+        fresh = self
         for record in records:
             if record.kind == "dry":
-                fresh.dry(record.params.get("amount", 1.0), _place_from_params(record.params))
-                continue
-            if record.kind == "pencil":
-                fresh.pencil(
+                made = fresh.dry(record.params.get("amount", 1.0),
+                                 _place_from_params(record.params))
+            elif record.kind == "pencil":
+                made = fresh.pencil(
                     record.points,
                     pressure=float(record.pressure),
                     width=float(record.params.get("width", 0.0026)),
                     smooth=bool(record.params.get("smooth", True)),
                     note=record.note,
                 )
-                continue
-            if record.kind == "erase":
-                fresh.erase(_place_from_params(record.params), note=record.note)
-                continue
-            params = dict(record.params)
-            color = params.pop("color", record.color_hex or "#000000")
-            glaze = bool(params.pop("glaze", False))
-            smooth = bool(params.pop("smooth", True))
-            # Logs written before press existed have no key for it, and one stamp is
-            # what they meant: they replay unchanged.
-            press = int(params.pop("press", 1))
-            fresh.stroke(
-                record.points,
-                brush=_brush_from_params(params),
-                color=np.asarray(color, dtype=np.float32) if isinstance(color, list) else color,
-                pressure=record.pressure,
-                glaze=glaze,
-                smooth=smooth,
-                press=press,
-                note=record.note,
-            )
-        return fresh
+            elif record.kind == "erase":
+                made = fresh.erase(_place_from_params(record.params), note=record.note)
+            else:
+                params = dict(record.params)
+                color = params.pop("color", record.color_hex or "#000000")
+                glaze = bool(params.pop("glaze", False))
+                smooth = bool(params.pop("smooth", True))
+                # Logs written before press existed have no key for it, and one stamp
+                # is what they meant: they replay unchanged.
+                press = int(params.pop("press", 1))
+                made = fresh.stroke(
+                    record.points,
+                    brush=_brush_from_params(params),
+                    color=(np.asarray(color, dtype=np.float32) if isinstance(color, list)
+                           else color),
+                    pressure=record.pressure,
+                    glaze=glaze,
+                    smooth=smooth,
+                    press=press,
+                    note=record.note,
+                )
+            # The record's own account of the stream and of the call that laid it,
+            # carried over verbatim: a replay never draws the wander, so what its
+            # own marks would record is the seed, which is nowhere the painting was.
+            for key in ("rng", "via"):
+                if key in record.params:
+                    made.params[key] = record.params[key]
+                else:
+                    made.params.pop(key, None)
 
     def _adopt(self, other: Session) -> None:
         """Take on another session's canvas, history and rng, keeping our own identity."""
         self.canvas = other.canvas
         self.history = other.history
-        # `other` is a fresh replay of exactly the kept records, so `other.rng`
-        # is already in the state a plain seed + those records would produce --
-        # not adopting it left self.rng wherever it happened to be before the
-        # undo, so a block_in()/sweep() painted after this fallback path drew
-        # its wobble from a stream a real replay would never have produced.
+        # `other` is a fresh replay of exactly the kept records, and :meth:`replay`
+        # has put its generator where this painting's stood before the undone marks
+        # -- not adopting it left self.rng wherever it happened to be before the
+        # undo, so a block_in()/sweep() painted after this path drew its wobble from
+        # a stream a clean rebuild would never have produced.
         self.rng = other.rng
 
     # -- internals --------------------------------------------------------------
+    @contextmanager
+    def _one_call(self, verb: str = ""):
+        """Hold the generator's state for the length of one painting call.
+
+        ``verb`` names the mass verb the call is, and rides on every record the call
+        makes as ``params["via"]``, so that the log can tell a pass of a mass from a
+        mark laid by hand -- which :meth:`report` needs and nothing else did.
+
+        Every record a call makes carries the state the stream was in when the call
+        *began* -- see :meth:`_stream_state` -- so that undoing the call, whole or in
+        part, puts the stream back to before it. It cannot be taken per record: a
+        mass draws each pass's wander from the stream *between* its ``stroke()``
+        calls, so by the time a pass's record is written its own draw has already
+        happened, and a state taken there would leave the stream one draw past the
+        undone mark rather than before it. Taken once, here, before the first draw,
+        it is right for every record the call makes. Nested calls -- the contour of
+        a clean block-in, ``cover``'s dry and fill -- share the outermost mark.
+        """
+        if self._stream_mark is not None:
+            yield
+            return
+        self._stream_mark = _stream_of(self.rng)
+        self._call_verb = verb
+        try:
+            yield
+        finally:
+            self._stream_mark = None
+            self._call_verb = ""
+
+    def _stream_state(self) -> dict:
+        """The generator's state to record on a mark: the call's, or now."""
+        return self._stream_mark if self._stream_mark is not None else _stream_of(self.rng)
+
+    def _restore_stream(self, record: StrokeRecord) -> bool:
+        """Put the generator back to where ``record``'s call began, if the log knows.
+
+        Returns whether it could. A log written before 0.2.0 carries no state, and
+        the stream is then left as it is -- which is what every undo did until now.
+        """
+        state = record.params.get("rng") if record.params else None
+        if not state:
+            return False
+        self.rng = _stream_rng(state)
+        return True
+
     def _resolve_brush(self, brush, size, opacity, overrides: dict) -> Brush:
         b = brush if isinstance(brush, Brush) else get_brush(str(brush))
         _check_brush_overrides(overrides)
@@ -2867,6 +3124,118 @@ def _check_smudge_size(size: float) -> None:
         f"no softer than {SMUDGE_SIZE:.3g} already leaves it. Rehearse it, or use "
         f"size={SMUDGE_SIZE:.3g} and put the rest in with paint.",
         stacklevel=3,
+    )
+
+
+#: The tips whose width does not follow pressure: a chisel is the width it was given.
+_CHISEL_TIPS = ("flat", "bristle", "knife")
+
+#: A mark shorter than this many brush widths is a *shape* rather than a pass, and
+#: the one a painter reaches for a pressure list on expecting a taper. Longer than
+#: this, a list on a chisel is grading the paint along a pass, which it does.
+_SHORT_MARK_WIDTHS = 4.0
+
+
+def _check_pressure_on_tip(b: Brush, pressure, pts: np.ndarray, canvas) -> None:
+    """Warn when a pressure list on a chisel tip is asking for a width it cannot give.
+
+    The documentation already says an oriented tip keeps its chisel under any
+    pressure, and two painters read it and laid every pot as a rectangle with chisel
+    ends anyway -- *warning is not method*. So the engine says it at the call, in the
+    shape ``smudge``'s size warning has: only for a list with more than one value
+    (a named profile is the engine's own, and a scalar asks for nothing along the
+    mark), and only on a mark short enough to be a shape rather than a pass, because
+    a list on a long pass of a `flat` is how a passage brightens toward one side and
+    is doing exactly what it should.
+    """
+    if b.tip not in _CHISEL_TIPS or isinstance(pressure, str):
+        return
+    arr = np.atleast_1d(np.asarray(pressure, dtype=np.float32))
+    if arr.size < 2 or float(arr.max() - arr.min()) < 0.05:
+        return
+    # The mark's length in the brush's own unit, the canvas long side.
+    long = float(canvas.long_side)
+    dx = (float(pts[:, 0].max()) - float(pts[:, 0].min())) * canvas.width / long
+    dy = (float(pts[:, 1].max()) - float(pts[:, 1].min())) * canvas.height / long
+    if math.hypot(dx, dy) > _SHORT_MARK_WIDTHS * b.size:
+        return
+    shown = ", ".join(f"{float(v):g}" for v in arr[:4]) + (", ..." if arr.size > 4 else "")
+    warnings.warn(
+        f"pressure=[{shown}] on a {b.tip} tip changes the paint, not the width: a "
+        f"chisel keeps the width it was given, so this mark comes back a rectangle "
+        f"with a lighter end rather than a taper. A mark that tapers wants "
+        f"round_hard or liner, whose width follows pressure; a flat or knife wants a "
+        f"length.",
+        stacklevel=4,
+    )
+
+
+#: How many times its axis price a shaped block-in with ``direction`` left off may
+#: cost before it says so. Measured on one painting's two tower planes: 3.9x and 11x
+#: at the default against ``"axis"``, and 1.0x on the one mass wider than tall.
+_DIRECTION_RATIO = 2.5
+
+
+def _check_default_direction(session, place, b: Brush, density: float, overhang,
+                             stacklevel: int = 2) -> None:
+    """Warn when a shaped block-in with ``direction`` left off costs far more than its axis.
+
+    The default is horizontal and stays horizontal -- ``"axis"`` would be right nearly
+    always and moving the default would move every painting ever made. What changes
+    is that the price walk, which already has the number, says it: a painter costed
+    two planes at 9 and 9 with ``direction=90``, wrote the calls without it, and the
+    rehearsal came back charging 124 for a pass budgeted at 40.
+    """
+    if not isinstance(place, Polygon):
+        return
+    # On a trial copy: walking the passes draws their wander, and the count does
+    # not depend on it.
+    trial = session._trial_session()
+    laid = sum(1 for _ in trial._block_in_paths(place, b, None, density, overhang))
+    along = sum(1 for _ in trial._block_in_paths(place, b, "axis", density, overhang))
+    if laid <= _DIRECTION_RATIO * max(along, 1):
+        return
+    warnings.warn(
+        f"block_in of {place.name or 'this shape'} with direction= left off runs its "
+        f"passes horizontally and lays {laid} of them, stepping down the whole "
+        f"height; along the mass's own axis it is {along} (direction=\"axis\", or "
+        f"{place.axis:.0f} degrees). That is {laid / max(along, 1):.1f}x the price.",
+        stacklevel=stacklevel,
+    )
+
+
+#: Past this share of a shape's shorter extent, a clean edge's half-brush inset is
+#: taking the mass rather than a rim off it: see :func:`_check_clean_size`.
+_CLEAN_SHARE = 0.25
+
+
+def _check_clean_size(place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> None:
+    """Warn when a clean edge's brush is a large share of the mass's shorter extent.
+
+    ``edge="clean"`` insets the fill by half the brush all the way round, which is a
+    rim on a large mass and most of a small one; the contour pass then puts the outer
+    half of the brush back on the line, so the *paint* still covers the shape -- but
+    it covers it as one chisel pass with the corners the tip leaves, not as the
+    shape that was drawn. A painter's lantern cap ``0.036`` deep at ``size=0.016``
+    came back a rounded mushroom. The number that predicts it is the brush's share
+    of the shape's shorter extent, in the brush's own unit (the canvas long side).
+    """
+    long = float(canvas.long_side)
+    short = min(place.width * canvas.width / long, place.height * canvas.height / long)
+    if short <= 0.0:
+        return
+    share = b.size / short
+    if share <= _CLEAN_SHARE:
+        return
+    kept = place.inset(b.size * 0.5).area / max(place.area, 1e-12)
+    warnings.warn(
+        f"block_in(edge='clean') at size={b.size:.3g} on {place.name or 'a shape'} "
+        f"{short:.3f} across at its narrowest: the brush is {share:.0%} of that, so "
+        f"the half-brush inset keeps {kept:.0%} of the shape to fill and the contour "
+        f"pass lays the rest as one chisel stroke, corners rounded off. Use a brush "
+        f"under a quarter of the shorter extent -- size={_CLEAN_SHARE * short:.3g} "
+        f"here -- or leave the edge ragged.",
+        stacklevel=stacklevel,
     )
 
 
@@ -3059,6 +3428,75 @@ def _check_linear_brush(b: Brush, step: float, n: int) -> None:
     )
 
 
+def _pass_lengths(place, degrees: float, n: int) -> tuple[float, float]:
+    """How long the first and the last of ``n`` passes across a shape are.
+
+    The passes of a banded scumble step across the place along the normal of
+    ``degrees`` and run along it; each one is cut to the outline, so on a wedge the
+    first pass and the last are very different lengths. Measured the way
+    :meth:`Session._shape_paths` lays them, at the two end offsets.
+    """
+    pts = np.asarray(place.points, dtype=np.float64)
+    cx, cy = place.box.center
+    theta = math.radians(float(degrees))
+    dx, dy = math.cos(theta), math.sin(theta)
+    nx, ny = -dy, dx
+    offs = (pts[:, 0] - cx) * nx + (pts[:, 1] - cy) * ny
+    lo_n, hi_n = float(offs.min()), float(offs.max())
+
+    def length_at(off: float) -> float:
+        origin = (cx + nx * off, cy + ny * off)
+        return sum(t1 - t0 for t0, t1 in _spans_inside(place, origin, (dx, dy)))
+
+    half = 0.5 * (hi_n - lo_n) / max(n, 1)
+    return length_at(lo_n + half), length_at(hi_n - half)
+
+
+#: A shape whose pass length at one end is this many times the other's is a wedge,
+#: and one brush cannot serve both ends of it.
+_WEDGE_RATIO = 2.0
+
+
+def _check_scumble_ends(place, degrees: float, b: Brush, n: int, stacklevel: int = 2) -> None:
+    """Warn when a banded scumble's brush is wider than its passes at one end.
+
+    The brush is picked from the *step* between passes (three of them), which closes
+    the joins on a band whose passes are all about one length. A shape whose width
+    varies along the stepping axis has passes of very different lengths, and a
+    brush right for the wide end is wider than the pass is long at the narrow one:
+    the passes there are dabs, and the paint blooms past the outline. One painter's
+    wedge, ``0.045`` across at the mouth and ``0.42`` at the far edge, bloomed at
+    the mouth and read as barely there at the wide end, and was abandoned for a
+    hand-built version in five pieces each sized to its own width.
+    """
+    if not isinstance(place, Polygon):
+        return
+    first, last = _pass_lengths(place, degrees, n)
+    narrow, wide = min(first, last), max(first, last)
+    if narrow <= 0.0 or b.size <= narrow:
+        return
+    if wide >= _WEDGE_RATIO * narrow:
+        warnings.warn(
+            f"scumble on {place.name or 'this shape'}: its width varies "
+            f"{wide / narrow:.0f}x along the direction the passes step -- the passes "
+            f"run {narrow:.3f} long at one end and {wide:.3f} at the other, and the "
+            f"brush is {b.size:.3g} wide. Picked for one end it is wrong for the "
+            f"other: at the narrow end the passes are dabs wider than the shape, "
+            f"and the paint blooms past it. Lay it as two or three bands each sized "
+            f"to its own width, or hand it size= for the end that matters.",
+            stacklevel=stacklevel,
+        )
+    else:
+        warnings.warn(
+            f"scumble on {place.name or 'this shape'}: every pass is shorter "
+            f"({narrow:.3f}) than the brush laying it ({b.size:.3g}), so the passes "
+            f"are dabs and the paint blooms past the outline. The passes run the "
+            f"short way across this place -- turn direction=, or lay a mass this "
+            f"narrow as a stroke.",
+            stacklevel=stacklevel,
+        )
+
+
 def _normal_extent(place, degrees: float) -> float:
     """How far a place reaches across a sweep at ``degrees``, along that sweep's normal.
 
@@ -3091,21 +3529,151 @@ def _mass_reason(fill, b: Brush, direction, density: float, laid: int) -> str:
     for the box its curve sweeps out -- once per direction, and each pass line comes
     back as however many pieces of it are really inside a concave shape.
     """
-    dirs = _pass_directions(direction)
+    dirs = _pass_directions("horizontal" if direction is None else direction)
     band = _pass_step(b.size, density)
     extents = [_normal_extent(fill, fill.axis if d == "axis" else _angle_of(d))
                for d in dirs]
     lines = sum(max(1, int(round(e / band))) for e in extents)
     parts = []
     if len(dirs) > 1:
-        parts.append(f"{len(dirs)} directions")
+        parts.append(f"{len(dirs)} directions (one mass rarely needs two)")
         parts.append(f"{lines // len(dirs)} passes each stepping across "
                      f"{max(extents):.2f} of the canvas")
     else:
         parts.append(f"{lines} passes stepping across {max(extents):.2f} of the canvas")
     if laid > lines * 1.15:
-        parts.append(f"each cut into {laid / max(lines, 1):.1f} pieces by the outline")
+        # The mechanism and the remedy in one breath: a painter told only that the
+        # outline cut the passes went looking for a different outline.
+        parts.append(f"each cut into {laid / max(lines, 1):.1f} pieces by the outline "
+                     f"-- lay the straight stretches as strokes, or use a wider brush")
     return ", ".join(parts)
+
+
+#: The check's thresholds, each one a number a real pass of a real painting tripped.
+_REPORT_MIN_MARKS = 10          # one brush at one size: over this many marks
+_REPORT_ANGLE_MARKS = 12        # a stack: this many long marks within...
+_REPORT_ANGLE_DEG = 6.0         # ...this many degrees of one another
+_REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps
+_REPORT_EARLY_MARKS = 60        # small marks inside the first this many are detail first
+_REPORT_SMALL_MARK = 0.02       # ...where small is under this
+_REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
+
+
+def _mark_length_and_angle(r: StrokeRecord, canvas) -> tuple[float, float]:
+    """A mark's chord in the brush's unit (the long side), and its angle mod 180."""
+    pts = np.asarray(r.points, dtype=np.float64)
+    if len(pts) < 2:
+        return 0.0, 0.0
+    long = float(canvas.long_side)
+    dx = (float(pts[-1, 0]) - float(pts[0, 0])) * canvas.width / long
+    dy = (float(pts[-1, 1]) - float(pts[0, 1])) * canvas.height / long
+    return math.hypot(dx, dy), math.degrees(math.atan2(dy, dx)) % 180.0
+
+
+def _call_of(r: StrokeRecord):
+    """What one call the mark belongs to: a mass verb's passes share a key.
+
+    The passes of one mass carry the verb's name and the stream state the call began
+    from, and two calls of the same verb cannot share a state, because every mass
+    draws from the stream at least once. A mark laid by hand is a call of its own.
+    """
+    via = r.params.get("via") if r.params else None
+    if not via:
+        return ("hand", r.index)
+    state = r.params.get("rng") or {}
+    return (via, state.get("state"), state.get("inc"))
+
+
+def _angle_name(degrees: float) -> str:
+    if degrees < _REPORT_ANGLE_DEG or degrees > 180.0 - _REPORT_ANGLE_DEG:
+        return "horizontal"
+    if abs(degrees - 90.0) < _REPORT_ANGLE_DEG:
+        return "vertical"
+    return f"{degrees:.0f} degrees"
+
+
+def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]:
+    """The lines :meth:`Session.report` prints, one per rule that fired."""
+    out: list[str] = []
+    if not marks:
+        return out
+    calls = {_call_of(r) for r in marks}
+
+    # One brush at one size, across two or more calls.
+    tools = {(r.brush, round(float(r.params.get("size", 0.0)), 4)) for r in marks}
+    if len(marks) >= _REPORT_MIN_MARKS and len(calls) >= 2 and len(tools) == 1:
+        (brush, size), = tools
+        out.append(
+            f"all {len(marks)} marks are {brush} at size={size:g}, in {len(calls)} "
+            f"calls: one brush at one size for a whole pass reads as one tool. Vary "
+            f"the size, the brush or the pressure between things."
+        )
+
+    # A stack of passes at one angle, from two or more calls.
+    long_marks = []
+    for r in marks:
+        length, angle = _mark_length_and_angle(r, canvas)
+        if length >= 2.0 * float(r.params.get("size", 0.0)) and length > 0.0:
+            long_marks.append((r, angle))
+    best: list[tuple[StrokeRecord, float]] = []
+    for _, centre in long_marks:
+        near = [(r, a) for r, a in long_marks
+                if min(abs(a - centre), 180.0 - abs(a - centre)) <= _REPORT_ANGLE_DEG]
+        if len(near) > len(best):
+            best = near
+    if (len(best) >= _REPORT_ANGLE_MARKS and len(best) >= 0.6 * len(long_marks)
+            and len({_call_of(r) for r, _ in best}) >= 2):
+        centre = float(np.median([a for _, a in best]))
+        out.append(
+            f"{len(best)} of {len(long_marks)} long marks run within "
+            f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
+            f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars unless the "
+            f"subject runs that way. Vary direction= between passes, or sweep each "
+            f"mass along its own axis."
+        )
+
+    # A bristle too small to be a brush.
+    small_comb = [r for r in marks
+                  if r.params.get("tip") == "bristle"
+                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE]
+    if len(small_comb) >= 3:
+        out.append(
+            f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE}: "
+            f"a comb that small is four streaks with gaps, not a brush. round_hard "
+            f"reads at that size; a small solid plane wants flat at pressure='even'."
+        )
+
+    # Detail before the masses are down.
+    small = [r for r in marks if float(r.params.get("size", 1.0)) < _REPORT_SMALL_MARK]
+    if earlier + len(marks) <= _REPORT_EARLY_MARKS and len(small) >= _REPORT_EARLY_COUNT:
+        out.append(
+            f"{len(small)} marks under size={_REPORT_SMALL_MARK} inside the painting's "
+            f"first {_REPORT_EARLY_MARKS}: detail before the masses are down. A good "
+            f"painting is mostly big statements."
+        )
+
+    # A pressure list asking a chisel for a width.
+    tapered = []
+    for r in marks:
+        if r.params.get("via") or r.params.get("tip") not in _CHISEL_TIPS:
+            continue
+        if isinstance(r.pressure, str):
+            continue
+        arr = np.atleast_1d(np.asarray(r.pressure, dtype=np.float32))
+        if arr.size < 2 or float(arr.max() - arr.min()) < 0.05:
+            continue
+        length, _ = _mark_length_and_angle(r, canvas)
+        if length <= _SHORT_MARK_WIDTHS * float(r.params.get("size", 0.0)):
+            tapered.append(r)
+    if tapered:
+        tips = sorted({str(r.params.get("tip")) for r in tapered})
+        out.append(
+            f"{len(tapered)} short mark{'s' if len(tapered) != 1 else ''} with a "
+            f"pressure list on a {'/'.join(tips)} tip: pressure changes a chisel's "
+            f"paint, not its width, so these are rectangles with a lighter end. A "
+            f"mark that tapers wants round_hard or liner."
+        )
+    return out
 
 
 def _pass_step(size: float, density: float) -> float:
@@ -3304,7 +3872,7 @@ def _arc_length(points: np.ndarray) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(np.hypot(d[:, 0], d[:, 1]))])
 
 
-def _sweep_spine(edge, closed, spacing: float) -> tuple[np.ndarray, bool]:
+def _sweep_spine(edge, closed, spacing: float, smooth: bool = True) -> tuple[np.ndarray, bool]:
     """The boundary a sweep follows: smoothed, then resampled at even arc length.
 
     Smoothed first because that is the curve the strokes will actually paint -- a
@@ -3312,6 +3880,15 @@ def _sweep_spine(edge, closed, spacing: float) -> tuple[np.ndarray, bool]:
     step the passes off the painted edge. Even spacing is what lets the offset be
     measured in one part-brush and the cross passes be laid in the mass's own
     coordinates rather than the canvas's.
+
+    ``smooth=False`` keeps the edge's own straight sides and corners: the spine is
+    the polyline itself, resampled with every vertex kept. That is what a drawn
+    polygon's contour wants -- a spline through four sparse corners bows outward by
+    tens of pixels, and a `block_in` fill is cut against the straight sides, so the
+    smoothed contour and the fill it was meant to finish did not agree about where
+    the mass stopped. The stroke laid along the spine still fits its own spline
+    through these points, but they sit a part-brush apart, and a spline through
+    points that close together is the polyline to within a pixel or two.
 
     Returns the spine and whether the edge is a loop. A loop's spine repeats its
     first point at the end, so interpolating along it wraps.
@@ -3344,7 +3921,8 @@ def _sweep_spine(edge, closed, spacing: float) -> tuple[np.ndarray, bool]:
             )
         pts = np.vstack([pts, pts[:1]])
 
-    dense = catmull_rom(pts.astype(np.float32), samples_per_segment=12).astype(np.float64)
+    dense = (catmull_rom(pts.astype(np.float32), samples_per_segment=12).astype(np.float64)
+             if smooth else pts)
     cum = _arc_length(dense)
     total = float(cum[-1])
     if total < 1e-9:
@@ -3353,6 +3931,10 @@ def _sweep_spine(edge, closed, spacing: float) -> tuple[np.ndarray, bool]:
     # Enough points to follow the curve, few enough that a long edge stays quick.
     count = int(np.clip(round(total / max(spacing, 1e-4)) + 1, 4, 96))
     at = np.linspace(0.0, total, count)
+    if not smooth and len(dense) <= 96:
+        # The corners themselves, so an even resampling cannot cut one off between
+        # two samples. An outline dense enough to be smooth already needs none.
+        at = np.unique(np.concatenate([at, cum]))
     spine = np.stack(
         [np.interp(at, cum, dense[:, 0]), np.interp(at, cum, dense[:, 1])], axis=1
     )
@@ -3662,6 +4244,28 @@ def _brush_from_params(params: dict) -> Brush:
 def _encode_rng(rng: np.random.Generator) -> dict:
     state = rng.bit_generator.state
     return json.loads(json.dumps(state, default=str))
+
+
+def _stream_of(rng: np.random.Generator) -> dict:
+    """The generator's state as the four numbers a log record carries.
+
+    The PCG64 state proper and its increment, plus the one cached 32-bit draw the
+    generator may be holding -- everything :func:`_decode_rng` needs, without the
+    name of the bit generator repeated on every record.
+    """
+    state = rng.bit_generator.state
+    inner = state["state"]
+    return {"state": int(inner["state"]), "inc": int(inner["inc"]),
+            "has_uint32": int(state.get("has_uint32", 0)),
+            "uinteger": int(state.get("uinteger", 0))}
+
+
+def _stream_rng(stored: dict) -> np.random.Generator:
+    """A generator at the state a log record carries. The inverse of :func:`_stream_of`."""
+    return _decode_rng({"bit_generator": "PCG64",
+                        "state": {"state": stored["state"], "inc": stored["inc"]},
+                        "has_uint32": stored.get("has_uint32", 0),
+                        "uinteger": stored.get("uinteger", 0)})
 
 
 def _decode_rng(state: dict) -> np.random.Generator:

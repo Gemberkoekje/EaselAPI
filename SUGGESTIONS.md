@@ -1,19 +1,19 @@
 # What the painters asked for, and what was done
 
-Four sessions painted a picture from the guide and then wrote down what the engine and
-the documentation had cost them, a fifth pass synthesised the points more than one of
+Seven sessions painted a picture from the guide and then wrote down what the engine and
+the documentation had cost them, a synthesis pass gathered the points more than one of
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything in the tables below is done** — 31 engine items and 42 documentation
+**Everything in the tables below is done** — 42 engine items and 50 documentation
 items. The long arguments that produced each one have been cut, because a request list
 is worth keeping only while somebody still has to act on it. What survives is the
 finding, because a finding is still true after the fix, and the handful of places where
-the answer differed from the request. **Three further sessions then painted one shared
-subject and left requests that are *not* done**; those are gathered under *Still open*,
-deduplicated, and counted nowhere in the done totals.
+the answer differed from the request. The last three sessions painted one shared
+subject; their lists were deduplicated into one round, and every number they took was
+re-measured before anything was built on it.
 
-**Done is not the same as right, and four times now it has meant *measured and there was
+**Done is not the same as right, and five times now it has meant *measured and there was
 nothing to fix*.** An engine item has a test behind it. A documentation item is a
 hypothesis until a fresh session paints against it, which is the rule
 [`LESSONS.md`](LESSONS.md) opens with and the reason every line below says what was
@@ -26,7 +26,7 @@ changed rather than that it worked.
 | Third session — a landscape at dusk, 184 strokes of 300, `paintings/lighthouse_dusk/` | 6 | 9 |
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
-| Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | *open* | *open* |
+| Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | 11 | 8 |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -58,91 +58,42 @@ painter's introspection about its own reasoning and is worth what such a report 
 usually worth — but it is the arm the prediction was about, and it points the same way.
 **The other arm has not been run.**
 
-**The post-pass check is still not built, and it is still the cheapest thing on the
-list.** `LESSONS.md` has it as the next engine step — a check over the pass just
-painted, printed beside the budget line, from inputs already in the log. Scored against
-the fourth session: *n passes at the same angle* catches the road's banded scumble; *one
-brush at one size for a whole pass* catches the first façade attempt; *the subject's
-share against the plan* catches the drift to 41% at the moment it happened rather than
-at the end. The fourth rule that session proposed for it — *a mass laid solid whose
-planned and rendered values differ by more than `0.10`* — **is not worth building**, and
-knowing that is what measuring the gap bought: the two values agree to `0.000`, so the
-check would never fire. Every rule that becomes a check can then leave the guide, which
-is the growth rule paying for itself.
+**The post-pass check is built.** It was the cheapest thing on the list for two rounds:
+a check over the pass just painted, printed beside the budget line, from inputs already
+in the log. `Session.report()` is it, `easel run` prints it after every pass
+(`--check` widens it to the painting, `easel log --check` reads it cold), and the MCP
+`run` tool hands it back. Six rules, every one met by a real pass of a real painting:
+*one brush at one size* for a whole pass of two or more calls; *a stack of passes at one
+angle*; *a bristle under `size=0.025`*; *small marks before the masses are down*; *a
+pressure list on a short chisel mark*, which the greenhouse painters added; and *the
+subject's share* of the marks so far, against the plan's number when it is given. The
+rule the fourth session proposed and this page dropped — a solid mass whose planned
+and rendered values differ — is still not in it, for the reason given then: the gap is
+`0.000`. The seventh rule the greenhouse round added, a shaped mass at the default
+direction costing over 2.5× its axis, needs the shape and fires at the call instead.
+Every rule that becomes a check can now leave the guide, which is the growth rule
+paying for itself; none has left it yet, because the check is a hypothesis until a
+fresh session paints against it.
 
 ### The greenhouse sessions: three painters on one subject
 
 One brief — a lighthouse mid-conversion into a greenhouse — was written down before any
 of the guide was read and handed to three painters unchanged
 (`paintings/lighthouse_greenhouse/{sonnet,opus,fable}/`). Their suggestion files sit
-beside each painting; what follows is those requests, deduplicated and left here for
-whoever next actions the register. **Nothing below is done.** Each item names its
-painter(s) and whether the number behind it was re-measured here or is the session's own
-report — which, by this file's own rule, is a hypothesis until checked. Only the
-`edge="clean"` arch and the three Fable items carry a probe re-run here
-(`fable/probes/`); the Opus and Sonnet numbers are their sessions' own and should be
-checked before anything is built on them.
-
-**Action first — `edge="clean"` fails on a mass narrow relative to its brush, found by all three.**
-This is the strongest signal the collection has produced: three painters, three
-different shapes, one call, none of them finding it in the guide. Sonnet got a pointed
-arch above a sharply tapering tower; Opus got a small cap eaten to 51% of its area,
-corners first (measured on six of its own masses); Fable got a 65px arch on a tall
-tower and isolated it (re-measured here) to the **contour spline bowing through sparse
-corners** — ragged stops correctly at 3px, subdividing the sides to six points brings it
-to 9px, and the dusk example's own four-cornered `tower()` arches 45px on today's
-engine, so the regression is already latent in a committed painting. It picks up exactly the
-residual the third session's `edge="clean"` item left noted — *the outline's own corners
-under a wide brush* — and root-causes it. The three
-disagree on the trigger — distance between outline corners, the brush's share of the
-shape's shorter extent, or the spline itself — and Fable's probe argues these are one
-condition seen three ways: the offset curve turns hardest exactly where corners are
-sparse, and a mass whose shorter extent is a couple of brushes is all corner. **Do
-both:** warn before the pass from `size / min(box.w, box.h)` (and corner spacing), and
-sweep the clean contour along the polygon's own edges rather than a spline. Probe:
-`fable/probes/probe_clean_contour.py`.
-
-**Engine, the rest.** Measured-by column: *here* = re-run in this repo, *session* = that
-painter's own number, unverified.
-
-| What was found | Painter(s) | Measured | Request |
-|---|---|---|---|
-| A chisel tip (`flat`/`knife`) staircases a mass whose boundary is not parallel to its passes: 13–17% of edges land within 10° of horizontal on a mass with no horizontal feature, against 3–4% for `bristle`/`round_hard`. One dimension over from *a shallow shape → its bounding box*, and not in that table. | Opus | session | a row in *the shape each tool leaves behind*, repair beside it: lay the plane with a comb, put the core back with one solid stroke down its middle. |
-| Oriented tips ignore a `pressure` width taper — every pot a chisel-ended rectangle, the exact passage the painter had read. | Sonnet, Opus | docs already say so | an engine warning, in the shape `smudge`/`cost` already use: *pressure=[…] on flat/bristle/knife changes paint, not width — round_hard tapers width.* A post-pass-check candidate. |
-| A shaped `block_in` with `direction` left off costs 3–11× its axis price (mid plane 3.9×, lit band 11×), because the default steps down the whole height. | Opus | session | post-pass-check candidate: when pass count exceeds ~2.5× the axis cost, say so and name `direction="axis"`. Met by real passes, twice in one painting. |
-| `scumble`'s `3×extent/n` auto-size (the fourth session's fix) blooms at the narrow end of a shape whose width varies ~9× along the stepping axis. | Sonnet | session (observed) | teach the auto-size or its warning to read the width at both ends, or add that sentence beside *leave size off* in `RECIPES.md`. |
-| `compare({place: value})` scores each place but never the gap *between* two places, which is what `0.10` actually means; a sheet finished all-green with two masses planned `0.00` apart, and they merged on the canvas. | Opus | session (arithmetic exact) | at plan time, print the pairs of planned places within `0.10` and ask *do these two touch?* |
-| CLI `easel undo` is not reliably lossless: the painting's undo detour drifted 1.06% of pixels from a clean rebuild, confined to marks after the undo, and resisted minimization (in-process undo and simple CLI cases restore exactly). | Fable | here | practice note — rebuild from edited scripts or undo in-process, not CLI mid-run; and maintainer instrumentation to root-cause. Probe: `fable/probes/probe_undo_drift.py`. |
-| Free planning verbs (`look`/`preview`/`rehearse`/`cost`/`compare`) leave the RNG stream untouched — the property that makes *rehearse everything* free of side effects; `pencil` is the exception and advances it. | Fable | here | assert the guarantee in a test; one line that `pencil` shifts the texture of every later stroke. Probe: `fable/probes/probe_rng.py`. |
-| A saturated mixture reads more vivid in this picture's very low-chroma field than `value_of` predicts; two mixtures each needed a third desaturation pass found only at real scale. | Sonnet | session (observed twice, mechanism a guess) | measure simultaneous contrast first; if it holds, a `palette.chroma_of()` instrument beside `value_of`, not a guide rule. |
-| A lone one-script `--rehearse` on an already-painted session reports `stroke_count`/`remaining` as `0`/full budget *inside the script*, while its `compare()`/`look()` see the real canvas. | Sonnet | session (not root-caused) | check whether the one-script rehearsal copy carries the budget/stroke-count state the way it copies the canvas and RNG; if intended, one line in `REFERENCE.md`'s budget section. |
-
-**Documentation and recipes.**
-
-| Gap | Painter(s) | Request |
-|---|---|---|
-| No recipe for a **volume of lit air** — a beam, a shaft, a halo seen from outside — as opposed to *a passage light in the middle*, which is light on a surface. | Fable (and reached unaided by the car-wash and dusk sessions for haze/halo) | a named recipe: mix the glaze close to the field, lay it with the soft round tip along the axis, taper by pressure, brightest at the source. It earns the one place the guide warns off that brush. |
-| No recipe for a small **compound** object — a container plus something growing from it, in three marks or fewer; the pots read as fruit. | Sonnet | a slot in `RECIPES.md`'s noun-free convention (*a small container with something spilling from it*); no working calls to propose yet. |
-| *Draw the planes with the silhouette.* *A mass built of planes* does not say **when** the tiling is decided: designed before the block-in the tower turned; invented in the pass the rock became the weakest passage (67 strokes of a planned 28). | Opus | one clause in the recipe and step 1 — the second drawing is not the finish; planes decided after the mass is down arrive as things laid *on* a hull, the failure the recipe already names. |
-| *Look every 5 to 15 strokes* is written for the held Python loop; under `easel run` the atom is a pass (10–50 strokes in one call), looked at when it returns. | Fable | state the cadence in passes for the shell workflow: rehearse before every pass, look after it. |
-| An exercise calibrates value; none calibrates hue, where the mixing surprises live (blue + yellow = green when you wanted grey, in prose only). | Fable | a ninth exercise: lay the planned mixtures as a swatch strip and look, before the first mass. |
-| `cost_line()` names the mechanism (*cut into N pieces by the outline*) but not the remedy. | Sonnet | name the fix in the same breath — straight segments as strokes, or a wider brush — as the `smudge` warning already says what a smaller size would look like. |
-| Composition is the one thing painters need with no procedure: the guide has a single (excellent) rule and nothing on how much of the canvas the subject takes or what to do with an empty half. | Opus (opinion, not a finding) | eventually a few `RECIPES.md` entries collected across paintings, not a `PAINTER.md` section; cannot be written from one painting. |
-
-**Logged as working as intended — evidence, not requests.** `cost()` caught a bent-`ribbon`
-stair at 141 of 340 before a stroke was spent; cut into straight flights it cost five —
-`PAINTING.md`'s own worked example reproduced and caught for free (Sonnet). And two
-correct, already-written rules failed anyway: a value-plan place going stale when its
-silhouette moved (a fourth instance on record), and a `pressure` list ignored on a
-chisel tip (*warning is not method* reproduced). Both argue for building the post-pass
-check over adding a sentence.
+beside their paintings, and what they asked for is **done**: eleven engine items and
+eight documentation items, in the two tables headed *What the greenhouse sessions
+found* below, each with what was measured before it was built. Every number the three
+painters took reproduced; two of the mechanisms they proposed for a real failure were
+wrong, and both are said beside the fix. The one long-standing item the round closed
+with them is the post-pass check.
 
 **On the split hypothesis:** all three greenhouse painters are *given everything* arms —
 they read the four guide files and at least one earlier painting — so none is the
 missing *method-plus-recipes-plus-reference-only* arm. Opus and Fable each named essay
 passages that did work no other file could (the glaze table, *the shape each tool leaves
 behind*, *masses that are not rectangles*), the same kind of evidence the fourth session
-gave, pointing the same way. **The other arm still has not been run.**
+gave, pointing the same way. **The other arm still has not been run**, and it is the
+one thing left open on this page that the engine cannot close.
 
 ---
 
@@ -232,6 +183,30 @@ first engine row above: what the guide has to say about a planned value and a se
 turned out to be that they are the same number, which is a shorter thing to say than the
 warning that was asked for.
 
+### What the greenhouse sessions found
+
+Three painters, one subject, three request lists — deduplicated into one round. Two of
+the three had probed their own claims before making them and the third's were checked
+here first; **every number the painters took reproduced**, to the percentage point where
+one had been taken, and two of the mechanisms proposed for a real failure were wrong in
+ways that changed what was built. The measurements are `scripts/probe_greenhouse_session.py`
+and the numbers are in `CALIBRATION.md`.
+
+| What was wrong | What was done |
+|---|---|
+| **`edge="clean"` fails on a mass narrow relative to its brush**, found by all three: a pointed arch above a tapering tower (Sonnet), a cap eaten to a mushroom, corners first (Opus), and a 65px arch standing off a four-cornered tower (Fable), who isolated it to the contour's spline bowing through sparse corners. They disagreed about the trigger — corner spacing, or the brush's share of the shorter extent. | **Both things the register asked for, and the trigger was neither number.** The contour is swept along the polygon's own edges rather than a spline through its corners: the arch goes from 65px to 4px on Fable's tower, 45px to 4px on the dusk example's own `tower()`, and 69px to 4px on a taper like Sonnet's — the ragged fill's 2–4px, so the contour now stops where the fill does. The share survives as the corners finding: measured on Opus's cap, the corners of a clean mass go past about a quarter of its shorter extent (83% of the corner pixels painted at a 22% share, 70% at 29%, 51% at 36%, 6% at 58%) while the cap as a whole stays covered, so `block_in` and `preview` say so past a quarter, in the shape the scumble warnings have. The same draw from the stream as the sweep it replaces, so nothing laid after a clean mass moves; the clean masses themselves do, in every painting that has one. |
+| **A chisel tip staircases a mass whose boundary is not parallel to its passes** — 13–17% of strong edges within 10° of horizontal on a mass with no horizontal feature, against 3–4% for `bristle`/`round_hard`. One dimension over from *a shallow shape → its bounding box*, and not in that table. (Opus, measured.) | Re-measured to the percentage point — `flat` 13% and 17%, `knife` 16%, `bristle` 4% and 7%, `round_hard` 3% — and rowed in *the shape each tool leaves behind* with the repair beside it: lay the plane with a comb, put the core back with one solid stroke down the middle. The table is in `CALIBRATION.md` under *Pressure*. A documentation item with a measurement, which is what the painter asked for; the engine change it would want — breaking a chisel's pass ends — would move every mass ever laid. |
+| **Oriented tips ignore a `pressure` width taper** — every pot a chisel-ended rectangle, the exact passage the painter had read, twice, in two paintings. *Warning is not method* reproduced. (Sonnet, Opus.) | **The engine says it at the call**, in the shape `smudge`'s size warning has: a hand-laid mark shorter than four brush widths given a pressure list with more than one value on a `flat`, `bristle` or `knife` says the list changes the paint and not the width, and names `round_hard` and `liner`. A list on a long pass is how *a passage brightening toward one side* is laid and is left alone, and so are the passes of a mass, where a list is the canvas-order feature. The same condition is a rule of the post-pass check. |
+| **A shaped `block_in` with `direction` left off costs 3–11× its axis price** — mid plane 3.9×, lit band 11× — because the default steps down the whole height; a rehearsal charged 124 for a pass budgeted at 40. (Opus, measured.) | **The ratios reproduce exactly — 3.9×, 11.0×, and 1.0× on the one mass wider than tall — and the price walk says so at 2.5×**, from `cost` and from the call, naming the axis count and `direction="axis"`. The default does not move, for the reason the painter gave: `"axis"` would be right nearly always and moving it would move every painting ever made. `direction`'s default is now `None`, which is horizontal, so the engine can tell *left off* from *chosen*. |
+| **`scumble`'s `3 × extent / n` auto-size blooms at the narrow end of a shape whose width varies ~9× along the stepping axis** — a beam wedge, abandoned after one rehearsal for a hand-built passage in five pieces. (Sonnet, observed.) | **Measured, and it is the brush being wider than the whole narrow end.** On a wedge `0.045` to `0.42` across, the auto-sized brush is `0.240` and the passes run `0.068` and `0.397` long; paint landing outside the outline is 73% of the wedge's area beside the mouth half. The verb reads the pass lengths at both ends and says so when the brush is wider than either, naming both lengths — and the sentence the painter offered as the alternative is in *a quiet gradient* beside *leave `size` off*: lay a wedge as two or three bands each sized to its own width, or hand it `size=` for the end that matters. |
+| **`compare({place: value})` scores each place but never the gap *between* two places**, which is what `0.10` actually means; a sheet finished all-green with two masses planned `0.00` apart, and they merged on the canvas. (Opus, arithmetic exact.) | The table lists every pair of planned places within the threshold of each other, closest first, and asks *do these two touch?* — a question, not an error, because three of that plan's four close pairs were masses that never met. Read off the plan rather than the canvas, so it is asked on the empty canvas, which is the run the guide already tells a painter to make. `Comparison.pairs` is it as data. |
+| **CLI `easel undo` is not reliably lossless** — the painting's undo detour drifted 1.06% of pixels from a clean rebuild, confined to the marks after the undo, and resisted minimisation. The mechanism was guessed as accumulated state, "the random stream or the wet paint layer". (Fable, measured.) | **Two causes, both root-caused, both fixed, both tested.** A mass draws its pass wander from the session's stream between the strokes it records, so undoing one left the stream past it; and `easel undo` rebuilds from the log, whose replay never draws the wander, so it handed back a stream sitting at the seed. Every record now carries the stream's state at the start of the call that made it — taken once, before the first draw, which is why an earlier attempt at this was left open in `LESSONS.md` — and undo restores it on both paths. The other cause was the one the toy cases could not show: the log rounded every point to five decimals, so a replay from disk laid every wobbled pass a hair off its line, invisible on hand-written coordinates. The points are exact now. A mass, a detour undone, a third mass: identical to a clean rebuild in-process for a mark, in-process for a whole mass, and through the session file. The practice note the painter asked for is therefore not written; the finding is in `CALIBRATION.md` under *The log, undo, and the stream*. |
+| **Free planning verbs leave the RNG stream untouched** — the property that makes *rehearse everything* free of side effects; `pencil` is the exception and "advances the stream". (Fable, measured.) | **Asserted by a test**, verb by verb: a bristle stroke laid after `look`, `look(values=True)`, `preview`, `rehearse`, `cost` or `compare` is the stroke laid after nothing, to the pixel. The exception's mechanism was wrong and the exception was bigger: `pencil` never touches the stream — it is *logged*, and a mark's texture is seeded from its place in the log, so `dry()` and `erase()` shift every later mark the same way. One paragraph in `PAINTING.md`'s *The rest of the API*, and a table in `CALIBRATION.md`. Not changed: seeding from the count of paint marks alone would move every painting with an underdrawing. |
+| **A saturated mixture reads more vivid in a very low-chroma field than `value_of` predicts**; two mixtures each needed a third desaturation pass found only at real scale. Mechanism a guess: simultaneous contrast. (Sonnet, observed twice.) | **The engine side was measured first, and it is nothing** — the fifth *nothing to fix*. A solid plane reads back at the mixture's own Oklab chroma or a little *under* it, never above (the ground pulling the first passes toward itself), and the rendered view reads the same as the paint. So what read more vivid was the eye, judging a colour against its field, which the engine cannot measure and does not add to; the instrument the painter asked for is built instead: `palette.chroma_of`, beside `value_of`, with the pigments' own numbers in `CALIBRATION.md` for scale. It is what the ninth exercise prints. Not a guide rule, as asked. |
+| **A lone one-script `--rehearse` on an already-painted session reports `stroke_count`/`remaining` as `0`/full budget inside the script**, while its `compare()` sees the real canvas. Not root-caused. (Sonnet.) | Root-caused: the rehearsal copy started its own log from nothing, so its count was the pass's and its budget the whole one. The copy now carries the painting's count, so `stroke_count`, `spent`, `remaining` and `budget_line()` inside a rehearsed pass are the numbers the pass will see when run for real; what the copy itself laid is its own `history.stroke_count`, which is what the shell's *Rehearsed* line always reported and still does. |
+| `cost_line()` names the mechanism (*cut into N pieces by the outline*) but not the remedy. (Sonnet.) | It names it in the same breath — *lay the straight stretches as strokes, or use a wider brush* — and *2 directions* adds *one mass rarely needs two*. |
+| **The post-pass check**, open since the synthesis, with the greenhouse's two candidate rules added to it. | Built — see *Still open* above for what it is. Building it needed one thing the log did not have: a way to tell a pass of a mass from a mark laid by hand, which every record now carries as `params["via"]`. |
+
 ---
 
 ## The documentation
@@ -289,6 +264,25 @@ reference, only that the pencil is free and a drawing is still the cheapest plac
 find out that the proportions in your head do not fit the canvas, which you can see the
 moment it is down. That is the half of the pencil that survives having nothing to
 compare it to.
+
+### What the greenhouse sessions asked of the documentation
+
+| Gap | What was done |
+|---|---|
+| No recipe for a **volume of lit air** — a beam, a shaft, a halo seen from outside — as opposed to *a passage light in the middle*, which is light on a surface. Reached unaided by three paintings. (Fable) | *A volume of lit air*, in `RECIPES.md`: the glaze mixed close to the field in value and hue, laid with the soft round tip along the axis, tapered by pressure so it is narrow and bright at the source and wide and gone at the far end — the painter's own three calls, rendered and looked at before they were written down. It earns the one place the guide warns off that brush, and it says so. |
+| No recipe for a small **compound** object — a container plus something growing from it, in three marks or fewer; the pots read as fruit. No working calls to propose. (Sonnet) | *A small container with something spilling from it*: the other painter on the same subject had it — one chisel mark for the body, a wider lighter chisel mark for the rim, one starved stroke for what spills — and the failed version is named beside it, because a round taper for the body is the natural first attempt and reads as a bulb. Rendered side by side to check that it does. |
+| *A mass built of planes* does not say **when** the tiling is decided: designed before the block-in the tower turned; invented in the pass the rock became the weakest passage. (Opus) | One clause in the recipe — *draw the planes with the silhouette* — and one line in step 1, with the failure it predicts named as the one the recipe already names, one level up. |
+| *Look every 5 to 15 strokes* is written for the held Python loop; under `easel run` the atom is a pass. (Fable) | One paragraph under *The one habit*: the count is for a held session; under `easel run` the habit is *rehearse before every pass, look after it* — and now, read the check `run` prints beside the budget line. |
+| An exercise calibrates value; none calibrates hue, where the mixing surprises live. (Fable) | A ninth exercise, the swatch strip: every planned mixture laid side by side before the first mass, printing value and chroma for each. In the guide and in `examples/exercises.py`. |
+| `scumble`'s auto-size on a wedge: the sentence beside *leave size off*. (Sonnet) | In *a quiet gradient*, with the number, beside the warning the verb now gives — and one more finding the same painter's probe left: a `flat` scallops a wide band at `0.11` peak to peak against `0.03` for a solid block-in, measured on the committed painting. |
+| The chisel staircase: a row in *the shape each tool leaves behind*, repair beside it. (Opus) | The row, the paragraph, the measurement and the repair — see the engine table. |
+| Composition is the one thing painters need with no procedure. *Eventually a few `RECIPES.md` entries collected across paintings, not a `PAINTER.md` section; cannot be written from one painting.* (Opus, opinion) | Two entries, collected from four paintings' notes rather than composed: *a subject that is one thing against a ground* (the bands crossed twice, the ground cut to a wedge, the horizon found late, and *two things that both want to be the subject* folded in from the car wash) and *a picture with an empty half* (the counter-beam, and the corner left empty on purpose). Marked in the file as the least certain things in it. The third entry the painter named has one instance on record and is a sentence rather than a recipe. |
+
+**Two lines of evidence the same painters logged as working as intended** stay where the
+register put them: `cost()` catching a bent `ribbon` at 141 of 340 before a stroke was
+spent, and two correct, already-written rules failing anyway — a plan's place going stale
+when its silhouette moved, and the pressure list on a chisel. The second is now a
+warning and a rule of the check, which is the answer both arguments were making.
 
 ---
 
@@ -380,6 +374,17 @@ without a stroke being charged for any of them. 56 rehearsals, no repainted mass
 fourth painter who was told to expect it and still had not guessed which passes would
 go wrong.
 
+**The three greenhouse painters defended the same three things above all**, unprompted:
+the seeded rehearsal (a chartreuse searchlight of a beam twice, three flat slabs where a
+cylinder should have turned, a chisel staircase, ten pots that were ten bricks, a halo
+twice the size of the thing it surrounded, a stair read as a hose, a fog that was green
+— all caught on a copy, none charged; 92 and 20 rehearsal images between two of them);
+`at_value`, which landed about twenty-five planned values each to the hundredth and
+raised when asked for a value under the floor; and `compare({place: value})`, which
+carried three pictures with no photograph and finished all their places inside `0.10`.
+One of them leaned on determinism hard enough to prove the `undo` finding with it: three
+independent clean rebuilds of its painting are byte-identical.
+
 ---
 
 ## Where the arguments went
@@ -396,19 +401,24 @@ when the work was finished. What was worth keeping outlived it:
 - the paintings, their notes and their pass scripts are in
   [`paintings/`](paintings), read from the outside in [`PAINTINGS.md`](PAINTINGS.md);
 - each engine item has a test in `tests/test_requests.py`, named for the request, and
-  the probes behind the third and fourth rounds are `scripts/probe_third_session.py`
-  and `scripts/probe_fourth_session.py`;
+  the probes behind the third, fourth and greenhouse rounds are
+  `scripts/probe_third_session.py`, `scripts/probe_fourth_session.py` and
+  `scripts/probe_greenhouse_session.py`, with the painters' own probes beside their
+  paintings under `paintings/lighthouse_greenhouse/`;
 - the releases are cut by version in [`CHANGELOG.md`](CHANGELOG.md), which is where to
   look for *which defaults moved*.
 
-**Seven of the painters' own claims have been re-measured before anything was built on
-them, and four did not survive.** All four are recorded above where the fix is — the
+**Sixteen of the painters' own claims have been re-measured before anything was built
+on them, and four did not survive.** All four are recorded above where the fix is — the
 clean contour spilling further than the ragged fill it replaced, the smudge on a slope
 that turned out to be a smudge on a bend, the rendered view that turned out not to lift
 a solid mass at all, and the bare boundary at `overhang=0` that turned out to be the
 comb and the brush running dry. That is `LESSONS.md`'s *check the painters' numbers*
 working as intended, and it is worth noticing **what kind** of claim fails it: every one
 of the four was reported as *observed* — a rehearsal showed it plainly and no number was
-taken — and reasoned back to a mechanism that sounded right. A claim that survives the
-check is usually worth more afterwards, because the re-measurement says what it is
-really about.
+taken — and reasoned back to a mechanism that sounded right. The nine from the
+greenhouse round all held, and two of them held with the wrong mechanism attached — the
+pencil that "advances the stream" advances the log index, and the undo that lost "the
+stream or the wet layer" was losing the stream *and* the log's precision — which is the
+other thing the check is for. A claim that survives it is usually worth more afterwards,
+because the re-measurement says what it is really about.

@@ -130,6 +130,34 @@ is always more white than feels right.
 
 ---
 
+### Chroma: the engine lays what it is given
+
+A painter mixed two colours, checked each against its target `value_of`, and found both
+came back far more saturated on a large plane in a very low-chroma field than the number
+suggested; each needed a second and a third desaturation pass found only at real scale.
+The engine side of that, measured: a mass `0.60 × 0.30` laid solid with a `flat` at
+`size=0.03`, 512×384 linen on `toned_warm_grey`, the Oklab chroma of the mixture, of
+the paint sampled over the mass, of the rendered view of it, and of the ground:
+
+| mixture | mixed | paint | view | ground |
+|---|---|---|---|---|
+| `yellow_ochre` + `viridian` 0.3 | `0.090` | `0.086` | `0.086` | `0.026` |
+| `cadmium_red` + white 0.4 | `0.164` | `0.149` | `0.149` | `0.026` |
+| `cerulean` + `burnt_umber` 0.5 | `0.017` | `0.016` | `0.016` | `0.026` |
+| `ultramarine` + white 0.6 | `0.084` | `0.071` | `0.071` | `0.026` |
+
+**The paint reads at the mixture's chroma or a little under it, never above** — the
+ground showing through the first passes pulls it toward the ground — and the view reads
+the same as the paint. So what read as more vivid was the eye, judging a colour against
+the field it sits in, which is what simultaneous contrast is; the engine cannot measure
+that and does not add to it. What it can do is give the number: `palette.chroma_of`,
+beside `value_of`, so a mixture's chroma can be put next to the field's before a plane
+of it is laid. For scale, the pigments: `titanium_white` `0.007`, `burnt_umber`
+`0.020`, `viridian` `0.055`, `alizarin` `0.057`, `burnt_sienna` `0.071`, `ultramarine`
+`0.085`, `cerulean` `0.092`, `yellow_ochre` `0.123`, `cadmium_yellow` `0.170`,
+`lemon_yellow` `0.175`, `cadmium_red` `0.202`; the `toned_grey` ground `0.013`.
+(`scripts/probe_greenhouse_session.py`.)
+
 ## The paint and the view of it
 
 There are two surfaces here, and it is worth knowing that they agree before spending a
@@ -489,6 +517,74 @@ inward from it, so the passes describe the form rather than crossing it — and 
 needs no closed shape. A shape's own outline can be swept: `shape.closed` is a loop,
 which `sweep` detects. The numbers for that are in the next section.
 
+### The contour of a clean edge
+
+Three painters handed one subject hit `edge="clean"` on three shapes: a pointed arch
+above a tapering tower, a cap eaten to a mushroom, and an arch standing 65px off a
+four-cornered tower — which the third isolated to the contour pass being swept along a
+*spline* through the polygon's corners, bowing outward wherever the corners are sparse.
+The contour is swept along the polygon's own edges since 0.2.0. Pixels of paint
+standing above the shape's top edge, 1024×768 linen, `flat` at `size=0.02`, laid solid
+with vertical passes; the ragged fill's half-brush is about 3px:
+
+| shape | ragged | clean, spline (until 0.2.0) | clean, along the edges |
+|---|---|---|---|
+| a fresh four-cornered tower, `0.10` wide | 4px | **65px** | 4px |
+| `lighthouse_dusk`'s own `tower()` polygon | 3px | **45px** | 4px |
+| a tower tapering from `0.20` to `0.07` | 2px | **69px** | 4px |
+
+The dusk example's committed `painting.png` predates the regression and does not show
+it; its four clean masses now rebuild where they were drawn. What the three painters
+proposed as the trigger — the distance between two outline corners, or the brush's
+share of the shape's shorter extent — was two views of the same spline, and neither
+number was it. (`scripts/probe_greenhouse_session.py`, which prints the spline column
+by putting the old contour back for one call.)
+
+### A clean edge on a narrow mass
+
+The other half of the same finding survives the fix and is the share. `edge="clean"`
+insets the fill by half the brush all round, which is a rim on a large mass and most of
+a small one. A painter's lantern cap, `0.214 × 0.036`, 1120×860 linen, `flat`, solid,
+`direction="axis"`. *Share* is the brush over the cap's shorter extent in the brush's
+own unit (the canvas long side); *kept* is the area the inset leaves to fill; *covered*
+is the share of the cap's pixels that got paint; *corners* the same over the outer 8% of
+its width at either end; *spill* the paint outside the cap as a share of its area:
+
+| `size` | share | kept | covered ragged / clean | corners ragged / clean | spill ragged / clean |
+|---|---|---|---|---|---|
+| `0.004` | 14% | 86% | 92% / 92% | 87% / 91% | 7% / 5% |
+| `0.006` | 22% | 80% | 99% / 99% | 97% / 83% | 16% / 8% |
+| `0.008` | 29% | 74% | 100% / 99% | 96% / 70% | 23% / 11% |
+| `0.010` | 36% | 68% | 100% / 98% | 97% / 51% | 30% / 15% |
+| `0.012` | 43% | 62% | 100% / 97% | 92% / 29% | 31% / 18% |
+| `0.016` | 58% | 51% | 99% / 96% | 85% / 6% | 42% / 21% |
+| `0.020` | 72% | 40% | 99% / 94% | 79% / 0% | 45% / 25% |
+
+The cap as a whole stays covered; **what goes is the corners**, and it goes past about
+a quarter of the shorter extent — the contour pass lays the strip the inset gave up as
+one chisel stroke, with the rounded ends a chisel leaves. So `block_in` and `preview`
+say so past a quarter, naming the share and what the inset keeps, and the fix is a
+smaller brush or the ragged edge. Clean still spills half what ragged does at every
+size, which is what it is for.
+
+### A shaped mass with `direction` left off
+
+`direction` defaults to horizontal, and on a shape taller than it is wide the passes
+step down its whole height. A painter costed two planes at 9 and 9 with `direction=90`,
+wrote the calls without it, and the rehearsal charged 124 for a pass budgeted at 40.
+The same masses priced three ways, `flat`, `density=1.0`, 1120×860:
+
+| mass | `"axis"` | `90` | left off | ratio |
+|---|---|---|---|---|
+| the tower's mid plane, `size=0.027` | 11 | 11 | **43** | 3.9× |
+| the tower's lit band, `size=0.022` | 5 | 7 | **55** | 11.0× |
+| the vine mass, wider than tall, `size=0.030` | 5 | 8 | 5 | 1.0× |
+
+The default does not move — `"axis"` would be right nearly always, and moving it would
+move every painting ever made — but the price walk has both numbers, and a shaped mass
+with `direction` left off says so from `cost` and from the call when the horizontal
+passes cost over 2.5× the axis: it fires on the first two and not on the third.
+
 ---
 
 ## `sweep`
@@ -752,6 +848,27 @@ ground. Past about five the ramp stops reaching its own ends. **Three steps is t
 middle of the window and is what the verb picks with no `size=`** — the same figure the
 inward case picks, for the same reason. Hand it under two and it says so.
 
+### The band across a wedge
+
+The step-sized brush closes the joins on a band whose passes are all about one length.
+A painter's beam — a wedge `0.045` across at the mouth and `0.42` at the far edge,
+1024×768 linen on `cool_grey`, `n=8`, `direction="vertical"`, so the passes run across
+the wedge and step along it — bloomed at the mouth and read as barely there at the far
+end, and was abandoned after one rehearsal for a hand-built passage in five pieces. The
+passes run `0.068` long at one end and `0.397` at the other. Paint landing outside the
+outline, as a share of the wedge's area, by which half of the wedge it fell beside:
+
+| brush | in steps | bloom beside the mouth half | beside the far half |
+|---|---|---|---|
+| `0.240` (picked from the step) | 3.0 | **73%** | 53% |
+| `0.100` | 1.2 | 19% | 20% |
+| `0.050` | 0.6 | 4% | 6% |
+
+Picked for the step, the brush is wider than the whole mouth, and no one brush serves
+both ends. The verb says so when the brush is wider than the passes at either end,
+naming both lengths; the answer is two or three bands each sized to its own width, or a
+`size=` chosen for the end that matters.
+
 ### Opacity does not make a passage quieter
 
 The passes overlap, so a low opacity accumulates back toward full colour instead of
@@ -793,7 +910,35 @@ so a fine line thins rather than disappearing. Measured on `round_hard` at
 | 1.00 | 36 px | 79 538 |
 
 The **oriented** tips — `flat`, `bristle`, `knife` — keep their chisel: 60 px at
-pressure 0.2 and at 1.0 alike, because a flat brush's width is the mass it lays.
+pressure 0.2 and at 1.0 alike, because a flat brush's width is the mass it lays. Two
+painters read that and laid every pot as a rectangle with chisel ends under
+`pressure=[1.0, 0.35]` regardless, so since 0.2.0 a hand-laid mark shorter than four
+brush widths given a pressure list on one of these tips says so at the call; a list on
+a long pass is how a passage brightens toward one side and is left alone.
+
+### The chisel staircase
+
+A chisel's pass ends stack into steps down a boundary that is not parallel to the
+passes — the *shallow shape → its bounding box* row of *the shape each tool leaves
+behind*, one dimension over. A painter's lit band, `0.06 × 0.64`, its sides sloping
+about three degrees off vertical, filled with vertical passes and laid solid, 1120×860
+linen on `toned_warm_grey`. The mass has no horizontal feature in it, so every
+horizontal edge is the tool's: the share of its strong edges (the top decile of the
+Sobel magnitude) running within ten degrees of horizontal:
+
+| tip | `size` | horizontal edges |
+|---|---|---|
+| `flat` | `0.020` | **13%** |
+| `flat` | `0.010` | **17%** |
+| `knife` | `0.020` | **16%** |
+| `bristle` | `0.022` | 4% |
+| `bristle` | `0.012` | 7% |
+| `round_hard` | `0.020` | 3% |
+
+Three to four times as many from a chisel, and a smaller chisel is worse, because there
+are more pass ends. The repair that worked costs one stroke: lay the plane with a comb
+and put the core back with a single solid stroke down its middle. Measured by the
+painter who found it and re-measured here to the percentage point.
 
 The named profiles, widest and narrowest point of one stroke, same brush:
 
@@ -913,6 +1058,49 @@ wobble is three low harmonics round the tip, drawn per *stroke* the way the comb
 and it swells as far as it bites so the mark keeps the size it asked for. Do not
 compare tips with this instrument: a thin tip's overlap falls faster for the same
 jitter, so it ranks thinness as much as repetition.
+
+---
+
+## The log, undo, and the stream
+
+**A replay from a saved log is the painting, to the pixel.** It was not: the log rounded
+every point to five decimals for a tidier file, and a wobbled pass came back from disk a
+hair off its line — invisible on hand-written coordinates, which are short decimals to
+begin with, and the reason a painter could not minimise the drift below with toy cases.
+The points are written exactly since 0.2.0, and a saved log replays byte for byte.
+
+**`undo` puts the random stream back.** A mass draws its pass wander from the session's
+stream, between the strokes it records. Undoing a plain mark was already exact; undoing
+a whole mass left the stream past it, and `easel undo` — which rebuilds from the log —
+handed back a stream sitting at the seed, so the next mass drew wander a clean rebuild
+never had. A painter measured its working session drifting **1.06%** of its pixels from
+a clean rebuild of the same scripts, confined to the marks laid after the undo. Every
+mark now carries the stream's state at the start of the call that made it (taken once,
+before the first draw, because per record it would already be one draw past). A mass,
+then a detour, then the detour undone, then a third mass, 320×240, seed 5, against the
+third mass laid straight after the first: identical in-process for a mark undone,
+identical in-process for a whole mass undone, identical through the session file.
+
+**The planning verbs leave nothing behind, and three free verbs do.** One `bristle`
+stroke laid after each verb, 400×300, seed 9, hashed against the same stroke laid after
+nothing:
+
+| verb | the stroke after it |
+|---|---|
+| `look`, `look(values=True)`, `preview`, `rehearse`, `cost`, `compare` | identical |
+| `pencil`, `dry`, `erase` | **changes** |
+
+The first row is the property *rehearse everything* rests on, and it is asserted by a
+test. The second is the log index, not the stream: a mark's texture is seeded from its
+place in the log, and each of those is logged, so adding or removing one shifts every
+mark after it. Deterministic, and a painting still rebuilds from its scripts.
+
+**A rehearsal copy counts on from the painting.** Inside a lone `easel run --rehearse`,
+`s.stroke_count` and `s.remaining` read `0` and the whole budget while `compare()` in
+the same script saw the painted canvas; the copy started its own log from nothing. It
+carries the painting's count now, so the numbers inside a rehearsed pass are the numbers
+the pass will see when it is run for real, and what the copy itself laid is its own
+`s.history.stroke_count` — which is what the shell's *Rehearsed* line reports.
 
 ---
 

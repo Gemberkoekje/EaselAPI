@@ -17,7 +17,7 @@ colour per cell is here to catch "that whole passage is too warm", nothing finer
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -99,6 +99,13 @@ class Comparison:
     #: The darkest value the palette can reach. Cells whose *reference* is more than
     #: a threshold below it are out of reach of any stroke; zero disables the split.
     floor: float = 0.0
+    #: Planned places whose *targets* sit within the threshold of each other, as
+    #: ``(name, name, gap)``, closest first. Only a value plan has these. The table
+    #: scores every place against its own target, and what the threshold *means* --
+    #: the distance below which two masses read as one -- is a statement about a
+    #: pair, and no pair was ever checked: a plan finished all-green with two masses
+    #: planned ``0.00`` apart, and they were the two that touched on the canvas.
+    pairs: list[tuple[str, str, float]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._by_label = {c.label: c for c in self.cells}
@@ -176,6 +183,17 @@ class Comparison:
             f" more than {self.threshold:.2f} out (* above); "
             f"largest {self.max_delta:.2f}."
         )
+        if self.pairs:
+            # A question, not an error: three of one painting's four close pairs were
+            # masses that never met, and the fourth was the tower's foot dissolving
+            # into the water. The sheet cannot know which; it can ask.
+            lines.append(
+                f"{len(self.pairs)} pair{'s' if len(self.pairs) != 1 else ''} planned "
+                f"within {self.threshold:.2f} of each other -- do these two touch? "
+                f"Where they do, they will read as one mass:"
+            )
+            for a, b, gap in self.pairs:
+                lines.append(f"    {a} / {b}, {gap:.2f} apart")
         if beyond:
             lines.append(
                 f"{len(beyond)} of those (~) ask for a value below the palette's "

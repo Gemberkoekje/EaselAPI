@@ -280,6 +280,11 @@ neither of the two numbers proposed above but the spline the contour is swept al
 bowing through sparse corners — which is why a tapering tower gets a pointed arch and a
 shallow cap loses its corners. The measurement is
 [`fable/probes/probe_clean_contour.py`](paintings/lighthouse_greenhouse/fable/probes/probe_clean_contour.py).
+Since 0.2.0 the engine sweeps the contour along the polygon's own edges, and every one
+of those shapes comes back at 4px — the ragged fill's own half-brush; the share the second
+painter measured survives as the *corners* going past about a quarter, which is what
+the call now warns about. `scripts/probe_greenhouse_session.py` prints the before
+beside the after.
 
 Both also arrived at *the tool has a geometry and it will choose if you do not* by a
 different route: Sonnet through a `pressure` list that did nothing to a chisel's width,
