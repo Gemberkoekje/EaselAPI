@@ -20,7 +20,7 @@ you paint over it.
 **Read the guide before you paint.** The engine is only the brush;
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
 is the half that matters. It ships inside the package, so there is nothing to go and
-find: **`easel guide`** prints its first page — the whole workflow, under a thousand
+find: **`easel guide`** prints its first page — the whole workflow, about a thousand
 words — and `easel guide --full` prints the rest.
 
 ```python
@@ -35,7 +35,7 @@ s.stroke([(0.2, 0.6), (0.6, 0.55), (0.9, 0.62)], "bristle", "yellow_ochre")
 s.export("painting.png")
 ```
 
-## Three paintings, made this way
+## Paintings, made this way
 
 ![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom
 of white light down the tunnel, a red stop light, and a foam-covered side brush
@@ -45,21 +45,29 @@ swinging in from the right, past a steering wheel and rear-view mirror](https://
 strokes of a 300 budget, 1152×720 linen, no reference photograph. The nineteen pass
 scripts beside it reproduce that PNG byte for byte.*
 
-![Three ripe pears on a kitchen windowsill in late-afternoon light, a chipped blue
-enamel mug behind them and a half-drawn curtain at the right](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/windowsill_pears/painting.png)
+![A laundromat at night seen from the sidewalk opposite: a wide lit shopfront window set
+in a dark building, a row of washing machines with round doors inside it, one person
+sitting alone at the right-hand end, and the window's light broken into streaks down a
+wet road in the foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/laundromat_night/painting.png)
 
-*[**Three pears on a kitchen windowsill**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/windowsill_pears/NOTES.md) — 224
-strokes, 1024×768 linen, no reference photograph.*
+*[**A laundromat at night, from across the street**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/laundromat_night/NOTES.md) — 286
+strokes of a 300 budget, 1024×768 linen, no reference photograph. Fourteen pass scripts
+beside it reproduce that PNG byte for byte.*
 
-![A lighthouse on a rocky headland at dusk: a white tower with a red band standing in
-dark rock on the left, its lamp lit, an orange afterglow along the right-hand horizon
-reflected in a calm sea, and a crescent moon in the upper right](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/lighthouse_dusk/painting.png)
+![A grey heron seen from high above in a flooded parking lot at dawn, the water filling
+nearly the whole frame: a near-black band of trees across the top with a warm yellow
+reflection under it, the bird standing large and high in the picture with a white head
+and a long ochre bill and its own pale reflection directly below it, and painted stall
+lines running away across the water in the
+foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/heron_lot/2/painting.png)
 
-*[**A lighthouse on a rocky headland at dusk**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/lighthouse_dusk/NOTES.md) — 184
-strokes of a 300 budget, 1024×768 linen, no reference photograph. Eighteen rehearsals,
-none of them charged; the ten pass scripts beside it reproduce that PNG byte for byte.*
+*[**A heron in a flooded parking lot at dawn**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/heron_lot/2/NOTES.md) — 253
+strokes of a 320 budget, 1024×768 rough canvas, no reference photograph. The same subject
+was painted twice by the same painter to separate two kinds of fault;
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md#a-heron-in-a-flooded-parking-lot-at-dawn)
+has both attempts side by side.*
 
-All three were painted by a language model working from [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md),
+Every one of these was painted by a language model working from [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md),
 one call to this API at a time, with no human hand on the canvas and nothing traced.
 Every stroke is in the log, every time-lapse was rebuilt from it, and the notes beside
 each painting say what went wrong as well as what went right.
@@ -180,7 +188,7 @@ easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
-easel guide                                          # the method, in under a thousand words
+easel guide                                          # the method, in about a thousand words
 easel guide --full                                   # all of PAINTER.md
 easel guide --painting                               # the reasons under the rules
 easel guide --recipes                                # the calls, in order, for a thing
@@ -401,7 +409,7 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what seven painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what nine painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
 each. Every item on it is done — including the five that were answered by measuring them
 and finding nothing to fix, which say so.

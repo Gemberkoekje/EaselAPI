@@ -155,8 +155,8 @@ s.erase(span("E4", "G7"))
 ```
 
 A rehearsal answers one question per round trip. The pencil answers six at once, for
-nothing, and `s.erase(region)` takes back the five you did not want. **Eight of the
-nine paintings in this repository never drew a line**, and the most expensive
+nothing, and `s.erase(region)` takes back the five you did not want. **Seven of the
+ten paintings in this repository never drew a line**, and the most expensive
 rehearsals in two of them went on features whose silhouette this loop would have
 settled first.
 
@@ -1215,7 +1215,7 @@ Shapes — a mass that is not a box. Every one of these is a place like the ones
 above, and goes anywhere a region goes:
 
 ```python
-blob(place, radius, wobble=0.25, seed=0)   # an irregular silhouette
+blob(place, radius, wobble=0.22, seed=0)   # an irregular silhouette
 ellipse(place, rx, ry, rotate=0)           # round, or filling the place given
 s.circle(place, r, wobble=0)               # round *in pixels* on any canvas
 hull([p1, p2, p3])                         # the mass around three or four points

@@ -618,9 +618,9 @@ And three that were already here:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the runs found has been applied.
-[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from seven painting sessions and the
-synthesis across them, and **every item is now done** — forty-two for the engine, fifty
-for the documentation — each with a note saying what it became.
+[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from nine painting sessions and the
+synthesis across them, and **every item is now done** — forty-nine for the engine,
+sixty-five for the documentation — each with a note saying what it became.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints
