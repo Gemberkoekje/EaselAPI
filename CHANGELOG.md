@@ -21,14 +21,27 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
+**0.3.0 is released, so the next change to land here needs a version bump before it can
+ship.** The version is written by hand in `pyproject.toml` and copied into
+`src/easel/__init__.py` and both entries in `server.json`; `tests/test_version.py` and
+`tests/test_server_json.py` hold every copy to the one in `pyproject.toml`. Releasing is
+a tag push — `git tag v0.x.y && git push origin v0.x.y` — and `publish.yml` refuses a tag
+that disagrees with `pyproject.toml` before it uploads anything, because a PyPI version
+number cannot be reused once taken.
+
 ## [0.3.0] — 2026-09-14
 
-**This release carries three rounds of work.** 0.3.0 was prepared twice and never
+**Released**, and it carries three rounds of work. It was prepared twice and never
 tagged — an earlier draft of this file split the same work across a 0.3.0 and a 0.4.0,
 neither of which was released — so the eighth session's round, the ninth session's
 round and the documentation restructure are all in here, under the version that
-follows 0.2.0. The last released version is 0.2.0; nothing below ever shipped under
-any other number.
+follows 0.2.0. **There has never been a 0.4.0**, and nothing below ever shipped under
+any number but this one.
+
+Shipped on 2026-09-14 as `v0.3.0`: `easel-paint` 0.3.0 on PyPI, the GitHub release with
+`easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.3.0 in the MCP registry. It
+is also the first tag pushed since the release workflow's `bundle` and `registry` jobs
+were fixed, and the first run in which either of them succeeded.
 
 Each round kept its own account, in the order the work happened.
 
