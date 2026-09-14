@@ -5,9 +5,8 @@ the documentation had cost them, a synthesis pass gathered the points more than 
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything in the tables below is done — except the last round, which is open and
-says so** — 42 engine items and 50 documentation items closed, and 3 engine and 5
-documentation items open from the eighth session. The long arguments that produced each
+**Everything in the tables below is done** — 45 engine items and 55 documentation
+items, the last eight of them closed in 0.3.0. The long arguments that produced each
 one have been cut, because a request list is worth keeping only while somebody still has
 to act on it. What survives is the
 finding, because a finding is still true after the fix, and the handful of places where
@@ -29,7 +28,7 @@ changed rather than that it worked.
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
 | Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | 11 | 8 |
-| Eighth session — a pool at night, 221 strokes of 300, `pool_night/` | 3 open | 5 open |
+| Eighth session — a pool at night, 221 strokes of 300, `pool_night/` | 3 | 5 |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -81,13 +80,19 @@ and rendered values differ — is still not in it, for the reason given then: th
 `0.000`. The seventh rule the greenhouse round added, a shaped mass at the default
 direction costing over 2.5× its axis, needs the shape and fires at the call instead.
 Every rule that becomes a check can now leave the guide, which is the growth rule
-paying for itself; none has left it yet, and the check has now had its first outing
-against a session that had never seen it — see the eighth session below, where it fired
-on twelve horizontal passes in the painting's very first mass, on a bristle under
-`0.025` four times and on pressure lists on a chisel tip twice, and every one of those
-was acted on in the rehearsal it fired in. What it has not yet shown is that a
-rule it holds can safely leave the guide, which needs a session painting against a guide
-the rule has left.
+paying for itself, and the check has had its first outing against a session that had
+never seen it — see the eighth session below, where it fired on twelve horizontal
+passes in the painting's very first mass, on a bristle under `0.025` four times and on
+pressure lists on a chisel tip twice, and every one of those was acted on in the
+rehearsal it fired in.
+
+**And in 0.3.0 the first rule left.** *You will under-vary your marks* is in
+`PAINTING.md` rather than on the front page, because the check names both halves of it
+after every pass with the numbers attached, which the paragraph could not do — and
+because the front page's word budget left the eighth session's two items nowhere else
+to come from, which is the growth rule working exactly as it was meant to. Whether a
+rule can safely leave is still unshown; what has changed is that it is now a question
+a session can answer, because there is a guide with a rule missing from it.
 
 ### The greenhouse sessions: three painters on one subject
 
@@ -185,31 +190,25 @@ of the three lookups were in files the split does not vary.
 the withheld files it wrote that the guide's repetition "seems not to have noticed its
 own cost", and `LESSONS.md` opens with the measurement that a rule correct, well placed
 and repeated three times still failed every run. Fair as a description of reading it,
-wrong about the cause — which is the same shape as the four re-measured claims at the
-foot of this page: an observation reasoned back to a mechanism that sounded right.
+wrong about the cause — which is the same shape as the re-measured claims at the foot
+of this page that did not survive: an observation reasoned back to a mechanism that
+sounded right. It made one of those too, and said so in advance.
 
-### What it asks for, and none of it is done
+### What it asked for, and what was done
 
-**This is the first round on this page that is open.** It is filed rather than held
-back, because the session that raised it is the split test's other arm and these items
-are worth reading beside the account above. Each says whether its numbers were
-*measured* or *observed*, which the foot of this page says is what decides which claims
-survive re-measurement — and one is offered as an opinion with no measurement at all,
-marked so.
+**It is the first round this page ever carried as open, and it is closed in 0.3.0** —
+three engine items and five documentation items, in the two tables headed *What the
+eighth session found* below. Each of its claims said whether its numbers were
+*measured* or *observed*, and one was offered as an opinion with no measurement at
+all; all of them were re-measured before anything was built, in
+`scripts/probe_pool_session.py`. **Every number reproduced to the stroke.** One
+mechanism did not, and the session had marked that one as a guess — which is what the
+foot of this page predicts about guessed mechanisms, from the other arm of the same
+habit.
 
-| The engine | What is proposed |
-|---|---|
-| **A glaze's usable opacity is a function of its distance from the field, and there is no instrument for it.** `CALIBRATION.md` measures the problem — at `0.14` a film moves the value `0.087`, within a hundredth of the `0.10` that makes a new mass, and at `0.05` the underlying hue is already dead — and the guide's answer is *mix the glaze close, then choose an opacity*, which is a two-step search run by rehearsal. Six of this painting's rehearsals went on it, and one glaze was rehearsed three times and dropped. (Measured by the file; the cost observed here.) | `glaze(points, color, to_value=0.62)`, solving for opacity the way `at_value` solves a mixture for a value. `at_value` is the single most defended thing on this page across seven sessions, and the same instrument does not exist for a film — which is the other place a painter aims at a value and cannot hit it. |
-| **The inward `scumble`'s usable `n` is bounded by the patch, and the verb warns from only one side.** The brush is `3 × depth / n` and the post-pass check's comb floor is `0.025`, so `n ≤ 120 × depth`: on a patch shallower than about `0.07` there is no `n` giving both enough rings to avoid contour banding and a brush that is a brush. This session met it at `n=12` on `depth=0.075`, read the resulting bristle warning as an unrelated complaint, and spent two further rehearsals. (Arithmetic exact; the banding observed.) | The verb says when the brush is too *wide* for the patch and nothing when the patch cannot carry the `n` asked for. It should say so from the narrow side too — and where no `n` fits, name *a volume of lit air*, which is what lays it. |
-| **`direction=` given a sequence is priced far above any single angle in it.** Measured on one mass, same brush, same density, same call: `"axis"` **4** strokes, a single `-17°` **7**, `"cross"` **15**, a ten-angle sequence **51**. `cost()` gives the number and nothing gives the mechanism; the greenhouse round's 2.5× price walk fires on `direction` *left off*, not on a sequence. (Costs measured. The mechanism — that the stack is sized for the steepest angle in the list — is **observed and offered as a guess**, which this page's own record suggests is the half most likely to be wrong.) | Either the price walk covers a sequence, or one row in `CALIBRATION.md` under `block_in`. The guide tells a painter to vary direction between passes to break a comb, so a painter following that advice reaches for the sequence first; `"cross"` at 15 was the affordable answer and nothing pointed at it. |
-
-| The documentation | What is proposed |
-|---|---|
-| **The two glow recipes cannot be told apart at the moment of choosing.** *A passage light in the middle* and *a volume of lit air* are the right pair, and the sentence that separates them — *an inward scumble is a bloom **on** something* — sits inside the second entry, where it is read by a painter who has already chosen correctly. Four sessions have now reached the glaze answer the hard way, and one of them had the recipe open. | One clause in the first entry and in the index table at the head of `RECIPES.md`: on a surface, versus in a medium. The index is where a recipe is chosen, and it is the one place in that file with room for a distinction rather than a procedure. |
-| **`compare({place: value})` is unreachable from the method file.** `PAINTER.md` step 3 is where the value plan is made and it teaches the plan as printed numbers; the pairs question lives in `PAINTING.md`, and `REFERENCE.md` carries the signature without the reason. This session wrote a nine-value plan, checked the separations by hand against the `0.10` rule, satisfied itself, and still shipped a coping that reached the subject's own value — the exact failure the pairs table was built for. | Two lines in step 3 beside *plan those three as numbers*: run it on the empty canvas, and read the pairs. It carried three pictures with no photograph for the greenhouse painters, and the arm without the essay never ran it once. |
-| **No preset ground suits a low-key picture, and the guide's ground advice is silently wrong for one.** *Start on a toned ground, not white* is right for a mid-key picture. The lowest preset is `umber_wash` at `0.425`; this session took `cool_grey` at `0.53`, after which every dark mass had to be laid `solid=True` to cover it — which cost strokes, removed the ground-breathing-through the same page values, and left the deck repaint as the one mass this painter had to lay twice. The fourth session solved this and wrote the reason only in its own notes. | One sentence under *Getting started*, where the presets are listed: a picture whose masses sit below the presets wants a ground of its own — `Session(ground="#5a5045")` — and `value_of` it before the first mass. The mechanism is already there, since a ground takes any colour; no rule points a painter at it. |
-| **A painter placing marks *inside* a shaped mass needs point-in-shape constantly, and nothing says so.** This session hand-rolled edge-intersection arithmetic about fifteen times to check that a ripple, a lamp or a glaze fell inside its pool, with `shape.contains(x, y)` listed in the file it had open. Every mark laid *in* a mass rather than *as* one wants it, and this painting is mostly such marks. | A line where `RECIPES.md` lays small marks into a larger mass. A list of methods answers *what exists*; it does not answer *what you are about to need*, and the shapes list is read once at the start rather than at the moment a mark is placed. |
-| **The worked examples may prime toward one kind of picture.** Three of the four finished paintings are low-light scenes with a single light source, and most of the guide's illustrative passages are drawn from them. The named-subject priming is measured and guarded against; this is not. (**Opinion, unmeasured, and offered as one.** This session chose a low-light subject before opening anything, so it is a data point for the hypothesis and cannot test it.) | Nothing yet. If the next brief is written for a high-key or flatly-lit subject, that is the measurement — and the brief has to be written before anyone reads `paintings/`, which is the protocol the subject rule already uses. |
+Two of the three engine items are **instruments rather than mechanisms**, which is
+what a deficit of lookup produces: the engine could answer both questions and would
+not say either out loud. The third is a price the walk already knew and never quoted.
 
 ---
 
@@ -323,6 +322,19 @@ and the numbers are in `CALIBRATION.md`.
 | `cost_line()` names the mechanism (*cut into N pieces by the outline*) but not the remedy. (Sonnet.) | It names it in the same breath — *lay the straight stretches as strokes, or use a wider brush* — and *2 directions* adds *one mass rarely needs two*. |
 | **The post-pass check**, open since the synthesis, with the greenhouse's two candidate rules added to it. | Built — see *Still open* above for what it is. Building it needed one thing the log did not have: a way to tell a pass of a mass from a mark laid by hand, which every record now carries as `params["via"]`. |
 
+### What the eighth session found
+
+A pool at night, painted against `PAINTER.md`, `RECIPES.md` and `REFERENCE.md` and
+nothing else. **Every number it took reproduced to the stroke**, and one mechanism it
+offered did not — it had marked that one as a guess. The measurements are
+`scripts/probe_pool_session.py` and the numbers are in `CALIBRATION.md`.
+
+| What was wrong | What was done |
+|---|---|
+| **A glaze's usable opacity is a function of its distance from the field, and there is no instrument for it.** `CALIBRATION.md` measures the problem — at `0.14` a film moves the value `0.087`, within a hundredth of the `0.10` that makes a new mass, and at `0.05` the underlying hue is already dead — and the guide's answer, *mix the glaze close, then choose an opacity*, leaves the second half as a two-step search run by rehearsal. Six of this painting's rehearsals went on it and one glaze was rehearsed three times and dropped. The instrument asked for: `glaze(points, color, to_value=0.62)`, solving for opacity the way `at_value` solves a mixture for a value. (Measured by the file; the cost observed here.) | **Built as asked, and it is a search rather than a formula**, for `at_value`'s reason: what a film delivers is the pigment model, the tooth and whatever is already there, and none of that is available as arithmetic. `glaze(to_value=)` lays films on trial canvases until one delivers the value, **measured over the film's own footprint** rather than a region named by hand, and then lays that one. It lands within `0.002` of the target on every case tried, costs one stroke like any other glaze, and puts the opacity it chose in the log. Because the trials come off a *copy* of the stroke stream, the film that lands is byte for byte the film that would have landed had its opacity been typed out — solving for it moves no paint, and a test holds that. A target the film cannot reach raises, naming the value under it and the value at `opacity=1.0`. |
+| **The inward `scumble`'s usable `n` is bounded by the patch, and the verb warns from only one side.** The brush is `3 × depth / n` and the post-pass check's comb floor is `0.025`, so `n ≤ 120 × depth`: on a shallow patch there is no `n` giving both enough rings to avoid contour banding and a brush that is a brush. Met at `n=12` on `depth=0.075`; the resulting bristle warning was read as an unrelated complaint and two further rehearsals were spent. (Arithmetic exact; the banding observed.) | **The arithmetic is exact and the verb says it from both sides now**, in the shape its other warnings have. It names the patch's depth, the brush it derived, the floor, and the largest `n` that clears it — *more rings on a patch this shallow buy a narrower brush, not finer banding*. Where no `n` fits it names *a volume of lit air* instead, as the request asked. **One number moved**: *about `0.07`* is the wall for the recipe's eight rings, and the wall where nothing fits is `0.042`, which is five rings — the fewest the verb's own docstring says read as a fall-off. Both are in `CALIBRATION.md`. |
+| **`direction=` given a sequence is priced far above any single angle in it.** Measured on one mass, same brush, same density, same call: `"axis"` **4** strokes, a single `-17°` **7**, `"cross"` **15**, a ten-angle sequence **51**. `cost()` gives the number and nothing gives the mechanism; the greenhouse round's 2.5× price walk fires on `direction` *left off*, not on a sequence. (Costs measured. The mechanism — that the stack is sized for the steepest angle in the list — is **observed and offered as a guess**, which this page's own record suggests is the half most likely to be wrong.) | **The costs reproduce to the stroke and the mechanism does not, exactly as the request predicted of itself.** A sequence is *one whole pass per angle* and the mass is charged the **sum**: on the same room mass a ten-angle list costs 85, which is `4 + 5 + 7 + 7 + 9 + 10 + 10 + 11 + 11 + 11`, and the steepest of them alone is 11. So the price walk covers a sequence at the request's own threshold — *far above any single angle in it* — and names every angle's price in the line. Two angles can never be more than twice the dearer of them, which leaves `"cross"` and the cross-at-the-mass's-own-angle idiom every painting here uses silent, and catches the list that is really a stack. The row asked for is in `CALIBRATION.md` as well. |
+
 ---
 
 ## The documentation
@@ -402,6 +414,26 @@ warning and a rule of the check, which is the answer both arguments were making.
 
 ---
 
+### What the eighth session asked of the documentation
+
+| Gap | What was done |
+|---|---|
+| **The two glow recipes cannot be told apart at the moment of choosing.** *A passage light in the middle* and *a volume of lit air* are the right pair, and the sentence that separates them — *an inward scumble is a bloom **on** something* — sits inside the second entry, where it is read by a painter who has already chosen correctly. Four sessions have now reached the glaze answer the hard way, and one of them had the recipe open. | The index says *on a surface* against one and *in a medium* against the other, which is the one place in that file with room for a distinction rather than a procedure, and the first entry now says it outright with the second linked from it. |
+| **`compare({place: value})` is unreachable from the method file.** `PAINTER.md` step 3 teaches the plan as printed numbers; the pairs question lives in `PAINTING.md` and `REFERENCE.md` carries the signature without the reason. This session wrote a nine-value plan, checked the separations by hand, satisfied itself, and still shipped a coping that reached the subject's own value. | Two lines in step 3: put the plan itself through `compare({place: value})` on the empty canvas and read the pairs. Run on this session's own plan, before a mark, the sheet reports nine pairs inside `0.10` — the coping against the near deck among them, which is the fault it found at stroke 137 with `sample()`. |
+| **No preset ground suits a low-key picture, and the guide's ground advice is silently wrong for one.** The lowest preset is `umber_wash` at `0.425`; this session took `cool_grey` at `0.53`, after which every dark mass had to be laid `solid=True` to cover it — which cost strokes, removed the ground breathing through, and left the deck repaint as the one mass it had to lay twice. The fourth session solved this and wrote the reason only in its own notes. | One sentence under *Getting started* where the presets are listed, with both numbers re-measured: `umber_wash` reads `0.425`, `cool_grey` `0.536`, and `Session(ground="#5a5045")` reads `0.320`. The mechanism was always there, since a ground takes any colour; what was missing was a rule pointing at it. |
+| **A painter placing marks *inside* a shaped mass needs point-in-shape constantly, and nothing says so.** This session hand-rolled edge-intersection arithmetic about fifteen times to check that a ripple, a lamp or a glaze fell inside its pool, with `shape.contains(x, y)` listed in the file it had open. | A block in `RECIPES.md` where small marks are laid into a larger mass, with `contains` for one point and `inside(xs, ys)` for a scatter of them — and `inside` added to `REFERENCE.md`, where only `contains` was listed. A list of methods answers *what exists*; it is read once at the start rather than at the moment a mark is placed. |
+| **The worked examples may prime toward one kind of picture.** Three of the four finished paintings are low-light scenes with a single light source, and most of the guide's illustrative passages are drawn from them. The named-subject priming is measured and guarded against; this is not. (**Opinion, unmeasured, and offered as one.** This session chose a low-light subject before opening anything, so it is a data point for the hypothesis and cannot test it.) | **Nothing, which is what it asked for.** The measurement it wants is a brief written for a high-key or flatly-lit subject, before anyone reads `paintings/` — the protocol the subject rule already uses — and that is a session's work rather than a release's. It is the one item on this page closed by agreeing that it cannot be acted on yet. |
+
+**And a rule left the front page, which is the growth rule paying for itself.**
+`PAINTER.md` is held to 10,000 words and the two items above did not fit; the standing
+answer is that a rule the engine checks at the call can leave the guide, and none had.
+*You will under-vary your marks* is the first: the post-pass check names both halves of
+it after every pass, with the numbers attached, which the paragraph could not do. It is
+in `PAINTING.md` now, moved rather than cut, and whether a rule can safely leave is a
+question the next session can answer — which is the point of moving it.
+
+---
+
 ## The two questions, and their answers
 
 **On the guide's length.** Every session says it is too long and every session credits
@@ -423,11 +455,13 @@ at*, the checklist and the exercises come to about 8,500 words on their own, so 
 6,000 would mean cutting them — which every other item on that list forbids. A budget
 nobody can meet on the day it is written enforces nothing. The honest claim is halving.
 
-**Still open, deliberately: the split is a hypothesis.** The test is two fresh sessions,
-one given only the method, the recipes and the reference, one given everything. The
-third painter's prediction, written down so it can be wrong: the first paints the masses
-as well and improvises worse, because the essay is where the judgement came from when no
-recipe existed.
+**Open at the time, deliberately: the split is a hypothesis.** The test is two fresh
+sessions, one given only the method, the recipes and the reference, one given
+everything. The third painter's prediction, written down so it can be wrong: the first
+paints the masses as well and improvises worse, because the essay is where the
+judgement came from when no recipe existed. *Both arms have since been run — see* The
+eighth session *above, where the prediction's first half held and its second did not in
+the form it was written.*
 
 The one data point that exists on reading order is not clean, and it is in `LESSONS.md`
 rather than here. The third session read everything *before* the exercises — the wrong
@@ -452,10 +486,11 @@ over the pass it just painted, printed beside the budget line — one brush at o
 for a whole pass, *n* passes at the same angle, a bristle under `size=0.025`, the
 subject's share of strokes against the plan. Every input is already in the log. Each
 rule that becomes a check can then leave the guide, which is the growth rule paying for
-itself. That is in `LESSONS.md` as the next engine step, not built. So is the one form
+itself. *That answer is dated: the check was built in the greenhouse round as
+`Session.report()`, and in 0.3.0 the first rule left the guide under it.* The one form
 of the file idea with a real mechanism — a short rules card kept where a `CLAUDE.md` is
-kept, which survives a context compaction where the guide does not — which cannot be
-judged, because none of the three sessions was ever compacted.
+kept, which survives a context compaction where the guide does not — is still unbuilt
+and still cannot be judged, because none of the sessions has ever been compacted.
 
 ---
 
@@ -516,8 +551,8 @@ which it acted on every time it fired.
 
 It is also the first session in four rounds to repaint a mass, and its account says why
 without being asked: it chose a ground too light for the picture and found out at pass
-three, which is the one item on its open list that was already solved in a painting it
-had not been allowed to read.
+three, which is the one item on its list that was already solved in a painting it had
+not been allowed to read.
 
 ---
 
@@ -535,24 +570,33 @@ when the work was finished. What was worth keeping outlived it:
 - the paintings, their notes and their pass scripts are in
   [`paintings/`](paintings), read from the outside in [`PAINTINGS.md`](PAINTINGS.md);
 - each engine item has a test in `tests/test_requests.py`, named for the request, and
-  the probes behind the third, fourth and greenhouse rounds are
-  `scripts/probe_third_session.py`, `scripts/probe_fourth_session.py` and
-  `scripts/probe_greenhouse_session.py`, with the painters' own probes beside their
-  paintings under `paintings/lighthouse_greenhouse/`;
+  the probes behind the third, fourth, greenhouse and eighth rounds are
+  `scripts/probe_third_session.py`, `scripts/probe_fourth_session.py`,
+  `scripts/probe_greenhouse_session.py` and `scripts/probe_pool_session.py`, with the
+  painters' own probes beside their paintings under
+  `paintings/lighthouse_greenhouse/`;
 - the releases are cut by version in [`CHANGELOG.md`](CHANGELOG.md), which is where to
   look for *which defaults moved*.
 
-**Sixteen of the painters' own claims have been re-measured before anything was built
-on them, and four did not survive.** All four are recorded above where the fix is — the
+**Twenty of the painters' own claims have been re-measured before anything was built
+on them, and five did not survive.** All five are recorded above where the fix is — the
 clean contour spilling further than the ragged fill it replaced, the smudge on a slope
 that turned out to be a smudge on a bend, the rendered view that turned out not to lift
-a solid mass at all, and the bare boundary at `overhang=0` that turned out to be the
-comb and the brush running dry. That is `LESSONS.md`'s *check the painters' numbers*
-working as intended, and it is worth noticing **what kind** of claim fails it: every one
-of the four was reported as *observed* — a rehearsal showed it plainly and no number was
-taken — and reasoned back to a mechanism that sounded right. The nine from the
-greenhouse round all held, and two of them held with the wrong mechanism attached — the
-pencil that "advances the stream" advances the log index, and the undo that lost "the
-stream or the wet layer" was losing the stream *and* the log's precision — which is the
-other thing the check is for. A claim that survives it is usually worth more afterwards,
-because the re-measurement says what it is really about.
+a solid mass at all, the bare boundary at `overhang=0` that turned out to be the comb
+and the brush running dry, and the direction sequence that turned out to be priced as a
+sum rather than at its steepest angle. That is `LESSONS.md`'s *check the painters'
+numbers* working as intended, and it is worth noticing **what kind** of claim fails it:
+every one of the five was reported as *observed* — a rehearsal showed it plainly and no
+number was taken — and reasoned back to a mechanism that sounded right. The nine from
+the greenhouse round all held, and two of them held with the wrong mechanism attached —
+the pencil that "advances the stream" advances the log index, and the undo that lost
+"the stream or the wet layer" was losing the stream *and* the log's precision — which is
+the other thing the check is for. A claim that survives it is usually worth more
+afterwards, because the re-measurement says what it is really about.
+
+**The fifth is the sharpest case the page has, because the painter called it.** The
+eighth session labelled its own mechanism *observed and offered as a guess, which this
+page's own record suggests is the half most likely to be wrong*, and it was. Its three
+costs reproduced to the stroke. A session that can tell which half of its own finding
+is load-bearing is doing the check's work before the check runs, and the register
+should say so: that labelling is worth asking of every round from here.

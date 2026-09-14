@@ -345,6 +345,19 @@ had been the cheapest open item on the register for two rounds. Every number the
 painters took reproduced; two of the mechanisms they proposed did not, and
 `SUGGESTIONS.md` says which.
 
+An eighth painter — a pool at night, painted against `PAINTER.md`, `RECIPES.md` and
+`REFERENCE.md` and nothing else — is the other arm of that experiment, and what it was
+short of turned out to be **lookup rather than judgement**: three questions the engine
+could already answer and would not say out loud. So its round is mostly instruments.
+`glaze(to_value=)` solves a film's opacity for the value it should land the passage on,
+the way `at_value` solves a mixture — the search a painter otherwise runs by rehearsal,
+six of them in that painting. The inward `scumble` warns from the narrow side of its
+window as well as the wide one, and names the other recipe where no number of rings
+fits. The price walk covers a sequence of directions, which is one whole pass per angle
+and charged as the sum — not, as the painter guessed and said it was guessing, one
+stack sized for the steepest. And the first rule has left the front page for the essay,
+because the post-pass check now says it better than the paragraph could.
+
 ## The worked examples
 
 [`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings) holds the paintings those sessions made, and each is an

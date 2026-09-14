@@ -585,6 +585,33 @@ move every painting ever made — but the price walk has both numbers, and a sha
 with `direction` left off says so from `cost` and from the call when the horizontal
 passes cost over 2.5× the axis: it fires on the first two and not on the third.
 
+### `direction` given a sequence
+
+**A sequence is one whole pass per angle, and the mass is charged the sum.** Not one
+stack sized for the steepest angle in it — every angle is paid for in full, and a
+steep angle on a wide mass costs several times a shallow one. One painting's room
+mass, `bristle` at `size=0.16`, `density=0.9`, 1024×768:
+
+| `direction` | strokes |
+|---|---|
+| `"axis"` (the mass runs at 2.8°) | 4 |
+| `-17` | 7 |
+| `"cross"` | 15 |
+| `(4, 94)` — a cross at the mass's own angle | 15 |
+| a ten-angle sequence | **85** |
+
+and those ten angles priced one at a time are `4 + 5 + 7 + 7 + 9 + 10 + 10 + 11 + 11
++ 11`, which is the 85 exactly. The steepest of them alone is 11. The painter who
+found this costed a ten-angle list at **51** on the same mass — a different ten
+angles, and the same arithmetic.
+
+The guide asks a painter to vary direction between passes to break a comb, so a
+painter following it reaches for the sequence first. **Two directions are what
+breaks a comb and more do not break it further**, which is why the affordable answer
+is the pair. A list longer than a pair says so from `cost` and from the call when it
+costs over 2.5× its own dearest angle — which two angles never can, so the pair
+idiom every painting here uses stays silent.
+
 ---
 
 ## `sweep`
@@ -762,6 +789,37 @@ meant to shift a passage has instead made a new one.
 the glaze close first, then choose an opacity. A painter rehearsed one twice at `0.14`
 and `0.07`, got a saturated stripe and then nothing, and dropped the mark.
 
+### Aiming a film at a value
+
+*Mix the glaze close, then choose an opacity* is two steps, and the second is a
+search: the window above is a few hundredths of opacity wide and it sits somewhere
+different over every passage. A later painting spent **six rehearsals** on it and
+dropped a glaze it had rehearsed three times. `glaze(to_value=)` runs that search
+instead — `at_value` for a film — by laying films on trial canvases until one
+delivers the value asked for, measured over the film's own footprint.
+
+The same warm film over the same cool dark, 512×384, measured over the whole
+footprint rather than the middle of it (which is why the changes are a shade larger
+than the table above):
+
+| asked for | opacity found | delivered | miss |
+|---|---|---|---|
+| `0.34` | `0.031` | `0.338` | `-0.002` |
+| `0.38` | `0.102` | `0.382` | `+0.002` |
+| `0.42` | `0.164` | `0.418` | `-0.002` |
+| `0.46` | `0.242` | `0.459` | `-0.001` |
+
+It costs **one stroke**, like any other glaze: the search is spent on copies. About
+eight trial films, which is nothing on a halo and about a second on a band across the
+whole canvas. The trials come off a copy of the stroke stream, so **the film that
+lands is byte for byte the film that would have landed had its opacity been typed
+out** — solving for it moves no paint.
+
+A target outside what the film can deliver **raises**, naming both ends of what it
+can reach, for `at_value`'s reason: a film silently landing at the wrong value is
+the failure the instrument exists to stop. In the row above that range is `0.319`
+(the paint under it) to `0.588` (the film at `opacity=1.0`).
+
 ---
 
 ## `scumble`
@@ -820,6 +878,33 @@ because at `opacity=0.5` nothing lands there more than twice. **About three step
 the usable middle**, and that is what the verb picks when no `size=` is given. A
 preset's own default is `0.11` here, five steps wide, which is why the example in the
 guide carries no `size=`.
+
+#### And the other wall: `n` is bounded by the patch
+
+The brush is `3 × depth / n`, so **more rings on a shallow patch buy a narrower
+brush, not finer banding** — and the bristle comb has a floor of `0.025`, below which
+it is four streaks with gaps (*The bristle comb*, below). Putting the two together,
+the derived brush is still a brush only while `n ≤ 120 × depth`, where `depth` is
+half the patch's shorter extent:
+
+| `depth` | most rings that fit | the brush there |
+|---|---|---|
+| `0.030` | 3 | `0.030` |
+| `0.042` | **5** | `0.025` |
+| `0.0667` | **8** | `0.025` |
+| `0.075` | 9 | `0.025` |
+| `0.100` | 12 | `0.025` |
+| `0.200` | 24 | `0.025` |
+
+Arithmetic, not a measurement, and exact. The two bold rows are the walls: `0.0667`
+is where the recipe's eight rings stop fitting, and `0.042` is where even five — the
+fewest that read as a fall-off rather than as steps — stop fitting, so **under about
+`0.042` deep no `n` works at all**. A painter met this at `n=12` on a patch `0.075`
+deep, read the post-pass check's bristle complaint as an unrelated one, and spent two
+more rehearsals. The verb had warned from one side since the third session (a brush
+too wide fills the patch flat) and said nothing from this one; it now says both, and
+where no `n` fits it names *a volume of lit air* — the patch is not asking for this
+verb.
 
 ### The band, and the brush that closes its joins
 

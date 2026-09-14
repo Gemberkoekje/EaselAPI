@@ -625,6 +625,18 @@ quiet masses.
 | `knife` | Thick slabs with a hard edge. Drags what it crosses. Use rarely, for punctuation, and keep it close in value to what it lands on or it reads as something stuck to the surface. |
 | `smudge` | Carries no paint; moves what is already there. For losing edges. |
 
+**You will under-vary your marks.** Real brushwork varies in width, pressure,
+direction and opacity constantly. If every stroke uses the same brush at the same
+size with the same pressure, the result will look mechanical no matter how good the
+drawing is. Change `size`, change `pressure`, change direction between passes.
+
+That paragraph was on the front page until 0.3.0, and it is the first rule to leave
+it because a check holds it. `s.report()` now says *all 14 marks are bristle at
+size=0.03, in 4 calls* and *12 of 15 long marks run within 6 degrees of horizontal*
+after the pass that did it — with the numbers, which the paragraph could not do.
+Whether a rule can safely leave the guide is the next thing to find out, and finding
+out needs a painter working from a guide it has already left.
+
 **A `bristle` stroke is never solid** — it lays a comb of streaks, which is what makes
 it alive on a mark whose direction you mean. Lay a big quiet mass with `flat`, or with
 bristle passes that *cross*; single parallel passes rib it. Below about `size=0.02` a

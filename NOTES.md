@@ -1,136 +1,142 @@
-# Phase notes: the greenhouse round, and the post-pass check
+# Phase notes: the eighth session's round, and the first rule to leave the guide
 
 *To understand this, start by reading [`SUGGESTIONS.md`](SUGGESTIONS.md)'s two tables
-headed **What the greenhouse sessions found** — eleven engine items and eight
-documentation items, each with what was measured before it was built — then
-[`CALIBRATION.md`](CALIBRATION.md)'s new sections (*The contour of a clean edge*, *A
-clean edge on a narrow mass*, *The chisel staircase*, *The band across a wedge*,
-*Chroma*, and *The log, undo, and the stream*), then [`LESSONS.md`](LESSONS.md)'s
-rewritten paragraph under **A separate file of warnings**, which is where the post-pass
-check is described as built. The code is `src/easel/session.py`; the numbers are
-reproducible with `python scripts/probe_greenhouse_session.py`.*
+headed **What the eighth session found** and **What the eighth session asked of the
+documentation** — three engine items and five documentation items, each with what was
+measured before it was built — then [`CALIBRATION.md`](CALIBRATION.md)'s new sections
+(*`direction` given a sequence*, *And the other wall: `n` is bounded by the patch*, and
+*Aiming a film at a value*), then [`LESSONS.md`](LESSONS.md)'s paragraph under **A
+separate file of warnings**, which is where the departing rule is recorded. The code is
+`src/easel/session.py`; the numbers are reproducible with `python
+scripts/probe_pool_session.py`.*
 
-Every item three painters left beside their paintings under
-`paintings/lighthouse_greenhouse/` is done, the post-pass check that had been open for
-two rounds is built, and it is all in **0.2.0**, which had not been released.
+Every item the eighth session left is done — the first round this page ever carried as
+*open*, and it is closed — and it is all in **0.3.0**, which had not been released.
 
 ## The shape of it
 
-**Every number the three painters took reproduced, and two of the mechanisms they
-proposed were wrong.** That is the character of this round, and it is the opposite of
-the last one's: the fourth session's claims were *observed* and two did not survive;
-these were mostly *measured* — Opus and Fable shipped probes with their lists — and all
-nine held to the percentage point where a number had been taken. What the re-measurement
-bought this time was not *nothing to fix* but *the right thing to fix*:
+**It is a round of instruments, and that follows from what the session was.** It is the
+split test's other arm: a painter given the method, the recipes and the reference and
+nothing else. The prediction was that such an arm paints the masses as well and
+improvises worse. The masses held; the improvisation held too, and what it was short of
+was **three lookups it could not make**. So two of its three engine items are questions
+the engine could already answer and would not say out loud, and the third is a price the
+walk already knew and never quoted. Nothing here is a new mechanism.
+
+**Every number reproduced to the stroke, and one mechanism did not survive** — which the
+painter had predicted of itself, in the clause that makes this the best-labelled round
+on the page:
 
 | The claim | What measuring it found |
 |---|---|
-| `edge="clean"` fails on a narrow mass, and the trigger is the corner spacing (Sonnet) or the brush's share of the shorter extent (Opus) | Both were views of the contour's **spline**, which bowed 45–69px off three different four-cornered shapes. Along the polygon's own edges it is 4px, the ragged fill's own half-brush. The share survives as a second finding — the *corners* go past about a quarter — and is the new warning's threshold |
-| CLI `easel undo` drifts 1.06% of the canvas; the mechanism is "accumulated state — the random stream or the wet layer" (Fable) | Two causes. A mass draws its wander *between* the strokes it records, so undoing one left the stream past it and a replay handed back the seed; **and the log rounded every point to five decimals**, so a replay from disk was never quite the painting. The toy cases could not show the second because hand-written coordinates are short decimals already |
-| `pencil` "advances the stream" (Fable) | It never touches the stream. It is *logged*, and a mark's texture is seeded from its place in the log — so `dry()` and `erase()` do the same thing, which the probe had not tried |
-| A saturated mixture reads more vivid in a low-chroma field; mechanism a guess, simultaneous contrast (Sonnet) | The engine side is nothing: a solid plane reads at the mixture's chroma or a little under, never above, and the view equals the paint. The fifth *measured and nothing to fix*; `chroma_of` is the instrument instead of a rule |
+| A `direction` sequence is priced far above any single angle in it; the mechanism is that *the stack is sized for the steepest angle in the list* (**offered as a guess**) | The costs reproduce exactly — `"axis"` 4, `-17°` 7, `"cross"` 15 on the same mass. The mechanism is the **sum**: a ten-angle list costs 85, which is `4 + 5 + 7 + 7 + 9 + 10 + 10 + 11 + 11 + 11`, and the steepest alone is 11. One whole pass per angle |
+| The inward scumble's `n` is bounded by the patch: `n ≤ 120 × depth`, and under about `0.07` deep no `n` fits (**arithmetic exact**) | Exact, and the wall is two walls. `0.0667` is where the recipe's *eight* rings stop fitting; where *nothing* fits is `0.042`, five rings, which is the verb's own floor for reading as a fall-off. Both are in the warning |
+| A glaze's usable window is a few hundredths wide and there is no instrument for it (**measured by `CALIBRATION.md`; the cost observed**) | Held. The film's delivery is monotone and smooth in opacity but not analytic, so the instrument is a search, the way `at_value` is |
 
-The other five — the chisel staircase, the direction ratios, the wedge, the pairs, the
-rehearsal count — reproduced exactly and were built as asked.
-
-**The post-pass check** is `Session.report()`, six rules read off the log and printed by
-`easel run` beside the budget line after every pass. Building it needed one thing the log
-did not have: a way to tell a pass of a mass from a mark laid by hand. Every record now
-carries the verb that laid it (`params["via"]`), which is also what lets two of the rules
-— *one brush at one size* and *a stack at one angle* — count **calls** rather than marks,
-so a single mass never fires them and two parallel masses do.
+**The one documentation item that asked for nothing gets nothing**, and the register says
+so rather than quietly dropping it: *the worked examples may prime toward one kind of
+picture* was offered as an unmeasured opinion by a session that had itself chosen a
+low-light subject. The measurement it wants is a brief written for a high-key subject
+before anyone reads `paintings/`, which is a session's work rather than a release's.
 
 ## Decisions worth knowing
 
-**The stream's state is taken once per painting call, not per record.** `LESSONS.md` had
-left the undo issue open with exactly the reason: a mass draws each pass's wander between
-the `stroke()` calls that record it, so a state taken when a record is written is already
-one draw past the undone mark. `Session._one_call()` takes it at the start of the outer
-call and every record the call makes carries the same one; the contour of a clean
-block-in and `cover`'s dry-then-fill nest inside it. `replay()` copies each record's
-state across verbatim rather than re-recording it, because a replay never draws.
+**`glaze(to_value=)` searches on trial canvases, and that is the whole design.** What a
+film delivers is the pigment model, the tooth and whatever is already there; none of it
+is available as a formula, so the honest instrument lays real films on copies until one
+lands. Three things make it affordable and safe:
 
-**The clean contour is a behaviour change and it is deliberate.** Every clean mass in
-every painting rebuilds differently now — the dusk example's tower loses an arch its
-committed PNG never had — and the draw from the stream was kept identical so that
-nothing laid *after* a clean mass moves. `CHANGELOG.md` says so under *Changed*.
+- it is measured over **the film's own footprint** — the pixels a probe at `opacity=1.0`
+  changes — rather than a region named by hand, so the search compares like with like
+  and never widens as the film strengthens;
+- the trials come off a *copy* of the stroke stream (`_trial_session`), so the film that
+  lands is byte for byte the film that would have landed had its opacity been typed out.
+  A test holds that, and it is the property that made the feature possible at all;
+- it exits as soon as a probe is within `0.002` of the target, which is a fifth of the
+  precision a value plan is written to. Eight probes in practice — nothing on a halo,
+  about a second on a band across the whole canvas.
 
-**The log's points are exact now, and the format was not bumped.** A record gained two
-keys and lost five decimals of rounding; an older build reads the file without noticing
-and a file from an older build loads here, minus the one thing it cannot have (its
-stream restored on undo, which `_restore_stream` reports rather than guesses).
+**The sequence warning's threshold is the request's own words.** *Priced far above any
+single angle in it*, at the same 2.5× the default-direction check uses. Two angles can
+never be more than twice the dearer of them, so the pair idiom every painting in this
+repository uses — `(4, 94)`, a cross at the mass's own angle — is silent by
+construction, and a list that is really a stack fires. That property is worth more than
+a tuned constant: it means the check cannot become noise on correct code.
 
-**`direction`'s default became `None`.** It still means horizontal. The warning fires on
-*left off*, not on *chosen*, and there was no other way to tell the two apart.
+**The comb floor gets a rounding tolerance and the comment says why.** A polygon of an
+ellipse comes a hair short of its own extents, so the `n` sitting exactly on the boundary
+derives `0.024998` rather than `0.025`, and a warning reading *0.025, under the 0.025*
+is noise. The check compares against `0.0245` and the remedy's arithmetic uses the same
+number, so the two cannot disagree.
 
-**The composition recipes are the least certain things written this round.** Opus asked
-for them "eventually, collected across paintings, not composed" and said one painting
-could not write them. Four paintings' notes had enough for two entries; they are marked
-in `RECIPES.md` as what they are, and the third the painter named is a sentence inside
-the first.
+**A rule left the front page, and it left because the budget made it.** `PAINTER.md` is
+held to 10,000 words and had 25 to spare; the two documentation items that belong on it
+are 74. The growth rule's standing answer is that a rule the engine checks at the call
+can leave the guide, and none had. *You will under-vary your marks* is the first: the
+post-pass check names both halves of it after the pass that did it, with the numbers. It
+is in `PAINTING.md` — moved, not cut — with a paragraph saying where it came from and
+that whether this works is still unknown. The front page is at 9,996.
 
 ## Pitfalls hit
 
-- **The first undo fix made the in-process case exact and the CLI case still wrong**,
-  and the trace showed the stream was right all the way through. The canvas after the
-  replay was what differed — which is how the rounding was found. Measure the thing
-  after each fix, not the mechanism you fixed.
-- **A replay that re-records the stream state corrupts every later undo.** The first
-  version of the fix did; the replay's own marks record the seed. Carry the stored state
-  across.
-- **The chroma docstring quoted pigment numbers from memory and they were wrong.**
-  `cadmium_red` is the most vivid in the box at `0.20`, not `cadmium_yellow`. The probe
-  prints the table; the docstring quotes the probe.
-- **The guide's word budget is 10,000 and the ninth exercise put it 52 over.** The fix
-  was to tighten the round's own additions, not to move anything out — the cadence line,
-  the planes line and the exercise are 9,975 with it.
-- **The check script skips a code block containing `...` as pseudo-code**, comments
-  included. Two ellipses in a recipe's comments hid it from the checker until the count
-  said 13 skipped instead of 12.
+- **`opacity` had to become `None`-defaulted to tell *given* from *default*.** The same
+  shape as `direction=None` last round. `GLAZE_OPACITY = 0.18` is the value; the
+  signature says so and a test holds that the default film is the film it always was,
+  byte for byte.
+- **A target a hair *below* the field raises as out of reach, and that is correct but
+  looks odd.** Ask for `0.317` under paint reading `0.319` and the film cannot get
+  there — it can only travel away from the field. The message names both ends, which is
+  what makes it actionable; `at_value` behaves the same way.
+- **The first sequence warning recommended an alternative that cost more.** On a mass
+  where three near-parallel angles cost 13, the axis cross costs 15. The line now states
+  the cross's price rather than promising a saving — a warning that oversells its remedy
+  is a warning that gets ignored the second time.
+- **A test helper named `_scumbled` already existed in `tests/test_requests.py`** and the
+  new one shadowed it silently, breaking three passing tests with a `TypeError` that
+  named neither. Module-level helpers in a 1,900-line test file need checking before
+  they are added.
+- **A recipe's code block has to run under the checker's preamble.** The point-in-shape
+  block was written with `pool` and `rng`, neither of which exists there; it uses `mass`
+  and its own `numpy` import now. `check_guide_blocks.py` catches this and the count of
+  skipped blocks is the thing to watch, because a block containing `...` is skipped
+  rather than failed.
 
 ## What changed, by file
 
-**New:** `scripts/probe_greenhouse_session.py`.
+**New:** `scripts/probe_pool_session.py`.
 
-**Engine:** `src/easel/session.py` — `report()` and `_pass_findings`; `_one_call`,
-`_stream_state`, `_restore_stream`, `_stream_of`/`_stream_rng`; `params["rng"]` and
-`params["via"]` on every record; `_clean_contour` and `_sweep_spine(smooth=)`;
-`_check_pressure_on_tip`, `_check_default_direction`, `_check_clean_size`,
-`_check_scumble_ends`/`_pass_lengths`; `direction=None`; `_spent_base` and the
-rehearsal copy; `replay` carrying the stream; `_mass_reason`'s remedies ·
-`src/easel/history.py` — exact points · `src/easel/measure.py` — `Comparison.pairs` ·
-`src/easel/palette.py` — `chroma_of` · `src/easel/cli.py` — the check beside the
-budget line, `run --check`, `log --check` · `src/easel/mcp_server.py` — the check in
-`run`.
+**Engine:** `src/easel/session.py` — `glaze(to_value=)` and `_glaze_opacity`, with
+`GLAZE_OPACITY` and the four search constants; `_check_inward_comb` and
+`_INWARD_MIN_RINGS`; `_check_direction_sequence`, called from `block_in` and from
+`_plan_price`; the `scumble` and `block_in` docstrings for both windows.
 
-**Documentation:** `RECIPES.md` (four recipes, the planes clause, the wedge and the
-flat's scallop) · `PAINTER.md` (the cadence, the planes line, the ninth exercise) ·
-`PAINTING.md` (the staircase row and paragraph; the pairs; the worked examples' bare
-calls; free-but-logged verbs; undo; the check; `chroma_of`) · `REFERENCE.md` (every new
-argument, call and flag) · `CALIBRATION.md` (six sections) · `SUGGESTIONS.md` (the two
-tables, the counts, *Still open*) · `LESSONS.md` (the check as built, the undo entry
-settled, the re-measurement record) · `CHANGELOG.md`, `README.md`, `llms.txt`,
-`PAINTINGS.md`, `examples/exercises.py`.
+**Documentation:** `RECIPES.md` (the two glow recipes told apart in the index and in the
+first entry; point-in-shape where small marks go into a mass) · `PAINTER.md` (the pairs
+question in step 3; a ground of its own under *Getting started*; *under-vary your marks*
+removed) · `PAINTING.md` (that paragraph, with its provenance) · `REFERENCE.md`
+(`glaze(to_value=)`, `shape.inside`) · `CALIBRATION.md` (three sections) ·
+`SUGGESTIONS.md` (the round closed, two tables, the counts, the departing rule) ·
+`LESSONS.md` (the first rule to leave, the re-measurement record at twenty claims and
+five failures, and the standing ask that painters label which half of a finding is
+measured) · `CHANGELOG.md`, `README.md`.
 
-**Tests:** `tests/test_requests.py` — a *greenhouse sessions* section, nineteen tests ·
-`tests/test_mcp.py` — the check through the wire.
+**Tests:** `tests/test_requests.py` — an *eighth session* section, thirteen tests.
 
 ## State
 
-The suite passes with the `mcp` extra installed and without it; `ruff check src tests
-scripts examples mcpb` is clean; `check_guide_blocks.py` runs every block, and
-`PAINTER.md` is inside its budget with about 25 words to spare — tighter than it has
-ever been. The next paragraph that wants in will have to displace one.
+The suite passes; `ruff check src tests scripts examples mcpb` is clean;
+`check_guide_blocks.py` runs every block, and `PAINTER.md` is at 9,996 words against its
+10,000 budget. Version bumped to 0.3.0 in `pyproject.toml`, `src/easel/__init__.py` and
+`server.json`.
 
 ## Deliberately not done
 
-- **The other arm of the split experiment.** All seven painters so far are *given
-  everything* arms. The engine cannot close this one.
-- **The rules card for a compacted session.** Still no compacted session to judge it
-  against.
-- **`PAINTINGS.md` and `README.md` do not index the greenhouse paintings as first-class
-  examples**, at the owner's request recorded in Fable's notes; nothing here changes that.
-- **The `flat`'s scallop on a wide band** (`0.11` peak to peak against `0.03`) is one
-  measurement on one committed painting, quoted in the quiet-gradient recipe with its
-  source. It has no probe in `scripts/` and no calibration section; it would want one
-  before anything is built on it.
+- **Whether a rule can safely leave the guide.** The experiment is now *runnable* rather
+  than run: it needs a fresh session painting from a guide with the rule missing.
+- **The high-key brief.** The fifth documentation item's own measurement, and it has to
+  be written before anyone reads `paintings/`.
+- **`glaze(to_value=)` has no public "what opacity would that be" call.** The chosen
+  opacity is in the log and that is enough for the rehearse-then-commit loop; a second
+  entry point is worth adding only if a painter asks for one.
+- **The MCP server does not expose `glaze`**, and did not before. Nothing in this round
+  changes the wire.

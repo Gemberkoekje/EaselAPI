@@ -23,11 +23,13 @@ import pytest
 from PIL import Image
 
 from easel import (
+    Polygon,
     Region,
     Session,
     blob,
     brush,
     cell,
+    ellipse,
     hull,
     polygon,
     ribbon,
@@ -1699,3 +1701,194 @@ def test_the_check_is_printed_beside_the_budget_line(tmp_path, capsys):
     assert "check over the painting" in capsys.readouterr().out
     assert main(["log", str(session), "--check"]) == 0
     assert "long marks run within 6 degrees of horizontal" in capsys.readouterr().out
+
+
+# ======================================================================================
+# The eighth session: a pool at night, painted against a restricted document set. It is
+# the split test's other arm, and what it failed at was lookup rather than judgement --
+# so two of its three engine items are instruments for questions the engine could
+# already answer and would not say out loud. Every number it quoted reproduced; one
+# mechanism it offered as a guess did not, and the test that covers it says so.
+# ======================================================================================
+
+# -- a glaze aimed at a value rather than at a strength --------------------------------
+def _film(tmp_path):
+    """A dry cool-dark mass with a warm light film to lay over it."""
+    s = make(tmp_path)
+    p = s.palette
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.30)
+    p["warm"] = p.at_value(p.mix("cadmium_red", "yellow_ochre", 0.4), 0.62)
+    s.block_in(span("A1", "H8"), "flat", "dark", size=0.18, solid=True,
+               pressure="even", direction="horizontal")
+    s.dry()
+    return s, [(0.2, 0.5), (0.8, 0.5)], dict(brush="flat", size=0.18, pressure="even")
+
+
+def _under(s: Session, before: np.ndarray) -> float:
+    """The value of the paint wherever the film changed it."""
+    mask = np.abs(s.canvas.rgb - before).sum(axis=2) > 1e-4
+    return s.palette.value_of(s.canvas.rgb[mask].mean(axis=0))
+
+
+@pytest.mark.parametrize("target", [0.34, 0.38, 0.42, 0.46])
+def test_a_glaze_can_be_aimed_at_a_value(tmp_path, target):
+    """``at_value`` for a mixture, and now the same instrument for a film.
+
+    The window between *the hue underneath is dead* and *this is a new mass* is a few
+    hundredths of opacity wide and sits somewhere different over every passage, so
+    *mix the glaze close, then choose an opacity* is a search run by rehearsal. One
+    painting spent six of them on it.
+    """
+    s, points, kw = _film(tmp_path)
+    before = s.canvas.rgb.copy()
+    spent = s.stroke_count
+    s.glaze(points, "warm", to_value=target, **kw)
+    assert abs(_under(s, before) - target) <= 0.005
+    assert s.stroke_count == spent + 1, "the search runs on copies and costs one mark"
+
+
+def test_solving_a_glaze_lays_the_same_film_as_typing_the_opacity(tmp_path):
+    """The search runs on trial canvases off a *copy* of the stroke stream.
+
+    If it did not, every mark after a solved film would move, and the instrument
+    would cost the determinism promise to buy a number.
+    """
+    s, points, kw = _film(tmp_path)
+    s.glaze(points, "warm", to_value=0.42, **kw)
+    opacity = s.history.records[-1].params["opacity"]
+
+    t, points, kw = _film(tmp_path)
+    t.glaze(points, "warm", opacity=opacity, **kw)
+    assert np.array_equal(s.canvas.rgb, t.canvas.rgb)
+
+
+def test_a_glaze_left_alone_is_the_film_it_always_was(tmp_path):
+    """The default did not move: 0.18, and the same pixels as naming it."""
+    s, points, kw = _film(tmp_path)
+    s.glaze(points, "warm", **kw)
+    t, points, kw = _film(tmp_path)
+    t.glaze(points, "warm", opacity=0.18, **kw)
+    assert s.history.records[-1].params["opacity"] == 0.18
+    assert np.array_equal(s.canvas.rgb, t.canvas.rgb)
+
+
+def test_a_value_no_film_can_reach_raises_rather_than_landing_near_it(tmp_path):
+    """``at_value``'s rule, for the same reason: a film silently landing at the wrong
+    value is not found until ``compare`` says so, a mass later."""
+    s, points, kw = _film(tmp_path)
+    with pytest.raises(ValueError) as excinfo:
+        s.glaze(points, "warm", to_value=0.95, **kw)
+    said = str(excinfo.value)
+    assert "out of reach" in said and "opacity=1.0" in said
+    assert s.history.records[-1].kind == "dry", "no film was laid"
+
+
+def test_a_film_cannot_be_given_both_a_strength_and_a_value(tmp_path):
+    s, points, kw = _film(tmp_path)
+    with pytest.raises(ValueError, match="both"):
+        s.glaze(points, "warm", opacity=0.2, to_value=0.42, **kw)
+
+
+# -- the inward scumble's other wall: n bounded by the patch ---------------------------
+def _glow(tmp_path) -> Session:
+    """A session with the two values a centred scumble steps between."""
+    s = make(tmp_path)
+    s.palette["shadow"] = s.palette.at_value(
+        s.palette.mix("ultramarine", "burnt_umber", 0.5), 0.30)
+    s.palette["lit"] = s.palette.at_value(
+        s.palette.mix("cerulean", "titanium_white", 0.7), 0.70)
+    return s
+
+
+def _inward_said(s: Session, patch, n: int, **kw) -> str:
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.scratch().scumble(patch, "shadow", "lit", n, direction="inward", **kw)
+    return " ".join(str(c.message) for c in caught)
+
+
+def test_a_shallow_patch_says_it_cannot_carry_the_rings_asked_for(tmp_path):
+    """The brush is ``3 x depth / n``, so more rings buy a *narrower* brush.
+
+    A painter met this at n=12 on a patch 0.075 deep, read the post-pass check's
+    bristle complaint as an unrelated one, and spent two more rehearsals. The verb
+    had warned from the wide side since the third session and said nothing here.
+    """
+    s = _glow(tmp_path)
+    patch = ellipse((0.5, 0.5), 0.30, 0.075, name="patch")
+    said = _inward_said(s, patch, 12)
+    assert "comb" in said and "0.0187" in said
+    assert "Drop to n=9" in said
+    assert _inward_said(s, patch, 8) == "", "eight rings fit here and should be quiet"
+
+
+def test_a_patch_no_n_fits_is_sent_to_the_other_recipe(tmp_path):
+    """Under about 0.042 deep even five rings comb, so there is nothing to tune: a
+    glow that shallow is not a bloom on a surface."""
+    s = _glow(tmp_path)
+    said = _inward_said(s, ellipse((0.5, 0.5), 0.20, 0.03, name="patch"), 8)
+    assert "No n fits" in said and "a volume of lit air" in said
+
+
+def test_a_named_narrow_brush_is_told_what_the_verb_would_have_picked(tmp_path):
+    s = _glow(tmp_path)
+    patch = ellipse((0.5, 0.5), 0.30, 0.075, name="patch")
+    said = _inward_said(s, patch, 8, size=0.015)
+    assert "Leave size= off" in said and "0.0281" in said
+
+
+# -- a sequence of directions is one pass per angle, and is charged the sum ------------
+def _room() -> Polygon:
+    wallbase = [(-0.05, 0.245), (0.38, 0.29), (0.72, 0.335), (1.05, 0.365)]
+    return polygon([(-0.05, -0.05), (1.05, -0.05)] + wallbase[::-1], name="room")
+
+
+def test_a_direction_sequence_costs_the_sum_of_its_angles(tmp_path):
+    """Not the steepest of them, which is the mechanism the painter guessed and marked
+    as a guess. Their own three numbers reproduce; the mechanism did not."""
+    s = make(tmp_path)
+    room = _room()
+    base = {"shape": room, "brush": "bristle", "size": 0.16, "density": 0.9}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        ten = [0, 12, -17, 30, -35, 50, 62, -70, 80, 95]
+        each = [s.cost(dict(base, direction=a), share=0) for a in ten]
+        total = s.cost(dict(base, direction=ten), share=0)
+        assert s.cost(dict(base, direction="axis"), share=0) == 4
+        assert s.cost(dict(base, direction=-17), share=0) == 7
+        assert s.cost(dict(base, direction="cross"), share=0) == 15
+    assert total == sum(each)
+    assert total > max(each)
+
+
+def test_the_price_walk_covers_a_sequence_and_leaves_the_pair_idiom_alone(tmp_path):
+    """Two angles can never be more than twice the dearer of them, so the cross at a
+    mass's own angle -- which every painting in this repository uses -- stays quiet."""
+    s = make(tmp_path)
+    room = _room()
+
+    def warned(direction) -> str:
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            s.scratch().block_in(room, "bristle", "burnt_umber", density=0.9,
+                                 size=0.16, direction=direction)
+        return " ".join(str(c.message) for c in caught)
+
+    said = warned([0, 12, -17, 30, -35, 50, 62, -70, 80, 95])
+    assert "sequence of 10 directions" in said and "85 strokes" in said
+    assert "4 + 5 + 7" in said, "the line has to show that the price is a sum"
+    for pair in ("cross", (4, 94), (5, 173)):
+        assert warned(pair) == "", f"{pair} is the affordable answer and should be quiet"
+
+
+def test_a_sequence_is_priced_the_same_from_cost_and_from_the_call(tmp_path):
+    """The quote and the bill come off one walk, as they do for every other mass."""
+    s = make(tmp_path)
+    room = _room()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quoted = s.cost({"shape": room, "brush": "bristle", "size": 0.16,
+                         "density": 0.9, "direction": [0, 40, 80]}, share=0)
+        laid = len(s.block_in(room, "bristle", "burnt_umber", density=0.9, size=0.16,
+                              direction=[0, 40, 80]))
+    assert quoted == laid

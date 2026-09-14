@@ -21,6 +21,107 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
+## [0.3.0] — 2026-09-14
+
+The eighth session's round, and the first one the register has carried as *open*. That
+session is the split test's other arm — a painter given only the method, the recipes
+and the reference — and what it failed at was **lookup rather than judgement**: three
+questions the engine could already answer and would not say out loud. So two of its
+three engine items are instruments rather than mechanisms, and the third is a price
+the walk already knew and never quoted.
+
+Every number it took reproduced, to the stroke. **One mechanism it offered did not**,
+and it had marked that one as a guess — a sequence of directions is not a stack sized
+for its steepest angle, it is one whole pass per angle, charged as the sum. The entry
+below says so, which is this project's habit and the second time it has changed what
+was built.
+
+And the first rule has left the front page. `PAINTER.md` is held to 10,000 words, the
+two documentation items it needed did not fit, and the growth rule's own answer is
+that **a rule the engine checks at the call can leave the guide**. *You will
+under-vary your marks* is that rule: the post-pass check names it after every pass,
+with the numbers, which the paragraph could not do. Whether a rule can safely leave
+is now a question a session can answer, which is the point of moving it.
+
+### Added
+
+- **`glaze(points, color, to_value=0.42)`** — `at_value` for a film. A glaze's
+  strength is its distance from what it lands on, so the usable window is a few
+  hundredths of opacity wide and sits somewhere different over every passage; *mix the
+  glaze close, then choose an opacity* leaves the second half as a search run by
+  rehearsal, and one painting spent six of them on it. This runs the search: films on
+  trial canvases until one delivers the value asked for, measured over **the film's own
+  footprint**, then that one for real. It costs one stroke like any other glaze, the
+  chosen opacity is in the log, and because the trials come off a copy of the stroke
+  stream **the film that lands is byte for byte the film that would have landed had its
+  opacity been typed out**. A target the film cannot reach raises, naming both ends of
+  what it can, for the reason `at_value` raises.
+- **The inward scumble warns from the narrow side too.** Its brush is `3 × depth / n`,
+  so more rings on a shallow patch buy a *narrower* brush and not finer banding — and
+  past `n = 120 × depth` that brush is under the `0.025` where a comb is four streaks
+  with gaps. It had warned since the third session when the brush was too *wide* to lay
+  a fall-off and said nothing at this end, where a painter met it at `n=12` on a patch
+  `0.075` deep, read the post-pass check's bristle complaint as unrelated, and spent
+  two more rehearsals. Where no `n` fits at all — under about `0.042` deep, where even
+  five rings comb — it names *a volume of lit air* instead, because a glow that shallow
+  is not a bloom on a surface.
+- **The price walk covers a sequence of directions.** It fired on `direction` left off
+  and not on a painter who chose one and chose ten. A list that costs over 2.5× its own
+  dearest angle now says so from `cost` and from the call, with every angle's price in
+  the line — and two angles can never be more than twice the dearer of them, so the
+  cross-at-the-mass's-own-angle idiom every painting here uses stays silent.
+- `shape.inside(xs, ys)` is in `REFERENCE.md` beside `contains`, and both are where
+  small marks are laid into a larger mass in `RECIPES.md`. One painter hand-rolled
+  edge-intersection arithmetic about fifteen times with `contains` listed in the file
+  open beside them: a list of methods answers *what exists*, and is read once at the
+  start rather than at the moment a mark is placed.
+
+### Changed
+
+- **`RECIPES.md` separates its two glow recipes at the moment of choosing.** *A passage
+  light in the middle* and *a volume of lit air* are the right pair, and the sentence
+  that told them apart sat inside the second one, where it is read by a painter who has
+  already chosen correctly. The index now says *on a surface* against one and *in a
+  medium* against the other, and the first entry says it outright. Four sessions have
+  reached the glaze answer the hard way and one of them had the recipe open.
+- **`PAINTER.md` step 3 sends the value plan through `compare({place: value})` on the
+  empty canvas.** The pairs question lived in `PAINTING.md` and `REFERENCE.md` carried
+  the signature without the reason; the arm without the essay never ran it. A painter
+  who wrote a nine-value plan, checked the separations by hand and satisfied themselves
+  still shipped a frame as light as its subject — which is exactly what the pairs table
+  was built to ask.
+- **`PAINTER.md` says a low-key picture wants a ground of its own.** *Start on a toned
+  ground, not white* is right for a mid-key picture and silently wrong for a night one:
+  the lowest preset is `umber_wash` at `0.425`, and a painter who took `cool_grey` at
+  `0.53` then had to lay every dark mass `solid=True` to cover it. A ground takes any
+  colour, so the mechanism was always there — `Session(ground="#5a5045")` reads `0.32`.
+- **`PAINTING.md` has *You will under-vary your marks*, which was on the front page.**
+  Moved, not cut, and moved because the post-pass check holds both halves of it at the
+  pass with the numbers attached. It is the first rule to leave the guide under the
+  growth rule that says one may.
+- `CALIBRATION.md` gains the three tables this round measured: a direction sequence
+  priced angle by angle, the inward scumble's `n` window, and a film aimed at a value.
+
+### Measured, and not changed
+
+- **A sequence of directions is not priced at the steepest angle in it.** That was the
+  painter's own account of the 51 strokes their ten-angle list cost, and they offered it
+  as a guess. Measured on their mass, same brush, same density: `"axis"` 4, a single
+  `-17°` 7, `"cross"` 15, and a ten-angle sequence 85 — which is those ten angles'
+  prices *added up*, `4 + 5 + 7 + 7 + 9 + 10 + 10 + 11 + 11 + 11`. The finding is real
+  and the number reproduces; the mechanism is the sum, and the warning is written from
+  the mechanism rather than from the guess.
+- **`n ≤ 120 × depth` is exact, and "about `0.07`" is the wall for the recipe's eight
+  rings rather than for every `n`.** At `0.0667` deep eight rings stop fitting; five —
+  the fewest that read as a fall-off rather than as steps — stop fitting at `0.042`,
+  and that is where the verb stops being the answer at all. The warning carries both.
+- **The fifth documentation item asked for nothing and gets nothing.** *The worked
+  examples may prime toward one kind of picture* was offered as an opinion, unmeasured,
+  by a session that had itself chosen a low-light subject before opening anything. It is
+  a data point for the hypothesis and cannot test it. The measurement is a brief written
+  for a high-key or flatly-lit subject, before anyone reads `paintings/`, and that is a
+  session's work rather than a release's.
+
 ## [0.2.0] — 2026-09-13
 
 The fourth painting session's six engine requests, the guide split by function, the
@@ -255,7 +356,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Gemberkoekje/EaselAPI/releases/tag/v0.1.0

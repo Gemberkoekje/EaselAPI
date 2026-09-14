@@ -199,6 +199,10 @@ already sit in a value relationship, and any ground left showing reads as a colo
 you chose. On white, everything you paint looks dark and every gap looks like a
 hole.
 
+**A picture whose masses all sit below the presets wants a ground of its own.** The
+lowest is `umber_wash` at `0.425`; `Session(ground="#5a5045")` reads `0.32`. Any
+colour works; `value_of` it first.
+
 ---
 
 ## The workflow
@@ -349,6 +353,10 @@ Two mixtures that sound different can be the same value, and that is the commone
 way a first pass turns into mush. **If two of your three are within `0.10` of each
 other, they will not read as separate masses** no matter how different their
 colours are.
+
+**Put the plan itself through `s.compare({place: value})` on the empty canvas, and
+read the pairs** — every two places planned within `0.10`. A painter who checked
+them by hand shipped a frame as light as its subject.
 
 **That threshold is a floor, and a mass also has a ceiling.** Shading a mass to give
 it form spends value range, and the range is shared: past about `0.15` across one
@@ -698,18 +706,13 @@ entries, not marks you paid for**, so an `undo(3)` spanning a pencil line gives 
 back two strokes. Painting over leaves a history in the surface that is part of why
 paintings look alive.
 
-**You will under-vary your marks.** Real brushwork varies in width, pressure,
-direction and opacity constantly. If every stroke uses the same brush at the same
-size with the same pressure, the result will look mechanical no matter how good the
-drawing is. Change `size`, change `pressure`, change direction between passes.
-
-**And you will under-vary your *objects*, which is the same fault one level up and
-much harder to see.** Having worked out how to paint one of a thing, you will paint
-the next one with the same recipe, and a viewer reads three copies of one object
-rather than three of a kind. The fix is cheap and has to be deliberate: **vary one
-thing per object on purpose** — which way its light falls, how sharp its edge is,
-how much of it the mass in front takes away. One difference each is enough; the
-recipe repeated exactly is what gives you away.
+**You will under-vary your *objects*, and it is much harder to see than the
+under-varied marks the post-pass check now names for you.** Having worked out how
+to paint one of a thing, you will paint the next one with the same recipe, and a
+viewer reads three copies of one object rather than three of a kind. The fix is
+cheap and has to be deliberate: **vary one thing per object on purpose** — which way
+its light falls, how sharp its edge is, how much of it the mass in front takes away.
+One difference each is enough; the recipe repeated exactly is what gives you away.
 
 **You will use too many strokes on detail and too few on structure.** A good
 painting is mostly big statements. Budget for it: if you are 200 strokes in and

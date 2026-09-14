@@ -61,7 +61,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `stroke(points, brush, color, ...)` | one mark along a path | 1 |
 | `dab(x, y, brush, color, press=1)` | one mark at a point; `press` stamps it again | 1 |
 | `smudge(edge, size=0.02)` | drags what is on the canvas, along a path **or a shape's own outline** | 1 |
-| `glaze(points, color, opacity=0.18)` | a thin film that adds no height | 1 |
+| `glaze(points, color, opacity=0.18, to_value=None)` | a thin film that adds no height; `to_value=` solves for the opacity that lands the passage under it on a value, the way `at_value` solves a mixture | 1 |
 | `block_in(place, ...)` | a mass, as overlapping passes | one per pass |
 | `sweep(edge, ..., into=, depth=)` | a mass, as passes along its boundary stepped inward | one per pass |
 | `scumble(band, a, b, n=8)` | a soft passage, `n` passes stepping between two colours | `n` |
@@ -191,7 +191,9 @@ ribbon(places, width, end_width=None)  # a mass running along a line
 union(a, b, ...)                       # one silhouette round overlapping shapes
 s.circle(place, r, wobble=0)           # round in *pixels* on any canvas
 shape.inset(a)  shape.smooth(2)  shape.scaled(f)  shape.shifted(dx, dy)
-shape.box  shape.area  shape.axis  shape.center  shape.closed  shape.contains(x, y)
+shape.box  shape.area  shape.axis  shape.center  shape.closed
+shape.contains(x, y)                   # is this mark inside the mass?
+shape.inside(xs, ys)                   # ...and the same question for many at once
 ```
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
