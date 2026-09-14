@@ -831,16 +831,15 @@ def build_server() -> MCPServer:
 
         Args:
             document: which of the five to return.
-                "guide" (PAINTER.md) -- the method: the order of work, the
-                    mistakes, eight warm-up exercises, the closing checklist.
+                "guide" (PAINTER.md) -- the method: the loop, the order of work,
+                    the mistakes, nine warm-up exercises, the closing checklist.
                     Required reading, and the only one that is.
-                "painting" (PAINTING.md) -- the same rules with their reasons:
-                    colour, wet paint, the brushes, working from a reference or
-                    from nothing, and the rest of the API. Read once, after the
-                    exercises.
-                "recipes" (RECIPES.md) -- the calls, in order, for a particular
-                    kind of thing, each with what it looks like when it goes
-                    wrong. Read one when you are about to paint that thing.
+                "painting" (PAINTING.md) -- how the paint, the brushes and the
+                    planning tools behave, and copying a photograph in its last
+                    chapter. Read once, after the exercises.
+                "recipes" (RECIPES.md) -- one situation at a time: the calls in
+                    order, what it looks like when it goes wrong, and the number
+                    behind it. Read one when you are about to lay that thing.
                 "reference" (REFERENCE.md) -- units, defaults, what each
                     argument does.
                 "calibration" (CALIBRATION.md) -- the measured numbers behind

@@ -121,18 +121,19 @@ tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
 method on one page, so the nine warm-up exercises come before anything else.
 
-It is one file of five, split by what you do with each rather than by subject, because
-three painters each said the same two things — the guide is long, and the essay in it is
-what made the rules stick. Nothing was cut to shorten it; it was moved, and `PAINTER.md`
-is now held to a word budget by the test suite.
+It is one file of five, and every rule in the five is stated once, in the file it
+belongs to, and linked from everywhere else. `PAINTER.md` is held to a word budget by
+the test suite so that it stays the file a painter can hold in their head; the numbers
+it quotes are measured in `CALIBRATION.md`, and what painters reported about their own
+sessions is kept there too rather than beside the rules.
 
 | | |
 |---|---|
-| [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) | the method: the order of work, the mistakes, the exercises, the checklist. Held in your head |
-| [`PAINTING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTING.md) | the reasons: colour, wet paint, the brushes, working from a reference. Read once |
-| [`RECIPES.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/RECIPES.md) | the procedures: the calls in order for a kind of thing, and what it looks like when it goes wrong |
+| [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) | the method: the loop, the order of work, the mistakes, the exercises, the checklist. Held in your head |
+| [`RECIPES.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/RECIPES.md) | one situation at a time: the calls in order, what it looks like when it goes wrong, and the number behind it |
+| [`PAINTING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTING.md) | how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter. Read once |
 | [`REFERENCE.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/REFERENCE.md) | the facts: units, defaults, what each argument does |
-| [`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md) | the numbers behind the rules, each with what it was measured on |
+| [`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md) | the measurement behind every number the other four quote, each with what it was measured on |
 
 The engine is designed around one habit:
 

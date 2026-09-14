@@ -19,7 +19,32 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-Nothing yet.
+The documentation was restructured, and no engine behaviour or default moved.
+
+- **One home per rule.** Every rule in `PAINTER.md`, `PAINTING.md`, `RECIPES.md`,
+  `REFERENCE.md` and `CALIBRATION.md` is now stated once, in the file it belongs to,
+  and linked from the others. The same six rules had been stated in four to six places
+  each. `scripts/check_guide_overlap.py` reports any sentence that appears in more than
+  one of the five.
+- **`PAINTER.md` is a card and a body.** *The first hour* is the loop, the order, the
+  five mistakes with their fix on the same row, and a pointer to the checklist, in
+  under a thousand words; the body states each step once with its number and links to
+  the situation and the measurement. The anecdotes that carried the rules — which
+  painter did what, and how many strokes it cost — moved to `CALIBRATION.md` under
+  *From the sessions*, where a painter's own count is labelled as such. The drawing is
+  step 1 of the order, in its own right. 9,973 words to 6,441.
+- **`RECIPES.md` is the situations file.** Same entries, each trimmed to the calls,
+  the failure and the number, plus one new entry, *A scene with straight edges*: the
+  projection helper three painters had each built for themselves, and the one thing the
+  guide had nothing on.
+- **`PAINTING.md` is the engine's behaviour**, with the reference-photograph material
+  gathered into a last chapter a painter without a photograph can skip, and the MCP
+  section moved to `REFERENCE.md` with the rest of the facts. 11,500 words to 6,900.
+- **`CALIBRATION.md`** gained an index at the top mapping each rule the guide states to
+  the section that measured it, and the *From the sessions* section. No measurement
+  changed.
+- `DIAGNOSIS.md` gained a row for the new recipe and follows one pointer to the rule's
+  new home.
 
 ## [0.4.0] — 2026-09-14
 

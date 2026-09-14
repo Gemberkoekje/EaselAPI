@@ -14,11 +14,11 @@ built yet. Both have to work: the repository itself is used through
 `pip install -e .`, which is a checkout.
 
 There are five of them now rather than three. The guide was split by function --
-method, reasons, procedures, facts, numbers -- when three painters in a row said
-the same two things about it: that it was long, and that its essay was what made
-its rules stick. Nothing was cut; it was moved, and `PAINTER.md` is held to
-:data:`FRONT_PAGE_WORDS` so that it stays the file a painter can hold in their
-head. `LESSONS.md` has the reasoning.
+method, situations, the engine's behaviour, facts, numbers -- and since the tenth
+round every rule is stated once, in the file it belongs to, and linked from the
+others; `scripts/check_guide_overlap.py` says whether a sentence has crept into
+two files. `PAINTER.md` is held to :data:`FRONT_PAGE_WORDS` so that it stays the
+file a painter can hold in their head. `LESSONS.md` has the reasoning.
 """
 
 from __future__ import annotations

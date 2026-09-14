@@ -131,6 +131,10 @@ addition correct and none of them refused. A rule nothing enforces is a preferen
 
 ### The essay is finished at its size. Split by function; never cut
 
+*Revised by the tenth round — see [One home per rule](#one-home-per-rule) below. The
+split by function stayed; the "never cut" half did not survive a painter who had read
+all of it and made the warned-against mistakes anyway.*
+
 Three sessions each said the same two things about the guide and both are true: it is
 long, and the essay is what made the rules stick. Every attempt to shrink it by editing
 has failed, and the reason is not editorial skill — **the rule you would cut is the one
@@ -668,6 +672,46 @@ only to the engine's about itself — and a claim that survives the check is usu
 worth more afterwards, because the re-measurement says what it is really about.
 
 ---
+
+## One home per rule
+
+The tenth session read every file in the corpus before painting, painted a picture of
+its own choosing in 297 strokes, and was then asked what it would change about the
+documentation. Its answer, and what was done about it:
+
+- **The length was structural, not editorial.** Five files split by kind of content each
+  restated their neighbours to stand alone, so one rule lived in up to six places: *paint
+  masses, never up to a line* in six, *vary the direction of marks* in six, *paint over,
+  never undo* in five, the rehearsal rule and the smudge numbers in four each. And
+  `PAINTER.md` held itself three times: a first-hour summary, a body, and a checklist
+  that restated the body as questions.
+- **The stories were most of the words**, and they did not do what the corpus believed.
+  This painter read every warning and still laid its thin members three times too heavy
+  and its shadows as a fan of same-width rays; what caught both was a rehearsal looked
+  at and the line `easel run` printed after the pass. That is the *warning is not
+  method* finding above, arriving from a session that had read the whole essay.
+- **So the essay's cost was real and its benefit smaller than believed**, and the
+  standing rule above — split by function, never cut — was revised: split by function
+  *and* state each rule once. `PAINTER.md` is now a card and a body (9,973 words to
+  6,441), with the drawing as step 1 of the order in its own right; `RECIPES.md` holds
+  the situations, each with its number; `PAINTING.md` holds
+  the engine's behaviour with the photograph material in a skippable last chapter;
+  `CALIBRATION.md` indexes each rule to its measurement and holds the painters' own
+  reported counts in a section of their own, labelled as reports. `scripts/check_guide_overlap.py`
+  says whether a sentence has crept into two files.
+- **One thing was added rather than moved**: a recipe for a scene of straight edges,
+  because three painters had each built a projection helper from nothing and the guide
+  had no paragraph on it.
+
+**This is a hypothesis, like every guide change**, and the test is the one this file
+already names: a fresh session painting against the shorter corpus and then being read.
+The prediction, written down so it can be wrong: the value structure and the depth
+order hold as well as before, because those rules were never the ones painters
+violated; the mistakes painters make — the ones with a check behind them — are made at
+the same rate, because the prose never prevented them; and the session reaches its
+subject earlier, because it spent less of its first hour reading. If the shorter
+corpus produces a painter that skips the exercises or paints boxes for backgrounds at a
+higher rate, the cut went too far and the row above says where the words went.
 
 ## The milestones, as a key
 

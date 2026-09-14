@@ -24,6 +24,41 @@ it says so.** Most of what is here is re-measurable from the scripts in `scripts
 where a figure comes from a painter's own report and has not been re-measured, the line
 says that too.
 
+## Where each rule's number lives
+
+The guide and the recipes quote a number beside each rule and quote it once; this is
+where the rule's measurement is. The last row holds figures painters reported about
+their own sessions rather than measurements of the engine.
+
+| The rule, as the guide states it | Measured under |
+|---|---|
+| Two masses closer than `0.10` in value read as one | *Values* |
+| The floor of the box is `0.14`, and more passes do not go lower | *What the box reaches* |
+| Mix to a value, not a ratio; white is weaker than its share | *The value scale*, *Tinting and mixing* |
+| The engine lays the chroma it is given, never more | *Chroma: the engine lays what it is given* |
+| A mass reads the same in the view as in the paint | *The paint and the view of it* |
+| Paint buries graphite by what lands; `density` does not thin | *Graphite under paint* |
+| Wet is a matter of a few strokes | *Wetness* |
+| `density` spaces the passes; `solid` fills them; a solid plane still stripes at `0.03` | *Load and run-out* |
+| A mass never stops dead at its outline; `overhang` moves the ends only | *`block_in`* |
+| A solid mass lands short of its mixture; four pixels is the cliff | *What a solid mass actually lands at* |
+| Passes along the form come out less square | *Laying a mass along its own axis* |
+| A shape costs its box along the passes, times the crossings | *Shaped masses (M8)* |
+| A clean edge spills half what a ragged one does, and eats corners past a quarter | *The contour of a clean edge*, *A clean edge on a narrow mass* |
+| A shaped mass with `direction` left off can cost many times its axis | *A shaped mass with `direction` left off* |
+| A sequence of directions is priced as the sum | *`direction` given a sequence* |
+| A sweep follows an edge; crossing closes it | *`sweep`* |
+| A smudge buys nothing past `0.02`, removes about half a join once, and works along not across | *`smudge`* |
+| A glaze far from its ground has no usable opacity | *`glaze`* |
+| An inward scumble is a glow; three steps of brush is the window; `n` is bounded by the patch | *`scumble`* |
+| A band's brush is three steps; a wedge needs two bands; `opacity` does not quieten a passage | *The band, and the brush that closes its joins*, *The band across a wedge*, *Opacity does not make a passage quieter* |
+| A chisel does not taper; a chisel ending on a slope is a staircase | *Pressure*, *The chisel staircase* |
+| A dab is a light touch; `press=3` lands; scale a mark off the thing | *At the scale of a feature* |
+| A bristle under `0.025` is four streaks; round tips repeat, `tip_wobble` redraws | *The bristle comb* |
+| A rehearsal is the next strokes; `pencil`, `dry` and `erase` are logged | *The log, undo, and the stream* |
+| What a mass costs, before the call | *Budget* |
+| Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
+
 ---
 
 ## Values
@@ -1295,3 +1330,58 @@ are a wider brush, a thinner `density`, and one direction instead of two.
 **`edge="clean"` costs one stroke more than the fill it replaces** — and the fill
 itself is slightly cheaper, because it is laid into the shape inset by half a brush.
 `cost()` prices both halves.
+
+---
+
+## From the sessions
+
+The guide used to quote these beside its rules. They are what painters reported about
+their own paintings — counted off their logs and written in their notes — and not
+measurements of the engine, so they carry the rule at the top of this file the other
+way round: **every figure here is a painter's own count, re-measured where the export
+allowed it and not otherwise.** They are here so that the rules they support can be
+stated in one line each, and so that the next painter can put its own numbers beside
+them.
+
+**Rehearsing.** Two painters rehearsed 27 and 18 passes of one painting each; every one
+of the eighteen changed something, and not one was charged. Another rehearsed and threw
+away 38 marks across two sittings, at no cost. The painter who rehearsed nothing spent
+about 60 of its 224 strokes repainting five masses it had laid once and disliked. A
+tenth session rehearsed every one of its eleven passes and found, on the copy, a set
+of thin members laid three times too heavy and a recipe for small things that would
+have cost 220 strokes against 142 left.
+
+**The subject's share.** One painter working to 300 spent 59% of them before the
+subject began and reached it with 41% in hand; its own verdict was that the part it
+came for was the weakest passage. Another spent 24% on the subject against a planned
+32%. One stopped with 115 strokes unspent. One that measured at the moment the subject
+was done stood at 45%, and at 41% after two passes on the surroundings, which obeys
+both rules. The tenth stood at 40% against a plan of about 30%, and began the subject
+at 44% of the budget.
+
+**Form is bounded at both ends.** A mass that read flat at `0.09` of value across its
+width was laid up to `0.22` and turned — and its shadow side then sat `0.09` from the
+mass behind it and the two began to merge. At about `0.15` both held. That is the
+ceiling the guide quotes beside its `0.10` floor.
+
+**A cast shadow on a lit surface.** On a surface at `0.60`, the darkest mixture at
+`0.16` read as a hole punched through it, `0.50` as a shadow, and `0.42` as a shadow
+with weight.
+
+**The pairs in a value plan.** A plan finished all-green with two of its places
+planned `0.00` apart; they were the two that met on the canvas, and one dissolved into
+the other exactly there. Three of that plan's four close pairs were fine, because those
+masses never met.
+
+**A cool mass on a warm ground.** A painter concluded three times that its subject was
+far too light, and `compare()` said it was inside `0.05` every time — about two steps
+of apparent lightness that the number does not carry.
+
+**The drawing.** Seven of the first ten paintings drew no line at all and nine placed
+no landmark. The tenth drew its arrangement four times before paint, at a cost of
+nothing, and threw the first two away; the two passages it never drew were the two it
+named weakest at the end.
+
+**Reading.** Reading the guide, the reasons, the reference, the calibration file and
+two paintings' notes cost one session a few minutes and about thirty thousand tokens,
+against far more spent looking at its own rehearsals.
