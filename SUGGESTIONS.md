@@ -5,9 +5,10 @@ the documentation had cost them, a synthesis pass gathered the points more than 
 them raised, and the repository's owner put two further questions to the third painter.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Everything in the tables below is done — except the last round, which is open and
-says so** — 42 engine items and 50 documentation items closed, and 3 engine and 5
-documentation items open from the eighth session. The long arguments that produced each
+**Everything in the tables below is done — except the last two rounds, which are open
+and say so** — 42 engine items and 50 documentation items closed, and 3 engine and 5
+documentation items open from the eighth session, 4 engine and 10 documentation from the
+ninth. The long arguments that produced each
 one have been cut, because a request list is worth keeping only while somebody still has
 to act on it. What survives is the
 finding, because a finding is still true after the fix, and the handful of places where
@@ -29,7 +30,9 @@ changed rather than that it worked.
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
 | Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | 11 | 8 |
-| Eighth session — a pool at night, 221 strokes of 300, `pool_night/` | 3 open | 5 open |
+| Eighth session — a pool at night, 221 strokes of 300, `paintings/pool_night/` | 3 open | 5 open |
+| Ninth session — a heron in a flooded lot at dawn, 293 of 320, `paintings/heron_lot/1/` | 3 open | 6 open |
+| …and its second attempt at the same subject, 253 of 320, `paintings/heron_lot/2/` | 1 open | 4 open |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -48,6 +51,12 @@ The eighth read **three** — `PAINTER.md` with its nine exercises, then `RECIPE
 `REFERENCE.md` — and nothing else: not `PAINTING.md`, not `CALIBRATION.md`, nothing
 under `paintings/`. It is the split test's other arm, and the only session on this page
 whose items were raised without the essay or the numbers to check them against.
+
+The ninth read **four** — the eighth's three plus `DIAGNOSIS.md`, which did not exist
+when any earlier session painted. It is therefore the restricted arm again with the
+symptom index added, and the **only data point that exists on whether that index
+works**. It was told it could follow a `DIAGNOSIS.md` pointer into a withheld file and
+read the area named; it never once did, which is its own first finding.
 
 ---
 
@@ -116,7 +125,7 @@ close is closed.
 
 Restricted to `PAINTER.md` and its nine exercises, then `RECIPES.md` and
 `REFERENCE.md`. Subject chosen and written down before the repository was opened: a
-municipal pool at night lit from underwater, `pool_night/`, **221 of 300 strokes**,
+municipal pool at night lit from underwater, `paintings/pool_night/`, **221 of 300 strokes**,
 about forty rehearsals, subject share 39% at the moment the subject was finished against
 a planned 40%, and a nine-value plan that `at_value` landed to the hundredth. It then
 wrote an unprompted critique of the engine, the documentation and its own painting, and
@@ -210,6 +219,126 @@ marked so.
 | **No preset ground suits a low-key picture, and the guide's ground advice is silently wrong for one.** *Start on a toned ground, not white* is right for a mid-key picture. The lowest preset is `umber_wash` at `0.425`; this session took `cool_grey` at `0.53`, after which every dark mass had to be laid `solid=True` to cover it — which cost strokes, removed the ground-breathing-through the same page values, and left the deck repaint as the one mass this painter had to lay twice. The fourth session solved this and wrote the reason only in its own notes. | One sentence under *Getting started*, where the presets are listed: a picture whose masses sit below the presets wants a ground of its own — `Session(ground="#5a5045")` — and `value_of` it before the first mass. The mechanism is already there, since a ground takes any colour; no rule points a painter at it. |
 | **A painter placing marks *inside* a shaped mass needs point-in-shape constantly, and nothing says so.** This session hand-rolled edge-intersection arithmetic about fifteen times to check that a ripple, a lamp or a glaze fell inside its pool, with `shape.contains(x, y)` listed in the file it had open. Every mark laid *in* a mass rather than *as* one wants it, and this painting is mostly such marks. | A line where `RECIPES.md` lays small marks into a larger mass. A list of methods answers *what exists*; it does not answer *what you are about to need*, and the shapes list is read once at the start rather than at the moment a mark is placed. |
 | **The worked examples may prime toward one kind of picture.** Three of the four finished paintings are low-light scenes with a single light source, and most of the guide's illustrative passages are drawn from them. The named-subject priming is measured and guarded against; this is not. (**Opinion, unmeasured, and offered as one.** This session chose a low-light subject before opening anything, so it is a data point for the hypothesis and cannot test it.) | Nothing yet. If the next brief is written for a high-key or flatly-lit subject, that is the measurement — and the brief has to be written before anyone reads `paintings/`, which is the protocol the subject rule already uses. |
+
+---
+
+## The ninth session: the restricted arm, with the symptom index
+
+`PAINTER.md` and its nine exercises, then `RECIPES.md`, `REFERENCE.md` and
+`DIAGNOSIS.md`. Subject chosen and written down before the repository was opened: a grey
+heron standing in sheet-flood over a parking lot at dawn, `paintings/heron_lot/1/`, **293 of 320
+strokes**, about forty rehearsals, subject share **34% at the moment the subject was
+finished** against a planned 32%, a thirteen-value plan `at_value` landed to the
+hundredth, and two signature marks. It wrote an unprompted critique of the engine, the
+documentation and its own painting, and only then read the three withheld files.
+
+**Three things the earlier rounds predicted happened again**, and are recorded here as
+confirmations rather than as new items:
+
+- **It laid a lamp halo as an inward `scumble` and got a moon, twice**, before arriving
+  at three crossing glazes — the fifth session to reach *a volume of lit air* the hard
+  way, and the second to do it with `RECIPES.md` open.
+- **It never ran `compare({place: value})`.** Its case is worse than the eighth's,
+  because it did everything `PAINTER.md` step 3 asks: it planned thirteen values as
+  numbers, printed each with `value_of`, and laid the ninth exercise's swatch strip
+  before the first mass. It still shipped `sky_hi` at `0.50` and `water_mid` at `0.50` —
+  planned `0.00` apart, and the two masses that meet along the entire far edge. The
+  greyscale view had a dark and a mid and **no light at all until stroke 217 of 293**,
+  when a look caught it; the repair is the passage the painter names as the picture's
+  worst. This is the pairs question, twice in a row now, and the second painter had more
+  of step 3 in hand than the first.
+- **A depth-order violation, in a session that otherwise held back-to-front throughout.**
+  Every mass went down far to near with nothing cut around anything. The violation was a
+  late graded passage laid *over* the far trees, the pole and the bird's head — see the
+  documentation table below, which proposes naming the sub-case rather than repeating the
+  rule. `LESSONS.md` already has this paragraph down as needing a rewrite after three
+  failed runs; this is the fourth, and it is a different shape from the other three.
+
+**What the arm did well without the essay.** The masses again followed the method. The
+picture's one structural strength — the far edge lost across the whole left half, sky
+meeting water at `0.07` and under the reading threshold, with the trees picking the edge
+up only on the right — came out of repairing a ruled horizon and off no document. Two
+passages were abandoned rather than fixed after two rehearsals each, which is the
+`paintings/` habit arriving without `paintings/`.
+
+### What it asks for, and none of it is done
+
+Two of the three engine items below are **measurements taken against an open item rather
+than new complaints**, which is what this arm is for. Probes: `paintings/heron_lot/1/probe_seq.py`,
+`probe_seq2.py`, `probe_band.py`.
+
+| The engine | What is proposed |
+|---|---|
+| **A hand-rolled graded passage gets none of the protection `scumble` now has, and `RECIPES.md` teaches the hand-rolled form.** *A passage brightening toward one side* is six `stroke()` calls with sizes and offsets written out, and step 4 of `PAINTER.md` writes the scumble out by hand beside the verb. Neither says the thing the verb now knows: the brush has to be about three times the step or the passes read as bars. Measured **on this painting, against itself**: the sky, laid with `scumble(n=11)` and the brush left to the verb, sits at a uniform 4.0 steps and its across-band wobble is `0.037`; the dawn band, seven strokes with brushes chosen by hand, tapers 4.2 → **1.7** steps and wobbles `0.072` — twice as rough, same canvas, same painter, same pass structure. `1.7`–`2.5` is the middle of `CALIBRATION.md`'s own measured worst zone. (Measured.) | A rule of the post-pass check, which is where `LESSONS.md` says a rule like this belongs and whose bar it meets — it fires on a real pass of a real painting: **three or more long, roughly parallel marks from one call whose offset step is under about twice the smallest brush among them.** Every input is in the log. Failing that, one clause in *a passage brightening toward one side* carrying the number the verb already uses. |
+| **`direction=` given a sequence lays a complete stack per angle, and `REFERENCE.md` says the opposite.** The eighth session filed the price and marked its mechanism — *the stack is sized for the steepest angle in the list* — as a guess. **It is not that.** The cost is the **exact sum of what each angle costs alone**, on all three shapes tried (wide 37/88/137, tall 36/85/134, concave 48/100/141; sum-of-singles 37/88/137, 36/85/134, 48/100/141 — nine for nine, to the stroke). In paint: `direction=[0, 90]` logs **7 passes at 0° plus 30 at 90°**. So `REFERENCE.md`'s *"or a sequence for one pass each"* reads as *n passes for n angles* and means *n complete stacks*. This session gave a treeline sixteen angles to break its comb, on the guide's own advice to vary direction, and was quoted **515 strokes against 22 for one direction — 23×, and 1.6× the whole budget.** Caught by `cost()` before anything was spent. (Costs and pass angles both measured.) | The wording first: *a sequence lays a full stack per angle and is priced as the sum of them*, in `REFERENCE.md`'s `direction` row and in `CALIBRATION.md` under `block_in`. Then the price walk, which today fires on `direction` **left off** — the same 2.5× test on a sequence would have caught this at the call rather than at the painter's own `cost()`. `"cross"` is two angles and is the affordable answer nothing points at. |
+| **The check's bristle floor fired 28 times across the painting and was correctly ignored 28 times.** *A bristle under `size=0.025`* is right for a solid plane and wrong for what this painting is mostly made of: broken glints on water, grit under a flood, feather groups on a bird — marks where the comb's gaps at `load=0.25`–`0.45` **are** the mark. By the second half the painter had stopped reading that line, which is the risk `LESSONS.md` names from the other direction when it says a warning that cannot fire is worse than none. (Observed; the count is from the log.) | Narrow the condition rather than the rule: do not fire on a mark whose `load` is inside the run-out window `CALIBRATION.md` already publishes (`0.4`–`0.6` and below), where a starved comb is the intended mark. A check a painter learns to skip costs the other five rules their credibility. |
+
+| The documentation | What is proposed |
+|---|---|
+| **`DIAGNOSIS.md` worked as a recognition aid and never once as a lookup**, in 293 strokes and about forty rehearsals. Read front to back — as this session was told to — it stops being an index and becomes recall: the painter recognised *staircase*, *venetian blind*, *floating discs*, *searchlight that owns the picture* and *paper cut-out* on sight, and then **repaired each from the remembered description rather than following the pointer**. Zero pointers were followed, though following them was permitted. The recalled version has no measurement attached, which is the whole difference between the index and its targets: the one fault it fixed properly, the chisel staircase, it fixed with `edge="clean"` while `CALIBRATION.md` holds a cheaper repair (a comb, plus one solid stroke down the middle) at the other end of the same row. (Observed, n=1, and the only n there is.) | The file's own instruction — *use it the other way round*, `grep -i` — is the right one and it lost to a reading instruction. If a run hands a painter the index, hand it as a file to **grep and not to read**, and record which it was; this session cannot tell the two arms apart because it only ran one. The sharper version: an index whose rows carry the *repair* as well as the pointer stops rewarding recall, but that is the fourth copy `LESSONS.md` refuses, so the honest proposal is to measure the grep arm before changing the file. |
+| **Four of the rows most relevant to a restricted painter point into files that arm does not have.** *Two masses you planned as different that read as one* → `PAINTING.md` → *Painting without a reference*, which is where `compare({place: value})` lives and is exactly this session's worst fault. Also *a mixture that should have been a grey and came out green* (met, three times, on the swatch strip), *a glaze that is a stripe at one opacity and invisible at the next* (met, and the glaze dropped), and *a form shaded until it stopped separating from its background*. A pointer into a file you were not given is worse than no row, because the answer is visibly there and out of reach. (Observed.) | Either the index ships only with the files it indexes, or each row says which file it lands in **before** the painter follows it — it does name them, but as a destination rather than as a prerequisite. This is a property of how a run is configured rather than of the file, so it belongs with the protocol in `LESSONS.md`. |
+| **`compare({place: value})` is unreachable from the method file** — the eighth session's item, refiled because the second instance is stronger. Doing all of step 3 was not sufficient: numbers planned, `value_of` printed for each, swatch strip laid, and the plan still had its two largest masses at `0.00` apart. Step 3's own text is what makes this survivable-looking — it teaches the `0.10` threshold as a property of *a mixture*, and the thing that fails is a property of *a pair that touches*. | The eighth session's two lines in step 3, plus one clause it did not ask for: the threshold is about **two masses that meet**, so the pair to check is not the two closest numbers but the two closest numbers **whose masses share a boundary**. That is the question `Comparison.pairs` already asks and the reason step 3's by-hand version does not catch it. |
+| **`RECIPES.md` has no entry for the biggest mass in the picture.** *A quiet gradient* is a band between two masses; *a passage brightening toward one side* is a passage inside one; *a passage light in the middle* is a bloom. A sky, a far field, a sheet of water seen at a grazing angle is none of those: it is a graded field that is a third of the canvas, that must not read as a band, and whose joins are the picture's largest surface. This session laid three of them and got one right — and the one it got right is the one it handed to the verb. (Observed.) | An entry collected the way the others were: the verb over the whole field with `size` left off, a direction a few degrees off the frame so the passes do not parallel it, and the crossers named as part of the recipe rather than as composition advice — because a graded field with nothing crossing it *is* a band, however closed its joins. Two of the four paintings on this page have one. |
+| **Depth order failed in a new shape: a late atmospheric pass is a mass at a depth, and does not feel like one.** Back to front held for every mass in this painting. What broke it was the dawn band — laid last because it is *light*, and laid over the far trees, the pole and the bird's head, all of which are in front of the sky. It was repairable only because `RECIPES.md`'s *a repair under things that are standing on it* had been followed from the first pass, so the three buried things could be re-run at their own depth for twelve marks. `LESSONS.md` has the depth paragraph down as needing a rewrite after three failed runs; this is a fourth failure and it is not the same one. (Observed.) | Step 2 names masses and hollow things. The sub-case to add is one sentence: **a glaze, a graded passage or a veil of light is a mass, and the question to ask of it is the same one — what is it in front of?** And the instrument that catches it exists and is unreachable from the method file: `look(diff=True)` after a pass, which `PAINTING.md` names in one clause under *Looking* and which this painter did not use once. |
+| **`sample()` over a `cell()` averages the background in with the mass, and reads like a measurement.** Checking whether the bird's dark had landed, this session sampled `F5` and read `0.449` against a planned `0.30`, plus the trees at `0.336` against `0.20` — concluded the engine was laying everything `0.14` light, and wrote a second probe to find out why. The cells contained water and sky. A tight region inside each mass read `0.324` and `0.218`, which is `at_value` doing exactly what six sessions have defended. Two probe scripts and a false belief about the engine. (Measured, after the fact.) | One clause where `REFERENCE.md` and `PAINTING.md` introduce `sample` — *it averages what is in the place, so to measure a mass, hand it a region inside the mass and not the cell the mass sits in* — or `compare()`'s own advice applied one level down: a number that disagrees with `at_value` by more than a hundredth is almost always the place, not the paint. |
+
+### The same painter, the same subject, a second time
+
+After writing the critique above, the ninth session was shown the three withheld files
+and then painted the **same subject again** with all of them in hand
+(`paintings/heron_lot/2/`, 253 of 320, subject share 42% against a planned 40%). It is not a
+controlled experiment — same painter, and it knew what it had got wrong — but it
+separates two kinds of fault cleanly, and that is what it is recorded for.
+
+| | first painting | second |
+|---|---|---|
+| strokes | 293 / 320 | 253 / 320 |
+| subject share | 33% | 42% |
+| stroke at which the picture had a light mass | **217** | **16** |
+| depth-order violations | 1 | 0 |
+| passages abandoned after two rehearsals | 2 | 1 |
+
+**Every fault that was a lookup got fixed. The one fault that was judgement repeated
+itself exactly.** `compare({place: value})` ran twice on the empty canvas and caught two
+real merges before a stroke; the graded field went down in pass two with the light
+already in it; every soft passage took its brush from the verb. And the body of the bird
+came out a smooth mass with marks laid on it *again* — the failure *a mass built of
+planes* names, which the painter had read, quoted in its own notes as its worst habit,
+and then made a second time with the recipe open. That is one data point for
+[`LESSONS.md`](LESSONS.md)'s standing question about what a guide change can do: the
+files moved everything that was a missing number or a missing verb, and nothing that was
+a missing decision.
+
+### What the second painting adds, and none of it is done
+
+| The engine | What is proposed |
+|---|---|
+| **A solid block-in lands short of its mixture, and under about four pixels it lands whatever was underneath.** Bare ground `0.394`, `density=1.0, solid=True, opacity=1.0, pressure="even"` — every clause of *a plane that is a plane* — a mixture at `0.865`, 600×600 linen: <br><br>`px:` 1.8 · 2.7 · 3.6 · 4.8 · 7.2 · 12.0 · 18.0 <br>`flat:` 0.427 · **0.403** · 0.405 · 0.681 · 0.768 · 0.801 · 0.826 <br>`bristle:` 0.415 · 0.407 · 0.411 · 0.582 · 0.656 · 0.733 · 0.773 <br>`round_hard:` 0.581 · 0.669 · 0.778 · 0.834 · 0.853 · 0.852 · 0.856 <br><br>At 2.7px a chisel lands `0.403` against a ground of `0.394` — nothing. Even at 18px a `flat` is `0.04` short and a `bristle` `0.09` short, which is most of the `0.10` that separates two masses; only a round tip holds its colour small. **The evidence is already in this repo's own data**: *The paint and the view of it* records a solid mass mixed at `0.215` landing `0.241` and one at `0.50` landing `0.504` — the same pull toward what it was laid over, in four rows, unnamed, at one brush size. This cost the painting four rehearsals on a bird's head laid at `size=0.005` that came back a dark fuzzy ball, and it is the likelier account of the first painting's bill "blooming pale" as a mass. (Measured; `paintings/heron_lot/2/probe_cover.py`.) | The general statement is that **a mass lands between its mixture and what it is laid over, and how far depends on the brush**. One row in `CALIBRATION.md` under `block_in` with the size column, and one clause on `solid`'s row in `REFERENCE.md` — which currently says it is "what fills a mass" without saying it does not fill it to its colour. A warning at the call when an oriented tip is handed a `size` under about `0.008` would have saved all four rehearsals, and its condition is measurable rather than guessed. |
+
+| The documentation | What is proposed |
+|---|---|
+| **Six of the nine paintings on this page used no pencil at all.** Checked, not remembered: with the pool and the two herons set aside, every `pencil` hit under `paintings/` is the word inside an `UNPAINTED_KINDS` filter list or a probe. `pool_night` is the only painting in the repository that used landmarks (3) and the only one that redrew after the far masses were down (`p4_water.py`) — which is the guide's own order. The ninth session drew 13 lines in `pass1_draw.py` in each of its two paintings, at log indices 0–15 of 316 and 273, and **zero landmarks in either**. The sub-cell precision method — `mark` → `pt` → pencil through the points → `grid="fine"` → paint — is the guide's answer to the thing painters are worst at, and eight of nine painters did not use it once. (Measured off the repository.) | This is the largest untouched thing on the page and it needs a diagnosis before a fix. The three candidates below are what one painter can offer; which of them is right is a question for a run, not for this table. |
+| **The guide sells the pencil on being free, and a rehearsal is free too.** *The pencil is free and does not count against the budget* is true and does not distinguish the two, so a painter who has correctly internalised *rehearse everything* will reach for the rehearsal — which is what happened here, five sequential times on one bird's head. **The property that actually distinguishes the pencil is that it is parallel**: six candidate outlines in one call, compared in one look, against one answer per round trip from a rehearsal. Nothing in any file says this. (Observed, and it is the painter's own account of its reasoning, worth what that is usually worth.) | One clause wherever the pencil is introduced: *a rehearsal shows you one answer; a pencil shows you six at once.* That is the argument that survives `rehearse everything` being the stronger habit. |
+| **`The drawing` is written entirely around a reference, and the painter without one is sent straight to it.** *Painting without a reference* says *draw first anyway* → *The drawing*, and every mechanism in that section assumes two panels: marks drawn on both, `look(region=..., reference="ref.jpg", grid="fine")`, correcting by cell against the photograph. A painter with nothing to compare against reads it and finds one sentence addressed to them — that the proportions in your head may not fit the canvas. Nothing there tells them how to draw a *feature*, which is where both of this session's paintings spent their most expensive rehearsals. | The no-reference half of the precision loop, written out: landmarks placed by eye and checked at `grid="fine"` against each other rather than against a photograph, and the pencil as the thing you iterate a silhouette with before building it as a polygon. `compare({place: value})` was built for exactly this asymmetry and is the precedent. |
+| **The pass-script convention quietly makes the pencil a one-off.** `paintings/` teaches numbered pass scripts, the drawing naturally becomes `p1_draw.py` — and once it is pass 1 it is finished. The guide's actual order is *landmarks before anything, pencil **after the far masses are down**, near masses on top*, which wants the pencil between passes 2 and 3. Both of this session's paintings put all their graphite in pass 1, on bare ground, where the first block-in buried it; the only painter that redrew mid-painting did it in its fourth pass. So the worked example the guide points at fights the instruction the guide gives, and the example wins. (Observed across nine paintings' scripts.) | Name the pass. If the convention is `p1_draw.py`, the guide's order asks for a second one — and a painting in `paintings/` whose scripts show it would teach it better than the sentence does, since a worked example is an instruction whatever the prose beside it says. |
+
+**And one composition note, offered as a single instance rather than a rule.** The guide
+says to count the horizontal bands before the first mass and then find something that
+crosses them, *or a viewpoint that is not square on*. The second painting took a
+stronger version — a viewpoint steep enough that **there is no horizon in the frame at
+all** — and the band problem did not have to be solved because it did not arise. The
+water became the whole picture and the sky existed only as what it reflected. One
+painting, so it is a note and not an entry; if a second one wants it, it belongs beside
+*a subject that is one thing against a ground*.
+
+**One measurement tried and discarded, recorded because the instrument is this repo's.**
+The painter tried to show that a verb-picked `scumble` is smoother than a hand-laid band
+using the across-band wobble from *The band, and the brush that closes its joins*, and
+the number came back the wrong way round — because on a `rough` ground with heavy
+flecking showing through it counts canvas texture as ripple. The table states its own
+conditions (linen) and is not wrong; but a painter reaching for that metric on their own
+painting will get a number that means something else. One clause beside it would prevent
+the next person spending what this one spent.
 
 ---
 

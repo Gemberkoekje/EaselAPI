@@ -32,7 +32,9 @@ arrived at their convention on its own.
   including those of one subject**: the greenhouse brief was written down before any
   of it was read and then handed to more than one painter unchanged, which is the rule
   satisfied twice over — no painter could be steered by a noun in a worked example, and
-  none of them picked the brief either.
+  none of them picked the brief either. The heron's second attempt is the one deliberate
+  exception: the subject was chosen under the rule the first time and then repainted on
+  purpose, by the same painter, to find out what reading the rest of the files was worth.
 - **How much else was read varies, and it matters.** The pears session read
   `PAINTER.md` and nothing else in the repository, which makes it the only clean
   measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
@@ -46,7 +48,12 @@ arrived at their convention on its own.
   differ in one place — Sonnet never opened `CALIBRATION.md`, Opus read the sections its
   rules cite — and the Fable attempt read every earlier painting's notes and the dusk
   painting's scripts, and opened `CALIBRATION.md` and `LESSONS.md` only after its
-  picture was finished. So where they
+  picture was finished. The pool read the narrowest set of any of them: `PAINTER.md`
+  and its nine exercises, `RECIPES.md` and `REFERENCE.md`, and nothing else — no earlier
+  painting and no `CALIBRATION.md` — which makes it the method measured without the
+  numbers underneath it. The heron's first attempt read that set plus `DIAGNOSIS.md`, and
+  its second read everything, which is the one place on this page where the same painter
+  appears at both ends of the range. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -290,6 +297,141 @@ Both also arrived at *the tool has a geometry and it will choose if you do not* 
 different route: Sonnet through a `pressure` list that did nothing to a chisel's width,
 Opus through a chisel's pass ends stacking into a staircase.
 
+## An empty municipal pool at night, lit from underwater
+
+![An empty municipal pool at night seen from a high corner: the water a bright pale-cyan
+diamond crossing the frame, two soft cores of light burning up through it from lamps set
+in the pool's own walls, dark deck all around, a chair and one small orange sign at the
+left, a board entering from the right edge, and roof members crossing the near-black
+band along the top](paintings/pool_night/painting.png)
+
+One light source, and it is underneath everything, so every form in the room is underlit
+and the value structure cannot fail: one bright plane against near-black. Square on the
+subject is a layer cake — ceiling, wall, far deck, water, near deck — so the viewpoint is
+a high corner and the pool is a diamond crossing every band, with the roof members
+crossing them again on the other diagonal, a chair crossing them at the left and a board
+entering from the right.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `cool_grey` ground, seed 11 |
+| Spent | 221 strokes of a 300 budget, plus two signature marks that did not count |
+| Rehearsed and thrown away | Every pass was rehearsed against a copy before it was committed — about forty runs, none of them charged |
+| Reproducible | **Not claimed.** Each committed pass ran once in its final form and in order, but that was never checked from a clean session, so nothing here says the scripts rebuild the PNG |
+| Files | [`paintings/pool_night/`](paintings/pool_night) — [notes](paintings/pool_night/NOTES.md), [time-lapse](paintings/pool_night/painting.gif) |
+
+This is the picture painted against the narrowest document set on the page — `PAINTER.md`
+and its nine exercises, `RECIPES.md` and `REFERENCE.md`, and nothing else — and the
+[exercises it worked first](paintings/pool_night/exercises) are committed beside the
+passes. It is also the only painting here that used `mark` landmarks: three of them, the
+two lamps and the exit sign, pinned in the drawing pass before any paint so that every
+later pass building the glow could find the same points again.
+
+The [notes](paintings/pool_night/NOTES.md) are mostly about measuring rather than
+looking, because twice the painter's eye was simply wrong and one line of numbers settled
+it. A deck that *looked* too light at `0.40` was the `0.39` it had been mixed to — local
+contrast against a dark room, the same false alarm the laundromat above talked itself
+into. A coping that looked fine had quietly climbed to `0.50` against water at
+`0.45`–`0.55`, which is the frame around the subject going as light as the subject, and
+nothing but `sample()` was ever going to say so. The deck came down to `0.30` and the
+whole stack was re-run for 21 strokes, early, while nothing was standing on it yet.
+Three deck glazes later ran straight over the chair and erased it, caught only by
+cropping in for the post-pass check's *did a correction bury something?*, and it was
+re-laid at its own depth a step darker to suit the darker deck it now stands on.
+
+## A heron in a flooded parking lot at dawn
+
+The other subject here painted more than once, and the only one painted twice by the same
+painter. The first attempt was made under the narrowest reading set on the page bar one —
+`PAINTER.md` and its nine exercises, then `RECIPES.md`, `REFERENCE.md` and
+`DIAGNOSIS.md`. It then wrote its own post-mortem, was shown the files it had been denied,
+and painted the subject again with those and that post-mortem in hand. It is not a
+controlled experiment — same painter, and it knew what it had got wrong — but it separates
+two kinds of fault, which is what it is here for: what a painter gets wrong for want of a
+number or a verb, and what it gets wrong for want of judgement.
+
+### First attempt
+
+![A grey heron standing in shallow floodwater over a parking lot at first light: a wide
+pale sky with a yellow dawn band low in it, a dark treeline along the right, a lamp
+standard still lit at the left and given back by the water as a broken chain of pale
+discs, the bird at the middle right with a white head and a dark bill read against the
+trees, and painted stall lines showing through the water and converging to the bottom
+left](paintings/heron_lot/1/painting.png)
+
+| | |
+|---|---|
+| Canvas | 1024×768, rough, `toned_warm_grey` ground, seed 17 |
+| Spent | 293 strokes of a 320 budget, plus two signature marks that did not count |
+| Rehearsed and thrown away | About forty rehearsal runs, none of them charged |
+| Reproducible | **Not claimed.** Each pass ran once in its final form and in order, but that was never checked from a clean session |
+| Files | [`1/`](paintings/heron_lot/1) — [notes](paintings/heron_lot/1/NOTES.md), [time-lapse](paintings/heron_lot/1/painting.gif), [exercises](paintings/heron_lot/1/ex) |
+
+Its best passage is an absence: water meets sky at `0.07` of value across the whole left
+half, under the reading threshold, so there is no horizon line at all until the trees pick
+the edge up on the right. That began as the repair for a ruled horizon and came off no
+document. Its [notes](paintings/heron_lot/1/NOTES.md) also record a treeline given
+sixteen directions to break its comb — on the guide's own advice to vary direction — which
+`cost()` priced at **515 strokes against 22 for one direction**, 1.6× the whole budget,
+caught before a stroke was spent. And a fault the picture never quite recovers from: the
+sky and the mid water were planned `0.00` apart along the entire edge where they meet, so
+the greyscale view had a dark and a mid and **no light at all until stroke 217 of 293**.
+The dawn band that fixed it was then laid last, because it is light — over the far trees,
+the pole and the bird's head, all of which stand in front of the sky. It was repairable
+for twelve marks only because every mass in `prelude.py` is a named function that can be
+re-run at its own depth.
+
+### Second attempt
+
+![The same heron seen from much higher up, so the flooded asphalt fills nearly the whole
+frame: a near-black band of trees across the top with a warm yellow reflection under it,
+the bird standing large and high in the picture with a white head and a long ochre bill,
+its own pale reflection directly below it, and painted stall lines running away across the
+water in the foreground](paintings/heron_lot/2/painting.png)
+
+| | |
+|---|---|
+| Canvas | 1024×768, rough, a custom ground `#6d635a` at value `0.394`, seed 23 |
+| Spent | 253 strokes of a 320 budget, plus two signature marks that did not count |
+| Reproducible | **Not claimed**, on the same terms as the first |
+| Files | [`2/`](paintings/heron_lot/2) — [notes](paintings/heron_lot/2/NOTES.md), [time-lapse](paintings/heron_lot/2/painting.gif), [the measurement it produced](paintings/heron_lot/2/probe_cover.py) |
+
+The composition throws the horizon away rather than fighting it: a steep downward view in
+which the water *is* the picture and the sky exists only as what it gives back, so there
+are no horizontal bands to cross and the bird spans the frame with its own reflection.
+`compare({place: value})` was run on the empty canvas twice before a stroke — the call the
+two sessions before this one never reached — and it found two real merges and one piece of
+sloppiness, a bird planned as a single averaged value. The light went in with the ground:
+the graded field is pass two, and the picture had a light mass at stroke **16** against
+217.
+
+It also produced the page's sharpest engine measurement, in
+[`probe_cover.py`](paintings/heron_lot/2/probe_cover.py): **a solid block-in does not land
+its colour.** On bare ground at `0.394`, with every clause of a plane that is a plane set
+— `density=1.0, solid=True, opacity=1.0, pressure="even"` — a mixture at `0.865` comes
+back at `0.403` from a 2.7px `flat`, which is the ground and nothing else, and at 18px is
+still `0.04` short. Only a round tip holds its colour small. That is why a bird's head
+laid at `size=0.005` was a dark fuzzy ball for four rehearsals, and it is the likelier
+account of the first painting's bill "blooming pale" than the one the first painting gave.
+
+### What the second attempt settles
+
+Almost everything that improved was a **lookup** — a number or a verb the first painter
+did not have. The one fault that was a matter of judgement repeated itself exactly: *a
+mass built of planes* says to decide the tiling with the silhouette, before the block-in;
+the painter read it, wrote it into the first painting's notes as the named fault, and then
+invented the planes in the pass again. Both birds have a smooth pebble for a body, with
+the recipe open the second time.
+
+Which is the better picture is not the same question, and the notes refuse to collapse
+them. The second is the better-made one — braver composition, a real focal counterchange,
+no depth violation, fewer strokes for more subject — and it is narrower in colour and
+came out `0.15` under plan on its glow band. The first has the better single passage, and
+nothing in the second is as good as that lost edge. The second also tried to prove one
+thing and could not: a wobble measurement meant to show its verb-picked scumbles were
+smoother than the first's hand-laid band counts the rough ground's flecking as ripple, so
+it says the opposite and is not quoted as evidence either way.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -331,10 +473,14 @@ golden-image tests in CI.
   three rims that are three similar yellow stripes; the lighthouse stopped with 116
   unspent on purpose and says which passage they should have gone to if that was wrong;
   the laundromat spent all but 14 and still calls its own composition — a frontal
-  elevation that is a stack of horizontal bands — the thing it would change first; and
-  of the two greenhouse attempts, one names nine pots that read closer to fruit than to
-  terracotta and the other names a rock that took a quarter of its budget to end up
-  adequate.
+  elevation that is a stack of horizontal bands — the thing it would change first; among
+  the greenhouse attempts, one names nine pots that read closer to fruit than to
+  terracotta and another a rock that took a quarter of its budget to end up adequate;
+  and the pool stopped 79 strokes early on purpose and names the dark it left thin —
+  the upper-left quarter and the deck corners — while arguing that a night picture needs
+  them quiet. Both herons name the same unfinished thing, which is the point of having
+  two of them: a bird's body that is a smooth pebble where it should be built of planes,
+  abandoned once for want of the recipe and once with the recipe open.
 
 ## Further
 
