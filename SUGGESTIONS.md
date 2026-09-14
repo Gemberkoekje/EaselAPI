@@ -211,9 +211,9 @@ say so; where a mechanism is a guess, it is labelled as one.
 ### What it asked of the documentation — done
 
 Every item here was made in the same session, as the round recorded in `LESSONS.md`
-under *One home per rule* and in `CHANGELOG.md` under *Unreleased*; each is a
-hypothesis until a fresh session paints against it. Three of the fogged-glass round's
-open documentation items above were closed in passing and are marked there.
+under *One home per rule* and in `CHANGELOG.md` under *0.3.0*, in which it shipped;
+each is a hypothesis until a fresh session paints against it. Three of the fogged-glass
+round's open documentation items above were closed in passing and are marked there.
 
 | Gap | What was done |
 |---|---|
