@@ -184,9 +184,9 @@ def build_parser() -> argparse.ArgumentParser:
     g_which.add_argument("--full", action="store_true",
                          help="the whole guide, not just its first page")
     g_which.add_argument("--painting", action="store_true",
-                         help="PAINTING.md instead: the reasons under the rules, read once")
+                         help="PAINTING.md instead: how the paint and the brushes behave, read once")
     g_which.add_argument("--recipes", action="store_true",
-                         help="RECIPES.md instead: the calls, in order, for particular things")
+                         help="RECIPES.md instead: one situation at a time, the calls in order")
     g_which.add_argument("--reference", action="store_true",
                          help="REFERENCE.md instead: units, defaults, every argument")
     g_which.add_argument("--calibration", action="store_true",

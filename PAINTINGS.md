@@ -29,12 +29,18 @@ arrived at their convention on its own.
 
 - The subject was chosen **before** the guide was read, so the picture was not steered
   towards what the engine happens to be good at. **That holds for every picture here,
-  including those of one subject**: the greenhouse brief was written down before any
-  of it was read and then handed to more than one painter unchanged, which is the rule
-  satisfied twice over — no painter could be steered by a noun in a worked example, and
-  none of them picked the brief either. The heron's second attempt is the one deliberate
-  exception: the subject was chosen under the rule the first time and then repainted on
-  purpose, by the same painter, to find out what reading the rest of the files was worth.
+  including those of one subject**: the lighthouse-greenhouse brief was written down
+  before any of it was read and then handed to more than one painter unchanged, which is
+  the rule satisfied twice over — no painter could be steered by a noun in a worked
+  example, and none of them picked the brief either. The heron's second attempt is the
+  one deliberate exception: the subject was chosen under the rule the first time and then
+  repainted on purpose, by the same painter, to find out what reading the rest of the
+  files was worth. Two painters have since chosen *near* neighbours independently — a
+  greenhouse interior down the aisle at a low sun, and a greenhouse wall seen from
+  outside through fogged glass — the second finding the first's directory only after
+  choosing, and declining to open it. **That is not a held subject and is not a
+  control**, which is the difference between those two pictures and the ones filed
+  under one directory: it is the rule working twice over rather than an experiment.
 - **How much else was read varies, and it matters.** The pears session read
   `PAINTER.md` and nothing else in the repository, which makes it the only clean
   measurement of the guide on its own. The car wash read `README.md`, `LESSONS.md` and
@@ -43,8 +49,8 @@ arrived at their convention on its own.
   masses as functions and its `compare()` plan sheet from them rather than from the
   guide. The laundromat read `PAINTING.md`, `RECIPES.md` and `REFERENCE.md` but never
   opened `CALIBRATION.md`, and of the earlier paintings read one prelude and one
-  planning pass and nothing else. The greenhouse painters all read the four guide
-  files. The Sonnet and Opus attempts each read one earlier painting's scripts and
+  planning pass and nothing else. The lighthouse-greenhouse painters all read the four
+  guide files. The Sonnet and Opus attempts each read one earlier painting's scripts and
   differ in one place — Sonnet never opened `CALIBRATION.md`, Opus read the sections its
   rules cite — and the Fable attempt read every earlier painting's notes and the dusk
   painting's scripts, and opened `CALIBRATION.md` and `LESSONS.md` only after its
@@ -53,7 +59,12 @@ arrived at their convention on its own.
   painting and no `CALIBRATION.md` — which makes it the method measured without the
   numbers underneath it. The heron's first attempt read that set plus `DIAGNOSIS.md`, and
   its second read everything, which is the one place on this page where the same painter
-  appears at both ends of the range. So where they
+  appears at both ends of the range. The winter greenhouse's notes record `PAINTER.md`
+  and nothing wider. The fogged glass read `PAINTER.md` with its exercises, then
+  `PAINTING.md`, then `RECIPES.md` where a passage called for one, grepping
+  `REFERENCE.md` and `CALIBRATION.md` rather than reading them, and read no earlier
+  painting at all — it found the winter greenhouse in `git status`, recognised how close
+  the subject was, and left it shut. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -69,12 +80,19 @@ arrived at their convention on its own.
 Numbered pass scripts make the drawing `p1_draw.py`, and once it is pass 1 it is
 finished — but the guide's order is *landmarks before anything, pencil **after the
 far masses are down**, near masses on top*, which wants a second drawing pass
-between 2 and 3. Seven of the ten paintings here drew no line at all and nine
-placed no landmark; `pool_night` is the only one that redrew mid-painting
-(`p4_water.py`, its fourth pass) and the only one that placed landmarks at all.
+between 2 and 3. Seven of the paintings here drew no line at all and all but two
+placed no landmark; only `pool_night` (`p4_water.py`) and `greenhouse_winter`
+(`p4_staging.py`) redrew mid-painting, each in its fourth pass, and only `pool_night`
+and `fogged_glass` placed landmarks at all.
 **A worked example is an instruction whatever the prose
 beside it says**, so the example is winning. If you are numbering passes, name the
 second one — `p4_redraw.py` — before you need it.
+
+`greenhouse_winter` is the clearest example of the thing to copy, and it says so in
+its own script: *drawn again in pencil on top of the paint, because the first drawing
+is under it*. Every pot and every plant in that picture is re-drawn at the pass that
+paints it, after the glass, the light and the floor are down — which is the guide's
+order followed rather than the convention's.
 
 ## Inside a car wash, from the driver's seat
 
@@ -443,6 +461,84 @@ thing and could not: a wobble measurement meant to show its verb-picked scumbles
 smoother than the first's hand-laid band counts the rough ground's flecking as ripple, so
 it says the opposite and is not quoted as evidence either way.
 
+## A greenhouse in winter, looking down the aisle at a low sun
+
+![Inside a small greenhouse in winter, looking straight down the central aisle: a low
+sun blooming pale gold behind the fogged end wall, glazing bars and rafters converging
+on it, wooden staging down both sides carrying a row of terracotta pots — most holding
+dry stalks, two or three still green — deep shadow under the benches, and a galvanised
+watering can standing on the dark aisle floor](paintings/greenhouse_winter/painting.png)
+
+Late afternoon, and the whole picture is one problem: light passing through glass,
+through fog on the glass, through thin leaves, and stopping dead at the clay.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 3 |
+| Spent | 297 strokes of a 300 budget, plus two signature marks that did not count |
+| Reproducible | **Not claimed** — built pass by pass with rehearsals, and the two `erase()` calls in `p12_export.py` were added after the fact. The scripts are the record of how it was made, not a byte-for-byte rebuild |
+| Files | [`greenhouse_winter/`](paintings/greenhouse_winter) — [notes](paintings/greenhouse_winter/NOTES.md), [time-lapse](paintings/greenhouse_winter/painting.gif) |
+
+**A frontal elevation of a greenhouse is a layer cake** — plinth, glass, transom, eaves,
+ridge, all horizontal — and this painting's first decision was to refuse it. The
+viewpoint is one-point perspective straight down the aisle, so the staging, the glazing
+bars and the rafters all converge on a vanishing point low and left of centre, and over
+the sun's third of the picture there is no horizontal at all. Counting the bands before
+the first mass and choosing a viewpoint that crosses them was the whole composition, made
+in `p0_draw.py` before a stroke was spent — the closing checklist's warning acted on
+rather than discovered afterwards.
+
+It is also the page's best example of the pencil used the way the guide asks. Every pot
+and plant is drawn *again*, in graphite on top of the paint, at the pass that paints it;
+`p4_staging.py` says why in a comment. And it is the one painting here that spent more
+than a third of its budget on a single class of object: 110 strokes of 297 went on the
+pots, which is where its own notes locate both its best passage and its worst, nine of
+them reading closer to fruit than to terracotta.
+
+## A greenhouse wall in late winter, from outside
+
+![A greenhouse wall seen from outside at a low angle in flat grey winter light: misted
+glass running away to the left, dark glazing bars and horizontal pane laps converging, a
+green blur of plants pressing behind the film, vertical runnels of water where the fog
+has cleared, one leaf pressed flat against the pane and a terracotta pot glowing orange
+through the mist, with frozen ground and a bare tree in haze at the
+left](paintings/fogged_glass/painting.png)
+
+Standing outside on a flat grey afternoon: the glass fogged from the inside, water run
+down it in tracks that clear the film, and the green coming part of the way through. The
+picture is almost all one surface, and it has to read as three depths at once — the water
+on the near side, the plants behind it, the winter beyond.
+
+| | |
+|---|---|
+| Canvas | 1200×800, rough, `umber_wash` ground, seed 11 |
+| Spent | 311 strokes of a 320 budget, plus two signature marks that did not count |
+| Rehearsals | About forty-four, none of them charged |
+| Reproducible | **Not claimed** — the drawing pass was run twice and several measuring scripts ran as passes between the painting ones, and a mark's texture is seeded from its place in the log, so a clean rebuild would not come back byte for byte |
+| Files | [`fogged_glass/`](paintings/fogged_glass) — [notes](paintings/fogged_glass/NOTES.md), [time-lapse](paintings/fogged_glass/painting.gif) |
+
+This picture reached the same first decision as the one above, by the same route and
+independently: a wall of glass painted frontally is a layer cake, so the projection was
+written before any line was drawn — every mass placed in metres by a `P(xm, hm, dm)`
+helper, eye at 1.70 m, the eave and sill converging and the glazing bars thinning as
+`0.8 × 0.045 / dm`. **Two painters who had read the same warning and not each other
+arrived at the same helper with the same signature**, which is the closest thing on this
+page to a controlled result that nobody controlled for.
+
+Its own decision is the second one: the saturated green is held back everywhere except
+where the water has cleared the film, so the only real colour in the picture runs in
+narrow vertical tracks down the near pane. One leaf pressed flat against the glass and
+one pot seen through the mist are the two marks that say *through*, and they carry it.
+
+What it does not do, by its own account: the bare tree at the left was spent on twice and
+is still a grey mass with spokes, the left third is haze rather than fog in one place, and
+the warm ground — chosen so that anything left showing would read as warmth coming
+through the cool film, which is the whole subject — was buried to `0.07%` of the canvas
+in exchange for a solid support, and not noticed until the closing measurement. Its
+critique of the engine and the guide is the open section at the top of
+[`SUGGESTIONS.md`](SUGGESTIONS.md), the only part of that register that is still a
+request list.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -485,8 +581,13 @@ golden-image tests in CI.
   unspent on purpose and says which passage they should have gone to if that was wrong;
   the laundromat spent all but 14 and still calls its own composition — a frontal
   elevation that is a stack of horizontal bands — the thing it would change first; among
-  the greenhouse attempts, one names nine pots that read closer to fruit than to
-  terracotta and another a rock that took a quarter of its budget to end up adequate;
+  the lighthouse-greenhouse attempts, one names nine pots that read closer to fruit than
+  to terracotta and another a rock that took a quarter of its budget to end up adequate;
+  the winter greenhouse names an aisle floor that is a large quiet mid-brown with
+  little incident in it; the fogged glass names a bare tree it spent on twice and still
+  calls a grey mass with spokes, a left third that is haze rather than fog in one place,
+  and a warm ground chosen so it would show through the cool film and then buried to
+  `0.07%` of the canvas;
   and the pool stopped 79 strokes early on purpose and names the dark it left thin —
   the upper-left quarter and the deck corners — while arguing that a night picture needs
   them quiet. Both herons name the same unfinished thing, which is the point of having

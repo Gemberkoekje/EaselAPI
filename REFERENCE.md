@@ -20,7 +20,7 @@ here without the rule beside it is how a painting comes out correct and dead.
 | A coordinate `(x, y)` | `0..1`, origin **top-left**. `x` is a fraction of the **width**, `y` of the **height** |
 | `size` (brush) | a fraction of the canvas's **long side**, whichever way the brush travels |
 | `depth`, `inset()`, `overhang` distance | normalised canvas units, the same as a coordinate |
-| An angle | degrees **clockwise from the horizontal**; `y` runs *down*, so `90` is downward |
+| An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture has to be converted, `atan2(dy, dx)` on the normalised points |
 | A value | `0..1`, the sRGB luminance `look(values=True)` shows and `palette.value_of` reports |
 | A colour | a pigment name, a palette slot you named, `"#rrggbb"`, or an `(r, g, b)` triple |
 | A place | a region name, `"D4"`, `"C3:F6"`, a `Region`, a 4-tuple `(x0, y0, x1, y1)`, or a `Polygon` |
@@ -77,12 +77,12 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | Argument | Default | What it does |
 |---|---|---|
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass — but **it does not fill it to its colour**: a solid mass lands between its mixture and what it was laid over, and how far depends on the brush. A `flat` 18px wide is `0.04` short and a `bristle` `0.09`; under about **four pixels** an oriented tip lands the ground and nothing else, and says so at the call. Only a round tip holds its colour small. See `CALIBRATION.md`, *What a solid mass actually lands at*. It costs nothing in the rendered view — see *The paint and the view of it* |
-| `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths — and **which two edges those are turns with `direction`**: swept horizontally it reaches past the left and right, swept vertically past the top and bottom, and off the foot of the mass. The two it does not lengthen still get half a brush, so a mass never stops dead at its outline. The box/shape defaults differ because a rectangle stopping short of its corners reads as cropped, while a shape's outline **is the drawing** |
+| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
+| `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
 | `overhang` (`cover`) | `1.0` | one full brush width, so a repair's ends sit outside the mistake it is covering rather than stopping at its edge |
 | `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview` |
-| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence. **A sequence lays a full stack per angle and is priced as the sum of them** — not one pass each, and not one stack sized for the steepest: `direction=[0, 90]` on one mass logged 7 passes at `0°` plus 30 at `90°`, and a sixteen-angle list was quoted 515 strokes against 22 for one direction. `"cross"` is two angles and is the affordable way to break a comb. On `scumble`, also `"inward"`. **Left off on a shape**, `block_in` and `cost` say so when horizontal passes cost over 2.5× what `"axis"` would; **given a sequence**, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
+| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, or a sequence of any of those. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
@@ -234,9 +234,8 @@ p["sky_here"] = s.sample(halo_ring)     # the engine's own array, no conversion
 ```
 
 **`sample` averages what is in the place it is given**, so to measure a *mass* hand it
-the mass and not the cell the mass sits in: a bird planned at `0.30` standing in water
-at `0.50` reads `0.501` by its cell and `0.327` by its own shape. A number that
-disagrees with `at_value` by more than a hundredth is almost always the place.
+the mass and not the cell the mass sits in: a small mass planned at `0.30` on a field
+at `0.50` reads `0.501` by its cell and `0.327` by its own shape.
 
 `sample` reads the **paint**. `sample(place, rendered=True)` reads the *view* of it —
 the relief and any graphite the paint has not buried — so the two can be put side by
@@ -246,10 +245,8 @@ paint too, and its table now says so.
 
 `chroma_of` is `value_of`'s counterpart for *how coloured*: the Oklab chroma, `0` for
 any grey, about `0.02` for the grounds and `burnt_umber`, `0.12` for `yellow_ochre`,
-`0.20` for `cadmium_red`. The engine lays the chroma it is given — a solid plane reads
-back at the mixture's chroma or a little under, never above — so a mixture that comes
-back more vivid than its number is the eye judging it against the field, and
-`p.chroma_of(mix)` beside `p.chroma_of(s.sample(field))` is the number that predicts it.
+`0.20` for `cadmium_red`. A solid plane reads back at the mixture's chroma or a little
+under, never above.
 
 Grounds for `Session(ground=...)`: `white`, `warm_white`, `toned_grey`,
 `toned_warm_grey`, `cool_grey`, `umber_wash`, `burnt_sienna` — or any colour.
@@ -341,5 +338,43 @@ After every pass, rehearsed or committed, `run` prints the budget line and then 
 post-pass check over that pass; `--check` runs it over the whole painting instead, and
 `easel log --check` does the same without painting anything.
 
-The same verbs are available over MCP (`easel-mcp`), where the looking tools hand back
-the picture rather than a path to it. See [`README.md`](README.md).
+---
+
+## Or through the MCP server
+
+If your client speaks MCP, the same verbs are there as tools, and the difference worth
+having is that **the looking tools hand you the picture**: `look`, `preview`,
+`rehearse`, `compare` and `prepare` return their PNG beside the path they wrote it to,
+so looking every five to fifteen strokes costs one call instead of a call and a file
+read. Marks are still made by `run`, which takes the script as text — the same Python
+the guide teaches, with `s` and the whole API already in scope. `preview`, `rehearse`
+and `cost` each hand back the Python that paints the plan they checked; paste that into
+`run` rather than retyping it, because a plan retyped between checking and painting
+drifts.
+
+A **place** arrives as JSON in any of six forms — a named region, a grid cell, a span, a
+rectangle, an outline, or a shape builder with its own arguments:
+
+```text
+"upper-band"                                    a named region
+"D4"                                            one grid cell
+"C3:F6"                                         a run of cells
+[0.10, 0.10, 0.45, 0.30]                        a rectangle
+[[0.2, 0.2], [0.6, 0.15], [0.7, 0.5]]           an outline you have
+{"blob": "D5", "radius": 0.12, "seed": 3}       and the builders: blob, ellipse,
+{"ribbon": [[0.2, 0.8], [0.5, 0.5]], "width": 0.09}      hull, ribbon, polygon
+```
+
+A **plan** is a list of those three kinds of thing, or one on its own: a mass is an
+object with `shape` and any `block_in` argument, a sweep one with `edge` and any
+`sweep` argument, a mark a list of points or an object with `points`.
+
+```json
+{"shape": {"blob": "D5", "radius": 0.12, "seed": 3},
+ "brush": "bristle", "color": "dark", "size": 0.05, "direction": "axis"}
+```
+
+The server is `easel-mcp`, or `python -m easel.mcp_server` when the scripts directory
+is not on `PATH`. It needs one extra: `pip install easel-paint[mcp]`. The `guide` tool
+returns any of the five documents, so a client with no repository to read still has the
+method.
