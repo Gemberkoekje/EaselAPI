@@ -303,81 +303,12 @@ Early, and feature-complete against what it was specified to be. The engine, pal
 composition helpers, `look()`, history, CLI, the precision tools (drawing, landmarks,
 preview, rehearse, compare, prepare), shaped masses and the MCP server all work. The
 server came last, on the rule that anything changing the API lands before the thing
-that exposes it, and it has kept up: `paint`, `scumble`, `cover`, `circle`, `union`,
-`at_value`, the stroke budget, comparison against a written value plan, and rehearsing
-a whole pass from the shell all arrived in one round after a painter used the guide
-and wrote down what the engine had cost them.
+that exposes it, and it has kept up with every change since.
 
-A second painter did the same thing and probed every claim before making it: a centred
-fall-off for a glow, `solid=True` because density spaces the passes rather than filling
-them, a silhouette of its own for a round tip, a clean edge that stops insetting at the
-canvas frame, rehearsals numbered apart from the painting's looks, `cost_line` saying
-*why* a number is large, and `smudge` taking the boundary it is meant to run along.
-
-A third measured seven claims against the engine before writing any of them down, and
-the round after it is the smallest and the most specific: the inward scumble sizing its
-own brush from its ring step (and warning when handed a wider one), several pass scripts
-rehearsed together against one copy, a rehearsal carrying the painting's last look so
-`look(diff=True)` tints what the pass *would* change, a pressure list read in canvas
-order so a passage can brighten toward one side in a single call, `s.sample(place)` for
-painting with a colour that is already on the canvas, and `sweep(wander=)` — because the
-contour of a clean edge should be the line you drew. Two of those landed differently
-from how they were asked for, and the reasons are in
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md).
-
-The documentation round after **that** split the guide into method, reasons, recipes,
-facts and numbers, with a word budget on the first of them that CI holds.
-
-A fourth painter — a night street, 286 strokes of 300, 56 rehearsals, nothing repainted
-— produced the current round, and two of its six requests are in the repository as
-*measurements that came out the other way*. The engine now lets a painter ask what the
-rendered view makes of a mass (`sample(rendered=True)`) rather than believe it; both
-directions of `scumble` size their own brush from their own step; `smudge`'s default is
-the knee of its own measured curve instead of four times past it; and a keyword that
-belongs to a neighbouring call says so by name. What did *not* change, because measuring
-it first said not to, is in
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md)
-beside the request, and the release itself is in
-[`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md).
-
-Then three painters were handed one subject — a lighthouse half way through becoming a
-greenhouse — and all three hit the same call on three different shapes: `edge="clean"`
-was sweeping its contour along a spline that bowed 65px off a four-cornered tower. That
-round is in the same release: the contour follows the polygon's own edges; `undo` puts
-the random stream back and a replay from a saved log is the painting, which one painter
-had measured drifting 1.06% and committed the rebuild instead; four warnings in the
-shape the earlier ones have; `compare` asks whether two places planned `0.00` apart
-touch; `chroma_of` beside `value_of`; and **the post-pass check** — the guide's standing
-warnings read off the log and printed beside the budget line after every pass, which
-had been the cheapest open item on the register for two rounds. Every number the three
-painters took reproduced; two of the mechanisms they proposed did not, and
-`SUGGESTIONS.md` says which.
-
-An eighth painter — a pool at night, painted against `PAINTER.md`, `RECIPES.md` and
-`REFERENCE.md` and nothing else — is the other arm of that experiment, and what it was
-short of turned out to be **lookup rather than judgement**: three questions the engine
-could already answer and would not say out loud. So its round is mostly instruments.
-`glaze(to_value=)` solves a film's opacity for the value it should land the passage on,
-the way `at_value` solves a mixture — the search a painter otherwise runs by rehearsal,
-six of them in that painting. The inward `scumble` warns from the narrow side of its
-window as well as the wide one, and names the other recipe where no number of rings
-fits. The price walk covers a sequence of directions, which is one whole pass per angle
-and charged as the sum — not, as the painter guessed and said it was guessing, one
-stack sized for the steepest. And the first rule has left the front page for the essay,
-because the post-pass check now says it better than the paragraph could.
-
-A ninth painted the same subject **twice** — a heron in a flooded lot at dawn, once
-against that restricted set plus `DIAGNOSIS.md` and once with everything — and the two
-together separate the two kinds of fault cleanly: every fault that was a *lookup* got
-fixed by reading, and the one that was *judgement* repeated itself exactly with the
-recipe open. Its round is the current release. The post-pass check gained a seventh
-rule it asked for by name and lost twenty-eight false alarms it had learned to ignore;
-an oriented tip under four pixels now says it will lay no paint at all, which it does
-not; `RECIPES.md` gained the biggest mass in a picture, which none of its entries
-covered. **Two of the round's claims did not survive re-measurement** — one of them the
-*previous* session's guess, which this session was measuring, and one of them its own:
-a threshold offered in `size` that is really a threshold in pixels, and so a different
-`size` on every canvas.
+Every one of those pieces was added or corrected because a painter actually used the
+guide against the engine and wrote down what it cost them — an engine change lands
+with a test and a measurement behind it, and a guide change stays a hypothesis until
+the next session paints against it and says so.
 
 ## The worked examples
 
