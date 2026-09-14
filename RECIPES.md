@@ -22,7 +22,7 @@ are shapes of.
 | | |
 |---|---|
 | **Surfaces** | [a plane that is a plane](#a-plane-that-is-a-plane) · [a form that turns](#a-form-that-turns) · [a mass built of planes](#a-mass-built-of-planes) |
-| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) · [a volume of lit air](#a-volume-of-lit-air) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a quiet gradient](#a-quiet-gradient) |
+| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) — *on a surface* · [a volume of lit air](#a-volume-of-lit-air) — *in a medium* · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a graded field that is most of the picture](#a-graded-field-that-is-most-of-the-picture) · [a quiet gradient](#a-quiet-gradient) |
 | **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a small container with something spilling from it](#a-small-container-with-something-spilling-from-it) · [a tapered arc](#a-tapered-arc) · [the one ruled line](#the-one-ruled-line) |
 | **Edges** | [an edge that is actually lost](#an-edge-that-is-actually-lost) · [a mark that crosses a boundary](#a-mark-that-crosses-a-boundary) |
 | **Order** | [a hollow thing](#a-hollow-thing) · [a repair under things that are standing on it](#a-repair-under-things-that-are-standing-on-it) |
@@ -147,6 +147,13 @@ both, in that order, before laying it this way.
 A glow, a bloom, light falling on a surface. It is dark at **every** edge, which is
 what makes it not a gradient.
 
+**This one is light *on* something.** If there is no surface — light in the air
+itself, a beam, a halo seen from outside — it is [a volume of lit
+air](#a-volume-of-lit-air) below, and the verb here cannot lay it. Four sessions
+have now reached that the hard way and one of them had this page open, so the
+distinction is worth a moment before you spend a rehearsal: an inward scumble is a
+bloom **on** something, and what lays light in a medium is glazes.
+
 ```python
 s.scumble(patch, "shadow", "light", 8, direction="inward")     # 8 strokes
 ```
@@ -236,10 +243,75 @@ having a visible end. The ends run off the canvas on purpose. A pressure list is
 in canvas order on a `block_in`, a `scumble` and a `sweep` too, so the same thing works
 as one call where a shape suits it better than six strokes.
 
+**Written by hand, the brush is yours to get right, and the number is the verb's.**
+`scumble` picks `3 × step` and warns under `2 ×`; nothing here does that for you.
+Above, the passes step `0.14 / 5 = 0.028` apart and the brush is `0.085` — three
+steps, on purpose. A painter who tapered a seven-stroke band from `0.058` down to
+`0.024` over a step of `0.014` ended at **1.7 steps** and got twice the across-band
+wobble of the `scumble` in the same picture. **Keep the narrowest brush in the stack
+over twice the step**, or hand the passage to the verb. The post-pass check reads
+this off the log and says so.
+
 **Goes wrong as:** a stack of bars, which is what a `scumble` gives you here if the
 passes are too few or the brush too narrow to overlap; or as a passage that brightens
 in stripes, which is a pressure list on passes that alternate direction — that is
 fixed, but any pass you write by hand still runs the way you wrote it.
+
+---
+
+## A graded field that is most of the picture
+
+A sky, a far field, a sheet of water seen at a grazing angle: a third of the canvas
+or more, graded, with no outline anywhere in it and no second mass to be a band
+*between*. It is the biggest thing you will paint and the recipes above are all
+smaller than it — *a quiet gradient* is a band between two masses, *a passage
+brightening toward one side* is a passage inside one, *a passage light in the
+middle* is a bloom. This is the field itself.
+
+```python
+upper = polygon([(-0.06, 0.13), (0.34, 0.19), (0.62, 0.15), (1.06, 0.10),
+                 (1.06, 0.59), (-0.06, 0.62)])       # where the light changes along
+lower = polygon([(-0.06, 0.50), (1.06, 0.47), (1.06, 1.06), (-0.06, 1.06)])
+s.scumble(upper, "light", "mid", 7, direction=4,     # the field, it is two ramps
+          load=1.0, load_falloff=0.0, opacity=0.95)
+s.scumble(lower, "mid", "shadow", 8, direction=3,
+          load=1.0, load_falloff=0.0, opacity=0.95)
+s.stroke([(-0.06, 0.31), (0.42, 0.37), (1.06, 0.34)], "bristle", "mid",
+         size=0.075, load=0.40, opacity=0.45, pressure="swell")   # and two crossers
+s.stroke([(1.06, 0.72), (0.55, 0.68), (-0.06, 0.73)], "bristle", "shadow",
+         size=0.065, load=0.35, opacity=0.40, pressure="swell")
+```
+
+**Four things, and the last one is the one that gets left off.**
+
+- **The verb, over the whole field, with `size` left off.** It picks a brush from its
+  own step; a hand-laid band is where this goes wrong, and *a passage brightening
+  toward one side* has the numbers.
+- **`load=1.0, load_falloff=0.0`.** A scumble does *not* default to solid on a band,
+  so the passes run dry along their length. Measured over a field 11 passes deep:
+  `0.9%` of it comes back within a hair of bare ground at the defaults and `0.0%`
+  with these, and the across-band ripple drops from `0.0021` to `0.0008` — two and a
+  half times smoother for the same eleven strokes.
+- **A direction a few degrees off the frame.** Three paintings used `356`, `4`, `3`,
+  `6` and `10`. No measurement says this is better, and that is the point: the passes
+  of a field that runs exactly along the frame are a stack of bands parallel to the
+  edge of the picture, which the eye finds and a row profile does not.
+- **Two or three ramps, not one, wherever the light changes along it** — warm where
+  it reflects the horizon, cool where it reflects the sky overhead. Overlap them;
+  the join disappears into the next ramp's first pass.
+
+**And something has to cross it.** A graded field with nothing crossing it *is* a
+band, however closed its joins — that is composition advice everywhere else in the
+guide and it is part of *this* recipe, because the field is the one mass big enough
+for it to decide the picture. Two or three starved passes at an angle, ends running
+off the canvas, none of them parallel to each other.
+
+**Goes wrong as:** horizontal strata (the pass structure showing, which is the
+`load_falloff` clause); a stack of bands with a different name (nothing crossing it);
+or a field that reads as two fields (two ramps that do not overlap).
+
+*Collected from three paintings that have one — a night sky and a wet road, a dawn
+sky, and a flooded lot that is one graded field from top to bottom.*
 
 ---
 
@@ -301,6 +373,26 @@ share 97% of their silhouette at `0` and 76% at `0.7`.
 five copies of one disc to within 7% — a disc is not a figure of speech here, it is the
 tip printing itself. The `bristle` is the only tip in the box that does not repeat
 itself, at 26% shared silhouette, because its comb is drawn per stroke.
+
+**Landing one of these *inside* a mass: ask the mass.** A mark laid into a shape
+rather than as one has to be inside it, and the shape already knows:
+
+```python
+import numpy as np
+
+x, y = 0.48, 0.52
+if mass.contains(x, y):                                  # one point
+    s.dab(x, y, "round_hard", "pale", size=0.012, press=3)
+
+xs, ys = np.random.default_rng(4).random((2, 40))        # or forty at once
+inside = mass.inside(xs, ys)
+xs, ys = xs[inside], ys[inside]
+```
+
+Every mark laid *in* a mass wants this, and some paintings are mostly such marks:
+one painter hand-rolled edge-intersection arithmetic about fifteen times, with
+`contains` listed in the file open beside them. A list of methods answers *what
+exists*; it is read once, at the start, and not at the moment a mark is placed.
 
 ---
 

@@ -102,8 +102,6 @@ warning about it, which is why each one here comes with the thing to do instead.
   → *The angle of the mark* *(reasons)*
 - **You will reach for `undo`.** Repairs happen with paint: `s.cover(place, color)`
   is the whole burying recipe, already mixed. → *When something is wrong, paint over it*
-- **You will spend on detail too early.** A good painting is mostly big statements. If
-  you are 50 strokes in and painting tiny marks, you are in trouble.
 
 **What a mark costs, before you make it.** `stroke`, `dab`, `smudge` and `glaze` are
 one each. A `block_in` or a `sweep` is one *per pass* — ten to thirty for one call, and
@@ -199,6 +197,10 @@ already sit in a value relationship, and any ground left showing reads as a colo
 you chose. On white, everything you paint looks dark and every gap looks like a
 hole.
 
+**A picture whose masses all sit below the presets wants a ground of its own.** The
+lowest is `umber_wash` at `0.425`; `Session(ground="#5a5045")` reads `0.32`. Any
+colour works; `value_of` it first.
+
 ---
 
 ## The workflow
@@ -241,9 +243,11 @@ either, and a shape's passes stop at its own silhouette. Most masses are shapes;
 *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md).
 
 **Draw the arrangement before you commit paint to it, even with nothing to copy.**
-`s.pencil()` is free — it costs no strokes and paint buries it — and `preview()` is
-not a substitute, because the two answer different questions: `preview` checks a mark
-against a plan, and the pencil checks *the plan*. A painter who worked from typed
+`s.pencil()` is free, and so is a rehearsal — free is not the reason to reach for
+it. **A rehearsal shows you one answer; a pencil shows you six at once.**
+`preview()` is not a substitute either, because the two answer different questions:
+`preview` checks a mark against a plan, and the pencil checks *the plan*. A painter
+who worked from typed
 coordinates through `preview` alone never saw its composition as a composition until
 the picture was finished, and by then the fault was the picture. Put the big shapes
 down in graphite, look, and move them while moving them is free.
@@ -287,6 +291,9 @@ Three things follow from it:
   anything; the pencil goes down after the far masses; the near masses go on top.
 - **Let the near mass overlap.** Run it a little into the far one. A silhouette
   that stops exactly on a boundary was measured; one that overlaps was painted.
+- **A veil of light is a mass at a depth.** A glaze or a graded passage laid last
+  because it is *light* is still in front of something: one buried the far trees and
+  the bird. `look(diff=True)` shows what a pass covered.
 - **A mistake in the background is cheap while the foreground is not there yet.**
   It stops being cheap the moment something is standing in front of it. Repainting a
   mass buries everything standing on it, and the correction you have just decided to
@@ -349,6 +356,11 @@ Two mixtures that sound different can be the same value, and that is the commone
 way a first pass turns into mush. **If two of your three are within `0.10` of each
 other, they will not read as separate masses** no matter how different their
 colours are.
+
+**Put the plan itself through `s.compare({place: value})` on the empty canvas, and
+read the pairs** — every two places planned within `0.10`. The threshold is about
+two masses that **meet**, which a column of numbers cannot show: two painters
+checked theirs by hand and shipped a merge.
 
 **That threshold is a floor, and a mass also has a ceiling.** Shading a mass to give
 it form spends value range, and the range is shared: past about `0.15` across one
@@ -698,23 +710,13 @@ entries, not marks you paid for**, so an `undo(3)` spanning a pencil line gives 
 back two strokes. Painting over leaves a history in the surface that is part of why
 paintings look alive.
 
-**You will under-vary your marks.** Real brushwork varies in width, pressure,
-direction and opacity constantly. If every stroke uses the same brush at the same
-size with the same pressure, the result will look mechanical no matter how good the
-drawing is. Change `size`, change `pressure`, change direction between passes.
-
-**And you will under-vary your *objects*, which is the same fault one level up and
-much harder to see.** Having worked out how to paint one of a thing, you will paint
-the next one with the same recipe, and a viewer reads three copies of one object
-rather than three of a kind. The fix is cheap and has to be deliberate: **vary one
-thing per object on purpose** — which way its light falls, how sharp its edge is,
-how much of it the mass in front takes away. One difference each is enough; the
-recipe repeated exactly is what gives you away.
-
-**You will use too many strokes on detail and too few on structure.** A good
-painting is mostly big statements. Budget for it: if you are 200 strokes in and
-still adjusting the big masses, that is fine. If you are 50 strokes in and painting
-tiny marks, you are in trouble.
+**You will under-vary your *objects*, which is harder to see than under-varying your
+marks and is not something the check can name.** Having worked out how
+to paint one of a thing, you will paint the next one with the same recipe, and a
+viewer reads three copies of one object rather than three of a kind. The fix is
+cheap and has to be deliberate: **vary one thing per object on purpose** — which way
+its light falls, how sharp its edge is, how much of it the mass in front takes away.
+One difference each is enough; the recipe repeated exactly is what gives you away.
 
 ---
 
@@ -952,10 +954,9 @@ are the ones to answer slowly.
 - Does the greyscale view (`look(values=True)`) have a clear light, mid and dark?
 - Are the edges varied — some hard, some soft, at least one lost?
 - Is there anywhere the ground still shows through? (There should be.)
-- Did you vary brush size, or is everything one width?
 - Are the highlights few and deliberate?
-- Is anything mechanically repeated — evenly spaced marks, identical parallel
-  strokes, a perfectly straight line?
+- Is anything mechanically repeated — a perfectly straight line, a row of identical
+  marks?
 - **Is any small mark a disc, a capsule or a rectangle — the tool's own shape rather
   than the thing's?** Crop into them and look. A round tip prints one silhouette
   however many times you set it down.

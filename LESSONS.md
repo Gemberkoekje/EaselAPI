@@ -75,15 +75,26 @@ the tool runs over the pass it just painted**, printed beside the budget line �
 input is already in the log, which carries brush, size, path, colour and load per
 record. **Built, in the greenhouse round, as `Session.report()` and the lines `easel
 run` prints after every pass** (`--check` widens it to the painting, `easel log --check`
-reads it cold). Six rules, each of which a real pass of a real painting tripped: one
+reads it cold). Seven rules, each of which a real pass of a real painting tripped: one
 brush at one size for a whole pass of two or more calls; twelve or more long marks
-within six degrees of one angle from two or more calls; a `bristle` under `size=0.025`;
+within six degrees of one angle from two or more calls; three or more long parallel
+marks at three or more colours stepped further apart than half the narrowest brush
+laying them, which is a graded passage that will come back as bars; a `bristle` under
+`size=0.025` at a `load` over `0.6`;
 eight or more marks under `size=0.02` inside the first sixty; a pressure list on a short
 chisel mark; and the subject's share of the marks so far, against the plan's number when
-it is given. A seventh — a shaped `block_in` with `direction` left off costing over 2.5×
-its axis — needs the shape and fires at the call. **Each rule that becomes a check can
-leave the guide**, which is the growth rule paying for itself; none has left it yet,
-because a check is a hypothesis until a fresh session paints against it.
+it is given. An eighth — a shaped `block_in` with `direction` left off costing over 2.5×
+its axis, or a sequence of directions costing over 2.5× its own dearest angle — needs
+the shape and fires at the call. **Each rule that becomes a check can
+leave the guide**, which is the growth rule paying for itself.
+
+**One has now left it.** *You will under-vary your marks* is in `PAINTING.md` rather
+than on the front page since 0.3.0, because the check names both halves of it after the
+pass that did it, with the numbers attached, which the paragraph could not do. It was
+moved because the eighth session's two front-page items had nowhere else to come from —
+which is the mechanism working as designed rather than a tidy-up. It is still a
+hypothesis, and the shape of the test has not changed: a fresh session painting from a
+guide with the rule missing. What has changed is that such a guide now exists.
 
 **A fourth session scored its own painting against the candidates and three of the five
 would have caught something it did.** It proposed a sixth — *a mass laid solid whose
@@ -238,28 +249,38 @@ compared with each other.
 A painter reporting on its own painting is not a measurement. Every figure in the run
 write-ups was re-measured from the exported PNGs. They were mostly right and not entirely.
 
-**Sixteen claims have now been re-measured before anything was built on them, and four
+**Twenty claims have now been re-measured before anything was built on them, and five
 did not survive** — the clean contour that was supposed to spill less than a ragged fill,
 the smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift
-a solid mass off its planned value (it does not move it at all), and the boundary said
+a solid mass off its planned value (it does not move it at all), the boundary said
 to be left bare at `overhang=0` (it is the comb and the brush running dry, and the
-*sides*, which `overhang` cannot touch, come back barer than the ends). The nine from
-the greenhouse round all held, to the percentage point where a painter had taken a
+*sides*, which `overhang` cannot touch, come back barer than the ends), and the sequence
+of directions said to be priced at its steepest angle (it is priced at the *sum* of them
+all, one whole pass per angle). The nine from the
+greenhouse round all held, to the percentage point where a painter had taken a
 number — and two of them had the *mechanism* wrong while the finding was right: the
 pencil said to advance the random stream advances the log index, and the CLI undo said
 to lose "the random stream or the wet layer" was losing the stream *and* five decimals
 of every point in the saved log. A claim that comes with a probe is a claim that can be
 wrong in a useful way.
 
-**They have a shape.** Every one of the four was reported as *observed* — a rehearsal
+**They have a shape.** Every one of the five was reported as *observed* — a rehearsal
 showed the failure plainly, no number was taken, and the painter reasoned back to a
 mechanism that sounded right. The failures were all real; the *causes* were invented, and
 a cause invented from a real failure is the most convincing kind of wrong claim there is,
 because the evidence for it is genuine. The two that carried a measurement both held.
 
+**And the fifth was labelled by the painter who made it**, which is the best version of
+this that has happened: the eighth session wrote *observed and offered as a guess, which
+this page's own record suggests is the half most likely to be wrong* beside its own
+mechanism, and its three measured costs reproduced to the stroke. **Ask every round to
+label which half of each finding is measured and which is reasoned.** It costs the
+painter one clause, it tells the re-measurement where to look first, and a session that
+can draw the line is already doing the check's work.
+
 So: **when a request names a mechanism, measure the mechanism and not the failure.** It
-is cheap — the four above cost an afternoon between them — and it changes what gets
-built. Twice here it turned a requested warning into a requested *instrument*: nothing
+is cheap — the five above cost an afternoon between them — and it changes what gets
+built. Four times now it has turned a requested warning into a requested *instrument*: nothing
 was wrong with `sample()`'s number, and what the session actually lacked was a way to ask
 it the question, which is now `sample(rendered=True)` and a label on `compare()`'s table.
 A warning that cannot fire is worse than no warning, because it is read as a promise that
@@ -538,8 +559,35 @@ code in the repo that turns untyped JSON into engine objects, and the echoed Pyt
 them — two defects were already found there by driving the tools rather than by reading
 them. The engine itself is untouched by that milestone.
 
-**About the protocol, if it is run again.** Three questions were left to the repo's owner
-and none has been decided:
+**About the protocol, if it is run again.** Five questions now, and none has been
+decided. The last two came out of the ninth session, which was the first to be handed
+[`DIAGNOSIS.md`](DIAGNOSIS.md):
+
+- **Hand the index as a file to grep, not as a file to read, and record which it
+  was.** `DIAGNOSIS.md` opens with *this file is not for reading* and
+  `grep -i rings DIAGNOSIS.md` as the intended interface. The one session that has
+  had it was told to read it front to back, and it then worked entirely from recall:
+  it recognised *staircase*, *venetian blind*, *floating discs*, *searchlight that
+  owns the picture* and *paper cut-out* on sight and repaired each from the
+  remembered description, **following zero pointers in 293 strokes** though following
+  them was permitted. The recalled version has no measurement attached, which is the
+  whole difference between the index and its targets: the one fault it fixed
+  properly, the chisel staircase, it fixed with `edge="clean"` while `CALIBRATION.md`
+  holds a cheaper repair at the other end of the same row. **That is n=1 and it is
+  the only n there is**, so the answer is not to change the file — an index whose
+  rows carried the repair as well as the pointer would be the fourth copy this page
+  refuses — but to run the grep arm and compare.
+- **Decide whether a restricted arm gets the index at all, and record it.** Four of
+  the rows most relevant to a painter without the essay point into files that arm
+  does not have — *two masses you planned as different that read as one* lands in
+  `PAINTING.md` → *Painting without a reference*, which is that session's own worst
+  fault. **A pointer into a file you were not given is worse than no row**, because
+  the answer is visibly there and out of reach. Either ship the index only with the
+  files it indexes, or say in the run's own instructions which files the painter has,
+  so a row naming one they do not have reads as a prerequisite rather than as a
+  destination. This is a property of the run, not of the file.
+
+And three that were already here:
 
 - **The unprompted stage should probably become "chosen before the guide is read".** Four
   of four sessions painted the subject they had named before reading anything, and their

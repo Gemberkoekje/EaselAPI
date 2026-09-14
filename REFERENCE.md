@@ -61,7 +61,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `stroke(points, brush, color, ...)` | one mark along a path | 1 |
 | `dab(x, y, brush, color, press=1)` | one mark at a point; `press` stamps it again | 1 |
 | `smudge(edge, size=0.02)` | drags what is on the canvas, along a path **or a shape's own outline** | 1 |
-| `glaze(points, color, opacity=0.18)` | a thin film that adds no height | 1 |
+| `glaze(points, color, opacity=0.18, to_value=None)` | a thin film that adds no height; `to_value=` solves for the opacity that lands the passage under it on a value, the way `at_value` solves a mixture | 1 |
 | `block_in(place, ...)` | a mass, as overlapping passes | one per pass |
 | `sweep(edge, ..., into=, depth=)` | a mass, as passes along its boundary stepped inward | one per pass |
 | `scumble(band, a, b, n=8)` | a soft passage, `n` passes stepping between two colours | `n` |
@@ -77,10 +77,10 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | Argument | Default | What it does |
 |---|---|---|
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass. It costs nothing in the rendered view — see `CALIBRATION.md`, *The paint and the view of it* |
+| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. What fills a mass — but **it does not fill it to its colour**: a solid mass lands between its mixture and what it was laid over, and how far depends on the brush. A `flat` 18px wide is `0.04` short and a `bristle` `0.09`; under about **four pixels** an oriented tip lands the ground and nothing else, and says so at the call. Only a round tip holds its colour small. See `CALIBRATION.md`, *What a solid mass actually lands at*. It costs nothing in the rendered view — see *The paint and the view of it* |
 | `overhang` (`block_in`, `scumble`, `cover`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths — and **which two edges those are turns with `direction`**: swept horizontally it reaches past the left and right, swept vertically past the top and bottom, and off the foot of the mass. The two it does not lengthen still get half a brush, so a mass never stops dead at its outline. The box/shape defaults differ because a rectangle stopping short of its corners reads as cropped, while a shape's outline **is the drawing** |
 | `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview` |
-| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence for one pass each. On `scumble`, also `"inward"`. **Left off on a shape**, `block_in` and `cost` say so when horizontal passes cost over 2.5× what `"axis"` would. **Where the stack starts** is below |
+| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees, or a sequence. **A sequence lays a full stack per angle and is priced as the sum of them** — not one pass each, and not one stack sized for the steepest: `direction=[0, 90]` on one mass logged 7 passes at `0°` plus 30 at `90°`, and a sixteen-angle list was quoted 515 strokes against 22 for one direction. `"cross"` is two angles and is the affordable way to break a comb. On `scumble`, also `"inward"`. **Left off on a shape**, `block_in` and `cost` say so when horizontal passes cost over 2.5× what `"axis"` would; **given a sequence**, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
@@ -191,7 +191,9 @@ ribbon(places, width, end_width=None)  # a mass running along a line
 union(a, b, ...)                       # one silhouette round overlapping shapes
 s.circle(place, r, wobble=0)           # round in *pixels* on any canvas
 shape.inset(a)  shape.smooth(2)  shape.scaled(f)  shape.shifted(dx, dy)
-shape.box  shape.area  shape.axis  shape.center  shape.closed  shape.contains(x, y)
+shape.box  shape.area  shape.axis  shape.center  shape.closed
+shape.contains(x, y)                   # is this mark inside the mass?
+shape.inside(xs, ys)                   # ...and the same question for many at once
 ```
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
@@ -228,6 +230,11 @@ there, ask for it and pass it straight on:
 ```python
 p["sky_here"] = s.sample(halo_ring)     # the engine's own array, no conversion
 ```
+
+**`sample` averages what is in the place it is given**, so to measure a *mass* hand it
+the mass and not the cell the mass sits in: a bird planned at `0.30` standing in water
+at `0.50` reads `0.501` by its cell and `0.327` by its own shape. A number that
+disagrees with `at_value` by more than a hundredth is almost always the place.
 
 `sample` reads the **paint**. `sample(place, rendered=True)` reads the *view* of it —
 the relief and any graphite the paint has not buried — so the two can be put side by
@@ -277,14 +284,18 @@ Looks are written to `out_dir` and numbered: `look_001.png`, `preview_002.png`,
 their own — `rehearse_001.png` upward, each taking the next free name.
 
 `report()` is the check `easel run` prints beside the budget line after every pass:
-six rules read off the log — one brush at one size for a whole pass of two or more
+seven rules read off the log — one brush at one size for a whole pass of two or more
 calls; twelve or more long marks within six degrees of one angle, from two or more
-calls; a bristle under `size=0.025`; eight or more marks under `size=0.02` inside the
+calls; **a graded passage laid too narrow**, three or more long parallel marks at
+three or more colours stepped further apart than half the narrowest brush laying them;
+a bristle under `size=0.025` **at a load over `0.6`**, because below that the
+comb's gaps are the mark; eight or more marks under `size=0.02` inside the
 painting's first sixty; a pressure list on a short chisel mark; and the subject's share
 of the marks so far, wherever a mark is noted `subject`, against `subject_share` if
 given. `since=` is the log index the pass began at (`len(s.history.records)` before it);
-left off, the whole painting. A seventh rule — a shaped `block_in` with `direction`
-left off costing over 2.5× its axis — needs the shape and fires at the call.
+left off, the whole painting. An eighth rule — a shaped `block_in` with `direction`
+left off costing over 2.5× its axis, or a sequence costing over 2.5× its own dearest
+angle — needs the shape and fires at the call.
 
 ---
 

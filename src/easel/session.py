@@ -86,6 +86,31 @@ SMUDGE_SIZE = 0.020
 #: was at ``0.02`` -- a lobe bought for nothing.
 SMUDGE_MAX = 0.030
 
+#: A film's strength when the painter names neither an opacity nor a value to reach.
+GLAZE_OPACITY = 0.18
+
+#: How far off the target a solved film may land before the search stops looking.
+#: A value plan is written to the hundredth and read against a ``0.10`` threshold,
+#: so a fifth of a hundredth is already past the precision the number is used at;
+#: what this really buys is an early exit, and the search usually takes it.
+_GLAZE_VALUE_TOL = 0.002
+
+#: How many films :meth:`Session._glaze_opacity` may lay on a trial canvas. Halving
+#: the opacity bracket each time, twelve is a thousandth of the range; with the
+#: tolerance above the search has normally stopped by seven or eight.
+_GLAZE_SOLVE_STEPS = 12
+
+#: How far a pixel's linear colour has to move before it counts as under the film.
+#: Measured against a probe at full strength, so this is only separating paint from
+#: arithmetic noise, not weak films from strong ones.
+_GLAZE_FOOTPRINT = 1e-4
+
+#: Under this, a solved film is a stroke that changes nothing and says so. From the
+#: measured table, ``0.05`` moves a value ``0.028``, so this is about a hundredth --
+#: the precision a value plan is written to, and the point below which a painter is
+#: paying a mark for a film nobody can see.
+_GLAZE_MIN_OPACITY = 0.02
+
 
 class Session:
     """A painting in progress.
@@ -397,9 +422,149 @@ class Session:
         return self.stroke(_smudge_path(edge, size), brush="smudge",
                            color="titanium_white", pressure=pressure, size=size, **kw)
 
-    def glaze(self, points, color, brush="round_soft", opacity: float = 0.18, **kw):
-        """A thin transparent film over dry paint. Does not build height."""
-        return self.stroke(points, brush=brush, color=color, opacity=opacity, glaze=True, **kw)
+    def glaze(self, points, color, brush="round_soft", opacity: float | None = None,
+              to_value: float | None = None, **kw):
+        """A thin transparent film over dry paint. Does not build height.
+
+        ``opacity`` is the only argument that does much, and it is the hard one:
+        a film's strength is its **distance from what it lands on**, in hue as well
+        as in value, so the usable window moves with every passage it is laid over.
+        Measured on one mass, a warm light mixture over a cool dark: ``0.05`` has
+        already killed the underlying hue and delivered a neutral grey, and ``0.14``
+        has moved the value ``0.087`` -- within a hundredth of the ``0.10`` that
+        makes a *new* mass rather than shifting an old one. Between those two is the
+        whole of the window, and where it sits is different over every mass. The
+        guide's answer is *mix the glaze close, then choose an opacity*, and that
+        second half is a search a painter runs by rehearsal: one painting spent six
+        rehearsals on it and dropped a glaze it had rehearsed three times.
+
+        **So aim at the value instead.** ``to_value=`` is to a film what
+        :meth:`~easel.palette.Palette.at_value` is to a mixture -- the same question,
+        the other instrument -- and it is answered the same way, by searching rather
+        than by arithmetic, because the film's delivery is no more linear in opacity
+        than a mixture's value is in the ratio of white::
+
+            s.glaze(band, "warm", opacity=0.18)        # a strength, and then look
+            s.glaze(band, "warm", to_value=0.42)       # a value, and it lands there
+
+        It lays films on a trial canvas until one delivers the value asked for,
+        measured over the **film's own footprint** -- the pixels it actually
+        changes, not a region named by hand -- and then lays that one for real. The
+        trials come off a copy of the stroke stream, so the film that lands is the
+        film that would have landed had its opacity been typed out: solving for it
+        moves no paint. It costs the search about eight trial films, which is
+        nothing on a halo and about a second on a band across the whole canvas, and
+        it charges **one stroke**, like any other glaze.
+
+        The opacity it chose is on the record it hands back, so a rehearsed film can
+        be written out as a number for the real pass::
+
+            print(s.glaze(band, "warm", to_value=0.42).params["opacity"])
+
+        Args:
+            points: the film's path, as any stroke's.
+            color: the colour of the film. Mix it *close to what it lands on* --
+                this solves for an opacity, and no opacity rescues a film that is
+                far away: see the table under ``glaze`` in ``CALIBRATION.md``.
+            brush: preset name or brush. The soft round by default, which is the one
+                tip a film wants.
+            opacity: how strong the film is, ``0.18`` by default. Hand this or
+                ``to_value``, not both.
+            to_value: the value the passage under the film should read at
+                afterwards, as :meth:`~easel.palette.Palette.value_of` reports it.
+
+        Returns:
+            The one record for the film.
+
+        Raises:
+            ValueError: if both ``opacity`` and ``to_value`` are given, or if the
+                target is not between the value already there and the one the film
+                delivers at full strength. It raises rather than laying the nearest
+                it managed, for :meth:`~easel.palette.Palette.at_value`'s reason: a
+                film silently landing at the wrong value is the failure this exists
+                to stop.
+        """
+        if to_value is not None:
+            if opacity is not None:
+                raise ValueError(
+                    f"glaze(opacity={opacity!r}, to_value={to_value!r}) was given "
+                    f"both: a strength and a value to reach are two ways of asking "
+                    f"for the same film, and to_value= exists because the first is "
+                    f"the hard one. Drop one of them."
+                )
+            opacity = self._glaze_opacity(points, color, float(to_value), brush, kw)
+        return self.stroke(points, brush=brush, color=color, glaze=True,
+                           opacity=GLAZE_OPACITY if opacity is None else float(opacity),
+                           **kw)
+
+    def _glaze_opacity(self, points, color, target: float, brush, kw: dict) -> float:
+        """The opacity at which this film delivers ``target`` over its own footprint.
+
+        Bisected on trial canvases rather than solved, for the reason
+        :meth:`~easel.palette.Palette.at_value` bisects: what a film delivers is the
+        pigment model, the tooth and whatever is already there, and none of that is
+        available as a formula. Each probe is a real film on a copy of this canvas,
+        so what is measured is what will happen.
+
+        The footprint comes off a probe at full strength -- the pixels a film of this
+        shape changes at all -- and every probe after it is measured over that one
+        mask, so the search is comparing like with like and never widens as the film
+        gets stronger. It is also the honest place to measure: a film laid along a
+        path reaches where its brush reaches, and a region named by hand is a
+        different area from the one the paint lands on.
+        """
+        before = self.canvas.rgb
+
+        def film(opacity: float) -> np.ndarray:
+            trial = self._trial_session()
+            trial.glaze(points, color, brush=brush, opacity=opacity, **kw)
+            return trial.canvas.rgb
+
+        full = film(1.0)
+        under = np.abs(full - before).sum(axis=2) > _GLAZE_FOOTPRINT
+        if not under.any():
+            raise ValueError(
+                "glaze(to_value=...) cannot solve a film that lands nowhere: at "
+                "opacity=1.0 this one changes no pixel. Check the points are on "
+                "the canvas and the colour is not what is already there."
+            )
+        field = self.palette.value_of(before[under].mean(axis=0))
+        reach = self.palette.value_of(full[under].mean(axis=0))
+        lowest, highest = min(field, reach), max(field, reach)
+        if not lowest - _GLAZE_VALUE_TOL <= target <= highest + _GLAZE_VALUE_TOL:
+            raise ValueError(
+                f"glaze(to_value={target:.3f}) is out of reach: the paint under this "
+                f"film reads {field:.3f}, and at opacity=1.0 -- the whole film, no "
+                f"transparency left -- it reaches {reach:.3f}. A film can only travel "
+                f"between those two. Mix the film further from what it lands on, or "
+                f"lay the change as paint: a film asked to move a passage this far "
+                f"has no usable opacity, which is the table under `glaze` in "
+                f"CALIBRATION.md."
+            )
+
+        rising = reach > field
+        lo, hi = 0.0, 1.0
+        best, best_v = 1.0, reach
+        for _ in range(_GLAZE_SOLVE_STEPS):
+            mid = 0.5 * (lo + hi)
+            value = self.palette.value_of(film(mid)[under].mean(axis=0))
+            if abs(value - target) < abs(best_v - target):
+                best, best_v = mid, value
+            if abs(value - target) <= _GLAZE_VALUE_TOL:
+                break
+            if (value < target) == rising:
+                lo = mid
+            else:
+                hi = mid
+        if best < _GLAZE_MIN_OPACITY:
+            warnings.warn(
+                f"glaze(to_value={target:.3f}) solved to opacity={best:.3g}, which is "
+                f"a film that changes nothing: the paint under it already reads "
+                f"{field:.3f}. It still costs a stroke. Ask for a value further from "
+                f"what is there, or leave the passage alone.",
+                stacklevel=4,
+            )
+        return best
 
     def block_in(
         self,
@@ -448,6 +613,16 @@ class Session:
                 wrote the calls without it, and the rehearsal charged 43 and 55. So a
                 shape laid with this left off says so when it costs more than about
                 2.5x what ``"axis"`` would, and names the number.
+
+                **A sequence is one whole pass per angle and is charged the sum.**
+                Not one stack sized for the steepest -- every angle is paid for in
+                full, and a steep angle on a wide mass costs several times a
+                shallow one. Measured on one painting's room mass, same brush, same
+                density: ``"axis"`` 4 strokes, a single ``-17`` degrees 7,
+                ``"cross"`` 15, and a ten-angle sequence **85**, which is the ten
+                angles' own prices added up. Two directions are what breaks a comb
+                and more do not break it further, so a list longer than a pair says
+                so too, with every angle's price in the line.
             density: how close together the passes run. 1.0 steps them a part-brush
                 apart, which covers the place; below 1 spaces them out and leaves
                 the ground showing through, which is usually what you want for a
@@ -557,6 +732,9 @@ class Session:
 
         if shaped and direction is None:
             _check_default_direction(self, fill, b, density, overhang, stacklevel=3)
+        if direction is not None:
+            _check_direction_sequence(self, fill, b, direction, density, overhang,
+                                      stacklevel=3)
         if edge == "clean" and shaped:
             _check_clean_size(place, b, self.canvas, stacklevel=3)
 
@@ -1147,6 +1325,19 @@ class Session:
         colour with a rim of ramp round it, which is a sun and not a glow, and it
         says so.
 
+        **The patch bounds ``n`` from the other side, and this is the half that
+        surprises people.** The brush is ``3 x depth / n``, so *more rings on a
+        shallow patch buy a narrower brush, not finer banding* -- and past
+        ``n = 120 x depth`` that brush is under ``0.025``, where a comb is four
+        streaks with gaps. A patch ``0.0667`` deep carries the recipe's eight
+        rings and nothing shallower does. It says so at the call, from both sides
+        now: a painter who met this at ``n=12`` on a patch ``0.075`` deep read the
+        post-pass check's bristle complaint as unrelated and spent two more
+        rehearsals. **Where no ``n`` fits** -- under about ``0.042`` deep, where
+        even five rings comb -- the patch is not asking for this verb at all: a
+        glow that shallow is *a volume of lit air*, three glazes along the axis of
+        the light, and the warning says so.
+
         Reach for it instead of strokes radiating out from a centre -- which is the
         obvious answer and gives you a daisy, because strokes that all start in one
         place draw the petals of one.
@@ -1166,7 +1357,10 @@ class Session:
             color_a: the value at the first edge.
             color_b: the value at the far edge.
             n: how many passes. Below about five the steps start to read; the guide's
-                own recipe uses eight.
+                own recipe uses eight. On ``direction="inward"`` it is also bounded
+                from above by the patch -- ``n <= 120 x depth``, above which the
+                brush derived from the ring step is under ``0.025`` and combs. Both
+                walls say so at the call.
             brush: preset name or brush.
             size: brush size override. **Leave it off on either direction and the
                 verb sizes its own brush from its own step.** On a band that is
@@ -1220,11 +1414,13 @@ class Session:
             # The brush comes from the ring step unless the painter named one. A
             # `Brush` handed in carries a size somebody chose, so it counts as named;
             # a preset's name does not, and a preset's default is what fills the patch.
-            if size is None and not isinstance(brush, Brush):
+            named = size is not None or isinstance(brush, Brush)
+            if not named:
                 size = _inward_size(place, n)
             b = self._resolve_brush(brush, size, opacity,
                                     {"load_falloff": 0.0, **brush_overrides})
             _check_inward_brush(place, b, n)
+            _check_inward_comb(place, b, n, named)
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
         step = _normal_extent(place, degrees) / n
@@ -2021,6 +2217,9 @@ class Session:
                 # comes back charging 124 for a pass budgeted at 40 should say why.
                 _check_default_direction(trial, fill, b, density, spec.get("overhang"),
                                          stacklevel=5)
+            else:
+                _check_direction_sequence(trial, fill, b, direction, density,
+                                          spec.get("overhang"), stacklevel=5)
             return laid + int(clean), _mass_reason(fill, b, direction, density, laid)
 
         # A sweep works its pass count out from the depth before any geometry is
@@ -2236,6 +2435,19 @@ class Session:
         repair that has to disappear into what it lands on: each needs the colour
         that is *there*, not the one that was mixed for it eight passes ago and has
         since been scumbled over.
+
+        **It averages what is in the place, which is a trap when the place is a
+        cell.** A cell is a rectangle of canvas and a mass rarely fills one, so
+        sampling the cell hands back the mass averaged with everything around it --
+        a number that reads exactly like a measurement and is not one. Measured on a
+        bird planned at ``0.30`` standing in water at ``0.50``: its cell reads
+        ``0.501``, its own shape ``0.327``, a region cut inside it ``0.318``. A
+        painter checked two masses that way, concluded the engine was laying
+        everything ``0.14`` light, and wrote a second probe to find out why; both
+        were :meth:`~easel.palette.Palette.at_value` doing what it was asked. **To
+        measure a mass, hand it the mass** -- a shape is averaged over itself, and
+        the mass you blocked in is a shape you already have. A number that disagrees
+        with ``at_value`` by more than a hundredth is almost always the place.
 
         Reading it back by hand is where this goes wrong, and quietly. The canvas
         holds linear light; a plain ``(r, g, b)`` tuple handed to the palette is read
@@ -2634,15 +2846,21 @@ class Session:
         three painters made the same mistakes *after* reading the warnings about
         them, and what did catch a mistake was never a sentence but a line printed
         after a pass. Every input is already in the log, which carries brush, size,
-        path, pressure and note per mark. Six rules, each of which a real pass of a
+        path, pressure and note per mark. Seven rules, each of which a real pass of a
         real painting would have tripped:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
           degrees of each other, from two or more calls, and most of the long marks
           in the pass;
-        - **a bristle under ``size=0.025``**, which is a comb of four streaks with
-          gaps rather than a brush;
+        - **a graded passage laid too narrow** -- three or more long parallel marks
+          at three or more colours, stepped further apart than half the narrowest
+          brush laying them, which is the same wall ``scumble`` warns on and the
+          one a hand-laid band gets no protection from;
+        - **a loaded bristle under ``size=0.025``**, which is a comb of four streaks
+          with gaps rather than a brush. Not a *starved* one: below ``load=0.6`` the
+          gaps are the mark, and a painting made of broken glints tripped this
+          twenty-eight times and was right to ignore it every time;
         - **small marks before the masses are down** -- eight or more under
           ``size=0.02`` inside the first sixty marks of the painting;
         - **a pressure list on a chisel tip**, on a hand-laid mark short enough to
@@ -2652,10 +2870,12 @@ class Session:
           share to measure at the moment the subject is finished, and meant to fall
           afterwards.
 
-        A seventh -- a shaped ``block_in`` with ``direction`` left off costing over
-        2.5x its axis price -- needs the shape, so it fires at the call instead. Each
+        An eighth -- a shaped ``block_in`` with ``direction`` left off costing over
+        2.5x its axis price, or a sequence of directions costing over 2.5x its own
+        dearest angle -- needs the shape, so it fires at the call instead. Each
         rule that lives here can leave the guide, which is the growth rule paying
-        for itself.
+        for itself, and one has: *you will under-vary your marks* is in
+        ``PAINTING.md`` rather than on the front page since 0.3.0.
 
         Args:
             since: the log index the pass began at -- ``len(s.history.records)``
@@ -3052,7 +3272,15 @@ class Session:
             changes["size"] = float(size)
         if opacity is not None:
             changes["opacity"] = float(opacity)
-        return b.with_(**changes) if changes else b
+        b = b.with_(**changes) if changes else b
+        # The one place a painter's `size=` becomes a brush, whichever verb took it,
+        # and once per call: a mass hands its own passes the resolved `Brush` with no
+        # `size=`, so this does not fire per pass. A `Brush` built by hand and handed
+        # in whole is the painter's own and is left alone, the way a named scumble
+        # brush is.
+        if "size" in changes:
+            _check_tip_pixels(b, self.canvas)
+        return b
 
     def _resolve_color(self, color) -> np.ndarray:
         if isinstance(color, str) and not color.startswith("#"):
@@ -3130,6 +3358,51 @@ def _check_smudge_size(size: float) -> None:
 #: The tips whose width does not follow pressure: a chisel is the width it was given.
 _CHISEL_TIPS = ("flat", "bristle", "knife")
 
+#: Under this many pixels wide an oriented tip stops depositing paint at all. It is a
+#: count of **pixels**, not a ``size``, and that is the whole point: the cliff sits at
+#: the same pixel width on every canvas, so the ``size`` it corresponds to moves by a
+#: factor of four between a 300px canvas and a 1200px one. Measured on a solid
+#: block-in with every clause of *a plane that is a plane* -- ``density=1.0``,
+#: ``solid=True``, ``opacity=1.0``, ``pressure="even"`` -- a mixture at ``0.865`` over
+#: a ground at ``0.395``, 600x600 linen: a ``flat`` lands ``0.399`` at 3.5px and
+#: ``0.683`` at 5px, and one stroke of a ``flat``, ``bristle`` or ``knife`` deposits
+#: **zero** paint at 1-2px against a ``round_hard``'s 44-51 pixels' worth. Checked on
+#: 300, 600 and 1200px canvases: the knee is at 4px on all three.
+_CHISEL_MIN_PX = 4.0
+
+
+def _check_tip_pixels(b: Brush, canvas, stacklevel: int = 4) -> None:
+    """Warn when an oriented tip is too few pixels wide to lay any paint.
+
+    Not an aesthetic rule like the comb floor, which a painter can want to break: a
+    chisel under about four pixels does not make a poor mark, it makes **no mark**,
+    and is still charged against the budget. A painter spent four rehearsals on a
+    bird's head laid at ``size=0.005`` that came back a dark fuzzy ball rather than
+    the mixture it was given.
+
+    The condition the request proposed was ``size`` under about ``0.008``, and that
+    is the wrong unit: ``size`` is a fraction of the canvas long side, so ``0.008``
+    is 2.4px on a 300px canvas -- already dead -- and 9.6px on a 1200px one, which
+    is a perfectly good small brush. Measured on three canvas sizes, the cliff is at
+    four *pixels* on all of them. A round tip has no such cliff and is what to reach
+    for at this scale; ``liner`` is a ``round_hard`` at ``size=0.005`` for exactly
+    this reason and does not trip it.
+    """
+    if b.tip not in _CHISEL_TIPS:
+        return
+    px = b.size * float(canvas.long_side)
+    if px >= _CHISEL_MIN_PX:
+        return
+    warnings.warn(
+        f"a {b.tip} tip at size={b.size:.4g} is {px:.1f} pixels wide on this canvas, "
+        f"under the {_CHISEL_MIN_PX:.0f} where an oriented tip stops depositing paint "
+        f"at all -- the mark is charged and lands nothing. Measured, a solid mass laid "
+        f"this small comes back the value of whatever it was laid over. Use round_hard "
+        f"(or liner, which is one) at this scale, or size="
+        f"{_CHISEL_MIN_PX / float(canvas.long_side):.4g} and up.",
+        stacklevel=stacklevel,
+    )
+
 #: A mark shorter than this many brush widths is a *shape* rather than a pass, and
 #: the one a painter reaches for a pressure list on expecting a taper. Longer than
 #: this, a list on a chisel is grading the paint along a pass, which it does.
@@ -3200,6 +3473,64 @@ def _check_default_direction(session, place, b: Brush, density: float, overhang,
         f"passes horizontally and lays {laid} of them, stepping down the whole "
         f"height; along the mass's own axis it is {along} (direction=\"axis\", or "
         f"{place.axis:.0f} degrees). That is {laid / max(along, 1):.1f}x the price.",
+        stacklevel=stacklevel,
+    )
+
+
+def _check_direction_sequence(session, place, b: Brush, direction, density: float,
+                              overhang, stacklevel: int = 2) -> None:
+    """Warn when a sequence of directions costs far more than any one angle in it.
+
+    A sequence is *one whole pass per angle*, and the mass is charged the **sum**.
+    That is the price walk's other blind spot: the default-direction check above
+    fires on ``direction`` left off, and nothing fired on a painter who did choose
+    one and chose ten. Measured on one painting's room mass, same brush, same
+    density, same call: ``"axis"`` **4** strokes, a single ``-17`` degrees **7**,
+    ``"cross"`` **15**, and a ten-angle sequence **85** -- which is exactly
+    ``4 + 5 + 7 + 7 + 9 + 10 + 10 + 11 + 11 + 11``, the ten angles' own prices
+    added up.
+
+    The painter who raised this guessed the mechanism was that the stack is sized
+    for the steepest angle in the list, which would have made the sequence cost
+    about what its dearest member costs. It does not: **every angle is paid for in
+    full**, and a steep angle on a wide mass is several times a shallow one, so the
+    bill grows with the list and not with its worst entry. Their own numbers
+    reproduce to the stroke; the mechanism they offered as a guess, and marked as
+    one, is the half that was wrong.
+
+    So the threshold is the request's own words -- *priced far above any single
+    angle in it*. Two angles can never be more than twice the dearer of them, which
+    leaves the pair idiom every painting in this repository uses (a cross at the
+    mass's own angle, ``(4, 94)``) silent, and catches the list that is really a
+    stack. The remedy is the pair: two directions break a comb, which is what the
+    guide asks for, and ten do not break it any further.
+    """
+    dirs = _pass_directions(direction)
+    if len(dirs) < 2:
+        return
+    # On a trial copy, for :func:`_check_default_direction`'s reason: walking the
+    # passes draws their wander, and the count does not depend on it.
+    trial = session._trial_session()
+
+    def price(d) -> int:
+        return sum(1 for _ in trial._block_in_paths(place, b, d, density, overhang))
+
+    each = [price(d) for d in dirs]
+    total, dearest = sum(each), max(each)
+    if total <= _DIRECTION_RATIO * max(dearest, 1):
+        return
+    # Normalised into [0, 180): a mass whose axis is 90 would otherwise be sent to
+    # `("axis", 180)`, which is horizontal written the long way round.
+    across = (place.axis + 90.0) % 180.0
+    pair = price(("axis", across))
+    warnings.warn(
+        f"block_in of {place.name or 'this shape'} with a sequence of {len(dirs)} "
+        f"directions lays one whole pass at every one of them and is charged the "
+        f"sum: {total} strokes, from {' + '.join(str(e) for e in each)}. No single "
+        f"angle in the list costs more than {dearest} -- a sequence is not one pass "
+        f"stacked, it is {len(dirs)} passes. Two directions are what breaks a comb "
+        f"and {len(dirs)} do not break it further: a cross at the mass's own angle, "
+        f"direction=(\"axis\", {across:.0f}), is {pair} here.",
         stacklevel=stacklevel,
     )
 
@@ -3350,6 +3681,69 @@ def _inward_size(place, n: int) -> float:
     # The Brush constructor takes (0, 1]; a large `n` on a small patch would
     # otherwise derive its way to zero and raise from somewhere unhelpful.
     return float(min(max(_INWARD_STEPS * step, 0.01), 1.0))
+
+
+#: Fewer rings than this and a centred scumble reads as steps rather than a
+#: fall-off, whatever the brush is: the verb's own docstring is *below about five
+#: the steps start to read*, and the guide's recipe uses eight. It is the other
+#: wall of the window :func:`_check_inward_comb` measures -- ``n`` has to be small
+#: enough that the brush is still a brush, and large enough to be a ramp.
+_INWARD_MIN_RINGS = 5
+
+
+def _check_inward_comb(place, b: Brush, n: int, named: bool) -> None:
+    """Warn when a centred scumble's brush is too *narrow* to be a brush.
+
+    :func:`_check_inward_brush` is the other side of this one wall, and until now
+    the verb warned from that side only: a brush wide enough to fill the patch flat
+    said so, and a brush too narrow to lay anything said nothing. But the brush is
+    ``3 x depth / n`` and the painter sets ``n``, so **more rings on a shallow patch
+    buy a narrower brush rather than finer banding** -- and past the point where
+    that brush is under the post-pass check's comb floor it is four streaks with
+    gaps. The arithmetic is exact: the derived brush clears ``0.025`` only while
+    ``n <= 120 x depth``, so a patch ``0.0667`` deep carries the recipe's eight
+    rings and nothing shallower does.
+
+    A painter met this at ``n=12`` on a patch ``0.075`` deep, read the bristle
+    warning the post-pass check gave as an unrelated complaint, and spent two more
+    rehearsals. Both halves of the window are now said at the call, in the shape
+    the other scumble warnings have: the verb lays what it was asked for and says
+    what it will look like.
+
+    Where no ``n`` fits at all -- a patch so shallow that even the fewest rings that
+    still read as a fall-off leave a comb under the floor -- there is nothing to
+    tune, and the warning names the recipe that lays a glow that shallow instead.
+    """
+    # The floor is a two-figure number, and a brush that *rounds* to it is not
+    # under it: a polygon of an ellipse comes a hair short of its own extents, so
+    # the `n` that sits exactly on the boundary derives 0.024998 rather than
+    # 0.025, and a warning reading "0.025, under the 0.025" is noise.
+    floor = _REPORT_SMALL_BRISTLE - 0.0005
+    if b.tip != "bristle" or b.size >= floor:
+        return
+    depth = _inward_depth(place)
+    fits = int(_INWARD_STEPS * depth / floor)
+    if named:
+        remedy = (f"Leave size= off and the verb picks {_inward_size(place, n):.3g} "
+                  f"from the ring step.")
+    elif fits >= _INWARD_MIN_RINGS:
+        remedy = (f"The brush is 3 x depth / n, so more rings on a patch this "
+                  f"shallow buy a narrower brush and not finer banding: this one "
+                  f"carries {fits} rings before the comb goes under the floor. Drop "
+                  f"to n={fits}.")
+    else:
+        remedy = (f"No n fits: this patch is {depth:.3g} deep, and at the fewest "
+                  f"rings that still read as a fall-off ({_INWARD_MIN_RINGS}) the "
+                  f"brush is {_INWARD_STEPS * depth / _INWARD_MIN_RINGS:.3g}, still "
+                  f"under the floor. A glow this shallow is not a bloom on a "
+                  f"surface -- lay it as a volume of lit air, three glazes along "
+                  f"the axis of the light (RECIPES.md).")
+    warnings.warn(
+        f"scumble(direction='inward', n={n}) on a patch {depth:.3g} deep lays its "
+        f"rings with a bristle {b.size:.3g} wide, under the {_REPORT_SMALL_BRISTLE} "
+        f"where a comb is four streaks with gaps rather than a brush. {remedy}",
+        stacklevel=3,
+    )
 
 
 def _check_inward_brush(place, b: Brush, n: int) -> None:
@@ -3553,10 +3947,24 @@ def _mass_reason(fill, b: Brush, direction, density: float, laid: int) -> str:
 _REPORT_MIN_MARKS = 10          # one brush at one size: over this many marks
 _REPORT_ANGLE_MARKS = 12        # a stack: this many long marks within...
 _REPORT_ANGLE_DEG = 6.0         # ...this many degrees of one another
-_REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps
+_REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps...
+_REPORT_STARVED_LOAD = 0.6      # ...unless it was starved this far, where they are the mark
 _REPORT_EARLY_MARKS = 60        # small marks inside the first this many are detail first
 _REPORT_SMALL_MARK = 0.02       # ...where small is under this
 _REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
+
+# `_REPORT_STARVED_LOAD` is the one threshold here that narrows a rule rather than
+# setting one, and it exists because the rule above it was being ignored. A painting
+# whose subject is broken glints on water, grit under a flood and feather groups on a
+# bird tripped *a bristle under 0.025* twenty-eight times and was right to skip it
+# every time: at those loads the comb's gaps **are** the mark. Checked against both
+# of that session's paintings, every small-bristle call site in them named an
+# explicit `load` and not one used the preset's own `0.9` -- 15 of 16 at or under
+# `0.6` in the first painting and 12 of 12 in the second. `0.6` is the top of the
+# run-out window `CALIBRATION.md` already publishes for a deliberately broken mark,
+# not a new number. What still fires is what the rule was written for: a small
+# *loaded* comb, which is a solid plane laid with the wrong tip. A check a painter
+# learns to skip costs the other five rules their credibility.
 
 
 def _mark_length_and_angle(r: StrokeRecord, canvas) -> tuple[float, float]:
@@ -3590,6 +3998,88 @@ def _angle_name(degrees: float) -> str:
     if abs(degrees - 90.0) < _REPORT_ANGLE_DEG:
         return "vertical"
     return f"{degrees:.0f} degrees"
+
+
+#: A graded passage laid by hand has to clear this many of its own steps, the same
+#: number ``scumble`` warns on: see :data:`_LINEAR_MIN_STEPS`. Below about a quarter
+#: of a step the marks are further apart than four brushes and are separate marks
+#: rather than a passage laid badly, so the rule does not reach down there.
+_REPORT_BAND_FLOOR = 0.25
+
+#: How many marks make a passage rather than a pair. Three is the fewest that can
+#: have a step at all.
+_REPORT_BAND_MARKS = 3
+
+#: How many distinct colours a stack of parallel marks needs before it counts as
+#: *graded* rather than as a mass. This is what keeps every ``block_in`` out of the
+#: rule: its passes step ``size * (1 - 0.45 * density)`` apart, which is always
+#: under two brushes, and they are all one colour, so the joins a graded passage
+#: shows at that spacing do not arise.
+_REPORT_BAND_COLOURS = 3
+
+
+def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
+    """The largest stack of parallel, stepping-coloured marks whose brush is too narrow.
+
+    ``scumble`` has picked its own brush from its own step since 0.2.0 and says so
+    when handed a narrower one -- but ``RECIPES.md`` teaches the hand-rolled form of
+    the same passage (*a passage brightening toward one side* is six ``stroke()``
+    calls with the sizes written out), and a hand-laid stack gets none of that
+    protection. Measured on one painting against itself: its sky, laid with
+    ``scumble(n=11)`` and the brush left to the verb, sits at a uniform 4.0 steps and
+    its across-band wobble is ``0.037``; its dawn band, seven strokes with brushes
+    chosen by hand, tapers 4.2 to **1.7** steps and wobbles ``0.072`` -- twice as
+    rough, same canvas, same painter, same pass structure.
+
+    Returns ``(count, step, narrowest brush, brushes per step)`` or ``None``.
+
+    The conditions are narrow on purpose, because a check a painter learns to skip
+    costs the other rules their credibility:
+
+    * **parallel and long**, as the stack-of-bars rule counts them;
+    * **at three or more distinct colours**, which is what makes it a *graded*
+      passage. A mass is one colour however its passes are spaced, and that is what
+      keeps every ``block_in`` out of this -- at ``density=1.0`` its passes are
+      ``0.55`` of a brush apart, which is under two steps and perfectly right;
+    * **spaced between a quarter of a brush and two**, so that marks four brushes
+      apart -- three trunks, three cables, three reflections -- are separate marks
+      and not a passage laid badly.
+    """
+    best: list[tuple[StrokeRecord, float]] = []
+    for _, centre in long_marks:
+        near = [(r, a) for r, a in long_marks
+                if min(abs(a - centre), 180.0 - abs(a - centre)) <= _REPORT_ANGLE_DEG]
+        if len(near) > len(best):
+            best = near
+    if len(best) < _REPORT_BAND_MARKS:
+        return None
+    colours = {tuple(round(float(v), 4) for v in (r.params.get("color") or ()))
+               for r, _ in best}
+    if len(colours - {()}) < _REPORT_BAND_COLOURS:
+        return None
+
+    # Where each mark sits across the stack, in the brush's own unit.
+    long_side = float(canvas.long_side)
+    angle = math.radians(float(np.median([a for _, a in best])))
+    nx, ny = -math.sin(angle), math.cos(angle)
+    offsets = []
+    for r, _ in best:
+        pts = np.asarray(r.points, dtype=np.float64)
+        x = float(pts[:, 0].mean()) * canvas.width / long_side
+        y = float(pts[:, 1].mean()) * canvas.height / long_side
+        offsets.append(x * nx + y * ny)
+    steps = np.diff(np.sort(np.asarray(offsets)))
+    steps = steps[steps > 1e-9]
+    if steps.size < _REPORT_BAND_MARKS - 1:
+        return None
+    step = float(np.median(steps))
+    brush = min(float(r.params.get("size", 0.0)) for r, _ in best)
+    if brush <= 0.0 or step <= 0.0:
+        return None
+    per_step = brush / step
+    if not _REPORT_BAND_FLOOR <= per_step < _LINEAR_MIN_STEPS:
+        return None
+    return len(best), step, brush, per_step
 
 
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]:
@@ -3632,15 +4122,31 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]
             f"mass along its own axis."
         )
 
-    # A bristle too small to be a brush.
+    # A hand-laid graded passage whose brush is too narrow for its own step.
+    band = _graded_band(long_marks, canvas)
+    if band is not None:
+        count, step, brush, steps = band
+        out.append(
+            f"{count} marks at stepping colours run parallel {step:.3f} apart, and the "
+            f"narrowest brush laying them is {brush:.3g} -- {steps:.1f} of that step. "
+            f"Under {_LINEAR_MIN_STEPS:.0f} the passes stop overlapping and a graded "
+            f"passage comes back as bars. Use about three steps "
+            f"(size={_LINEAR_STEPS * step:.3g} here), or hand the passage to scumble(), "
+            f"which sizes its own brush from its own step."
+        )
+
+    # A bristle too small to be a brush -- unless it was starved on purpose, where
+    # the comb's gaps are the mark and not the fault. See _REPORT_STARVED_LOAD.
     small_comb = [r for r in marks
                   if r.params.get("tip") == "bristle"
-                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE]
+                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE
+                  and float(r.params.get("load", 1.0)) > _REPORT_STARVED_LOAD]
     if len(small_comb) >= 3:
         out.append(
-            f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE}: "
-            f"a comb that small is four streaks with gaps, not a brush. round_hard "
-            f"reads at that size; a small solid plane wants flat at pressure='even'."
+            f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE} "
+            f"at a load over {_REPORT_STARVED_LOAD}: a comb that small is four streaks "
+            f"with gaps, not a brush. round_hard reads at that size; a small solid "
+            f"plane wants flat at pressure='even'."
         )
 
     # Detail before the masses are down.
