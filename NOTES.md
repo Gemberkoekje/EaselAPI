@@ -9,7 +9,7 @@ that closes its joins*, then [`LESSONS.md`](LESSONS.md)'s **About the protocol**
 now carries five questions rather than three. The code is `src/easel/session.py`; the
 numbers are reproducible with `python scripts/probe_heron_session.py`.*
 
-Every item both heron paintings left is done, and it is all in **0.4.0**, which had not
+Every item both heron paintings left is done, and it is all in **0.3.0**, which had not
 been released.
 
 ## The shape of it
@@ -136,7 +136,8 @@ the second departing rule) · `CHANGELOG.md`.
 The suite passes with the `mcp` extra and without it; `ruff check src tests scripts
 examples mcpb` is clean; `check_guide_blocks.py` runs every block; `PAINTER.md` is at
 9,973 words against its 10,000 and `DIAGNOSIS.md` at 128 lines against its 130. Version
-bumped to 0.4.0 in `pyproject.toml`, `src/easel/__init__.py` and `server.json`.
+bumped in `pyproject.toml`, `src/easel/__init__.py` and `server.json` -- to 0.4.0
+at the time, renumbered to 0.3.0 before release because 0.3.0 was never tagged.
 
 ## Deliberately not done
 

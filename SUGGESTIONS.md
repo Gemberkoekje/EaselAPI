@@ -10,8 +10,8 @@ This file is the register: **what was wrong, what was done about it, and — in 
 sections at the top — what has not been done yet.**
 
 **Everything in the numbered session tables below is done** — 49 engine items and 65
-documentation items, the eighth session's eight of them in 0.3.0 and the ninth's
-fourteen in 0.4.0. **The two sections that are not done are the first two** — *Open: the fogged glass*,
+documentation items, the eighth session's eight of them and the ninth's
+fourteen all in 0.3.0. **The two sections that are not done are the first two** — *Open: the fogged glass*,
 which has been acted on by nobody, and *Open: the winter greenhouse*, whose
 documentation items were closed by the round that rewrote the five files and whose
 engine items were not. When an item closes it moves down into the tables with the rest.
@@ -295,7 +295,7 @@ rehearsal it fired in.
 
 **And two rules have now left.** *You will under-vary your marks* went to
 `PAINTING.md` in 0.3.0 and *you will use too many strokes on detail* followed it in
-0.4.0, both because the check names them after the pass that did them, with the
+0.3.0, both because the check names them after the pass that did them, with the
 numbers attached, which a paragraph read once cannot do. Neither left on its merits:
 the front page's word budget left the eighth session's two items and the ninth's
 three nowhere else to come from, which is the growth rule working exactly as it was
@@ -303,7 +303,7 @@ meant to and is now **the binding constraint on every documentation round**. Whe
 a rule can safely leave is still unshown; what has changed is that it is a question a
 session can answer, because there is a guide with two rules missing from it.
 
-The check has seven rules as of 0.4.0. The seventh — a graded passage laid too narrow
+The check has seven rules as of 0.3.0. The seventh — a graded passage laid too narrow
 — is the first to arrive from a session *asking for a check rule by name* rather than
 reporting a symptom, and it met the bar the same way: it fires on a real pass of a
 real painting, and the inputs were already in the log.
@@ -466,7 +466,7 @@ passages were abandoned rather than fixed after two rehearsals each, which is th
 
 ### What it asked for, and what was done
 
-**Closed in 0.4.0** — three engine items and six documentation items, in the two
+**Closed in 0.3.0** — three engine items and six documentation items, in the two
 tables headed *What the ninth session found* below, and the four its second painting
 added in the two after them. Two of the three engine items are measurements taken
 against an **open** item rather than new complaints, which is what this arm is for:
