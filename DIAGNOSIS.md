@@ -10,6 +10,10 @@ failures you were not going to make.
 the image is wrong and you can describe it. Find the description, follow the pointer,
 make the mark. `grep -i rings DIAGNOSIS.md` is the intended interface.
 
+**Follow the pointer; do not work from the row** — one session recognised five on
+sight, followed none, and repaired a staircase the expensive way while the row's own
+target held the cheap one. **A row naming a file you were not given is not for you.**
+
 It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 [`RECIPES.md`](RECIPES.md), [`REFERENCE.md`](REFERENCE.md) and
 [`CALIBRATION.md`](CALIBRATION.md). Every pointer is checked against those files by
@@ -30,18 +34,18 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | Slabs stuck on a smooth shape, or a woven surface where planes should be | `RECIPES.md` → *A mass built of planes* |
 | Two flat stripes where a round form should have turned | `RECIPES.md` → *A form that turns* |
 | A bare strip of ground along the canvas frame | `CALIBRATION.md` → *`block_in`* |
+| A small mass that came back the colour of whatever it was laid over, or a solid mass that will not reach the value you mixed | `CALIBRATION.md` → *What a solid mass actually lands at* |
 | A mass that shows its passes because you laid it with a round tip | `CALIBRATION.md` → *`block_in`* |
 
 ## A soft passage, a glow, a gradient
 
 | What you are looking at | Where |
 |---|---|
-| A wide soft passage that came out as three or four hard bars | `RECIPES.md` → *A quiet gradient*; `CALIBRATION.md` → *The band, and the brush that closes its joins* |
-| A venetian blind: gaps left between the passes | `CALIBRATION.md` → *The band, and the brush that closes its joins* |
+| A wide soft passage that came out as three or four hard bars, or a venetian blind with gaps between the passes | `RECIPES.md` → *A quiet gradient*; `CALIBRATION.md` → *The band, and the brush that closes its joins* |
+| A band you laid by hand, stroke by stroke, that ribbed where a `scumble` of the same shape did not | `RECIPES.md` → *A passage brightening toward one side* |
+| A sky, a far field or a sheet of water — a third of the canvas, graded — that reads as a stack of bands, or shows horizontal strata with flecks of bare ground in them | `RECIPES.md` → *A graded field that is most of the picture* |
 | A glow with visible concentric rings, like a contour map | `CALIBRATION.md` → *`scumble`* |
-| A solid disc with a thin ramp round it | `RECIPES.md` → *A passage light in the middle* |
-| A daisy: petals radiating from a shared centre | `RECIPES.md` → *A passage light in the middle* |
-| A rim drawn round your glow, with nothing in the middle | `RECIPES.md` → *A passage light in the middle* |
+| A glow that came back a solid disc with a thin ramp round it, a daisy of petals radiating from a shared centre, or a rim with nothing in the middle | `RECIPES.md` → *A passage light in the middle* |
 | A passage that will not go quiet however low you set `opacity` | `CALIBRATION.md` → *Opacity does not make a passage quieter* |
 | A passage that bloomed past the outline at one end and is barely there at the other | `CALIBRATION.md` → *The band across a wedge* |
 | Light that is **in** a medium rather than on a surface: a beam, a shaft, a halo, a lamp under water | `RECIPES.md` → *A volume of lit air* |
@@ -78,7 +82,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | A small object reading as a bulb, a brick, or a bite | `RECIPES.md` → *A small container with something spilling from it* |
 | A chisel mark given a pressure list that did not taper | `REFERENCE.md` → *Pressure*; `CALIBRATION.md` → *Pressure* |
 | A starved brush that laid almost nothing | `CALIBRATION.md` → *Load and run-out* |
-| A bristle under `size=0.025` reading as four streaks with gaps | `CALIBRATION.md` → *The bristle comb* |
+| A bristle under `size=0.025` reading as four streaks with gaps — when you wanted a plane, not a broken mark | `CALIBRATION.md` → *The bristle comb* |
 | A hole in a mass laid as a dot in its interior | `PAINTER.md` → *What you are bad at* |
 
 ## Colour, value, paint

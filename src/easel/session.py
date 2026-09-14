@@ -2436,6 +2436,19 @@ class Session:
         that is *there*, not the one that was mixed for it eight passes ago and has
         since been scumbled over.
 
+        **It averages what is in the place, which is a trap when the place is a
+        cell.** A cell is a rectangle of canvas and a mass rarely fills one, so
+        sampling the cell hands back the mass averaged with everything around it --
+        a number that reads exactly like a measurement and is not one. Measured on a
+        bird planned at ``0.30`` standing in water at ``0.50``: its cell reads
+        ``0.501``, its own shape ``0.327``, a region cut inside it ``0.318``. A
+        painter checked two masses that way, concluded the engine was laying
+        everything ``0.14`` light, and wrote a second probe to find out why; both
+        were :meth:`~easel.palette.Palette.at_value` doing what it was asked. **To
+        measure a mass, hand it the mass** -- a shape is averaged over itself, and
+        the mass you blocked in is a shape you already have. A number that disagrees
+        with ``at_value`` by more than a hundredth is almost always the place.
+
         Reading it back by hand is where this goes wrong, and quietly. The canvas
         holds linear light; a plain ``(r, g, b)`` tuple handed to the palette is read
         as sRGB, the same as a hex string is -- so a mean sampled off ``s.canvas.rgb``
@@ -2833,15 +2846,21 @@ class Session:
         three painters made the same mistakes *after* reading the warnings about
         them, and what did catch a mistake was never a sentence but a line printed
         after a pass. Every input is already in the log, which carries brush, size,
-        path, pressure and note per mark. Six rules, each of which a real pass of a
+        path, pressure and note per mark. Seven rules, each of which a real pass of a
         real painting would have tripped:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
           degrees of each other, from two or more calls, and most of the long marks
           in the pass;
-        - **a bristle under ``size=0.025``**, which is a comb of four streaks with
-          gaps rather than a brush;
+        - **a graded passage laid too narrow** -- three or more long parallel marks
+          at three or more colours, stepped further apart than half the narrowest
+          brush laying them, which is the same wall ``scumble`` warns on and the
+          one a hand-laid band gets no protection from;
+        - **a loaded bristle under ``size=0.025``**, which is a comb of four streaks
+          with gaps rather than a brush. Not a *starved* one: below ``load=0.6`` the
+          gaps are the mark, and a painting made of broken glints tripped this
+          twenty-eight times and was right to ignore it every time;
         - **small marks before the masses are down** -- eight or more under
           ``size=0.02`` inside the first sixty marks of the painting;
         - **a pressure list on a chisel tip**, on a hand-laid mark short enough to
@@ -2851,10 +2870,12 @@ class Session:
           share to measure at the moment the subject is finished, and meant to fall
           afterwards.
 
-        A seventh -- a shaped ``block_in`` with ``direction`` left off costing over
-        2.5x its axis price -- needs the shape, so it fires at the call instead. Each
+        An eighth -- a shaped ``block_in`` with ``direction`` left off costing over
+        2.5x its axis price, or a sequence of directions costing over 2.5x its own
+        dearest angle -- needs the shape, so it fires at the call instead. Each
         rule that lives here can leave the guide, which is the growth rule paying
-        for itself.
+        for itself, and one has: *you will under-vary your marks* is in
+        ``PAINTING.md`` rather than on the front page since 0.3.0.
 
         Args:
             since: the log index the pass began at -- ``len(s.history.records)``
@@ -3251,7 +3272,15 @@ class Session:
             changes["size"] = float(size)
         if opacity is not None:
             changes["opacity"] = float(opacity)
-        return b.with_(**changes) if changes else b
+        b = b.with_(**changes) if changes else b
+        # The one place a painter's `size=` becomes a brush, whichever verb took it,
+        # and once per call: a mass hands its own passes the resolved `Brush` with no
+        # `size=`, so this does not fire per pass. A `Brush` built by hand and handed
+        # in whole is the painter's own and is left alone, the way a named scumble
+        # brush is.
+        if "size" in changes:
+            _check_tip_pixels(b, self.canvas)
+        return b
 
     def _resolve_color(self, color) -> np.ndarray:
         if isinstance(color, str) and not color.startswith("#"):
@@ -3328,6 +3357,51 @@ def _check_smudge_size(size: float) -> None:
 
 #: The tips whose width does not follow pressure: a chisel is the width it was given.
 _CHISEL_TIPS = ("flat", "bristle", "knife")
+
+#: Under this many pixels wide an oriented tip stops depositing paint at all. It is a
+#: count of **pixels**, not a ``size``, and that is the whole point: the cliff sits at
+#: the same pixel width on every canvas, so the ``size`` it corresponds to moves by a
+#: factor of four between a 300px canvas and a 1200px one. Measured on a solid
+#: block-in with every clause of *a plane that is a plane* -- ``density=1.0``,
+#: ``solid=True``, ``opacity=1.0``, ``pressure="even"`` -- a mixture at ``0.865`` over
+#: a ground at ``0.395``, 600x600 linen: a ``flat`` lands ``0.399`` at 3.5px and
+#: ``0.683`` at 5px, and one stroke of a ``flat``, ``bristle`` or ``knife`` deposits
+#: **zero** paint at 1-2px against a ``round_hard``'s 44-51 pixels' worth. Checked on
+#: 300, 600 and 1200px canvases: the knee is at 4px on all three.
+_CHISEL_MIN_PX = 4.0
+
+
+def _check_tip_pixels(b: Brush, canvas, stacklevel: int = 4) -> None:
+    """Warn when an oriented tip is too few pixels wide to lay any paint.
+
+    Not an aesthetic rule like the comb floor, which a painter can want to break: a
+    chisel under about four pixels does not make a poor mark, it makes **no mark**,
+    and is still charged against the budget. A painter spent four rehearsals on a
+    bird's head laid at ``size=0.005`` that came back a dark fuzzy ball rather than
+    the mixture it was given.
+
+    The condition the request proposed was ``size`` under about ``0.008``, and that
+    is the wrong unit: ``size`` is a fraction of the canvas long side, so ``0.008``
+    is 2.4px on a 300px canvas -- already dead -- and 9.6px on a 1200px one, which
+    is a perfectly good small brush. Measured on three canvas sizes, the cliff is at
+    four *pixels* on all of them. A round tip has no such cliff and is what to reach
+    for at this scale; ``liner`` is a ``round_hard`` at ``size=0.005`` for exactly
+    this reason and does not trip it.
+    """
+    if b.tip not in _CHISEL_TIPS:
+        return
+    px = b.size * float(canvas.long_side)
+    if px >= _CHISEL_MIN_PX:
+        return
+    warnings.warn(
+        f"a {b.tip} tip at size={b.size:.4g} is {px:.1f} pixels wide on this canvas, "
+        f"under the {_CHISEL_MIN_PX:.0f} where an oriented tip stops depositing paint "
+        f"at all -- the mark is charged and lands nothing. Measured, a solid mass laid "
+        f"this small comes back the value of whatever it was laid over. Use round_hard "
+        f"(or liner, which is one) at this scale, or size="
+        f"{_CHISEL_MIN_PX / float(canvas.long_side):.4g} and up.",
+        stacklevel=stacklevel,
+    )
 
 #: A mark shorter than this many brush widths is a *shape* rather than a pass, and
 #: the one a painter reaches for a pressure list on expecting a taper. Longer than
@@ -3445,7 +3519,9 @@ def _check_direction_sequence(session, place, b: Brush, direction, density: floa
     total, dearest = sum(each), max(each)
     if total <= _DIRECTION_RATIO * max(dearest, 1):
         return
-    across = place.axis + 90.0
+    # Normalised into [0, 180): a mass whose axis is 90 would otherwise be sent to
+    # `("axis", 180)`, which is horizontal written the long way round.
+    across = (place.axis + 90.0) % 180.0
     pair = price(("axis", across))
     warnings.warn(
         f"block_in of {place.name or 'this shape'} with a sequence of {len(dirs)} "
@@ -3871,10 +3947,24 @@ def _mass_reason(fill, b: Brush, direction, density: float, laid: int) -> str:
 _REPORT_MIN_MARKS = 10          # one brush at one size: over this many marks
 _REPORT_ANGLE_MARKS = 12        # a stack: this many long marks within...
 _REPORT_ANGLE_DEG = 6.0         # ...this many degrees of one another
-_REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps
+_REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps...
+_REPORT_STARVED_LOAD = 0.6      # ...unless it was starved this far, where they are the mark
 _REPORT_EARLY_MARKS = 60        # small marks inside the first this many are detail first
 _REPORT_SMALL_MARK = 0.02       # ...where small is under this
 _REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
+
+# `_REPORT_STARVED_LOAD` is the one threshold here that narrows a rule rather than
+# setting one, and it exists because the rule above it was being ignored. A painting
+# whose subject is broken glints on water, grit under a flood and feather groups on a
+# bird tripped *a bristle under 0.025* twenty-eight times and was right to skip it
+# every time: at those loads the comb's gaps **are** the mark. Checked against both
+# of that session's paintings, every small-bristle call site in them named an
+# explicit `load` and not one used the preset's own `0.9` -- 15 of 16 at or under
+# `0.6` in the first painting and 12 of 12 in the second. `0.6` is the top of the
+# run-out window `CALIBRATION.md` already publishes for a deliberately broken mark,
+# not a new number. What still fires is what the rule was written for: a small
+# *loaded* comb, which is a solid plane laid with the wrong tip. A check a painter
+# learns to skip costs the other five rules their credibility.
 
 
 def _mark_length_and_angle(r: StrokeRecord, canvas) -> tuple[float, float]:
@@ -3908,6 +3998,88 @@ def _angle_name(degrees: float) -> str:
     if abs(degrees - 90.0) < _REPORT_ANGLE_DEG:
         return "vertical"
     return f"{degrees:.0f} degrees"
+
+
+#: A graded passage laid by hand has to clear this many of its own steps, the same
+#: number ``scumble`` warns on: see :data:`_LINEAR_MIN_STEPS`. Below about a quarter
+#: of a step the marks are further apart than four brushes and are separate marks
+#: rather than a passage laid badly, so the rule does not reach down there.
+_REPORT_BAND_FLOOR = 0.25
+
+#: How many marks make a passage rather than a pair. Three is the fewest that can
+#: have a step at all.
+_REPORT_BAND_MARKS = 3
+
+#: How many distinct colours a stack of parallel marks needs before it counts as
+#: *graded* rather than as a mass. This is what keeps every ``block_in`` out of the
+#: rule: its passes step ``size * (1 - 0.45 * density)`` apart, which is always
+#: under two brushes, and they are all one colour, so the joins a graded passage
+#: shows at that spacing do not arise.
+_REPORT_BAND_COLOURS = 3
+
+
+def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
+    """The largest stack of parallel, stepping-coloured marks whose brush is too narrow.
+
+    ``scumble`` has picked its own brush from its own step since 0.2.0 and says so
+    when handed a narrower one -- but ``RECIPES.md`` teaches the hand-rolled form of
+    the same passage (*a passage brightening toward one side* is six ``stroke()``
+    calls with the sizes written out), and a hand-laid stack gets none of that
+    protection. Measured on one painting against itself: its sky, laid with
+    ``scumble(n=11)`` and the brush left to the verb, sits at a uniform 4.0 steps and
+    its across-band wobble is ``0.037``; its dawn band, seven strokes with brushes
+    chosen by hand, tapers 4.2 to **1.7** steps and wobbles ``0.072`` -- twice as
+    rough, same canvas, same painter, same pass structure.
+
+    Returns ``(count, step, narrowest brush, brushes per step)`` or ``None``.
+
+    The conditions are narrow on purpose, because a check a painter learns to skip
+    costs the other rules their credibility:
+
+    * **parallel and long**, as the stack-of-bars rule counts them;
+    * **at three or more distinct colours**, which is what makes it a *graded*
+      passage. A mass is one colour however its passes are spaced, and that is what
+      keeps every ``block_in`` out of this -- at ``density=1.0`` its passes are
+      ``0.55`` of a brush apart, which is under two steps and perfectly right;
+    * **spaced between a quarter of a brush and two**, so that marks four brushes
+      apart -- three trunks, three cables, three reflections -- are separate marks
+      and not a passage laid badly.
+    """
+    best: list[tuple[StrokeRecord, float]] = []
+    for _, centre in long_marks:
+        near = [(r, a) for r, a in long_marks
+                if min(abs(a - centre), 180.0 - abs(a - centre)) <= _REPORT_ANGLE_DEG]
+        if len(near) > len(best):
+            best = near
+    if len(best) < _REPORT_BAND_MARKS:
+        return None
+    colours = {tuple(round(float(v), 4) for v in (r.params.get("color") or ()))
+               for r, _ in best}
+    if len(colours - {()}) < _REPORT_BAND_COLOURS:
+        return None
+
+    # Where each mark sits across the stack, in the brush's own unit.
+    long_side = float(canvas.long_side)
+    angle = math.radians(float(np.median([a for _, a in best])))
+    nx, ny = -math.sin(angle), math.cos(angle)
+    offsets = []
+    for r, _ in best:
+        pts = np.asarray(r.points, dtype=np.float64)
+        x = float(pts[:, 0].mean()) * canvas.width / long_side
+        y = float(pts[:, 1].mean()) * canvas.height / long_side
+        offsets.append(x * nx + y * ny)
+    steps = np.diff(np.sort(np.asarray(offsets)))
+    steps = steps[steps > 1e-9]
+    if steps.size < _REPORT_BAND_MARKS - 1:
+        return None
+    step = float(np.median(steps))
+    brush = min(float(r.params.get("size", 0.0)) for r, _ in best)
+    if brush <= 0.0 or step <= 0.0:
+        return None
+    per_step = brush / step
+    if not _REPORT_BAND_FLOOR <= per_step < _LINEAR_MIN_STEPS:
+        return None
+    return len(best), step, brush, per_step
 
 
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]:
@@ -3950,15 +4122,31 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]
             f"mass along its own axis."
         )
 
-    # A bristle too small to be a brush.
+    # A hand-laid graded passage whose brush is too narrow for its own step.
+    band = _graded_band(long_marks, canvas)
+    if band is not None:
+        count, step, brush, steps = band
+        out.append(
+            f"{count} marks at stepping colours run parallel {step:.3f} apart, and the "
+            f"narrowest brush laying them is {brush:.3g} -- {steps:.1f} of that step. "
+            f"Under {_LINEAR_MIN_STEPS:.0f} the passes stop overlapping and a graded "
+            f"passage comes back as bars. Use about three steps "
+            f"(size={_LINEAR_STEPS * step:.3g} here), or hand the passage to scumble(), "
+            f"which sizes its own brush from its own step."
+        )
+
+    # A bristle too small to be a brush -- unless it was starved on purpose, where
+    # the comb's gaps are the mark and not the fault. See _REPORT_STARVED_LOAD.
     small_comb = [r for r in marks
                   if r.params.get("tip") == "bristle"
-                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE]
+                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE
+                  and float(r.params.get("load", 1.0)) > _REPORT_STARVED_LOAD]
     if len(small_comb) >= 3:
         out.append(
-            f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE}: "
-            f"a comb that small is four streaks with gaps, not a brush. round_hard "
-            f"reads at that size; a small solid plane wants flat at pressure='even'."
+            f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE} "
+            f"at a load over {_REPORT_STARVED_LOAD}: a comb that small is four streaks "
+            f"with gaps, not a brush. round_hard reads at that size; a small solid "
+            f"plane wants flat at pressure='even'."
         )
 
     # Detail before the masses are down.

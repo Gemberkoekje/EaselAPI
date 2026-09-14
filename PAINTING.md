@@ -125,6 +125,45 @@ Four things about drawing that are easy to get wrong:
 `s.sketch_lines()` gives every line back as points, so a stroke can be swept along
 one, aimed at one, or ignore it.
 
+#### Without a reference
+
+**Everything above assumes two panels**, and a painter with nothing to copy reads it
+and finds one sentence addressed to them. The loop still works; what changes is what
+the points are checked *against*. They are checked against **each other**, which is
+the only thing a painting from your head can be wrong about:
+
+```python
+s.mark("eye",   0.612, 0.505)
+s.mark("bill",  0.668, 0.518)
+s.mark("foot",  0.598, 0.690)
+s.look(region=span("E4", "G7"), grid="fine")   # no reference= : the same view
+```
+
+Read the labels under each cross and ask the questions a photograph would have
+answered for you: is the bill one head-length from the eye or two? Is the foot as far
+below the eye as the drawing in your head says? Proportion inside the subject is
+what you are checking, and the fine grid gives you tenths to check it in.
+
+**Then iterate the silhouette in graphite before you build it as a polygon**, which
+is the pencil's own advantage over a rehearsal and the reason to reach for it here:
+
+```python
+for wobble in (0.0, 0.18, 0.34):                     # three candidates, one look
+    s.pencil(blob(span("E4", "G7"), 0.16, wobble=wobble, seed=4).closed, pressure=0.5)
+s.look(region=span("E4", "G7"))                      # pick one, erase the others
+s.erase(span("E4", "G7"))
+```
+
+A rehearsal answers one question per round trip. The pencil answers six at once, for
+nothing, and `s.erase(region)` takes back the five you did not want. **Eight of the
+nine paintings in this repository never drew a line**, and the most expensive
+rehearsals in two of them went on features whose silhouette this loop would have
+settled first.
+
+`compare({place: value})` exists for the same asymmetry — a value plan checked
+against itself rather than against a photograph — and is the precedent for all of
+this.
+
 ### Try the mark before you spend it
 
 Three tools sit between deciding on a mark and paying for it. They answer the three
@@ -515,6 +554,17 @@ the **paint**, not the view of it: the relief shading `look()` draws is light fa
 on the surface, not pigment in it. That is what to reach for when a mark has to meet
 what is already there — a halo's outer ring, a repair, the far side of a lost edge.
 
+**It averages what is in the place, so to measure a mass, hand it the mass.** A cell
+is a rectangle of canvas and a mass rarely fills one; sample the cell and you get the
+mass averaged with everything around it, which reads exactly like a measurement and
+is not one. Measured on a bird planned at `0.30` standing in water at `0.50`: its cell
+reads `0.501`, its own shape reads `0.327`, and a region cut inside it reads `0.318`.
+A painter who checked two masses by cell concluded the engine was laying everything
+`0.14` light and wrote a probe to find out why; both were `at_value` doing exactly
+what it is asked. **A number that disagrees with `at_value` by more than a hundredth
+is almost always the place, not the paint** — and the mass you blocked in is a shape
+you already have, so pass that.
+
 `s.sample(place, rendered=True)` is the other one — the surface `look()` and `export()`
 draw, relief and unburied graphite and all — so the question *is my mass darker than it
 looks?* is one line rather than a belief:
@@ -630,12 +680,19 @@ direction and opacity constantly. If every stroke uses the same brush at the sam
 size with the same pressure, the result will look mechanical no matter how good the
 drawing is. Change `size`, change `pressure`, change direction between passes.
 
-That paragraph was on the front page until 0.3.0, and it is the first rule to leave
-it because a check holds it. `s.report()` now says *all 14 marks are bristle at
-size=0.03, in 4 calls* and *12 of 15 long marks run within 6 degrees of horizontal*
-after the pass that did it — with the numbers, which the paragraph could not do.
-Whether a rule can safely leave the guide is the next thing to find out, and finding
-out needs a painter working from a guide it has already left.
+**You will use too many strokes on detail and too few on structure.** A good
+painting is mostly big statements. Budget for it: if you are 200 strokes in and
+still adjusting the big masses, that is fine. If you are 50 strokes in and painting
+tiny marks, you are in trouble.
+
+Both were on the front page — the first until 0.3.0, the second until 0.4.0 — and
+they are the first two rules to leave it because a check holds them. `s.report()`
+says *all 14 marks are bristle at size=0.03, in 4 calls*, *12 of 15 long marks run
+within 6 degrees of horizontal*, and *9 marks under size=0.02 inside the painting's
+first 60: detail before the masses are down. A good painting is mostly big
+statements* — after the pass that did it, with the numbers, which a paragraph read
+once cannot do. Whether a rule can safely leave the guide is still the next thing to
+find out, and finding out needs a painter working from a guide it has already left.
 
 **A `bristle` stroke is never solid** — it lays a comb of streaks, which is what makes
 it alive on a mark whose direction you mean. Lay a big quiet mass with `flat`, or with
@@ -1107,7 +1164,8 @@ of its pixels from a rebuild and committed the rebuild.
 
 **And after every pass, `easel run` prints a check** — the guide's standing warnings
 read off the log rather than repeated: one brush at one size for a whole pass, a stack
-of passes at one angle, a bristle under `size=0.025`, small marks before the masses,
+of passes at one angle, a graded passage whose brush is narrower than half its own
+step, a loaded bristle under `size=0.025`, small marks before the masses,
 a pressure list asking a chisel for a width, and the subject's share of the marks so
 far. `s.report(since=n)` is the same lines in Python; `--check` widens it to the
 painting.

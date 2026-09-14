@@ -1360,10 +1360,14 @@ def test_a_clean_edge_says_when_its_brush_is_a_large_share_of_a_narrow_mass(tmp_
         s.block_in(cap, "flat", "burnt_umber", size=0.016, edge="clean", direction="axis")
     with pytest.warns(UserWarning, match="of the shorter extent"):
         s.preview({"shape": cap, "brush": "flat", "size": 0.016, "edge": "clean"})
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
+    # Under the threshold this rule is silent. Not *nothing* is said: at 0.005 on this
+    # canvas a flat is 1.6 pixels wide, which the tip-pixels rule catches -- so the
+    # assertion is about this warning rather than about silence.
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
         s.block_in(cap, "flat", "burnt_umber", size=0.005, edge="clean", direction="axis")
         s.block_in(cap, "flat", "burnt_umber", size=0.016, direction="axis")   # ragged
+    assert not [c for c in caught if "of the shorter extent" in str(c.message)]
 
 
 # -- a pressure list on a chisel tip -------------------------------------------------------
@@ -1892,3 +1896,210 @@ def test_a_sequence_is_priced_the_same_from_cost_and_from_the_call(tmp_path):
         laid = len(s.block_in(room, "bristle", "burnt_umber", density=0.9, size=0.16,
                               direction=[0, 40, 80]))
     assert quoted == laid
+
+
+# ======================================================================================
+# The ninth session: a heron in a flooded lot, painted against the eighth's three files
+# plus DIAGNOSIS.md -- the restricted arm again, with the symptom index. Two of its three
+# engine items are measurements taken against an *open* item rather than new complaints,
+# which is what that arm is for, and one of them settles the mechanism the eighth session
+# guessed at. Its second attempt at the same subject produced the fourth.
+# ======================================================================================
+
+# -- a direction sequence lays a complete stack per angle ------------------------------
+def test_a_direction_sequence_lays_a_whole_stack_at_every_angle(tmp_path):
+    """The eighth session guessed *sized for the steepest*; the ninth measured the
+    passes. ``direction=[0, 90]`` logs the 0-degree stack and the 90-degree stack, whole,
+    one after the other -- which is why the price is the sum and not the maximum."""
+    s = make(tmp_path)
+    shape = polygon([(0.20, 0.42), (0.80, 0.40), (0.80, 0.52), (0.20, 0.54)], name="band")
+    kw = dict(brush="bristle", color="burnt_umber", size=0.036, density=1.0, solid=True)
+
+    def angles(direction) -> list[float]:
+        t = s.scratch()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            recs = t.block_in(shape, direction=direction, **kw)
+        return [_mark_angle(r, t.canvas) for r in recs]
+
+    flat, upright = angles(0), angles(90)
+    both = angles([0, 90])
+    assert len(both) == len(flat) + len(upright), "one whole stack per angle"
+    # The flat stack first, whole, then the upright one -- not interleaved and not
+    # merged. Read as the angle each half runs at rather than pass by pass: every
+    # pass wanders a degree or two off its own line, and the wander comes off a
+    # stream the first stack has already spent, so the exact angles do not repeat.
+    assert _runs_at(both[:len(flat)]) == _runs_at(flat) == 0
+    assert _runs_at(both[len(flat):]) == _runs_at(upright) == 90
+
+
+def _mark_angle(record, canvas) -> float:
+    pts = record.points
+    dx = (pts[-1][0] - pts[0][0]) * canvas.width
+    dy = (pts[-1][1] - pts[0][1]) * canvas.height
+    return float(np.degrees(np.arctan2(dy, dx)) % 180.0)
+
+
+def _runs_at(angles: list[float]) -> int:
+    """Which way a stack of passes runs, to the nearest right angle."""
+    return int(round(float(np.median(angles)) / 90.0) * 90) % 180
+
+
+# -- the check's bristle floor, narrowed to a loaded comb ------------------------------
+def _combs(tmp_path, load: float) -> str:
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    for i in range(4):
+        s.stroke([(0.2, 0.3 + i * 0.1), (0.8, 0.32 + i * 0.1)], "bristle", "c",
+                 size=0.012, load=load)
+    return s.report()
+
+
+def test_a_starved_comb_under_the_floor_is_not_a_fault(tmp_path):
+    """A painting made of broken glints on water, grit under a flood and feather groups
+    tripped this twenty-eight times and was right to skip it every time. Checked against
+    both of that session's paintings: every small-bristle call site named an explicit
+    ``load`` and none used the preset's own ``0.9``."""
+    assert "nothing to report" in _combs(tmp_path, 0.35)
+    assert "nothing to report" in _combs(tmp_path, 0.6)
+
+
+def test_a_loaded_comb_under_the_floor_still_is(tmp_path):
+    """What the rule was written for: a small solid plane laid with the wrong tip."""
+    said = _combs(tmp_path, 0.9)
+    assert "bristle under size=0.025" in said and "load over 0.6" in said
+
+
+# -- a graded passage laid by hand, and what it is not ---------------------------------
+def _graded(tmp_path):
+    s = make(tmp_path)
+    p = s.palette
+    for name, v in (("a", 0.66), ("b", 0.70), ("c", 0.74), ("d", 0.78)):
+        p[name] = p.at_value(p.mix("cadmium_red", "cerulean", 0.3), v)
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.25)
+    return s
+
+
+def _band_line(s: Session) -> str:
+    return next((ln for ln in s.report().splitlines() if "stepping colours" in ln), "")
+
+
+def test_a_hand_laid_band_too_narrow_for_its_own_step_says_so(tmp_path):
+    """``scumble`` has sized its own brush since 0.2.0; ``RECIPES.md`` teaches the
+    hand-rolled form of the same passage, which gets none of that. One painting's sky
+    sat at 4.0 steps and wobbled 0.037; its hand-laid dawn band tapered to 1.7 steps
+    and wobbled 0.072, on the same canvas in the same pass structure."""
+    s = _graded(tmp_path)
+    for i, col in enumerate(("a", "b", "c", "d", "d", "c", "b")):
+        y = 0.24 + i * 0.0185
+        s.stroke([(-0.07, y + 0.012), (0.5, y), (1.07, y - 0.006)], "bristle", col,
+                 size=0.058 - i * 0.0057, opacity=0.3, load=1.0, load_falloff=0.0)
+    said = _band_line(s)
+    assert "7 marks at stepping colours" in said and "scumble()" in said
+
+
+def test_a_mass_is_not_a_graded_passage_however_its_passes_are_spaced(tmp_path):
+    """The condition that keeps every ``block_in`` out of the rule. Its passes step
+    ``size * (1 - 0.45 * density)`` apart -- always under two brushes -- and they are
+    all one colour, so the joins a graded passage shows at that spacing do not arise."""
+    for density, solid in ((1.0, True), (0.8, False), (0.5, False)):
+        s = _graded(tmp_path)
+        s.block_in(span("A1", "H4"), "bristle", "dark", size=0.06, density=density,
+                   solid=solid, direction="horizontal")
+        assert _band_line(s) == "", f"fired on a plain mass at density={density}"
+
+
+def test_a_verb_sized_passage_is_quiet_and_a_narrow_one_is_not(tmp_path):
+    """The discriminator, on the verb the rule borrows its number from."""
+    quiet = _graded(tmp_path)
+    quiet.scumble(span("A1", "H4"), "dark", "d", 11)
+    assert _band_line(quiet) == ""
+
+    loud = _graded(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        loud.scumble(span("A1", "H4"), "dark", "d", 11, size=0.02)
+    assert "stepping colours" in _band_line(loud)
+
+
+def test_marks_further_apart_than_four_brushes_are_separate_marks(tmp_path):
+    """Three trunks, three cables, three reflections: parallel, differently coloured,
+    and not a passage laid badly."""
+    s = _graded(tmp_path)
+    for x, col in ((0.20, "a"), (0.45, "c"), (0.70, "d")):
+        s.stroke([(x, 0.25), (x + 0.01, 0.70)], "bristle", col, size=0.02)
+    assert _band_line(s) == ""
+
+
+# -- an oriented tip too few pixels wide to lay any paint ------------------------------
+def _tip_warning(session: Session, build) -> list[str]:
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        build(session)
+    return [str(c.message) for c in caught if "pixels wide" in str(c.message)]
+
+
+def test_an_oriented_tip_under_four_pixels_says_it_lands_nothing(tmp_path):
+    """Not an aesthetic rule: a chisel this small does not make a poor mark, it makes
+    no mark, and is charged for it. Four rehearsals went on a bird's head laid at
+    ``size=0.005`` that came back the colour of the water behind it."""
+    s = make(tmp_path)                      # 320x240, so the long side is 320
+    said = _tip_warning(s, lambda t: t.block_in(
+        Region(0.3, 0.3, 0.7, 0.7), "flat", "burnt_umber", size=0.005, density=1.0,
+        solid=True, pressure="even"))
+    assert len(said) == 1, "once per call, not once per pass"
+    assert "1.6 pixels wide" in said[0] and "round_hard" in said[0]
+
+
+def test_the_threshold_is_pixels_and_not_a_size(tmp_path):
+    """The request proposed ``size`` under ``0.008``, and that is the wrong unit: the
+    same size is 2.4px on a 300px canvas and 9.6px on a 1200px one. Measured on three
+    canvases, the cliff is at four *pixels* on all of them."""
+    small = Session(320, 240, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+    large = Session(1280, 960, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+    def mark(t):
+        t.stroke([(0.3, 0.5), (0.7, 0.5)], "flat", "burnt_umber", size=0.008)
+
+    assert _tip_warning(small, mark), "2.6px on this canvas and should say so"
+    assert not _tip_warning(large, mark), "10.2px on this canvas and is a real brush"
+
+
+def test_a_round_tip_has_no_such_cliff(tmp_path):
+    """It holds its colour small, which is why ``liner`` is a ``round_hard`` at 0.005."""
+    s = make(tmp_path)
+    for tip in ("round_hard", "round_soft", "liner"):
+        assert not _tip_warning(
+            s, lambda t, b=tip: t.stroke([(0.3, 0.5), (0.7, 0.5)], b, "burnt_umber",
+                                         size=0.004))
+
+
+def test_the_tiny_chisel_is_named_before_a_stroke_is_spent(tmp_path):
+    """From ``cost()`` as well as from the call, like the other price-walk warnings."""
+    s = make(tmp_path)
+    said = _tip_warning(s, lambda t: t.cost(
+        [{"region": Region(0.3, 0.3, 0.7, 0.7), "brush": "flat", "color": "burnt_umber",
+          "size": 0.005}], share=0))
+    assert said and "flat" in said[0]
+
+
+# -- sample() averages the place it is given -------------------------------------------
+def test_sampling_a_cell_measures_the_cell_and_not_the_mass_in_it(tmp_path):
+    """A painter checked two masses by cell, concluded the engine was laying everything
+    0.14 light, and wrote a probe to find out why. Both were ``at_value`` doing what it
+    was asked; the cells contained the water the masses were standing in."""
+    s = make(tmp_path)
+    p = s.palette
+    p["water"] = p.at_value(p.mix("cerulean", "burnt_umber", 0.45), 0.50)
+    p["bird"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.55), 0.30)
+    s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "water", size=0.09, solid=True,
+               direction="horizontal", pressure="even", opacity=1.0)
+    bird = polygon([(0.53, 0.44), (0.60, 0.42), (0.63, 0.50), (0.57, 0.56)], name="bird")
+    s.block_in(bird, "flat", "bird", size=0.03, solid=True, direction="axis",
+               pressure="even", opacity=1.0)
+
+    by_cell = p.value_of(s.sample(cell("F5")))
+    by_shape = p.value_of(s.sample(bird))
+    assert abs(by_shape - 0.30) < 0.06, "the mass itself is near where it was mixed"
+    assert by_cell > by_shape + 0.12, "and the cell is mostly the water around it"

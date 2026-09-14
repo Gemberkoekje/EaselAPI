@@ -21,6 +21,111 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
+## [0.4.0] — 2026-09-14
+
+The ninth session's round: a heron in a flooded lot at dawn, painted twice. The first
+is the restricted arm again with `DIAGNOSIS.md` added — the only data point that
+exists on whether the symptom index works — and the second is the same painter and
+the same subject with the withheld files in hand. Fourteen items between them, and
+the two paintings together separate the two kinds of fault cleanly: **every fault
+that was a lookup got fixed by reading, and the one that was judgement repeated
+itself exactly, with the recipe open.**
+
+**Two of its claims did not survive being re-measured, and one of those was the
+*eighth* session's guess, which this session was measuring.** A sequence of
+directions is priced as the sum of its angles, nine measurements for nine, and
+`direction=[0, 90]` logs the `0°` stack whole and then the `90°` stack whole. The
+other is this round's own: *a warning when an oriented tip is handed a `size` under
+about `0.008`* came with a measured table behind it and still had the wrong unit —
+the cliff is at four **pixels**, which is a different `size` on every canvas.
+
+And a second rule has left the front page, for the same reason as the first: the
+`PAINTER.md` word budget left three of this round's items nowhere else to come from.
+*You will use too many strokes on detail and too few on structure* is in
+`PAINTING.md` beside *you will under-vary your marks*, and the post-pass check says
+both after the pass that did them.
+
+### Added
+
+- **A seventh rule of the post-pass check: a graded passage laid too narrow.** Three
+  or more long parallel marks at three or more colours, stepped further apart than
+  half the narrowest brush laying them — `scumble`'s own `2 ×` wall, applied to a
+  stack laid by hand, which is the form `RECIPES.md` teaches and the form that gets
+  no protection. Measured on one painting against itself: its sky, laid with the verb,
+  sits at 4.0 steps and wobbles `0.037`; its hand-laid dawn band tapers to **1.7**
+  steps and wobbles `0.072`. The conditions are narrow on purpose — a mass is one
+  colour however its passes are spaced, which keeps every `block_in` out of it, and
+  marks more than four brushes apart are separate marks. The first rule to arrive from
+  a session asking for a check rule by name.
+- **An oriented tip under four pixels says it will lay nothing.** Not an aesthetic
+  rule: a `flat`, `bristle` or `knife` that small does not make a poor mark, it makes
+  **no mark**, and is charged for it. One stroke deposits *zero* paint at 1–2px
+  against a `round_hard`'s 44–51 pixels' worth, and a solid mass laid at 2.7px comes
+  back the value of the ground under it. It fires once per call from every verb a
+  `size=` reaches, and from `cost()` before a stroke is spent.
+- *A graded field that is most of the picture* in `RECIPES.md` — a sky, a far field, a
+  sheet of water at a grazing angle, which none of the other light recipes is. Four
+  ingredients collected from three paintings, with the one measurement the request did
+  not have: `load=1.0, load_falloff=0.0` is not the verb's default on a band, and
+  without it `0.9%` of an eleven-pass field comes back within a hair of bare ground.
+- *Without a reference* under `The drawing` in `PAINTING.md`: the precision loop with
+  the points checked against **each other**, and the parallel-pencil loop written out.
+  Eight of the nine painters before this one never drew a line.
+
+### Changed
+
+- **The check's bristle floor now skips a comb that was starved on purpose.** *A
+  bristle under `size=0.025`* fired twenty-eight times in one painting and was
+  correctly ignored twenty-eight times: its subject is broken glints on water, grit
+  under a flood and feather groups on a bird, where the comb's gaps **are** the mark.
+  It now needs a `load` over `0.6`, the top of the run-out window `CALIBRATION.md`
+  already publishes. Checked against both of that session's paintings: every
+  small-bristle call site in them names an explicit `load` and **not one** uses the
+  preset's `0.9`, so the rule was firing on nothing it was written for.
+- **`REFERENCE.md`'s `direction` row said the opposite of what a sequence does.** *Or
+  a sequence for one pass each* reads as *n passes for n angles* and means *n complete
+  stacks*; it now says so, with the pass counts and the 515-stroke quote a sixteen-angle
+  list drew. The price walk itself landed in 0.3.0 and fires on all nine of this
+  session's cases; one fix of its own, the suggested cross on a mass whose axis is `90`
+  was being written as `("axis", 180)` rather than `("axis", 0)`.
+- **`solid`'s row and `sample`'s entry both said less than they should.** `solid=True`
+  is "what fills a mass" and does not fill it to its colour — a mass lands *between its
+  mixture and what it was laid over*, measured in both directions. And `sample`
+  averages the place it is given, so a cell hands back the mass averaged with
+  everything around it: a bird planned at `0.30` in water at `0.50` reads `0.501` by
+  its cell and `0.327` by its own shape. A painter read two masses that way and
+  concluded the engine lays everything `0.14` light.
+- `PAINTER.md`: the pairs question in step 3 now says the threshold is about two masses
+  that **meet**; step 2 names *a veil of light is a mass at a depth* and `look(diff=True)`
+  beside it; and the pencil is no longer sold on being free, which a rehearsal also is.
+- `CALIBRATION.md` gains *What a solid mass actually lands at*, and the across-band
+  ripple table gains the clause a painter spent a measurement discovering it needed.
+- `PAINTINGS.md` records what the numbered-pass convention does to the drawing: seven
+  of the ten paintings here drew no line at all and nine placed no landmark.
+
+### Measured, and not changed
+
+- **A sequence of directions is not priced at its steepest angle**, which the eighth
+  session guessed and the ninth measured: the cost is the exact sum of what each angle
+  costs alone, nine for nine across three shapes, and in paint it is one whole stack
+  per angle laid one after the other. The warning was already written from the
+  mechanism rather than from the guess, so nothing had to move.
+- **The across-band ripple metric does not read canvas texture.** A painter compared a
+  hand-laid band against a `scumble` with it, got an answer the wrong way round, and
+  put it down to flecking on a `rough` ground. Measured: identical on `smooth`, `linen`
+  and `rough` to four decimals at every window width, and on a *starved* pass `rough`
+  reads *lower*. What it is sensitive to is the window — `0.0008` across the full width
+  against `0.0020` through a narrow column, for the same paint. One clause beside the
+  table, and the table itself is unchanged.
+- **`DIAGNOSIS.md` is not changed on n=1.** The one session that has had it read it
+  front to back, recognised five rows on sight, and followed **zero** pointers in 293
+  strokes. An index whose rows carried the repair as well as the pointer would be the
+  fourth copy `LESSONS.md` refuses, so the proposal is a protocol question — hand it as
+  a file to grep and record which arm was run — and that is where it is written.
+- **Which of the three pencil diagnoses is right is left to a run.** All three are
+  documentation fixes and all three are made, because each is correct on its own terms;
+  picking between them needs a painter working from a guide that carries all three.
+
 ## [0.3.0] — 2026-09-14
 
 The eighth session's round, and the first one the register has carried as *open*. That
@@ -356,7 +461,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.0...v0.1.1

@@ -65,6 +65,17 @@ arrived at their convention on its own.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting; run them against a fresh session and the same PNG comes back.
 
+**One thing the convention gets wrong, and it is worth knowing before you copy it.**
+Numbered pass scripts make the drawing `p1_draw.py`, and once it is pass 1 it is
+finished — but the guide's order is *landmarks before anything, pencil **after the
+far masses are down**, near masses on top*, which wants a second drawing pass
+between 2 and 3. Eight of the nine paintings here put all their graphite in pass 1,
+on bare ground, where the first block-in buried it; `pool_night` is the only one
+that redrew mid-painting (`p4_water.py`, its fourth pass) and the only one that
+placed landmarks at all. **A worked example is an instruction whatever the prose
+beside it says**, so the example is winning. If you are numbering passes, name the
+second one — `p4_redraw.py` — before you need it.
+
 ## Inside a car wash, from the driver's seat
 
 ![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom

@@ -75,13 +75,17 @@ the tool runs over the pass it just painted**, printed beside the budget line �
 input is already in the log, which carries brush, size, path, colour and load per
 record. **Built, in the greenhouse round, as `Session.report()` and the lines `easel
 run` prints after every pass** (`--check` widens it to the painting, `easel log --check`
-reads it cold). Six rules, each of which a real pass of a real painting tripped: one
+reads it cold). Seven rules, each of which a real pass of a real painting tripped: one
 brush at one size for a whole pass of two or more calls; twelve or more long marks
-within six degrees of one angle from two or more calls; a `bristle` under `size=0.025`;
+within six degrees of one angle from two or more calls; three or more long parallel
+marks at three or more colours stepped further apart than half the narrowest brush
+laying them, which is a graded passage that will come back as bars; a `bristle` under
+`size=0.025` at a `load` over `0.6`;
 eight or more marks under `size=0.02` inside the first sixty; a pressure list on a short
 chisel mark; and the subject's share of the marks so far, against the plan's number when
-it is given. A seventh — a shaped `block_in` with `direction` left off costing over 2.5×
-its axis — needs the shape and fires at the call. **Each rule that becomes a check can
+it is given. An eighth — a shaped `block_in` with `direction` left off costing over 2.5×
+its axis, or a sequence of directions costing over 2.5× its own dearest angle — needs
+the shape and fires at the call. **Each rule that becomes a check can
 leave the guide**, which is the growth rule paying for itself.
 
 **One has now left it.** *You will under-vary your marks* is in `PAINTING.md` rather
@@ -555,8 +559,35 @@ code in the repo that turns untyped JSON into engine objects, and the echoed Pyt
 them — two defects were already found there by driving the tools rather than by reading
 them. The engine itself is untouched by that milestone.
 
-**About the protocol, if it is run again.** Three questions were left to the repo's owner
-and none has been decided:
+**About the protocol, if it is run again.** Five questions now, and none has been
+decided. The last two came out of the ninth session, which was the first to be handed
+[`DIAGNOSIS.md`](DIAGNOSIS.md):
+
+- **Hand the index as a file to grep, not as a file to read, and record which it
+  was.** `DIAGNOSIS.md` opens with *this file is not for reading* and
+  `grep -i rings DIAGNOSIS.md` as the intended interface. The one session that has
+  had it was told to read it front to back, and it then worked entirely from recall:
+  it recognised *staircase*, *venetian blind*, *floating discs*, *searchlight that
+  owns the picture* and *paper cut-out* on sight and repaired each from the
+  remembered description, **following zero pointers in 293 strokes** though following
+  them was permitted. The recalled version has no measurement attached, which is the
+  whole difference between the index and its targets: the one fault it fixed
+  properly, the chisel staircase, it fixed with `edge="clean"` while `CALIBRATION.md`
+  holds a cheaper repair at the other end of the same row. **That is n=1 and it is
+  the only n there is**, so the answer is not to change the file — an index whose
+  rows carried the repair as well as the pointer would be the fourth copy this page
+  refuses — but to run the grep arm and compare.
+- **Decide whether a restricted arm gets the index at all, and record it.** Four of
+  the rows most relevant to a painter without the essay point into files that arm
+  does not have — *two masses you planned as different that read as one* lands in
+  `PAINTING.md` → *Painting without a reference*, which is that session's own worst
+  fault. **A pointer into a file you were not given is worse than no row**, because
+  the answer is visibly there and out of reach. Either ship the index only with the
+  files it indexes, or say in the run's own instructions which files the painter has,
+  so a row naming one they do not have reads as a prerequisite rather than as a
+  destination. This is a property of the run, not of the file.
+
+And three that were already here:
 
 - **The unprompted stage should probably become "chosen before the guide is read".** Four
   of four sessions painted the subject they had named before reading anything, and their

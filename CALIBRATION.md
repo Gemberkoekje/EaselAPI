@@ -411,6 +411,45 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   one, pass `pressure="even"` and the old behaviour is back. `sweep` steps by the
   same rule and has the same caveat — its golden case shows it, deliberately.
 
+### What a solid mass actually lands at
+
+**A mass lands between its mixture and what it was laid over, and how far depends on
+the brush.** Every clause of *a plane that is a plane* — `density=1.0`, `solid=True`,
+`opacity=1.0`, `pressure="even"` — a mixture at `0.865`, 600×600 linen, sampled well
+inside the mass:
+
+| brush width | 1.8px | 2.7px | 3.6px | 4.8px | 7.2px | 12px | 18px |
+|---|---|---|---|---|---|---|---|
+| `flat` | `0.427` | **`0.403`** | `0.405` | `0.681` | `0.768` | `0.801` | `0.826` |
+| `bristle` | `0.415` | `0.407` | `0.411` | `0.582` | `0.656` | `0.733` | `0.773` |
+| `round_hard` | `0.581` | `0.669` | `0.778` | `0.834` | `0.853` | `0.852` | `0.856` |
+
+over a ground of `0.395`. At 2.7px a chisel lands `0.403` against that ground —
+nothing at all. Even at 18px a `flat` is `0.04` short of its mixture and a `bristle`
+`0.09` short, which is most of the `0.10` that separates two masses; only a round tip
+holds its colour small.
+
+**It is a pull toward the ground, not a fixed shortfall**, which is the half the
+painting that found this could not see from one ground. The same mixture over a
+*lighter* ground lands **above** itself: over `0.957`, `flat` reads `0.956` at 2.7px
+and `0.873` at 18px; over `0.125` it reads `0.131` and `0.771`. A mixture at `0.20`
+over the light ground lands `0.232`. Same direction every time — toward what was
+underneath.
+
+**The cliff is at four *pixels*, and pixels are the unit.** Not `size`, which is a
+fraction of the canvas long side: the same `size=0.008` is 2.4px on a 300px canvas and
+9.6px on a 1200px one. Measured on all three, a `flat` at 3.6px lands `0.405`,
+`0.405` and `0.401`, and at 4.8px lands `0.674`, `0.681` and `0.600` — the knee is at
+the same *pixel* width every time. One stroke tells the same story more starkly: a
+`flat`, `bristle` or `knife` deposits **zero** paint at 1–2px, against a
+`round_hard`'s 44–51 pixels' worth. An oriented tip handed a `size` under four pixels
+now says so at the call, and `cost()` says it before a stroke is spent.
+
+*This cost one painting four rehearsals on a bird's head laid at `size=0.005` that
+came back a dark fuzzy ball. The evidence was already in this file — The paint and
+the view of it records a solid mass mixed at `0.215` landing `0.241` and one at `0.50`
+landing `0.504` — in four rows, at one brush size, unnamed.*
+
 ### Laying a mass along its own axis
 
 Measured on the same sloping mass (share of strong edges within ten degrees of
@@ -932,6 +971,18 @@ verb over. Under a step the passes stop meeting at all and most of the band is s
 ground. Past about five the ramp stops reaching its own ends. **Three steps is the
 middle of the window and is what the verb picks with no `size=`** — the same figure the
 inward case picks, for the same reason. Hand it under two and it says so.
+
+**If you reach for this metric on your own painting, read both passages through
+windows of the same width, and make them wide.** The ripple grows as the window
+narrows, because a narrow column averages fewer pixels per row and the per-row noise
+survives into the difference. Measured on one solid scumble, read through five
+windows: `0.0008` across the full width, `0.0011` at `0.40` of it, `0.0016` at
+`0.13`, `0.0020` at `0.04` — two and a half times the number for the same paint. A
+painter compared a hand-laid band against a `scumble` this way, got an answer the
+wrong way round, and put the mechanism down to canvas texture on a `rough` ground.
+**It is not the texture**: the five rows above read identically on `smooth`, `linen`
+and `rough` to four decimals, and on a *starved* pass `rough` reads `0.0011` against
+linen's `0.0031` — lower, not higher. It is the window.
 
 ### The band across a wedge
 

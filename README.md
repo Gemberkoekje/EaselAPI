@@ -358,6 +358,19 @@ and charged as the sum — not, as the painter guessed and said it was guessing,
 stack sized for the steepest. And the first rule has left the front page for the essay,
 because the post-pass check now says it better than the paragraph could.
 
+A ninth painted the same subject **twice** — a heron in a flooded lot at dawn, once
+against that restricted set plus `DIAGNOSIS.md` and once with everything — and the two
+together separate the two kinds of fault cleanly: every fault that was a *lookup* got
+fixed by reading, and the one that was *judgement* repeated itself exactly with the
+recipe open. Its round is the current release. The post-pass check gained a seventh
+rule it asked for by name and lost twenty-eight false alarms it had learned to ignore;
+an oriented tip under four pixels now says it will lay no paint at all, which it does
+not; `RECIPES.md` gained the biggest mass in a picture, which none of its entries
+covered. **Two of the round's claims did not survive re-measurement** — one of them the
+*previous* session's guess, which this session was measuring, and one of them its own:
+a threshold offered in `size` that is really a threshold in pixels, and so a different
+`size` on every canvas.
+
 ## The worked examples
 
 [`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings) holds the paintings those sessions made, and each is an
