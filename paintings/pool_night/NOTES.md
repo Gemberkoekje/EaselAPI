@@ -6,8 +6,8 @@ pass was rehearsed against a copy before it was committed; the comment at the to
 each says what the rehearsal changed.
 
 Final: **221 of a 300-stroke budget**, 37% of marks noted `subject` against a planned
-40%. Output: [`pool_at_night.png`](pool_at_night.png),
-[`pool_at_night.gif`](pool_at_night.gif).
+40%. Output: [`painting.png`](painting.png), time-lapse
+[`painting.gif`](painting.gif).
 
 ## The subject, and why this one
 

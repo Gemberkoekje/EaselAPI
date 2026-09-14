@@ -35,7 +35,7 @@ def new(width: int = 1024, height: int = 768, ground: str = "cool_grey",
                    timelapse=False)
 
 
-# The room mass the session priced its directions on, off `pool_night/prelude.py`.
+# The room mass the session priced its directions on, off its own `prelude.py`.
 WALLBASE = [(-0.05, 0.245), (0.38, 0.29), (0.72, 0.335), (1.05, 0.365)]
 ROOM = polygon([(-0.05, -0.05), (1.05, -0.05)] + WALLBASE[::-1], name="room")
 
@@ -201,7 +201,7 @@ def probe_low_key_ground() -> None:
 # -- 5. the pairs question, on the plan this session wrote ---------------------------------
 def probe_plan_pairs() -> None:
     print("\n== compare({place: value}) on the empty canvas ==")
-    print("  the eighth session's own nine-value plan, off pool_night/prelude.py, run")
+    print("  the eighth session's own nine-value plan, off paintings/pool_night/, run")
     print("  through the question it never asked.")
     plan = {
         Region(0.0, 0.0, 1.0, 0.25, "roof dark"): 0.16,
