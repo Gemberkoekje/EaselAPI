@@ -1,13 +1,20 @@
 # What the painters asked for, and what was done
 
-Nine sessions painted a picture from the guide and then wrote down what the engine and
-the documentation had cost them — ten paintings, because the ninth painted its subject
-twice — a synthesis pass gathered the points more than one of them raised, and the
-repository's owner put two further questions to the third painter.
-This file is the register: **what was wrong, and what was done about it.**
+Ten sessions painted a picture from the guide and then wrote down what the engine and
+the documentation had cost them — eleven paintings, because the ninth painted its
+subject twice — a synthesis pass gathered the points more than one of them raised, and
+the repository's owner put two further questions to the third painter. The winter
+greenhouse was painted before the fogged glass and filed after it, in its own section
+below, so [`paintings/`](paintings) and this register count the same pictures again.
+This file is the register: **what was wrong, what was done about it, and — in the two
+sections at the top — what has not been done yet.**
 
-**Everything in the tables below is done** — 49 engine items and 65 documentation
-items, the eighth session's eight of them in 0.3.0 and the ninth's fourteen in 0.4.0.
+**Everything in the numbered session tables below is done** — 49 engine items and 65
+documentation items, the eighth session's eight of them in 0.3.0 and the ninth's
+fourteen in 0.4.0. **The two sections that are not done are the first two** — *Open: the fogged glass*,
+which has been acted on by nobody, and *Open: the winter greenhouse*, whose
+documentation items were closed by the round that rewrote the five files and whose
+engine items were not. When an item closes it moves down into the tables with the rest.
 The long arguments that produced each
 one have been cut, because a request list is worth keeping only while somebody still has
 to act on it. What survives is the
@@ -33,6 +40,8 @@ changed rather than that it worked.
 | Eighth session — a pool at night, 221 strokes of 300, `paintings/pool_night/` | 3 | 5 |
 | Ninth session — a heron in a flooded lot at dawn, 293 of 320, `paintings/heron_lot/1/` | 3 | 6 |
 | …and its second attempt at the same subject, 253 of 320, `paintings/heron_lot/2/` | 1 | 4 |
+| **Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/fogged_glass/`** | **8 open** | **3 open, 3 done** |
+| **The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it** | **7 open** | 8, done as the documentation round |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -57,6 +66,190 @@ when any earlier session painted. It is therefore the restricted arm again with 
 symptom index added, and the **only data point that exists on whether that index
 works**. It was told it could follow a `DIAGNOSIS.md` pointer into a withheld file and
 read the area named; it never once did, which is its own first finding.
+
+---
+
+## Open: the fogged glass
+
+**Nothing in this section has been acted on.** It is the tenth round, and the only part
+of this file that is still a request list. `PAINTER.md` and its nine exercises, then
+`PAINTING.md`, then `RECIPES.md` where a passage called for one — `CALIBRATION.md` and
+`REFERENCE.md` were grepped, not read. Subject chosen and written down before the
+repository was opened: a greenhouse wall in late winter seen from outside, the glass
+fogged from the inside, `paintings/fogged_glass/`, **311 of 320 strokes**, about forty-four
+rehearsals, subject share **29%** against a planned 37%, and two signature marks. It
+wrote a critique of the engine, the documentation and its own painting when asked.
+
+**It sits next to a near neighbour, and the neighbour is not the same subject.**
+`paintings/greenhouse_winter/` already existed from an earlier Fable session — a
+greenhouse interior looking down the aisle at a low sun. This painter chose *the outside
+of a fogged greenhouse wall* before reading anything, found that directory in
+`git status`, recognised how close it was, and declined to open it. **So this is not a
+held subject and not a control**, and it is filed as two paintings rather than as one
+subject with two parts, which is what `paintings/lighthouse_greenhouse/` and
+`paintings/heron_lot/` are for. The repository owner's reading of the two pictures,
+recorded as a comparison and not as evidence from a matched pair:
+
+> Fable stood inside and built the room; Opus stood outside and painted the seeing.
+> Fable's is constructed and a little illustrative; Opus's is spatial and a little
+> empty. Same two hands, same two virtues, same two faults.
+
+**One thing in the two pictures is a genuine convergence, because it is checkable
+against their scripts rather than against an impression.** Both painters opened by
+refusing a frontal elevation on the closing checklist's layer-cake warning, and both
+answered it with a metric perspective projection written before any line was drawn —
+`P(xm, hm, dm)`, the same three arguments in the same order, in each one's `prelude.py`,
+neither having read the other. Two painters reaching the same helper off the same
+sentence is worth more than any similarity in the pictures.
+
+On the painting itself, the owner's reading: the near pane reads as wet misted glass with
+the plants a green blur behind it, the runnels carry the only saturated colour, and the
+far end dissolves instead of stopping. The one pressed leaf and the orange pot seen
+through the film are the two marks that say *through*, and they are enough. The tree is
+what the painter says it is — a grey mass with spokes — and the left third is haze that
+is not fog in one place. The picture is about the wall, and the wall is right.
+
+**Three claims in this section were re-measured before it was written**, by the painter,
+on its own finished session file: the check bug reproduces from the CLI, the depth-order
+violation is `0.089` of value on a named bar, and the buried ground is `0.07%` of the
+canvas. The other items are reported as observed and say so.
+
+### What it found in the engine — open
+
+| What is wrong | What is asked for |
+|---|---|
+| **`direction=` is the one argument it never understood — whether passes *run* along the angle or *step* along it — and it resolved the question by rehearsing instead of by knowing.** It is the most central argument in the API and it has been ambiguous for every painting in the collection. The painter's own account: `block_in(GLASS, direction=-23)` visibly laid passes running up-right along the eave, which says *run*; `cost_line` on the same call answered *24 passes stepping across 0.80 of the canvas*, and `0.80` is not the extent perpendicular to `-23` of that mass's box by its own arithmetic. So the two instruments appear to describe different geometries, and a painter reading both cannot tell which. Four of this painting's worst rehearsals came out of it, including a glass wedge combed vertically by `("axis", 70)`. (Observed, across the session; the disagreement between the picture and `cost_line` is the reproducible half.) | One sentence in `REFERENCE.md` saying which it is, with a diagram-in-words — the same mass at `0`, `45` and `90` with the pass geometry named — and **a check that the cost output agrees with it**. If `cost_line`'s *stepping across N* is measured on a different axis from the one the passes run on, that is the bug; if it is not, the sentence is the whole fix. *Measured against a box in the winter-greenhouse section below: passes run along the angle, the stack steps across it, and `cost_line` agrees — in normalised units, which is the half nobody had written down. The sentence is in the units table.* |
+| **The post-pass check's *detail before the masses are down* rule fires on every rehearsal for the whole life of a shell-driven painting, and it taught this painter to ignore warnings.** It claims to police *the painting's first 60* and it fired at 135, 162, 190, 243, 260 and 273 strokes spent. **Mechanism, measured and isolated:** a session reloaded by `easel run` carries `spent` but an **empty `history.records`** on the `--rehearse` path — `spent: 311, records held: 0` — so the rule's `earlier` term computes as `0` and the guard `earlier + len(marks) <= 60` is always true. On the committed path the same session holds 403 records and the rule correctly stays silent. Reproduced on the finished 311-stroke session file: rehearsing a nine-dab pass fires it, running the identical pass reports *nothing to look at*. Since the guide's standing instruction is *rehearse every pass with `--rehearse`, look, and only then run it without*, the false positive is guaranteed to reach every painter on every pass, and the correct silence only ever appears after the decision it was meant to inform. | Populate the reloaded history on the rehearse path, or take `earlier` from `spent` rather than from the record list. **And audit any other rule that reads across passes for the same hole** — `earlier` is currently the only cross-pass input to `_pass_findings`, so the blast radius looks like this one rule, which is worth confirming rather than assuming. This is the ninth session's ignored-warning finding arriving a second time from a different direction: that one was a rule too broad, this one is a rule that is simply wrong on the path everybody uses. |
+| **`jitter=0.5` is accepted in silence, and it destroys a pass.** The default is `0.02`. The painter read *the default wanders about 1.2 px on a `size=0.1` flat, halving both halves the wander* as naming an operation rather than a number, passed `0.5`, and every member of the frame — eave, sill, bars, laps — came back as a chain of separate beads instead of a line. Twenty-five times the default, no warning, from a call that otherwise looked exactly like the recipe. The check warns about a pressure list on a chisel tip, which is a subtler fault than this one. (Observed; the rehearsal is in the session's notes.) | A warning past some multiple of the default — the same shape as the existing bristle and chisel rules. The docs half is in the table below. |
+| **`cover()` lays a rectangle larger than the area it is given, and it is offered as the answer to *you will reach for `undo`*.** Used to bury a mis-made leaf inside a worked pane, `cover(Region(0.905, 0.380, 0.985, 0.478))` put a flat pale panel across a visibly larger patch of glass, because its recipe runs the ends of each stroke *outside* the area by design. On a flat passage that is the right recipe; on a textured one the repair is louder than the mistake, and the painter buried `cover`'s own output by hand with marks shaped like the pane. (Observed.) | Either a shape-aware form that does not overrun — `cover(shape)` insetting the way `edge="clean"` does — or the overrun named at the call site the way the bristle refusal already is: *`cover` runs its ends outside the area; on a worked passage lay the burial yourself*. |
+| **`inset()` erodes a boundary that lies on the canvas frame, and left a pale strip down the right edge of the finished picture.** `GLASS.inset(0.024)` pulled the glass mass `0.024` in from **every** boundary including the one at `x = 1.0`, so the right-hand frame kept its ground and the glass stopped short of the edge; the defect survived to the final inspection pass and cost a repair. `edge="clean"` is documented as dropping the inset where an outline runs off the canvas, on the stated principle that *a mass that meets the frame should run off it*. Plain `inset()` does not, and the asymmetry is invisible from the call. (Observed; the repair is `p9_repair.py`.) | Make `inset()` drop the erosion on any boundary outside the frame, for `edge="clean"`'s reason and with its wording. If that would break a caller that wants true erosion, an `inset(..., frame=False)` and a note on the `REFERENCE.md` row. |
+| **There is no instrument for *is the ground still showing through*, and the painting fails the checklist line in silence.** The plan's best idea was a warm ground — `umber_wash` at `0.425` — chosen so that anything left showing through the cool condensation film would read as warmth coming through, which is the subject. Laying the glass interior at `density=1.0, load=1.0` bought a solid support for the fine marks and spent the ground to get it, and **the painter did not notice until the closing measurement**. Measured against a bare canvas of the same size, texture, ground and seed: **0.07%** of the finished canvas is within `10/255` of bare ground, `0.32%` within `16/255`. The owner's reading: *that is the pool's ground mistake in reverse, and both were caught by measuring the wrong thing late.* | A ground-showing-through percentage in `report()`, which would have named it at pass three rather than at the end. The measurement is a diff against a bare canvas at the session's own ground, texture and seed, which the session can always construct. A floor worth warning under is a judgement call — the checklist says *there should be* some and does not say how much. |
+| **A round tip prints its own outline, and both its defaults are the bad one.** `tip_wobble` defaults to `0`, which is the disc the documentation warns about, so *several small marks with `round_hard` or `liner`* is the failure by default and the fix is opt-in. Worse in combination: `block_in` of a small `hull` with a `round_hard` at `size=0.013` — a leaf pressed on the glass, a feature about `0.05` across — printed the shape's own scalloped boundary and came back, in the painter's words, a cauliflower. It was relaid as two tapering strokes that meet plus a midrib. (Observed.) | Consider a non-zero `tip_wobble` default on the round tips, or a check that fires on three or more small round-tip marks at `tip_wobble=0`. And a refusal or warning on `block_in` with a round tip below some fraction of the shape's shorter extent — there is no good outcome in that combination, and `flat` or a pair of strokes is always the answer. |
+| **`scumble` over two adjacent bands is read as one stack and warned about as one graded passage.** Two overlapping ramps laid over the ground, `n=7` then `n=8`, drew *15 marks at stepping colours run parallel 0.027 apart* — the two calls summed. It may well be the right reading, since the two ramps *are* one passage and the painter did mean them to join; but the suggested remedy, `size=0.271`, is three times either band's own step and would have been wrong for both. (Observed; offered as the half most likely to be wrong, in the eighth session's sense.) | Worth a look at whether the rule should span calls, and if it should, whether the `size` it suggests can be derived per band rather than off the merged step. |
+
+### What it asked of the documentation — open
+
+| What is wrong | What is asked for |
+|---|---|
+| **The `jitter` guidance names an operation where it should print a number.** *The default wanders about `1.2` px on a `size=0.1` `flat`, halving both halves the wander, and zero is ruled* — the painter read "halving" as a thing to say rather than a thing to compute, and passed `0.5`. The actual defaults, `jitter 0.02` and `size_jitter 0.06`, are in `REFERENCE.md` inside a run-on line listing *every other `Brush` field, with its default*, which is where nobody looks for the one they need. | Print the middle setting in *The one ruled line* as what it is: `jitter=0.01, size_jitter=0.03`. The recipe is already the right place; it is one substitution. *Done in the documentation round: the defaults, the halved setting and the `0.5` failure are all in the recipe.* |
+| **`direction=` needs the worked example the rest of the geometry gets.** *The angle of the mark* explains why direction matters and *Where a stack of passes starts* says which end a stack begins at, and neither says what the angle names. The engine half is in the table above; the documentation half is a diagram-in-words — one mass, three angles, the pass direction and the step direction both labelled. | The sentence, and a worked example beside the existing `direction=(28, 118)` line. |
+| **The fifth painter in a row asks for the prose to move into `report()`.** Its own account: reading the guide did not stop it making the mistakes the guide names — it painted a box in the background, filled an outline, took the tool's own shape four separate times, and drew a daisy, each after reading the paragraph naming it. What *did* stop it was the post-pass check and the rehearsal image. Its summary: about 210 KB of guidance across five files produced a working set of maybe fifteen rules plus the checks. **`PAINTING.md` already contains the finding** — *a line printed after the pass that did it is worth more than the paragraph* — and the request is that the documents take their own advice much further. The owner's reading: *the check stops mistakes; the paragraph names them afterwards.* | Nothing new to write, and possibly a good deal to delete. The question this round poses is which paragraphs have a rule in them that a check could carry, and what the prose is for once they have gone. |
+| **The closing checklist asks a question the painter cannot answer.** *Is there anywhere the ground still shows through? There should be.* There is no way to tell short of building a bare canvas and diffing it, which is what this painter did — after the painting was finished, and having already lost the thing the ground was chosen for. | The instrument is the engine item above. The checklist line should say how to look, the way the neighbouring lines name `s.erase()` and `s.export(sketch=False)`. |
+| **`cover()` is documented by its virtues.** *The whole recipe, already set* and *buries a mistake with every clause of the recipe in place*, in the row of *the five things you will get wrong* that a painter reaches for under pressure. The clause that decides whether it is usable — that its ends run outside the area — is stated two files away, under `block_in`'s `overhang` discussion, and not where `cover` is recommended. | One clause beside the recommendation: *on a worked passage it will overrun; bury it by hand instead.* *Done in the documentation round, in `PAINTER.md` where `cover` is recommended.* |
+| **A veil of light is a mass at a depth — read, then violated.** The painting held back-to-front throughout except in its late atmospheric passes, which is the confirmation below. The sentence exists and is correct; it sits in *Paint from back to front*, several thousand words from the glaze documentation and the glaze recipes, where a painter deciding to lay a film is actually looking. | Repeat it at `glaze`, which is the one place this round would argue for duplication over the file's one-rule-one-place discipline — or link it from there, which the file's own conventions already allow. *Done in the documentation round: one sentence at the glaze table in `PAINTING.md`, linking the rule at step 3.* |
+
+### Confirmations, not new items
+
+- **A depth-order violation, in a session that otherwise held back-to-front throughout,
+  and it is a late atmospheric pass over near things — the second round running.** The
+  ninth session's single violation was a late graded passage laid over the far trees,
+  the pole and the bird's head. This one's is a late *glaze*: the warmth inside the
+  greenhouse, and the cool film knocking it back, were both laid across a glazing bar
+  that is **outside** the glass. Measured on the same bar, same width, clear of the
+  glaze and inside it: `0.290` against `0.379`, a lift of **`0.089`** — within a
+  hundredth of the `0.10` that makes a new mass — and the hue carried from `#4b494f` to
+  `#63605e`. **Both violations are glazes or graded films laid late**, which is exactly
+  the case *a veil of light is a mass at a depth* was written for, and both painters had
+  read it. Two points is not a pattern, but it is the same shape twice, and it suggests
+  the failure is not *forgetting depth order* but *not counting a film as a mass*.
+- **`compare({place: value})` was run once, at stroke 115 of 311, and never on the empty
+  canvas.** `PAINTER.md` step 4 asks for it twice — once before the first stroke, once
+  after the block-in. This is better than the eighth and ninth sessions, which never ran
+  it at all, and it is still the third round in a row where the instrument that exists
+  for painting without a reference is used less than the method asks. It did its job
+  when it ran: five of six planned places came back inside `0.05`.
+- **The nine exercises were painted, and two paid for themselves inside the first pass** —
+  exercise 3's starved brush on rough canvas became the condensation beading and the
+  frost, and exercise 8's box-against-shape was cited when the painter caught itself
+  laying the yard as `Region` boxes.
+- **Every failure in the session was caught in a rehearsal**, at a cost of nothing: a
+  blue summer sky, a rectangle in the background, a pine forest where the glass should
+  be, a chisel staircase, four haze strokes that read as searchlights, a railing that
+  only became glazing when the horizontal pane laps went on, a cauliflower, three orange
+  bands where the warmth should have pooled, and four orange ovals after that. Forty-four
+  rehearsals against 311 paid strokes. This is the item on *What none of them would
+  change* holding for a tenth painter.
+
+---
+
+## Open: the winter greenhouse
+
+**The engine items in this section have not been acted on; the documentation items
+were done in the same session, as the round that rewrote the five files.** It was
+painted *before* the fogged glass and filed *after* it, which is why the register's
+count of rounds and the gallery's count of pictures briefly disagreed. Every file in the
+corpus was read in full before the first stroke — `PAINTER.md` and its nine exercises,
+then `PAINTING.md`, `RECIPES.md`, `REFERENCE.md`, `LESSONS.md`, the calibration file in
+part, and three earlier paintings' notes and preludes. Subject chosen before the
+repository was opened: a greenhouse interior in late winter, looking down the aisle at
+a low sun behind the fogged end wall, `paintings/greenhouse_winter/`, **297 of 300
+strokes**, seventeen rehearsals, subject share **40% at the moment the subject was
+finished** against a planned 30%, and two signature marks. Two directives were added to
+the run and belong with it: *keep using the pencil until everything is proportional*,
+and *before redoing after a rehearsal, ask whether it is a large mistake or a happy
+accident, and keep the second kind*. The first produced four drawings before paint and
+the composition; the second saved rehearsal cycles and once kept a smudge strip that
+should have gone.
+
+**Three claims here were measured before they were written**, on the session's own
+run output and on a fresh canvas: the cost of the first pot recipe, the check firing on
+rehearsed passes, and the unit `direction=` is measured in. The rest are observed and
+say so; where a mechanism is a guess, it is labelled as one.
+
+### What it found in the engine — open
+
+| What is wrong | What is asked for |
+|---|---|
+| **The chisel staircase and the half-brush spill are one defect, and it was the most common way a mass went wrong in this painting: four times.** The end wall's gable came back as chisel ends stepping down both slopes; the bench tops, laid as strokes fanning to the vanishing point, poked chisel corners up into the wall behind them; the dark under each bench spilled half a brush above the bench's far edge onto the end wall as a sawtooth; and `edge="clean"` warned on every pot body because a pot is too narrow for the quarter-brush rule. Three workarounds were used and none is in the recipes: passes along the slope, a clean contour where the brush allowed it, and lowering the under-bench polygon by `0.12` m in world space so the overhang stayed hidden under the bench — a hack. (Observed; the mechanism is the one `CALIBRATION.md` measures under *The chisel staircase* and *`block_in`*.) | **An opt-in hard clip on a shaped mass**: `block_in(shape, ..., edge="hard")` or `clip=True`, masking every dab to the outline so a pass ends where the outline is rather than where its chisel falls, with no inset and no contour pass. Ragged stays the default, because a mass behind others wants the brush to break past its boundary. To settle it: the staircase probe's share of horizontal edges with the clip on, and the overhang table's *furthest paint past each edge* row, which should read zero on every side. |
+| **Nothing prices a compound recipe short of a full rehearsal, and the estimate was wrong by more than a factor of two.** The pot recipe was budgeted at about 100 strokes for thirteen pots and rehearsed at **220 against 142 left**; rebuilt from strokes it came to 108. Each rehearsal took about three minutes because the copy renders every dab. `cost()` prices one `block_in` or `sweep`; a helper that calls a dozen verbs has no price until it has been painted on a copy. (Measured, from the run output.) | **A count-only rehearsal**: `s.scratch(count_only=True)`, or a `with s.counting():` block, that runs the pass with the pixel work skipped and returns the stroke count and the post-pass check in seconds. The count depends on pass geometry, which is computed before anything is stamped, so it should equal the rendered count exactly — assert that on every painting's scripts in `paintings/`, which is the test. (Mechanism reasoned.) |
+| **The graded-passage rule fires on rows of separate things and on a `smudge`.** Three times in this painting: on the light pass — *5 marks at stepping colours run parallel 0.028 apart, and the narrowest brush laying them is 0.02* — where the `0.02` was the smudge, which lays no colour, counted with two block-in passes and two glazes; on the staging pass — *19 marks … 0.019 apart, narrowest 0.012* — the plinth's passes, its top-course stroke, the far-floor scumble and the bench boards summed across five calls; and on the pots — *30 marks at stepping colours run parallel 0.003 apart, narrowest brush 0.004, 1.2 of that step* — the vertical body strokes of ten separate pots at three terracotta values, which are ten objects and not a passage. Read against `_graded_band`: it takes the largest set of long marks within six degrees of one angle across the whole pass, requires three colours and a median step between a quarter and two brushes, and never asks whether the marks form one contiguous band or whether their colours step one way. (Observed, with the check's code read.) | Three narrowings, each cheap: skip `smudge` records, which carry no colour; require the marks' offsets to form one run with no gap wider than four brushes, so the trunks clause applies inside the set and not only to its median; and require the colours to ramp monotonically across the run — a set that goes dark, light, dark is a row of things. Re-run `report()` over this painting's pass logs and it should stay silent on p2, p4, p6 and p7 and still fire on the ninth session's dawn band. |
+| **`direction=` is measured in normalised units, and on a canvas that is not square the passes do not run at the angle you gave.** On a 1000×500 canvas, `block_in(band, direction=-23)` laid its passes at **−12° on screen** (18 passes; the reversed ones at 168°), which is exactly the screen angle of a line at −23° in the `0..1` coordinates; on 1024×768 the same call runs at −18°, and `45` runs at 37°. `cost_line`'s *stepping across N* is consistent with that same space: on a band `0.8 × 0.2`, `direction=0` stepped across `0.20`, `90` across `0.80`, `−23` across `0.50`, which is the box's extent perpendicular to −23° in normalised units to the hundredth. So the two instruments agree with each other and both disagree with the picture. This is the fogged-glass session's open item above, measured on a box: not a bug in `cost_line`, and not *run* against *step* — passes run along the angle and the stack steps across it — but a unit nobody wrote down. It also means the *passes along the sloped boundary* remedy for the staircase, which this painter used on a gable whose screen slope was 41°, laid them at 33°. (Measured.) | The one sentence, in the units table of `REFERENCE.md` — done in this round. And an engine form that removes the arithmetic: let `direction=` take a pair of points or an edge, `direction=((0.33, 0.01), (0.58, 0.29))`, meaning *along this line on the screen*, since that is what every painter who types an angle is trying to say. A shape's `.axis` already works in normalised units and can stay as it is. |
+| **`compare({place: value})` asks the painter a question it could answer.** The pairs list says *do these two touch?* and the two rounds before this one answered it wrong — the ninth session's `0.00` pair met along the whole far edge. This painting's plan listed five pairs, of which two touched: the lit bench top against the right wall behind it at `0.04` apart, lightened to clear it, and the left bench against the left wall at `0.02`, darkened. Every place is a `Region` or a `Polygon`, the engine already has `contains` and `inside`, and whether two places overlap or share a boundary is one intersection test. (Reasoned; the two rounds' wrong answers are the evidence.) | Mark each listed pair *(touch)* or *(apart)* on the sheet, and put only the touching ones under the *do these two touch* line. Adjacent means overlapping or within half the narrower brush of each other, which the plan can carry as a default. |
+| **A drawing cannot survive the paint, so the method's own order costs a second drawing pass that nine of eleven paintings never made.** The guide's order is landmarks before anything, pencil after the far masses, near masses on top; in this painting the bench tops buried the first drawing and `p4_staging.py` redrew every pot and the can before the pass that painted them. Landmarks survive because a `mark()` is a point; a line is paint's to bury. (Observed.) | `pencil(points, overlay=True)`, or `s.guide(points)`: graphite that `look()` draws and paint never buries, hidden by `export()` and by `look(sketch=False)`, so the arrangement drawn at step 1 is still there at step 7. It is the `mark()` mechanism extended from a point to a path and touches no paint. The measure of it is whether the next session draws once. |
+| **A smudge along a long boundary leaves a strip, not a lost edge.** One pass along each under-bench line in the finish pass, four points along a boundary about `0.4` of the canvas long, left a visible lighter band inside the dark for the whole length — the light floor carried into the dark at the calibrated reach, which on a short join is a softened edge and on a long one reads as a second edge running beside the first. It was kept under the happy-accident directive and should not have been. (Observed; the mechanism, the asymmetric pull `CALIBRATION.md` records under *`smudge`*, is a guess.) | Measure it: one pass at the default size along a boundary `0.4` long, the strip's width and value against the two masses, against the same pass on a join `0.05` long. If the strip is the calibrated reach and nothing more, *An edge that is actually lost* should say that a smudge loses a *stretch* and a long boundary wants the paint-across recipe from the start. If it is wider than the reach predicts, the pull is the thing to look at. |
+
+### What it asked of the documentation — done
+
+Every item here was made in the same session, as the round recorded in `LESSONS.md`
+under *One home per rule* and in `CHANGELOG.md` under *Unreleased*; each is a
+hypothesis until a fresh session paints against it. Three of the fogged-glass round's
+open documentation items above were closed in passing and are marked there.
+
+| Gap | What was done |
+|---|---|
+| **The same rule was stated in full in four to six of the five files**, and the front file held itself three times: a first-hour summary, a body, and a checklist restating the body. Counted, not felt: *paint masses, never up to a line* in six places, *vary the direction of marks* in six, *paint over, never undo* in five, the rehearsal rule and the smudge numbers in four each. | **One home per rule, linked from everywhere else.** `scripts/check_guide_overlap.py` reports any twelve-word run of prose stated in more than one of the four guide files, and reports zero; the calibration file is checked on request, because its claim lines restate the guide on purpose. |
+| **The stories were most of the words, and they did not prevent the mistakes they described.** This painter read every warning and still laid its glazing bars three times too heavy and its shadows as a fan of same-width rays; the rehearsal and the post-pass check caught both. The fifth painter in a row to say so, per the row above. | The anecdotes and the painters' own counts moved to `CALIBRATION.md` under *From the sessions*, labelled as reports rather than measurements, so each rule in the method could be one line with its number. `PAINTER.md` went from 9,973 words to 6,441 and is a card (*The first hour*, 894 words) and a body. `PAINTING.md` from 11,500 to 6,900, holding the engine's behaviour only. |
+| **The drawing was a paragraph inside the block-in step, and the two passages this painter never drew were the two it named weakest.** The owner asked whether *make a sketch first* should be an explicit step. | **Step 1 of seven**, in its own right: draw it in graphite and keep drawing until it is proportional and the way you want it. The diagnosis index was renumbered with it. |
+| **Nothing in the corpus said how to construct a scene of straight edges**, and three painters each wrote a metric projection from nothing — this one threw away two full drawings finding the eye height and the length of the room before writing it. | *A scene with straight edges* in `RECIPES.md`: the helper, the three numbers that decide the picture, why its lines cross the bands, and how it goes wrong as a diagram. |
+| **The photograph material sat in the middle of the reasons file**, where a painter without a photograph had to read around it; the MCP section sat beside the brushes. | *Working from a photograph* is the last chapter of `PAINTING.md` and the reading order says to skip it; the MCP section is in `REFERENCE.md` with the rest of the facts. |
+| **The eight checked rules were still paragraphs.** The check prints them after the pass that did it. | Each is one line pointing at `report()`, and the rules themselves are listed once, in `REFERENCE.md`. |
+| **A row of small containers wants a stroke recipe and had a block-in one.** Thirteen pots laid with a `block_in` each, and a cross-hatched blob for what grew in them, rehearsed at 220 strokes; rebuilt as one to three chisel strokes for a body, a capsule for a rim, a dark stroke for the opening and one lit arc, at 108. | The clause in *A small container with something spilling from it*, with the cost of getting it wrong, and the rim as a hollow thing seen from above. |
+| **`CALIBRATION.md` had no way in by rule**, and the reading order never reached its tables, which were the most useful pages in the corpus. | An index at its top mapping every rule the guide states to the section that measured it. |
+
+### Confirmations, not new items
+
+- **The *detail before the masses* rule fired on the rehearsal of every pass after the
+  masses were down and never on the committed run of the same pass** — at 132 strokes
+  spent (*28 marks under size=0.02 inside the painting's first 60*, the bars), at 158
+  (*55 marks*, the pots), at 263 (*16 marks*, the can and the drips). The mechanism is
+  the one the fogged-glass session isolated above; this is a second painting and a
+  second painter meeting it on every pass, and the rewrite puts *rehearse then run* on
+  the front page, so every painter will.
+- **`compare({place: value})` was run four times** — on the empty canvas, after the
+  glass, after the staging with the places redrawn to the new silhouettes, and at the
+  finish — which is the first round since the eighth to run it as the method asks. It
+  caught the two touching pairs above before either mass was laid, and it reported one
+  stale place with a confident `−0.25` after a pot had been painted over it, which is
+  the *re-read the places when a silhouette moves* clause doing its job.
+- **Every failure was caught in a rehearsal and no committed mass was repainted.**
+  Seventeen rehearsals against 297 paid strokes: a sage-green sky, a rounded arch where
+  a gable should be, a bristle roof combed the way the rafters would run, a fan of
+  chisel corners, the sawtooth under the benches, a black cage of glazing bars, a pot
+  recipe at 220 strokes, fat scalloped rims, a saturated green clot. The one scrape of
+  the canvas was none.
+- **A metric projection written before the first line**, `P(xm, hm, dm)`, the same
+  helper the fogged-glass session wrote independently — recorded in the move notes as a
+  convergence and now a recipe.
 
 ---
 
@@ -676,6 +869,16 @@ repaid inside the first pass; and the habit of putting a measured number behind 
 
 Every row of *the shape each tool leaves behind* survived being measured.
 
+**The tenth painter defended the same core unprompted**, and named three things it would
+not give up: rehearsal seeded as the next real strokes — *"the single best thing here,
+and it's not close"* — `cost_line` naming the lever rather than only the price, which
+turned a 130-stroke foliage pass into 38; and the engine's refusals, which it called
+teaching errors rather than failures, quoting the one that would not lay a glaze: *the
+paint under this film reads 0.412, at opacity 1.0 it reaches 0.496, a film can only
+travel between those two.* It added the property no earlier session names: the painting
+rebuilds from its own pass scripts, and every repair in it is a pass rather than an
+erasure. It hit five rows of *the shape each tool leaves behind* and defended the table.
+
 **The fourth session defended the same list**, unprompted and before being asked for an
 opinion, and adds two notes to it. `at_value` was asked for about twenty-five planned
 values and landed every one to the hundredth, including the ones approached from above.
@@ -768,6 +971,15 @@ three costs reproduced to the stroke, and the ninth session re-measured the mech
 and settled it. A session that can tell which half of its own finding is load-bearing
 is doing the check's work before the check runs, and the register should say so: that
 labelling is worth asking of every round from here.
+
+**The tenth round is the first to arrive with the labelling already done**, which is
+what that paragraph asked for. Three of its fourteen items carry a measurement taken on
+its own finished session file — the rehearse-path check bug, reproduced from the CLI
+both ways; the depth-order violation, `0.089` on a named bar; and the buried ground,
+`0.07%` of the canvas against a bare reference — and the other eleven say *observed*.
+One says outright that it is the half most likely to be wrong. **None of it has been
+re-measured by anybody else yet**, which is the difference between that section and
+every other on this page.
 
 **And the seventh is the one that was neither observed nor guessed.** *A warning when
 an oriented tip is handed a `size` under about `0.008`* came with a measured table
