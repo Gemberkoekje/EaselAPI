@@ -48,6 +48,13 @@ more (the asymmetric pull the session guessed at is not doing anything extra).
 
 ### Added
 
+- **`easel.guide` is bound on the package** and named in `__all__`, so `dir(easel)`
+  lists it beside `brush`, `canvas` and `palette`. `from easel import guide` already
+  worked; what did not was a bare `import easel` followed by `easel.guide`, which is the
+  path taken by an agent that opens a REPL and asks what is in here. Discoverability is
+  that module's whole job, and it was the one submodule the listing left out — see
+  `SUGGESTIONS.md`, *The install session*.
+
 - **`block_in(shape, ..., edge="hard")`** — a mass masked to its own outline. Every dab
   is multiplied by the shape's coverage, so a pass ends **where the outline is** rather
   than where its chisel falls: no inset, no contour pass, and no paint outside the
@@ -195,6 +202,13 @@ more (the asymmetric pull the session guessed at is not doing anything extra).
   quotes, and the two it overturned print the *before* beside the *after*.
 
 ### Documentation
+
+- **The package docstring names the route to the guide, not the filename** —
+  `easel.guide.front_page()`, or `python -m easel guide` from a shell, in place of *read
+  `PAINTER.md`*. A bare filename sends a reader whose import has just failed into the
+  filesystem to look for it, which is where one session spent its first ten minutes.
+  `python -m easel` rather than `easel` because the console script is not on `PATH` in
+  every install.
 
 - **`direction=` got the worked example the rest of the geometry gets** — one mass at
   three angles, the pass direction and the step direction both named, beside the new

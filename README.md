@@ -121,6 +121,10 @@ tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
 method on one page, so the nine warm-up exercises come before anything else.
 
+**If you have already installed the package you do not need that link.** All five
+documents ship inside the wheel: `python -m easel guide` prints the first hour,
+`--full` prints the rest, and `easel.guide.read()` hands you any of them as text.
+
 It is one file of five, and every rule in the five is stated once, in the file it
 belongs to, and linked from everywhere else. `PAINTER.md` is held to a word budget by
 the test suite so that it stays the file a painter can hold in their head; the numbers
