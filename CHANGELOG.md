@@ -19,16 +19,25 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-**0.4.0 is prepared and not yet tagged.** The version is written by hand in
+Nothing yet.
+
+**0.4.0 is released, so the next change to land here needs a version bump before it can
+ship.** The version is written by hand in
 `pyproject.toml` and copied into `src/easel/__init__.py` and both entries in
 `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold every copy
 to the one in `pyproject.toml`. Releasing is a tag push — `git tag v0.x.y && git push
 origin v0.x.y` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml`
 before it uploads anything, because a PyPI version number cannot be reused once taken.
 
-## [0.4.0] — unreleased
+## [0.4.0] — 2026-09-15
 
-Two rounds, filed as one because they raised the same two items from opposite
+**Released.** Shipped as `v0.4.0`: `easel-paint` 0.4.0 on PyPI, the GitHub release with
+`easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.4.0 in the MCP registry. The
+`bundle` job failed on the first run and was re-run — *The release*, at the foot of this
+section, has what happened and why it is worth knowing.
+
+Three rounds. Two of them were filed as one because they raised the same two items from
+opposite
 directions: the tenth session's **fogged glass** — a greenhouse wall in late winter
 seen from outside, 311 of 320 strokes — and the **winter greenhouse** painted before it
 and filed after it, an interior at a low sun, 297 of 300. Both painters refused a
@@ -39,6 +48,12 @@ the angle they had computed off the picture was not the angle `direction=` takes
 Fifteen engine items between them and three documentation items left over from the
 round that rewrote the five files, every one acted on. `SUGGESTIONS.md` carries no open
 section for the first time since the eighth session's round was filed.
+
+**The third round never painted.** An install session was asked to `pip install
+easel-paint` and paint from it, and spent its first ten minutes in `site-packages`
+instead — one engine item and two documentation items, and the finding that what it came
+to report was not a bug but a stale editable install serving 0.1.0 metadata over 0.4.0
+code. `SUGGESTIONS.md` carries it closed like the rest.
 
 Two of the items closed by **measuring and finding nothing to fix**, which is this
 project's habit and the sixth and seventh time it has happened: `cost_line` does agree
@@ -231,14 +246,37 @@ more (the asymmetric pull the session guessed at is not doing anything extra).
   poses is what the prose is for, and this round's answer is that it is for the rules
   no check can hold, which is still most of them.
 
+### The release
+
+**The run half-failed, and the half that failed is the one that leaves no trace.**
+`build`, `pypi` and `registry` succeeded; `bundle` did not. It unpacks `easel.mcpb` and
+resolves `easel-paint[mcp]==<version>` from PyPI to prove the bundle installs — which it
+can only do once the upload it is racing has propagated, and its budget for that is `for
+delay in 0 15 30 60`: four attempts across 105 seconds. PyPI took longer than that on the
+day. Nothing was wrong with the bundle. Re-running the one failed job, once the index had
+caught up, passed on the first attempt and attached `easel.mcpb` to the release.
+
+**What it leaves behind is the part to know.** `bundle` is the job that *creates* the
+GitHub release — `gh release create` when the tag has none — so while it is failing there
+is no release at all, only a bare tag, and `easel.mcpb` is downloadable from nowhere.
+PyPI and the registry are already correct and unaffected, which is exactly what makes it
+easy to miss. The job is built to be re-run (`create` only if absent, `--clobber` on the
+upload) and re-running it is the whole remedy; the retry budget is the thing that would
+stop it happening. This is the second release running in which `bundle` was the job that
+failed.
+
+One trap for whoever automates this next: **`gh run watch --exit-status` exited 0 on the
+half-failed run.** The per-job conclusions are the thing to read, not the exit code.
+
 ## [0.3.0] — 2026-09-14
 
 **Released**, and it carries three rounds of work. It was prepared twice and never
 tagged — an earlier draft of this file split the same work across a 0.3.0 and a 0.4.0,
 neither of which was released — so the eighth session's round, the ninth session's
 round and the documentation restructure are all in here, under the version that
-follows 0.2.0. **There has never been a 0.4.0**, and nothing below ever shipped under
-any number but this one.
+follows 0.2.0. **The 0.4.0 that earlier draft described was never released**, and nothing
+below ever shipped under any number but this one — the 0.4.0 above is a different release
+carrying different work, cut on 2026-09-15.
 
 Shipped on 2026-09-14 as `v0.3.0`: `easel-paint` 0.3.0 on PyPI, the GitHub release with
 `easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.3.0 in the MCP registry. It
@@ -716,7 +754,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.0...v0.1.1
