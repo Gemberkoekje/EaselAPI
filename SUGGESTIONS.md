@@ -44,7 +44,7 @@ changed rather than that it worked.
 | Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/fogged_glass/` | 8 | 6 |
 | The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
-| …and that session painting, 257 of 300, from the package alone, in an empty folder | **5 open** | **5 open**, and one that is neither |
+| …and that session painting, 257 of 300, `paintings/pier_underside/`, in an empty folder | **5 open** | **5 open**, and one that is neither |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -78,8 +78,8 @@ read the area named; it never once did, which is its own first finding.
 and paint from whatever the package carried. `python -m easel guide`, `--full`,
 `--reference` and `easel brushes`, and nothing else — the repository was not opened at
 any point. Subject chosen before anything was installed: the underside of a pier at low
-tide, **257 of 300 strokes**, signed and exported. The picture is a dark structure over
-water at dusk.
+tide, `paintings/pier_underside/`, **257 of 300 strokes**, signed and exported. The
+picture is a dark structure over water at dusk.
 
 **It is not a blind run, and its documentation findings should be discounted for it.**
 This session had spent the morning inside `SUGGESTIONS.md` and `CHANGELOG.md` doing

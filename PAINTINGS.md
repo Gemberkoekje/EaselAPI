@@ -540,6 +540,60 @@ the engine and the guide is the tenth session's round in
 [`SUGGESTIONS.md`](SUGGESTIONS.md), acted on in 0.4.0 together with the winter
 greenhouse's.
 
+## The underside of a pier at low tide
+
+![Looking out from beneath a pier: a dark timber underside filling the upper frame with
+joists receding to the right and diagonal cross-bracing across them, two near pilings
+cropping the left and right edges and two more standing further back in the murk, a wedge
+of pale daylight widening to the right between the deck and the water, and dark green
+water below it carrying a broken shimmer of that light and darkening into the
+foreground](paintings/pier_underside/painting.png)
+
+The first picture here painted from nothing but the installed package. The session was
+told to `pip install easel-paint` and paint from whatever came with it; it read
+`python -m easel guide`, `--full`, `--reference` and `easel brushes`, and never opened
+this repository. It also ran in an empty directory — no checkout, no listing, nothing on
+disk to read — which is why it is the painting that settles where the subjects have been
+coming from.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `#5a5045` ground (v=0.32), seed 11 |
+| Spent | 257 strokes of a 300 budget, plus two signature marks that did not count |
+| Rehearsals | Twenty-three, none of them charged |
+| Reproducible | **Not claimed** — the drawing pass was rewritten and re-run three times, `look` scripts ran as passes between the painting ones, and each pass script was edited after its rehearsal, so what is committed is the last version of each rather than the sequence that built the canvas |
+| Files | [`pier_underside/`](paintings/pier_underside) — [notes](paintings/pier_underside/NOTES.md), [time-lapse](paintings/pier_underside/painting.gif) |
+
+Its own decision is the cross-bracing, and it arrived late. Deck, slot and water is three
+horizontal bands, and the post-pass check had said so on nearly every pass — *a stack of
+bars unless the subject runs that way* — while the subject genuinely did run that way. The
+two near pilings cross the bands; the diagonal braces are what finally made the frame read
+as structure rather than as stripes, and they went on with fewer than a hundred strokes
+left.
+
+**What it does not do is the reason it matters.** The subject was chosen, and written
+down, before anything was installed: under a pier the light arrives from *below*, bounced
+up off the water, so every form is lit backwards. That inversion is not in the finished
+picture — what is there is a dark structure over water at dusk, lit from the ordinary
+direction. It reached that on a clean sheet: the value structure is sound, the masses are
+shapes, the edges vary, the lightest mass is the one planned to be lightest, and the
+ground still shows at `0.58%`. **It passed every line of the closing checklist on the way
+to losing the thing it was for.**
+
+That is the finding, and it is the first on this page aimed at the picture rather than at
+the marks: nothing in the method asks whether the reason you chose the subject survived.
+The checklist asks whether the thing you measured most carefully is still attached, which
+is a question about a mark. Its round in [`SUGGESTIONS.md`](SUGGESTIONS.md) proposes the
+two lines that would have caught it — one in the plan, one at the end — and is open at the
+time of writing.
+
+By its own account it also leaves the pilings as slabs, cylinders painted as rectangles
+with a stripe down one side that never turn from lit to shadow; crushes almost the whole
+picture into `0.15`–`0.35` of a box that runs to `0.96`, and calls it atmosphere; and
+stops with the weakest passage still the weakest. Its critique of the engine and the guide
+— including a warning it learned to skim, and a card so self-contained that it finished a
+painting without opening three of the five files — is in the same round.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
