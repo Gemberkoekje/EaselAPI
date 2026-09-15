@@ -19,13 +19,13 @@ The whole API runs through one object::
 
 Coordinates are always normalised 0..1 with the origin at the top-left, so nothing
 here depends on the canvas size. If you are new to the engine, read the guide rather
-than this docstring -- ``easel.guide.front_page()`` here, or ``python -m easel guide``
+than this docstring -- ``easel.docs.front_page()`` here, or ``python -m easel guide``
 from a shell. It teaches the workflow, which matters more than the function list.
 """
 
 from __future__ import annotations
 
-from easel import guide
+from easel import docs, guide
 from easel.brush import BRUSHES, TIPS, Brush, brush
 from easel.canvas import GRAPHITE, GROUNDS, Canvas
 from easel.color import (
@@ -77,7 +77,7 @@ from easel.texture import TEXTURES, make_texture
 
 #: Checked against pyproject.toml by tests/test_version.py, which is the only
 #: thing keeping these two in step -- see that file for what it cost last time.
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     # the main entry point
@@ -142,7 +142,9 @@ __all__ = [
     "LEVELS",
     "History",
     "StrokeRecord",
-    # the method
+    # the method. `guide` is the older name for `docs` and still works; it is not
+    # what to reach for, because `Session.guide()` is a different thing entirely.
+    "docs",
     "guide",
     "__version__",
 ]

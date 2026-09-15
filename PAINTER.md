@@ -91,7 +91,9 @@ s.block_in(span("A5", "H8"), "flat", "light", size=0.14, solid=True, direction=6
 
 **Before the first stroke.** Count the horizontal bands in the drawing; more than
 three, and find a viewpoint or a thing that crosses them while it is still graphite.
-Write the three values down as numbers, and the split of the budget as numbers.
+Write the three values down as numbers, and the split of the budget as numbers. **Write
+down why this subject and not another**, in a sentence — the checklist asks for it back
+at the end, and nothing else can.
 
 **The five things you will get wrong.** Each has been made by every painter so far, so
 the fix is on the same row as the mistake.
@@ -104,13 +106,20 @@ the fix is on the same row as the mistake.
 | **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
 | **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped boundary | give a mark a length, or `tip_wobble=0.7`; run passes along a sloped boundary, or `edge="hard"`, which masks the paint to the outline. `report()` counts the discs for you | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
 
-**When you think it is finished**, the checklist is at the end of this file. Two of
+**When you think it is finished**, the checklist is at the end of this file. Three of
 its lines are about finishing rather than about faults: the last third of the budget
-goes on what surrounds the subject, and the last marks are about the picture, not the
-score.
+goes on what surrounds the subject, the last marks are about the picture rather than a
+score, and the reason you chose the subject is still in it.
 
 **Now go and paint the nine exercises**, at the end of this file. Then read
 [`PAINTING.md`](PAINTING.md) once, and start.
+
+**And before you lay a passage you have not laid before — a form that turns, a graded
+field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** This
+file is sufficient to finish a painting, which is a trap: one painter finished a whole
+picture without opening any of the other four, and its two worst passages were both
+recipes three keystrokes away. The moment to go looking is *before* the pass, not after
+the rehearsal shows it failing.
 
 ---
 
@@ -147,112 +156,76 @@ A picture whose masses all sit below the presets wants a ground of its own:
 
 ## The workflow
 
-The order oil painters have used for centuries, for the same reason it works here: it
-keeps you making *large* decisions before *small* ones, so a mistake is cheap for as
-long as possible.
+The card above is the whole of it. What follows is only what the card has no room
+for: the mechanism behind each step, once each.
 
 ### 1. Draw the arrangement in graphite
 
-`s.pencil()` puts graphite into the canvas — no paint, no wetness, and it does not count
-as a stroke, so the drawing is free. **Draw the arrangement before you commit paint to
-it, and keep drawing until it is proportional and the way you want it.** A rehearsal
-shows you one answer; a pencil shows you six at once, and moving a mass in graphite
-costs nothing where moving it in paint costs the mass and everything standing on it.
-Put the big shapes down, look with the grid on, move them, look again. Try a silhouette
-three ways before you build it as a shape:
+A rehearsal shows you one answer; a pencil shows you six at once.
 
-```python
-for wobble in (0.0, 0.18, 0.34):                     # three candidates, one look
-    s.pencil(blob(span("E4", "G7"), 0.16, wobble=wobble, seed=4).closed, pressure=0.5)
-s.look(region=span("E4", "G7"))                      # pick one, erase the others
-s.erase(span("E4", "G7"))
-```
+**Write down why this subject and not another, in a sentence, before the first mark.**
+Not what it is — why you chose it over the others. One painter chose the underside of a
+pier because there the light arrives from *below*, bounced off the water, so every form
+is lit backwards; it then painted a competent dark structure lit from the ordinary
+direction, and passed every line of the closing checklist on the way. The sentence is
+free, and it is the only thing that can be checked at the end.
 
 Four things about the drawing:
 
-- **Count the horizontal bands in it before the first mass.** More than three, and find
-  a viewpoint or a thing that crosses them now, while it is graphite. A frontal
-  elevation is a layer cake before a brush is picked, and no brushwork gets it back.
+- **Count the horizontal bands before the first mass.** More than three, and find a
+  viewpoint or a thing that crosses them now, while it is graphite.
 - **If the scene is built of straight edges that converge, write the projection before
-  you draw anything.** You are reliable about sizes and distances and unreliable about
-  where they land on the canvas (*A scene with straight edges* in
+  you draw anything.** You are reliable about sizes and unreliable about where they
+  land (*A scene with straight edges* in
   [`RECIPES.md`](RECIPES.md#a-scene-with-straight-edges)).
 - **Draw the planes of anything built from them with its silhouette**, not after the
   mass is down (*A mass built of planes* in
   [`RECIPES.md`](RECIPES.md#a-mass-built-of-planes)).
 - **Landmarks before anything, pencil after the far masses, near masses on top.** Paint
-  buries graphite in proportion to how much lands, and a full-strength block-in buries
-  all of it; a `mark()` is a point and cannot be buried. So draw the whole arrangement
-  now to judge it, and draw the near things *again* once the far masses are down —
-  unless you draw it with `s.guide()`, which is `mark()` along a path: graphite on the
-  view rather than in the canvas, so `look()` keeps showing it, `export()` never does,
-  and the arrangement drawn here is still there at step 7. Use `pencil()` for the
-  underdrawing that should show through thin paint, and `guide()` for the scaffolding
-  that should not be in the picture at all.
+  buries graphite in proportion to how much lands; a `mark()` is a point beside the
+  canvas and cannot be buried. So draw the whole arrangement now to judge it, and draw
+  the near things *again* once the far masses are down — unless you draw it with
+  `s.guide()`, which is `mark()` along a path: graphite on the view rather than in the
+  canvas, so `look()` keeps showing it and `export()` never does.
+
+```python
+s.guide([(0.05, 0.38), (0.95, 0.34)], note="bench")   # still there at step 7
+s.unguide("bench")                                    # or s.erase(), which takes both
+```
+
+`erase()` rubs out both drawings, the graphite and the overlay, which is what redrawing
+an arrangement wants; `unguide(note)` takes back one labelled part and leaves the rest.
 
 The two passages you do not draw are the two that will come out weakest. Draw the small
 things too — a lid, a handle, what stands in a thing — before the pass that paints them.
 
 ### 2. Tone the ground, then find the big shapes
 
-Two or three masses. Not outlines — **masses**, in the biggest brush you will use in
-the whole painting, blocked in with `density` below 1.0 so the ground breathes through.
+**`density` spaces the passes; it does not fill them.** Every pass runs dry along its
+own length whatever the spacing, so `density=1.0` still leaves a twentieth of the ground
+showing. When a mass has to be solid — because it is near, or because fine marks will
+stand on it — say `solid=True`. Not for these first masses.
 
 ```python
-s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
 s.block_in(blob(cell("D5"), 0.26, wobble=0.3, seed=2), brush="bristle", color="dark",
            density=0.7, size=0.2, direction="axis")
 ```
 
-**`density` spaces the passes; it does not fill them.** Every pass runs dry along its
-own length whatever the spacing, so `density=1.0` lays a mottled mass with a twentieth
-of the ground still showing. When a mass has to be solid — because it is near, or fine
-marks will stand on it — say `solid=True`. Not for these first masses. A solid mass
-still shows its pass structure at about `0.03` of value, which is faint striping on a
-large flat plane and invisible on anything with a form; hide it with a bigger brush or
-a broken one, never with an argument (*`block_in`* in
-[`CALIBRATION.md`](CALIBRATION.md#block_in)).
-
-A place can be a rectangle — `cell("D5")`, `span("E5", "H8")`, `region("lower-half")`
-— or a shape: `blob`, `ellipse`, `hull`, `ribbon`, `polygon`. Most masses are shapes,
-and a shape's passes stop at its own silhouette. What a shape costs and how far paint
-lands outside it is *Masses that are not rectangles* in
-[`PAINTING.md`](PAINTING.md#masses-that-are-not-rectangles).
-
-Resist detail here. If you can already name what you are painting, you have gone too
-far too early.
+Resist detail here: if you can already name what you are painting, you have gone too far
+too early.
 
 ### 3. Paint from back to front
 
-**Lay the furthest thing first and let each nearer thing be painted over it.**
-Background, middle distance, foreground, then the small shape standing in front of all
-of them.
+A near shape's edges are real edges — where its paint stops and the mass behind it still
+shows — and you drew none of them. Paint it first and the only way to those same edges is
+to cut the mass behind it carefully around it, which is painting *up to* a line.
 
-```python
-s.palette["far"]  = s.palette.tint("cerulean", 0.55)
-s.palette["near"] = s.palette.desaturate(s.palette["far"], 0.4)
-
-s.block_in("upper-half", "flat", "far", size=0.18)          # furthest
-s.block_in(span("A4", "H6"), "flat", "near", size=0.16)     # nearer
-s.stroke([(0.3, 0.42), (0.3, 0.78)], "bristle", "dark", size=0.03)   # in front
-```
-
-The narrow shape's edges are now real edges — the place where its paint stops and the
-mass behind it still shows — and you drew none of them. Paint it first and the only way
-to get the same edges is to cut the mass behind it carefully around it, which is
-painting *up to* a line.
-
-Three things follow:
-
-- **Let the near mass overlap.** Run it a little into the far one. A silhouette that
-  stops exactly on a boundary was measured; one that overlaps was painted.
+- **Let the near mass overlap.** A silhouette that stops exactly on a boundary was
+  measured; one that overlaps was painted.
 - **A veil of light is a mass at a depth.** A glaze laid last because it is *light* is
   still in front of something. `look(diff=True)` shows what a pass covered.
-- **A mistake in the background is cheap while the foreground is not there yet**, and
-  stops being cheap the moment something stands on it. So fix a mass *before* the near
-  things go on, and keep every mass in its own named function so the whole stack can be
-  re-run in depth order when a repair is needed later (*A repair under things that are
-  standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it)).
+- **A mistake in the background is cheap until something stands on it.** Keep every mass
+  in its own named function so the stack can be re-run in depth order for a repair later.
 
 **Anything with an inside has its own depth order: the far edge, then what is inside,
 then the near edge.**
@@ -267,182 +240,96 @@ s.block_in(near, "flat", "light", size=0.06)               # in front of the ins
 ```
 
 Painted the other way round there is nothing for the inside to stop against. Ask it of
-anything you can see into, before the first stroke: what is behind the inside, what is
-the inside, and what is in front of it? One broken catch-light along the near edge
-finishes it (*A hollow thing* in [`RECIPES.md`](RECIPES.md#a-hollow-thing)).
+anything you can see into, before the first stroke.
 
 ### 4. Check your values before you check anything else
 
-```python
-s.look(values=True)
-```
+**Plan the three as numbers before you mix anything.** `palette.value_of(c)` reports
+exactly what the greyscale view will show, and `palette.at_value(base, target)` hands
+back the mixture of `base` that reads at `target` — **from whichever side it starts**,
+mixing in white to raise a value and a dark to lower one. It raises when a value is out
+of reach rather than handing back the nearest it managed.
 
-Greyscale is what squinting does for a painter, and **value structure is what makes an
-image read.** If the greyscale is mush, no colour will save it. A painting usually
-wants three clearly separated values: a light mass, a mid mass and a dark.
-
-**Plan those three as numbers, before you mix anything.** `palette.value_of(c)` reports
-exactly the value the greyscale view will show, and `palette.at_value(base, target)`
-hands back the mixture of `base` that reads at `target`, from whichever side it starts:
-
-```python
-p = s.palette
-p["dark"] = p.mix("ultramarine", "burnt_umber", 0.55)
-p["mid"]  = p.tint(p.mix("yellow_ochre", "burnt_sienna", 0.35), 0.40)
-p["lit"]  = p.tint(p.mix("yellow_ochre", "burnt_sienna", 0.40), 0.74)
-for name in ("dark", "mid", "lit"):
-    print(name, p.hex(p[name]), round(p.value_of(p[name]), 2))
-```
-
-**If two of your three are within `0.10` of each other, they will not read as separate
-masses** however different their colours — but only where the two places actually
-meet. Put the plan through `compare()` on the empty canvas: it lists every two places
-planned within `0.10`, marks each pair `(touch)` or `(apart)`, and names the touching
-ones as the ones that will read as one. Two rounds of painters were asked that
-question instead of told the answer and both got it wrong.
+Two masses within `0.10` read as one — but only where the two places actually meet. Put
+the plan through `compare()` on the empty canvas: it lists every pair planned within
+`0.10`, marks each `(touch)` or `(apart)`, and names the touching ones as the ones that
+will read as one. Two rounds of painters were asked that question instead of told the
+answer, and both got it wrong.
 
 ```python
 upper, lower = span("A1", "H4"), span("A5", "H8")
 s.compare({upper: 0.72, lower: 0.38})       # the sheet, the outlines, and the pairs
 ```
 
-The keys are places and the values are what `value_of` reports, so the plan is a few
-lines written before you start and checkable after every mass. **Re-read the places
-whenever you move a silhouette**: a place is a rectangle, and one that now straddles two
-masses reports their average in a confident voice.
+Re-read the places whenever you move a silhouette: a place is a rectangle, and one that
+now straddles two masses reports their average in a confident voice.
 
-**The threshold is a floor, and a mass also has a ceiling.** Shading a mass to give it
-form spends value range, and the range is shared: shade until the form clears `0.10`
-and stop, because past about `0.15` across one mass its shadow side starts closing on
-whatever it stands against.
+**That threshold is a floor, and a mass also has a ceiling.** Shading spends value range,
+and the range is shared: shade until the form clears `0.10` and stop, because past about
+`0.15` across one mass its shadow side starts closing on whatever it stands against.
 
-**The box has no black, and does not need one.** `mix("ultramarine", "burnt_umber",
-0.5)` is the bottom of the range at `0.14`, and varying the ratio holds the value while
-swinging cool to warm. Piling on passes will not go lower; if a mass is not dark
-enough, mix it darker. A reference darker than that is usually still reachable by
-*covering* the place, at `density=1.0` and full load, with nothing lighter showing
-through; a colour you supply lands as written, black included, and a mixed dark is
-alive where a tube black is dead (*Colour* in [`PAINTING.md`](PAINTING.md#colour)).
-`at_value` raises when a value is out of reach rather than handing back the nearest it
-managed.
-
-**A cast shadow is the first place you will spend that dark, and it is the wrong
-place.** A shadow lying on a lit surface is **a step or two below the surface**, mixed
-from that surface's value rather than from the bottom of the box — and it is a tapering
-stroke that loses its far end, not a filled shape, which comes back as a slab with two
-hard ends.
-
-```python
-dark = p.at_value("surface", p.value_of("surface") - 0.18)      # a step or two
-s.stroke([(0.55, 0.30), (0.66, 0.38), (0.80, 0.46)], "flat", dark,
-         size=0.085, pressure=[1.0, 0.6, 0.0])                  # and lose the far end
-s.stroke([(0.55, 0.305), (0.62, 0.35)], "flat", p.at_value(dark, 0.38),
-         size=0.05, pressure=[0.9, 0.0])     # darkest where the two things meet
-```
-
-**A cool mass on a warm ground reads about two steps lighter than it measures.** When
-your eye says a mass is far too light and `compare()` says it is inside `0.05`, believe
-the number.
+**The box has no black and does not need one.** `mix("ultramarine", "burnt_umber", 0.5)`
+is the bottom of the range at `0.14`, and varying the ratio holds the value while
+swinging cool to warm. Piling on passes will not go lower; if a mass is not dark enough,
+mix it darker. **A cast shadow is the first place you will spend that dark, and the
+wrong one**: a shadow lying on a lit surface is a step or two below *that surface*, and
+it is a tapering stroke that loses its far end, not a filled shape.
 
 ### 5. Refine the mid-tones
 
-Now the middle values, with a medium brush (`size≈0.08–0.12`), across the whole canvas
-rather than finishing one corner — a painting should come up all at once. Look every
-ten strokes or so.
-
-**There is no gradient tool.** Nothing here grades a mass smoothly from one value to
-another. What a painter does instead is paint the gradient as **steps and then lose the
-joins**, while the paint is wet:
-
-```python
-steps = [(cell("D4"), "dark"), (cell("D5"), "shadow"), (cell("D6"), "light")]
-for place, value in steps:
-    s.block_in(place, "flat", value, pressure="even", size=0.03)
-s.smudge([(0.42, 0.50), (0.46, 0.62)])              # walk each join once, while wet
-```
-
-**One smudge removes about 40% of a step, once, and a second pass undoes most of the
-first** (*`smudge`* in [`CALIBRATION.md`](CALIBRATION.md#smudge)). When once is not
-enough, stop smudging and lay paint: many overlapping strokes at closely spaced values.
+**There is no gradient tool.** A painter lays the gradient as steps and then loses the
+joins while the paint is wet — and one `smudge` removes about 40% of a step, once, while
+a second pass undoes most of the first. When once is not enough, stop smudging and lay
+paint:
 
 ```python
 s.scumble(span("A4", "H6"), "shadow", "light", 8)    # close the join with paint
 ```
 
-Eight passes running along the band and stepping across it, one value step per pass,
-each wider than the step so the joins close. Leave `size` off: the verb picks its brush
-from its own step, and a brush narrower than twice the step brings the bars back. Below
-about five passes the steps read as steps again.
+Passes running along the band and stepping across it, one value step each, every pass
+wider than the step so the joins close. Leave `size` off: the verb picks its brush from
+its own step. Below about five passes the steps read as steps again.
 
-**A passage that is light in the *middle* is the same verb turned inward** — a lit
-patch, a bloom, light falling on a surface is dark at every edge:
+**A passage that is light in the *middle* is the same verb turned inward** —
+`direction="inward"`, for a lit patch or a bloom, which is dark at every edge. The first
+ring lands on the boundary, so give it the value the patch meets its surroundings at. Not
+strokes radiating from the centre, which draws a daisy.
 
-```python
-s.scumble(patch, "shadow", "light", 8, direction="inward")   # 8 strokes, lit in the middle
-```
-
-The first ring lands on the boundary, so give it the value the patch meets its
-surroundings at. Do not lay it as strokes radiating from the centre, which draws a
-daisy. Light *in* the air rather than on a surface — a beam, a halo seen from outside —
-is glazes, not this verb (*A volume of lit air* in
-[`RECIPES.md`](RECIPES.md#a-volume-of-lit-air)).
-
-**This matters more than it looks**, because a wide soft passage is where a picture's
-structure comes from. A field gradated top to bottom is a stack of horizontal bands
-until its joins are gone and something crosses it, and a stack of bands is a
-composition whether or not you meant one (*A graded field that is most of the picture*
-in [`RECIPES.md`](RECIPES.md#a-graded-field-that-is-most-of-the-picture)).
+A field gradated top to bottom is a stack of horizontal bands until its joins are gone
+and something crosses it, and a stack of bands is a composition whether or not you meant
+one (*A graded field that is most of the picture* in
+[`RECIPES.md`](RECIPES.md#a-graded-field-that-is-most-of-the-picture)).
 
 ### 6. Edges: lost and found
 
-The step that separates a painting from a diagram, and the one you will be most
-tempted to skip. **Hard edges pull the eye; soft and lost edges let it move on.**
-Decide where you want attention, make those edges hard, and lose the others — let two
-masses merge with no boundary at all in places.
-
-```python
-s.smudge([(0.3, 0.4), (0.45, 0.44)])                # soften an edge
-s.stroke([(0.6, 0.3), (0.62, 0.5)], "round_hard", "dark", size=0.02)  # sharpen one
-```
+The step you will be most tempted to skip. Decide where you want attention and lose
+every other edge — two masses merging with no boundary at all in places. Lose one edge
+completely rather than four partly.
 
 Three things about `smudge`:
 
-- **Leave `size` off.** What it buys stops at about `0.02`, the default; what it costs
-  — how far it drags the light mass into the dark — keeps growing with the brush.
+- **Leave `size` off.** What it buys stops at about `0.02`, the default; what it costs —
+  how far it drags the light mass into the dark — keeps growing with the brush.
 - **Run it *along* a boundary, never across one.** Dragged across, it pulls a lobe of
   the lighter mass into the darker and leaves a finger-shaped thumbprint.
 - **Along means along the boundary's own shape.** Only a straight boundary is two
   points; hand a curve its points, or hand it the mass and it walks that outline.
 
 ```python
-s.smudge([(0.30, 0.40), (0.38, 0.41)])             # a straight edge is two points
-s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53),
-          (0.73, 0.63)])                            # a curved one is the curve
-s.smudge(mass)                                     # a shape is already that curve
+s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53)])   # a curved edge is the curve
+s.smudge(mass)                                         # a shape is already that curve
 ```
 
-One pass, not three. If the boundary is still there afterwards, the answer is paint
-laid across it, not another smudge (*An edge that is actually lost* and *A mark that
-crosses a boundary* in [`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
-
-An image where every edge is equally sharp looks like clip-art. Lose one edge
-completely rather than four edges partly.
+One pass, not three. If the boundary is still there afterwards, the answer is paint laid
+across it, not another smudge (*An edge that is actually lost* in
+[`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
 
 ### 7. Highlights last, smallest brush, fewest strokes
 
-The lightest lights and the sharpest accents go on at the end, and there should be very
-few of them. Every highlight you add makes the others count for less.
-
-```python
-s.dab(0.62, 0.35, "round_hard", "titanium_white", size=0.015)
-```
-
-**Anything the size of a cell or smaller is three marks at most — the dark, the light,
-and the edge between them** — laid dark first, and looked at through a `region=` crop
-before the light goes on. `size` is the *feature's* fraction of the canvas, not the
-mass's. A small mark that has to land is `press=3`; a lighter touch is a whisper, and a
-dark accent at `press=2` on a lit passage may not register at all (*Pressure* in
-[`PAINTING.md`](PAINTING.md#pressure)).
+Every highlight you add makes the others count for less. **Anything the size of a cell
+or smaller is three marks at most — the dark, the light, and the edge between them** —
+laid dark first, and looked at through a `region=` crop before the light goes on. `size`
+is the *feature's* fraction of the canvas, not the mass's.
 
 ---
 
@@ -520,10 +407,16 @@ difference each is enough.
 
 ## Nine small exercises
 
-**They are a gate.** A painter who skips them meets the lessons inside the picture
-instead, with the rest of the painting already standing on the mass that has to be
-repainted. An exercise is the one place where a mistake has nothing built on top of it.
-They take a minute each. Do the nine. Then start.
+**Nothing stops you skipping these, and this file has stopped calling them a gate**,
+because a rule nothing enforces is a preference and saying it louder does not change
+that. What is true is the cost: a painter who skips them meets the same lessons inside
+the picture instead, with the rest of the painting already standing on the mass that has
+to be repainted. An exercise is the one place where a mistake has nothing built on top
+of it. They take a minute each.
+
+Run them in one script if you like, but **give each `look()` a `path=`** — or run each
+in its own directory. Looks are numbered from what is already in `out_dir`, so nothing
+is overwritten; nine unnamed looks are still nine files to tell apart afterwards.
 
 **1. A value scale.** Nine even steps from the darkest mix to white. Mix to a *value*,
 not to a ratio: white is much stronger than its share of the mixture, so ask for the
@@ -700,7 +593,7 @@ s.look()            # the hues beside each other, which the numbers cannot show
 ## A checklist before you call it finished
 
 **Passing this list means the painting is not *wrong*. It does not mean it is
-finished.** Every line but the last two is a fault to look for; the last two are the
+finished.** Every line but the last three is a fault to look for; the last three are the
 only ones that ask whether you are done, and they are the ones to answer slowly.
 
 - Does the greyscale view have a clear light, mid and dark?
@@ -753,6 +646,12 @@ only ones that ask whether you are done, and they are the ones to answer slowly.
   without deciding to. The passage you would apologise for is the one that wants them —
   not the one you have most recently been enjoying — and the last marks are about the
   picture, never about a score.
+- **Read back why you chose this subject. Is that reason still in the picture?** Not
+  *is the painting good* — is the thing you wanted there. It is the one line here that
+  nothing else can ask: the check reads marks, and every other line above is about a
+  mark. A picture can pass all of them and have quietly become a different picture,
+  competently painted. If the reason is gone and strokes are left, that is what they
+  are for.
 
 If you have a reference, look at them side by side one last time:
 

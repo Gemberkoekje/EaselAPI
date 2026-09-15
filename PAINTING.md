@@ -622,7 +622,7 @@ s.look(...)
 s.report(since=None, subject_share=None)           # the post-pass check, off the log
 
 s.pencil(points, pressure=0.55)                    # graphite; not a stroke
-s.erase(region=None)                               # rub the drawing out
+s.erase(region=None)                               # rub out both drawings
 s.sketch_lines()                                   # every line drawn, as points
 s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
 s.preview(strokes, reference=, region=, grid=)     # where a mark would go

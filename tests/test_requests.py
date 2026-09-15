@@ -2873,3 +2873,166 @@ def test_a_smudges_reach_does_not_grow_with_the_join(tmp_path):
     assert all(abs(h - 1.3) < 0.2 for h in heights), "not the calibrated reach"
     # And the band is a mid value, which over a long join is a second edge.
     assert all(abs(v - 0.51) < 0.04 for v in values)
+
+
+# -- a warning that is said once rather than skimmed five times -------------------------
+def _bar_line(session, since):
+    """Whether the post-pass check called this pass a stack of bars."""
+    return any("stack of bars" in line
+               for line in session.report(since=since).split("\n"))
+
+
+def _lay_bars(session, y0: float, angle: float = 0.0, n: int = 14, note: str = ""):
+    """One pass of `n` long parallel marks, laid by hand so each is its own call."""
+    before = len(session.history.records)
+    for i in range(n):
+        y = y0 + i * 0.012
+        dx, dy = 0.4 * math.cos(math.radians(angle)), 0.4 * math.sin(math.radians(angle))
+        session.stroke([(0.5 - dx / 2, y - dy / 2), (0.5 + dx / 2, y + dy / 2)],
+                       "bristle", "burnt_umber", size=0.02, note=note)
+    return before
+
+
+def test_the_stack_of_bars_warning_is_said_once(tmp_path):
+    """It fired on five passes of the pier -- the masses, the joists, the water, the
+    second water pass and the focal pass -- on a subject that is joists, a waterline
+    and a reflection, and does run that way. By the fourth the painter had stopped
+    reading the line, which means it was also unread on the pass where it was right.
+    The warning's own text concedes *unless the subject runs that way* and cannot tell
+    whether the subject does, so it is said once and not again until the picture has
+    acquired something that crosses it."""
+    s = make(tmp_path)
+    assert _bar_line(s, _lay_bars(s, 0.10)), "the first stack of bars goes unreported"
+    assert not _bar_line(s, _lay_bars(s, 0.30)), "said twice about an unchanged picture"
+    assert not _bar_line(s, _lay_bars(s, 0.50)), "and a third time"
+
+
+def test_a_crossing_pass_lets_the_warning_speak_again(tmp_path):
+    """What re-arms it: the painter answered the warning, the picture picked up
+    something square to the bars, and is now stacking them again. That is a different
+    situation from the one it was told about, so it is worth a line."""
+    s = make(tmp_path)
+    assert _bar_line(s, _lay_bars(s, 0.10))
+    _lay_bars(s, 0.10, angle=90.0, n=14)                      # the pilings cross it
+    assert _bar_line(s, _lay_bars(s, 0.30)), "the picture changed and the line did not"
+
+
+def test_re_checking_one_pass_says_the_same_thing_twice(tmp_path):
+    """A pass is identified by where the painting stood at its end, not by a call
+    count, so asking the same question twice is not what spends the warning."""
+    s = make(tmp_path)
+    since = _lay_bars(s, 0.10)
+    assert _bar_line(s, since) and _bar_line(s, since) and _bar_line(s, since)
+
+
+def test_the_warning_is_still_quiet_after_a_save_and_a_reload(tmp_path):
+    """A painting worked from the shell is loaded and saved once per pass -- which is
+    how the pier was painted -- so a rule that decays has to decay across that."""
+    s = make(tmp_path)
+    assert _bar_line(s, _lay_bars(s, 0.10))
+    s.save(tmp_path / "p.easel")
+    again = Session.load(tmp_path / "p.easel")
+    assert not _bar_line(again, _lay_bars(again, 0.30))
+
+
+def test_a_rehearsal_does_not_spend_the_warning(tmp_path):
+    """A rehearsal is thrown away. If rehearsing a pass consumed the one time the
+    line is printed, the pass that is paid for would go unwarned."""
+    s = make(tmp_path)
+    trial = s.scratch()
+    assert _bar_line(trial, _lay_bars(trial, 0.10)), "a rehearsal is not told"
+    assert _bar_line(s, _lay_bars(s, 0.10)), "and the painting was told by the rehearsal"
+
+
+def test_a_horizontal_stack_is_called_horizontal(tmp_path):
+    """Marks along the horizontal come back as a mixture of 179 and 1 degrees, two
+    degrees apart and clustered as such -- and a plain median of them is 90. So the
+    commonest stack of bars there is was named *vertical*, and the painter was pointed
+    at right angles to the fault."""
+    s = make(tmp_path)
+    since = _lay_bars(s, 0.10, angle=-0.6)
+    line = [ln for ln in s.report(since=since).split("\n") if "stack of bars" in ln]
+    assert line and "horizontal" in line[0], line
+
+
+# -- a look is numbered from the directory, not from the session ------------------------
+def test_two_sessions_in_one_directory_do_not_write_over_each_other(tmp_path):
+    """Four of the nine exercises were run from one script, against four sessions
+    sharing an out_dir, and produced one file: `look_001.png`, four times. The images
+    were gone before they could be looked at, in the one part of the method that is
+    only looking. A counter knows about the session holding it; the directory is the
+    thing both sessions can see."""
+    first, second = make(tmp_path), make(tmp_path)
+    written = [first.look(), second.look(), first.look(), second.look()]
+    assert [p.name for p in written] == [
+        "look_001.png", "look_002.png", "look_003.png", "look_004.png"]
+    assert len(set(written)) == 4 and all(p.exists() for p in written)
+
+
+def test_a_reopened_painting_carries_on_where_the_directory_left_off(tmp_path):
+    """Which is what `easel run` does between passes, and what the counter was
+    carried through save and load for. It is not carried any more."""
+    s = make(tmp_path)
+    s.look()
+    s.save(tmp_path / "p.easel")
+    assert Session.load(tmp_path / "p.easel").look().name == "look_002.png"
+
+
+def test_a_preview_and_a_compare_are_numbered_the_same_way(tmp_path):
+    """Every view under `out_dir` shares the arrangement, so a second session
+    previewing a plan does not land on the first one's preview either."""
+    first, second = make(tmp_path), make(tmp_path)
+    plan = [{"shape": cell("D5"), "brush": "flat", "color": "burnt_umber", "size": 0.06}]
+    assert first.preview(plan).name == "preview_001.png"
+    assert second.preview(plan).name == "preview_002.png"
+
+
+# -- erase() takes both drawings ---------------------------------------------------------
+def test_erase_takes_the_scaffolding_with_the_graphite(tmp_path):
+    """Redrawing an arrangement left the old scaffolding fan on the view beside the
+    new one -- two convergence points in one look, which is exactly the thing the
+    drawing exists to judge. `erase()` is the word a painter reaches for, and the
+    guide introduces the two drawings in one paragraph, so it takes both."""
+    s = make(tmp_path)
+    s.pencil([(0.1, 0.2), (0.9, 0.2)])
+    s.guide([(0.1, 0.5), (0.9, 0.5)], note="horizon")
+    s.guide([(0.2, 0.1), (0.2, 0.3)], note="post")
+    s.erase()
+    assert s.guides == [], "the scaffolding outlived the drawing it belongs to"
+    assert s.sketch_lines() == []
+
+
+def test_erasing_a_region_cuts_the_scaffolding_where_it_cuts_the_graphite(tmp_path):
+    """The same rule as `sketch_lines()`: a path wholly inside goes, one wholly
+    outside stays, one that crosses comes back as the pieces left over."""
+    s = make(tmp_path)
+    s.guide([(0.0, 0.5), (1.0, 0.5)], note="horizon")   # crosses column A
+    s.guide([(0.5, 0.1), (0.5, 0.3)], note="post")      # nowhere near it
+    assert s.erase(cell("A5")) is not None
+    notes = sorted(g["note"] for g in s.guides)
+    assert notes == ["horizon", "post"]
+    cut = next(g for g in s.guides if g["note"] == "horizon")
+    assert cut["points"][0][0] > 0.1, "the crossing path was not cut back"
+
+
+def test_unguide_still_takes_one_labelled_part_and_leaves_the_rest(tmp_path):
+    """`erase()` is for redrawing the whole arrangement. This is the other half."""
+    s = make(tmp_path)
+    s.guide([(0.1, 0.5), (0.9, 0.5)], note="horizon")
+    s.guide([(0.2, 0.1), (0.2, 0.3)], note="post")
+    assert s.unguide("post") == 1
+    assert [g["note"] for g in s.guides] == ["horizon"]
+
+
+# -- the guide the painter reads, and the guide the painter draws ------------------------
+def test_the_documents_are_easel_docs_and_the_old_name_still_works():
+    """`easel.guide` and `s.guide()` were two unrelated things under one name -- the
+    module that reads the documents, and the method that lays scaffolding on the view
+    -- and both are reached from one session. The module is `easel.docs`; the older
+    name forwards, because a name that has shipped does not stop working."""
+    import easel
+    from easel import docs, guide
+
+    assert guide.front_page() == docs.front_page()
+    assert guide.DOCUMENTS == docs.DOCUMENTS
+    assert "docs" in easel.__all__ and "guide" in easel.__all__

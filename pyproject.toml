@@ -10,7 +10,7 @@ name = "easel-paint"
 # to point at a commit that already says 0.1.0 here, or the build fails on
 # purpose rather than publishing the mismatch. Running that workflow by hand
 # instead rehearses to TestPyPI, which is what a .devN version is for.
-version = "0.4.0"
+version = "0.5.0"
 description = "A headless painting engine for AI agents: brushes, paint load, wet blending, canvas texture."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -70,7 +70,7 @@ packages = ["src/easel"]
 
 # The guide is the deliverable, so it ships with the engine rather than only in
 # the repository. These land as `easel/docs/*.md` inside the wheel and are found
-# again by `easel.guide`, which falls back to the repository root so a checkout
+# again by `easel.docs`, which falls back to the repository root so a checkout
 # (`pip install -e .`, and this repo's own CI) still works. Kept here rather than
 # copied into `src/` so there is one copy of each document and nothing to drift.
 [tool.hatch.build.targets.wheel.force-include]

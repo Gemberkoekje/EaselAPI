@@ -47,7 +47,7 @@ from typing import Any
 
 from PIL import Image as _PILImage
 
-from easel import guide as _guide
+from easel import docs as _docs
 from easel import regions as _regions
 from easel.brush import Brush
 from easel.cli import parse_size, reference_text, run_script
@@ -859,8 +859,8 @@ def build_server() -> MCPServer:
                 other documents always come back whole.
         """
         if document != "guide":
-            return _guide.read(document)
-        return _guide.read("guide") if full else _guide.front_page()
+            return _docs.read(document)
+        return _docs.read("guide") if full else _docs.front_page()
 
     # -- the three questions about a mark that has not been made yet ---------------
     @server.tool()

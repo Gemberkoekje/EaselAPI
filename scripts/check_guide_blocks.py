@@ -31,7 +31,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from easel.guide import FRONT_PAGE_WORDS  # noqa: E402  (after the sys.path insert)
+from easel.docs import FRONT_PAGE_WORDS  # noqa: E402  (after the sys.path insert)
 
 OUT = ROOT / "out" / "_check"
 OUT.mkdir(parents=True, exist_ok=True)

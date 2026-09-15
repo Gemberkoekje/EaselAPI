@@ -168,7 +168,6 @@ class Session:
         self.timelapse = bool(timelapse)
         #: The stroke budget, or ``None``. See :meth:`budget_line` and :meth:`cost`.
         self.budget = None if budget is None else int(budget)
-        self._look_counter = 0
         self._last_look: np.ndarray | None = None
         # A scrap of canvas rather than the painting: set on the copies handed out by
         # scratch() and rehearse(), and read by _look_path so a rehearsal's looks are
@@ -180,6 +179,10 @@ class Session:
         #: The overlay drawing: paths ``look()`` draws and paint never buries. See
         #: :meth:`guide`.
         self.guides: list[dict] = []
+        # Where the stack-of-bars warning last fired: the painting's mark count at
+        # the time, and how many long marks crossed the bars it was fired about.
+        # See :meth:`_banding_wanted`.
+        self._banding_told: tuple[int, int] | None = None
         self._preparation: Preparation | None = None
         #: Assisted modes this painting has used: a machine-laid sketch, or a mass
         #: blocked in on an outline traced from the reference. The protocol reserves
@@ -1715,6 +1718,13 @@ class Session:
     def erase(self, region=None, note: str = "") -> StrokeRecord:
         """Rub out the drawing, all of it or inside one region or shape.
 
+        **Both drawings**: the graphite in the canvas and the overlay :meth:`guide`
+        lays on the view. They are two mechanisms and one word -- a painter redrawing
+        an arrangement reaches for ``erase()``, and a scaffolding fan left behind on
+        the view puts two convergence points in one look, which is exactly the thing
+        the drawing exists to judge. :meth:`unguide` takes the overlay on its own,
+        and takes it by ``note``.
+
         Erase before painting rather than arguing with a line while painting. A line
         the painter has decided is wrong costs nothing to remove and costs a great
         deal to paint around.
@@ -1722,6 +1732,14 @@ class Session:
         place = as_place(region) if region is not None else None
         self._snapshot()
         self.canvas.erase_sketch(place)
+        if place is None:
+            self.guides.clear()
+        elif self.guides:
+            kept = []
+            for g in self.guides:
+                for piece in _erase_from_lines([g["points"]], place):
+                    kept.append({"points": piece, "note": g.get("note", "")})
+            self.guides[:] = kept
         record = self.history.add(
             StrokeRecord(
                 index=self._index_base + len(self.history.records),
@@ -1821,6 +1839,10 @@ class Session:
         Use :meth:`pencil` for a drawing that *should* go under the paint and show
         through it -- the underdrawing is part of the painting, and this is not.
 
+        It comes off with :meth:`unguide`, which takes the whole overlay or one
+        ``note`` of it, and with :meth:`erase`, which takes the graphite and the
+        overlay together the way redrawing an arrangement wants.
+
         Args:
             points: normalised (x, y) points. One point is a dot.
             note: a short label drawn beside the line's first point.
@@ -1850,7 +1872,10 @@ class Session:
         """Rub out the overlay drawing, or the parts of it carrying ``note``.
 
         Returns how many paths went. The whole of it is the usual thing to want, once
-        the paint has taken over from the drawing.
+        the paint has taken over from the drawing. :meth:`erase` takes the overlay
+        as well as the graphite, which is the call to reach for when the whole
+        arrangement is being redrawn; this one is for taking back one labelled part
+        of it and leaving the rest.
         """
         before = len(self.guides)
         if note is None:
@@ -2064,27 +2089,24 @@ class Session:
     def _look_path(self, path: str | Path | None, prefix: str = "look") -> Path:
         if path is not None:
             return Path(path)
-        if prefix == "rehearse" or self._is_trial:
-            return self._next_rehearsal_path()
-        self._look_counter += 1
-        return self.out_dir / f"{prefix}_{self._look_counter:03d}.png"
+        return self._next_free_path("rehearse" if self._is_trial else prefix)
 
-    def _next_rehearsal_path(self) -> Path:
-        """The next free ``rehearse_NNN.png`` under :attr:`out_dir`.
+    def _next_free_path(self, prefix: str) -> Path:
+        """The next free ``<prefix>_NNN.png`` under :attr:`out_dir`.
 
-        Numbered from what is on disk rather than from a counter, because there is
-        nowhere to keep a counter: a rehearsal runs on a copy of the session and the
-        copy is thrown away. ``easel run --rehearse`` therefore restarted at ``001``
-        every time -- over the painting's own ``look_001.png``, and then over the
-        previous rehearsal. Putting two versions of a pass side by side is the whole
-        reason to rehearse one twice, and only the latest could ever be looked at.
+        Numbered from what is on disk rather than from a counter, because a counter
+        only knows about the session holding it. A rehearsal has nowhere to keep one
+        at all -- it runs on a copy of the session and the copy is thrown away, so
+        ``easel run --rehearse`` restarted at ``001`` every time, over the painting's
+        own ``look_001.png`` and then over the previous rehearsal. The same defect
+        reaches further than rehearsals: **two sessions sharing an ``out_dir``
+        overwrite each other**, each counting from 1 in ignorance of the other. One
+        painter ran four of the nine exercises from one script, got one file written
+        four times, and lost all four images in the one part of the method that is
+        *only* looking. A directory is the thing both sessions can see, so the
+        directory is what the number comes from.
         """
-        highest = 0
-        for existing in self.out_dir.glob("rehearse_*.png"):
-            number = existing.stem[len("rehearse_"):]
-            if number.isdigit():
-                highest = max(highest, int(number))
-        return self.out_dir / f"rehearse_{highest + 1:03d}.png"
+        return self.out_dir / f"{prefix}_{_highest_numbered(self.out_dir, prefix) + 1:03d}.png"
 
     # -- planning ---------------------------------------------------------------
     def preview(
@@ -2515,7 +2537,6 @@ class Session:
         trial.budget = self.budget
         trial.timelapse = False
         trial._is_trial = True
-        trial._look_counter = 0
         # The painting's own last look, so `look(diff=True)` inside a rehearsed pass
         # tints what the pass would change. A trial starting with none could only
         # diff a rehearsal against itself, which is to say against nothing -- and
@@ -2525,6 +2546,9 @@ class Session:
         trial._last_look = self._last_look
         trial.marks = self.marks
         trial.guides = self.guides
+        # A tuple, so the trial deciding it has been told does not tell the painting:
+        # a rehearsed pass gets the same answer the paid pass will get.
+        trial._banding_told = self._banding_told
         trial._preparation = self._preparation
         trial.assisted = []
         trial._index_base = self._index_base + len(self.history.records)
@@ -3122,7 +3146,13 @@ class Session:
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
           degrees of each other, from two or more calls, and most of the long marks
-          in the pass;
+          in the pass. **Said once**, and again only when the picture has acquired
+          a long mark ``_REPORT_CROSSING_DEG`` off the bars it was said about. It is
+          the one rule here that can be *right and useless*: its own text concedes
+          *unless the subject runs that way*, it cannot tell whether the subject
+          does, and on a subject that does -- joists, a waterline, a reflection -- it
+          fired on five passes running until the painter stopped reading it, which
+          means it was unread on the pass where it was right;
         - **a graded passage laid too narrow** -- five or more long parallel marks at
           three or more colours, in one run with no gap wider than four brushes and
           with their colours turning at most once, stepped further apart than half
@@ -3162,6 +3192,16 @@ class Session:
           already spent the warm ground the whole picture had been planned around.
           It says so under ``_GROUND_FLOOR``, which is the one judgement in here.
 
+        **What this cannot see is a composition**, and it says ``nothing to report`` to
+        a dead one. Every rule here is about a mark, because a mark is what the log
+        holds. One painting's largest mistake was its first arrangement -- it made the
+        distant opening the hero and left the subject an empty band across the top of
+        the frame -- and every pass the check approved was locally clean. That is a
+        boundary rather than a fault: composition is carried by the drawing, which is
+        free, and judged by looking at it. It is also the argument for putting *why
+        did you choose this subject* on the closing checklist, where a painter answers
+        it, rather than here, where nothing can.
+
         Two more need the shape and so fire at the call instead: a shaped
         ``block_in`` with ``direction`` left off costing over 2.5x its axis price (or
         a sequence of directions costing over 2.5x its own dearest angle), and a round
@@ -3174,7 +3214,8 @@ class Session:
         Args:
             since: the log index the pass began at -- ``len(s.history.records)``
                 before the pass -- so the check covers the pass alone. Omitted, the
-                whole log.
+                whole log, and the one rule that decays does not: an audit asked for
+                says everything it has.
             subject_share: the share of the marks the plan gave the subject, ``0..1``.
 
         Returns:
@@ -3204,7 +3245,14 @@ class Session:
         earlier = len(before) + sum(
             1 for r in records[:start] if r.kind not in History.UNPAINTED_KINDS
         )
-        findings = _pass_findings(marks, earlier, self.canvas)
+        paid = before + [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        # The stack-of-bars line decays over a pass and not over the painting: what
+        # makes a warning skimmable is being printed after every pass unasked, and
+        # `--check` is asked for. An audit says everything it has.
+        findings = _pass_findings(
+            marks, earlier, self.canvas,
+            banding=None if since is None else self._banding_wanted(paid),
+        )
         scope = "this pass" if since is not None else "the painting"
         head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
         if findings:
@@ -3212,7 +3260,6 @@ class Session:
         else:
             head += "nothing to report"
         lines = [head] + [f"  - {line}" for line in findings]
-        paid = before + [r for r in records if r.kind not in History.UNPAINTED_KINDS]
         on_it = [r for r in paid if "subject" in str(r.note).lower()]
         if on_it:
             share = len(on_it) / max(len(paid), 1)
@@ -3234,6 +3281,35 @@ class Session:
                          f"some")
             lines.append(line)
         return "\n".join(lines)
+
+    def _banding_wanted(self, painting: list[StrokeRecord]):
+        """Whether the stack-of-bars line is worth printing, as a test on its angle.
+
+        Said once, and again only when the picture has acquired something that
+        crosses the bars. A warning that concedes *unless the subject runs that way*
+        cannot tell whether the subject does, and on a subject that does -- joists, a
+        waterline, a reflection -- it fired on five passes running until the painter
+        stopped reading it. By the fourth it was unread on the pass where it was
+        right. That is the bristle floor's twenty-eight correctly-ignored warnings
+        again, inside the engine rather than in a file, and teaching a painter to skim
+        a line is worse than not printing it.
+
+        Re-checking the same pass says the same thing: the pass is identified by the
+        painting's mark count at its end, so ``report()`` called twice over one pass
+        answers twice, and only a *later* pass is measured against what the picture
+        has picked up since.
+        """
+        here = len(painting)
+
+        def wanted(centre: float) -> bool:
+            crossings = _crossing_marks(painting, centre, self.canvas)
+            told = self._banding_told
+            if told is None or told[0] == here or crossings > told[1]:
+                self._banding_told = (here, crossings)
+                return True
+            return False
+
+        return wanted
 
     def _note_assisted(self, what: str) -> None:
         """Record an assisted mode, once. See :attr:`assisted`."""
@@ -3267,7 +3343,11 @@ class Session:
             "timelapse": self.timelapse,
             "out_dir": str(self.out_dir),
             "budget": self.budget,
-            "look_counter": self._look_counter,
+            # Nothing here reads this back since 0.5.0 -- a look is numbered from
+            # what is in `out_dir`, which is the thing two sessions can both see.
+            # It is still written because a 0.4.0 build reads the key and would
+            # otherwise fail to load the file at all.
+            "look_counter": _highest_numbered(self.out_dir, "look"),
             "stroke_count": self.canvas.stroke_count,
             "texture_strength": self.canvas.texture_strength,
             "rng_state": _encode_rng(self.rng),
@@ -3277,6 +3357,11 @@ class Session:
             # because that is what it is: an older file has none and loads with none.
             "guides": [{"points": [[float(x), float(y)] for x, y in g["points"]],
                         "note": str(g.get("note", ""))} for g in self.guides],
+            # What the post-pass check has already said about a stack of bars. A
+            # painting worked from the shell is loaded and saved once per pass, so
+            # without this the one rule that is meant to decay restarts every pass.
+            "banding_told": (None if self._banding_told is None
+                             else [int(self._banding_told[0]), int(self._banding_told[1])]),
             "has_sketch": bool(self.canvas.has_sketch),
             "assisted": list(self.assisted),
         }
@@ -3344,7 +3429,6 @@ class Session:
                 budget = meta.get("budget")
                 s.budget = None if budget is None else int(budget)
                 s.timelapse = bool(meta["timelapse"])
-                s._look_counter = int(meta["look_counter"])
                 s.marks = {
                     k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()
                 }
@@ -3355,6 +3439,8 @@ class Session:
                 ]
                 s._preparation = None
                 s.assisted = [str(a) for a in meta.get("assisted", [])]
+                told = meta.get("banding_told")
+                s._banding_told = None if told is None else (int(told[0]), int(told[1]))
                 s._index_base = 0
                 s._is_trial = False
                 s._stream_mark = None
@@ -3464,12 +3550,12 @@ class Session:
         fresh.marks = dict(self.marks)
         fresh.guides = [dict(g) for g in self.guides]
         fresh.assisted = list(self.assisted)
-        # The replayed session shares this one's out_dir, so without carrying
-        # these across, its very next look()/preview()/rehearse()/compare() would
-        # renumber from 1 and silently overwrite an earlier look_NNN.png this
-        # session already wrote -- and ref_shape()/sketch() etc. would raise "No
-        # prepared reference yet" even though this session has one.
-        fresh._look_counter = self._look_counter
+        fresh._banding_told = self._banding_told
+        # The replayed session shares this one's out_dir. Numbering a look from the
+        # directory rather than from a per-session counter is what keeps its very
+        # next look()/preview()/rehearse()/compare() off a file this one already
+        # wrote; the preparation is carried across so that ref_shape()/sketch() etc.
+        # do not raise "No prepared reference yet" when this session has one.
         fresh._last_look = self._last_look
         fresh._preparation = self._preparation
 
@@ -3702,6 +3788,20 @@ _NOT_BRUSH_FIELDS = {
         "profile along one stroke rather than a property of the brush."
     ),
 }
+
+
+def _highest_numbered(out_dir: Path, prefix: str) -> int:
+    """The largest ``N`` in ``<out_dir>/<prefix>_NNN.png``, or ``0`` for none.
+
+    A directory is the one piece of state every session writing into it can see,
+    so it is where a look's number comes from. See :meth:`Session._next_free_path`.
+    """
+    highest = 0
+    for existing in Path(out_dir).glob(f"{prefix}_*.png"):
+        number = existing.stem[len(prefix) + 1:]
+        if number.isdigit():
+            highest = max(highest, int(number))
+    return highest
 
 
 def _check_smudge_size(size: float) -> None:
@@ -4448,6 +4548,7 @@ _REPORT_ANGLE_MARKS = 12        # a stack: this many long marks within...
 _REPORT_ANGLE_DEG = 6.0         # ...this many degrees of one another
 _REPORT_SMALL_BRISTLE = 0.025   # a comb under this is four streaks with gaps...
 _REPORT_STARVED_LOAD = 0.6      # ...unless it was starved this far, where they are the mark
+_REPORT_CROSSING_DEG = 30.0     # a long mark this far off the bars runs across them
 _REPORT_EARLY_MARKS = 60        # small marks inside the first this many are detail first
 _REPORT_SMALL_MARK = 0.02       # ...where small is under this
 _REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
@@ -4483,6 +4584,25 @@ def _mark_length_and_angle(r: StrokeRecord, canvas) -> tuple[float, float]:
     dx = (float(pts[-1, 0]) - float(pts[0, 0])) * canvas.width / long
     dy = (float(pts[-1, 1]) - float(pts[0, 1])) * canvas.height / long
     return math.hypot(dx, dy), math.degrees(math.atan2(dy, dx)) % 180.0
+
+
+def _angle_centre(angles) -> float:
+    """The middle of a cluster of angles that are already ``mod 180``.
+
+    A plain median is wrong here and wrong in the one direction that matters most.
+    Marks lying along the horizontal come back as a mixture of ``179`` and ``1``,
+    which the clustering above correctly reads as two degrees apart -- and whose
+    median is ``90``. So the commonest stack of bars there is named *vertical*, and
+    the line a painter is meant to act on points at right angles to the fault. The
+    same number steers :func:`_graded_band`'s normal, where it measures the spread
+    of a horizontal band *along* the band instead of across it.
+
+    Doubling the angles maps ``mod 180`` onto the whole circle, where a mean has no
+    seam, and halving the result brings it back.
+    """
+    doubled = np.radians(np.asarray(list(angles), dtype=np.float64) * 2.0)
+    mean = math.atan2(float(np.sin(doubled).mean()), float(np.cos(doubled).mean()))
+    return math.degrees(mean) / 2.0 % 180.0
 
 
 def _call_of(r: StrokeRecord):
@@ -4601,7 +4721,7 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
 
     # Where each mark sits across the stack, in the brush's own unit.
     long_side = float(canvas.long_side)
-    angle = math.radians(float(np.median([a for _, a in best])))
+    angle = math.radians(_angle_centre(a for _, a in best))
     nx, ny = -math.sin(angle), math.cos(angle)
     across = []
     for r, _ in best:
@@ -4672,8 +4792,46 @@ def _value_turns(run: list[StrokeRecord]) -> int:
     return sum(1 for a, b in zip(signs, signs[1:], strict=False) if a != b)
 
 
-def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]:
-    """The lines :meth:`Session.report` prints, one per rule that fired."""
+def _crossing_marks(records, centre: float, canvas) -> int:
+    """Long marks that run *across* a stack of bars at ``centre`` rather than along it.
+
+    What re-arms the stack-of-bars warning. The warning's own text concedes *unless
+    the subject runs that way*, and it cannot tell whether the subject does -- so it
+    is said once, and again only when the picture has acquired something that crosses
+    what it was said about. This is how the picture is asked.
+
+    ``_REPORT_CROSSING_DEG`` is 30 rather than the 6 the cluster is gathered within,
+    because the question here is not *is this mark in the stack* but *does this mark
+    read as running across it*. A piling 15 degrees off a run of joists is still part
+    of the layer cake; the same piling square to them is what breaks it.
+
+    30 because the pier's own angles are bimodal and it sits in the gap: of its 251
+    long marks, 175 lie within 10 degrees of the bars and 43 within 20 degrees of
+    square to them, with 33 spread between. Swept over that painting pass by pass,
+    **every threshold from 20 to 60 degrees prints the same three lines** -- the
+    first stack, the pilings crossing it, and the stack rebuilt afterwards. 15 prints
+    four and 0 prints seven, which is the rule with no decay at all. So the number is
+    the middle of a plateau rather than a knee, and nothing in reach of it is close.
+    """
+    n = 0
+    for r in records:
+        length, angle = _mark_length_and_angle(r, canvas)
+        if length <= 0.0 or length < 2.0 * float(r.params.get("size", 0.0)):
+            continue
+        off = abs(angle - centre)
+        if min(off, 180.0 - off) >= _REPORT_CROSSING_DEG:
+            n += 1
+    return n
+
+
+def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
+                   banding=None) -> list[str]:
+    """The lines :meth:`Session.report` prints, one per rule that fired.
+
+    ``banding`` decides whether the stack-of-bars line is worth printing this time,
+    given the angle it would be printed about. Left off, it always is; the session
+    passes :meth:`Session._banding_wanted`, which is what makes that one rule decay.
+    """
     out: list[str] = []
     if not marks:
         return out
@@ -4703,14 +4861,15 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]
             best = near
     if (len(best) >= _REPORT_ANGLE_MARKS and len(best) >= 0.6 * len(long_marks)
             and len({_call_of(r) for r, _ in best}) >= 2):
-        centre = float(np.median([a for _, a in best]))
-        out.append(
-            f"{len(best)} of {len(long_marks)} long marks run within "
-            f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
-            f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars unless the "
-            f"subject runs that way. Vary direction= between passes, or sweep each "
-            f"mass along its own axis."
-        )
+        centre = _angle_centre(a for _, a in best)
+        if banding is None or banding(centre):
+            out.append(
+                f"{len(best)} of {len(long_marks)} long marks run within "
+                f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
+                f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars unless "
+                f"the subject runs that way. Vary direction= between passes, or sweep "
+                f"each mass along its own axis."
+            )
 
     # A hand-laid graded passage whose brush is too narrow for its own step.
     band = _graded_band(long_marks, canvas)
