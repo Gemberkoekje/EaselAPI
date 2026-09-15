@@ -16,6 +16,8 @@ Where a test could ask the API what it did, it asks the canvas instead.
 
 from __future__ import annotations
 
+import math
+import re
 import warnings
 
 import numpy as np
@@ -38,6 +40,7 @@ from easel import (
 )
 from easel.cli import main, run_script
 from easel.palette import Palette
+from easel.session import GLAZE_OPACITY
 
 
 def make(tmp_path, **kw):
@@ -1441,18 +1444,17 @@ def test_a_banded_scumble_says_when_its_brush_is_wider_than_the_passes_at_one_en
 def test_a_value_plan_names_the_pairs_planned_within_the_threshold(tmp_path):
     """Every place inside tolerance and two of them planned 0.00 apart: the sheet scored
     each against its own target and never the gap *between* two, which is what 0.10
-    means. It asks now -- a question, because three of that painting's four close
-    pairs were masses that never met."""
+    means. It lists them now -- and says which of them meet, per the round below."""
     s = make(tmp_path)
     result = s.compare({Region(0.0, 0.0, 1.0, 0.3, name="sea"): 0.40,
                         Region(0.4, 0.3, 0.6, 0.9, name="tower"): 0.40,
                         Region(0.0, 0.9, 1.0, 1.0, name="rock"): 0.21})
-    assert result.pairs == [("sea", "tower", pytest.approx(0.0))]
+    assert result.pairs == [("sea", "tower", pytest.approx(0.0), True)]
     table = result.table()
-    assert "do these two touch" in table and "sea / tower, 0.00 apart" in table
+    assert "will read as one mass" in table and "sea / tower, 0.00 apart" in table
     apart = s.compare({Region(0.0, 0.0, 1.0, 0.3, name="sea"): 0.40,
                        Region(0.0, 0.9, 1.0, 1.0, name="rock"): 0.21})
-    assert apart.pairs == [] and "do these two touch" not in apart.table()
+    assert apart.pairs == [] and "planned within" not in apart.table()
 
 
 # -- undo puts the generator back where a clean rebuild has it ------------------------------
@@ -2103,3 +2105,771 @@ def test_sampling_a_cell_measures_the_cell_and_not_the_mass_in_it(tmp_path):
     by_shape = p.value_of(s.sample(bird))
     assert abs(by_shape - 0.30) < 0.06, "the mass itself is near where it was mixed"
     assert by_cell > by_shape + 0.12, "and the cell is mostly the water around it"
+
+
+# ======================================================================================
+# The tenth session: a fogged greenhouse wall from outside, and the winter greenhouse
+# interior painted before it and filed after it. Both rounds are in here together: they
+# raised the same two items from opposite directions -- what `direction=` names, and a
+# check that fires on a row of separate things -- and a test that guarded only one of
+# them would be guarding half a fix.
+# ======================================================================================
+
+# -- the check reads the painting behind a rehearsal -----------------------------------
+def test_the_first_sixty_rule_counts_the_painting_a_rehearsal_stands_on(tmp_path):
+    """The rule that says *detail before the masses are down* policed the painting's
+    first sixty marks and fired at 135, 162, 190, 243, 260 and 273 strokes spent -- on
+    the ``--rehearse`` path only. A rehearsal copy starts with an empty log, so the
+    rule's *earlier* term was nought however far along the painting was, and the guide
+    has every painter rehearse first: the false positive was the answer they always
+    got, and the correct silence only arrived after the decision it was meant to
+    inform."""
+    s = make(tmp_path)
+    for i in range(70):
+        s.stroke([(0.05 + 0.012 * i, 0.20), (0.05 + 0.012 * i, 0.30)], "flat",
+                 "burnt_umber", size=0.05)
+    assert s.spent >= 60
+
+    def detail(session):
+        before = len(session.history.records)
+        for i in range(9):
+            session.dab(0.2 + 0.03 * i, 0.8, "round_hard", "titanium_white", size=0.01)
+        return session.report(since=before)
+
+    trial = s.scratch()
+    assert trial.history.records == []
+    assert "detail before the masses are down" not in detail(trial)
+    assert "detail before the masses are down" not in detail(s)
+
+    # And it still fires where it should: nine small marks on a bare canvas.
+    assert "detail before the masses are down" in detail(make(tmp_path).scratch())
+
+
+def test_a_rehearsals_subject_share_is_the_paintings_share(tmp_path):
+    """The other rule that reads across passes, and the same hole. A rehearsed pass
+    reported its own marks as the whole painting, so a subject share measured where the
+    guide says to measure it -- at the moment the subject is finished, which is a
+    rehearsal -- came back as 100% of nine marks."""
+    s = make(tmp_path)
+    for i in range(6):
+        s.stroke([(0.05, 0.1 + 0.1 * i), (0.95, 0.1 + 0.1 * i)], "flat", "burnt_umber",
+                 size=0.05)
+    trial = s.scratch()
+    trial.stroke([(0.2, 0.75), (0.8, 0.75)], "flat", "titanium_white", size=0.05,
+                 note="subject")
+    trial.stroke([(0.2, 0.85), (0.8, 0.85)], "flat", "titanium_white", size=0.05,
+                 note="subject")
+    assert "subject: 2 of 8 marks so far (25%)" in trial.report()
+    assert "against 40% planned" in trial.report(subject_share=0.40)
+    assert "behind" in trial.report(subject_share=0.40)
+
+
+# -- a jitter that is a multiple of the default rather than a tweak --------------------
+def test_a_jitter_far_past_the_default_says_so(tmp_path):
+    """``jitter=0.5`` was accepted in silence and beaded every member of a greenhouse
+    frame. It is twenty-five times the default, from a call that otherwise looked
+    exactly like the recipe -- and the check warns about a pressure list on a chisel
+    tip, which is a subtler fault than this one. The number behind the wall is width:
+    a stroke is 1.2 brushes across at the default and 3.7 at ``0.5``."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="25 times the default"):
+        s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.03, jitter=0.5)
+
+    # The wall is five times the default, and under it nothing is said.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.stroke([(0.1, 0.6), (0.9, 0.6)], "flat", "burnt_umber", size=0.03, jitter=0.1)
+        s.stroke([(0.1, 0.7), (0.9, 0.7)], "flat", "burnt_umber", size=0.03)
+        # A brush built by hand is the painter's own, the way the chisel floor has it.
+        s.stroke([(0.1, 0.8), (0.9, 0.8)], brush("flat", size=0.03, jitter=0.5),
+                 "burnt_umber")
+
+    # And it is the width that is measured, not the adjective: the band the painter
+    # got is the band the warning quotes.
+    wide = Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                   out_dir=tmp_path, timelapse=False)
+    bands = []
+    for y, j in ((0.35, 0.02), (0.65, 0.5)):
+        before = wide.canvas.rgb.copy()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            wide.stroke([(0.1, y), (0.9, y)], "liner", "burnt_umber", size=0.005,
+                        jitter=j, pressure="even")
+        rows = np.where((np.abs(wide.canvas.rgb - before).sum(axis=2) > 1e-3).any(axis=1))[0]
+        bands.append((rows.max() - rows.min() + 1) / (0.005 * 1024))
+    assert bands[0] < 1.4 and bands[1] > 3.0
+
+
+# -- inset() leaves a boundary on the canvas frame where it is -------------------------
+def _right_column_bare(session, place, **kw):
+    """How much of the canvas's last column, where the mass reaches it, is bare ground."""
+    rows = slice(int(0.15 * session.canvas.height), int(0.85 * session.canvas.height))
+    ground = session.canvas.values()[rows, -1] / 255.0
+    session.block_in(place, solid=True, **kw)
+    now = session.canvas.values()[rows, -1] / 255.0
+    return float(np.mean(np.abs(now - ground) < 0.02))
+
+
+def test_inset_does_not_erode_a_boundary_that_lies_on_the_frame(tmp_path):
+    """``edge="clean"`` has dropped its inset at the frame since 0.2.0, on the stated
+    principle that *a mass that meets the frame should run off it*; plain ``inset()``
+    eroded it, and the asymmetry is invisible from the call. ``GLASS.inset(0.024)``
+    pulled a glass wall off ``x = 1.0``, the ground showed down the right edge of the
+    finished painting, and the defect survived to the final inspection pass."""
+    glass = polygon([(0.55, 0.05), (1.05, 0.02), (1.05, 0.98), (0.55, 0.95)], name="glass")
+    kw = dict(brush="flat", color="burnt_umber", size=0.06)
+    assert _right_column_bare(make(tmp_path), glass.inset(0.024), **kw) == 0.0
+    assert _right_column_bare(make(tmp_path), glass.inset(0.024, frame=False), **kw) > 0.9
+
+    # Per coordinate, not per point: the side at the frame stays, the rest moves in.
+    kept = glass.inset(0.024)
+    assert [x for x, _ in kept.points if x >= 1.0] == [1.0, 1.0]
+    assert min(x for x, _ in kept.points) > 0.55
+    assert min(y for _, y in kept.points) > 0.02
+
+    # A region reaching the frame behaves the same way, and one that does not is
+    # eroded exactly as before.
+    assert Region(0.5, 0.0, 1.0, 0.8).inset(0.05) == Region(0.55, 0.0, 1.0, 0.75)
+    assert Region(0.2, 0.2, 0.8, 0.8).inset(0.05) == Region(0.25, 0.25, 0.75, 0.75)
+    # And growing is untouched: past the frame is where it was going anyway.
+    assert Region(0.5, 0.0, 1.0, 0.8).inset(-0.05).bounds == pytest.approx(
+        (0.45, 0.0, 1.0, 0.85))
+    inside = make(tmp_path).circle((0.5, 0.5), 0.16)
+    assert inside.inset(0.03).points == inside.inset(0.03, frame=False).points
+
+
+# -- cover() can be told to stay inside the area it was given ---------------------------
+def _cover_footprint(session, patch, **kw):
+    """The share of ``patch``'s own area that a burial actually painted."""
+    session.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "burnt_umber", size=0.12,
+                     solid=True)
+    session.dry()
+    before = session.canvas.rgb.copy()
+    session.cover(patch, "titanium_white", **kw)
+    changed = np.abs(session.canvas.rgb - before).sum(axis=2) > 1e-3
+    w, h = session.size
+    asked = (patch.x1 - patch.x0) * w * (patch.y1 - patch.y0) * h
+    return float(changed.sum() / asked)
+
+
+def test_cover_has_a_form_that_does_not_overrun_the_area(tmp_path):
+    """``cover`` is offered as the answer to *you will reach for undo*, and its recipe
+    runs the ends of each pass outside the area by design. On a flat passage that is
+    right. Used to bury a mis-made leaf inside a worked pane of glass it put a flat
+    pale panel across a visibly larger patch, and the painter buried ``cover``'s own
+    output by hand with marks shaped like the pane."""
+    patch = Region(0.905, 0.380, 0.985, 0.478)
+
+    def on_a_fresh_canvas(**kw):
+        # 1024x768, the canvas the docstring's 3.07x and 0.93x were measured on.
+        return _cover_footprint(
+            Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False), patch, size=0.06, **kw)
+
+    assert on_a_fresh_canvas() > 2.5, "the recipe runs its ends outside, as documented"
+    assert on_a_fresh_canvas(edge="clean") < 1.05, "and the clean form stops at the line"
+
+
+# -- how much ground is still showing --------------------------------------------------
+def test_the_check_says_how_much_ground_is_still_showing(tmp_path):
+    """The closing checklist asks *is there anywhere the ground still shows through?
+    There should be* -- and there was no way to tell short of building a bare canvas
+    and diffing it, which is what a painter did after the painting was finished,
+    having already lost the warm ground the whole picture was planned around. The
+    instrument is the diff, and it is exact: same ground, same texture, same seed."""
+    s = Session(400, 300, texture="linen", ground="umber_wash", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    assert s.canvas.ground_showing() == 1.0
+    assert "ground:" not in s.report(), "nothing painted yet is not a finding"
+
+    s.block_in(Region(0.0, 0.0, 1.0, 1.0), "bristle", "ultramarine", size=0.09,
+               density=0.7)
+    loose = s.canvas.ground_showing()
+    assert 0.01 < loose < 0.2, "a first pass leaves the ground showing, as the guide says"
+    assert f"ground: {loose:.2%}" in s.report()
+    assert "the checklist asks for some" not in s.report()
+
+    s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "ultramarine", size=0.09,
+               density=1.0, solid=True)
+    assert s.canvas.ground_showing() < 0.001
+    assert "the checklist asks for some" in s.report()
+
+    # Per channel, not by value: a film at the ground's own lightness has covered it.
+    cool = Session(400, 300, texture="linen", ground="umber_wash", seed=7,
+                   out_dir=tmp_path, timelapse=False)
+    same_value = cool.palette.at_value("ultramarine",
+                                       cool.palette.value_of(cool.canvas.bare().mean(axis=(0, 1))))
+    cool.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", same_value, size=0.09,
+                  density=1.0, solid=True)
+    assert cool.canvas.ground_showing() < 0.01
+
+    # And graphite is not paint: a drawing over the ground is still ground showing.
+    drawn = Session(400, 300, texture="linen", ground="umber_wash", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+    drawn.pencil([(0.1, 0.1), (0.9, 0.9)], pressure=1.0)
+    assert drawn.canvas.ground_showing() == 1.0
+
+
+# -- the graded-passage rule, narrowed to a passage ------------------------------------
+def _ramped(tmp_path):
+    """A wide canvas with eight values of one mixture, light to dark."""
+    s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    p = s.palette
+    for i, v in enumerate((0.30, 0.38, 0.46, 0.54, 0.62, 0.70, 0.78, 0.86)):
+        p[f"v{i}"] = p.at_value(p.mix("cadmium_red", "cerulean", 0.3), v)
+    return s
+
+
+def _lay(s, y, col, size):
+    s.stroke([(0.05, y), (0.95, y)], "flat", col, size=size, load=1.0, load_falloff=0.0)
+
+
+def test_a_row_of_separate_things_is_not_a_graded_passage(tmp_path):
+    """Three times in one painting, and once in the next. Read against the rule's own
+    code it took the largest set of long marks within six degrees of one angle across
+    the whole pass, wanted three colours and a median step, and never asked whether
+    the marks formed one contiguous band or whether their colours stepped one way.
+
+    Ten pots on a bench, three vertical body strokes each at three terracotta values,
+    came back as *30 marks at stepping colours ... 1.2 of that step*. They are ten
+    objects: the step is three quarters of a brush **inside** a pot, and the gaps that
+    matter are the ones between pots."""
+    s = _ramped(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for i in range(10):
+            x = 0.10 + i * 0.075
+            for j, col in enumerate(("v1", "v3", "v5")):
+                s.stroke([(x + j * 0.004, 0.52), (x + j * 0.004, 0.58)], "flat", col,
+                         size=0.005)
+    assert _band_line(s) == ""
+
+
+def test_two_ramps_laid_end_to_end_are_not_one_passage(tmp_path):
+    """Two overlapping ``scumble`` ramps over adjacent bands, ``n=7`` then ``n=8``,
+    drew *15 marks at stepping colours* -- the two calls summed -- and the remedy it
+    suggested was three times either band's own step, which would have been wrong for
+    both. A passage steps one way; a sequence that turns twice is two of them."""
+    one = _ramped(tmp_path)
+    for i in range(8):
+        _lay(one, 0.18 + i * 0.028, f"v{i}", 0.03)
+    assert "8 marks at stepping colours" in _band_line(one), "one ramp still says so"
+
+    two = _ramped(tmp_path)
+    for i in range(8):
+        _lay(two, 0.18 + i * 0.028, f"v{i % 4}", 0.03)
+    assert _band_line(two) == ""
+
+
+def test_a_smudge_lays_no_colour_and_is_not_counted_in_a_passage(tmp_path):
+    """*5 marks at stepping colours run parallel 0.028 apart, and the narrowest brush
+    laying them is 0.02* -- where the 0.02 was a smudge, counted with two block-in
+    passes and two glazes. A smudge drags what is already there; it contributed no
+    colour to the passage it was made the narrowest brush of."""
+    quiet = _ramped(tmp_path)
+    for i in range(5):
+        _lay(quiet, 0.20 + i * 0.028, f"v{i}", 0.06)
+    assert _band_line(quiet) == "", "a brush this wide for this step is right"
+
+    smudged = _ramped(tmp_path)
+    for i in range(5):
+        _lay(smudged, 0.20 + i * 0.028, f"v{i}", 0.06)
+    smudged.smudge([(0.05, 0.34), (0.95, 0.34)], size=0.02)
+    assert _band_line(smudged) == ""
+
+    # A mark that does lay colour at that size is the fault the rule was written for.
+    painted = _ramped(tmp_path)
+    for i in range(5):
+        _lay(painted, 0.20 + i * 0.028, f"v{i}", 0.06)
+    _lay(painted, 0.34, "v5", 0.02)
+    assert "6 marks at stepping colours" in _band_line(painted)
+
+
+# -- a round tip printing its own outline ----------------------------------------------
+def _leaf():
+    """The leaf pressed flat on the glass, off ``paintings/fogged_glass/p8_wet.py``."""
+    return hull([(0.918, 0.405), (0.949, 0.393), (0.968, 0.424),
+                 (0.951, 0.462), (0.921, 0.448)], name="leaf")
+
+
+def test_several_small_round_marks_at_no_wobble_are_one_disc(tmp_path):
+    """``tip_wobble`` defaults to ``0``, which is the disc the documentation warns
+    about, so *several small marks with round_hard or liner* is the failure by
+    default and the fix is opt-in. The closing checklist asks *is any small mark a
+    disc, a capsule or a rectangle -- the tool's own shape rather than the thing's?*
+    and this is that question, counted."""
+    s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    for i in range(4):
+        s.dab(0.30 + 0.05 * i, 0.5, "round_hard", "titanium_white", size=0.012, press=3)
+    assert "one disc printed 4 times" in s.report()
+
+    wobbled = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                      out_dir=tmp_path, timelapse=False)
+    for i in range(4):
+        wobbled.dab(0.30 + 0.05 * i, 0.5, "round_hard", "titanium_white", size=0.012,
+                    press=3, tip_wobble=0.7)
+    assert "one disc printed" not in wobbled.report()
+
+    # A liner drawing fine lines is the guide's own advice and is not this fault: a
+    # round tip stops reading as a capsule at about seven times its own width.
+    lines = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+    for i in range(4):
+        lines.stroke([(0.30 + 0.05 * i, 0.3), (0.31 + 0.05 * i, 0.7)], "liner",
+                     "titanium_white", size=0.004)
+    assert "one disc printed" not in lines.report()
+
+
+def test_a_round_tip_blocking_in_a_small_shape_says_so(tmp_path):
+    """A ``hull`` ``0.046`` across at its narrowest with a ``round_hard`` at
+    ``size=0.013`` -- a leaf pressed on the glass -- printed the shape's own scalloped
+    boundary and came back, in the painter's word, a cauliflower. It was relaid as two
+    tapering strokes that meet plus a midrib. A disc's overhang goes out all the way
+    round, so at that share the mass lands half again the area of the shape."""
+    s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    with pytest.warns(UserWarning, match="round tip .* at size=0.013"):
+        s.block_in(_leaf(), "round_hard", "titanium_white", direction=34, density=1.0,
+                   size=0.013, pressure="even")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.block_in(_leaf(), "flat", "titanium_white", direction=34, density=1.0,
+                   size=0.013, pressure="even")
+        s.block_in(_leaf(), "round_hard", "titanium_white", direction=34, density=1.0,
+                   size=0.009, pressure="even")
+
+    # And what the warning is about, measured: the painted area against the shape's.
+    def landed(brush, size):
+        one = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                      out_dir=tmp_path, timelapse=False)
+        before = one.canvas.rgb.copy()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            one.block_in(_leaf(), brush, "titanium_white", size=size, density=1.0,
+                         solid=True, direction=34, pressure="even", opacity=1.0)
+        painted = np.abs(one.canvas.rgb - before).max(axis=2) > 0.01
+        return painted.sum() / _leaf().mask(1200, 800).sum()
+
+    assert landed("round_hard", 0.013) > 1.5
+    assert landed("flat", 0.013) < landed("round_hard", 0.013)
+
+
+# -- a hard clip: a pass that ends where the outline is --------------------------------
+def _lit_face():
+    """The lit band off ``scripts/probe_greenhouse_session.py``: boundaries about three
+    degrees off vertical, and no horizontal feature of its own."""
+    return polygon([(0.303, 0.268), (0.307, 0.400), (0.311, 0.540), (0.318, 0.680),
+                    (0.330, 0.820), (0.344, 0.905), (0.398, 0.940), (0.384, 0.820),
+                    (0.368, 0.680), (0.357, 0.540), (0.348, 0.400), (0.340, 0.258)]
+                   ).smooth(3)
+
+
+def _horizontal_edge_share(session, box, pad=0.01):
+    """Share of the strong edges in a region running within 10 degrees of horizontal.
+
+    The Sobel measure ``CALIBRATION.md``'s *Laying a mass along its own axis* table is
+    built on. Higher is squarer; a staircase is a run of horizontal edges where the
+    mass has no horizontal feature.
+    """
+    img = np.asarray(session.canvas.to_srgb8(impasto=True), dtype=np.float32) / 255.0
+    h, w, _ = img.shape
+    grey = (0.2126 * img[..., 0] ** 2.2 + 0.7152 * img[..., 1] ** 2.2
+            + 0.0722 * img[..., 2] ** 2.2)
+    x0, y0 = int((box.x0 - pad) * w), int((box.y0 - pad) * h)
+    x1, y1 = int((box.x1 + pad) * w), int((box.y1 + pad) * h)
+    g = grey[max(y0, 1):min(y1, h - 1), max(x0, 1):min(x1, w - 1)]
+    gy, gx = np.gradient(g)
+    mag = np.hypot(gx, gy)
+    strong = mag > max(np.percentile(mag, 90), 1e-4)
+    ang = np.degrees(np.arctan2(np.abs(gx[strong]), np.abs(gy[strong])))
+    return float((ang < 10.0).mean())
+
+
+def _laid(tmp_path, face, edge, brush="flat", size=0.020):
+    s = Session(1120, 860, texture="linen", ground="toned_warm_grey", seed=41,
+                out_dir=tmp_path, timelapse=False)
+    s.palette["v"] = s.palette.at_value(s.palette.mix("yellow_ochre", "viridian", 0.30),
+                                        0.25)
+    before = s.canvas.rgb.copy()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(face, brush, "v", size=size, density=1.0, solid=True, opacity=1.0,
+                   pressure="even", direction=90, edge=edge)
+    return s, np.abs(s.canvas.rgb - before).max(axis=2) > 0.01
+
+
+def test_a_hard_clip_ends_a_pass_where_the_outline_is(tmp_path):
+    """The chisel staircase and the half-brush spill are one defect, and it was the
+    most common way a mass went wrong in one painting: four times. A gable came back
+    as chisel ends stepping down both slopes; bench tops poked corners into the wall
+    behind them; the dark under each bench spilled half a brush above the bench's far
+    edge as a sawtooth. Three workarounds were used and none is in the recipes, one of
+    them lowering a polygon 0.12 m in world space so the overhang stayed hidden."""
+    face = _lit_face()
+    ragged, ragged_px = _laid(tmp_path, face, "ragged")
+    hard, hard_px = _laid(tmp_path, face, "hard")
+    inside = face.mask(1120, 860)
+
+    # The overhang table's own row: furthest paint past each edge, which should read
+    # zero on every side.
+    ys, xs = np.nonzero(hard_px)
+    x0, y0, x1, y1 = face.bounds
+    assert xs.min() >= x0 * 1120 - 1 and xs.max() <= x1 * 1120 + 1
+    assert ys.min() >= y0 * 860 - 1 and ys.max() <= y1 * 860 + 1
+    outside = float((hard_px & ~inside).sum()) / hard_px.sum()
+    assert outside < 0.02, "only the boundary's own feathering lands outside"
+    assert (ragged_px & ~inside).sum() > 10 * (hard_px & ~inside).sum()
+
+    # The staircase probe's row: the share of horizontal edges on a mass that has none.
+    assert _horizontal_edge_share(ragged, face.box) > 0.10
+    assert _horizontal_edge_share(hard, face.box) < 0.06
+
+    # Ragged stays the default, because a mass behind other things wants the brush to
+    # break past its boundary.
+    plain, plain_px = _laid(tmp_path, face, "ragged")
+    assert np.array_equal(plain_px, ragged_px)
+
+
+def test_a_hard_clip_is_priced_as_it_is_painted_and_replays(tmp_path):
+    """Two promises every mass here makes: the quote is the bill, and the log is the
+    painting. A clip is where the paint may land, so it has to be in the record."""
+    face = _lit_face()
+    spec = {"shape": face, "brush": "flat", "color": "burnt_umber", "size": 0.06,
+            "edge": "hard", "direction": 20}
+    s = Session(400, 300, texture="linen", ground="white", seed=7, out_dir=tmp_path,
+                timelapse=False)
+    quote = Session(400, 300, texture="linen", ground="white", seed=7, out_dir=tmp_path,
+                    timelapse=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert len(s.paint(spec)) == quote.cost(spec)
+    assert s.history.records[-1].params["clip"], "the clip is in the log"
+    assert np.array_equal(s.canvas.rgb, s.replay().canvas.rgb)
+
+    saved = s.save(tmp_path / "hard.easel")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        back = Session.load(saved).replay()
+    assert np.array_equal(s.canvas.rgb, back.canvas.rgb)
+
+
+def test_an_unknown_edge_names_all_three(tmp_path):
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match="'hard'"):
+        s.block_in(cell("D5"), "flat", "burnt_umber", edge="sharp")
+
+
+# -- direction= as a line on the screen ------------------------------------------------
+def _screen_angles(session, records):
+    """Each pass's angle in **screen** degrees, mod 180."""
+    w, h = session.size
+    out = []
+    for r in records:
+        (x0, y0), (x1, y1) = r.points[0], r.points[-1]
+        out.append(math.degrees(math.atan2((y1 - y0) * h, (x1 - x0) * w)) % 180.0)
+    return out
+
+
+def test_direction_can_be_the_line_you_can_see(tmp_path):
+    """``direction=`` is an angle in the normalised coordinates, and on a canvas that
+    is not square that is not the angle on screen: measured, ``direction=-23`` lays
+    its passes at **-12 degrees** on 1000x500 and ``45`` runs at **37** on 1024x768.
+    Every instrument agrees with every other and all of them disagree with the
+    picture, which is where the painter is looking -- one laid *passes along the
+    sloped boundary*, the remedy for a gable whose screen slope was 41 degrees, at
+    33. So hand over the line and let the engine do the arithmetic."""
+    band = Region(0.1, 0.3, 0.9, 0.7)
+    kw = dict(brush="flat", color="burnt_umber", size=0.05, density=0.9)
+
+    for (w, h), asked, on_screen in (((1000, 500), -23, 168.0), ((1024, 768), 45, 36.9)):
+        s = Session(w, h, texture="linen", ground="white", seed=7, out_dir=tmp_path,
+                    timelapse=False)
+        s.block_in(band, **kw, direction=asked)
+        assert np.median(_screen_angles(s, s.history.records)) == pytest.approx(
+            on_screen, abs=0.5), "the units moved"
+
+        # The same angle, handed over as a line drawn at it on the screen.
+        long = max(w, h)
+        run = 0.4
+        line = ((0.30, 0.50),
+                (0.30 + run * math.cos(math.radians(asked)) / (w / long),
+                 0.50 + run * math.sin(math.radians(asked)) / (h / long)))
+        t = Session(w, h, texture="linen", ground="white", seed=7, out_dir=tmp_path,
+                    timelapse=False)
+        t.block_in(band, **kw, direction=line)
+        assert np.median(_screen_angles(t, t.history.records)) == pytest.approx(
+            asked % 180.0, abs=0.5), "the line did not run where it was drawn"
+
+
+def test_a_pair_of_numbers_is_still_two_angles(tmp_path):
+    """The one thing the new form must not break: ``direction=(28, 118)`` is a cross
+    at a mass's own angle, and a number is not a point."""
+    from easel.session import _pass_directions
+    assert _pass_directions((28, 118)) == [28.0, 118.0]
+    assert _pass_directions(((0.0, 0.0), (1.0, 1.0))) == [45.0]
+    assert _pass_directions([((0.0, 0.0), (1.0, 1.0)), 90]) == [45.0, 90.0]
+
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match="line of two points"):
+        s.block_in(cell("D5"), "flat", "burnt_umber",
+                   direction=[(0.1, 0.2), (0.3, 0.4), (0.5, 0.6)])
+    with pytest.raises(ValueError, match="zero length"):
+        s.block_in(cell("D5"), "flat", "burnt_umber", direction=((0.2, 0.2), (0.2, 0.2)))
+
+
+def test_a_scumble_takes_the_same_line(tmp_path):
+    """``direction=`` means the same thing on every verb that takes one."""
+    from easel.session import _angle_of
+    assert _angle_of(((0.33, 0.01), (0.58, 0.29))) == pytest.approx(
+        math.degrees(math.atan2(0.28, 0.25)))
+    s = make(tmp_path)
+    p = s.palette
+    p["a"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.3)
+    p["b"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.7)
+    s.scumble(span("A1", "H4"), "a", "b", 8, direction=((0.0, 0.0), (1.0, 0.0)))
+    laid = np.median(_screen_angles(s, s.history.records))
+    assert min(laid, 180.0 - laid) < 2.0, "a horizontal line did not lay horizontal passes"
+
+
+# -- a value plan's pairs, answered rather than asked -----------------------------------
+def test_the_plan_says_which_close_pairs_actually_meet(tmp_path):
+    """``compare({place: value})`` asked the painter *do these two touch?* and the two
+    rounds after it was added answered it wrong -- one plan's ``0.00`` pair met along
+    its whole far edge. Every place is a rectangle or a shape, and whether two of them
+    overlap or share a boundary is one intersection test."""
+    s = make(tmp_path)
+    plan = {Region(0.0, 0.0, 1.0, 0.3, name="sea"): 0.40,
+            Region(0.4, 0.3, 0.6, 0.9, name="tower"): 0.40,
+            Region(0.0, 0.9, 1.0, 1.0, name="rock"): 0.42}
+    table = s.compare(plan).table()
+    assert "sea / tower, 0.00 apart (touch)" in table
+    assert "tower / rock, 0.02 apart (touch)" in table
+    # Only the touching pairs go under the line; the rest are named as not a fault.
+    assert "the rest never meet" in table and "sea / rock (apart)" in table
+
+    # A gap the painter can name: two masses a fine brush apart are adjacent, and the
+    # same two a tenth of the canvas apart are not.
+    near = {Region(0.1, 0.10, 0.9, 0.40, name="upper"): 0.70,
+            Region(0.1, 0.405, 0.9, 0.70, name="lower"): 0.68}
+    assert s.compare(near).pairs[0][3] is True
+    assert s.compare(near, near=0.001).pairs[0][3] is False
+
+    far = {Region(0.1, 0.10, 0.9, 0.30, name="upper"): 0.70,
+           Region(0.1, 0.60, 0.9, 0.90, name="lower"): 0.68}
+    result = s.compare(far)
+    assert result.pairs[0][3] is False
+    assert "none of them meet" in result.table()
+
+
+# -- a count-only rehearsal: the price of a compound recipe -----------------------------
+def _every_verb(s):
+    """One call of each verb that marks the canvas, including a compound helper."""
+    s.pencil([(0.1, 0.1), (0.5, 0.2), (0.9, 0.1)])
+    s.block_in(span("A1", "H3"), "bristle", "burnt_umber", size=0.09, density=0.8,
+               direction="axis")
+    s.block_in(ellipse(span("C4", "F6")), "flat", "titanium_white", size=0.04,
+               solid=True, direction=30, edge="hard")
+    s.sweep([(0.05, 0.75), (0.5, 0.72), (0.95, 0.78)], "bristle", "yellow_ochre",
+            into="down", depth=0.08, size=0.03)
+    s.scumble(span("A7", "H8"), "burnt_umber", "titanium_white", 6)
+    s.stroke([(0.2, 0.5), (0.8, 0.55)], "flat", "cerulean", size=0.02)
+    s.dab(0.5, 0.5, "round_hard", "titanium_white", size=0.01, press=3)
+    s.dry()
+    s.glaze([(0.1, 0.45), (0.9, 0.45)], "cadmium_red", opacity=0.08)
+    s.smudge([(0.2, 0.62), (0.8, 0.62)], size=0.02)
+    s.cover(cell("G7"), "burnt_umber", size=0.03)
+
+
+def test_a_counted_pass_costs_the_same_as_the_pass_it_is_counting(tmp_path):
+    """``cost()`` prices one ``block_in`` or one ``sweep``; a helper that calls a dozen
+    verbs had no price at all short of painting it on a copy, and the copy renders
+    every dab. One painter budgeted thirteen pots at about 100 strokes, rehearsed at
+    **220 against 142 left** at three minutes a go, and rebuilt the recipe from
+    strokes at 108. The count is exact rather than an estimate: pass geometry is
+    settled before anything is stamped."""
+    def run(count_only):
+        s = Session(512, 384, texture="linen", ground="toned_grey", seed=7,
+                    out_dir=tmp_path, timelapse=False)
+        trial = s.scratch(count_only=count_only)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _every_verb(trial)
+        return s, trial
+
+    base, painted = run(False)
+    _, counted = run(True)
+
+    assert counted.spent == painted.spent and counted.spent > 0
+    assert len(counted.history.records) == len(painted.history.records)
+    for a, b in zip(painted.history.records, counted.history.records, strict=True):
+        assert (a.kind, a.brush, a.note) == (b.kind, b.brush, b.note)
+        assert a.points == b.points
+        assert a.dabs == b.dabs
+        assert a.params.get("size") == b.params.get("size")
+    assert counted.report(since=0) != ""
+    # Nothing was laid, so the canvas it borrowed is the canvas it started from.
+    assert np.array_equal(counted.canvas.rgb, base.canvas.rgb)
+    assert "ground:" not in counted.report(since=0), "it has no ground to report on"
+
+
+def test_a_counted_film_aimed_at_a_value_says_it_was_not_solved(tmp_path):
+    """The one question counting cannot answer. What a film delivers is measured off
+    the paint under it, and a count-only run has laid none of its own pass -- so the
+    search is skipped rather than answered against a canvas that does not exist, and
+    said out loud, because an out-of-reach value raises when it is painted."""
+    s = make(tmp_path)
+    p = s.palette
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.30)
+    p["warm"] = p.at_value(p.mix("cadmium_red", "yellow_ochre", 0.4), 0.62)
+    s.block_in(span("A1", "H8"), "flat", "dark", size=0.18, solid=True,
+               pressure="even", direction="horizontal")
+    s.dry()
+
+    counted = s.scratch(count_only=True)
+    with pytest.warns(UserWarning, match="priced but not solved"):
+        counted.glaze([(0.2, 0.5), (0.8, 0.5)], "warm", to_value=0.42, size=0.18)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")           # said once, however many films
+        counted.glaze([(0.2, 0.6), (0.8, 0.6)], "warm", to_value=0.42, size=0.18)
+    assert counted.spent == s.spent + 2
+
+    # A rehearsal still solves it, which is what a rehearsal is for.
+    rehearsed = s.scratch()
+    rehearsed.glaze([(0.2, 0.5), (0.8, 0.5)], "warm", to_value=0.42, size=0.18)
+    assert rehearsed.history.records[-1].params["opacity"] != GLAZE_OPACITY
+
+
+def test_the_shell_can_count_a_pass(tmp_path, capsys):
+    """``easel run --count``: the price and the check, no look, nothing committed."""
+    script = tmp_path / "pots.py"
+    script.write_text(
+        "from easel import polygon\n"
+        "for i in range(6):\n"
+        "    x = 0.08 + i * 0.13\n"
+        "    body = polygon([(x, 0.60), (x + 0.09, 0.60), (x + 0.08, 0.72), (x + 0.02, 0.72)])\n"
+        "    s.block_in(body, 'flat', 'burnt_sienna', size=0.02, solid=True, direction='axis')\n"
+    )
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--budget", "300"]) == 0
+    capsys.readouterr()
+    assert main(["run", str(session), str(script), "--count"]) == 0
+    out = capsys.readouterr().out
+    assert "Counted pots.py" in out and "Nothing painted, nothing committed." in out
+    assert "check over this pass" in out
+    assert ".png" not in out, "a counted pass has nothing to look at"
+
+    # And the same pass rehearsed costs the same and does write a look.
+    assert main(["run", str(session), str(script), "--rehearse"]) == 0
+    rehearsed = capsys.readouterr().out
+    counted_strokes = re.search(r"Counted pots\.py: (\d+) strokes", out).group(1)
+    assert f"Rehearsed pots.py: {counted_strokes} strokes" in rehearsed
+    assert ".png" in rehearsed
+
+
+# -- a drawing paint cannot bury --------------------------------------------------------
+def test_a_guide_survives_the_paint_and_stays_out_of_the_picture(tmp_path):
+    """The method's own order costs a second drawing pass: landmarks before anything,
+    pencil after the far masses, near masses on top. In one painting the bench tops
+    buried the first drawing and the pass before the pots redrew every pot and the can
+    before painting them; nine of eleven paintings never made that second pass, and
+    the two passages one painter never drew were the two it named weakest. A landmark
+    survives because it is a point held beside the canvas; this is the same mechanism
+    along a path."""
+    s = Session(600, 400, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    s.guide([(0.05, 0.40), (0.50, 0.42), (0.95, 0.38)], note="bench")
+    s.pencil([(0.05, 0.60), (0.95, 0.62)])
+    assert s.spent == 0, "neither a guide nor a drawing is a stroke"
+
+    s.block_in(span("A1", "H8"), "flat", "burnt_umber", size=0.2, solid=True,
+               opacity=1.0, pressure="even")
+
+    def over(**kw):
+        """How many pixels of the view are not the canvas underneath it."""
+        view = np.asarray(s.look_image(scale=None, **kw), dtype=int)
+        bare = np.asarray(s.canvas.to_srgb8(sketch=kw.get("sketch", True)), dtype=int)
+        return int((np.abs(view - bare).sum(axis=2) > 10).sum())
+
+    assert over() > 100, "the guide is gone: paint buried it after all"
+    assert over(sketch=False) == 0, "look(sketch=False) has to leave it out"
+    # And the picture itself never has it: export goes to the canvas, not the view.
+    out = s.export(tmp_path / "painting.png")
+    assert np.array_equal(np.asarray(Image.open(out).convert("RGB")),
+                          s.canvas.to_srgb8(impasto=True, sketch=True))
+
+    # A full-strength mass buries the pencil line it was drawn over, which is what
+    # the two are for: one is the underdrawing, the other is the scaffolding.
+    drawn = [ln for ln in s.sketch_lines()]
+    assert drawn, "the pencil line is still in the log"
+    band = s.canvas.sketch[int(0.60 * 400) - 2:int(0.62 * 400) + 2]
+    assert float(band.max()) < 0.05, "the mass did not bury the graphite"
+
+
+def test_a_guide_is_carried_through_save_load_and_replay(tmp_path):
+    """It is held beside the canvas, the way the landmarks are, so it has to travel
+    the same way they do -- and an older session file has none and loads with none."""
+    s = make(tmp_path)
+    s.guide([(0.1, 0.2), (0.9, 0.25)], note="eave")
+    s.guide([(0.1, 0.8)], note="pot")
+    s.stroke([(0.2, 0.5), (0.8, 0.5)], "flat", "burnt_umber", size=0.05)
+
+    back = Session.load(s.save(tmp_path / "p.easel"))
+    assert [g["note"] for g in back.guides] == ["eave", "pot"]
+    assert back.guides[0]["points"] == [(0.1, 0.2), (0.9, 0.25)]
+    assert [g["note"] for g in s.replay().guides] == ["eave", "pot"]
+    assert [g["note"] for g in s.scratch().guides] == ["eave", "pot"]
+
+    assert s.unguide("eave") == 1 and [g["note"] for g in s.guides] == ["pot"]
+    assert s.unguide() == 1 and s.guides == []
+    with pytest.raises(ValueError, match="at least one point"):
+        s.guide([])
+
+
+# -- a smudge on a long boundary leaves a strip, not a lost edge ------------------------
+def _stepped(tmp_path, bound=0.50):
+    """A hard step from 0.19 to 0.78 across the canvas, both masses clipped to their
+    own edge so the boundary is a boundary and not a half-brush of overlap."""
+    s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    p = s.palette
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.17)
+    p["lit"] = p.at_value(p.mix("yellow_ochre", "titanium_white", 0.5), 0.78)
+    for place, colour in ((Region(0.0, 0.0, 1.0, bound), "dark"),
+                          (Region(0.0, bound, 1.0, 1.0), "lit")):
+        s.block_in(place, "flat", colour, size=0.06, solid=True, opacity=1.0,
+                   pressure="even", direction="horizontal", edge="hard")
+    s.dry()
+    return s
+
+
+def test_a_smudges_reach_does_not_grow_with_the_join(tmp_path):
+    """One pass along each under-bench line, four points along a boundary about 0.4 of
+    the canvas long, left a visible lighter band inside the dark for the whole length.
+    The session guessed the asymmetric pull was doing something extra on a long
+    boundary. It is not: the strip is the calibrated reach and nothing more, flat
+    across a sixteen-fold range of join lengths, and what changes is what the same band
+    reads as -- a softened corner over a short join, and *dark, mid, light* over a long
+    one, which is two edges where there was one."""
+    bound, row = 0.50, int(0.50 * 768)
+
+    def strip(length):
+        s = _stepped(tmp_path, bound)
+        before = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+        x0 = 0.5 - length / 2.0
+        s.smudge([(x0, bound), (x0 + length, bound)], size=0.02)
+        after = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+        c0, c1 = int((x0 + length * 0.2) * 1024), int((x0 + length * 0.8) * 1024)
+        lift = (after[:, c0:c1].mean(axis=1) - before[:, c0:c1].mean(axis=1))[:row]
+        tall = 100.0 * int((lift > 0.01).sum()) / 768
+        value = float(after[:, c0:c1].mean(axis=1)[:row][int(np.argmax(lift))])
+        return tall, value
+
+    heights, values = zip(*(strip(length) for length in (0.05, 0.10, 0.20, 0.40, 0.80)),
+                          strict=True)
+    assert max(heights) - min(heights) < 0.2, "the reach grew with the join after all"
+    assert all(abs(h - 1.3) < 0.2 for h in heights), "not the calibrated reach"
+    # And the band is a mid value, which over a long join is a second edge.
+    assert all(abs(v - 0.51) < 0.04 for v in values)

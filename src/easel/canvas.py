@@ -107,6 +107,12 @@ GROUNDS: dict[str, str] = {
 _WET_DECAY_PER_STROKE = 0.94
 _MAX_THICKNESS = 4.0
 
+#: How close to bare a pixel has to be, per sRGB channel, to count as ground still
+#: showing through. ``10/255`` is the tighter of the two a painter measured on a
+#: finished canvas whose warm ground had been chosen to be seen through and was not:
+#: **0.07%** at this, **0.32%** at ``16/255``.
+_GROUND_TOLERANCE = 10.0 / 255.0
+
 #: Graphite at full density, as sRGB. Dark and slightly cool, not black -- a pencil
 #: line on a toned ground reads as a grey, and an underdrawing that reads as black
 #: is one the painter will chase instead of paint through.
@@ -169,13 +175,7 @@ class Canvas:
         )
         self.tooth_ceiling = tooth_ceiling(self.height_map, self.grain)
 
-        ground_lin = self._resolve_ground(ground)
-        self.rgb = np.empty((self.height, self.width, 3), dtype=np.float32)
-        self.rgb[:] = ground_lin
-        # The ground is not perfectly even: the tooth shades it very slightly.
-        shade = 1.0 + (self.height_map - 0.5) * 0.06
-        self.rgb *= shade[..., None]
-        np.clip(self.rgb, 0.0, 1.0, out=self.rgb)
+        self.rgb = self.bare()
 
         self.wetness = np.zeros((self.height, self.width), dtype=np.float32)
         self.thickness = np.zeros((self.height, self.width), dtype=np.float32)
@@ -194,6 +194,48 @@ class Canvas:
     def to_px(self, x: float, y: float) -> tuple[float, float]:
         """Normalised (x, y) to pixel coordinates. Internal use."""
         return x * (self.width - 1), y * (self.height - 1)
+
+    def bare(self) -> np.ndarray:
+        """The linear RGB this canvas started as: its ground, shaded by its own tooth.
+
+        Computed rather than kept, because it is the constructor's own two lines and
+        a stored copy would be a third of a canvas carried around for a question
+        nobody used to ask. It is the reference :meth:`ground_showing` diffs against,
+        and it is exact: same ground, same texture, same seed, same shading.
+        """
+        rgb = np.empty((self.height, self.width, 3), dtype=np.float32)
+        rgb[:] = self._resolve_ground(self.ground_spec)
+        # The ground is not perfectly even: the tooth shades it very slightly.
+        rgb *= (1.0 + (self.height_map - 0.5) * 0.06)[..., None]
+        return np.clip(rgb, 0.0, 1.0, out=rgb)
+
+    def ground_showing(self, tolerance: float = _GROUND_TOLERANCE) -> float:
+        """The share of the canvas still within ``tolerance`` of bare ground, ``0..1``.
+
+        The closing checklist asks *is there anywhere the ground still shows
+        through? There should be* -- and there was no way to answer it short of
+        building a bare canvas and diffing it, which is what a painter finally did
+        **after** the painting was finished, having already lost the thing the ground
+        was chosen for. A warm ground at ``0.425`` picked so that anything showing
+        through a cool film would read as warmth coming through; the interior laid at
+        ``density=1.0, load=1.0`` bought a solid support for the fine marks and spent
+        the ground to get it, and **0.07%** of the finished canvas was still within
+        ``10/255`` of bare.
+
+        Per channel in sRGB, not by value: a cool film laid over a warm ground at the
+        same lightness has covered it, and a measure that only reads value would call
+        that bare. Graphite is not paint and does not count -- a drawing over the
+        ground is still ground showing through.
+
+        Args:
+            tolerance: how close to bare a pixel has to be to count, as a fraction of
+                the full range. The default is ``10/255``, which is the tighter of
+                the two the painter measured; ``16/255`` gave ``0.32%`` on the same
+                canvas.
+        """
+        now = linear_to_srgb(self.composite(impasto=False, sketch=False))
+        was = linear_to_srgb(self.bare())
+        return float(np.mean(np.abs(now - was).max(axis=2) <= float(tolerance)))
 
     def _resolve_ground(self, ground) -> np.ndarray:
         if isinstance(ground, str) and not ground.startswith("#"):
@@ -219,11 +261,19 @@ class Canvas:
         thickness_gain: float,
         texture_sensitivity: float,
         glaze: bool = False,
+        clip: np.ndarray | None = None,
     ) -> float:
         """Deposit one dab. Centre is in pixel coordinates and may be fractional.
 
         Everything outside the canvas is clipped away, so a stroke can safely run
         off the edge -- which is what a painter does at the border of a canvas.
+
+        ``clip`` is a second, optional mask the size of the canvas: the dab is
+        multiplied by it, so a pass can be held inside an outline rather than
+        stopping wherever its tip happens to fall. That is what
+        ``block_in(edge="hard")`` is, and it is the only way this engine ends a pass
+        on a line rather than on a chisel end. Fractional values feather the
+        boundary; zero is outside it.
 
         Returns:
             How much paint actually landed, as the sum of the deposited alpha --
@@ -245,6 +295,10 @@ class Canvas:
         if cx1 <= cx0 or cy1 <= cy0:
             return 0.0
         sub = mask[sy0 : sy0 + (cy1 - cy0), sx0 : sx0 + (cx1 - cx0)]
+        if clip is not None:
+            sub = sub * clip[cy0:cy1, cx0:cx1]
+            if not np.any(sub > 1e-4):
+                return 0.0
 
         # Gating tooth: the surface height, roughened by the aperiodic grain.
         tooth = (self.height_map[cy0:cy1, cx0:cx1] * _TOOTH_HEIGHT_W

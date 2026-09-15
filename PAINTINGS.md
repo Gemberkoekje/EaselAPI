@@ -534,10 +534,11 @@ What it does not do, by its own account: the bare tree at the left was spent on 
 is still a grey mass with spokes, the left third is haze rather than fog in one place, and
 the warm ground — chosen so that anything left showing would read as warmth coming
 through the cool film, which is the whole subject — was buried to `0.07%` of the canvas
-in exchange for a solid support, and not noticed until the closing measurement. Its
-critique of the engine and the guide is the open section at the top of
-[`SUGGESTIONS.md`](SUGGESTIONS.md), the only part of that register that is still a
-request list.
+in exchange for a solid support, and not noticed until the closing measurement — which
+is the reason `report()` now says what share of the canvas is still bare. Its critique of
+the engine and the guide is the tenth session's round in
+[`SUGGESTIONS.md`](SUGGESTIONS.md), acted on in 0.4.0 together with the winter
+greenhouse's.
 
 ## The log
 

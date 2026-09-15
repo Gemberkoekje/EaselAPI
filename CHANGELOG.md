@@ -19,15 +19,203 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-Nothing yet.
+**0.4.0 is prepared and not yet tagged.** The version is written by hand in
+`pyproject.toml` and copied into `src/easel/__init__.py` and both entries in
+`server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold every copy
+to the one in `pyproject.toml`. Releasing is a tag push — `git tag v0.x.y && git push
+origin v0.x.y` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml`
+before it uploads anything, because a PyPI version number cannot be reused once taken.
 
-**0.3.0 is released, so the next change to land here needs a version bump before it can
-ship.** The version is written by hand in `pyproject.toml` and copied into
-`src/easel/__init__.py` and both entries in `server.json`; `tests/test_version.py` and
-`tests/test_server_json.py` hold every copy to the one in `pyproject.toml`. Releasing is
-a tag push — `git tag v0.x.y && git push origin v0.x.y` — and `publish.yml` refuses a tag
-that disagrees with `pyproject.toml` before it uploads anything, because a PyPI version
-number cannot be reused once taken.
+## [0.4.0] — unreleased
+
+Two rounds, filed as one because they raised the same two items from opposite
+directions: the tenth session's **fogged glass** — a greenhouse wall in late winter
+seen from outside, 311 of 320 strokes — and the **winter greenhouse** painted before it
+and filed after it, an interior at a low sun, 297 of 300. Both painters refused a
+frontal elevation on the closing checklist's layer-cake warning and answered it with a
+metric perspective projection written before any line was drawn; both then found that
+the angle they had computed off the picture was not the angle `direction=` takes.
+
+Fifteen engine items between them and three documentation items left over from the
+round that rewrote the five files, every one acted on. `SUGGESTIONS.md` carries no open
+section for the first time since the eighth session's round was filed.
+
+Two of the items closed by **measuring and finding nothing to fix**, which is this
+project's habit and the sixth and seventh time it has happened: `cost_line` does agree
+with the picture about `direction=` (the disagreement was a unit nobody had written
+down), and a smudge's strip on a long boundary is the calibrated reach and nothing
+more (the asymmetric pull the session guessed at is not doing anything extra).
+
+### Added
+
+- **`block_in(shape, ..., edge="hard")`** — a mass masked to its own outline. Every dab
+  is multiplied by the shape's coverage, so a pass ends **where the outline is** rather
+  than where its chisel falls: no inset, no contour pass, and no paint outside the
+  shape. The chisel staircase and the half-brush spill are one defect and it was the
+  most common way a mass went wrong in the winter greenhouse — four times, with three
+  workarounds used and none of them in the recipes, one of them lowering a polygon
+  `0.12` m in world space so the overhang stayed hidden under a bench. Measured with
+  the staircase table's own Sobel instrument on that painting's lit face: a `flat` at
+  `size=0.020` puts **13%** of its strong edges within ten degrees of horizontal
+  ragged and **4%** hard, a `knife` **16%** and **4%**, on a mass with no horizontal
+  feature of its own. Furthest paint past the outline: **9.3px** ragged, **2.6px**
+  clean, **under one pixel on every side** hard. Ragged stays the default, because a
+  mass *behind* other things wants the brush to break past its boundary.
+  `overhang` defaults to a full brush here, since nothing can land outside the outline
+  and the only thing it still does is carry each pass end up to it. `cover()` takes it
+  too, which is the in-bounds burial the fogged-glass round asked for.
+- **`stroke(..., clip=place)`** — the same thing by hand, and what `edge="hard"` is made
+  of. It changes where the paint lands and nothing else: a clipped stroke and its
+  unclipped twin lay the same dabs from the same draws. The clip rides in the log, so a
+  clipped painting replays and reloads as it was painted.
+- **`direction=((x0, y0), (x1, y1))`** — a line to run along, instead of an angle.
+  `direction=` is measured in the **normalised** coordinates, which on a canvas that is
+  not square is not the angle on screen: measured, `direction=-23` lays its passes at
+  **−12°** on 1000×500, and `45` runs at **37°** on 1024×768. Every instrument agrees
+  with every other — `cost_line`'s *stepping across N* is the same space, to the
+  hundredth — and all of them disagree with the picture, which is where the painter is
+  looking. Three painters wrote a projection, read a screen slope off it and typed that
+  in; one laid *passes along the sloped boundary*, the remedy for a gable at 41°, at
+  33°. A pair of points is a line; a pair of numbers is still two angles, so
+  `direction=(28, 118)` is unchanged.
+- **`s.scratch(count_only=True)`, `easel run --count` and `run(count=True)` through the
+  MCP server** — a rehearsal with the pixel work skipped. `cost()` prices one
+  `block_in` or one `sweep`; a painter's own helper
+  that calls a dozen verbs had no price short of painting it on a copy, and the copy
+  renders every dab. One budgeted thirteen pots at about 100 strokes, rehearsed at
+  **220 against 142 left** at three minutes a go, and rebuilt the recipe from strokes at
+  108. The count is exact rather than an estimate — pass geometry is settled before
+  anything is stamped — and `tests/test_paintings.py` holds that against the winter
+  greenhouse's own scripts, pass by pass: same stroke count, same paths, same dabs.
+  Timed on the pot recipe, which is where the saving is: **1.6s rendered against 0.06s
+  counted**, a factor of about thirty, and most of it turned out to be the undo snapshot
+  rather than the dabs — three canvas-sized arrays per stroke, which a copy that lays no
+  paint has nothing to undo to. The one thing
+  it cannot answer is a film given `to_value=`, whose search is measured off paint a
+  counted run has not laid; that is skipped and said out loud, once.
+- **`s.guide(points, note="")` and `s.unguide()`** — a drawing paint cannot bury.
+  `mark()` survives the whole painting because it is a point held beside the canvas and
+  drawn onto every look; a graphite line does not, because it is *in* the canvas. So
+  the method's own order costs a second drawing pass: in the winter greenhouse the
+  bench tops buried the first drawing and the pass before the pots redrew every pot and
+  the can. Nine of eleven paintings never made that second pass, and the two passages
+  one painter never drew were the two it named weakest. This is `mark()` along a path:
+  `look()` draws it, `look(sketch=False)` leaves it out, `export()` never sees it, and
+  it is not charged. Use `pencil()` for the underdrawing that should show through thin
+  paint; this is the scaffolding that should not be in the picture at all.
+- **A ground-showing percentage in `report()`**, and `Canvas.ground_showing(tolerance)`
+  behind it — a diff against a bare canvas at the session's own ground, texture and
+  seed. The closing checklist asks *is there anywhere the ground still shows through?
+  There should be*, and there was no way to answer it short of building that canvas and
+  diffing it, which one painter did **after** the painting was finished, having already
+  spent the warm ground the whole picture was planned around: **0.07%** of it was
+  within `10/255` of bare. Per channel rather than by value, so a cool film at the
+  ground's own lightness counts as covering it; graphite is not paint and does not
+  count. Under `0.5%` the line says so, which is the one judgement in the check.
+- **`inset(..., frame=False)`** on a region and a shape, for the erosion that used to be
+  the only behaviour. See *Changed*.
+- **`Polygon.coverage(width, height, samples=2)`** — fractional coverage per pixel,
+  which is what a hard clip is multiplied by. `mask()` asks whether a pixel's *centre*
+  is inside, which is the right question for an area and the wrong one for painting
+  through.
+
+### Changed
+
+- **`inset()` no longer erodes a boundary that lies on the canvas frame.**
+  `edge="clean"` has dropped its inset there since 0.2.0, on the stated principle that
+  *a mass that meets the frame should run off it*; plain `inset()` did not, and the
+  asymmetry was invisible from the call. A painter's `GLASS.inset(0.024)` pulled a glass
+  wall in from `x = 1.0`, the ground showed down the right edge of the finished
+  painting, and the defect survived to the final inspection pass and cost a repair.
+  Per coordinate, not per point: a point on the bottom frame keeps its `y` and takes the
+  inset `x`. `frame=False` is the old behaviour, and growing (a negative amount) is
+  untouched. **A script that insets a mass drawn past the frame now paints a little
+  more canvas than it did in 0.3.0**; nothing saved to an `.easel` file moves, because
+  the log holds the path that was painted.
+- **The post-pass check's *detail before the masses are down* rule no longer fires on
+  every rehearsal.** It claims to police the painting's first sixty marks and fired at
+  135, 162, 190, 243, 260 and 273 strokes spent. A rehearsal copy starts with an empty
+  log, so the rule's *earlier* term computed as nought however far along the painting
+  was — and since the guide has every painter rehearse first and look, the false
+  positive was the answer they always got, while the correct silence only ever arrived
+  after the decision it was meant to inform. The audit the item asked for found a
+  second rule reading across passes the same way: **the subject's share**, which
+  reported a rehearsed pass's own marks as the whole painting. Both now read the
+  painting behind the copy.
+- **The graded-passage rule is narrowed to a passage.** It fired three times in one
+  painting on rows of separate things and once on two `scumble` ramps summed into one
+  stack with a remedy three times either band's own step. Four narrowings, each cheap:
+  marks that lay no colour of their own are dropped (a `smudge` at `size=0.02` had made
+  itself the narrowest brush in a five-mark "passage" it contributed no colour to); the
+  marks must form **one run** with no gap wider than four brushes between neighbours
+  (ten pots of three strokes each step three quarters of a brush *inside* a pot, and
+  only the gaps between pots are wide); the colours must step **one way**, turning at
+  most once (a band that brightens and falls back is a passage; ten pots at three
+  terracotta values turn nine times); and a passage is now **five** marks rather than
+  three, three being also the number of strokes a small container's body takes. The
+  ninth session's dawn band still trips it.
+- **`report()` gained a seventh rule**: three or more small round-tip marks at
+  `tip_wobble=0`, each short enough to be the tip's silhouette rather than a line.
+  Both of a round tip's defaults are the bad one — the disc is the default and the fix
+  is opt-in — so *several small marks with `round_hard` or `liner`* is the failure
+  nobody has to ask for. The closing checklist's *is any small mark a disc, a capsule
+  or a rectangle* is this rule's own question, and now points at it.
+- **`block_in` warns on a round tip blocking in a small shape.** A `hull` `0.046`
+  across at its narrowest with a `round_hard` at `size=0.013` — a leaf pressed on glass
+  — printed the shape's own scalloped boundary and came back, in the painter's word, a
+  cauliflower. A disc's overhang goes out all the way round, so at that share the mass
+  lands **1.61x** the area of the shape and the fringe is the silhouette; a chisel at
+  the same share lands **1.34x**. It fires at the same quarter of the shorter extent
+  that `edge="clean"` already uses, so it adds no new threshold there, and only on a
+  *feature* — a shape under a tenth of the canvas across, which is where the fringe
+  lands on a drawing rather than on a soft silhouette a round tip is the right choice
+  for. Only on a ragged edge, too: `"clean"` has its own line about the same combination and `"hard"` masks the
+  fringe away, which is one of the remedies this names.
+- **`jitter=` past five times its default says so.** `jitter=0.5` was accepted in
+  silence and beaded every member of a greenhouse frame — twenty-five times the default
+  of `0.02`, from a call that otherwise looked exactly like the recipe. It is the
+  wander of each dab in tip diameters, so it comes out as width: measured, a stroke
+  lands **1.2 brushes** across at the default, **1.8** at `0.1` and **3.7** at `0.5`,
+  which is a chain of beads rather than a line. It fires on the override, not on a
+  brush's own field: every named brush in the box sits between `0` and `0.03`, and a
+  `Brush` built by hand is the painter's own.
+- **`compare({place: value})` says which close pairs actually touch.** It used to ask
+  *do these two touch?* — three of one painting's four close pairs were masses that
+  never met — and the two rounds that followed answered it wrong, the worse of them a
+  pair planned `0.00` apart that met along its whole far edge. Every place is a
+  rectangle or a shape, so it is one intersection test. Each pair is marked `(touch)`
+  or `(apart)` and only the touching ones go under the line that matters.
+  `Comparison.pairs` carries the fourth field; `near=` is how close counts, defaulting
+  to `0.01` because a value plan carries no brushes to take half of.
+
+### Tooling
+
+- `scripts/probe_tenth_session.py` — every claim these two rounds were built on,
+  re-measured on the engine as it now is and runnable. It prints the numbers this entry
+  quotes, and the two it overturned print the *before* beside the *after*.
+
+### Documentation
+
+- **`direction=` got the worked example the rest of the geometry gets** — one mass at
+  three angles, the pass direction and the step direction both named, beside the new
+  line form. The unit sentence was already in `REFERENCE.md`'s table from the
+  documentation round.
+- **The closing checklist's ground line says how to look**, which is the engine item
+  above. Its *is any small mark a disc* line names the check that counts them.
+- ***An edge that is actually lost*** **says that a smudge loses a *stretch*.** Its
+  reach does not grow with the join — `1.3%` of canvas height at the default size over
+  join lengths from `0.05` to `0.80`, flat, and the strip comes back at `0.51` between
+  masses at `0.19` and `0.78`. So over a short join it reads as a softened corner and
+  over `0.4` of the canvas as *dark, mid, light*: two edges where there was one. Past
+  about a tenth of the canvas, go to the paint-across recipe from the start.
+- **The staircase has a fourth repair**, and it is the cheap one: `edge="hard"`.
+- **The fifth painter in a row asked for the prose to move into `report()`.** This round
+  adds three checked rules and the answer to *which paragraphs have a rule a check
+  could carry* is: those three. Each is now one line pointing at the check rather than
+  a paragraph restating the numbers. `PAINTER.md` is 6,672 words against its 10,000
+  budget, so nothing had to be cut to pay for them — the question the request really
+  poses is what the prose is for, and this round's answer is that it is for the rules
+  no check can hold, which is still most of them.
 
 ## [0.3.0] — 2026-09-14
 

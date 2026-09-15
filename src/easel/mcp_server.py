@@ -134,8 +134,9 @@ _PLAN_HELP = (
     "A plan is a list of entries, or one entry on its own. A mark is a list of "
     "points, or an object with 'points' and any stroke argument. A mass is an "
     "object with 'shape' (a place) and any block_in argument -- 'brush', 'color', "
-    "'size', 'direction', 'density', 'edge': \"clean\" for a drawn contour, and "
-    "'solid': true for paint with no ground showing through it. "
+    "'size', 'direction', 'density', 'edge': \"clean\" for a drawn contour or "
+    "\"hard\" for one no paint crosses, and 'solid': true for paint with no ground "
+    "showing through it. "
     "A sweep is an object with 'edge' (a place, or "
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
     "'passes', 'closed'. A bare place on its own is a mass."
@@ -254,8 +255,8 @@ def _plan(entries) -> tuple[list, list[str]]:
 
         if "points" not in entry and ("shape" in entry or "region" in entry):
             # ``edge`` is kept here and dropped for a sweep: on a mass it is
-            # block_in's ragged-or-clean contour and belongs in the echoed call, and
-            # on a sweep it is the boundary, which is passed positionally.
+            # block_in's ragged/clean/hard boundary and belongs in the echoed call,
+            # and on a sweep it is the boundary, which is passed positionally.
             _check("mass", entry)
             source = entry.get("shape", entry.get("region"))
             specs.append(dict(entry, shape=_place(source)))
@@ -285,8 +286,9 @@ def _echo_args(entry: dict, *drop: str) -> str:
     """A plan entry's keywords as Python, less the ones passed positionally.
 
     Which keys are dropped depends on the kind, because ``edge`` means two things:
-    a sweep's boundary, which is its first argument, and a mass's ragged-or-clean
-    contour, which is a keyword like any other and has to survive into the echo.
+    a sweep's boundary, which is its first argument, and a mass's
+    ragged/clean/hard boundary, which is a keyword like any other and has to survive
+    into the echo.
     """
     rest = {k: v for k, v in entry.items() if k not in drop}
     return "".join(f", {k}={v!r}" for k, v in rest.items())
@@ -500,7 +502,7 @@ def build_server() -> MCPServer:
     @server.tool()
     @_tool
     def run(session: str, script: str = "", script_path: str = "",
-            rehearse: bool = False, prelude: str = "",
+            rehearse: bool = False, count: bool = False, prelude: str = "",
             prelude_path: str = "") -> str:
         """Paint: run a Python script against the session.
 
@@ -528,6 +530,11 @@ def build_server() -> MCPServer:
                 a script, which is what a pass actually is. Costs nothing but a look,
                 and about sixty of one painting's 224 strokes went on masses
                 that were repainted because rehearsing meant retyping the pass.
+            count: price the pass without painting it -- a rehearsal with the pixel
+                work skipped, so a helper that calls a dozen verbs comes back with a
+                stroke count and a check in about a thirtieth of the time. No look,
+                nothing committed. Implies `rehearse`. Rehearse instead when the
+                question is what it looks like: this one lays no paint.
             prelude: Python run first, in the same scope -- helpers, mixtures and
                 landmarks a pass should not have to redefine.
             prelude_path: a file to use as the prelude instead.
@@ -549,19 +556,23 @@ def build_server() -> MCPServer:
                else prelude)
 
         s = Session.load(session)
-        target = s.scratch() if rehearse else s
+        trying = rehearse or count
+        target = s.scratch(count_only=count) if trying else s
         before = len(target.history.records)
         result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
         # The post-pass check the CLI prints beside the budget line, here too: the
         # same words for the same pass, whichever way the pass was run.
         check = target.report(since=before)
-        if rehearse:
+        if trying:
             if result.code != 0:
                 return result.text
             left = s.remaining
             laid = target.history.stroke_count      # the copy's own log: this pass
             cost = (f"{laid} strokes" if left is None
                     else f"{laid} strokes of the {left} left")
+            if count:
+                return (f"Counted {Path(name).name}: {cost}. Nothing painted, "
+                        f"nothing committed.\n{check}")
             return (f"Rehearsed {Path(name).name}: {cost}. Nothing committed.\n"
                     f"{check}\n{target.look()}")
         if result.save:

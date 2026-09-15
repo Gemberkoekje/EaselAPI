@@ -281,7 +281,7 @@ chose. What each one leaves when you are not watching:
 | `flat` / `knife`, short | a rectangle with chisel ends |
 | `flat` / `knife` filling a mass whose boundary is not parallel to the passes | **a staircase down that boundary** — each pass ends in a chisel square to its travel, and where the boundary slopes the ends stop at different heights and stack |
 | `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
-| `round_hard` or `liner`, several small marks | **one disc, printed over and over** — unless `tip_wobble=0.7` redraws the outline per mark |
+| `round_hard` or `liner`, several small marks | **one disc, printed over and over** — unless `tip_wobble=0.7` redraws the outline per mark. `report()` counts them |
 | `bristle` below `size≈0.025` | a comb: a woven strap across a band, or a ladder of ticks along an edge |
 | `sweep` round a closed shape, or an inward `scumble` with too many rings | **concentric rings** |
 | several overlapping `blob`s | a dome — blobs of similar size average to a circle |
@@ -294,12 +294,16 @@ Three of those need more than a row.
 **The staircase is the most common way a mass goes wrong here, and it is measured.** A
 chisel leaves three to four times as many horizontal pass-ends down a sloping boundary
 as a comb or a round tip, and a *smaller* chisel is worse (*The chisel staircase* in
-[`CALIBRATION.md`](CALIBRATION.md#the-chisel-staircase)). Three repairs, cheapest
-first: run the passes *along* the sloped boundary (`direction=` in degrees) so the
-chisel ends fall on an edge that is square to them; lay the plane with a comb and put
-the core back with one solid stroke down its middle; or `edge="clean"`, which draws the
-contour along the outline for one stroke more (*Masses that are not rectangles*,
-below).
+[`CALIBRATION.md`](CALIBRATION.md#the-chisel-staircase)). Four repairs, cheapest
+first: run the passes *along* the sloped boundary — `direction=` in degrees, or the
+two points of the boundary itself — so the chisel ends fall on an edge that is square
+to them; lay the plane with a comb and put the core back with one solid stroke down its
+middle; `edge="clean"`, which draws the contour along the outline for one stroke more
+(*Masses that are not rectangles*, below); or `edge="hard"`, which masks every dab to
+the outline, costs no extra stroke and takes the staircase out rather than hiding it —
+`13%` of strong edges horizontal against `4%`, on a mass with no horizontal feature.
+It is opt-in because a mass standing *behind* other things wants the brush to break
+past its boundary, which is what ragged is for.
 
 **The shallow shape is not covered by the brush-width rule.** An ellipse `0.256 ×
 0.128` filled with a `flat` at `0.022` — a twelfth of its width — came out a rectangle.
@@ -332,12 +336,35 @@ s.block_in(span("A4", "F7"), "flat", "shadow", direction=(28, 118), size=0.12)  
 s.block_in(ribbon([(0.2, 0.8), (0.8, 0.4)], 0.2), "flat", "shadow", direction="axis")
 ```
 
+**What the number names.** Take one mass, a band twice as wide as it is tall, and give
+it three angles. At `0` each pass is a horizontal line the full width of the band, and
+the stack of them climbs from the top edge to the bottom — the marks lie along the
+long side, and there are as many of them as the *short* side divides into part-brushes.
+At `90` each pass is a vertical line the height of the band, and the stack marches
+left to right: the same mass, many more passes, each one short. At `45` the passes run
+down-right at a slant, and the stack steps down-left, perpendicular to them. So: **the
+passes run along the angle, and the stack steps across it.** That is also what
+`cost_line` counts when it says *N passes stepping across 0.50 of the canvas* — the
+`0.50` is the mass measured perpendicular to the angle, and the two instruments have
+always agreed.
+
 Passes that run along the form cover it in fewer strokes than passes that step down
 it, and come out visibly less square (*Laying a mass along its own axis* in
 [`CALIBRATION.md`](CALIBRATION.md#laying-a-mass-along-its-own-axis)). **The angle is in
 the `0..1` coordinates, not on the screen**: on a canvas that is not square, an angle
-you measured off the picture will not run along the edge you measured it on until you
-convert it (*Units* in [`REFERENCE.md`](REFERENCE.md#units-which-is-where-the-surprises-are)).
+you measured off the picture will not run along the edge you measured it on
+(*Units* in [`REFERENCE.md`](REFERENCE.md#units-which-is-where-the-surprises-are)).
+So do not convert it — hand over the line itself, and let the engine do the arithmetic:
+
+```python
+eave = ((0.33, 0.012), (0.58, 0.286))        # two points off the drawing, or a projection
+s.block_in(blob(span("C1", "G5"), 0.2), "bristle", "shadow", direction=eave, size=0.10)
+```
+
+A pair of *points* is a line to run along; a pair of *numbers* is still two angles, so
+`direction=(28, 118)` is unchanged. This is what to reach for whenever the angle came
+off the picture — a gable, a sill, a cable — because that is the case the conversion
+was needed for and nobody did it.
 **Two directions are what breaks a comb, and more do not break it further**: a sequence
 lays a full stack per angle and is charged the sum, so a ten-angle list costs a mass
 eight times over.

@@ -24,7 +24,10 @@ error anyone hits at the moment they cause it.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import re
+import warnings
 from pathlib import Path
 
 import pytest
@@ -111,3 +114,75 @@ def test_the_page_does_not_count_its_paintings(phrase: str) -> None:
         f"PAINTINGS.md counts its paintings again ({phrase!r}). Say it without the "
         f"number, so adding the next painting does not mean correcting this sentence."
     )
+
+
+# --------------------------------------------------------------------------------------
+# A count-only rehearsal, against the painting whose helpers asked for one
+# --------------------------------------------------------------------------------------
+# `cost()` prices one `block_in` or one `sweep`; a painter's own helper that calls a
+# dozen verbs had no price short of painting it on a copy, and the copy renders every
+# dab. One budgeted a row of thirteen pots at about 100 strokes, rehearsed it at 220
+# against 142 left, and rebuilt it from strokes at 108 -- three renders of a pass that
+# was never going to be laid, three minutes each.
+#
+# `scratch(count_only=True)` skips the pixel work, and the promise it makes is that the
+# count is *exact* rather than an estimate: pass geometry is settled before anything is
+# stamped. This is the test the request asked for -- the painting's own scripts, run
+# both ways, pass by pass.
+#
+# The winter greenhouse is the one that raised it, and the one built out of compound
+# helpers (`pot`, `foliage`, `stalks`, `boards` in its prelude). Its passes are run
+# here on a fresh canvas rather than on the state the one before it left, so a pass
+# that needs paint underneath raises the same way in both runs and is skipped: what is
+# being held is that counting changes nothing, not that a pass runs out of order.
+
+GREENHOUSE = PAINTINGS / "greenhouse_winter"
+PASSES = sorted(GREENHOUSE.glob("p[0-9]*.py"),
+                key=lambda p: int(re.match(r"p(\d+)", p.name).group(1)))
+
+
+def _run_pass(source: str, name: str, out: Path, count_only: bool):
+    """One pass of the greenhouse against a fresh canvas, painted or counted."""
+    from easel import Session
+    from easel.cli import run_scripts
+
+    s = Session(1024, 768, texture="linen", ground="toned_warm_grey", seed=7,
+                out_dir=out, timelapse=False, budget=300)
+    target = s.scratch(count_only=count_only)
+    # From `out`, because a pass is written to be run from beside its own session
+    # file: the greenhouse's last one exports to `painting.png` and `painting.gif`
+    # by name, and run from here that is the repository's own root.
+    with contextlib.chdir(out), contextlib.redirect_stdout(io.StringIO()), \
+            warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        result = run_scripts(target, [(source, name)],
+                             prelude=(GREENHOUSE / "prelude.py").read_text(encoding="utf-8"),
+                             prelude_name="prelude.py")
+    return result, target
+
+
+@pytest.mark.parametrize("script", PASSES, ids=lambda p: p.name)
+def test_a_counted_pass_logs_what_a_painted_one_logs(script: Path, tmp_path) -> None:
+    source = script.read_text(encoding="utf-8")
+    painted_result, painted = _run_pass(source, script.name, tmp_path, count_only=False)
+    counted_result, counted = _run_pass(source, script.name, tmp_path, count_only=True)
+
+    if painted_result.code != 0:
+        # This pass wants the paint an earlier one laid. Both runs are on a fresh
+        # canvas, so that is the script asking a question of the canvas, not counting
+        # answering one differently.
+        pytest.skip(f"{script.name} needs an earlier pass under it")
+    assert counted_result.code == 0
+
+    assert counted.history.stroke_count == painted.history.stroke_count
+    assert len(counted.history.records) == len(painted.history.records)
+    for a, b in zip(painted.history.records, counted.history.records, strict=True):
+        assert a.points == b.points, f"{script.name}: a pass moved"
+        assert (a.brush, a.kind, a.note) == (b.brush, b.kind, b.note)
+        assert a.dabs == b.dabs, f"{script.name}: the dab count moved"
+        assert a.params.get("size") == b.params.get("size")
+    # It laid no paint: every painted record's paint is nought, and the canvas it
+    # borrowed still reads as the bare ground it started from. Graphite is not paint
+    # and is still drawn -- it is free against the budget and cheap to lay.
+    assert all(r.paint == 0.0 for r in counted.history.records if r.kind != "pencil")
+    assert counted.canvas.ground_showing() == 1.0

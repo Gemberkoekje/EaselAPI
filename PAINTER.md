@@ -102,7 +102,7 @@ the fix is on the same row as the mistake.
 | **Boxes** | rectangles, especially in the background, which nobody made you draw | `blob`, `ellipse`, `hull`, `ribbon`, `polygon`; check the background hardest | *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md#masses-that-are-not-rectangles) |
 | **Parallel marks** | hatching; a grain repeated thirty times; a soft passage laid as three hard bands | vary the direction; two directions break a comb; a soft passage is `s.scumble(...)` | *The angle of the mark* in [`PAINTING.md`](PAINTING.md#the-angle-of-the-mark); *A quiet gradient* in [`RECIPES.md`](RECIPES.md#a-quiet-gradient) |
 | **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
-| **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped boundary | give a mark a length, or `tip_wobble=0.7`; run passes along a sloped boundary, or `edge="clean"` | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
+| **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped boundary | give a mark a length, or `tip_wobble=0.7`; run passes along a sloped boundary, or `edge="hard"`, which masks the paint to the outline. `report()` counts the discs for you | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
 
 **When you think it is finished**, the checklist is at the end of this file. Two of
 its lines are about finishing rather than about faults: the last third of the budget
@@ -183,7 +183,12 @@ Four things about the drawing:
 - **Landmarks before anything, pencil after the far masses, near masses on top.** Paint
   buries graphite in proportion to how much lands, and a full-strength block-in buries
   all of it; a `mark()` is a point and cannot be buried. So draw the whole arrangement
-  now to judge it, and draw the near things *again* once the far masses are down.
+  now to judge it, and draw the near things *again* once the far masses are down —
+  unless you draw it with `s.guide()`, which is `mark()` along a path: graphite on the
+  view rather than in the canvas, so `look()` keeps showing it, `export()` never does,
+  and the arrangement drawn here is still there at step 7. Use `pencil()` for the
+  underdrawing that should show through thin paint, and `guide()` for the scaffolding
+  that should not be in the picture at all.
 
 The two passages you do not draw are the two that will come out weakest. Draw the small
 things too — a lid, a handle, what stands in a thing — before the pass that paints them.
@@ -290,9 +295,11 @@ for name in ("dark", "mid", "lit"):
 ```
 
 **If two of your three are within `0.10` of each other, they will not read as separate
-masses** however different their colours. Put the plan through `compare()` on the empty
-canvas and read the pairs it lists — every two places planned within `0.10` — and ask
-of each: *do these two touch?* Where they do, they will read as one.
+masses** however different their colours — but only where the two places actually
+meet. Put the plan through `compare()` on the empty canvas: it lists every two places
+planned within `0.10`, marks each pair `(touch)` or `(apart)`, and names the touching
+ones as the ones that will read as one. Two rounds of painters were asked that
+question instead of told the answer and both got it wrong.
 
 ```python
 upper, lower = span("A1", "H4"), span("A5", "H8")
@@ -698,11 +705,18 @@ only ones that ask whether you are done, and they are the ones to answer slowly.
 
 - Does the greyscale view have a clear light, mid and dark?
 - Are the edges varied — some hard, some soft, at least one lost?
-- Is there anywhere the ground still shows through? There should be.
+- Is there anywhere the ground still shows through? There should be. `report()`
+  prints the share — it diffs the canvas against a bare one at your own ground,
+  texture and seed — and says so under `0.5%`. One painter chose a warm ground to
+  be seen through, laid the passage over it at `density=1.0, load=1.0`, and
+  finished at `0.07%` without noticing.
 - Are the highlights few and deliberate?
 - Is anything mechanically repeated — a perfectly straight line, a row of identical
   marks? **Is any small mark a disc, a capsule or a rectangle — the tool's own shape
-  rather than the thing's?** Crop into them and look.
+  rather than the thing's?** `report()` counts the discs — three or more small round-tip
+  marks at `tip_wobble=0` are one silhouette printed three times — and a `block_in` with
+  a round tip on a feature under four brushes across says so at the call. Crop into
+  what is left and look.
 - Is every mass laid along its own axis, or are the big shapes stacks of bars? **And
   are the bands in the marks, or in the subject you chose?** A frontal elevation is a
   layer cake before a brush is picked.

@@ -487,7 +487,14 @@ def test_run_hands_back_the_post_pass_check(call, painting):
     reply = call("run", session=painting,
                  script="s.stroke([(0.1, 0.5), (0.9, 0.5)], 'flat', 'ochre')")
     assert "check over this pass" in reply.text
-    reply = call("run", session=painting, rehearse=True,
-                 script="s.block_in(Region(0.1, 0.1, 0.9, 0.4), 'flat', 'ochre', size=0.04)\n"
-                        "s.block_in(Region(0.1, 0.5, 0.9, 0.8), 'flat', 'ochre', size=0.04)\n")
+    stack = ("s.block_in(Region(0.1, 0.1, 0.9, 0.4), 'flat', 'ochre', size=0.04)\n"
+             "s.block_in(Region(0.1, 0.5, 0.9, 0.8), 'flat', 'ochre', size=0.04)\n")
+    reply = call("run", session=painting, rehearse=True, script=stack)
     assert "Nothing committed" in reply.text and "from 2 calls" in reply.text
+
+    # And the same pass counted: the price and the check, no paint and no look.
+    counted = call("run", session=painting, count=True, script=stack)
+    assert "Nothing painted, nothing committed" in counted.text
+    assert "from 2 calls" in counted.text and ".png" not in counted.text
+    laid = re.search(r"Rehearsed .*?: (\d+) strokes", reply.text).group(1)
+    assert f"Counted <script>: {laid} strokes" in counted.text

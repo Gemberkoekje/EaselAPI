@@ -29,7 +29,7 @@ from PIL import Image
 from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
-from easel.color import parse_color
+from easel.color import luminance, parse_color
 from easel.history import History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
 from easel.measure import (
@@ -111,6 +111,13 @@ _GLAZE_FOOTPRINT = 1e-4
 #: paying a mark for a film nobody can see.
 _GLAZE_MIN_OPACITY = 0.02
 
+#: How close two planned places count as touching, as a fraction of the canvas long
+#: side, when the painter names no number. Half the narrower brush is what the rule
+#: wants and a value plan carries no brushes -- the keys are places and the values
+#: are values -- so this stands in for one: ``0.01`` is half of a fine brush at
+#: ``0.02``, and a painter who knows the two brushes passes ``near=`` instead.
+_PLAN_TOUCH = 0.01
+
 
 class Session:
     """A painting in progress.
@@ -170,6 +177,9 @@ class Session:
         #: Named landmarks: ``{name: (x, y)}``. Six or seven verified points are a
         #: drawing, and the masses get hung on them. See :meth:`mark`.
         self.marks: dict[str, tuple[float, float]] = {}
+        #: The overlay drawing: paths ``look()`` draws and paint never buries. See
+        #: :meth:`guide`.
+        self.guides: list[dict] = []
         self._preparation: Preparation | None = None
         #: Assisted modes this painting has used: a machine-laid sketch, or a mass
         #: blocked in on an outline traced from the reference. The protocol reserves
@@ -190,6 +200,23 @@ class Session:
         # and the painting's own count on a rehearsal copy, so that ``spent`` and
         # ``remaining`` inside a rehearsed pass are the painting's numbers.
         self._spent_base = 0
+        # The same marks as records rather than as a count. A rehearsal copy starts
+        # with an empty log, so every rule in :meth:`report` that reads across passes
+        # -- the first-sixty guard and the subject's share -- saw a painting that had
+        # never been painted, and *on the rehearse path only*: the same pass run for
+        # real read the whole log and stayed correctly silent. Since the guide has
+        # every painter rehearse first and look, the wrong answer is the one they
+        # always got. Shared, never written through: the copy is thrown away.
+        self._prior: list[StrokeRecord] = []
+        # A session that works out every stroke and lays none of it. Set on the copy
+        # `scratch(count_only=True)` hands back; see :meth:`scratch`.
+        self._counting = False
+        # What such a copy has already said it cannot answer, so it says each thing
+        # once however many times the pass asks.
+        self._uncounted: list[str] = []
+        # The last clip mask built, and the outline it came from.
+        # See :meth:`_clip_cover`.
+        self._clip_memo: tuple | None = None
         if self.timelapse:
             self.history.add_frame(self.canvas.thumbnail_srgb8())
 
@@ -255,6 +282,7 @@ class Session:
         glaze: bool = False,
         smooth: bool = True,
         press: int = 1,
+        clip=None,
         note: str = "",
         **brush_overrides,
     ) -> StrokeRecord:
@@ -273,6 +301,12 @@ class Session:
             smooth: fit a spline through the points. Off gives hard corners.
             press: for a one-point mark, how many times to stamp the same spot.
                 See :meth:`dab`. One mark either way, in the log and in the budget.
+            clip: a place -- a shape, a region, a name -- outside which none of this
+                stroke's paint may land. What ``block_in(edge="hard")`` is made of,
+                and available by hand for the same reason: it is the only way a mark
+                ends on a line rather than on its own tip. It changes where the paint
+                goes and nothing else, so a clipped stroke and its unclipped twin lay
+                the same dabs from the same draws.
             note: a line recorded in the log, for the painter's own benefit.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
@@ -284,9 +318,15 @@ class Session:
         stamps = int(press)
         if stamps < 1:
             raise ValueError(f"press must be at least 1, got {press}.")
+        hold = None if clip is None else _as_outline(clip)
+        cover = None if hold is None or self._counting else self._clip_cover(hold)
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
-        self.history.push_snapshot(self.canvas.snapshot())
+        # A count-only copy has nothing to undo to and nothing to undo, and copying
+        # three canvas-sized arrays per stroke is most of what it is trying not to
+        # spend: without this the pot recipe above counted in 2.1s against 3.1s
+        # painted, and with it in 0.06s.
+        self._snapshot()
         try:
             index = self._index_base + len(self.history.records)
             pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
@@ -304,6 +344,8 @@ class Session:
                 glaze=glaze,
                 smooth=smooth,
                 press=stamps,
+                clip=cover,
+                dry_run=self._counting,
             )
 
             record = self.history.add(
@@ -319,6 +361,9 @@ class Session:
                     note=note,
                     params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps,
                                          rng=self._stream_state(),
+                                         **({"clip": [[float(x), float(y)]
+                                                      for x, y in hold.points]}
+                                            if hold is not None else {}),
                                          **({"via": self._call_verb} if self._call_verb
                                             else {})),
                 )
@@ -492,7 +537,22 @@ class Session:
                     f"for the same film, and to_value= exists because the first is "
                     f"the hard one. Drop one of them."
                 )
-            opacity = self._glaze_opacity(points, color, float(to_value), brush, kw)
+            if self._counting:
+                # The search measures what is under the film, and a count-only copy
+                # has laid none of its own pass on the canvas it borrowed -- so the
+                # answer here would be measured against a canvas that does not
+                # exist. It is skipped rather than guessed at, and said out loud
+                # once, because an out-of-reach value raises when it is painted.
+                self._say_uncounted(
+                    "a film given to_value= was priced but not solved: what a film "
+                    "delivers is measured off the paint under it, and a count-only "
+                    "run has laid none of this pass. The stroke count is exact; "
+                    "whether the value is in reach is a question for --rehearse."
+                )
+                opacity = None
+            else:
+                opacity = self._glaze_opacity(points, color, float(to_value),
+                                              brush, kw)
         return self.stroke(points, brush=brush, color=color, glaze=True,
                            opacity=GLAZE_OPACITY if opacity is None else float(opacity),
                            **kw)
@@ -602,9 +662,26 @@ class Session:
             direction: ``"horizontal"``, ``"vertical"``, ``"diagonal"``, ``"cross"``
                 or ``"axis"`` (the place's own long axis); a number of degrees,
                 clockwise from the horizontal, to sweep the mass along its own form
-                rather than along the canvas; or a sequence of any of those for one
-                pass each. Vary this between passes so the marks are not parallel --
-                and prefer the angle the *subject* runs at. A hillside swept at its
+                rather than along the canvas; **a line of two points to run along**,
+                ``direction=((0.33, 0.01), (0.58, 0.29))``; or a sequence of any of
+                those for one pass each. The passes run *along* the angle and the
+                stack steps *across* it, which is the same geometry ``cost_line``
+                counts when it says how far a stack steps.
+
+                Take the line rather than the angle wherever the angle came off the
+                picture. Degrees here are measured in the ``0..1`` coordinates, not
+                on the screen, so on a canvas that is not square they are not the
+                angle you can see: measured on 1000x500, ``direction=-23`` lays its
+                passes at **-12 degrees on screen**, and on 1024x768 ``45`` runs at
+                **37**. Three painters wrote a metric projection, read the screen
+                slope of an edge off it, typed that in, and got something else --
+                one laid *passes along the sloped boundary*, the remedy for a gable
+                whose screen slope was 41 degrees, at 33. A pair of points is a
+                line; a pair of numbers is still two angles, so ``(28, 118)`` is a
+                cross and not a point.
+
+                Vary this between passes so the marks are not parallel -- and prefer
+                the angle the *subject* runs at. A hillside swept at its
                 own angle stops being a stack of horizontal bars, which is the single
                 loudest tell that nobody chose the direction. **Left off, the passes
                 run horizontally**, and on a shape that is not wider than it is tall
@@ -676,6 +753,30 @@ class Session:
                 so when asked. Where the outline runs off the canvas the inset is
                 dropped: there is no drawn line out there for the brush's outer
                 half to land on, and a mass that meets the frame should run off it.
+
+                ``"hard"`` masks **every dab to the outline** -- no inset, no contour
+                pass, and no paint outside the shape at all. It is the only setting
+                that ends a pass where the outline is rather than where the tip
+                falls, which is what the chisel staircase and the half-brush spill
+                both are: a mass laid ragged puts three to four times as many
+                horizontal edges down a sloping boundary as the mass has of its own,
+                and a dark under a bench spilled half a brush onto the wall behind
+                it as a sawtooth. Measured on one painter's lit face with the same
+                Sobel instrument the staircase table uses -- the share of strong
+                edges within ten degrees of horizontal, on a mass that has no
+                horizontal feature of its own, vertical passes, laid solid: a
+                ``flat`` at ``size=0.020`` puts **13%** there ragged and **4%**
+                hard, a ``knife`` **16%** and **4%**. The comb and the round tip
+                were never the ones doing it (**4%** and **3%** ragged) and are not
+                much helped. Furthest paint past the outline on that shape, which is
+                the other half of the same measurement: **9.3px** ragged, **2.6px**
+                clean, and **under one pixel on every side** hard, that pixel being
+                the boundary's own feathering. Its cost is the thing ragged is for
+                -- a mass
+                *behind* other things wants the brush to break past its boundary --
+                so ragged stays the default and this is opt-in. ``overhang`` defaults
+                to a full brush here, since nothing can land outside the outline and
+                the only thing it still does is carry every pass end up to it.
             solid: lay the mass as solid paint -- ``load=1.0`` and
                 ``load_falloff=0.0``, so no pass runs dry partway across. Density
                 spaces the passes; this is what fills the gaps *along* them.
@@ -701,12 +802,14 @@ class Session:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         b = self._resolve_brush(brush, size, None, brush_overrides)
         shaped = isinstance(place, Polygon)
-        if edge not in ("ragged", "clean"):
+        if edge not in ("ragged", "clean", "hard"):
             raise ValueError(
-                f"block_in(edge={edge!r}) is either 'ragged' -- the brush breaks past "
-                f"the boundary, the default -- or 'clean', which insets the fill by "
-                f"half the brush and lays one pass along the outline itself."
+                f"block_in(edge={edge!r}) is one of 'ragged' -- the brush breaks past "
+                f"the boundary, the default -- 'clean', which insets the fill by half "
+                f"the brush and lays one pass along the outline itself, or 'hard', "
+                f"which masks every dab to the outline so no paint lands outside it."
             )
+        overhang = _mass_overhang(edge, overhang)
 
         records: list[StrokeRecord] = []
         traced = ""
@@ -721,6 +824,7 @@ class Session:
         # fill's own overhang then carries the paint back out to the true outline,
         # and the contour pass below draws it.
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
+        held = place if edge == "hard" else None
         if edge == "clean" and b.tip == "bristle":
             warnings.warn(
                 f"block_in(edge='clean') with a bristle brush ({b.name!r}) leaves a "
@@ -737,6 +841,8 @@ class Session:
                                       stacklevel=3)
         if edge == "clean" and shaped:
             _check_clean_size(place, b, self.canvas, stacklevel=3)
+        elif edge == "ragged" and shaped:
+            _check_round_block(place, b, self.canvas, stacklevel=3)
 
         with self._one_call("block_in"):
             for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
@@ -747,6 +853,7 @@ class Session:
                         brush=b,
                         color=color,
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                        clip=held,
                         note=note or (f"block-in "
                                       f"{place.name or ('shape' if shaped else 'region')} "
                                       f"{pass_dir}{traced}"),
@@ -1194,7 +1301,8 @@ class Session:
         size: float | None = None,
         direction: str = "horizontal",
         density: float = 1.0,
-        overhang: float = 1.0,
+        overhang: float | None = None,
+        edge: str = "ragged",
         dry_first: bool = True,
         note: str = "",
         **brush_overrides,
@@ -1219,6 +1327,25 @@ class Session:
         :meth:`block_in`'s ``solid=True``, which is the same pair of defaults for a
         mass that is not a repair.
 
+        **The ends outside the area are the recipe, and on a worked passage they are
+        the fault.** Burying a mis-made leaf inside a finished pane of glass,
+        ``cover(Region(0.905, 0.380, 0.985, 0.478))`` laid a flat pale panel across a
+        visibly larger patch than the one it was given, and the repair was louder
+        than the mistake. Measured on that patch, a ``flat`` at ``size=0.06`` on a
+        1024x768 canvas: the plain recipe paints **3.07x** the area it was handed. On
+        a flat passage that is right and there is nothing to see; on a textured one,
+        pass ``edge="clean"``, which insets the fill by half the brush and draws the
+        boundary with the brush's outer half. That lands **0.93x** the area -- the
+        burial stops at the boundary it was given, to within a fraction of a brush of
+        wander, instead of a brush and a half outside it. ``overhang`` then defaults
+        to ``0`` rather than to a full brush, for the same reason. ``edge="hard"`` is
+        the same idea with no wander at all -- it masks the paint to the area and
+        lands **1.01x** it -- and is what to reach for when what is being buried is a
+        hole in something worked. There is no warning on the plain form, because the overrun
+        is the recipe working: the docstring's own ``cover(cell("D5"))`` paints about
+        three times the cell, and a rule that fires on the canonical call is a rule
+        painters learn to ignore.
+
         Args:
             place: what to bury -- a region, a name, a 4-tuple or a shape.
             color: what to bury it under.
@@ -1231,7 +1358,13 @@ class Session:
             density: as :meth:`block_in`. Leave it at 1.0 -- a correction that lets
                 the old paint through is not a correction.
             overhang: how far past the area each pass runs, in brush widths. The
-                default of one full width is what puts the ends outside.
+                default is one full width, which is what puts the ends outside, or
+                ``0`` beside ``edge="clean"``, which is what keeps them in.
+            edge: ``"ragged"``, the default -- the passes run past the area, which is
+                the recipe. ``"clean"`` is :meth:`block_in`'s clean edge: the fill
+                inset by half the brush and the boundary drawn. ``"hard"`` masks
+                every dab to the area, so nothing lands outside it at all. Reach for
+                either where what is underneath is worked rather than flat.
             dry_first: dry the area before covering it. Free, and part of the
                 recipe; only the area, so a wet neighbour it must blend into stays
                 wet.
@@ -1242,6 +1375,14 @@ class Session:
             drying is free and is not a mark.
         """
         target = as_place(place)
+        if overhang is not None:
+            reach = float(overhang)
+        elif edge == "clean":
+            reach = 0.0          # the inset plus the contour already reach the line
+        elif edge == "hard":
+            reach = None         # nothing can cross the outline: block_in's own rule
+        else:
+            reach = 1.0          # the recipe: ends outside, where no edge is drawn
         b = self._resolve_brush(
             brush, size, None,
             {"load": 1.0, "load_falloff": 0.0, "opacity": 1.0, **brush_overrides},
@@ -1258,7 +1399,7 @@ class Session:
                 self.dry(1.0, target)
             return self.block_in(
                 target, brush=b, color=color, direction=direction, density=density,
-                pressure="even", overhang=overhang,
+                pressure="even", overhang=reach, edge=edge,
                 note=note or f"cover {target.name or 'area'}",
             )
 
@@ -1540,7 +1681,7 @@ class Session:
             s.pencil([s.pt("chin"), s.pt("jaw"), s.pt("ear")])
             s.look()                       # is the drawing right before any paint?
         """
-        self.history.push_snapshot(self.canvas.snapshot())
+        self._snapshot()
         try:
             index = self._index_base + len(self.history.records)
             pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
@@ -1579,7 +1720,7 @@ class Session:
         deal to paint around.
         """
         place = as_place(region) if region is not None else None
-        self.history.push_snapshot(self.canvas.snapshot())
+        self._snapshot()
         self.canvas.erase_sketch(place)
         record = self.history.add(
             StrokeRecord(
@@ -1658,6 +1799,67 @@ class Session:
         """Forget a landmark. Marking over it with the same name also moves it."""
         self.marks.pop(str(name).strip(), None)
 
+    def guide(self, points, note: str = "") -> list[tuple[float, float]]:
+        """Draw a line on **the view** rather than on the canvas. Paint cannot bury it.
+
+        :meth:`mark` is this for a point. A landmark survives the whole painting
+        because it is a point held beside the canvas and drawn onto every look; a
+        graphite line does not, because it is in the canvas and paint is allowed to
+        cover it. So the method's own order costs a second drawing pass: landmarks
+        first, pencil after the far masses, near masses on top -- and in one painting
+        the bench tops buried the first drawing, so the pass before the pots redrew
+        every pot and the can before painting them. Nine of eleven paintings never
+        made that second pass, and the two passages one painter never drew were the
+        two it named weakest.
+
+        This is the same mechanism along a path. It touches no paint, no wetness and
+        no graphite channel: :meth:`look` draws it over the render, ``look(sketch=False)``
+        leaves it out with the drawing, and :meth:`export` never sees it, so the
+        arrangement drawn at step 1 is still there at step 7 and out of the picture
+        at the end. It is not a stroke and is not charged.
+
+        Use :meth:`pencil` for a drawing that *should* go under the paint and show
+        through it -- the underdrawing is part of the painting, and this is not.
+
+        Args:
+            points: normalised (x, y) points. One point is a dot.
+            note: a short label drawn beside the line's first point.
+
+        Returns:
+            The path, so it can be used inline.
+
+        Example::
+
+            for shelf in (0.38, 0.55, 0.72):
+                s.guide([(0.05, shelf), (0.95, shelf - 0.04)], note="bench")
+            s.look()                        # still there after the masses go on
+        """
+        pts = np.atleast_2d(np.asarray(points, dtype=np.float64))
+        if pts.size == 0 or pts.shape[1] != 2:
+            raise ValueError(
+                f"guide() needs at least one point, as (x, y) pairs -- "
+                f"guide([(0.2, 0.4), (0.7, 0.45)]) -- and got shape {pts.shape}."
+            )
+        path = [(float(x), float(y)) for x, y in pts]
+        if not all(math.isfinite(v) for xy in path for v in xy):
+            raise ValueError(f"guide() was given a point that is not finite: {path}")
+        self.guides.append({"points": path, "note": str(note)})
+        return path
+
+    def unguide(self, note: str | None = None) -> int:
+        """Rub out the overlay drawing, or the parts of it carrying ``note``.
+
+        Returns how many paths went. The whole of it is the usual thing to want, once
+        the paint has taken over from the drawing.
+        """
+        before = len(self.guides)
+        if note is None:
+            self.guides.clear()
+        else:
+            key = str(note)
+            self.guides[:] = [g for g in self.guides if g.get("note") != key]
+        return before - len(self.guides)
+
     # -- canvas state -----------------------------------------------------------
     # -- shapes, in this canvas's own units --------------------------------------
     @property
@@ -1720,7 +1922,7 @@ class Session:
         # Snapshot before the mark, like every other canvas-mutating call: without
         # this, undo() after a dry() pops the *previous* paint action's snapshot
         # while only dropping the dry record, desyncing the canvas from the log.
-        self.history.push_snapshot(self.canvas.snapshot())
+        self._snapshot()
         self.canvas.dry(amount, place)
         return self.history.add(
             StrokeRecord(
@@ -1823,6 +2025,7 @@ class Session:
             impasto=impasto,
             sketch=sketch,
             marks=self.marks if marks else None,
+            guides=self.guides,
         )
         self._last_look = current
         return save_look(img, self._look_path(path))
@@ -1836,7 +2039,7 @@ class Session:
         img = render_look(
             self.canvas, reference=ref_img,
             diff_against=self._last_look if diff else None,
-            marks=self.marks if show_marks else None, **kwargs
+            marks=self.marks if show_marks else None, guides=self.guides, **kwargs
         )
         self._last_look = self._look_array(
             kwargs.get("values", False), kwargs.get("impasto", True), kwargs.get("sketch", True)
@@ -2206,21 +2409,23 @@ class Session:
         if kind == "mass":
             # A clean edge fills the shape inset by half a brush and then draws the
             # contour, so it is priced on the inset shape plus the one contour pass.
-            clean = spec.get("edge", "ragged") == "clean"
+            edge = spec.get("edge", "ragged")
             place = spec["place"]
-            fill = _clean_fill(place, b.size * 0.5) if clean else place
+            fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
             direction = spec.get("direction")
+            over = _mass_overhang(edge, spec.get("overhang"))
             laid = sum(1 for _ in trial._block_in_paths(
-                fill, b, direction, density, spec.get("overhang")))
+                fill, b, direction, density, over))
             if direction is None:
                 # The same line block_in gives, from the same walk: a rehearsal that
                 # comes back charging 124 for a pass budgeted at 40 should say why.
-                _check_default_direction(trial, fill, b, density, spec.get("overhang"),
+                _check_default_direction(trial, fill, b, density, over,
                                          stacklevel=5)
             else:
                 _check_direction_sequence(trial, fill, b, direction, density,
                                           spec.get("overhang"), stacklevel=5)
-            return laid + int(clean), _mass_reason(fill, b, direction, density, laid)
+            return (laid + int(edge == "clean"),
+                    _mass_reason(fill, b, direction, density, laid))
 
         # A sweep works its pass count out from the depth before any geometry is
         # walked, so the quote goes through the same arithmetic the painted one does
@@ -2237,7 +2442,7 @@ class Session:
             why += f", and {laid - n_passes} more crossing them at {abs(cross):.0f} degrees"
         return laid, why
 
-    def scratch(self) -> Session:
+    def scratch(self, count_only: bool = False) -> Session:
         """A throwaway copy of this session: the painter's scrap of canvas.
 
         Everything painted on it lands exactly where it would land on the real
@@ -2248,8 +2453,42 @@ class Session:
         :meth:`rehearse` is this for a plan. This is it for a whole pass: ``easel run
         --rehearse`` runs a script against one of these, looks at the result and
         prints what it would cost, and then throws it away.
+
+        ``count_only=True`` is the same copy with **the pixel work skipped**: every
+        pass is worked out, every stroke is logged, and not one dab is stamped. The
+        price and the post-pass check come back in a second or two instead of three
+        minutes, and there is nothing to look at.
+
+        It exists because :meth:`cost` prices one ``block_in`` or one ``sweep``, and
+        a painter's own helper that calls a dozen verbs had no price at all short of
+        painting it. One budgeted a row of thirteen pots at about 100 strokes,
+        rehearsed it at **220 against 142 left**, and rebuilt it from strokes at 108
+        -- three renders of a pass that was never going to be laid. The count is
+        exact rather than an estimate: pass geometry is settled before anything is
+        stamped, so a counted pass and a painted one log the same number of strokes,
+        the same paths and the same brushes. ``tests/test_paintings.py`` holds that
+        against this repository's own painting scripts.
+
+        What it does not have is paint -- graphite is not paint and is still drawn,
+        being free against the budget and cheap to lay. :meth:`look`, :meth:`sample`
+        and :meth:`compare` on a counted copy read the canvas it started from, every
+        record's ``paint`` is nought, and :meth:`report` leaves out its ground line
+        rather than reporting the canvas it borrowed. A film given ``to_value=`` is
+        priced but not solved, and says so once: the search measures the paint under
+        the film, a counted run has laid none of its own pass, and an out-of-reach
+        value raises when it is painted. The count is still exact -- a film costs one
+        stroke at any opacity -- and whether the value is in reach is a question for
+        ``--rehearse``. Rehearse for real when the question is what it
+        looks like; count when the question is what it costs::
+
+            price = s.scratch(count_only=True)
+            paint_the_pots(price)                       # the helper, whole
+            print(price.spent, "strokes, of", s.remaining, "left")
+            print(price.report(since=0))
         """
-        return self._trial_session()
+        trial = self._trial_session()
+        trial._counting = bool(count_only)
+        return trial
 
     def _trial_session(self) -> Session:
         """A throwaway session sharing this one's surface, palette and seeding.
@@ -2285,12 +2524,21 @@ class Session:
         # neither writes into it, and the trial is thrown away regardless.
         trial._last_look = self._last_look
         trial.marks = self.marks
+        trial.guides = self.guides
         trial._preparation = self._preparation
         trial.assisted = []
         trial._index_base = self._index_base + len(self.history.records)
         trial._stream_mark = None
         trial._call_verb = ""
         trial._spent_base = self.spent
+        # The log behind that count, for the rules that read across passes. Same
+        # marks, kept as records rather than as a number; concatenated rather than
+        # taken from `self.history` alone so that a scratch of a scratch carries the
+        # whole painting and not just the layer under it.
+        trial._prior = self._prior + self.history.records
+        trial._counting = self._counting
+        trial._uncounted = []
+        trial._clip_memo = self._clip_memo
         return trial
 
     def _stroke_specs(self, strokes) -> list[dict]:
@@ -2399,10 +2647,15 @@ class Session:
                         (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
         label = str(spec.get("label", spec.get("note") or place.name
                               or f"mass {index + 1}"))
-        if spec.get("edge") == "clean" and isinstance(place, Polygon):
-            # The same line block_in gives, here too: the guide already says to
-            # preview the inset shape, and this is that sentence with a number on it.
-            _check_clean_size(place, b, self.canvas, stacklevel=4)
+        if isinstance(place, Polygon):
+            # The same lines block_in gives, here too: the guide already says to
+            # preview the inset shape, and these are those sentences with numbers on
+            # them.
+            edge = spec.get("edge", "ragged")
+            if edge == "clean":
+                _check_clean_size(place, b, self.canvas, stacklevel=4)
+            elif edge == "ragged":
+                _check_round_block(place, b, self.canvas, stacklevel=4)
         return {"points": points, "width": b.size, "fill": True,
                 "label": self._priced("mass", spec, label)}
 
@@ -2511,6 +2764,7 @@ class Session:
         region=None,
         path: str | Path | None = None,
         threshold: float = 0.10,
+        near: float = _PLAN_TOUCH,
     ) -> Comparison:
         """Per-cell value of the reference, of the canvas, and the difference.
 
@@ -2526,6 +2780,11 @@ class Session:
                 to fix: ``region.point(0.3, 0.6)``.
             path: where to write the heat map. Defaults to ``out_dir/compare_NNN.png``.
             threshold: what counts as out.
+            near: how close two planned places have to be, as a fraction of the
+                canvas long side, before the sheet calls them touching. Only used by
+                a value plan. Half the narrower brush is the number to want, and a
+                plan carries no brushes, so it defaults to ``0.01`` -- about a fine
+                brush -- and takes half of yours when you know it.
 
         Returns:
             A :class:`~easel.measure.Comparison`. Print it.
@@ -2552,9 +2811,18 @@ class Session:
         The keys are places (a name, a region, a shape) and the values are what
         :meth:`~easel.palette.Palette.value_of` reports, so a plan can be written
         before a stroke is laid and checked after every mass.
+
+        **Two planned values closer than the threshold only matter where the two
+        places meet**, and the sheet says which of them do. It used to ask -- three
+        of one painting's four close pairs were masses that never met -- and the two
+        rounds that followed answered it wrong, the worse of them a pair planned
+        ``0.00`` apart that met along its whole far edge. Every place in a plan is a
+        rectangle or a shape, so whether two of them overlap or come within ``near``
+        of each other is arithmetic, not a question for the painter.
         """
         if isinstance(reference, dict):
-            return self._compare_plan(reference, path=path, threshold=threshold)
+            return self._compare_plan(reference, path=path, threshold=threshold,
+                                      near=near)
         ref_img = load_reference(reference)
         r = as_region(region) if region is not None else None
 
@@ -2585,8 +2853,8 @@ class Session:
         result.path = save_look(sheet, self._look_path(path, "compare"))
         return result
 
-    def _compare_plan(self, plan: dict, path=None,
-                      threshold: float = 0.10) -> Comparison:
+    def _compare_plan(self, plan: dict, path=None, threshold: float = 0.10,
+                      near: float = _PLAN_TOUCH) -> Comparison:
         """Measure the canvas against a written value plan. See :meth:`compare`."""
         if not plan:
             raise ValueError(
@@ -2632,10 +2900,11 @@ class Session:
         # the plan rather than the canvas, so the question is asked at plan time, on
         # the empty canvas, which is the one run the guide already tells a painter
         # to make and the moment it is free to answer.
+        gap_px = max(float(near) * float(self.canvas.long_side), 0.0)
         result.pairs = sorted(
-            ((a, b, abs(va - vb))
-             for i, (a, _, va) in enumerate(places)
-             for (b, _, vb) in places[i + 1:]
+            ((a, b, abs(va - vb), _masks_meet(ma, mb, gap_px))
+             for i, (a, ma, va) in enumerate(places)
+             for (b, mb, vb) in places[i + 1:]
              if abs(va - vb) < threshold),
             key=lambda t: t[2],
         )
@@ -2847,32 +3116,57 @@ class Session:
         them, and what did catch a mistake was never a sentence but a line printed
         after a pass. Every input is already in the log, which carries brush, size,
         path, pressure and note per mark. Seven rules, each of which a real pass of a
-        real painting would have tripped:
+        real painting would have tripped, and two standing measurements printed
+        under them:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
           degrees of each other, from two or more calls, and most of the long marks
           in the pass;
-        - **a graded passage laid too narrow** -- three or more long parallel marks
-          at three or more colours, stepped further apart than half the narrowest
-          brush laying them, which is the same wall ``scumble`` warns on and the
-          one a hand-laid band gets no protection from;
+        - **a graded passage laid too narrow** -- five or more long parallel marks at
+          three or more colours, in one run with no gap wider than four brushes and
+          with their colours turning at most once, stepped further apart than half
+          the narrowest brush laying them. That is the same wall ``scumble`` warns
+          on and the one a hand-laid band gets no protection from; the clauses around
+          it are what keeps ten pots and two ramps laid end to end out of it, and a
+          brush that lays no colour of its own is not counted at all;
         - **a loaded bristle under ``size=0.025``**, which is a comb of four streaks
           with gaps rather than a brush. Not a *starved* one: below ``load=0.6`` the
           gaps are the mark, and a painting made of broken glints tripped this
           twenty-eight times and was right to ignore it every time;
         - **small marks before the masses are down** -- eight or more under
-          ``size=0.02`` inside the first sixty marks of the painting;
+          ``size=0.02`` inside the first sixty marks of the painting. *The
+          painting's* first sixty, rehearsal copies included: this and the subject's
+          share are the two rules that read across passes, and both counted a
+          rehearsal's own log alone until 0.4.0, which on the path the guide tells
+          every painter to use meant counting from a bare canvas;
         - **a pressure list on a chisel tip**, on a hand-laid mark short enough to
           have been asking for a taper;
+        - **three or more small round-tip marks at ``tip_wobble=0``**, each short
+          enough to be the tip's silhouette rather than a line. Both of a round tip's
+          defaults are the bad one -- the disc is the default and the fix is opt-in --
+          so *several small marks with ``round_hard`` or ``liner``* is the failure
+          nobody has to ask for. The closing checklist's *is any small mark a disc, a
+          capsule or a rectangle* is this rule's own question;
         - **the subject's share** of the marks so far, whenever a mark is noted
           ``subject``, against ``subject_share`` if the plan's number is given. The
           share to measure at the moment the subject is finished, and meant to fall
-          afterwards.
+          afterwards. A measurement, not a rule: it is printed under the findings and
+          not counted among them;
+        - **how much ground is still showing**, once anything has been painted:
+          :meth:`~easel.canvas.Canvas.ground_showing` against a bare canvas at this
+          session's own ground, texture and seed. The closing checklist asks *is
+          there anywhere the ground still shows through? There should be*, and until
+          0.4.0 there was no way to answer it short of building that canvas and
+          diffing it -- which one painter did after the painting was finished, having
+          already spent the warm ground the whole picture had been planned around.
+          It says so under ``_GROUND_FLOOR``, which is the one judgement in here.
 
-        An eighth -- a shaped ``block_in`` with ``direction`` left off costing over
-        2.5x its axis price, or a sequence of directions costing over 2.5x its own
-        dearest angle -- needs the shape, so it fires at the call instead. Each
+        Two more need the shape and so fire at the call instead: a shaped
+        ``block_in`` with ``direction`` left off costing over 2.5x its axis price (or
+        a sequence of directions costing over 2.5x its own dearest angle), and a round
+        tip blocking in a *feature* -- a shape under a tenth of the canvas across --
+        less than four brushes wide. Each
         rule that lives here can leave the guide, which is the growth rule paying
         for itself, and one has: *you will under-vary your marks* is in
         ``PAINTING.md`` rather than on the front page since 0.3.0.
@@ -2892,11 +3186,24 @@ class Session:
             lay_the_rocks()
             print(s.budget_line())
             print(s.report(since=before, subject_share=0.32))
+
+        Prints, on a pass that tripped nothing::
+
+            check over this pass, 9 marks: nothing to report
+              subject: 41 of 128 marks so far (32%), against 32% planned
+              ground: 2.16% of the canvas is still bare ground
         """
         records = self.history.records
         start = 0 if since is None else max(0, min(int(since), len(records)))
         marks = [r for r in records[start:] if r.kind not in History.UNPAINTED_KINDS]
-        earlier = sum(1 for r in records[:start] if r.kind not in History.UNPAINTED_KINDS)
+        # Every mark of the painting before this pass, the copy's inheritance
+        # included. A rehearsal's own log starts empty -- see :attr:`_prior` -- and
+        # without this the two rules that read across passes both answer as if the
+        # canvas were bare.
+        before = [r for r in self._prior if r.kind not in History.UNPAINTED_KINDS]
+        earlier = len(before) + sum(
+            1 for r in records[:start] if r.kind not in History.UNPAINTED_KINDS
+        )
         findings = _pass_findings(marks, earlier, self.canvas)
         scope = "this pass" if since is not None else "the painting"
         head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
@@ -2905,7 +3212,7 @@ class Session:
         else:
             head += "nothing to report"
         lines = [head] + [f"  - {line}" for line in findings]
-        paid = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        paid = before + [r for r in records if r.kind not in History.UNPAINTED_KINDS]
         on_it = [r for r in paid if "subject" in str(r.note).lower()]
         if on_it:
             share = len(on_it) / max(len(paid), 1)
@@ -2915,6 +3222,16 @@ class Session:
                 line += f", against {planned:.0%} planned"
                 if share < planned - 0.005:
                     line += " -- behind, if the subject is finished"
+            lines.append(line)
+        if paid and not self._counting:
+            # A count-only copy has laid no paint on the canvas it borrowed, so the
+            # honest answer is the one it started with and the useful one does not
+            # exist. Every other line here comes off the log and is exact.
+            bare = self.canvas.ground_showing()
+            line = f"  ground: {bare:.2%} of the canvas is still bare ground"
+            if bare < _GROUND_FLOOR:
+                line += (f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks for "
+                         f"some")
             lines.append(line)
         return "\n".join(lines)
 
@@ -2956,6 +3273,10 @@ class Session:
             "rng_state": _encode_rng(self.rng),
             "palette_slots": {k: [float(c) for c in v] for k, v in self.palette.slots.items()},
             "marks": {k: [float(v[0]), float(v[1])] for k, v in self.marks.items()},
+            # The overlay drawing. Kept beside the canvas the way the landmarks are,
+            # because that is what it is: an older file has none and loads with none.
+            "guides": [{"points": [[float(x), float(y)] for x, y in g["points"]],
+                        "note": str(g.get("note", ""))} for g in self.guides],
             "has_sketch": bool(self.canvas.has_sketch),
             "assisted": list(self.assisted),
         }
@@ -3027,6 +3348,11 @@ class Session:
                 s.marks = {
                     k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()
                 }
+                s.guides = [
+                    {"points": [(float(x), float(y)) for x, y in g.get("points", ())],
+                     "note": str(g.get("note", ""))}
+                    for g in meta.get("guides", [])
+                ]
                 s._preparation = None
                 s.assisted = [str(a) for a in meta.get("assisted", [])]
                 s._index_base = 0
@@ -3034,6 +3360,10 @@ class Session:
                 s._stream_mark = None
                 s._call_verb = ""
                 s._spent_base = 0
+                s._prior = []
+                s._counting = False
+                s._uncounted = []
+                s._clip_memo = None
 
                 canvas = Canvas.__new__(Canvas)
                 canvas.width = int(meta["width"])
@@ -3132,6 +3462,7 @@ class Session:
         for name, rgb in self.palette.slots.items():
             fresh.palette[name] = rgb
         fresh.marks = dict(self.marks)
+        fresh.guides = [dict(g) for g in self.guides]
         fresh.assisted = list(self.assisted)
         # The replayed session shares this one's out_dir, so without carrying
         # these across, its very next look()/preview()/rehearse()/compare() would
@@ -3184,6 +3515,9 @@ class Session:
                 color = params.pop("color", record.color_hex or "#000000")
                 glaze = bool(params.pop("glaze", False))
                 smooth = bool(params.pop("smooth", True))
+                held = params.pop("clip", None)
+                clip = None if held is None else polygon([(float(x), float(y))
+                                                          for x, y in held])
                 # Logs written before press existed have no key for it, and one stamp
                 # is what they meant: they replay unchanged.
                 press = int(params.pop("press", 1))
@@ -3196,6 +3530,7 @@ class Session:
                     glaze=glaze,
                     smooth=smooth,
                     press=press,
+                    clip=clip,
                     note=record.note,
                 )
             # The record's own account of the stream and of the call that laid it,
@@ -3264,6 +3599,40 @@ class Session:
         self.rng = _stream_rng(state)
         return True
 
+    def _say_uncounted(self, what: str) -> None:
+        """Warn once, per count-only copy, about a question counting cannot answer."""
+        if what in self._uncounted:
+            return
+        self._uncounted.append(what)
+        warnings.warn(f"scratch(count_only=True): {what}", stacklevel=4)
+
+    def _clip_cover(self, outline: Polygon) -> np.ndarray:
+        """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
+
+        ``block_in(edge="hard")`` hands every one of its passes the same outline, and
+        building the mask is the one expensive thing about a clipped stroke: 78ms on
+        a smoothed shape at 1200x800, against a few milliseconds for the dabs. A
+        one-entry memo is the whole of what a mass needs, because its passes come one
+        after another with nothing between. Keyed on the outline's own points rather
+        than on the object, so two equal shapes share the answer and a freed one
+        cannot be mistaken for a live one.
+        """
+        key = (outline.points, self.canvas.width, self.canvas.height)
+        if self._clip_memo is not None and self._clip_memo[0] == key:
+            return self._clip_memo[1]
+        cover = outline.coverage(self.canvas.width, self.canvas.height)
+        self._clip_memo = (key, cover)
+        return cover
+
+    def _snapshot(self) -> None:
+        """Push the canvas onto the undo stack, unless this session lays no paint.
+
+        One place, because every verb that marks the canvas has to do it and a
+        count-only copy has to do it nowhere -- see :meth:`scratch`.
+        """
+        if not self._counting:
+            self.history.push_snapshot(self.canvas.snapshot())
+
     def _resolve_brush(self, brush, size, opacity, overrides: dict) -> Brush:
         b = brush if isinstance(brush, Brush) else get_brush(str(brush))
         _check_brush_overrides(overrides)
@@ -3280,6 +3649,8 @@ class Session:
         # brush is.
         if "size" in changes:
             _check_tip_pixels(b, self.canvas)
+        if "jitter" in overrides:
+            _check_jitter(b, float(overrides["jitter"]))
         return b
 
     def _resolve_color(self, color) -> np.ndarray:
@@ -3403,10 +3774,63 @@ def _check_tip_pixels(b: Brush, canvas, stacklevel: int = 4) -> None:
         stacklevel=stacklevel,
     )
 
+#: Under this share of the canvas, :meth:`Session.report` says the ground has gone.
+#: A **judgement**, not a measurement, and the one number in the check that is: the
+#: closing checklist says *there should be* some ground showing and does not say how
+#: much. It is placed an order of magnitude from each of the two anchors there are.
+#: Above: a mottled ``density=1.0`` mass leaves **4.4%** of its interior within
+#: ``0.05`` of bare, which is ground plainly showing and what a first pass is for.
+#: Below: a painting whose warm ground had been chosen to be seen through, and was
+#: not, finished at **0.07%**. Raise or ignore it freely -- the number beside it is
+#: the instrument, and this is only what makes a painter look at the number.
+_GROUND_FLOOR = 0.005
+
 #: A mark shorter than this many brush widths is a *shape* rather than a pass, and
 #: the one a painter reaches for a pressure list on expecting a taper. Longer than
 #: this, a list on a chisel is grading the paint along a pass, which it does.
 _SHORT_MARK_WIDTHS = 4.0
+
+
+#: How many times the ``Brush.jitter`` default an override may ask for before it says
+#: so. ``jitter`` is the standard deviation of each dab's offset **in tip diameters**,
+#: smoothed along the stroke, so what it buys is width: measured on a straight
+#: ``liner`` stroke at ``pressure="even"``, 1024x768, the painted band is **1.2**
+#: brushes across at the default, **1.8** at ``0.1``, **2.2** at ``0.2`` and **3.7**
+#: at ``0.5``. Five times the default is where a line stops being one brush wide,
+#: which is the thing a line is. A painter read *halving both halves the wander* as
+#: naming an operation rather than a number, passed ``0.5``, and every member of a
+#: greenhouse frame came back a chain of beads; the call looked exactly like the
+#: recipe and nothing said a word.
+_JITTER_MULTIPLE = 5.0
+
+#: What the band widens to, per unit of ``jitter``, in tip diameters: the slope of the
+#: measured run above, end to end, quoted in the warning so the painter gets a number
+#: rather than an adjective. It runs a little under the middle of that table and lands
+#: on its far end, which is where this fires hardest and where it matters.
+_JITTER_WIDTHS = 5.3
+
+
+def _check_jitter(b: Brush, asked: float) -> None:
+    """Warn when a ``jitter=`` override is a multiple of the default rather than a tweak.
+
+    The same shape as the comb floor and the chisel-pixel floor: a number a painter
+    can reach for out of a recipe, with no good outcome past a measured wall. It fires
+    on the *override* and not on a brush's own field, because every named brush in the
+    box sits between ``0`` and ``0.03`` and a ``Brush`` built by hand is the painter's
+    own -- the way :func:`_check_tip_pixels` only looks when ``size`` was asked for.
+    """
+    default = float(next(f for f in dataclass_fields(Brush) if f.name == "jitter").default)
+    if asked <= _JITTER_MULTIPLE * default:
+        return
+    warnings.warn(
+        f"jitter={asked:g} is {asked / default:.0f} times the default of {default:g}. "
+        f"It is the wander of each dab in tip diameters, so it comes out as width: a "
+        f"stroke lands about {1.2 + _JITTER_WIDTHS * (asked - default):.1f} brushes "
+        f"across here against 1.2 at the default, which is a chain of beads rather "
+        f"than a line. Past {_JITTER_MULTIPLE * default:g} a mark stops being one "
+        f"brush wide. To halve the wander, pass jitter={default / 2:g}.",
+        stacklevel=4,
+    )
 
 
 def _check_pressure_on_tip(b: Brush, pressure, pts: np.ndarray, canvas) -> None:
@@ -3538,6 +3962,81 @@ def _check_direction_sequence(session, place, b: Brush, direction, density: floa
 #: Past this share of a shape's shorter extent, a clean edge's half-brush inset is
 #: taking the mass rather than a rim off it: see :func:`_check_clean_size`.
 _CLEAN_SHARE = 0.25
+
+
+#: The tips whose silhouette is a disc, so their overhang goes out in **every**
+#: direction rather than across the pass.
+_ROUND_TIPS = ("round_soft", "round_hard")
+
+#: Narrower than this, a shape is a *feature* rather than a mass, and a disc's fringe
+#: lands on a drawing rather than on a soft edge nobody minds. ``CALIBRATION.md``'s own
+#: scale ladder under *At the scale of a feature* puts a mass at about ``0.3`` of the
+#: canvas across and a plane within it at ``0.015-0.025``; the leaf that raised this is
+#: ``0.046``. Without it the rule fires on a mass a third of the canvas wide laid with
+#: a round tip, which is the guide's own advice for a soft silhouette -- and tells the
+#: painter to lay it as a pair of strokes, which at that size is nonsense.
+_ROUND_FEATURE = 0.1
+
+
+def _check_round_block(place, b: Brush, canvas, stacklevel: int = 3) -> None:
+    """Warn when a round tip is blocking in a shape too small to hold it.
+
+    A chisel's overhang is across its pass; a disc's is all the way round, laid at
+    small sizes as separate discs -- a fringe rather than a soft edge. On a small
+    shape that fringe *is* the silhouette, and a painter's pressed leaf, a ``hull``
+    ``0.055`` across at its narrowest blocked in with a ``round_hard`` at
+    ``size=0.013``, came back in their own word a cauliflower. It was relaid as two
+    tapering strokes that meet plus a midrib.
+
+    The number that predicts it is the same one :func:`_check_clean_size` uses -- the
+    brush's share of the shape's shorter extent, in the brush's own unit -- and it
+    fires at the same quarter, so this rule adds no new threshold. Measured on that
+    leaf as it was actually painted (``0.046`` across at its narrowest, 1200x800),
+    painted area as a multiple of the shape's own:
+
+    ========  ==============  ========
+    share     ``round_hard``  ``flat``
+    ========  ==============  ========
+    ``0.11``  ``1.19``        ``1.07``
+    ``0.20``  ``1.38``        ``1.23``
+    ``0.25``  ``1.53``        ``1.32``
+    ``0.28``  ``1.61``        ``1.34``
+    ``0.50``  ``2.17``        ``1.68``
+    ========  ==============  ========
+
+    The painter's own call is the ``0.28`` row: half again as much canvas as the
+    shape, all of it landing on the boundary that *is* the drawing. A chisel at the
+    same share lands a third more, which is why the remedy names one. There is no
+    knee -- the extra area is about ``2x`` the share, because a disc's fringe is its
+    perimeter times half its width -- so the quarter is where the clean-edge rule
+    already draws its line and not a second judgement.
+
+    Only on a shape narrower than :data:`_ROUND_FEATURE`, and only on a ragged edge.
+    Over that width the same share is a mass with a soft silhouette, which is what the
+    guide recommends a round tip for; under it the fringe *is* the drawing.
+    ``edge="clean"`` is left to :func:`_check_clean_size`, which fires at the same
+    share and says a different thing about the same combination, and ``edge="hard"``
+    masks the fringe away, which is one of the remedies this names.
+    """
+    if b.tip not in _ROUND_TIPS:
+        return
+    long = float(canvas.long_side)
+    short = min(place.width * canvas.width / long, place.height * canvas.height / long)
+    if not 0.0 < short < _ROUND_FEATURE:
+        return
+    share = b.size / short
+    if share <= _CLEAN_SHARE:
+        return
+    warnings.warn(
+        f"block_in({place.name or 'a shape'}) with a round tip ({b.name!r}) at "
+        f"size={b.size:.3g}, on a feature {short:.3f} across at its narrowest: the "
+        f"brush is {share:.0%} of that. A round tip's overhang goes out all the way "
+        f"round, so at this share the mass lands about half again the area of the "
+        f"shape and the fringe is the silhouette. Use a chisel ('flat', 'knife') at "
+        f"this size, size={_CLEAN_SHARE * short:.3g} and under, edge='hard' to mask "
+        f"the fringe away, or lay the shape as a pair of strokes that meet.",
+        stacklevel=stacklevel,
+    )
 
 
 def _check_clean_size(place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> None:
@@ -3952,6 +4451,14 @@ _REPORT_STARVED_LOAD = 0.6      # ...unless it was starved this far, where they 
 _REPORT_EARLY_MARKS = 60        # small marks inside the first this many are detail first
 _REPORT_SMALL_MARK = 0.02       # ...where small is under this
 _REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
+_REPORT_ROUND_MARKS = 3         # small round-tip marks at tip_wobble=0 that are one disc
+_ROUND_CAPSULE_WIDTHS = 7.0     # ...where "small" is also shorter than this many widths
+
+# `_ROUND_CAPSULE_WIDTHS` is `PAINTING.md`'s own number for the other half of the same
+# fault: a `round_hard` mark "needs to be about 7x longer than it is wide before it
+# stops reading as one" capsule. Under it, the mark is the tip's silhouette; over it,
+# it is a line, and a `liner` drawing fine lines at `tip_wobble=0` is the guide's own
+# advice and must not trip this.
 
 # `_REPORT_STARVED_LOAD` is the one threshold here that narrows a rule rather than
 # setting one, and it exists because the rule above it was being ignored. A painting
@@ -4006,9 +4513,30 @@ def _angle_name(degrees: float) -> str:
 #: rather than a passage laid badly, so the rule does not reach down there.
 _REPORT_BAND_FLOOR = 0.25
 
-#: How many marks make a passage rather than a pair. Three is the fewest that can
-#: have a step at all.
-_REPORT_BAND_MARKS = 3
+#: How many marks make a passage rather than a row of things. Three is the fewest
+#: that can have a step at all, and it was three until 0.4.0 -- which is also the
+#: number of strokes a small container's body takes, so ten pots on a bench came back
+#: as *30 marks at stepping colours*, which are ten objects. Five is over the count of
+#: anything this engine's recipes build out of parallel strokes and under every graded
+#: passage anyone has laid: ``RECIPES.md``'s hand-rolled band is six strokes, the dawn
+#: band that the rule was written for is seven, and a ``scumble`` is ``n``.
+_REPORT_BAND_MARKS = 5
+
+#: How wide a gap, in narrowest brushes, breaks one run of parallel marks into two.
+#: The same four brushes the floor below is built on, applied *between neighbours*
+#: rather than to the set's median step: three trunks were already excluded by the
+#: median, and ten pots three strokes each were not, because within a pot the step is
+#: three quarters of a brush and only the gaps between pots are wide.
+_REPORT_BAND_GAP = 4.0
+
+#: How many times the value sequence across a run may change direction and still be a
+#: graded passage. One: a band that brightens, or brightens and falls back, is a
+#: passage; the ninth session's dawn band rises over four marks and falls over three.
+#: Two ramps laid end to end -- a ``scumble`` of 7 and a ``scumble`` of 8 over
+#: adjacent bands, which this rule summed and then offered a remedy three times
+#: either band's own step -- turn twice, and ten pots at three terracotta values turn
+#: nine times.
+_REPORT_BAND_TURNS = 1
 
 #: How many distinct colours a stack of parallel marks needs before it counts as
 #: *graded* rather than as a mass. This is what keeps every ``block_in`` out of the
@@ -4043,8 +4571,25 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
       ``0.55`` of a brush apart, which is under two steps and perfectly right;
     * **spaced between a quarter of a brush and two**, so that marks four brushes
       apart -- three trunks, three cables, three reflections -- are separate marks
-      and not a passage laid badly.
+      and not a passage laid badly;
+    * **in one run**, with no gap between neighbours wider than
+      :data:`_REPORT_BAND_GAP` brushes. The spacing clause above is on the set's
+      *median* step, which three trunks fail and ten pots of three strokes each do
+      not: inside a pot the step is three quarters of a brush, and only the gaps
+      between pots are wide;
+    * **and stepping one way**, turning at most :data:`_REPORT_BAND_TURNS` time. A
+      band that brightens, or brightens and falls back, is a passage. A sequence that
+      turns again is a row of things -- ten pots at three terracotta values, or two
+      ``scumble`` ramps laid end to end and summed into one stack with a remedy three
+      times either band's own step.
+
+    Marks that lay **no colour of their own** are dropped before any of this: a
+    ``smudge`` drags what is already there, and one counted at ``size=0.02`` among two
+    block-ins and two glazes made itself the narrowest brush in a five-mark
+    "passage" it had contributed no colour to.
     """
+    long_marks = [(r, a) for r, a in long_marks
+                  if float(r.params.get("smudge", 0.0) or 0.0) < 1.0]
     best: list[tuple[StrokeRecord, float]] = []
     for _, centre in long_marks:
         near = [(r, a) for r, a in long_marks
@@ -4053,33 +4598,78 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
             best = near
     if len(best) < _REPORT_BAND_MARKS:
         return None
-    colours = {tuple(round(float(v), 4) for v in (r.params.get("color") or ()))
-               for r, _ in best}
-    if len(colours - {()}) < _REPORT_BAND_COLOURS:
-        return None
 
     # Where each mark sits across the stack, in the brush's own unit.
     long_side = float(canvas.long_side)
     angle = math.radians(float(np.median([a for _, a in best])))
     nx, ny = -math.sin(angle), math.cos(angle)
-    offsets = []
+    across = []
     for r, _ in best:
         pts = np.asarray(r.points, dtype=np.float64)
         x = float(pts[:, 0].mean()) * canvas.width / long_side
         y = float(pts[:, 1].mean()) * canvas.height / long_side
-        offsets.append(x * nx + y * ny)
-    steps = np.diff(np.sort(np.asarray(offsets)))
+        across.append((x * nx + y * ny, r))
+    across.sort(key=lambda pair: pair[0])
+    run = _longest_run(across)
+    if len(run) < _REPORT_BAND_MARKS:
+        return None
+
+    colours = {tuple(round(float(v), 4) for v in (r.params.get("color") or ()))
+               for _, r in run}
+    if len(colours - {()}) < _REPORT_BAND_COLOURS:
+        return None
+    if _value_turns([r for _, r in run]) > _REPORT_BAND_TURNS:
+        return None
+
+    steps = np.diff(np.asarray([off for off, _ in run]))
     steps = steps[steps > 1e-9]
     if steps.size < _REPORT_BAND_MARKS - 1:
         return None
     step = float(np.median(steps))
-    brush = min(float(r.params.get("size", 0.0)) for r, _ in best)
+    brush = min(float(r.params.get("size", 0.0)) for _, r in run)
     if brush <= 0.0 or step <= 0.0:
         return None
     per_step = brush / step
     if not _REPORT_BAND_FLOOR <= per_step < _LINEAR_MIN_STEPS:
         return None
-    return len(best), step, brush, per_step
+    return len(run), step, brush, per_step
+
+
+def _longest_run(across) -> list[tuple[float, StrokeRecord]]:
+    """The longest stretch of ``(offset, record)`` with no wide gap in it.
+
+    Wide is :data:`_REPORT_BAND_GAP` brushes, measured on the narrower of the two
+    marks either side of the gap, so a fine mark next to a broad one is judged by the
+    fine one. Input sorted by offset.
+    """
+    runs: list[list[tuple[float, StrokeRecord]]] = [[]]
+    for i, (off, r) in enumerate(across):
+        if i:
+            prev_off, prev = across[i - 1]
+            narrow = min(float(r.params.get("size", 0.0)),
+                         float(prev.params.get("size", 0.0)))
+            if off - prev_off > _REPORT_BAND_GAP * narrow:
+                runs.append([])
+        runs[-1].append((off, r))
+    return max(runs, key=len)
+
+
+def _value_turns(run: list[StrokeRecord]) -> int:
+    """How many times the value of the colour changes direction along a run.
+
+    Flat steps are not turns: the dawn band repeats its lightest colour at the top
+    and still rises once and falls once. Colours a hair apart are flat too, at the
+    hundredth a value plan is written to -- otherwise noise in the fourth decimal
+    counts as a direction.
+    """
+    values = [float(luminance(np.asarray(r.params.get("color") or (0.0, 0.0, 0.0),
+                                         dtype=np.float32))) for r in run]
+    signs = []
+    for a, b in zip(values, values[1:], strict=False):
+        if abs(b - a) < 0.005:
+            continue
+        signs.append(1 if b > a else -1)
+    return sum(1 for a, b in zip(signs, signs[1:], strict=False) if a != b)
 
 
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]:
@@ -4158,6 +4748,29 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas) -> list[str]
             f"painting is mostly big statements."
         )
 
+    # A round tip printing its own outline, over and over.
+    discs = []
+    for r in marks:
+        if r.params.get("tip") not in _ROUND_TIPS or r.params.get("via"):
+            continue
+        if float(r.params.get("tip_wobble", 0.0) or 0.0) > 0.0:
+            continue
+        size = float(r.params.get("size", 1.0))
+        if size >= _REPORT_SMALL_MARK:
+            continue
+        length, _ = _mark_length_and_angle(r, canvas)
+        if length <= _ROUND_CAPSULE_WIDTHS * size:
+            discs.append(r)
+    if len(discs) >= _REPORT_ROUND_MARKS:
+        out.append(
+            f"{len(discs)} small marks with a round tip at tip_wobble=0: that is one "
+            f"disc printed {len(discs)} times. Two plain round dabs share 97% of "
+            f"their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a "
+            f"clot, redrawn per mark the way a bristle's comb is. Or give the mark a "
+            f"length -- a round tip reads as a capsule under "
+            f"{_ROUND_CAPSULE_WIDTHS:.0f} times its own width."
+        )
+
     # A pressure list asking a chisel for a width.
     tapered = []
     for r in marks:
@@ -4205,22 +4818,68 @@ def _sweep_cover(edge, size: float, density: float, depth: float, into,
 
 
 def _pass_directions(direction) -> list:
-    """One entry per pass: the names as before, plus angles and sequences of either.
+    """One entry per pass: the names as before, plus angles, lines, and sequences.
 
-    ``"cross"`` stays two named passes. A number is one pass at that angle, and a
-    sequence is one pass each -- so a cross at an angle is ``(30, 120)``, which is
-    what a mass wants when its own axis is not the canvas's.
+    ``"cross"`` stays two named passes. A number is one pass at that angle, a pair of
+    points is one pass along the line through them, and a sequence is one pass each --
+    so a cross at an angle is ``(30, 118)``, which is what a mass wants when its own
+    axis is not the canvas's.
     """
     if isinstance(direction, str):
         return ["horizontal", "vertical"] if direction == "cross" else [direction]
     if isinstance(direction, (int, float)):
         return [float(direction)]
+    along = _line_angle(direction)
+    if along is not None:
+        return [along]
     passes: list = []
     for item in direction:
         passes.extend(_pass_directions(item))
     if not passes:
         raise ValueError("block_in(direction=...) was given an empty sequence")
     return passes
+
+
+def _line_angle(direction) -> float | None:
+    """A pair of points as the angle a pass along that line runs at, or ``None``.
+
+    ``direction=`` is an angle in the **normalised** ``0..1`` space, which is not the
+    angle it is on screen unless the canvas is square: on 1000x500,
+    ``block_in(band, direction=-23)`` lays its passes at **-12 degrees on screen**,
+    and on 1024x768 ``45`` runs at ``37``. Every instrument agrees with every other
+    -- ``cost_line``'s *stepping across N* is measured in the same space, to the
+    hundredth -- and all of them disagree with the picture, which is where a painter
+    is looking. Three painters wrote a metric projection, computed the screen slope of
+    an edge, typed it in, and got passes at some other angle; one of them laid *passes
+    along the sloped boundary*, the recipe for a gable at 41 degrees, at 33.
+
+    So this takes the two points instead and does the arithmetic, which is what every
+    painter typing an angle was trying to say. The conversion is nothing -- the angle
+    a pass runs at *is* ``atan2`` of the normalised delta -- and that is exactly why
+    nobody could see it was needed.
+
+    A pair of numbers is still a pair of angles (``direction=(30, 118)`` is a cross),
+    because a number is not a point. A path of three or more points has no one angle
+    and says so rather than being read as a sequence of angles.
+    """
+    if isinstance(direction, (str, int, float)) or not _is_path(direction):
+        return None
+    pts = [tuple(float(v) for v in p) for p in direction]
+    if len(pts) != 2:
+        raise ValueError(
+            f"direction= takes a line of two points -- direction=((0.33, 0.01), "
+            f"(0.58, 0.29)), meaning along this line on the screen -- and was given "
+            f"{len(pts)} of them. A curve has no one angle; take the two ends of the "
+            f"stretch you mean."
+        )
+    (x0, y0), (x1, y1) = pts
+    dx, dy = x1 - x0, y1 - y0
+    if math.hypot(dx, dy) < 1e-9:
+        raise ValueError(
+            f"direction= was given a line of zero length, ({x0}, {y0}) to ({x1}, "
+            f"{y1}). Two different points name a direction; one names a place."
+        )
+    return math.degrees(math.atan2(dy, dx))
 
 
 #: The named directions as angles, for the shaped sweep. The rectangle branches
@@ -4230,15 +4889,17 @@ _NAMED_ANGLES = {"horizontal": 0.0, "vertical": 90.0, "diagonal": -45.0}
 
 
 def _angle_of(direction) -> float:
-    """A direction as degrees, whether it arrived as a name or a number."""
+    """A direction as degrees: a name, a number, or a line of two points."""
     if isinstance(direction, str):
         if direction not in _NAMED_ANGLES:
             raise ValueError(
                 f"Unknown direction {direction!r}. Use 'horizontal', 'vertical', "
-                f"'diagonal', 'cross', 'axis', or a number of degrees."
+                f"'diagonal', 'cross', 'axis', a number of degrees, or a line of two "
+                f"points to run along."
             )
         return _NAMED_ANGLES[direction]
-    return float(direction)
+    along = _line_angle(direction)
+    return float(direction) if along is None else along
 
 
 def _spans_inside(poly: Polygon, origin, d) -> list[tuple[float, float]]:
@@ -4264,6 +4925,59 @@ def _spans_inside(poly: Polygon, origin, d) -> list[tuple[float, float]]:
         ts.append((px - ox) * dx + (py - oy) * dy)
     ts.sort()
     return [(ts[i], ts[i + 1]) for i in range(0, len(ts) - 1, 2)]
+
+
+def _masks_meet(a: np.ndarray, b: np.ndarray, gap_px: float) -> bool:
+    """Do two places overlap, or come within ``gap_px`` pixels of each other?
+
+    Overlap is one ``&``. The near case is the same test after growing one of them by
+    ``gap_px``, done by rolling rather than by a distance transform: the neighbourhood
+    is a square, and a square is separable, so it costs ``2r`` shifts down each axis
+    rather than ``(2r+1)^2`` over both -- forty on a fine brush's radius instead of
+    seventeen hundred. A square over-reaches a disc by root two at the corners, which
+    at this radius is under a pixel of a judgement whose own number is a stand-in.
+    """
+    if np.any(a & b):
+        return True
+    r = int(round(gap_px))
+    if r < 1:
+        return False
+    grown = a
+    for axis in (0, 1):
+        out = grown.copy()
+        for shift in [s for step in range(1, r + 1) for s in (step, -step)]:
+            moved = np.roll(grown, shift, axis=axis)
+            # `roll` wraps, so the rows or columns that came round the far side are
+            # cleared: a mass at the top of the canvas is not next to one at the foot.
+            edge = slice(None, shift) if shift > 0 else slice(shift, None)
+            moved[edge if axis == 0 else (slice(None), edge)] = False
+            out |= moved
+        grown = out
+    return bool(np.any(grown & b))
+
+
+def _mass_overhang(edge: str, overhang):
+    """How far a mass's passes run past their ends, once ``edge`` has had its say.
+
+    Only ``"hard"`` has anything to add: nothing can land outside the outline, so the
+    one thing an overhang still does there is carry every pass end up to it. The rest
+    is :meth:`Session._block_in_paths`'s own pair of defaults. Here rather than in
+    that walk because the walk is handed a fill and never learns which edge asked
+    for it -- and :meth:`Session.cost` has to charge what :meth:`Session.block_in`
+    lays.
+    """
+    return 1.0 if edge == "hard" and overhang is None else overhang
+
+
+def _as_outline(place) -> Polygon:
+    """Whatever a painter hands ``clip=``, as one closed outline.
+
+    A shape is itself; a region, a name or a 4-tuple becomes the polygon of its
+    rectangle. One place, because ``clip`` is also what goes in the log and comes
+    back out of it on a replay, and it has to be the same thing both ways.
+    """
+    held = as_place(place)
+    return held if isinstance(held, Polygon) else polygon(held)
 
 
 def _smudge_path(edge, size: float) -> list:
@@ -4295,47 +5009,14 @@ def _clean_fill(place, amount: float):
     better than ragged, because the contour pass runs along the frame too. A mass
     that meets the frame should run off it.
 
-    So the inset is dropped on any side the place reaches. A :class:`Polygon` clamps
-    its points to the canvas, so a run of points sitting exactly on ``0.0`` or
-    ``1.0`` is the only trace left of an outline drawn past the frame -- which makes
-    "the outline is at the frame" and "the outline ran off it" the same test, and the
-    right one either way.
-
-    Per coordinate, not per point: a point on the bottom frame keeps its ``y`` and
-    takes the inset ``x``, so only the side that meets the frame stays put. The
-    offset moves one point per vertex, so the two outlines correspond by index; when
-    they do not -- an offset that folded and fell back, or two vertices that landed
-    on each other and collapsed -- the plain inset is what there is.
+    Since 0.4.0 that is what :meth:`~easel.regions.Region.inset` and
+    :meth:`~easel.regions.Polygon.inset` do for anybody, so this is the call and no
+    longer the rule. It was the asymmetry that cost a painting: a mass held off the
+    seam by hand with ``GLASS.inset(0.024)`` kept the erosion ``edge="clean"`` had
+    always dropped, and left the strip down the right frame that this docstring
+    describes.
     """
-    if not isinstance(place, Polygon):
-        r = as_region(place)
-        lo_x = r.x0 if r.x0 <= 0.0 else r.x0 + amount
-        hi_x = r.x1 if r.x1 >= 1.0 else r.x1 - amount
-        lo_y = r.y0 if r.y0 <= 0.0 else r.y0 + amount
-        hi_y = r.y1 if r.y1 >= 1.0 else r.y1 - amount
-        # Inset past its own width, a region leaves a sliver at the centre rather
-        # than raising, the same way Region.inset does.
-        if hi_x - lo_x < Region.MIN_EXTENT:
-            mid = (r.x0 + r.x1) * 0.5
-            lo_x, hi_x = mid - Region.MIN_EXTENT * 0.5, mid + Region.MIN_EXTENT * 0.5
-        if hi_y - lo_y < Region.MIN_EXTENT:
-            mid = (r.y0 + r.y1) * 0.5
-            lo_y, hi_y = mid - Region.MIN_EXTENT * 0.5, mid + Region.MIN_EXTENT * 0.5
-        return Region(lo_x, lo_y, hi_x, hi_y, r.name)
-
-    fill = place.inset(amount)
-    if len(fill.points) != len(place.points):
-        return fill
-    at_frame = [(x <= 0.0 or x >= 1.0, y <= 0.0 or y >= 1.0) for x, y in place.points]
-    if not any(fx or fy for fx, fy in at_frame):
-        return fill                          # nothing touches the frame: today's inset
-    pts = [((ox if fx else ix), (oy if fy else iy))
-           for (ox, oy), (ix, iy), (fx, fy) in zip(place.points, fill.points, at_frame,
-                                                   strict=True)]
-    try:
-        return Polygon(tuple(pts), name=place.name, traced=place.traced)
-    except ValueError:
-        return fill                          # the stitched ring is not a shape
+    return as_place(place).inset(float(amount))
 
 
 def _place_params(place) -> dict:

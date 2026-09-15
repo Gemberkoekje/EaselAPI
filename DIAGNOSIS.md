@@ -54,6 +54,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | A passage lit on the side you did not mean | `REFERENCE.md` → *Where a stack of passes starts* |
 | A join you have smudged twice and it is still there | `RECIPES.md` → *A quiet gradient*; `CALIBRATION.md` → *`smudge`* |
 | A field gradated top to bottom that reads as a stack of bands | `PAINTER.md` → *5. Refine the mid-tones* |
+| A lighter band running beside a boundary you smudged, for its whole length | `RECIPES.md` → *An edge that is actually lost*; `CALIBRATION.md` → *`smudge`* |
 
 ## An edge
 

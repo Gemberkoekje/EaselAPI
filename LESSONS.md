@@ -88,6 +88,13 @@ its axis, or a sequence of directions costing over 2.5× its own dearest angle �
 the shape and fires at the call. **Each rule that becomes a check can
 leave the guide**, which is the growth rule paying for itself.
 
+The count has moved since, and `REFERENCE.md` is where it is kept rather than here:
+0.4.0 added an eighth read off the log — three or more small round-tip marks at
+`tip_wobble=0`, which is *one disc printed over and over* — a second that needs the
+shape, and two standing measurements under the findings, the subject's share and how
+much ground is still showing. The list above is what the mechanism was when it was
+built; the mechanism is what this file is for.
+
 **One has now left it.** *You will under-vary your marks* is in `PAINTING.md` rather
 than on the front page since 0.3.0, because the check names both halves of it after the
 pass that did it, with the numbers attached, which the paragraph could not do. It was
@@ -622,9 +629,9 @@ And three that were already here:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the runs found has been applied.
-[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from nine painting sessions and the
-synthesis across them, and **every item is now done** — forty-nine for the engine,
-sixty-five for the documentation — each with a note saying what it became.
+[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from ten painting sessions and the
+synthesis across them, and **every item is now done** — sixty-four for the engine,
+seventy-nine for the documentation — each with a note saying what it became.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints
