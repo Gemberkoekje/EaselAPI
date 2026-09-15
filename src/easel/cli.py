@@ -24,7 +24,7 @@ from pathlib import Path
 
 from PIL import Image as _PILImage
 
-from easel import guide
+from easel import docs
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
 from easel.palette import PIGMENTS
@@ -233,11 +233,11 @@ def _cmd_guide(args) -> int:
             else "guide")
 
     if args.path:
-        print(guide.document_path(name))
+        print(docs.document_path(name))
         return 0
 
-    text = guide.read(name) if (args.full or name != "guide") else guide.front_page()
-    guide.write(text)
+    text = docs.read(name) if (args.full or name != "guide") else docs.front_page()
+    docs.write(text)
     return 0
 
 

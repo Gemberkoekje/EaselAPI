@@ -123,7 +123,7 @@ method on one page, so the nine warm-up exercises come before anything else.
 
 **If you have already installed the package you do not need that link.** All five
 documents ship inside the wheel: `python -m easel guide` prints the first hour,
-`--full` prints the rest, and `easel.guide.read()` hands you any of them as text.
+`--full` prints the rest, and `easel.docs.read()` hands you any of them as text.
 
 It is one file of five, and every rule in the five is stated once, in the file it
 belongs to, and linked from everywhere else. `PAINTER.md` is held to a word budget by
@@ -345,7 +345,7 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what ten painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what eleven painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
 each. Every item on it is done — including the seven that were answered by measuring
 them and finding nothing to fix, which say so.

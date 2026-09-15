@@ -1,22 +1,19 @@
 # What the painters asked for, and what was done
 
-Ten sessions painted a picture from the guide and then wrote down what the engine and
-the documentation had cost them — eleven paintings, because the ninth painted its
+Eleven sessions painted a picture from the guide and then wrote down what the engine and
+the documentation had cost them — twelve paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: the pier session, at the top.** Everything below it is done — 65
-engine items and 81 documentation items — the eighth session's eight and the ninth's
-fourteen in 0.3.0, the last two rounds' fifteen engine items and the three documentation
-items they had left over, in 0.4.0, and the install session's three in 0.4.0 as well. The
-open round is written where the two before it were, and will be folded in where it stands
-rather than moved once it is acted on; those two were carried as *open* for one release
-and are in place below: they are the two paintings that raised the same items from
-opposite directions, and separating them would lose the thing that makes them worth
-reading together. The long arguments that produced each
+**No round is open.** 70 engine items and 86 documentation items, every one of them
+done — the eighth session's eight and the ninth's fourteen in 0.3.0, the last two
+rounds' fifteen engine items and the three documentation items they had left over, in
+0.4.0, the install session's three in 0.4.0 as well, and the pier session's ten in
+0.5.0, plus the one that was neither. Each round is folded in where it stands rather
+than moved once it is acted on. The long arguments that produced each
 one have been cut, because a request list is worth keeping only while somebody still has
 to act on it. What survives is the
 finding, because a finding is still true after the fix, and the handful of places where
@@ -24,8 +21,9 @@ the answer differed from the request. The last three sessions painted one shared
 subject; their lists were deduplicated into one round, and every number they took was
 re-measured before anything was built on it.
 
-**Done is not the same as right, and seven times now it has meant *measured and there was
-nothing to fix*.** An engine item has a test behind it. A documentation item is a
+**Done is not the same as right, and eight times now it has meant *measured and there
+was nothing to fix* — the eighth by declining to build at all.** An engine item has a
+test behind it. A documentation item is a
 hypothesis until a fresh session paints against it, which is the rule
 [`LESSONS.md`](LESSONS.md) opens with and the reason every line below says what was
 changed rather than that it worked.
@@ -44,7 +42,7 @@ changed rather than that it worked.
 | Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/fogged_glass/` | 8 | 6 |
 | The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
-| …and that session painting, 257 of 300, `paintings/pier_underside/`, in an empty folder | **5 open** | **5 open**, and one that is neither |
+| …and that session painting, 257 of 300, `paintings/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -74,7 +72,9 @@ read the area named; it never once did, which is its own first finding.
 
 ## The pier session: the first painting from the package alone
 
-**OPEN.** The install session above, continued: told to install `easel-paint` from PyPI
+**Every item in this section is done, in 0.5.0** — five engine items, five documentation
+items, and the one that is neither, which is the one that mattered. The install session
+above, continued: told to install `easel-paint` from PyPI
 and paint from whatever the package carried. `python -m easel guide`, `--full`,
 `--reference` and `easel brushes`, and nothing else — the repository was not opened at
 any point. Subject chosen before anything was installed: the underside of a pier at low
@@ -88,7 +88,9 @@ run-out window and the four-pixel floor — scattered numbers without the method
 holds them together. It had also *patched the engine that same day*. Its engine findings
 stand, because they are about marks it laid and warnings it was shown. Its reading of the
 guide is worth less, because a painter who already knows the numbers is exactly the
-painter who can skip four files and still finish.
+painter who can skip four files and still finish. **The discount is why one of its five
+documentation items was answered by compressing rather than by cutting**, and the row
+says so.
 
 ### The folder question is closed
 
@@ -109,33 +111,58 @@ that produced the car wash, applied by the painter to itself without being asked
 
 The first on this page aimed at the picture rather than at the marks.
 
-| What is missing | What it would take |
+| What is missing | What was done |
 |---|---|
-| **Nothing in the method ever asks whether the reason you chose the subject is still in the picture.** The closing checklist asks whether *the thing you measured most carefully* is still attached, which is a question about a mark. It does not ask whether *the thing you wanted* survived. This session chose the pier for one reason and said so before installing anything: under a pier the light arrives from *below*, bounced up off the water, so every form is lit backwards — a thing paint can do and a camera mostly cannot. It then painted a competent dark structure over water with the light coming from the ordinary direction, passed every line of the checklist, and noticed the loss only when it was asked for an opinion afterwards. Nothing failed. The value structure is sound, the masses are shapes, the edges vary, the ground shows at `0.58%`. (Observed, and the painter's own account.) | **Two lines.** One in step 1, beside *write the three values down as numbers*: **write down why this subject and not another**, in a sentence, before the first mark. One at the end of the checklist: **is that reason still in the picture?** — asked with the same slowness as the last two lines there, because like them it is about finishing rather than about faults. It is cheap, it is answerable by the painter and by nobody else, and it is the only line on the page that would have caught this. |
+| **Nothing in the method ever asks whether the reason you chose the subject is still in the picture.** The closing checklist asks whether *the thing you measured most carefully* is still attached, which is a question about a mark. It does not ask whether *the thing you wanted* survived. This session chose the pier for one reason and said so before installing anything: under a pier the light arrives from *below*, bounced up off the water, so every form is lit backwards — a thing paint can do and a camera mostly cannot. It then painted a competent dark structure over water with the light coming from the ordinary direction, passed every line of the checklist, and noticed the loss only when it was asked for an opinion afterwards. Nothing failed. The value structure is sound, the masses are shapes, the edges vary, the ground shows at `0.58%`. (Observed, and the painter's own account.) | **The two lines, as asked, and a third sentence that was not.** *Write down why this subject and not another* is on the card beside *write the three values down as numbers*, and again in step 1 with the pier's own loss as the worked example. *Read back why you chose this subject. Is that reason still in the picture?* is the last line of the checklist, and the preamble that said *every line but the last two* now says the last three, so it is read at the same speed as the two it joins. The sentence that was not asked for is the reason the line can exist at all, and it is in `report()`'s docstring rather than on the page: **the check cannot see a composition, and every rule in it is about a mark.** That is the engine row below, closed as a boundary. |
 
 ### The engine
 
-| What was wrong | What it would take |
+| What was wrong | What was done |
 |---|---|
-| **The banding warning fired on nearly every pass until the painter stopped reading it.** *N of N long marks run within 6 degrees of horizontal — a stack of bars unless the subject runs that way.* The subject was the underside of a pier: joists, a waterline, a reflection. It **does** run that way. It fired on the masses, the joists, the water, the second water pass and the focal pass; by the fourth the painter had stopped reading the line, which means it was also unread on the pass where it was right. **This is the ninth session's twenty-eight correctly-ignored bristle-floor warnings, reproduced inside the engine rather than in a file.** (Observed; the count is from the pass output.) | The remedy that worked on the bristle floor: narrow it, or let it decay. A warning whose own text concedes *unless the subject runs that way* cannot tell whether the subject does — so it should fire once, and again only when the picture has acquired something that crosses the bars. This one did acquire it, twice, and the line never changed. Teaching a painter to skim a line is worse than not printing it. |
-| **The post-pass check cannot see a dead composition, and says `nothing to report` to one.** The largest mistake of the session was the first arrangement: it made the distant opening the hero and left the subject — the lit underside — an empty band across the top of the frame. It was caught by looking at a drawing, which is free, and would have cost the whole painting had it not been. Every pass the check approved was locally clean. (Observed.) | Possibly nothing, and it is worth writing down as a boundary rather than as a fault: the check tutors the quality of marks, and the guide is what carries composition. But it is the same shape as the item in the table above — every instrument here points at the mark — and the two together are the argument for putting *why did you choose it* in the checklist, where a painter answers it, rather than in `report()`, where nothing can. |
-| **`s.erase()` does not clear `guide()` marks, and nothing obvious does.** Redrawing an arrangement left the old scaffolding fan on the view beside the new one — two convergence points in one look, which is exactly the thing the drawing exists to judge. `s.marks` is a plain dict and `s.marks.clear()` works; it was found by poking at `dir()`. (Observed.) | Defensible as designed — one is in the canvas, one is on the view — but `erase()` is the word a painter reaches for, and the guide introduces the two in the same paragraph. Either `erase()` takes the guides too, or it says at the call that it did not, or `forget()` exists and is named where `guide()` is taught. |
-| **`look()` numbers its output per session, so several sessions writing into one directory overwrite each other.** Four of the nine exercises were run from one script and produced one file — `out/look_001.png`, four times. The images were gone before they could be looked at, in the one part of the method that is *only* looking. (Observed.) | `path=` exists, solves it, and is in `REFERENCE.md`. It is not on the card, and the card is where the exercises are printed. One clause where they begin. |
-| **`easel.guide` and `s.guide()` are two unrelated things under one name** — the module that reads the documents, and the method that lays scaffolding on the view. Both are reached from the same session, and the guide teaches the second without mentioning the first. (Observed.) | Worth knowing how this one arrived: **the painter that found it patched it into the package itself, that same morning** — `guide` was bound into `__init__.py` by this session, so half the collision is its own doing. That is the taint in this round stated plainly, and it is also the argument for the blind run: the next one of these will be found the same way, by someone who did not put it there. |
+| **The banding warning fired on nearly every pass until the painter stopped reading it.** *N of N long marks run within 6 degrees of horizontal — a stack of bars unless the subject runs that way.* The subject was the underside of a pier: joists, a waterline, a reflection. It **does** run that way. It fired on the masses, the joists, the water, the second water pass and the focal pass; by the fourth the painter had stopped reading the line, which means it was also unread on the pass where it was right. **This is the ninth session's twenty-eight correctly-ignored bristle-floor warnings, reproduced inside the engine rather than in a file.** (Observed; the count is from the pass output.) | It decays, by the remedy the item named. Said once, and again only when the picture has picked up a long mark **30 degrees or more** off the bars it was said about — which is the picture being asked the question the warning's own text concedes it cannot answer. Measured by replaying this painting's fifteen passes: **7 firings become 3**, and the three are the first stack, the pilings crossing it, and the stack rebuilt afterwards. The threshold is the middle of a plateau rather than a knee — every value from 20 to 60 degrees prints those same three, 15 prints four, 0 prints seven — and the pier's own angles are bimodal underneath it, 175 of 251 long marks within 10 degrees of the bars and 43 within 20 degrees of square to them. `--check` is exempt: what makes a warning skimmable is being printed at you after every pass, and an audit was asked for. |
+| **The post-pass check cannot see a dead composition, and says `nothing to report` to one.** The largest mistake of the session was the first arrangement: it made the distant opening the hero and left the subject — the lit underside — an empty band across the top of the frame. It was caught by looking at a drawing, which is free, and would have cost the whole painting had it not been. Every pass the check approved was locally clean. (Observed.) | **Nothing, deliberately, and it is written down as a boundary** — which is what the item asked for and what it predicted. `report()`'s docstring now says it in the same place it lists the seven rules: the check cannot see a composition and says *nothing to report* to a dead one, because a mark is what the log holds; composition is carried by the drawing, which is free, and judged by looking at it. **The eighth item to close by measuring and finding nothing to fix**, and the only one so far that closes by declining to build. The other half of the item — that this is the argument for putting *why did you choose it* where a painter answers it — is the row above. |
+| **`s.erase()` does not clear `guide()` marks, and nothing obvious does.** Redrawing an arrangement left the old scaffolding fan on the view beside the new one — two convergence points in one look, which is exactly the thing the drawing exists to judge. `s.marks` is a plain dict and `s.marks.clear()` works; it was found by poking at `dir()`. (Observed.) | All three of the item's options, because they turned out to be one fix and a naming problem. `erase()` takes both drawings, and takes them the same way: the whole of each with no region, and inside a region it cuts an overlay path exactly where it cuts a graphite line, through the same function — so a path wholly inside goes, one wholly outside stays, and one that crosses comes back as the pieces. `unguide()` already existed and had since 0.4.0; this painter never found it and reached for `s.marks.clear()`, which clears landmarks and not guides, so what was missing was not the verb but the sentence naming it. It is now in `guide()`'s own docstring, in step 1 beside the call, and in the units table. |
+| **`look()` numbers its output per session, so several sessions writing into one directory overwrite each other.** Four of the nine exercises were run from one script and produced one file — `out/look_001.png`, four times. The images were gone before they could be looked at, in the one part of the method that is *only* looking. (Observed.) | The engine, not the clause — and the fix already existed one method away. Rehearsals have been numbered from **what is on disk** since 0.4.0, because a rehearsal runs on a copy and has nowhere to keep a counter; every view is numbered that way now. A directory is the one piece of state two sessions can both see. The per-session counter is gone, including out of `save()`/`load()`, where it was carried across specifically so that a reopened painting would not renumber from 1 — a workaround that is now the default. The clause was written too: the exercises say to give each `look()` a `path=`, because nine unnamed looks are still nine files to tell apart. |
+| **`easel.guide` and `s.guide()` are two unrelated things under one name** — the module that reads the documents, and the method that lays scaffolding on the view. Both are reached from the same session, and the guide teaches the second without mentioning the first. (Observed.) | The module is **`easel.docs`**. `easel.guide` forwards the whole of it and is not going away — a name that has shipped does not stop working — but everything that teaches it says `docs`, including the package docstring, the README and the `dir(easel)` listing, which now carries both. Worth keeping how this one arrived: **the painter that found it patched it into the package itself, that same morning** — `guide` was bound into `__init__.py` by this session, so half the collision is its own doing. That is the taint in this round stated plainly, and it is also the argument for the blind run: the next one of these will be found the same way, by someone who did not put it there. |
+
+### Found while acting on the round, not by the painter
+
+**The stack-of-bars warning had been naming the wrong direction, and the fix for it was
+a prerequisite for the one above.** Marks lying along the horizontal come back from the
+log as a mixture of `179` and `1` degrees. The clustering reads those correctly as two
+degrees apart — and then took a plain **median** of them, which is `90`. So the
+commonest stack of bars there is was reported as *vertical*, and the painter was pointed
+at right angles to its own fault. The pier was told *vertical* about its joists on the
+pass that added the cross-bracing. The same number steers the graded-passage rule's
+normal, where it measured the spread of a horizontal band *along* the band instead of
+across it. Both now take a circular mean of the doubled angles, which has no seam.
+
+It was found by trying to measure the decay rule against this painting and getting an
+answer that could not be true. **That is the third time a rule's own measurement has
+turned up a defect in the rule** — the argument for measuring every number before
+anything is built on it, which this page has made every round since the fourth.
+
+**A second, smaller one, about the workshop rather than the engine:** a non-editable
+`easel-paint` install in `site-packages` shadows the checkout, so `pytest` in this
+repository silently tests the published wheel and not the working tree. Every test run
+in the first half of this round passed against 0.4.0 code. CI is unaffected — it does
+`pip install -e ".[dev]"` — and the local fix is the same command. It is the install
+session's stale-editable-install finding wearing the other hat, and it is recorded here
+because it cost an hour twice now.
 
 ### The documentation
 
 **Every item here has one fix, and this page has already written it down:** *a rule
 nothing enforces is a preference.* The guide was restructured to stop the front page
-growing. It is now failing in the direction it was fixed toward.
+growing. It was failing in the direction it was fixed toward.
 
-| Gap | What it would take |
+| Gap | What was done |
 |---|---|
-| **The front page is so self-contained that the other four files went unread.** A whole painting was finished without opening `PAINTING.md`, `RECIPES.md` or `CALIBRATION.md` once. That is a real compliment to the card, and it is the finding: the painter hit problems those files had already solved and re-derived both badly through rehearsals. A foreground darkened with wide glazes landed as a bar with a hard lid, while *A graded field that is most of the picture* sat three keystrokes away; caustics laid as short round-tip marks came out as blobs stuck to the ceiling. (Observed.) | The split is right, and this is its cost rather than an argument against it. What the card cannot do on its own is make the other four feel necessary while remaining sufficient. The candidates are a gate (below), or the card naming a file at the moment of the situation instead of at the end of the paragraph. |
-| **The pointers have become texture.** Nearly every paragraph on the card ends in a cross-reference, and this painter skimmed past all of them — including the two it needed. At that density they stop reading as navigation. (Observed.) | Fewer, and only where a painter is about to be stuck. A pointer that fires on every paragraph fires on none. |
-| **The nine exercises are called *a gate*, and nothing gates them.** *They are a gate. A painter who skips them meets the lessons inside the picture instead.* This painter ran four of the nine, from one script, and went straight to the painting — then met exercise 8's lesson inside the picture, on a piling built as a box. (Observed.) | A mechanism, not a sentence: a flag on the session, a count in `report()`, a line in the budget output — anything that can be true or false. The word budget is held by a test and holds. This is held by a paragraph, and did not. |
-| **The body restates the card at three times the length.** Steps 1–7 appear twice, once in about nine hundred words and once in about three thousand, and the short one is better. The expansion earns its place only where it adds a mechanism the card has no room for — `compare()` on a value plan, `at_value` reachable from either side, the three rules about `smudge`. (Observed.) | If the card is to stay inside its budget, **this is the fat, not the essay.** Those mechanisms belong in `RECIPES.md` and `REFERENCE.md` beside the rest of their kind; what is left after they move is a second telling of something already told better. |
-| **`look(path=)` is not on the card**, which is where the exercises are, which is where several sessions in one directory first collide. (Observed; the engine item above is the same fact from the other side.) | One clause. |
+| **The front page is so self-contained that the other four files went unread.** A whole painting was finished without opening `PAINTING.md`, `RECIPES.md` or `CALIBRATION.md` once. That is a real compliment to the card, and it is the finding: the painter hit problems those files had already solved and re-derived both badly through rehearsals. A foreground darkened with wide glazes landed as a bar with a hard lid, while *A graded field that is most of the picture* sat three keystrokes away; caustics laid as short round-tip marks came out as blobs stuck to the ceiling. (Observed.) | The second of the two candidates, the first having been dropped: the card now names the *situation* rather than the file, in the line where it sends a painter away. **Before you lay a passage you have not laid before — a form that turns, a graded field, a hollow thing, lit air — open `RECIPES.md` and find it**, with this painting's two losses as the reason and *the moment is before the pass, not after the rehearsal shows it failing*. **This is the item on the page most likely to still be true**, and it is the one to watch in the next blind round: the split is right, sufficiency is what makes it work, and this is what sufficiency costs. |
+| **The pointers have become texture.** Nearly every paragraph on the card ends in a cross-reference, and this painter skimmed past all of them — including the two it needed. At that density they stop reading as navigation. (Observed.) | Counted and cut: **25 cross-references to 16**, and the seven workflow steps from **12 to 4**. Every one that survives is at the moment of a situation — the projection, the planes, the graded field, the lost edge — rather than at the end of a paragraph about something else. The five in the file table at the top are not navigation and were left; they are the map. |
+| **The nine exercises are called *a gate*, and nothing gates them.** *They are a gate. A painter who skips them meets the lessons inside the picture instead.* This painter ran four of the nine, from one script, and went straight to the painting — then met exercise 8's lesson inside the picture, on a piling built as a box. (Observed.) | **The word is gone, and nothing was built to earn it back.** The item asked for a mechanism; the honest answer was that the page's own rule cuts the other way — a rule nothing enforces is a preference, and the fix for a preference dressed as a rule is to stop dressing it. What is left is the cost, stated plainly: a painter who skips them meets the same lessons inside the picture, with the rest of the painting already standing on the mass that has to be repainted. Every mechanism considered — a flag on the session, a count in `report()`, a line in the budget output — could only record what it was told, which is a preference with a `True` in it. |
+| **The body restates the card at three times the length.** Steps 1–7 appear twice, once in about nine hundred words and once in about three thousand, and the short one is better. The expansion earns its place only where it adds a mechanism the card has no room for — `compare()` on a value plan, `at_value` reachable from either side, the three rules about `smudge`. (Observed.) | **Compressed rather than cut: 2,412 words to 1,540**, three times the card down to under twice it, and `PAINTER.md` from 6,672 words to about 6,000. Cut in full: the second telling of back-to-front, of what a place is, of hard edges pulling the eye, of the greyscale argument, and every code block that showed what the card had already shown. Kept, because the item named them: `compare()` on a value plan, `at_value` reaching a value from either side, the three rules about `smudge`. The section now opens by saying what it is for — *the card above is the whole of it; what follows is only the mechanism behind each step*. **Compressed and not deleted because of the discount at the top of this section**: a painter who arrived already knowing the numbers is the one most likely to find the expansion redundant, and the three-times figure is the part of the finding that is checkable. |
+| **`look(path=)` is not on the card**, which is where the exercises are, which is where several sessions in one directory first collide. (Observed; the engine item above is the same fact from the other side.) | The clause is there, and the collision it was meant to prevent is gone from the engine anyway — see the row above. Both, because they answer different halves: numbering from the directory stops a file being lost, and `path=` is what makes nine looks tellable apart afterwards. |
 
 ### What worked, recorded because a finding is still true afterwards
 

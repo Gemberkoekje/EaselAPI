@@ -21,13 +21,130 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
-**0.4.0 is released, so the next change to land here needs a version bump before it can
+**0.5.0 is released, so the next change to land here needs a version bump before it can
 ship.** The version is written by hand in
 `pyproject.toml` and copied into `src/easel/__init__.py` and both entries in
 `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold every copy
 to the one in `pyproject.toml`. Releasing is a tag push — `git tag v0.x.y && git push
 origin v0.x.y` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml`
 before it uploads anything, because a PyPI version number cannot be reused once taken.
+
+## [0.5.0] — 2026-09-15
+
+One round, and the first one painted from the package alone: a session was told to
+`pip install easel-paint` and paint from whatever the wheel carried, in an empty
+directory with no repository to read. It painted the underside of a pier at low tide,
+257 of 300 strokes, and came back with five engine items, five documentation items and
+one that is neither — the one that is neither being the only one that changed what the
+method *asks*.
+
+**The round is not blind and `SUGGESTIONS.md` says so**: the session had spent that
+morning inside this repository doing packaging work, so it arrived already knowing
+several of the guide's numbers without the method that holds them together. Its engine
+findings stand, because they are about marks it laid and warnings it was shown; its
+reading of the guide is discounted, and that discount is why one documentation item was
+answered by compressing rather than by cutting.
+
+**Two items closed by measuring and finding nothing to fix** — the eighth and ninth
+times this project has done that, and the ninth is the first to close by declining to
+build anything at all.
+
+### Added
+
+- **The closing checklist asks whether the reason you chose the subject is still in the
+  picture**, and the card asks you to write that reason down before the first mark. This
+  is the round's one real finding and it came from a painting that passed every other
+  line on the way to losing what it was for: the pier was chosen because under a pier
+  the light arrives from *below*, bounced off the water, so every form is lit backwards.
+  What got painted was a competent dark structure lit from the ordinary direction. The
+  value structure is sound, the masses are shapes, the edges vary, the ground shows at
+  `0.58%`. Nothing failed, and nothing asked. The checklist's preamble now says *every
+  line but the last three*, so the question is read at the speed of the two it joins.
+
+### Changed
+
+- **The stack-of-bars warning is said once**, and again only when the picture has picked
+  up a long mark 30 degrees or more off the bars it was said about. It is the one check
+  rule that can be right and useless: its own text concedes *unless the subject runs that
+  way*, it cannot tell whether the subject does, and on a subject that does — joists, a
+  waterline, a reflection — it fired on five passes running until the painter stopped
+  reading it, which means it was also unread on the pass where it was right. Replaying
+  the pier's fifteen passes: **7 firings become 3**, and the three are the first stack,
+  the pilings crossing it, and the stack rebuilt afterwards. Every threshold from 20 to
+  60 degrees gives those same three on that painting, so 30 is the middle of a plateau
+  rather than a knee. `easel run --check` and `log --check` are exempt: what makes a
+  warning skimmable is being printed at you after every pass, and an audit was asked
+  for. The state rides in the `.easel` file, because a painting worked from the shell is
+  loaded and saved once per pass and a rule that decays has to decay across that.
+- **A stack of near-horizontal marks is now called horizontal.** Marks along the
+  horizontal come back from the log as a mixture of `179` and `1` degrees; the clustering
+  read those correctly as two degrees apart and then took a plain median of them, which
+  is `90`. So the commonest stack of bars there is was reported as *vertical*, and the
+  painter was pointed at right angles to the fault. The same number steers the
+  graded-passage rule's normal, where it measured the spread of a horizontal band *along*
+  the band rather than across it. Both take a circular mean of the doubled angles now.
+  Found by trying to measure the item above against the painting that raised it and
+  getting an answer that could not be true.
+- **`s.erase()` takes both drawings** — the graphite in the canvas and the `guide()`
+  overlay on the view — and takes them the same way: the whole of each with no region,
+  and inside a region it cuts an overlay path exactly where it cuts a graphite line. A
+  painter redrawing an arrangement reaches for `erase()`, and a scaffolding fan left
+  behind puts two convergence points in one look, which is the thing the drawing exists
+  to judge. `unguide()` is unchanged and is still how to take back one labelled part.
+- **Looks are numbered from the directory, not from the session.** `look_001.png`,
+  `preview_001.png`, `compare_001.png` and `rehearse_001.png` each take the next free
+  name in `out_dir`. Two sessions sharing a directory no longer write over each other —
+  one painter ran four of the nine exercises from one script and got `look_001.png`
+  written four times, losing all four images in the one part of the method that is only
+  looking. Rehearsals have been numbered this way since 0.4.0 for the same reason. The
+  per-session counter is gone, including from `save()`/`load()`, where it was carried
+  across so that a reopened painting would not renumber from 1; that workaround is now
+  the default. `.easel` files still carry a `look_counter` key so that a 0.4.0 build can
+  read them.
+- **`easel.guide` is `easel.docs`.** The module that reads the documents and
+  `Session.guide()`, which lays scaffolding on the view, were two unrelated things under
+  one name, both reached from one session. `from easel import guide` still works and is
+  not going away; everything that teaches it says `docs`, and `dir(easel)` lists both.
+- **`PAINTER.md` is about 6,000 words, from 6,672.** The seven workflow steps restated
+  the nine-hundred-word card at nearly three times the length; they are 1,540 words now
+  and open by saying what they are for. Cut: the second telling of back-to-front, of
+  what a place is, of hard edges pulling the eye, of the greyscale argument, and every
+  code block that showed what the card had already shown. Kept, because they are the
+  mechanisms the card has no room for: `compare()` on a value plan, `at_value` reaching
+  a value from either side, and the three rules about `smudge`.
+- **The nine exercises are no longer called a gate.** Nothing gated them, and a rule
+  nothing enforces is a preference — this project's own rule, applied to itself. What is
+  left is the cost, stated plainly. Every mechanism considered could only record what it
+  was told, which is a preference with a `True` in it.
+- **Cross-references on the front page: 25 to 16**, and 12 to 4 across the seven workflow
+  steps. At the old density they stopped reading as navigation and a painter skimmed past
+  all of them, including the two it needed. Each one that survives is at the moment of a
+  situation. The card's closing line now names the situation rather than the file: before
+  you lay a passage you have not laid before, open `RECIPES.md` and find it.
+
+### Measured, and nothing to fix
+
+- **The post-pass check cannot see a composition**, and says `nothing to report` to a
+  dead one. One painting's largest mistake was its first arrangement — it made the
+  distant opening the hero and left the subject an empty band across the top of the
+  frame — and every pass the check approved was locally clean. This is written down in
+  `report()`'s docstring as a boundary rather than fixed as a fault: a mark is what the
+  log holds, composition is carried by the drawing, which is free, and judged by looking
+  at it. It is also the argument for putting *why did you choose this subject* on the
+  checklist, where a painter answers it, rather than in `report()`, where nothing can.
+  The first item on this page to close by declining to build.
+- **`unguide()` was not missing.** It has existed since 0.4.0. The painter who asked for
+  it never found it and reached for `s.marks.clear()`, which clears landmarks and not
+  guides, so what was missing was the sentence naming it — now in `guide()`'s own
+  docstring, in step 1 beside the call, and in the units table.
+
+### The workshop
+
+A non-editable `easel-paint` install in `site-packages` shadows the checkout, so
+`pytest` run in this repository silently tests the published wheel rather than the
+working tree. CI is unaffected — it does `pip install -e ".[dev]"` — and that is the
+local fix too. Recorded because it is the install session's stale-editable-install
+finding wearing the other hat, and because it has now cost time twice.
 
 ## [0.4.0] — 2026-09-15
 
@@ -754,7 +871,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.1.1...v0.2.0

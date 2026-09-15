@@ -67,7 +67,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `scumble(band, a, b, n=8)` | a soft passage, `n` passes stepping between two colours | `n` |
 | `cover(place, color)` | a repair, with every clause of the burying recipe set | one per pass |
 | `pencil(points)` | graphite under the paint | 0 |
-| `erase(region=None)` | takes graphite out | 0 |
+| `erase(region=None)` | takes **both** drawings out — the graphite and the `guide()` overlay | 0 |
 | `dry(amount=1.0, region=None)` | takes the wetness out so new paint covers rather than mixes | 0 |
 
 ---
@@ -278,14 +278,19 @@ A **plan** is one object all four planning verbs read: a list whose entries are 
 a dict of `stroke` arguments, a dict with `shape=` and any `block_in` argument, or a
 dict with `edge=` and any `sweep` argument. A bare place or shape is a mass.
 
-Looks are written to `out_dir` and numbered: `look_001.png`, `preview_002.png`,
-`compare_003.png` in one run of numbers belonging to the session, and rehearsals in
-their own — `rehearse_001.png` upward, each taking the next free name.
+Looks are written to `out_dir` and numbered `look_001.png`, `preview_001.png`,
+`compare_001.png`, `rehearse_001.png` upward — each kind counting on its own, and each
+taking the next free name **in the directory** rather than the next number in the
+session. So two sessions sharing an `out_dir` do not write over each other, and a
+painting reopened between `easel run` calls carries on where the directory left off.
+Pass `path=` to name a file yourself.
 
 `report()` is the check `easel run` prints beside the budget line after every pass:
 seven rules read off the log — one brush at one size for a whole pass of two or more
 calls; twelve or more long marks within six degrees of one angle, from two or more
-calls; **a graded passage laid too narrow**, five or more long parallel marks at three
+calls, **said once and again only when the picture has picked up a long mark 30 degrees
+off the bars it was said about** (`--check`, which is asked for rather than printed at
+you, says it whenever it is true); **a graded passage laid too narrow**, five or more long parallel marks at three
 or more colours, in one run with no gap wider than four brushes, their colours turning
 at most once, stepped further apart than half the narrowest brush laying them (a brush
 that lays no colour of its own is not counted);
