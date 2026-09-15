@@ -18,13 +18,14 @@ The whole API runs through one object::
     s.export("painting.png")
 
 Coordinates are always normalised 0..1 with the origin at the top-left, so nothing
-here depends on the canvas size. If you are new to the engine, read ``PAINTER.md``
-rather than this docstring: it teaches the workflow, which matters more than the
-function list.
+here depends on the canvas size. If you are new to the engine, read the guide rather
+than this docstring -- ``easel.guide.front_page()`` here, or ``python -m easel guide``
+from a shell. It teaches the workflow, which matters more than the function list.
 """
 
 from __future__ import annotations
 
+from easel import guide
 from easel.brush import BRUSHES, TIPS, Brush, brush
 from easel.canvas import GRAPHITE, GROUNDS, Canvas
 from easel.color import (
@@ -141,5 +142,7 @@ __all__ = [
     "LEVELS",
     "History",
     "StrokeRecord",
+    # the method
+    "guide",
     "__version__",
 ]

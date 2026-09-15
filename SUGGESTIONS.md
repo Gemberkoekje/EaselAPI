@@ -8,10 +8,11 @@ greenhouse was painted before the fogged glass and filed after it, in its own se
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Nothing here is open.** Every item in every table below is done — 64 engine items and
-79 documentation items — the eighth session's eight and the ninth's fourteen in 0.3.0,
+**Nothing here is open.** Every item in every table below is done — 65 engine items and
+81 documentation items — the eighth session's eight and the ninth's fourteen in 0.3.0,
 and the last two rounds' fifteen engine items and the three documentation items they had
-left over, in 0.4.0. The two rounds at
+left over, in 0.4.0, and the install session's three in 0.4.0 as
+well. The two rounds at
 the top were carried as *open* for one release and are now folded in where they were
 written, rather than moved: they are the two paintings that raised the same items from
 opposite directions, and separating them would lose the thing that makes them worth
@@ -42,6 +43,7 @@ changed rather than that it worked.
 | …and its second attempt at the same subject, 253 of 320, `paintings/heron_lot/2/` | 1 | 4 |
 | Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/fogged_glass/` | 8 | 6 |
 | The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
+| An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
 
 Only the first session is a clean measurement of the guide on its own; the second read
 three other files first and the third read five. Where they agree, that is painters
@@ -518,6 +520,32 @@ which the table says.
 
 ---
 
+## The install session: the one that never painted
+
+No strokes, no picture, and the only round on this page whose subject is the step
+*before* the guide. A session was told to install the package and paint from it, and
+spent its first ten minutes in `site-packages` instead: `import easel_paint` failed on
+the distribution name, and the METADATA it went looking for the real one in turned out
+to be a README from two releases back, whose pointer to `PAINTER.md` is a
+repository-relative link. It reached the documents by following the `.pth` file to the
+checkout, which is not a route anybody should need.
+
+**The headline finding was not a bug, and that is the useful half.** The wheel ships
+all five documents, `easel --help` lists `guide` last among its commands, and
+`tests/test_guide.py` has guarded both since 0.3.0. What the session actually hit was
+an **editable install that had gone stale**. `pip install -e .` writes `dist-info` once
+and freezes it, while the `.pth` goes on serving whatever the working tree says — so
+this machine had 0.1.0 metadata over 0.4.0 code, `pip show` and `easel.__version__`
+three releases apart and both of them correct. The README that install serves is from
+exactly the era the test file's own docstring describes, when the wheel carried none of
+the method. **The fixed bug is reproducible indefinitely on any checkout old enough,
+and nothing says so.**
+
+One engine item and two documentation items, which is the whole of what survived
+contact with a repository that had already fixed the thing the session came to report.
+
+---
+
 ## The engine
 
 ### What the first session found
@@ -659,6 +687,18 @@ the *eighth* session's guess, which this session was measuring. The measurements
 
 ---
 
+### What the install session found
+
+One item, and it is about being *found* rather than about paint — the only engine item
+on this page from a session that laid no strokes, and the only one with no measurement
+under it, because nothing here needed measuring. It needed running `dir()`.
+
+| What was wrong | What was done |
+|---|---|
+| **`easel.guide` was the one submodule `dir(easel)` did not list.** `brush`, `canvas`, `palette`, `regions`, `stroke`, `texture` and `look` are all bound by `__init__.py` as a side effect of its `from easel.X import ...` lines. `guide` is imported by nothing, so a bare `import easel` raised `AttributeError` on it. The path is narrow — `from easel import guide` has always worked, and `tests/test_guide.py` opens with it — but absence from a listing is a claim, and the claim it makes is that the engine ships no method. The exclusion looked deliberate at first, since `cli` and `mcp_server` are left out the same way, and it is not the same category: those two are process entry points nobody calls from Python, and this is an ordinary module with an ordinary API that the test suite calls on its first line. (Observed.) | **Bound in `__init__.py` and named in `__all__`**, on the grounds the module's own docstring gives: the guide is the deliverable, so it should not be the one module you cannot find by looking. Guarded by `test_the_guide_is_reachable_from_a_bare_import`, which runs the check **in a subprocess** on purpose — every other test in that file does `from easel import guide` at import time, and that binds the attribute for the rest of the process, so the same assertion made in-process passes with the fix reverted. Confirmed by reverting it. |
+
+---
+
 ## The documentation
 
 ### Rules and numbers that were wrong or missing
@@ -794,6 +834,18 @@ sensitive to is the **window**: `0.0008` across the full width, `0.0016` through
 `0.13`-wide column this painter used, `0.0020` through a `0.04` one — two and a half
 times the number for the same paint. The clause the session asked for is beside the
 table, and it says to read both passages through the same wide window.
+
+---
+
+### What the install session asked of the documentation
+
+Two items, and they are the same distance measured twice: between naming the guide and
+being able to reach it.
+
+| Gap | What was done |
+|---|---|
+| **The package docstring named the file and not the route.** *If you are new to the engine, read `PAINTER.md`* — a filename, with no path, no accessor and no command beside it, handed to a reader whose `import easel_paint` has just failed and who is therefore already in the mood to search a filesystem. Which is what the session did. The README's heading aimed at exactly this reader has the same shape, and sent them to a web link for a file already on their disk. (Observed, at the cost of the session's first ten minutes.) | The docstring now names the call — **`easel.guide.front_page()` here, or `python -m easel guide` from a shell** — and says *the guide* rather than the filename. `python -m easel` rather than `easel` because the console script is not on `PATH` in every install: this session's was in a `Scripts/` directory that was not, and pip had said so in a warning at install time that nobody reads.. The README's agent section now says the same thing in one line before its links, because the reader who needs it is the one who has already installed the package. |
+| **A stale editable install reproduces a fixed bug forever, and nothing on this page said so.** The freeze is pip's behaviour, not this package's: `dist-info` is written once and the `.pth` serves live code for every commit after, so `pip show`, the PyPI README and `easel.__version__` can disagree by any number of releases with none of them wrong. A checkout installed before 0.3.0 serves its owner the guide-less README until somebody reinstalls. (Observed on this repository's own machine, at 0.1.0 over 0.4.0.) | Written down here, which is the whole of what was available — there is nothing to fix in the engine. What it changes is what a *report* means: **a session reporting a missing document should be asked for `easel.__version__` and `pip show easel-paint` before any file is opened**, because those two disagreeing is the signal, and this entire round would have closed in a minute by asking. |
 
 ---
 

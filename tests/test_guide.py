@@ -11,6 +11,8 @@ now, told to read a file that is not there.
 
 from __future__ import annotations
 
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -37,6 +39,31 @@ def test_the_build_ships_exactly_the_documents_the_code_looks_for() -> None:
     missing from every install -- which is precisely the bug this replaced."""
     shipped = {Path(src).name for src in WHEEL_INCLUDES}
     assert shipped == set(guide.DOCUMENTS.values())
+
+
+def test_the_guide_is_reachable_from_a_bare_import() -> None:
+    """Shipping the document is half of it; being findable is the other half.
+
+    Discoverability is the whole job of this module, and it was the one submodule
+    `dir(easel)` did not list -- `brush`, `canvas`, `palette` and the rest are bound
+    by `__init__.py`, so an agent reading that listing saw the engine and concluded
+    there was no method. Absence from a listing is a claim.
+
+    This runs in a subprocess on purpose. Every other test in this file does
+    `from easel import guide` at import time, which binds the attribute on the
+    package for the rest of the process -- so the same assertion made in-process
+    passes whether or not `__init__.py` imports it, which is precisely the bug it
+    is here to catch. A session that types `dir(easel)` has imported nothing else.
+    """
+    probe = (
+        "import easel; "
+        "assert 'guide' in dir(easel), 'dir(easel) does not list guide'; "
+        "assert easel.guide.front_page().strip()"
+    )
+    done = subprocess.run(
+        [sys.executable, "-c", probe], capture_output=True, text=True
+    )
+    assert done.returncode == 0, done.stderr
 
 
 @pytest.mark.parametrize("source, target", sorted(WHEEL_INCLUDES.items()))
