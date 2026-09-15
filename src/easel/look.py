@@ -46,6 +46,10 @@ _FINE_LINE = (90, 200, 255)
 _FINE_LABEL_BG = (10, 90, 130)
 _MARK_COLOR = (255, 210, 40)
 _MARK_INK = (20, 16, 4)
+#: The overlay drawing's ink: graphite, and translucent, because it sits on top of
+#: paint it must not hide. See :func:`_draw_guides`.
+_GUIDE_COLOR = (58, 58, 64)
+_GUIDE_ALPHA = 190
 _PREVIEW_BAND = (60, 220, 255)
 _PREVIEW_LINE = (0, 40, 60)
 #: Neutral on purpose. In a values view nothing on screen should carry hue --
@@ -106,6 +110,7 @@ def render_look(
     sketch: bool = True,
     marks: dict | None = None,
     strokes: list | None = None,
+    guides: list | None = None,
 ) -> Image.Image:
     """Render a view of the canvas.
 
@@ -126,6 +131,10 @@ def render_look(
         impasto: shade paint height as low relief.
         sketch: show the pencil underdrawing the paint has not covered.
         marks: named landmarks to draw on both panels, ``{name: (x, y)}``.
+        guides: overlay drawing to put over both panels -- a list of
+            ``{"points": [...], "note": str}``. Graphite that lives on the view
+            rather than in the canvas, so paint never buries it. Drawn only when
+            ``sketch`` is on, which is what hides it from ``look(sketch=False)``.
         strokes: previewed strokes to draw over both panels. Each is a dict with
             ``points`` and optionally ``width`` (normalised), ``label``, and
             ``fill`` for a mass, which is drawn as the shape it will cover rather
@@ -168,7 +177,8 @@ def render_look(
         panels.append(_Frame(ref, crop, aspect))
 
     for frame in panels:
-        _decorate(frame, grid=grid, marks=marks, strokes=strokes)
+        _decorate(frame, grid=grid, marks=marks, strokes=strokes,
+                  guides=guides if sketch else None)
 
     if len(panels) == 1:
         return panels[0].img
@@ -204,8 +214,12 @@ def _crop_normalised(img: Image.Image, r: Region) -> Image.Image:
     return img.crop((x0, y0, x1, y1))
 
 
-def _decorate(frame: _Frame, grid, marks, strokes) -> None:
+def _decorate(frame: _Frame, grid, marks, strokes, guides=None) -> None:
     """Draw everything that is annotation rather than paint, onto one panel."""
+    if guides:
+        # Under the previews and the grid: it is the drawing, and everything else
+        # here is a question being asked about it.
+        frame.img = _draw_guides(frame, guides)
     if strokes:
         frame.img = _draw_strokes(frame, strokes)
     if grid == "fine":
@@ -338,6 +352,34 @@ def _draw_marks(frame: _Frame, marks: dict) -> Image.Image:
         draw.rectangle([tx, ty, tx + 6 * len(label) + 4, ty + 12], fill=_MARK_INK)
         draw.text((tx + 2, ty + 1), label, fill=_MARK_COLOR)
     return out
+
+
+def _draw_guides(frame: _Frame, guides: list) -> Image.Image:
+    """The overlay drawing: graphite lines on the view, which paint cannot reach.
+
+    Drawn the way a pencil line reads rather than the way a landmark does -- thin,
+    dark and unlabelled unless it was given a note -- because this *is* the drawing
+    and the painter is looking through it at the paint. ``mark()`` puts a cross and
+    a name on a point; this is the same mechanism along a path.
+    """
+    base = frame.img.convert("RGBA")
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    ink = _GUIDE_COLOR + (_GUIDE_ALPHA,)
+    for guide in guides:
+        pts = [frame.to_px(float(x), float(y)) for x, y in guide.get("points", ())]
+        if not pts:
+            continue
+        if len(pts) == 1:
+            x, y = pts[0]
+            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=ink)
+        else:
+            draw.line(pts, fill=ink, width=1, joint="curve")
+        note = str(guide.get("note") or "")
+        if note:
+            x, y = pts[0]
+            draw.text((x + 4, y - 11), note, fill=ink)
+    return Image.alpha_composite(base, overlay).convert("RGB")
 
 
 def _draw_strokes(frame: _Frame, strokes: list) -> Image.Image:

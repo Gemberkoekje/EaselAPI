@@ -98,6 +98,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--rehearse", action="store_true",
                        help="run the pass against a copy: write the look, print the "
                             "cost, commit nothing")
+    p_run.add_argument("--count", action="store_true",
+                       help="price the pass without painting it: a rehearsal with "
+                            "the pixel work skipped, so a helper that calls a dozen "
+                            "verbs has a price in a second. No look, nothing "
+                            "committed. Implies --rehearse")
     p_run.add_argument("--prelude", type=Path, default=None,
                        help="run this file first, in the same scope (helpers, "
                             "mixtures, landmarks)")
@@ -553,7 +558,10 @@ def _cmd_run(session: Session, args) -> int:
     # rehearsed is what lands when the same pass is run for real -- and because the
     # session file is never written, it costs nothing but the look. Several scripts
     # share the one copy, in order, so a pass is judged on the pass under it.
-    target = session.scratch() if args.rehearse else session
+    # `--count` is the same copy with the pixel work skipped: the price and the check
+    # in a fraction of the time, and nothing to look at. See `Session.scratch`.
+    rehearsing = args.rehearse or args.count
+    target = session.scratch(count_only=args.count) if rehearsing else session
     before = len(target.history.records)
 
     result = run_scripts(
@@ -567,9 +575,8 @@ def _cmd_run(session: Session, args) -> int:
     # changed for free.
     check = target.report() if args.check else target.report(since=before)
 
-    if args.rehearse:
+    if rehearsing:
         if result.code == 0:
-            path = target.look(path=None)
             # What the pass itself laid: the copy's own log. Its `stroke_count`
             # continues the painting's, which is what a script inside it wants.
             spent = target.history.stroke_count
@@ -577,9 +584,15 @@ def _cmd_run(session: Session, args) -> int:
             cost = (f"{spent} strokes" if left is None
                     else f"{spent} strokes of the {left} left")
             names = ", ".join(s.name for s in scripts)
-            print(f"Rehearsed {names}: {cost}. Nothing committed.")
-            print(check)
-            print(path)
+            if args.count:
+                # No look: a counted pass lays no paint, and a picture of the canvas
+                # it borrowed is a picture of the last pass, which is worse than none.
+                print(f"Counted {names}: {cost}. Nothing painted, nothing committed.")
+                print(check)
+            else:
+                print(f"Rehearsed {names}: {cost}. Nothing committed.")
+                print(check)
+                print(target.look(path=None))
         else:
             print(f"{result.report}\n", file=sys.stderr)
             if result.trace:

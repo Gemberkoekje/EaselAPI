@@ -600,6 +600,16 @@ Run the smudge along the boundary's own shape — only a straight boundary is tw
 in a value between the two masses, at a low opacity with a starved brush: that is what
 actually loses an edge. The smudge softens; the paint is what removes.
 
+**A smudge loses a *stretch*, not a boundary, and on a long one it makes a second
+edge.** Its reach is fixed — `1.3%` of canvas height at the default size, whatever the
+join is — so the band it leaves is the same height over a join `0.05` long and one
+`0.4` long, and what changes is only how far that band runs. Measured on a hard step
+from `0.19` to `0.78`: the strip comes back at `0.51`, almost exactly halfway, which
+over a short join reads as a softened corner and over a long one as *dark, mid, light*
+— two edges where there was one. So past about a tenth of the canvas, go to the
+paint-across recipe from the start, and use the smudge on the stretch you actually mean
+to lose (*`smudge`* in [`CALIBRATION.md`](CALIBRATION.md#smudge)).
+
 **Goes wrong as:** two edges that are *nearly* lost and read as neither — the commonest
 outcome. Lose one edge completely rather than four edges partly.
 

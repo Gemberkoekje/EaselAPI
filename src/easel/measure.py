@@ -100,12 +100,19 @@ class Comparison:
     #: a threshold below it are out of reach of any stroke; zero disables the split.
     floor: float = 0.0
     #: Planned places whose *targets* sit within the threshold of each other, as
-    #: ``(name, name, gap)``, closest first. Only a value plan has these. The table
-    #: scores every place against its own target, and what the threshold *means* --
-    #: the distance below which two masses read as one -- is a statement about a
-    #: pair, and no pair was ever checked: a plan finished all-green with two masses
-    #: planned ``0.00`` apart, and they were the two that touched on the canvas.
-    pairs: list[tuple[str, str, float]] = field(default_factory=list)
+    #: ``(name, name, gap, touching)``, closest first. Only a value plan has these.
+    #: The table scores every place against its own target, and what the threshold
+    #: *means* -- the distance below which two masses read as one -- is a statement
+    #: about a pair, and no pair was ever checked: a plan finished all-green with two
+    #: masses planned ``0.00`` apart, and they were the two that touched on the
+    #: canvas.
+    #:
+    #: ``touching`` is the fourth field because the sheet used to *ask* whether two
+    #: close places met and two rounds in a row answered it wrong -- the ``0.00``
+    #: pair above met along its whole far edge. Every place is a rectangle or a
+    #: shape and the engine already knows how to intersect two of them, so it is not
+    #: a question.
+    pairs: list[tuple[str, str, float, bool]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._by_label = {c.label: c for c in self.cells}
@@ -184,16 +191,30 @@ class Comparison:
             f"largest {self.max_delta:.2f}."
         )
         if self.pairs:
-            # A question, not an error: three of one painting's four close pairs were
+            # Not a question any more. Three of one painting's four close pairs were
             # masses that never met, and the fourth was the tower's foot dissolving
-            # into the water. The sheet cannot know which; it can ask.
-            lines.append(
-                f"{len(self.pairs)} pair{'s' if len(self.pairs) != 1 else ''} planned "
-                f"within {self.threshold:.2f} of each other -- do these two touch? "
-                f"Where they do, they will read as one mass:"
-            )
-            for a, b, gap in self.pairs:
-                lines.append(f"    {a} / {b}, {gap:.2f} apart")
+            # into the water -- so the sheet asked, and the next two rounds answered
+            # it wrong. The places are shapes; whether two of them meet is one
+            # intersection test, and only the ones that do are a fault.
+            met = [row for row in self.pairs if row[3]]
+            apart = [row for row in self.pairs if not row[3]]
+            close = (f"{len(self.pairs)} pair{'s' if len(self.pairs) != 1 else ''} "
+                     f"planned within {self.threshold:.2f} of each other")
+            names = ", ".join(f"{a} / {b} (apart)" for a, b, _, _ in apart)
+            if met:
+                lines.append(
+                    f"{close}. {len(met)} of them "
+                    f"{'meets' if len(met) == 1 else 'meet'} on the canvas and will "
+                    f"read as one mass:"
+                )
+                for a, b, gap, _ in met:
+                    lines.append(f"    {a} / {b}, {gap:.2f} apart (touch)")
+                if apart:
+                    lines.append(f"  the rest never meet, so their closeness is not a "
+                                 f"fault: {names}")
+            else:
+                lines.append(f"{close}, and none of them meet, so the closeness is not "
+                             f"a fault: {names}")
         if beyond:
             lines.append(
                 f"{len(beyond)} of those (~) ask for a value below the palette's "

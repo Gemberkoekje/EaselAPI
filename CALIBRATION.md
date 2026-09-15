@@ -810,6 +810,27 @@ of radius `0.20`, bristle at `0.13`:
   reached for a second and third pass when the first did not close the join. When one
   pass is not enough the answer is paint — overlapping strokes at closely spaced
   values — not another smudge.
+- **Its reach does not grow with the join, so a long boundary gets a strip rather than
+  a lost edge.** One pass at the default `size=0.02` along a hard step from `0.19` to
+  `0.78`, 1024×768 linen, both masses laid `edge="hard"` so the step is a step, the
+  pass measured across the middle of its own stretch:
+
+  | join length | strip height | strip value |
+  |---|---|---|
+  | `0.05` | `1.30%` of canvas height | `0.53` |
+  | `0.10` | `1.30%` | `0.51` |
+  | `0.20` | `1.17%` | `0.51` |
+  | `0.40` | `1.30%` | `0.51` |
+  | `0.80` | `1.30%` | `0.50` |
+
+  The height is the `1.3%` the table above already publishes for that size, flat across
+  a sixteen-fold range of join lengths, and the value is halfway between the two masses
+  to the hundredth. **So the mechanism is the reach and nothing else** — the asymmetric
+  pull above is not doing anything extra on a long boundary, which is what the session
+  that reported it guessed. What changes is what the same band *reads* as: over a short
+  join a softened corner, and over `0.4` of the canvas a mid-value band running beside
+  the boundary, which is *dark, mid, light* — two edges where there was one. A painter
+  who smudged each under-bench line in a finish pass kept four of them.
 - **It works along a boundary and fails across one.** Dragged across, it pulls a lobe
   of the lighter mass into the darker and leaves a finger-shaped thumbprint; run along
   the boundary in short passes it does what it is for.

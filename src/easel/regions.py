@@ -111,19 +111,45 @@ class Region:
     #: Smallest extent an inset or scaled region is allowed to collapse to.
     MIN_EXTENT = 0.005
 
-    def inset(self, amount: float) -> Region:
-        """Shrink by ``amount`` (a fraction of the canvas) on every side.
+    def inset(self, amount: float, frame: bool = True) -> Region:
+        """Shrink by ``amount`` (a fraction of the canvas) on every side but the frame.
 
         Insetting further than the region is wide leaves a sliver at the centre
         rather than raising. A painter mid-painting should not get an exception for
         asking for too much margin.
+
+        A side sitting **on the canvas frame stays where it is**, for the reason
+        ``block_in(edge="clean")`` gives and in its words: *a mass that meets the
+        frame should run off it*. The inset exists to hold a mass off a seam it
+        shares with another mass, and out there the seam is the edge of the picture:
+        pulling back from it leaves a strip of bare ground along the frame. A
+        painter's glass wall, ``GLASS.inset(0.024)`` on a mass drawn past ``x=1.0``,
+        left exactly that strip down the right edge of a finished painting and cost
+        a repair pass -- the asymmetry with ``edge="clean"``, which had always
+        dropped it, being invisible from the call. Pass ``frame=False`` for erosion
+        on every side regardless.
+
+        Growing (a negative ``amount``) is unaffected: a mass grown past the frame is
+        clamped to it, which is where it was going anyway.
         """
         a = float(amount)
-        cx, cy = self.center
-        half_w = max(self.width * 0.5 - a, Region.MIN_EXTENT * 0.5)
-        half_h = max(self.height * 0.5 - a, Region.MIN_EXTENT * 0.5)
-        return Region(_c(cx - half_w), _c(cy - half_h), _c(cx + half_w), _c(cy + half_h),
-                      self.name)
+        if a <= 0.0 or not frame:
+            cx, cy = self.center
+            half_w = max(self.width * 0.5 - a, Region.MIN_EXTENT * 0.5)
+            half_h = max(self.height * 0.5 - a, Region.MIN_EXTENT * 0.5)
+            return Region(_c(cx - half_w), _c(cy - half_h), _c(cx + half_w),
+                          _c(cy + half_h), self.name)
+        lo_x = self.x0 if self.x0 <= 0.0 else self.x0 + a
+        hi_x = self.x1 if self.x1 >= 1.0 else self.x1 - a
+        lo_y = self.y0 if self.y0 <= 0.0 else self.y0 + a
+        hi_y = self.y1 if self.y1 >= 1.0 else self.y1 - a
+        if hi_x - lo_x < Region.MIN_EXTENT:
+            mid = (self.x0 + self.x1) * 0.5
+            lo_x, hi_x = mid - Region.MIN_EXTENT * 0.5, mid + Region.MIN_EXTENT * 0.5
+        if hi_y - lo_y < Region.MIN_EXTENT:
+            mid = (self.y0 + self.y1) * 0.5
+            lo_y, hi_y = mid - Region.MIN_EXTENT * 0.5, mid + Region.MIN_EXTENT * 0.5
+        return Region(_c(lo_x), _c(lo_y), _c(hi_x), _c(hi_y), self.name)
 
     def scaled(self, factor: float) -> Region:
         """Grow or shrink about the centre. ``scaled(0.5)`` is half the size."""
@@ -491,8 +517,43 @@ class Polygon:
         out[cy0:cy1, cx0:cx1] = self.inside(xs[None, :], ys[:, None])
         return out
 
+    def coverage(self, width: int, height: int, samples: int = 2) -> np.ndarray:
+        """How much of each pixel the shape covers, ``0..1``.
+
+        :meth:`mask` asks whether a pixel's *centre* is inside, which is the right
+        question for measuring an area and the wrong one for painting through: a dab
+        multiplied by a hard mask lands with a stepped boundary a pixel deep.
+        ``samples`` points per axis inside each pixel gives the boundary a fraction
+        instead, which is what ``block_in(edge="hard")`` clips against.
+
+        Two samples per axis is four tests per pixel and takes the edge from one step
+        to four. Past that the gain is under what the canvas tooth already does to a
+        boundary.
+        """
+        w, h = int(width), int(height)
+        n = max(int(samples), 1)
+        if n == 1:
+            return self.mask(w, h).astype(np.float32)
+        out = np.zeros((h, w), dtype=np.float32)
+        x0, y0, x1, y1 = self.bounds
+        cx0 = max(0, int(np.floor(x0 * w)))
+        cy0 = max(0, int(np.floor(y0 * h)))
+        cx1 = min(w, int(np.ceil(x1 * w)) + 1)
+        cy1 = min(h, int(np.ceil(y1 * h)) + 1)
+        if cx1 <= cx0 or cy1 <= cy0:
+            return out
+        offsets = (np.arange(n, dtype=np.float64) + 0.5) / n
+        acc = np.zeros((cy1 - cy0, cx1 - cx0), dtype=np.float32)
+        for dy in offsets:
+            ys = (np.arange(cy0, cy1, dtype=np.float64) + dy) / h
+            for dx in offsets:
+                xs = (np.arange(cx0, cx1, dtype=np.float64) + dx) / w
+                acc += self.inside(xs[None, :], ys[:, None])
+        out[cy0:cy1, cx0:cx1] = acc / float(n * n)
+        return out
+
     # -- reshaping ---------------------------------------------------------------
-    def inset(self, amount: float) -> Polygon:
+    def inset(self, amount: float, frame: bool = True) -> Polygon:
         """Shrink the silhouette by ``amount`` all the way round; negative grows it.
 
         The same move as :meth:`Region.inset`, and wanted for the same reason: two
@@ -500,6 +561,17 @@ class Polygon:
         by half a brush. A shape shrunk past its own width collapses to a sliver at
         the centre rather than raising -- a painter mid-painting should not get an
         exception for asking for too much margin.
+
+        A point sitting **on the canvas frame keeps the coordinate that put it
+        there**, for ``block_in(edge="clean")``'s reason and in its words: *a mass
+        that meets the frame should run off it*. A shape clamps its points to the
+        canvas, so a run of points on ``0.0`` or ``1.0`` is the only trace an outline
+        drawn past the frame leaves -- which makes "at the frame" and "ran off it"
+        the same test, and the right one either way. Per coordinate, not per point:
+        a point on the bottom frame keeps its ``y`` and takes the inset ``x``, so
+        only the side that meets the frame stays put. ``frame=False`` erodes every
+        boundary, which is what this did before 0.4.0 -- and what left a pale strip
+        of bare ground down the right edge of a finished painting.
 
         Every *edge* moves in by ``amount``; a *tip* moves further, because that is
         where a brush of that reach has to stop. On a lobed or spiky outline the
@@ -513,6 +585,9 @@ class Polygon:
         a = float(amount)
         if abs(a) < 1e-9:
             return self
+        if frame and a > 0.0:
+            eroded = self.inset(a, frame=False)
+            return self._keep_the_frame(eroded)
         pts = np.asarray(self.points, dtype=np.float64)
         smaller = a > 0
         best: Polygon | None = None
@@ -552,6 +627,28 @@ class Polygon:
         # The offset ate the shape (a thin or spiky outline will do that). Fall back
         # to pulling every point toward the centre by the same amount.
         return self._toward_centre(a)
+
+    def _keep_the_frame(self, eroded: Polygon) -> Polygon:
+        """``eroded``, with every point that sat on the canvas frame put back there.
+
+        The offset moves one point per vertex, so the two outlines correspond by
+        index; when they do not -- an offset that folded and fell back to a scale
+        about the centre, or two vertices that landed on each other and collapsed --
+        the plain erosion is what there is. So is a stitched ring that is no longer
+        a shape, which a very deep inset on an outline hugging two sides can make.
+        """
+        if len(eroded.points) != len(self.points):
+            return eroded
+        at_frame = [(x <= 0.0 or x >= 1.0, y <= 0.0 or y >= 1.0) for x, y in self.points]
+        if not any(fx or fy for fx, fy in at_frame):
+            return eroded
+        pts = [((ox if fx else ix), (oy if fy else iy))
+               for (ox, oy), (ix, iy), (fx, fy)
+               in zip(self.points, eroded.points, at_frame, strict=True)]
+        try:
+            return Polygon(tuple(pts), name=self.name, traced=self.traced)
+        except ValueError:
+            return eroded
 
     def smooth(self, iterations: int = 2) -> Polygon:
         """A rounder version of this outline: the corners cut, the silhouette kept.

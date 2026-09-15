@@ -20,7 +20,7 @@ here without the rule beside it is how a painting comes out correct and dead.
 | A coordinate `(x, y)` | `0..1`, origin **top-left**. `x` is a fraction of the **width**, `y` of the **height** |
 | `size` (brush) | a fraction of the canvas's **long side**, whichever way the brush travels |
 | `depth`, `inset()`, `overhang` distance | normalised canvas units, the same as a coordinate |
-| An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture has to be converted, `atan2(dy, dx)` on the normalised points |
+| An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture does not have to be converted: hand `direction=` the two points instead — `direction=((0.33, 0.01), (0.58, 0.29))` — and it does the `atan2` for you |
 | A value | `0..1`, the sRGB luminance `look(values=True)` shows and `palette.value_of` reports |
 | A colour | a pigment name, a palette slot you named, `"#rrggbb"`, or an `(r, g, b)` triple |
 | A place | a region name, `"D4"`, `"C3:F6"`, a `Region`, a 4-tuple `(x0, y0, x1, y1)`, or a `Polygon` |
@@ -81,8 +81,8 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
 | `overhang` (`cover`) | `1.0` | one full brush width, so a repair's ends sit outside the mistake it is covering rather than stopping at its edge |
-| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview` |
-| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, or a sequence of any of those. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
+| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview`. `"hard"` masks every dab to the outline instead — no inset, no contour pass, no extra stroke, and no paint outside the shape: the one setting that ends a pass on a line rather than on its own tip. `overhang` defaults to a full brush there, since nothing can cross the outline. `cover()` takes both |
+| `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, a **line of two points** to run along, or a sequence of any of those. A pair of points is a line; a pair of numbers is two angles. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
 | `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
@@ -285,16 +285,25 @@ their own — `rehearse_001.png` upward, each taking the next free name.
 `report()` is the check `easel run` prints beside the budget line after every pass:
 seven rules read off the log — one brush at one size for a whole pass of two or more
 calls; twelve or more long marks within six degrees of one angle, from two or more
-calls; **a graded passage laid too narrow**, three or more long parallel marks at
-three or more colours stepped further apart than half the narrowest brush laying them;
+calls; **a graded passage laid too narrow**, five or more long parallel marks at three
+or more colours, in one run with no gap wider than four brushes, their colours turning
+at most once, stepped further apart than half the narrowest brush laying them (a brush
+that lays no colour of its own is not counted);
 a bristle under `size=0.025` **at a load over `0.6`**, because below that the
 comb's gaps are the mark; eight or more marks under `size=0.02` inside the
-painting's first sixty; a pressure list on a short chisel mark; and the subject's share
-of the marks so far, wherever a mark is noted `subject`, against `subject_share` if
-given. `since=` is the log index the pass began at (`len(s.history.records)` before it);
-left off, the whole painting. An eighth rule — a shaped `block_in` with `direction`
-left off costing over 2.5× its axis, or a sequence costing over 2.5× its own dearest
-angle — needs the shape and fires at the call.
+painting's first sixty; a pressure list on a short chisel mark; and three or more small
+round-tip marks at `tip_wobble=0`, each short enough to be the tip's silhouette rather
+than a line. Under those, two standing measurements: the subject's share of the marks so
+far, wherever a mark is noted `subject`, against `subject_share` if given, and what
+share of the canvas is **still bare ground**, which says so under `0.5%`. Both count the
+painting behind a rehearsal copy, not the copy's own log.
+`since=` is the log index the pass began at (`len(s.history.records)` before it);
+left off, the whole painting. Two more need the shape and fire at the call: a shaped
+`block_in` with `direction` left off costing over 2.5× its axis (or a sequence costing
+over 2.5× its own dearest angle), and a round tip blocking in a **feature** — a shape under a
+tenth of the canvas across — that is less than four of its brushes wide. Over that
+width the same brush is a mass with a soft silhouette, which is what a round tip is
+for.
 
 ---
 
@@ -305,15 +314,17 @@ Session(width=1024, height=768, texture="linen", ground="white", seed=0,
         timelapse=True, out_dir="out", texture_strength=1.0, budget=None)
 s.size   s.aspect   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
-s.scratch()        # a throwaway copy: the painter's scrap of canvas, counting on
-s.undo(n)          # log entries, not marks you paid for; puts the stream back too
+s.guides s.guide(points, note="")        s.unguide(note=None)
+s.scratch(count_only=False)   # a throwaway copy: the painter's scrap of canvas,
+s.undo(n)          # counting on log entries, not marks you paid for; puts the
+                   # stream back too. count_only skips the pixel work
 s.replay(upto=None)
 s.save(path)       Session.load(path)
 ```
 
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
-easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--prelude other.py] [--no-prelude] [--check]
+easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
 easel compare p.easel ref.jpg [--region D4]
@@ -337,6 +348,12 @@ on **one** copy, so a pass that lands on top of another pass is judged on it.
 After every pass, rehearsed or committed, `run` prints the budget line and then the
 post-pass check over that pass; `--check` runs it over the whole painting instead, and
 `easel log --check` does the same without painting anything.
+
+`--count` is `--rehearse` with the pixel work skipped: the pass is worked out stroke for
+stroke and none of it is laid, so a helper that calls a dozen verbs has a price and a
+check in about a thirtieth of the time and there is no look to write.
+`s.scratch(count_only=True)` is the same thing from Python and `run(count=True)` through
+the MCP server. Rehearse when the question is what it looks like.
 
 ---
 

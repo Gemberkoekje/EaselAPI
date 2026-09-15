@@ -222,6 +222,8 @@ def paint_stroke(
     glaze: bool = False,
     smooth: bool = True,
     press: int = 1,
+    clip: np.ndarray | None = None,
+    dry_run: bool = False,
 ) -> StrokeResult:
     """Stamp a stroke onto the canvas.
 
@@ -239,6 +241,16 @@ def paint_stroke(
             pressure profile runs across the stamps, so three of a ``taper`` press
             through full pressure in the middle one. Only meaningful for a single
             dab; a path is stamped along its length instead.
+        clip: a canvas-sized coverage mask every dab is multiplied by, or ``None``.
+            What ``block_in(edge="hard")`` holds a pass inside an outline with. It
+            changes where the paint lands and nothing else: the path, the dab count
+            and the draws from ``rng`` are the ones the unclipped stroke would make.
+        dry_run: work out the stroke and lay none of it. The path, the wander, the
+            per-dab radii and therefore the **dab count** are computed exactly as
+            they would be; the mask, the colour and the canvas are not touched. What
+            a count-only rehearsal is made of: every number a pass can be priced or
+            checked on is decided before a single dab is stamped, and stamping is
+            what takes the three minutes.
 
     Returns:
         A :class:`StrokeResult` describing what was stamped.
@@ -347,6 +359,13 @@ def paint_stroke(
             )
         if r < 0.6:
             continue
+        if dry_run:
+            stamped += 1
+            nx, ny = cx / max(canvas.width - 1, 1), cy / max(canvas.height - 1, 1)
+            rnx, rny = r / max(canvas.width - 1, 1), r / max(canvas.height - 1, 1)
+            min_x, max_x = min(min_x, nx - rnx), max(max_x, nx + rnx)
+            min_y, max_y = min(min_y, ny - rny), max(max_y, ny + rny)
+            continue
         # Split the centre into a whole pixel and a sub-pixel phase; the phase is
         # baked into the stamp so dabs are not all snapped to the pixel grid.
         ix = math.floor(cx)
@@ -401,6 +420,7 @@ def paint_stroke(
             thickness_gain=brush.thickness_gain * ld,
             texture_sensitivity=brush.texture_sensitivity,
             glaze=glaze,
+            clip=clip,
         )
         stamped += 1
 
@@ -416,7 +436,10 @@ def paint_stroke(
         min_x, max_x = min(min_x, nx - rnx), max(max_x, nx + rnx)
         min_y, max_y = min(min_y, ny - rny), max(max_y, ny + rny)
 
-    canvas.tick_wetness()
+    if not dry_run:
+        # Nothing was laid, so nothing is drying, and the canvas is not this run's
+        # to touch: a count-only rehearsal leaves the surface it borrowed alone.
+        canvas.tick_wetness()
 
     if stamped == 0:
         return StrokeResult(0, 0.0, float(brush.load), (0.0, 0.0, 0.0, 0.0))

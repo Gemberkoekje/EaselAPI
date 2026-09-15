@@ -341,10 +341,10 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what nine painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what ten painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Every item on it is done — including the five that were answered by measuring them
-and finding nothing to fix, which say so.
+each. Every item on it is done — including the seven that were answered by measuring
+them and finding nothing to fix, which say so.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
 defaults moved, and what a script that leaves an argument off will paint differently
