@@ -1,0 +1,13 @@
+s.erase(); s.unguide()
+s.guide(BOWL_OUT.closed, note="bowl")
+s.guide(BOWL_IN.closed,  note="bowl_in")
+s.guide(CUP.closed,      note="cup")
+s.guide(CUP_HOLLOW.closed, note="hollow")
+for pts, w, e in CUP_FING:
+    s.guide(ribbon(pts, w, e).closed, note="f")
+s.guide(ribbon(*CUP_THUMB).closed, note="th")
+s.guide(PICK.closed,       note="pick")
+s.guide(PICK_BACK.closed,  note="back")
+s.guide(ribbon(*PICK_INDEX).closed, note="ix")
+s.guide(ribbon(*PICK_THUMB).closed, note="pth")
+print(s.look())

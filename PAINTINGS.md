@@ -64,7 +64,11 @@ arrived at their convention on its own.
   `PAINTING.md`, then `RECIPES.md` where a passage called for one, grepping
   `REFERENCE.md` and `CALIBRATION.md` rather than reading them, and read no earlier
   painting at all — it found the winter greenhouse in `git status`, recognised how close
-  the subject was, and left it shut. So where they
+  the subject was, and left it shut. The hands read `PAINTER.md` with its exercises,
+  then `PAINTING.md`, `REFERENCE.md` and `RECIPES.md`, and nothing else — no
+  `CALIBRATION.md`, and no earlier painting, from the installed package in an empty
+  directory. That makes it the widest read of the package-only sessions and still
+  narrower than half the sessions that had a checkout. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -80,13 +84,22 @@ arrived at their convention on its own.
 Numbered pass scripts make the drawing `p1_draw.py`, and once it is pass 1 it is
 finished — but the guide's order is *landmarks before anything, pencil **after the
 far masses are down**, near masses on top*, which wants a second drawing pass
-between 2 and 3. Seven of the paintings here drew no line at all and all but two
-placed no landmark; only `pool_night` (`p4_water.py`) and `greenhouse_winter`
-(`p4_staging.py`) redrew mid-painting, each in its fourth pass, and only `pool_night`
-and `fogged_glass` placed landmarks at all.
+between 2 and 3. Seven of the paintings here drew no line at all and most placed no
+landmark; only `pool_night` (`p4_water.py`) and `greenhouse_winter`
+(`p4_staging.py`) redrew mid-painting, each in its fourth pass, and only `pool_night`,
+`fogged_glass` and `hands_beans` placed landmarks at all.
 **A worked example is an instruction whatever the prose
 beside it says**, so the example is winning. If you are numbering passes, name the
 second one — `p4_redraw.py` — before you need it.
+
+**There is a second way round it, and `hands_beans` is the one that took it.** It drew
+its whole arrangement with `s.guide()` rather than the pencil — graphite on the *view*
+rather than in the canvas, which `look()` keeps showing and `export()` never does — so
+paint could not bury it and no second drawing pass was needed. It put everything in
+`pass01_draw.py`, rewrote that pass three times while it was still free, and never drew
+again. The cost is at the other end and its round carries it: scaffolding that paint
+cannot bury is scaffolding that sits over the picture in every look until something
+takes it off.
 
 `greenhouse_winter` is the clearest example of the thing to copy, and it says so in
 its own script: *drawn again in pencil on top of the paint, because the first drawing
@@ -593,6 +606,68 @@ picture into `0.15`–`0.35` of a box that runs to `0.96`, and calls it atmosphe
 stops with the weakest passage still the weakest. Its critique of the engine and the guide
 — including a warning it learned to skim, and a card so self-contained that it finished a
 painting without opening three of the five files — is in the same round.
+
+## A pair of hands sorting dried beans
+
+![Looking down onto a dark warm table lit from the upper left: a shallow bowl of dried
+beans cropped by the lower left corner with a grazed light along its far rim, four beans
+put down on the table beside it, and in the centre a cupped hand seen from the front with
+two lit fingers above a dark hollow and a thumb rising across them, a second hand coming
+steeply down from the upper right with its thumb and finger closing on a single bean, and
+both forearms running off the frame and darkening as they
+go](paintings/hands_beans/painting.png)
+
+The second painting made from the installed package alone, and the first made against a
+shipped release by a painter who had never seen this repository. `python -m easel guide`,
+`--full`, `--painting`, `--reference` and `--recipes`, all nine exercises, and nothing
+else: no `CALIBRATION.md`, no `LESSONS.md`, no `DIAGNOSIS.md`, and no earlier painting.
+It ran in an empty directory, on **0.4.0**, which is the release before the one its own
+round is filed against.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `#5f4a39` ground (v=0.31), seed 11 |
+| Spent | 329 strokes of a 420 budget, plus two signature marks that did not count |
+| Rehearsals | 114 rehearsal views across the session, none of them charged |
+| Reproducible | **Not claimed** — the drawing pass was rewritten three times, `look` and `probe` scripts ran as passes between the painting ones, `prelude.py` was edited between passes as mixtures were rewritten, and each pass was edited after its rehearsal |
+| Files | [`hands_beans/`](paintings/hands_beans) — [notes](paintings/hands_beans/NOTES.md), [time-lapse](paintings/hands_beans/painting.gif), [exercises](paintings/hands_beans/ex) |
+
+**It is the third painting here to place landmarks, and the first to draw the whole
+arrangement with `s.guide()` rather than the pencil** — which sidesteps the burial
+problem the convention note above describes, because a guide is on the view and paint
+cannot bury it. It also produced the opposite problem, and the round below carries it:
+the scaffolding and the six landmark labels sat over the focal point through every look
+of the session, and one of them, `pinch`, sat *on* it.
+
+**Its subject was chosen the way this page requires and then chosen again by a human.**
+Asked for ten subjects before anything was installed, it listed a laundromat at 2 a.m.
+first, the underside of a pier second, a greenhouse in winter third and an empty drained
+pool eighth — **four of the ten already hanging in a repository it had never opened**,
+and the first and third in the same positions the pier session's list put them. The
+repository's owner replied that the laundromat, the pier and the greenhouse were already
+painted, and picked the hands off the rest of the list. That is the folder question
+answered a second time, from a second empty directory, with the overlap counted rather
+than described.
+
+**What it was for is half in the picture.** The reason was written down before anything
+was installed: old hands are warm and red at the knuckles where the skin is thin over
+bone and cooler across the planes between, and that contrast — not the pose — is what
+keeps the subject out of sentimentality. The warm/cool contrast is there, and it had to
+be a glaze; laid as paint at any useful opacity it is a pink stripe. The specificity is
+not. Nothing in the finished picture could only be an old hand.
+
+By its own account the hands do not read as hands: the gesture is legible and the anatomy
+is not. It traces that to a drawing it redrew three times without once asking whether the
+*view* was right — four near-parallel fingers laid out sideways, where a cupped hand seen
+from the front shows them foreshortened and overlapping — and then to about eighty
+strokes spent treating that at the brush, four times over, while the fault sat upstream in
+graphite where moving it is free. It stopped at 329 of 420 with the weakest passage still
+the weakest, and says in its notes that *deliberate* and *finished* are not the same word.
+
+Two of the engine items it arrived with **died on measurement before they were filed** —
+*A form that turns* holds up at a finger's width, and `edge="clean"` lays no brighter
+contour than a ragged edge does. Its round says so, and says what it had mistaken for
+each.
 
 ## The log
 
