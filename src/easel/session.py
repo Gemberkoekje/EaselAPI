@@ -29,7 +29,7 @@ from PIL import Image
 from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
-from easel.color import luminance, parse_color
+from easel.color import linear_to_srgb, luminance, parse_color
 from easel.history import History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
 from easel.measure import (
@@ -110,6 +110,23 @@ _GLAZE_FOOTPRINT = 1e-4
 #: the precision a value plan is written to, and the point below which a painter is
 #: paying a mark for a film nobody can see.
 _GLAZE_MIN_OPACITY = 0.02
+
+#: The standard deviation of value inside a sampled place, above which its mean is
+#: not a colour that is anywhere in it. Measured over 226 rectangles -- every cell and
+#: every 2x2 span -- on two finished paintings rebuilt from their own passes: of the
+#: rectangles whose mean misses the value of their own dominant mass by more than
+#: ``0.03``, **every one** has a spread at or above this, and it fires on a quarter of
+#: the rectangles that are within it. The span that raised the rule, ``span("C3","D4")``
+#: across a hand on a table, measures ``0.110`` against ``0.011`` for a clear cell of
+#: the same table. **It is deliberately not asked of a shape**: a mass with a turn in
+#: it is spread by design -- the same painting's two hands measure ``0.093`` and
+#: ``0.100`` handed whole -- and a shape is the remedy this warning names.
+_SAMPLE_SPREAD = 0.06
+
+#: Below this share of the place, the lighter or darker part of it is an incident --
+#: a glint, a bean, a signature -- rather than a second mass, and it moves the mean by
+#: less than the spread suggests.
+_SAMPLE_MINOR_SHARE = 0.10
 
 #: How close two planned places count as touching, as a fraction of the canvas long
 #: side, when the painter names no number. Half the narrower brush is what the rule
@@ -2726,6 +2743,14 @@ class Session:
         the mass you blocked in is a shape you already have. A number that disagrees
         with ``at_value`` by more than a hundredth is almost always the place.
 
+        **A rectangle that holds two masses says so**, because the sentence above was
+        read by the painter it was written for and the failure still arrives as a
+        number and goes straight into paint. Sampling a rectangle whose own values
+        fall into two parts warns and names both -- *67% of it reads about 0.303 and
+        33% about 0.564, so the 0.422 this returns is a measurement of neither*. A
+        shape is never asked the question: handing one over is the remedy, and a mass
+        with a turn in it is spread by design. See :meth:`_check_one_mass`.
+
         Reading it back by hand is where this goes wrong, and quietly. The canvas
         holds linear light; a plain ``(r, g, b)`` tuple handed to the palette is read
         as sRGB, the same as a hex string is -- so a mean sampled off ``s.canvas.rgb``
@@ -2766,7 +2791,10 @@ class Session:
         """
         rgb = self.canvas.composite(impasto=True, sketch=True) if rendered else self.canvas.rgb
         if place is None:
-            return rgb.reshape(-1, 3).mean(axis=0).astype(np.float32)
+            flat = rgb.reshape(-1, 3)
+            mean = flat.mean(axis=0).astype(np.float32)
+            self._check_one_mass(flat, mean, "the whole canvas")
+            return mean
 
         spot = as_place(place)
         x0, y0, x1, y1 = self.canvas.region_px(spot)
@@ -2777,10 +2805,63 @@ class Session:
         if maker is not None:
             inside = maker(self.canvas.width, self.canvas.height)[y0:y1, x0:x1]
             if inside.any():
+                # No spread check on a shape: the painter has handed it a mass, which
+                # is the whole of what the check would ask them to do, and a mass with
+                # a turn in it is spread by design. See `_check_one_mass`.
                 return window[inside].mean(axis=0).astype(np.float32)
             # A shape thinner than a pixel, or one drawn entirely off the canvas:
-            # its bounding box is the honest answer and is never empty.
-        return window.reshape(-1, 3).mean(axis=0).astype(np.float32)
+            # its bounding box is the honest answer and is never empty. Still a shape,
+            # so still not asked the question.
+            return window.reshape(-1, 3).mean(axis=0).astype(np.float32)
+        flat = window.reshape(-1, 3)
+        mean = flat.mean(axis=0).astype(np.float32)
+        named = getattr(spot, "name", "") or (
+            "{:.3g},{:.3g} to {:.3g},{:.3g}".format(*spot.bounds))
+        self._check_one_mass(flat, mean, named)
+        return mean
+
+    def _check_one_mass(self, pixels: np.ndarray, mean: np.ndarray, what: str) -> None:
+        """Warn when a sampled rectangle holds two masses, so its mean is neither.
+
+        :meth:`sample` hands back a number that reads exactly like a measurement.
+        Over a place that straddles a boundary it is a measurement of nothing on the
+        canvas, it arrives silently, and it goes straight into paint: one painter
+        sampled a span across a hand for the table under it, got ``0.342`` where the
+        table reads ``0.258``, and painted a pale halo above the hand with it.
+
+        The documented remedy -- *to measure a mass, hand it the mass* -- is already
+        in :meth:`sample`'s own docstring, and that painter had read it. What the
+        engine can add is the thing a painter cannot ask about their own place: **is
+        there more than one thing in here?** The place's own pixels answer it, so the
+        rule costs one pass over a window that has already been cut.
+
+        Asked of rectangles only, and the numbers behind ``_SAMPLE_SPREAD`` say why:
+        a mass handed in whole is spread by its own turn from lit to shadow, and it is
+        the answer this warning would give. So a painter who does what the sentence
+        says never sees it, and one who samples a cell hears about it before the
+        colour is mixed.
+        """
+        v = linear_to_srgb(luminance(pixels)).ravel()
+        if v.size < 16 or float(v.std()) < _SAMPLE_SPREAD:
+            return
+        cut = _two_ways(v)
+        dark, light = v[v <= cut], v[v > cut]
+        minor = min(dark.size, light.size) / v.size
+        if minor < _SAMPLE_MINOR_SHARE:
+            # One thing with something small on it -- a glint, a bean, a signature.
+            # It moves the mean by less than the spread suggests, and the mean is
+            # still a measurement of the mass.
+            return
+        here = float(linear_to_srgb(luminance(mean)))
+        warnings.warn(
+            f"sample({what}) is averaging more than one mass: {dark.size / v.size:.0%} "
+            f"of it reads about {dark.mean():.3f} and {light.size / v.size:.0%} about "
+            f"{light.mean():.3f}, so the {here:.3f} this returns is a measurement of "
+            f"neither. The place is a rectangle of canvas and a mass rarely fills one. "
+            f"To measure a mass, hand it the mass -- the shape you blocked in, which "
+            f"is a shape you already have.",
+            stacklevel=3,
+        )
 
     def compare(
         self,
@@ -4603,6 +4684,33 @@ def _angle_centre(angles) -> float:
     doubled = np.radians(np.asarray(list(angles), dtype=np.float64) * 2.0)
     mean = math.atan2(float(np.sin(doubled).mean()), float(np.cos(doubled).mean()))
     return math.degrees(mean) / 2.0 % 180.0
+
+
+def _two_ways(values: np.ndarray) -> float:
+    """The value that splits a place's pixels into its two clearest parts.
+
+    Otsu's threshold on a 64-bin histogram: the cut that puts the most of the
+    variance *between* the two parts and the least inside them. Used by
+    :meth:`Session._check_one_mass` to say what the two parts of a straddling place
+    actually read, because *this place holds a 0.26 and a 0.55* is a fact a painter
+    can act on and *this place is spread* is not.
+
+    A histogram rather than a sort, so the cost does not depend on how big the place
+    is; 64 bins, because the answer is going to be printed to three decimals against
+    a spread of tenths, and a finer split moves it by less than that.
+    """
+    hist, edges = np.histogram(values, bins=64, range=(0.0, 1.0))
+    mids = (edges[:-1] + edges[1:]) / 2.0
+    below = hist.cumsum()
+    total = below[-1]
+    weight = (hist * mids).cumsum()
+    ok = (below > 0) & (total - below > 0)
+    between = np.zeros(mids.shape, dtype=np.float64)
+    # The usual rearrangement: between-class variance without the two class means,
+    # which are a division apiece and cancel.
+    between[ok] = ((weight[-1] * below[ok] / total - weight[ok]) ** 2
+                   / (below[ok] * (total - below[ok]) / total))
+    return float(mids[int(np.argmax(between))])
 
 
 def _call_of(r: StrokeRecord):

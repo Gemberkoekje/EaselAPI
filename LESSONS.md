@@ -260,8 +260,11 @@ compared with each other.
 A painter reporting on its own painting is not a measurement. Every figure in the run
 write-ups was re-measured from the exported PNGs. They were mostly right and not entirely.
 
-**Twenty claims have now been re-measured before anything was built on them, and five
-did not survive** — the clean contour that was supposed to spill less than a ragged fill,
+**Thirty claims have now been re-measured before anything was built on them, and eight
+did not survive.** Three are recent — the `rough` ground that was not what a ripple
+metric was reading, the `size` threshold that turned out to be a pixel threshold, and
+the sampled spread whose two populations turned out to overlap. The first five are the
+ones with the clearest shape: the clean contour that was supposed to spill less than a ragged fill,
 the smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift
 a solid mass off its planned value (it does not move it at all), the boundary said
 to be left bare at `overhang=0` (it is the comb and the brush running dry, and the
@@ -303,6 +306,23 @@ Two findings were tools that lied: `value_of` returned linear luminance while th
 greyscale view showed sRGB, and the first attempt to measure a halftone screen measured
 the height map's autocorrelation rather than the paint that landed. Before trusting a
 number, check it against the picture the painter actually sees.
+
+### A measurement is only as general as what it was taken over
+
+Two of the eight failures above were neither observed nor guessed: they were *measured*,
+every number reproduced, and the rule proposed on top of them was still wrong, because
+the measurement was taken over too little. A threshold in `size` turned out to be a
+threshold in pixels, because the table behind it came off one canvas. A spread that
+separated two populations cleanly over four places on one painting stopped separating
+them at 226 places over two — and the false alarms included the very call the proposed
+remedy told painters to make.
+
+**So when a request proposes a threshold, re-measure the same claim over more of the same
+kind of thing before building on it.** It is cheap: both cases were settled by sweeping
+every cell and every span of a painting rebuilt from its own committed passes, which is
+an afternoon of compute and no judgement at all. And ask what the rule would say to a
+painter *doing the right thing*, because a rule that fires hardest on the remedy it names
+is worse than no rule.
 
 ### A measure that can be satisfied by damage is not measuring the thing
 
@@ -513,6 +533,15 @@ Each of these cost real time at least once.
     words, and a painter told what the engine is *bad* at justifies its choice with
     horizontal bands six times in eight. A plausible story about a tool's influence is
     worth about as much as a plausible story about a bug.
+15. **Do not write down that something shipped until the thing that ships it has run.**
+    `CHANGELOG.md` said 0.5.0 was released on the day 0.5.0 was *cut*, and the tag push
+    that would have made that true never happened — so for a day the file announced a
+    version that was not on PyPI, and the next round was nearly cut as 0.6.0 over a
+    number that was still free, which would have left a hole nothing could fill. The
+    rule and what makes it enforceable are in `CHANGELOG.md`'s own header. The shape
+    generalises past releases: **a record written in anticipation of a separate act is
+    a record of an intention**, and the two are indistinguishable once the page is
+    written.
 
 Environment papercuts, for whoever loses ten minutes to one: `np.savez_compressed` appends
 `.npz` to a path without it (save through an open file handle; there is a test).
@@ -629,9 +658,9 @@ And three that were already here:
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
 rather than an edit. Everything else the runs found has been applied.
-[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from ten painting sessions and the
-synthesis across them, and **every item is now done** — sixty-four for the engine,
-seventy-nine for the documentation — each with a note saying what it became.
+[`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from thirteen painting sessions and
+the synthesis across them, and **every item is now done** — seventy-two for the engine,
+ninety for the documentation — each with a note saying what it became.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints

@@ -91,11 +91,16 @@ s.block_in(span("A5", "H8"), "flat", "light", size=0.14, solid=True, direction=6
 
 **Before the first stroke.** Count the horizontal bands in the drawing; more than
 three, and find a viewpoint or a thing that crosses them while it is still graphite.
-Write the three values down as numbers, and the split of the budget as numbers. **Write
-down why this subject and not another**, in a sentence — the checklist asks for it back
-at the end, and nothing else can.
+**Then count them inside the biggest mass, and count any row of like things** — four
+fingers, five pickets, a row of windows. A comb the size of a hand is the same fault
+one scale down, and the band count is the instrument for both. **What is this thing's
+foreshortening?** Draw the view, not the object: a cupped hand seen from the front is
+a cluster coming toward you, not four fingers laid out sideways, and no brush repairs
+the difference. Write the three values down as numbers, and the split of the budget as
+numbers. **Write down why this subject and not another**, in a sentence — the checklist
+asks for it back at the end, and nothing else can.
 
-**The five things you will get wrong.** Each has been made by every painter so far, so
+**The six things you will get wrong.** Each has been made by every painter so far, so
 the fix is on the same row as the mistake.
 
 | The mistake | What it looks like | Do this instead | Where |
@@ -105,6 +110,7 @@ the fix is on the same row as the mistake.
 | **Parallel marks** | hatching; a grain repeated thirty times; a soft passage laid as three hard bands | vary the direction; two directions break a comb; a soft passage is `s.scumble(...)` | *The angle of the mark* in [`PAINTING.md`](PAINTING.md#the-angle-of-the-mark); *A quiet gradient* in [`RECIPES.md`](RECIPES.md#a-quiet-gradient) |
 | **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
 | **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped boundary | give a mark a length, or `tip_wobble=0.7`; run passes along a sloped boundary, or `edge="hard"`, which masks the paint to the outline. `report()` counts the discs for you | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
+| **Repainting a passage that has failed twice** | four treatments of one passage — vary the brushes, break the lights, lay core darks, give up on part of it — each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | *What you are bad at*, below |
 
 **When you think it is finished**, the checklist is at the end of this file. Three of
 its lines are about finishing rather than about faults: the last third of the budget
@@ -170,10 +176,24 @@ is lit backwards; it then painted a competent dark structure lit from the ordina
 direction, and passed every line of the closing checklist on the way. The sentence is
 free, and it is the only thing that can be checked at the end.
 
-Four things about the drawing:
+Five things about the drawing:
 
 - **Count the horizontal bands before the first mass.** More than three, and find a
-  viewpoint or a thing that crosses them now, while it is graphite.
+  viewpoint or a thing that crosses them now, while it is graphite. **Count them
+  inside the biggest mass as well, and count any row of like things**: four fingers
+  and nine pots on a ledge are the same question at a smaller scale, and the mass
+  being one mass is what hides it. One painting lost eighty strokes to four
+  near-parallel fingers that the band count never reached.
+- **Ask what the view is, not only what the arrangement is.** Everything around this
+  step — the grid, the cells, `preview`, three silhouettes in one look — helps you
+  move a mass rather than turn it, so the question has to be asked out loud: **what
+  is this thing's foreshortening?** One painter redrew an arrangement three times,
+  all three free, and all three were framing, limb angle and the size of a bowl; not
+  one of them asked whether a cupped hand seen from the front is four fingers laid
+  out sideways or a cluster foreshortened toward the viewer. It is the second. Draw
+  the view, not the object. (*A mass built of planes* in
+  [`RECIPES.md`](RECIPES.md#a-mass-built-of-planes) is the inside of a mass once the
+  view is settled; this is the question before it.)
 - **If the scene is built of straight edges that converge, write the projection before
   you draw anything.** You are reliable about sizes and unreliable about where they
   land (*A scene with straight edges* in
@@ -396,6 +416,16 @@ A `bristle` does not bury — its comb leaves the old paint showing between the 
 passage and louder than the mistake on a worked one; there, bury it by hand with marks
 shaped like the passage. `undo(n)` exists; treat it as scraping the canvas, and remember
 that `n` counts log entries rather than marks you paid for.
+
+**You will repaint a passage that has failed twice.** This is the rule for when to stop
+doing that, and it is a number because a preference will not survive the moment it is
+needed: **if a passage has failed twice, the fault is upstream of the brush.** Go back
+to the drawing. It is still free, and it is the only thing that is. One painting spent
+about eighty strokes on four successive treatments of one failing passage — vary the
+brushes, break the lights, lay core darks, abandon two of the four fingers — each one a
+brush-level answer to a drawing-level fault, and each one making the next repaint dearer
+because more was standing on it. The drawing underneath was a cupped hand drawn as four
+fingers laid out sideways, and no brush was ever going to fix that.
 
 **You will under-vary your objects.** Having worked out how to paint one of a thing,
 you will paint the next with the same recipe, and a viewer reads three copies of one

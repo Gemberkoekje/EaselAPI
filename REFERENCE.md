@@ -41,7 +41,7 @@ height` in `y` — or use `s.circle(place, r)`, which is round in pixels, and
 | `dry` | `smudge`, `glaze` — marks like any other |
 | `look`, `preview`, `rehearse`, `cost`, `compare`, `prepare` | `block_in`, `sweep`, `scumble`, `cover` — **once per pass**, so one call is ten to thirty |
 | `undo` (it removes what was charged) | |
-| `sketch(reference)` — it lays pencil, and is an assisted mode the log records | |
+| `sketch(reference, level=, pressure=, areas=)` — it lays pencil, and is an assisted mode the log records; `areas=` lays some of the numbered masses rather than all of them | |
 
 `s.stroke_count` is the tally, `s.spent` and `s.remaining` are it against a
 `Session(budget=...)`, and `s.budget_line()` prints both. The first five marks whose
@@ -97,6 +97,9 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `depth` (sweep) | `0.2` | how far into the mass to sweep, in canvas units |
 | `cross` (sweep) | `None` | a second set of passes leaning this many degrees off the boundary. 20–30 is usual |
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
+| `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
+| `clip` (`stroke`, `glaze`) | `None` | a place — a shape, a region, a name — outside which none of the mark lands. `block_in(edge="hard")` is this applied to a mass |
+| `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
 
@@ -185,13 +188,15 @@ r.point(u, v)  r.inset(a)  r.scaled(f)  r.shifted(dx, dy)  r.split_h(n)  r.split
 ## Shapes
 
 ```python
-polygon(points)                        # an outline you already have
-ellipse(place, rx=None, ry=None, rotate=0, aspect=None)
-blob(place, radius=None, wobble=0.22, points=15, seed=0, aspect=None)
-hull(places)                           # the mass around some points
-ribbon(places, width, end_width=None)  # a mass running along a line
-union(a, b, ...)                       # one silhouette round overlapping shapes
-s.circle(place, r, wobble=0)           # round in *pixels* on any canvas
+polygon(points, name="")               # an outline you already have
+ellipse(place, rx=None, ry=None, rotate=0, steps=48, aspect=None, name="")
+blob(place, radius=None, ry=None, wobble=0.22, points=15, seed=0, rotate=0,
+     aspect=None, name="")
+hull(places, name="")                  # the mass around some points
+ribbon(places, width, end_width=None, smooth=True, name="")   # a mass along a line
+union(a, b, ..., resolution=1024, name="")     # one silhouette round overlapping shapes
+s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="")
+                                       # round in *pixels* on any canvas
 shape.inset(a)  shape.smooth(2)  shape.scaled(f)  shape.shifted(dx, dy)
 shape.box  shape.area  shape.axis  shape.center  shape.closed
 shape.contains(x, y)                   # is this mark inside the mass?
@@ -214,9 +219,12 @@ are accepted as short names for seven of them.)
 
 ```python
 p = s.palette
-p["shadow"] = p.mix("ultramarine", "burnt_umber", 0.45)   # named, and it persists
-p.tint(c, 0.3)   p.shade(c, 0.3)   p.desaturate(c, 0.3)
-p.at_value(base, 0.62)      # that colour, moved to that value, from either side
+p["shadow"] = p.mix("ultramarine", "burnt_umber", ratio=0.45)  # named, and it persists
+p.mix_many([a, b, c], weights=[2, 1, 1])   # several at once; equal weights left off
+p.complement_grey(c, b, ratio=0.5)         # a lively neutral: a colour and its complement
+p.tint(c, amount=0.3)   p.shade(c, amount=0.3)   p.desaturate(c, amount=0.3)
+p.at_value(base, 0.62, light="titanium_white", dark=None, steps=24)
+                            # that colour, moved to that value, from either side
 p.value_of(c)               # what look(values=True) will show
 p.chroma_of(c)              # how coloured: 0 for a grey, 0.20 for cadmium_red
 p.darkest_value             # about 0.13: the floor of the box
@@ -257,17 +265,21 @@ Textures: `smooth`, `linen`, `rough`.
 ## Looking, planning, measuring
 
 ```python
-s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, path=)
-s.preview(plan, reference=, region=, grid=)     # where a mark would go
-s.rehearse(plan, reference=, region=)           # what it would look like
-s.cost(plan)        s.cost_line(plan)           # what it charges, and why
-s.paint(plan)                                   # the same plan, now paid for
-s.compare("ref.jpg", region=, threshold=0.10)   # per-cell value of both, and the miss
+s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, marks=, impasto=,
+       path=)                                   # the last three are on unless turned off
+s.preview(plan, reference=, region=, grid=, values=, scale=, path=)   # where a mark goes
+s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=)  # what it looks like
+s.cost(plan, share=0.25)   s.cost_line(plan)    # what it charges, and why; share= is
+                                                # how much of what is left it may eat
+s.paint(plan, note="")                          # the same plan, now paid for
+s.compare("ref.jpg", region=, threshold=0.10, near=0.01, path=)
+                                                # per-cell value of both, and the miss
 s.compare({place: value, ...})                  # ...against your own value plan, and
                                                 # the pairs it puts within 0.10: do they touch?
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
 s.report(since=None, subject_share=None)        # the post-pass check, read off the log
-s.prepare("ref.jpg", level="coarse")            # 7 masses; "medium" 20, "fine" 40
+s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
+                                                # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
 s.export("painting.png", impasto=True, sketch=True)
 s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None)

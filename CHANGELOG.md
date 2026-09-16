@@ -12,6 +12,18 @@ minor bump is where behaviour is allowed to move: **a version already saved to a
 arguments are in the log, but a *script* that leaves a default off can paint something
 different after a minor release. Each entry below says which defaults moved.
 
+**Nothing here may say it shipped until the tag exists.** *Released*, *shipped*, and
+*Shipped as `vX.Y.Z`* are claims about the world, and the only thing that makes them
+true is a pushed tag: `publish.yml` runs on `v*` and on nothing else, so until the tag
+is there no wheel has been built and no file has been uploaded. Writing the claim when
+a version is *cut* — in anticipation of a tag push, which is a separate act and can
+simply not happen — is how 0.5.0 spent a day saying it was on PyPI while the newest
+file there was 0.4.0, and how the round filed after it was nearly cut as 0.6.0 over a
+version number that was still free. Cut the version, write the entry **without** the
+claim, tag it, and add the claim afterwards. `tests/test_version.py` holds every such
+claim in this file to a tag that exists, and holds `pyproject.toml` to the newest
+section here so a version cannot be skipped.
+
 The engine's own record of *why* a rule is a rule lives elsewhere and is not duplicated
 here: measurements in [`CALIBRATION.md`](CALIBRATION.md), the requests painters made and
 what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method in
@@ -21,29 +33,46 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
-**0.5.0 is released, so the next change to land here needs a version bump before it can
-ship.** The version is written by hand in
-`pyproject.toml` and copied into `src/easel/__init__.py` and both entries in
-`server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold every copy
-to the one in `pyproject.toml`. Releasing is a tag push — `git tag v0.x.y && git push
-origin v0.x.y` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml`
-before it uploads anything, because a PyPI version number cannot be reused once taken.
+**0.5.0 is not released, and this section said for a day that it had been.** The line
+here announced it as done and told the next change to bump the version — written when
+that round was cut, in anticipation of a tag push that never happened. The newest tag is
+`v0.4.0` and PyPI's newest file is 0.4.0, which is the pair to check rather than this
+paragraph. So 0.5.0 was still free, and the round filed after it went into it rather
+than into a version of its own. Releasing is a tag push — `git tag v0.5.0 && git push origin
+v0.5.0` — and `publish.yml` refuses a tag that disagrees with
+`pyproject.toml` before it uploads anything, because a PyPI version number cannot be
+reused once taken. The version is written by hand in `pyproject.toml` and copied into
+`src/easel/__init__.py` and both entries in `server.json`; `tests/test_version.py` and
+`tests/test_server_json.py` hold every copy to the one in `pyproject.toml`.
 
-## [0.5.0] — 2026-09-15
+## [0.5.0] — 2026-09-16
 
-One round, and the first one painted from the package alone: a session was told to
-`pip install easel-paint` and paint from whatever the wheel carried, in an empty
-directory with no repository to read. It painted the underside of a pier at low tide,
-257 of 300 strokes, and came back with five engine items, five documentation items and
-one that is neither — the one that is neither being the only one that changed what the
-method *asks*.
+**Two rounds, and both painted from the installed package alone** — the first two
+sessions on this page that never had a checkout to read. The first was cut as this entry
+before the second arrived, and the tag was never pushed, so the second went in here
+rather than into a version of its own.
 
-**The round is not blind and `SUGGESTIONS.md` says so**: the session had spent that
-morning inside this repository doing packaging work, so it arrived already knowing
-several of the guide's numbers without the method that holds them together. Its engine
-findings stand, because they are about marks it laid and warnings it was shown; its
-reading of the guide is discounted, and that discount is why one documentation item was
-answered by compressing rather than by cutting.
+**The pier.** A session was told to `pip install easel-paint` and paint from whatever the
+wheel carried, in an empty directory. It painted the underside of a pier at low tide, 257
+of 300 strokes, and came back with five engine items, five documentation items and one
+that is neither — the one that is neither being the only one that changed what the method
+*asks*. **It is not blind and `SUGGESTIONS.md` says so**: it had spent that morning inside
+this repository doing packaging work, so it arrived already knowing several of the guide's
+numbers without the method that holds them together. Its engine findings stand, because
+they are about marks it laid and warnings it was shown; its reading of the guide is
+discounted, and that discount is why one documentation item was answered by compressing
+rather than by cutting.
+
+**The hands, and this one is blind.** A session was told to make sure of `easel-paint`
+**0.4.0**, not a local editable install, and to treat that wheel as the only thing
+available. It painted a pair of hands sorting dried beans, 329 of 420 strokes, and did
+not open this repository until the picture was exported and reviewed. Two engine items
+and four documentation items, plus one found while filing them. **Five of the frictions
+it hit are things the pier round had already fixed in this release**, which it never saw,
+so they are an independent painter confirming that round aimed right rather than items of
+their own. And where the two agree — the stack-of-bars warning going unread, the front
+page being long, the reason for the subject going missing — that is the same fault found
+twice, once by a painter who knew the numbers and once by a painter who did not.
 
 **Two items closed by measuring and finding nothing to fix** — the eighth and ninth
 times this project has done that, and the ninth is the first to close by declining to
@@ -60,6 +89,45 @@ build anything at all.
   value structure is sound, the masses are shapes, the edges vary, the ground shows at
   `0.58%`. Nothing failed, and nothing asked. The checklist's preamble now says *every
   line but the last three*, so the question is read at the speed of the two it joins.
+
+- **`sample()` over a rectangle that holds two masses says so, and names both.** A span
+  crossing a hand returned `0.342` where the table under it reads `0.258`, and the edge
+  painted with that number landed as a pale halo above the hand instead of sharpening
+  it. The documentation already says *to measure a mass, hand it the mass*; the painter
+  had read it, and the failure is silent, arrives as a number, and goes straight into
+  paint. The warning prints what is actually there — *84% of it reads about 0.276 and
+  16% about 0.529, so the 0.341 this returns is a measurement of neither* — split at
+  Otsu's threshold over the place's own pixels, and repeats the remedy.
+  **A shape is never asked the question**, which is the half the request did not
+  anticipate: a mass handed in whole is spread by its own turn from lit to shadow, and
+  the two hands that raised this measure `0.093` and `0.100` against a threshold of
+  `0.06`. The rule would have fired loudest on the call the sentence tells painters to
+  make. Measured over every cell and every 2×2 span of two finished paintings rebuilt
+  from their own passes — 226 rectangles: of the 35 whose mean misses the value of their
+  own dominant mass by more than `0.03`, it catches **all 35**, it fires on **23%** of
+  the rest, and on none of the seven masses handed in whole. `compare()` is untouched:
+  it samples per cell and would be noisy by the same measure on any picture with an edge
+  in it.
+- **`look(marks=)` and `look(impasto=)` are on the page.** Both shipped in 0.4.0 and were
+  named in none of the five documents; `REFERENCE.md`'s signature line listed eight of
+  the ten parameters and stopped. A painter placed six landmarks, judged the picture
+  through fifty-two looks with their labels drawn over it — one of them on the focal
+  point for the whole session — and never found the way to turn them off, having found
+  `unguide()` for the scaffolding because that one *is* named.
+- **The band count is asked at both scales, and the drawing step asks what the view is.**
+  *Count the horizontal bands* is a question about the arrangement, and the picture that
+  raised this passed it easily while sinking on four near-parallel fingers **inside one
+  mass**. It now also asks for the count inside the biggest mass and in any row of like
+  things. Beside it, the question nothing in the method asked: **what is this thing's
+  foreshortening?** Draw the view, not the object. That painter redrew its arrangement
+  three times, all three free, and all three were framing, limb angle and the size of a
+  bowl.
+- **A stopping rule for repainting: if a passage has failed twice, the fault is upstream
+  of the brush.** Go back to the drawing — it is still free, and it is the only thing
+  that is. About eighty strokes of one painting went on four successive treatments of one
+  failing passage, each a brush-level answer to a drawing-level fault, and each making
+  the next repaint dearer because more was standing on it. It is a number rather than a
+  preference because a preference will not survive the moment it is needed.
 
 ### Changed
 
@@ -122,6 +190,54 @@ build anything at all.
   situation. The card's closing line now names the situation rather than the file: before
   you lay a passage you have not laid before, open `RECIPES.md` and find it.
 
+- **A pass that raises under `--rehearse` says nothing was committed.** It printed
+  `easel: script raised, session saved with 180 strokes` — and the count was the
+  *painting's*, because a scratch copy continues the real numbers, so it read exactly
+  like a commit. Nothing was committed: the rehearsing branch returns above the save. It
+  now says *nothing committed, the copy had laid N of this pass's marks*, with `N` the
+  copy's own log. The painter stopped and verified the stroke count by hand before
+  trusting it, twice. Read off the session rather than passed in at the call site, so the
+  MCP server's `run(rehearse=True)` is fixed by the same change and a caller cannot get
+  it wrong; `exit()` on a copy says it too.
+- **Every parameter a painter can type is named in `REFERENCE.md`, and a test says so.**
+  The `look` line is the second of its kind and the first fix, a sentence, did not
+  generalise: the signature lines are hand-maintained and that one had been wrong since
+  the parameter shipped. `tests/test_reference.py` now reads each signature off the code
+  — two checks, because the page names a parameter two ways and each misses what the
+  other catches. Closing what it found: `stroke(clip=)`, `sweep(closed=)`,
+  `cover(dry_first=)`, `sketch(areas=)`, `mix(ratio=)`, `mix_many(weights=)` and
+  `complement_grey(ratio=)` were named nowhere on the page, and eight more calls were
+  written out with parameters left off the end.
+- **`PAINTING.md` no longer says looks are numbered per session.** They come from the
+  directory as of *Looks are numbered from the directory* above, and the paragraph
+  telling painters why a second painting overwrites the first's record of itself had
+  outlived the behaviour it described. Reported by the round that read the page against a
+  0.4.0 wheel, where that paragraph was still true.
+- **`README.md` and `PAINTINGS.md` no longer claim every painting re-runs byte for
+  byte.** Seven of the fourteen say **Reproducible: not claimed** in their own tables,
+  and both pages made the blanket claim anyway — one of them in the section that sends a
+  first-time painter to `paintings/`. The claim that holds everywhere is a different one
+  and is now stated as itself: the *log* replays byte for byte, because a stroke's
+  randomness is drawn from `(seed, stroke index)`, and golden-image tests hold it.
+  Whether the committed scripts rebuild the canvas is per painting, and each painting's
+  table says which of the two it claims. Found while filing the round, not by the
+  painter — who had spotted it on two paintings. `SUGGESTIONS.md`'s own preamble was
+  counting one session short in the same place: the winter greenhouse has a row in its
+  table and was never in the sentence, so thirteen sessions and fourteen paintings, and
+  the three pages that repeat those numbers agree with it now.
+
+### Tooling
+
+- **Nothing in this file may claim to have shipped until the tag exists**, and
+  `tests/test_version.py` holds it to that. The rule is in the header above with what it
+  cost: this section announced 0.5.0 as released on the day 0.5.0 was *cut*, the tag push
+  never happened, and the round filed after it was nearly cut as 0.6.0 over a version
+  number that was still free. Two checks, one per half — every version this file says was
+  released has to have a `v` tag, and at most one version section may be untagged, since
+  that one is the version being prepared and a second means a release was skipped. Both
+  need tags to answer, so the two CI jobs that run the whole suite now check out with
+  `fetch-tags`; a tagless clone skips rather than guessing.
+
 ### Measured, and nothing to fix
 
 - **The post-pass check cannot see a composition**, and says `nothing to report` to a
@@ -137,6 +253,20 @@ build anything at all.
   it never found it and reached for `s.marks.clear()`, which clears landmarks and not
   guides, so what was missing was the sentence naming it — now in `guide()`'s own
   docstring, in step 1 beside the call, and in the units table.
+
+And two the **hands** session arrived with, neither of which survived being measured.
+Recorded because a retraction is as much a finding as an item, and both are in
+`SUGGESTIONS.md` with their numbers.
+
+- ***A form that turns* does work at feature scale.** Laid at four widths on a
+  1024×768 canvas it keeps its transition at 25–40% of the form's own width throughout.
+  The recipe was never applied: the fingers were laid as strokes from the first pass.
+  **The mapping is the step that failed** — the painter did not think of a finger as a
+  form that turns, it thought of it as a finger.
+- **`edge="clean"` does not draw a contour that reads as an outline.** Measured on that
+  painting's own bowl, rim minus interior is `−0.010` for `clean`, `+0.007` for `ragged`
+  and `+0.013` for `hard`: the contour is if anything the *darkest* of the three. What
+  the painter saw was a cool mass at too high a value on a warm ground.
 
 ### The workshop
 

@@ -320,10 +320,20 @@ the next session paints against it and says so.
 [`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings) holds the paintings those sessions made, and each is an
 end-to-end worked example rather than a gallery: the numbered pass scripts that built
 it, the `prelude.py` of helpers and mixtures beside them, `NOTES.md` in the painter's
-own words, and the finished PNG and time-lapse. The scripts re-run from a fresh session
-at the same seed and reproduce the export byte for byte, so the order a painting was
-made in is readable rather than reconstructed — which is the one thing the guide cannot
-teach abstractly, and the thing a first-time painter is least sure of.
+own words, and the finished PNG and time-lapse — so the order a painting was made in is
+readable rather than reconstructed, which is the one thing the guide cannot teach
+abstractly and the thing a first-time painter is least sure of.
+
+**Two different claims live here, and this page used to make the stronger one about
+every painting.** The one that holds everywhere is that **the log replays byte for
+byte**: a stroke's randomness is drawn from `(seed, stroke index)`, so a saved painting
+comes back exactly as it was painted, and golden-image tests hold that. Whether the
+committed *scripts* rebuild the canvas is a separate question and the answer is per
+painting — seven of the fourteen say **Reproducible: not claimed** in their own table in
+[`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
+or `look` scripts ran as passes between the painting ones, and a mark's texture is
+seeded from its place in the log. Each painting's table says which of the two it
+claims; the ones that claim the stronger one were checked by sha256.
 
 **`PAINTER.md` points here with a condition attached**, and the condition is the whole
 trade: *if you chose your subject before opening this repository, these are yours; if
@@ -345,9 +355,9 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what eleven painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what thirteen painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Every item on it is done — including the seven that were answered by measuring
+each. Every item on it is done — including the eight that were answered by measuring
 them and finding nothing to fix, which say so.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
