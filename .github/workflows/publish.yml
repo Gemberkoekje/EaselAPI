@@ -26,6 +26,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The tag being published is fetched either way; every *older* tag has to
+          # come too, or `tests/test_version.py` reads a changelog full of release
+          # claims with nothing to check them against and fails the publish.
+          fetch-tags: true
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0

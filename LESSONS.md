@@ -533,6 +533,15 @@ Each of these cost real time at least once.
     words, and a painter told what the engine is *bad* at justifies its choice with
     horizontal bands six times in eight. A plausible story about a tool's influence is
     worth about as much as a plausible story about a bug.
+15. **Do not write down that something shipped until the thing that ships it has run.**
+    `CHANGELOG.md` said 0.5.0 was released on the day 0.5.0 was *cut*, and the tag push
+    that would have made that true never happened — so for a day the file announced a
+    version that was not on PyPI, and the next round was nearly cut as 0.6.0 over a
+    number that was still free, which would have left a hole nothing could fill. The
+    rule and what makes it enforceable are in `CHANGELOG.md`'s own header. The shape
+    generalises past releases: **a record written in anticipation of a separate act is
+    a record of an intention**, and the two are indistinguishable once the page is
+    written.
 
 Environment papercuts, for whoever loses ten minutes to one: `np.savez_compressed` appends
 `.npz` to a path without it (save through an open file handle; there is a test).

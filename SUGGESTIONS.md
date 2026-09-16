@@ -12,8 +12,10 @@ This file is the register: **what was wrong, and what was done about it.**
 eighth session's eight and the ninth's fourteen in 0.3.0, the tenth and the greenhouse's
 fifteen engine items and three left-over documentation items in 0.4.0 with the install
 session's three, the pier session's ten in 0.5.0 plus the one that was neither, and the
-hands session's six in 0.6.0. The long arguments that produced each one have been cut,
-because a request list is worth keeping only while somebody still has to act on it. What
+hands session's six in 0.5.0 as well — that release was cut for the pier round, never
+tagged, and the round filed after it went into it rather than into one of its own. The
+long arguments that produced each one have been cut, because a request list is worth
+keeping only while somebody still has to act on it. What
 survives is the finding, because a finding is still true after the fix, and the handful
 of places where the answer differed from the request. Three of the sessions painted one
 shared subject; their lists were deduplicated into one round, and every number any of
@@ -70,20 +72,22 @@ disagree, it may be the context talking.
 
 ## The hands session: the second painting from the package alone, and the first blind one
 
-**Every item in this section is done, in 0.6.0** — two engine items and four
-documentation items, and one more found while filing them. Told to `pip install
-easel-paint`, to make sure of **0.4.0** and not a local editable install, and to treat
-that package as the only thing available, in an empty directory. It painted from
-`python -m easel guide`, `--full`, `--painting`, `--reference` and `--recipes`, all nine
-exercises, and nothing else: no `CALIBRATION.md`, no `LESSONS.md`, no `DIAGNOSIS.md`, no
-earlier painting, and **this repository was not opened until after the picture was
-exported and reviewed**. Subject chosen before any of it was read: a pair of hands
-sorting dried beans, `paintings/hands_beans/`, **329 of 420 strokes**.
+**Every item in this section is done, in 0.5.0** — two engine items and four
+documentation items, and one more found while filing them. That release had been cut for
+the pier round below and never tagged, so the two package-only rounds ship as one.
 
-**It painted 0.4.0, so it is a report on the release before the one it is filed
-against**, and that cuts both ways. Five of the frictions it hit are things 0.5.0 had
-already fixed, which is an independent painter confirming that round aimed right; they
-are below as confirmations rather than as items. What is filed is what 0.5.0 does not
+Told to `pip install easel-paint`, to make sure of **0.4.0** and not a local editable
+install, and to treat that package as the only thing available, in an empty directory.
+It painted from `python -m easel guide`, `--full`, `--painting`, `--reference` and
+`--recipes`, all nine exercises, and nothing else: no `CALIBRATION.md`, no `LESSONS.md`,
+no `DIAGNOSIS.md`, no earlier painting, and **this repository was not opened until after
+the picture was exported and reviewed**. Subject chosen before any of it was read: a
+pair of hands sorting dried beans, `paintings/hands_beans/`, **329 of 420 strokes**.
+
+**It painted 0.4.0, which is the last release there has been**, and that cuts both ways.
+Five of the frictions it hit are things the pier round had already fixed in an
+unreleased 0.5.0 — an independent painter confirming that round aimed right, so they are
+below as confirmations rather than as items. What is filed is what that round does not
 touch. **And it is the blind run the pier session was not** — that one had spent the
 morning inside this repository and its documentation findings were discounted for it.
 This one had not, so its reading of the guide is worth full weight, and where the two
@@ -160,27 +164,28 @@ and thirteen paintings against a `paintings/` that holds fourteen: the winter gr
 painted before the fogged glass and filed after it, has a row in the table above and was
 never in the sentence. Thirteen sessions, fourteen paintings.
 
-### What 0.5.0 had already fixed, reported by a painter who did not have it
+### What the pier round had already fixed, reported by a painter who did not have it
 
 Confirmation rather than items, because a fix aimed at the right thing is worth knowing
-about from someone who hit the fault it was aimed at.
+about from someone who hit the fault it was aimed at. All four were in an unreleased
+0.5.0 while this painter was working from the 0.4.0 wheel.
 
 - **The stack-of-bars warning fired on pass after pass on a subject that ran that way**,
-  and the painter's own account says it stopped reading it. Same as the pier. 0.5.0's
-  decay is aimed at exactly this.
+  and the painter's own account says it stopped reading it. Same as the pier. The decay
+  rule is aimed at exactly this.
 - **`PAINTER.md` was too long to hold and the painter went back to it constantly**, which
   is what the 6,672 → 6,000 compression was for; and **the cross-references were skimmed
   past**, including two it needed, which is what 25 → 16 was for.
 - **The scaffolding had to be taken off by hand before the picture could be judged.**
-  0.5.0's `erase()` taking both drawings is half of this; the other half is the
-  `marks=False` item above, which 0.5.0 did not touch.
+  `erase()` taking both drawings is half of this; the other half is the `marks=False`
+  item above, which that round did not touch.
 - **The one that matters: it lost half of why it chose the subject, and noticed when it
   was asked for a review afterwards.** The reason was written down first — old hands are
   warm at the knuckles and cool across the planes between, and that contrast is what
   keeps the subject out of sentimentality. The contrast is in the picture. The
   specificity is not, and nothing during the painting asked. **That is the pier's finding
   reproduced on a different subject by a painter who had never read it**, and it is the
-  strongest evidence on this page that 0.5.0's checklist line earns its place.
+  strongest evidence on this page that the checklist line earns its place.
 
 ### Two items that died on measurement before they were filed
 

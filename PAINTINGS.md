@@ -603,8 +603,8 @@ That is the finding, and it is the first on this page aimed at the picture rathe
 the marks: nothing in the method asks whether the reason you chose the subject survived.
 The checklist asks whether the thing you measured most carefully is still attached, which
 is a question about a mark. Its round in [`SUGGESTIONS.md`](SUGGESTIONS.md) proposes the
-two lines that would have caught it — one in the plan, one at the end — and both shipped
-in 0.5.0.
+two lines that would have caught it — one in the plan, one at the end — and both are in
+0.5.0.
 
 By its own account it also leaves the pilings as slabs, cylinders painted as rectangles
 with a stripe down one side that never turn from lit to shadow; crushes almost the whole
