@@ -2388,7 +2388,7 @@ def test_a_smudge_lays_no_colour_and_is_not_counted_in_a_passage(tmp_path):
 
 # -- a round tip printing its own outline ----------------------------------------------
 def _leaf():
-    """The leaf pressed flat on the glass, off ``paintings/fogged_glass/p8_wet.py``."""
+    """The leaf pressed flat on the glass, off ``paintings/Claude/fogged_glass/p8_wet.py``."""
     return hull([(0.918, 0.405), (0.949, 0.393), (0.968, 0.424),
                  (0.951, 0.462), (0.921, 0.448)], name="leaf")
 

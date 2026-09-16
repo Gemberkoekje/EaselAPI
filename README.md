@@ -39,18 +39,18 @@ s.export("painting.png")
 
 ![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom
 of white light down the tunnel, a red stop light, and a foam-covered side brush
-swinging in from the right, past a steering wheel and rear-view mirror](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/car_wash/painting.png)
+swinging in from the right, past a steering wheel and rear-view mirror](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/car_wash/painting.png)
 
-*[**Inside a car wash, from the driver's seat**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/car_wash/NOTES.md) — 206
+*[**Inside a car wash, from the driver's seat**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/car_wash/NOTES.md) — 206
 strokes of a 300 budget, 1152×720 linen, no reference photograph. The nineteen pass
 scripts beside it reproduce that PNG byte for byte.*
 
 ![A laundromat at night seen from the sidewalk opposite: a wide lit shopfront window set
 in a dark building, a row of washing machines with round doors inside it, one person
 sitting alone at the right-hand end, and the window's light broken into streaks down a
-wet road in the foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/laundromat_night/painting.png)
+wet road in the foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/laundromat_night/painting.png)
 
-*[**A laundromat at night, from across the street**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/laundromat_night/NOTES.md) — 286
+*[**A laundromat at night, from across the street**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/laundromat_night/NOTES.md) — 286
 strokes of a 300 budget, 1024×768 linen, no reference photograph. Fourteen pass scripts
 beside it reproduce that PNG byte for byte.*
 
@@ -59,9 +59,9 @@ nearly the whole frame: a near-black band of trees across the top with a warm ye
 reflection under it, the bird standing large and high in the picture with a white head
 and a long ochre bill and its own pale reflection directly below it, and painted stall
 lines running away across the water in the
-foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/heron_lot/2/painting.png)
+foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/heron_lot/2/painting.png)
 
-*[**A heron in a flooded parking lot at dawn**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/heron_lot/2/NOTES.md) — 253
+*[**A heron in a flooded parking lot at dawn**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/heron_lot/2/NOTES.md) — 253
 strokes of a 320 budget, 1024×768 rough canvas, no reference photograph. The same subject
 was painted twice by the same painter to separate two kinds of fault;
 [`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md#a-heron-in-a-flooded-parking-lot-at-dawn)

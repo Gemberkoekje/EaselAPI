@@ -10,7 +10,7 @@ whether the check is worth building.
 and every one of the painters' claims that has failed re-measurement so far was
 reported as *observed*. Items 5 and 6 of that file have no probe here and say so.
 
-    python paintings/lighthouse_greenhouse/opus/probe.py
+    python paintings/Claude/lighthouse_greenhouse/opus/probe.py
 
 Probe 1  the chisel staircase: what a solid tip's pass ends do to a boundary
          that slopes, against the same mass laid with a comb.

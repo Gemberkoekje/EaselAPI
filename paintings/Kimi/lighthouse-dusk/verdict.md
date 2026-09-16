@@ -1,0 +1,11 @@
+Honest opinion: the tool is genuinely interesting, but it has a strong personality.
+
+**The tool:** Easel is much better than a “draw shapes with Pillow” library for this kind of thing. The finite paint load, wet mixing, canvas tooth, budgets, `look(values=True)`, rehearsal/cost model, and time-lapse all push you toward making painterly decisions instead of just rendering. I like that it forces process: draw first, masses first, back to front, check values, highlights last.
+
+But it is not effortless. The normalized coordinate/angle rules are easy to misunderstand, shaped masses can surprise you, `scumble`/`cover` can produce much bigger or flatter passages than expected, and small marks often become tool-shaped unless you fight the defaults. The warnings are useful, but they can become noisy: the horizontal-bars warning fired on a painting whose subject honestly is horizon/sea/reflection. Still, I’d rather have a tool with opinions and receipts than a blank raster API.
+
+**The documentation:** unusually good, but also a lot. `PAINTER.md`, `PAINTING.md`, `RECIPES.md`, `REFERENCE.md`, and `CALIBRATION.md` form a real method, not just API docs. The writing is thoughtful and often memorable. The downside is that it can feel like being supervised by a very earnest painting instructor: many rules, many warnings, some repetition, and not much patience for “just let me make a picture.” A shorter quick-start/cheat-sheet would help, but the depth is valuable once things go wrong.
+
+**The painting:** I think it works as a quiet dusk image. The value structure is clear: deep blue sea/sky, warm horizon band, dark lighthouse, bright lamp. The sky has a good bruised evening feeling, and the export reads much better than the checkpoint views because the labels and guides disappear.
+
+Its weaknesses are real: the foreground rock is too blocky and stair-stepped, the horizon wave band is a bit regular/scalloped, the tower’s lit edge is slightly mechanical, and the reflection is still more tentative than integrated. The beam is subtle to the point of being mostly atmosphere rather than a visible shaft. But the mood is there. It feels like a competent, moody Easel nocturne — not fully resolved, but honest, cohesive, and very much shaped by the tool in a good way.
