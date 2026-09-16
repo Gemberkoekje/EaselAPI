@@ -21,13 +21,124 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 Nothing yet.
 
-**0.5.0 is released, so the next change to land here needs a version bump before it can
-ship.** The version is written by hand in
-`pyproject.toml` and copied into `src/easel/__init__.py` and both entries in
-`server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold every copy
-to the one in `pyproject.toml`. Releasing is a tag push — `git tag v0.x.y && git push
-origin v0.x.y` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml`
-before it uploads anything, because a PyPI version number cannot be reused once taken.
+**0.6.0 is not released.** Releasing is a tag push — `git tag v0.6.0 && git push origin
+v0.6.0` — and `publish.yml` refuses a tag that disagrees with `pyproject.toml` before it
+uploads anything, because a PyPI version number cannot be reused once taken. The version
+is written by hand in `pyproject.toml` and copied into `src/easel/__init__.py` and both
+entries in `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold
+every copy to the one in `pyproject.toml`.
+
+## [0.6.0] — 2026-09-16
+
+One round, and the **second** painted from the package alone — this one blind. A session
+was told to make sure of `easel-paint` **0.4.0**, not a local editable install, and to
+treat that wheel as the only thing available, in an empty directory. It painted a pair
+of hands sorting dried beans, 329 of 420 strokes, and did not open this repository until
+the picture was exported and reviewed.
+
+**It is a report on the release before the one it is filed against**, and that cuts both
+ways: five of the frictions it hit are things 0.5.0 had already fixed, which is an
+independent painter confirming that round aimed right. What is in this one is what 0.5.0
+does not touch — two engine items and four documentation items.
+
+**The pier session's reading of the guide was discounted because it had spent that
+morning in this repository. This one had not**, so where the two agree — the
+stack-of-bars warning going unread, the front page being long, the reason for the
+subject going missing — that is the same fault found twice, once by a painter who knew
+the numbers and once by a painter who did not.
+
+### Added
+
+- **`sample()` over a rectangle that holds two masses says so, and names both.** A span
+  crossing a hand returned `0.342` where the table under it reads `0.258`, and the edge
+  painted with that number landed as a pale halo above the hand instead of sharpening
+  it. The documentation already says *to measure a mass, hand it the mass*; the painter
+  had read it, and the failure is silent, arrives as a number, and goes straight into
+  paint. The warning prints what is actually there — *84% of it reads about 0.276 and
+  16% about 0.529, so the 0.341 this returns is a measurement of neither* — split at
+  Otsu's threshold over the place's own pixels, and repeats the remedy.
+  **A shape is never asked the question**, which is the half the request did not
+  anticipate: a mass handed in whole is spread by its own turn from lit to shadow, and
+  the two hands that raised this measure `0.093` and `0.100` against a threshold of
+  `0.06`. The rule would have fired loudest on the call the sentence tells painters to
+  make. Measured over every cell and every 2×2 span of two finished paintings rebuilt
+  from their own passes — 226 rectangles: of the 35 whose mean misses the value of their
+  own dominant mass by more than `0.03`, it catches **all 35**, it fires on **23%** of
+  the rest, and on none of the seven masses handed in whole. `compare()` is untouched:
+  it samples per cell and would be noisy by the same measure on any picture with an edge
+  in it.
+- **`look(marks=)` and `look(impasto=)` are on the page.** Both shipped in 0.4.0 and were
+  named in none of the five documents; `REFERENCE.md`'s signature line listed eight of
+  the ten parameters and stopped. A painter placed six landmarks, judged the picture
+  through fifty-two looks with their labels drawn over it — one of them on the focal
+  point for the whole session — and never found the way to turn them off, having found
+  `unguide()` for the scaffolding because that one *is* named.
+- **The band count is asked at both scales, and the drawing step asks what the view is.**
+  *Count the horizontal bands* is a question about the arrangement, and the picture that
+  raised this passed it easily while sinking on four near-parallel fingers **inside one
+  mass**. It now also asks for the count inside the biggest mass and in any row of like
+  things. Beside it, the question nothing in the method asked: **what is this thing's
+  foreshortening?** Draw the view, not the object. That painter redrew its arrangement
+  three times, all three free, and all three were framing, limb angle and the size of a
+  bowl.
+- **A stopping rule for repainting: if a passage has failed twice, the fault is upstream
+  of the brush.** Go back to the drawing — it is still free, and it is the only thing
+  that is. About eighty strokes of one painting went on four successive treatments of one
+  failing passage, each a brush-level answer to a drawing-level fault, and each making
+  the next repaint dearer because more was standing on it. It is a number rather than a
+  preference because a preference will not survive the moment it is needed.
+
+### Changed
+
+- **A pass that raises under `--rehearse` says nothing was committed.** It printed
+  `easel: script raised, session saved with 180 strokes` — and the count was the
+  *painting's*, because a scratch copy continues the real numbers, so it read exactly
+  like a commit. Nothing was committed: the rehearsing branch returns above the save. It
+  now says *nothing committed, the copy had laid N of this pass's marks*, with `N` the
+  copy's own log. The painter stopped and verified the stroke count by hand before
+  trusting it, twice. Read off the session rather than passed in at the call site, so the
+  MCP server's `run(rehearse=True)` is fixed by the same change and a caller cannot get
+  it wrong; `exit()` on a copy says it too.
+- **Every parameter a painter can type is named in `REFERENCE.md`, and a test says so.**
+  The `look` line is the second of its kind and the first fix, a sentence, did not
+  generalise: the signature lines are hand-maintained and that one had been wrong since
+  the parameter shipped. `tests/test_reference.py` now reads each signature off the code
+  — two checks, because the page names a parameter two ways and each misses what the
+  other catches. Closing what it found: `stroke(clip=)`, `sweep(closed=)`,
+  `cover(dry_first=)`, `sketch(areas=)`, `mix(ratio=)`, `mix_many(weights=)` and
+  `complement_grey(ratio=)` were named nowhere on the page, and eight more calls were
+  written out with parameters left off the end.
+- **`PAINTING.md` no longer says looks are numbered per session.** They have come from
+  the directory since 0.5.0, and the paragraph telling painters why a second painting
+  overwrites the first's record of itself had outlived the behaviour it described.
+- **`README.md` and `PAINTINGS.md` no longer claim every painting re-runs byte for
+  byte.** Seven of the fourteen say **Reproducible: not claimed** in their own tables,
+  and both pages made the blanket claim anyway — one of them in the section that sends a
+  first-time painter to `paintings/`. The claim that holds everywhere is a different one
+  and is now stated as itself: the *log* replays byte for byte, because a stroke's
+  randomness is drawn from `(seed, stroke index)`, and golden-image tests hold it.
+  Whether the committed scripts rebuild the canvas is per painting, and each painting's
+  table says which of the two it claims. Found while filing the round, not by the
+  painter — who had spotted it on two paintings. `SUGGESTIONS.md`'s own preamble was
+  counting one session short in the same place: the winter greenhouse has a row in its
+  table and was never in the sentence, so thirteen sessions and fourteen paintings, and
+  the three pages that repeat those numbers agree with it now.
+
+### Measured, and there was nothing to build
+
+Two items the painter arrived with, neither of which survived being measured. Recorded
+because a retraction is as much a finding as an item, and both are in `SUGGESTIONS.md`
+with their numbers.
+
+- ***A form that turns* does work at feature scale.** Laid at four widths on a
+  1024×768 canvas it keeps its transition at 25–40% of the form's own width throughout.
+  The recipe was never applied: the fingers were laid as strokes from the first pass.
+  **The mapping is the step that failed** — the painter did not think of a finger as a
+  form that turns, it thought of it as a finger.
+- **`edge="clean"` does not draw a contour that reads as an outline.** Measured on that
+  painting's own bowl, rim minus interior is `−0.010` for `clean`, `+0.007` for `ragged`
+  and `+0.013` for `hard`: the contour is if anything the *darkest* of the three. What
+  the painter saw was a cool mass at too high a value on a warm ground.
 
 ## [0.5.0] — 2026-09-15
 
@@ -871,7 +982,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0

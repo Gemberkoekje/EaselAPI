@@ -3036,3 +3036,158 @@ def test_the_documents_are_easel_docs_and_the_old_name_still_works():
     assert guide.front_page() == docs.front_page()
     assert guide.DOCUMENTS == docs.DOCUMENTS
     assert "docs" in easel.__all__ and "guide" in easel.__all__
+
+
+# -- a failed rehearsal says nothing was committed ---------------------------------------
+def test_a_pass_that_raises_on_a_copy_does_not_say_it_was_saved(tmp_path):
+    """A script that raised under `--rehearse` printed `easel: script raised, session
+    saved with 180 strokes` -- and the count was the painting's, because a scratch
+    copy continues the real numbers, so it read exactly like a commit. Nothing was
+    committed: `_cmd_run` returns out of the rehearsing branch above the save. The
+    painter stopped and verified the stroke count by hand before trusting it, twice."""
+    from easel.cli import run_script
+
+    s = make(tmp_path, budget=300)
+    s.block_in(cell("D4"), "flat", "burnt_umber", size=0.08)
+    before = s.stroke_count
+    assert before > 0
+
+    source = ("s.block_in(cell('B2'), 'flat', 'burnt_umber', size=0.08)\n"
+              "raise ValueError('the pass broke here')\n")
+    copy = s.scratch()
+    result = run_script(copy, source, "pass09.py")
+
+    assert result.code == 1
+    assert "nothing committed" in result.report
+    assert "saved" not in result.report
+    # The copy's own marks, not the painting's count carried through it.
+    laid = copy.history.stroke_count
+    assert laid > 0 and copy.stroke_count == before + laid
+    assert f"{laid} of this pass's marks" in result.report
+    assert str(copy.stroke_count) not in result.report
+
+
+def test_a_pass_that_raises_for_real_still_says_what_was_saved(tmp_path):
+    """The other half: a half-finished pass on the painting itself is still work, and
+    the line that says so is the one a painter has always read."""
+    from easel.cli import run_script
+
+    s = make(tmp_path, budget=300)
+    result = run_script(s, "s.block_in(cell('B2'), 'flat', 'burnt_umber', size=0.08)\n"
+                           "raise ValueError('boom')\n", "pass09.py")
+    assert result.code == 1 and result.save
+    assert f"session saved with {s.stroke_count} strokes" in result.report
+
+
+def test_a_copy_that_calls_exit_says_it_too(tmp_path):
+    """`exit()` returns through its own branch, which carried the same sentence."""
+    from easel.cli import run_script
+
+    s = make(tmp_path, budget=300)
+    copy = s.scratch()
+    result = run_script(copy, "s.block_in(cell('B2'), 'flat', 'burnt_umber', size=0.08)\n"
+                              "exit(1)\n", "pass09.py")
+    assert result.code == 1 and "nothing committed" in result.report
+
+
+def test_the_shell_says_it_on_a_rehearsal_that_raises(tmp_path, capsys):
+    """End to end, because the message is printed by the CLI and the bug was that the
+    CLI printed it on a path where nothing is written."""
+    import easel.cli as cli
+
+    s = make(tmp_path, budget=300)
+    s.block_in(cell("D4"), "flat", "burnt_umber", size=0.08)
+    s.save(tmp_path / "p.easel")
+    script = tmp_path / "pass09.py"
+    script.write_text("s.dab((0.5, 0.5), 'round_soft', 'burnt_umber')\nraise ValueError('x')\n")
+
+    code = cli.main(["run", str(tmp_path / "p.easel"), str(script), "--rehearse",
+                     "--no-prelude"])
+    err = capsys.readouterr().err
+    assert code == 1 and "nothing committed" in err
+    # And the session on disk is untouched: the count it had before the failed pass.
+    assert Session.load(tmp_path / "p.easel").stroke_count == s.stroke_count
+
+
+# -- sample() over a place that holds two masses ------------------------------------------
+def _two_masses(tmp_path):
+    """A canvas with a dark field and one light mass standing in it."""
+    s = make(tmp_path)
+    s.palette["field"] = s.palette.at_value("burnt_umber", 0.25)
+    s.palette["thing"] = s.palette.at_value("yellow_ochre", 0.60)
+    s.cover(Region(0.0, 0.0, 1.0, 1.0), "field")
+    s.dry()
+    s.block_in(ellipse(span("C3", "D4")), "flat", "thing", size=0.06, solid=True,
+               edge="hard")
+    s.dry()
+    return s
+
+
+def test_sampling_across_two_masses_says_the_mean_is_neither(tmp_path):
+    """A span that crossed a hand returned 0.342 where the table read 0.258, and the
+    edge painted with it landed as a pale halo above the hand. The documentation does
+    say to hand it the mass; the painter had read it, and the failure is silent,
+    arrives as a number, and goes straight into paint. The engine can answer a
+    question the painter cannot ask about their own place: is there one thing here?"""
+    s = _two_masses(tmp_path)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        got = s.sample(span("C3", "E5"))
+    said = [str(w.message) for w in caught if "more than one mass" in str(w.message)]
+    assert said, [str(w.message) for w in caught]
+    # It names both parts, each within a hundredth of what was planned, and the
+    # number it is about to hand back, which lies between them and is neither.
+    dark, light = (float(n) for n in re.findall(r"about (\d\.\d+)", said[0]))
+    assert dark == pytest.approx(0.25, abs=0.03)
+    assert light == pytest.approx(0.60, abs=0.05)
+    here = s.palette.value_of(got)
+    assert dark < here < light
+    assert f"{here:.3f}" in said[0] and "hand it the mass" in said[0]
+
+
+def test_handing_it_the_mass_is_silent_however_wide_the_mass_is(tmp_path):
+    """The remedy the warning names cannot be the thing that trips it. A mass with a
+    turn in it is spread by design -- the hands that raised this measure 0.093 and
+    0.100 handed whole, both above the threshold -- so a shape is never asked."""
+    s = _two_masses(tmp_path)
+    mass = ellipse(span("C3", "D4"))
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.sample(mass)
+        # ...and one that is genuinely two masses, still handed in as a shape.
+        s.sample(hull([(0.05, 0.05), (0.95, 0.05), (0.95, 0.95), (0.05, 0.95)]))
+    assert not [w for w in caught if "more than one mass" in str(w.message)]
+
+
+def test_one_mass_with_a_glint_on_it_is_not_two(tmp_path):
+    """A place that is 97% one thing has a mean that is still that thing's. The
+    minority share is what keeps a highlight, a bean or a signature mark from turning
+    every cell it lands in into a warning."""
+    s = _two_masses(tmp_path)
+    s.dab(0.80, 0.80, "round_hard", "thing", size=0.02)
+    s.dry()
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.sample(span("F6", "H8"))
+    assert not [w for w in caught if "more than one mass" in str(w.message)]
+
+
+def test_a_clear_patch_of_one_mass_is_silent(tmp_path):
+    """The other end of it: the cell a painter is right to sample."""
+    s = _two_masses(tmp_path)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.sample(cell("A1"))
+    assert not caught, [str(w.message) for w in caught]
+
+
+def test_the_check_reads_the_paint_and_not_the_place(tmp_path):
+    """A bare canvas is one mass however it is sampled, so the rule cannot fire before
+    anything is painted -- which is when `s.sample()` is the documented way to read
+    the ground."""
+    s = make(tmp_path)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.sample()
+        s.sample(span("A1", "H8"))
+    assert not caught, [str(w.message) for w in caught]

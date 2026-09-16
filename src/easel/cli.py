@@ -418,10 +418,28 @@ def run_script(session: Session, source: str, name: str,
 
     Nothing is written here: the caller saves when :attr:`ScriptResult.save` says to,
     because it is the caller that knows where the session file lives.
+
+    **A pass run against a scratch copy says so when it fails.** Read off the session
+    rather than taken as an argument, because the session is the thing that knows:
+    a caller that handed over a copy and then said ``rehearsing=False`` would print
+    the same wrong line this exists to stop. A script that raised under ``--rehearse``
+    used to report *session saved with N strokes*, with ``N`` continuing the
+    painting's own count -- which is right for a script asking how far along it is,
+    and reads exactly like a commit in a message about what was saved. Nothing was
+    committed: the rehearsing branch returns above the save.
     """
     import easel
 
     short = Path(name).name
+    # `stroke_count` on a copy continues the painting's numbers; `history` is the
+    # copy's own log, which is what this pass laid. See `Session.scratch`.
+    on_copy = bool(getattr(session, "_is_trial", False))
+
+    def laid() -> str:
+        if on_copy:
+            return (f"nothing committed, the copy had laid "
+                    f"{session.history.stroke_count} of this pass's marks")
+        return f"session saved with {session.stroke_count} strokes"
 
     namespace = {n: getattr(easel, n) for n in easel.__all__}
     namespace.update(
@@ -461,13 +479,12 @@ def run_script(session: Session, source: str, name: str,
         # and no message printed at all.
         return ScriptResult(
             exc.code if isinstance(exc.code, int) else (1 if exc.code else 0),
-            f"easel: {short} called exit(); session saved with "
-            f"{session.stroke_count} strokes",
+            f"easel: {short} called exit(); {laid()}",
         )
     except Exception:
         # Save what was painted before the error: a half-finished pass is still work.
-        return ScriptResult(1, f"easel: script raised, session saved with "
-                               f"{session.stroke_count} strokes", traceback.format_exc())
+        return ScriptResult(1, f"easel: script raised, {laid()}",
+                            traceback.format_exc())
 
     if session.budget is None:
         return ScriptResult(0, f"Ran {short}: {session.stroke_count} strokes total.")

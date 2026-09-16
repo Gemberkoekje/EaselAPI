@@ -49,8 +49,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | A passage that will not go quiet however low you set `opacity` | `CALIBRATION.md` → *Opacity does not make a passage quieter* |
 | A passage that bloomed past the outline at one end and is barely there at the other | `CALIBRATION.md` → *The band across a wedge* |
 | Light that is **in** a medium rather than on a surface: a beam, a shaft, a halo, a lamp under water | `RECIPES.md` → *A volume of lit air* |
-| A ribbed slab, a fan of ribbons, or a searchlight that owns the picture | `RECIPES.md` → *A volume of lit air* |
-| A beam brightest at the wrong end | `RECIPES.md` → *A volume of lit air* |
+| A ribbed slab, a fan of ribbons, a searchlight that owns the picture, or a beam brightest at the wrong end | `RECIPES.md` → *A volume of lit air* |
 | A passage lit on the side you did not mean | `REFERENCE.md` → *Where a stack of passes starts* |
 | A join you have smudged twice and it is still there | `RECIPES.md` → *A quiet gradient*; `CALIBRATION.md` → *`smudge`* |
 | A field gradated top to bottom that reads as a stack of bands | `PAINTER.md` → *5. Refine the mid-tones* |
@@ -66,8 +65,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | Two edges *nearly* lost, reading as neither | `RECIPES.md` → *An edge that is actually lost* |
 | A drawn line running round a painted shape | `PAINTER.md` → *What you are bad at* |
 | A mechanical straight line in a picture that has none | `RECIPES.md` → *The one ruled line* |
-| A long edge that came out scalloped | `RECIPES.md` → *The one ruled line*; `CALIBRATION.md` → *`scumble`* |
-| A thin member beaded into a chain of separate blocks | `RECIPES.md` → *The one ruled line* |
+| A long edge that came out scalloped, or a thin member beaded into a chain of separate blocks | `RECIPES.md` → *The one ruled line*; `CALIBRATION.md` → *`scumble`* |
 | A silhouette you cannot sharpen without drawing along it | `PAINTER.md` → *What you are bad at* |
 
 ## A small mark
@@ -77,8 +75,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | A row of floating discs: one silhouette, printed over and over | `RECIPES.md` → *A small irregular bright mark*; `CALIBRATION.md` → *At the scale of a feature* |
 | A capsule with rounded ends, or a rectangle with chisel ends | `PAINTING.md` → *The shape each tool leaves behind* |
 | A small mark that did not register at all | `RECIPES.md` → *A small round thing*; `CALIBRATION.md` → *At the scale of a feature* |
-| A cast shadow reading as a hole punched through the surface | `PAINTER.md` → *4. Check your values* |
-| A cast shadow as a filled slab with two hard ends | `PAINTER.md` → *4. Check your values* |
+| A cast shadow reading as a hole punched through the surface, or as a filled slab with two hard ends | `PAINTER.md` → *4. Check your values* |
 | A tapered arc that left a seam, or came back a ghost | `RECIPES.md` → *A tapered arc* |
 | A small object reading as a bulb, a brick, or a bite | `RECIPES.md` → *A small container with something spilling from it* |
 | A chisel mark given a pressure list that did not taper | `REFERENCE.md` → *Pressure*; `CALIBRATION.md` → *Pressure* |
@@ -92,6 +89,7 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 |---|---|
 | A glaze that is a stripe at one opacity and invisible at the next | `CALIBRATION.md` → *`glaze`*; `PAINTING.md` → *Wet paint* |
 | A colour sampled off the canvas that came back near black | `PAINTING.md` → *Colour*; `REFERENCE.md` → *Colour* |
+| A colour sampled to match a mass that matches nothing on the canvas, or `sample()` warning that it is averaging more than one mass | `REFERENCE.md` → *Looking, planning, measuring*; `PAINTING.md` → *Colour* |
 | A mixture that should have been a grey and came out green | `PAINTING.md` → *Colour* |
 | A mixture that should be halfway and came out too dark | `CALIBRATION.md` → *The value scale* |
 | A value the palette refused as out of reach | `CALIBRATION.md` → *What the box reaches* |
@@ -113,6 +111,8 @@ It indexes [`PAINTER.md`](PAINTER.md), [`PAINTING.md`](PAINTING.md),
 | A correction that buried the fine marks standing on a mass | `RECIPES.md` → *A repair under things that are standing on it* |
 | Something that has escaped the thing containing it | `RECIPES.md` → *A hollow thing*; `PAINTER.md` → *3. Paint from back to front* |
 | Three of a thing reading as three copies of one thing | `PAINTER.md` → *What you are bad at* |
+| A row of like things inside one mass — fingers, pickets, pots — reading as a comb, or a thing drawn side-on when the view is end-on | `PAINTER.md` → *1. Draw the arrangement in graphite* |
+| A passage you have now repainted three or four times, each fix dearer than the last | `PAINTER.md` → *What you are bad at, and what to do instead* |
 | A background of square patches, every edge parallel to the canvas | `PAINTING.md` → *The angle of the mark* |
 | A scene of straight edges that reads as a diagram, every line the same weight and nothing lost | `RECIPES.md` → *A scene with straight edges* |
 | A surface's grain laid as thirty strokes all running one way | `PAINTING.md` → *The angle of the mark* |

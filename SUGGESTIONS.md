@@ -1,27 +1,23 @@
 # What the painters asked for, and what was done
 
-Twelve sessions painted a picture from the guide and then wrote down what the engine and
-the documentation had cost them — thirteen paintings, because the ninth painted its
+Thirteen sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — fourteen paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: the hands session, at the top.** Everything below it is done — 70
-engine items and 86 documentation items, all of them: the eighth session's eight and the
-ninth's fourteen in 0.3.0, the last two
-rounds' fifteen engine items and the three documentation items they had left over, in
-0.4.0, the install session's three in 0.4.0 as well, and the pier session's ten in
-0.5.0, plus the one that was neither. The open round adds **two engine items and four
-documentation items**, and is written where the three before it were carried; it will be
-folded in where it stands rather than moved once it is acted on. The long arguments that produced each
-one have been cut, because a request list is worth keeping only while somebody still has
-to act on it. What survives is the
-finding, because a finding is still true after the fix, and the handful of places where
-the answer differed from the request. The last three sessions painted one shared
-subject; their lists were deduplicated into one round, and every number they took was
-re-measured before anything was built on it.
+**Nothing here is open.** 72 engine items and 90 documentation items, all of them: the
+eighth session's eight and the ninth's fourteen in 0.3.0, the tenth and the greenhouse's
+fifteen engine items and three left-over documentation items in 0.4.0 with the install
+session's three, the pier session's ten in 0.5.0 plus the one that was neither, and the
+hands session's six in 0.6.0. The long arguments that produced each one have been cut,
+because a request list is worth keeping only while somebody still has to act on it. What
+survives is the finding, because a finding is still true after the fix, and the handful
+of places where the answer differed from the request. Three of the sessions painted one
+shared subject; their lists were deduplicated into one round, and every number any of
+them took was re-measured before anything was built on it.
 
 **Done is not the same as right, and eight times now it has meant *measured and there
 was nothing to fix* — the eighth by declining to build at all.** An engine item has a
@@ -45,198 +41,184 @@ changed rather than that it worked.
 | The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
 | …and that session painting, 257 of 300, `paintings/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
-| Twelfth — hands sorting dried beans, 329 of 420, `paintings/hands_beans/`, from the 0.4.0 wheel in an empty folder | **2 open** | **4 open** |
+| Twelfth — hands sorting dried beans, 329 of 420, `paintings/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
 
-Only the first session is a clean measurement of the guide on its own; the second read
-three other files first and the third read five. Where they agree, that is painters
-finding the same thing with increasing context. Where they disagree, it may be the
-context talking.
+**How much each painter had read is the first thing to check before trusting any
+agreement between them.** Only the first session is a clean measurement of the guide on
+its own; the second read three other files first and the third read five. Where sessions
+agree, that is painters finding the same thing with increasing context; where they
+disagree, it may be the context talking.
 
-The fourth read four — `PAINTER.md`, the exercises, then `PAINTING.md`, `RECIPES.md` and
-`REFERENCE.md`, in that order — and never opened `CALIBRATION.md` at all, which is worth
-knowing before trusting any of its numbers: where a calibrated figure would have settled
-one of its findings, it measured the thing again itself instead. It also read
-`paintings/car_wash/prelude.py` and `p0_plan.py`, and nothing else under `paintings/`.
-So it is the most-read session but not the widest-read one, and its agreement with the
-third should be discounted accordingly.
-
-The eighth read **three** — `PAINTER.md` with its nine exercises, then `RECIPES.md` and
-`REFERENCE.md` — and nothing else: not `PAINTING.md`, not `CALIBRATION.md`, nothing
-under `paintings/`. It is the split test's other arm, and the only session on this page
-whose items were raised without the essay or the numbers to check them against.
-
-The ninth read **four** — the eighth's three plus `DIAGNOSIS.md`, which did not exist
-when any earlier session painted. It is therefore the restricted arm again with the
-symptom index added, and the **only data point that exists on whether that index
-works**. It was told it could follow a `DIAGNOSIS.md` pointer into a withheld file and
-read the area named; it never once did, which is its own first finding.
-
-The twelfth read **four out of the package** — `PAINTER.md` with its nine exercises,
-then `PAINTING.md`, `REFERENCE.md` and `RECIPES.md`, all through `python -m easel guide`
-— and no `CALIBRATION.md`, no earlier painting, and nothing in this repository until its
-picture was finished, exported and reviewed. It is the first **blind** run of the
-package-only arm: the pier session had spent that morning inside the checkout and its
-documentation findings were discounted for it, and this one had not. Where the two agree
-— the stack-of-bars warning going unread, the front page being long, the reason for the
-subject going missing — that is the same fault found twice, once by a painter who knew
-the numbers and once by a painter who did not.
+- **The fourth** read four — the front page and exercises, then `PAINTING.md`,
+  `RECIPES.md`, `REFERENCE.md` — and never opened `CALIBRATION.md`, so where a
+  calibrated figure would have settled one of its findings it measured the thing again
+  itself. The most-read session, not the widest-read one; discount its agreement with the
+  third accordingly.
+- **The eighth** read three — front page and exercises, `RECIPES.md`, `REFERENCE.md` —
+  and nothing else. The split test's restricted arm, and the only session here whose
+  items were raised without the essay or the numbers to check them against.
+- **The ninth** read the eighth's three plus `DIAGNOSIS.md`, which no earlier session
+  had: the restricted arm with the symptom index added, and the **only data point on
+  whether that index works**. Told it could follow a `DIAGNOSIS.md` pointer into a
+  withheld file and read the area named, it never once did — its own first finding.
+- **The twelfth** read four, all through `python -m easel guide`, and nothing in this
+  repository until its picture was finished, exported and reviewed. The first **blind**
+  run of the package-only arm; the pier session before it had spent that morning inside
+  the checkout, and its reading of the guide was discounted for it.
 
 ---
 
-## The hands session: the second painting from the package alone, on the release before
+## The hands session: the second painting from the package alone, and the first blind one
 
-**OPEN.** Two engine items and four documentation items. Told to `pip install
+**Every item in this section is done, in 0.6.0** — two engine items and four
+documentation items, and one more found while filing them. Told to `pip install
 easel-paint`, to make sure of **0.4.0** and not a local editable install, and to treat
-that package as the only thing available — in an empty directory. The wheel was already
-present at 0.4.0 and non-editable, so the session verified it with `pip show -f` rather
-than installing, and painted from `python -m easel guide`, `--full`, `--painting`,
-`--reference` and `--recipes`, all nine exercises, and nothing else: no
-`CALIBRATION.md`, no `LESSONS.md`, no `DIAGNOSIS.md`, no earlier painting, and **this
-repository was not opened until after the picture was exported and reviewed**. Subject
-chosen before any of it was read: a pair of hands sorting dried beans,
-`paintings/hands_beans/`, **329 of 420 strokes**, signed and exported.
+that package as the only thing available, in an empty directory. It painted from
+`python -m easel guide`, `--full`, `--painting`, `--reference` and `--recipes`, all nine
+exercises, and nothing else: no `CALIBRATION.md`, no `LESSONS.md`, no `DIAGNOSIS.md`, no
+earlier painting, and **this repository was not opened until after the picture was
+exported and reviewed**. Subject chosen before any of it was read: a pair of hands
+sorting dried beans, `paintings/hands_beans/`, **329 of 420 strokes**.
 
 **It painted 0.4.0, so it is a report on the release before the one it is filed
 against**, and that cuts both ways. Five of the frictions it hit are things 0.5.0 had
-already fixed — which is an independent painter confirming that round aimed right, and
-is written up below rather than filed as items. What is filed is what 0.5.0 does not
-touch.
-
-**It is a blind run.** Unlike the pier session it had not been inside this repository
-that morning, had never patched the engine, and knew none of the guide's numbers going
-in. Its reading of the documentation is worth full weight.
+already fixed, which is an independent painter confirming that round aimed right; they
+are below as confirmations rather than as items. What is filed is what 0.5.0 does not
+touch. **And it is the blind run the pier session was not** — that one had spent the
+morning inside this repository and its documentation findings were discounted for it.
+This one had not, so its reading of the guide is worth full weight, and where the two
+agree — the stack-of-bars warning going unread, the front page being long, the reason
+for the subject going missing — that is the same fault found twice, once by a painter
+who knew the numbers and once by a painter who did not.
 
 ### The folder question, answered a second time
 
 The pier session closed this by painting in an empty directory and listing a laundromat
 first and a winter greenhouse third anyway. **This one replicates it with the overlap
-counted.** Asked for ten subjects before a word of the guide was read, in an empty folder, it
-listed: a laundromat at 2 a.m. **first**, the underside of a pier **second**, a
-greenhouse in winter **third**, and an empty drained pool **eighth**. Four of its ten
-are pictures already hanging in `paintings/`, and two of them are in the same positions
-the pier session's list put them.
+counted.** Asked for ten subjects before a word of the guide was read, in an empty
+folder, it listed a laundromat at 2 a.m. **first**, the underside of a pier **second**,
+a greenhouse in winter **third**, and an empty drained pool **eighth** — four of its ten
+already hanging in `paintings/`, two of them in the same positions the pier's list put
+them. Told the first three were painted, it dropped them and re-ranked the rest without
+being asked how. **The subjects are not coming from the filenames, and the prior is
+narrow enough that four in ten collide with a ten-painting corpus.** That is the finding
+to watch next, and it is not a comfortable one: a page that says *decide before you
+read* is defending against the weaker of the two effects.
 
-It then did something the pier session also did unprompted, and the two together are
-worth more than either: told the laundromat, the pier and the greenhouse were already
-painted, it dropped them and re-ranked the rest without being asked how. **The subjects
-are not coming from the filenames, and the prior is narrow enough that four in ten
-collide with a ten-painting corpus.** That is the finding to watch next, and it is not
-a comfortable one: a page that says *decide before you read* is defending against the
-weaker of the two effects.
-
-**One difference from every other session on this page, and it should be discounted for:
-the final pick was the owner's, not the painter's.** The ten were the painter's and were
-written before anything was read, which is the rule; the painter's own first choice was
-the laundromat and its second the drained pool, and the hands were its named runner-up
-rather than its pick. So the subject satisfies *chosen before reading* and does not
-satisfy *chosen by the painter*. Where that matters is the reason-for-the-subject
-finding below: the reason was the painter's own and written before reading, so that part
-stands on its own.
+**One difference from every other session here, and it should be discounted for: the
+final pick was the owner's, not the painter's.** The ten were the painter's and were
+written before anything was read; the hands were its named runner-up rather than its
+pick. So the subject satisfies *chosen before reading* and not *chosen by the painter*.
+The reason for the subject was the painter's own and written before reading, so the
+finding below that turns on it stands on its own.
 
 ### The engine
 
-| What is wrong | What could be done |
+| What was wrong | What was done |
 |---|---|
-| **A failed rehearsal says it saved, and did not.** A script that raises under `--rehearse` prints `easel: script raised, session saved with 180 strokes` — and the count is the *painting's*, because a scratch copy continues the real numbers, so it reads exactly like a commit. Nothing is committed: `cli.py` returns out of the rehearsing branch above the `if result.save: session.save(...)`. The message is built in `run_scripts`, which does not know whether it is rehearsing. The painter stopped and verified the stroke count by hand before trusting it, twice. (Observed; `src/easel/cli.py`, the `except Exception` at the end of `run_scripts` against the `return result.code` in the `rehearsing` branch of `cmd_run`.) | Say which it was. `run_scripts` can take the flag it already has at the call site, or `cmd_run` can rewrite the line it prints on the rehearsing path — *script raised; nothing committed, the copy had laid N of this pass's marks*. The count is the other half: `history.stroke_count` on a scratch continues the painting's numbers, which is right for a script and wrong in a message about what was saved. |
-| **`sample()` over a place that straddles two masses returns a confident mean of neither, and nothing says so.** Sampling the table for a found edge with `span("C3","D4")` — a span that crosses the hand — returned **0.342** where the local table is **0.258**, and the edge painted with it landed as a pale halo above the hand instead of sharpening it. The documentation does say *to measure a mass, hand it the mass*; the painter had read it, and the failure is silent, arrives as a number, and goes straight into paint. **It is cheaply detectable.** Measured on this painting's own canvas: the straddling span has a standard deviation of **0.111** over its own pixels, and a spread of `0.694`; a clear patch of the same table is **0.018** and `0.102`; a second straddling span is **0.062**. Pure table elsewhere is `0.030`. The two populations do not overlap. (Measured, on `hands.easel`.) | A warning, on the same principle as the disc counter — the engine can answer a question the painter cannot ask about their own place. *Sampled over a place whose own spread is 0.69; this straddles more than one mass and its mean is a measurement of neither.* The threshold sits in clear air between `0.03` and `0.06`, and the remedy is already the documented sentence, so it can be named: hand it the mass. Worth checking against `compare()`, which samples per cell and would be noisy by the same measure on any picture with an edge in it — the rule wants to be on `sample()` alone, where a single number is about to be used as a colour. |
+| **A failed rehearsal says it saved, and did not.** A script that raises under `--rehearse` prints `easel: script raised, session saved with 180 strokes` — and the count is the *painting's*, because a scratch copy continues the real numbers, so it reads exactly like a commit. Nothing is committed: `cli.py` returns out of the rehearsing branch above the `if result.save: session.save(...)`. The message is built in `run_scripts`, which does not know whether it is rehearsing. The painter stopped and verified the stroke count by hand before trusting it, twice. (Observed.) | It says which it was: *nothing committed, the copy had laid N of this pass's marks*, with `N` the copy's own log rather than the painting's count carried through it. **Read off the session rather than passed in at the call site**, which is the one place the request left open and the one that matters: the flag is at two call sites, the MCP server's `run(rehearse=True)` is the second, and it had the same bug. A caller that hands over a copy and then says `rehearsing=False` would print the line this exists to stop. `exit()` on a copy says it too — it returns through its own branch, which carried the same sentence. |
+| **`sample()` over a place that straddles two masses returns a confident mean of neither, and nothing says so.** Sampling the table for a found edge with `span("C3","D4")` — a span that crosses the hand — returned **0.342** where the local table is **0.258**, and the edge painted with it landed as a pale halo above the hand instead of sharpening it. The documentation does say *to measure a mass, hand it the mass*; the painter had read it, and the failure is silent, arrives as a number, and goes straight into paint. **It is the ninth session's item, at the same call, by a painter who had the sentence that round wrote** — `sample()` over a `cell()` cost that one a second probe and the conclusion that the engine was laying everything `0.14` light, and the answer then was a clause in three files. Offered with a threshold: the straddling span's own pixels have a standard deviation of **0.111**, a clear patch of the same table **0.018**, and *the two populations do not overlap*. (Measured, on `hands.easel`.) | **The warning is built and the threshold claim did not survive**, which is the interesting half. The span reproduces — `0.110` against the painter's `0.111`, and `0.011` for a clear cell of the same table — but *clear air between 0.03 and 0.06* is an artefact of four places on one canvas. Measured over **226 rectangles**, every cell and every 2×2 span of this painting and the pool rebuilt from their own passes, the two populations overlap heavily; worse, **a mass handed in whole sits at 0.093 and 0.100**, so the rule as asked for would have fired loudest on the call the remedy tells painters to make. So it is asked **of rectangles only** — the case the docstring already calls a trap — and a shape is never asked, because handing one over *is* the remedy and a mass with a turn in it is spread by design. At `sd ≥ 0.06` with a tenth of the place as the smaller part, it catches **all 35** rectangles whose mean misses their own dominant mass by more than `0.03`, fires on **23%** of the rest, and on none of the seven masses. It names what is there rather than reporting a spread: *84% of it reads about 0.276 and 16% about 0.529, so the 0.341 this returns is a measurement of neither*, split at Otsu's threshold over the place's own pixels. `compare()` is untouched, as the request asked. |
 
 ### The documentation
 
-| Gap | What could be done |
+| Gap | What was done |
 |---|---|
-| **`look(marks=False)` has existed since 0.4.0 and is in none of the five documents.** `look()` takes ten parameters; `REFERENCE.md`'s signature line names eight — `grid`, `values`, `region`, `reference`, `diff`, `scale`, `sketch`, `path` — and stops, so **`marks` and `impasto` are both missing from the page whose claim is *every fact on one page***. `PAINTING.md`'s *Looking* block shows `look(sketch=False)` for the pencil and has no row for the landmarks either. This painter placed six landmarks and judged the picture through **fifty-two looks** with their labels drawn on it; one of them, `pinch`, sat on the focal point for the whole session. It found `unguide()` for the scaffolding, because that one *is* named, and never found the parameter for the labels. **This is the pier session's `unguide()` item exactly — the verb exists, the sentence naming it does not** — reproduced by a painter who had not read the first. (Observed; `grep -rn "marks=" *.md` returns nothing, and `look(..., impasto=)` appears only in `CALIBRATION.md` prose.) | The sentence, in the three places the last one needed: `REFERENCE.md`'s signature line, `PAINTING.md`'s *Looking* block beside `sketch=False`, and `look()`'s own docstring. But this is the second of its kind and the first fix did not generalise, so the harder answer is the one worth costing: **`REFERENCE.md`'s signature lines are hand-maintained, and this one has been wrong since the parameter shipped.** A test that reads each signature off the code and asserts the documented line names every parameter would have caught both instances and will catch the next. `tests/test_reference.py` is where it goes, and its own docstring already argues for it: *it checks the facts that can drift on their own: the brush table, the defaults, **every name a painter can say**, and every flag the shell takes*. It checks brushes, grounds, textures, pressure profiles, pigments, regions, prepare levels, the free/charged columns and the CLI flags — and not one method's parameter list, which is the one kind of name on that page a painter types. |
-| **The band count is about the scene, and the picture's worst repetition was inside one mass.** *Count the horizontal bands in the drawing; more than three, and find a viewpoint or a thing that crosses them* is asked of the arrangement, and this arrangement passed it easily: a table, a bowl, two limbs crossing on two different diagonals, no horizon anywhere. What sank the picture was four near-parallel fingers **inside a single mass** — a comb the size of a hand, which the question does not reach because the mass is one mass. The painter then ran the check's own stack-of-bars warning four times over the same passage, varied brushes, broke the lights, laid core darks, and finally abandoned two of the four fingers. (Observed.) | One clause where the band count is asked, and it is nearly free: **count them inside the biggest mass too, and count the things in any row of like things.** Four fingers, five pickets, nine pots, a row of windows — the guide already knows this at object scale (*you will under-vary your objects*, and *nine of these on one ledge want a stroke recipe*) and does not connect it to the band count, which is the instrument for it. The two are the same question at two scales and only one of them is asked before the first mass. |
-| **The drawing step asks whether the arrangement is right and never asks whether the view is.** *Keep drawing until it is proportional and the way you want it* is about proportion and placement, and every tool around it — the grid, the cells, `preview`, three candidate silhouettes in one look — helps you move a mass rather than turn it. This painter redrew the whole arrangement three times, all three free, and all three were fixes to framing, limb angle and the bowl's size. **Not one of them asked whether a cupped hand seen from the front is four fingers laid out sideways or a cluster foreshortened toward the viewer.** It is the second, and the picture is the first, and that is its central failure. (Observed.) | A line in step 1, beside the band count, where it costs nothing: **what is this thing's foreshortening? Draw the view, not the object.** The nearest existing thing is *A mass built of planes* — *decide the tiling before the block-in* — which is about the inside of a mass once the view is settled. The two candidate framings, offered as the half most likely to be wrong: it may be a drawing question, in which case it belongs in step 1; or it may be the same shape as *why did you choose this subject*, in which case it belongs on the checklist as *is this the view you meant?* and the drawing step only points at it. |
-| **Nothing says when to stop repainting a passage and go back to the drawing.** The guide is firm that the drawing is free and that a mistake is cheap for as long as possible, and it has a rule for the wrong repair (*you will reach for `undo`*) and one for the wrong tool. It has none for *this is the fourth time I have repainted this passage*. About **eighty of this painting's strokes** went on four successive treatments of one failing passage — vary the brushes, break the lights, lay core darks, abandon two fingers — each a brush-level answer to a drawing-level fault, and each one making the next repaint more expensive because more was standing on it. (Observed; `pass06`, `pass13`, `pass24`, `pass27`.) | A stopping rule, stated as a number because a preference will not survive the moment it is needed: **if a passage has failed twice, the fault is upstream of the brush. Go back to the drawing — it is still free, and it is the only thing that is.** It fits beside *you will reach for `undo`* in *what you are bad at*, which is the table a painter reads under pressure, and it is the one line on this page that would have changed this picture rather than its finish. Whether the engine can help is a separate and weaker question — `report(since=)` can see repeated repaint of one region and the project's own rule is that a rule nothing enforces is a preference, but a region is not a passage and the counting would be guesswork. |
+| **`look(marks=False)` has existed since 0.4.0 and is in none of the five documents.** `look()` takes ten parameters; `REFERENCE.md`'s signature line names eight and stops, so **`marks` and `impasto` are both missing from the page whose claim is *every fact on one page***. `PAINTING.md`'s *Looking* block shows `look(sketch=False)` and has no row for the landmarks either. This painter placed six landmarks and judged the picture through **fifty-two looks** with their labels drawn on it; one of them, `pinch`, sat on the focal point for the whole session. It found `unguide()` for the scaffolding, because that one *is* named. **This is the pier session's `unguide()` item exactly — the verb exists, the sentence naming it does not** — reproduced by a painter who had not read the first. (Observed.) | The sentence, in all three places — and then the harder answer, because this is the second of its kind and the first fix did not generalise. **`tests/test_reference.py` now reads each signature off the code**, in two checks, because the page names a parameter two ways and each misses what the other catches: every optional parameter of every call the page documents has to appear in the page's *code* (not its prose — `path`, `name` and `note` are ordinary English), and a call the page writes out in full has to be complete **on its own line**. The second is what catches `impasto`, which is named on the page, on `export`'s line, four lines from the call that was missing it — a block-wide scope reads that as documented, and it is not. What the check found on arrival: `stroke(clip=)`, `sweep(closed=)`, `cover(dry_first=)`, `sketch(areas=)`, `mix(ratio=)`, `mix_many(weights=)` and `complement_grey(ratio=)` were named nowhere on the page, and eight more calls were written out with parameters left off the end. All closed. |
+| **The band count is about the scene, and the picture's worst repetition was inside one mass.** *Count the horizontal bands in the drawing; more than three, and find a viewpoint or a thing that crosses them* is asked of the arrangement, and this arrangement passed it easily: a table, a bowl, two limbs crossing on two different diagonals, no horizon anywhere. What sank the picture was four near-parallel fingers **inside a single mass** — a comb the size of a hand, which the question does not reach because the mass is one mass. (Observed.) | The clause, where the band count is asked and in step 1: **count them inside the biggest mass too, and count any row of like things** — four fingers, five pickets, a row of windows. The guide already knew this at object scale (*you will under-vary your objects*, *nine of these on one ledge want a stroke recipe*) and did not connect it to the band count, which is the instrument for it. |
+| **The drawing step asks whether the arrangement is right and never asks whether the view is.** *Keep drawing until it is proportional and the way you want it* is about proportion and placement, and every tool around it — the grid, the cells, `preview`, three candidate silhouettes in one look — helps you move a mass rather than turn it. This painter redrew the whole arrangement three times, all three free, and all three were fixes to framing, limb angle and the bowl's size. **Not one of them asked whether a cupped hand seen from the front is four fingers laid out sideways or a cluster foreshortened toward the viewer.** It is the second, and the picture is the first, and that is its central failure. (Observed.) | **In step 1, which was the first of the two framings the request offered.** *What is this thing's foreshortening? Draw the view, not the object*, on the card beside the band count and again in step 1 with this painting's own loss as the example. The checklist was the other candidate and it is the wrong one: the checklist runs when the drawing is no longer free, and the whole argument for the line is that it is asked while moving a mass costs nothing. *A mass built of planes* is named beside it as what comes after — the inside of a mass once the view is settled. |
+| **Nothing says when to stop repainting a passage and go back to the drawing.** The guide is firm that the drawing is free and that a mistake is cheap for as long as possible, and it has a rule for the wrong repair (*you will reach for `undo`*) and one for the wrong tool. It has none for *this is the fourth time I have repainted this passage*. About **eighty of this painting's strokes** went on four successive treatments of one failing passage — vary the brushes, break the lights, lay core darks, abandon two fingers — each a brush-level answer to a drawing-level fault, and each making the next repaint dearer because more was standing on it. (Observed; `pass06`, `pass13`, `pass24`, `pass27`.) | The stopping rule, stated as a number because a preference will not survive the moment it is needed: **if a passage has failed twice, the fault is upstream of the brush. Go back to the drawing — it is still free, and it is the only thing that is.** A sixth row in *the things you will get wrong*, which is the table a painter reads under pressure, and the paragraph beside *you will reach for `undo`*. The engine half was left alone, as the request's own weaker half: `report(since=)` can see repeated repaint of a region, and a region is not a passage. |
+
+**Two of this round's items are the same shape, and it is the shape to watch.** The
+`sample()` item and the `look(marks=)` item were each answered in an earlier round by
+writing a sentence — *to measure a mass, hand it the mass* for the ninth session, and the
+sentence naming `unguide()` for the pier's — and each was hit again, at the same call, by
+a painter who had read what was written. **Both are closed this time with something that
+fires**: a warning at the call, and a test over the page. *A rule nothing enforces is a
+preference* is this page's own line, and this is the round where it came for the
+sentences.
+
+### Found while filing the round, not by the painter
+
+**`README.md` and `PAINTINGS.md` claim every painting re-runs byte for byte, and half of
+them say in their own tables that they do not.** *The scripts re-run from a fresh session
+at the same seed and reproduce the export byte for byte* sits under **The worked
+examples**, which is the section that sends a first-time painter to `paintings/`;
+`PAINTINGS.md` makes the same claim one bullet from the end of the rules. Filed as *two
+of the thirteen*, and counted while fixing it: **seven of the fourteen** carry
+**Reproducible: not claimed** — drawing passes rewritten and re-run, `look` scripts run
+as passes between the painting ones, preludes edited between passes, each pass edited
+after its rehearsal.
+
+The claim that is true is a different one and both pages now make it as itself: **the log
+replays byte for byte**, because a stroke's randomness is drawn from `(seed, stroke
+index)`, and golden-image tests hold that. Whether the committed *scripts* rebuild the
+canvas is per painting, and each painting's table already says which — so the fix was to
+stop the two summary pages overriding them.
+
+**And the preamble of this page was counting one session short.** It said twelve sessions
+and thirteen paintings against a `paintings/` that holds fourteen: the winter greenhouse,
+painted before the fogged glass and filed after it, has a row in the table above and was
+never in the sentence. Thirteen sessions, fourteen paintings.
 
 ### What 0.5.0 had already fixed, reported by a painter who did not have it
 
-Filed as confirmation rather than as items, because a fix aimed at the right thing is
-worth knowing about from someone who hit the fault it was aimed at.
+Confirmation rather than items, because a fix aimed at the right thing is worth knowing
+about from someone who hit the fault it was aimed at.
 
 - **The stack-of-bars warning fired on pass after pass on a subject that ran that way**,
   and the painter's own account says it stopped reading it. Same as the pier. 0.5.0's
   decay is aimed at exactly this.
-- **`PAINTER.md` was too long to hold and the painter went back to it constantly**,
-  which is what the 6,672 → 6,000 compression was for; and **the cross-references were
-  skimmed past**, including two it needed, which is what 25 → 16 was for.
+- **`PAINTER.md` was too long to hold and the painter went back to it constantly**, which
+  is what the 6,672 → 6,000 compression was for; and **the cross-references were skimmed
+  past**, including two it needed, which is what 25 → 16 was for.
 - **The scaffolding had to be taken off by hand before the picture could be judged.**
   0.5.0's `erase()` taking both drawings is half of this; the other half is the
-  `marks=False` item above, which 0.5.0 does not touch.
+  `marks=False` item above, which 0.5.0 did not touch.
 - **The one that matters: it lost half of why it chose the subject, and noticed when it
   was asked for a review afterwards.** The reason was written down first — old hands are
   warm at the knuckles and cool across the planes between, and that contrast is what
   keeps the subject out of sentimentality. The contrast is in the picture. The
-  specificity is not, and nothing during the painting asked. **That is the pier's
-  finding reproduced on a different subject by a painter who had never read it**, and it
-  is the strongest evidence on this page that 0.5.0's checklist line earns its place.
+  specificity is not, and nothing during the painting asked. **That is the pier's finding
+  reproduced on a different subject by a painter who had never read it**, and it is the
+  strongest evidence on this page that 0.5.0's checklist line earns its place.
 
 ### Two items that died on measurement before they were filed
 
 The painter arrived at this repository with both and neither survived being measured,
 which is recorded because a retraction is as much a finding as an item.
 
-- **"*A form that turns* does not work at feature scale."** It does. The recipe laid at
-  four widths on a 1024×768 canvas — `0.30`, `0.16`, `0.08`, `0.05` — keeps its
-  transition at **25–40% of the form's own width** throughout and loses only `0.07` of
-  value range across the whole run. What actually happened is that the recipe was never
-  applied: the fingers were laid as strokes from the first pass, and *A form that turns*
-  was never opened, in a `RECIPES.md` the painter had read the contents page of. **The
-  mapping is the step that failed** — the painter did not think of a finger as a form
-  that turns, it thought of it as a finger — which is the noun-free design working as
-  intended at the page level and failing at the point of use. 0.5.0's card names the
-  situation rather than the file; this session is a data point on the item the register
-  flags as *most likely to still be true*, and it says the remaining risk is in the
-  painter's own naming rather than in the pointer.
+- **"*A form that turns* does not work at feature scale."** It does. Laid at four widths
+  on a 1024×768 canvas — `0.30`, `0.16`, `0.08`, `0.05` — it keeps its transition at
+  **25–40% of the form's own width** throughout and loses `0.07` of value range across
+  the run. The recipe was never applied: the fingers were laid as strokes from the first
+  pass, and *A form that turns* was never opened, in a `RECIPES.md` whose contents page
+  the painter had read. **The mapping is the step that failed** — the painter did not
+  think of a finger as a form that turns, it thought of it as a finger — which is the
+  noun-free design working at the page level and failing at the point of use. 0.5.0's
+  card names the situation rather than the file; this is a data point on the item the
+  register flags as *most likely to still be true*, and it says the remaining risk is in
+  the painter's own naming rather than in the pointer.
 - **"`edge="clean"` draws a contour that reads as an outline."** It does not. Measured on
-  the painting's own bowl geometry, rim minus interior is **−0.010** for `clean`,
-  `+0.007` for `ragged` and `+0.013` for `hard` — the contour is if anything the
-  *darkest* of the three. What the painter had seen was a cool mass at too high a value
-  on a warm ground, which is a colour decision of its own making, and it corrected the
-  bowl by three full value revisions rather than by touching `edge=`.
-
-### Found while filing the round, not by the painter
-
-**`README.md` claims every painting re-runs byte for byte, and two of the thirteen say
-in their own tables that they do not.** *The scripts re-run from a fresh session at the
-same seed and reproduce the export byte for byte, so the order a painting was made in is
-readable rather than reconstructed* — under **The worked examples**, which is the section
-that sends a first-time painter to `paintings/`. `pier_underside` and `hands_beans` both
-carry **Reproducible: not claimed**, for the same reasons: drawing passes rewritten and
-re-run, `look` scripts run as passes between the painting ones, and each pass edited
-after its rehearsal. `PAINTINGS.md` carries the same claim one bullet from the end of the
-rules — *run them against a fresh session and the same PNG comes back*.
-
-The claim that is true is a different one and the page already makes it better elsewhere:
-**the log replays byte for byte**, because a stroke's randomness is drawn from
-`(seed, stroke index)`. That is checked by golden-image tests. What is not checked, and
-is not true of at least two directories, is that the committed *scripts* rebuild the
-canvas. Worth separating in both places, and worth a line in each painting's table
-saying which of the two it claims — eleven of them may well re-run, and nobody has said
-so with a test.
+  the painting's own bowl, rim minus interior is **−0.010** for `clean`, `+0.007` for
+  `ragged` and `+0.013` for `hard` — the contour is if anything the *darkest* of the
+  three. What the painter had seen was a cool mass at too high a value on a warm ground,
+  and it corrected the bowl by three value revisions rather than by touching `edge=`.
 
 ### What worked, recorded because a finding is still true afterwards
 
-**Rehearsal is the part of this that works, and this session leaned on it harder than
-any so far: 114 rehearsal views, none charged, against 28 committed passes.** Caught
-free: a scumble that buried the fingers whole, navy-blue core shadows, four white discs
-clustered at the focal point, a pink stripe where warmth was wanted, a fan-shaped
-scallop for the back of a hand, and a bowl three times too light.
+**Rehearsal is the part of this that works, and this session leaned on it harder than any
+so far: 114 rehearsal views, none charged, against 28 committed passes.** Caught free: a
+scumble that buried the fingers whole, navy-blue core shadows, four white discs clustered
+at the focal point, a pink stripe where warmth was wanted, a fan-shaped scallop for the
+back of a hand, and a bowl three times too light.
 
-**`at_value` is the best primitive in the box.** Nine planned values, nine exact
-returns, and mixing to a value rather than to a ratio is the part of paint that is
-actually hard.
-
-**`glaze(to_value=)` failing is better than `glaze(to_value=)` succeeding.** *The paint
-under this film reads 0.389, and at opacity=1.0 it reaches 0.258. A film can only travel
-between those two.* That is a measurement the painter did not have, delivered at the
-moment it was needed, and it ended the pass — the fingertips were already dark enough
-and the glaze was not needed at all.
-
-**The post-pass check teaches by naming the mark.** *That is one disc printed seven
-times.* *A comb that small is four streaks with gaps.* Five of this painting's 331 marks
-carry a flagged fault at the end, and the early passes hold four of them: the check
-trained the painter over the session in a way the prose did not.
+**`at_value` is the best primitive in the box** — nine planned values, nine exact
+returns. **`glaze(to_value=)` failing is better than it succeeding**: *the paint under
+this film reads 0.389, and at opacity=1.0 it reaches 0.258* is a measurement the painter
+did not have, delivered at the moment it was needed, and it ended the pass. **The
+post-pass check teaches by naming the mark** — *that is one disc printed seven times*, *a
+comb that small is four streaks with gaps*; five of 331 marks carry a flagged fault at
+the end and the early passes hold four of them.
 
 ### The painting, and what the painter owns
 
@@ -245,9 +227,9 @@ trained the painter over the session in a way the prose did not.
   three times without the question being asked once.
 - **Eighty strokes went on symptoms** of that, at the brush, while the fault sat in
   graphite where moving it is free.
-- **It stopped at 329 of 420 with the weakest passage still the weakest** — the thing
-  the checklist warns about by name — and its notes say *deliberate* and *finished* are
-  not the same word, which is the honest version of the same admission the pier made.
+- **It stopped at 329 of 420 with the weakest passage still the weakest** — the thing the
+  checklist warns about by name — and its notes say *deliberate* and *finished* are not
+  the same word, which is the honest version of the pier's own admission.
 
 ---
 
@@ -275,13 +257,13 @@ says so.
 
 ### The folder question is closed
 
-Every session so far has chosen its subject inside a working directory, and it has never
-been possible to rule out that the directory was choosing. **This one ran in an empty
-folder: no repository, no listing, nothing to read.** The subjects came anyway, and they
-came from where they have always come from — a laundromat at 2 a.m. first, a greenhouse
-in winter third, a collapsing wave sixth. **The wave was also sixth on Fable's list.**
-The subjects are not coming from the filenames. They come from the prior, and the prior
-is shared across the family.
+Every session before this one chose its subject inside a working directory, and it had
+never been possible to rule out that the directory was choosing. **This one ran in an
+empty folder: no repository, no listing, nothing to read.** The subjects came anyway, and
+from where they have always come — a laundromat at 2 a.m. first, a greenhouse in winter
+third, a collapsing wave sixth, **and the wave was also sixth on Fable's list**. They
+come from the prior, and the prior is shared across the family. The hands session above
+replicates this with the overlap counted.
 
 One thing more, and it is the most encouraging sentence in the session: asked for ten and
 then for the most interesting, the painter named the laundromat its own favourite and
@@ -388,49 +370,30 @@ below: the two rounds raised the same two items from opposite directions — wha
 `direction=` names, and a check that fires on a row of separate things — and acting on
 half of either would have been acting on half a fix.
 
-It read `PAINTER.md` and its nine exercises, then `PAINTING.md`, then `RECIPES.md`
-where a passage called for one — `CALIBRATION.md` and `REFERENCE.md` were grepped,
-not read. Subject chosen and written down before the
-repository was opened: a greenhouse wall in late winter seen from outside, the glass
-fogged from the inside, `paintings/fogged_glass/`, **311 of 320 strokes**, about forty-four
-rehearsals, subject share **29%** against a planned 37%, and two signature marks. It
-wrote a critique of the engine, the documentation and its own painting when asked.
+It read `PAINTER.md` and its nine exercises, then `PAINTING.md`, then `RECIPES.md` where
+a passage called for one — `CALIBRATION.md` and `REFERENCE.md` were grepped, not read.
+Subject chosen and written down before the repository was opened: a greenhouse wall in
+late winter seen from outside, the glass fogged from the inside,
+`paintings/fogged_glass/`, **311 of 320 strokes**, subject share **29%** against a
+planned 37%.
 
-**It sits next to a near neighbour, and the neighbour is not the same subject.**
-`paintings/greenhouse_winter/` already existed from an earlier Fable session — a
-greenhouse interior looking down the aisle at a low sun. This painter chose *the outside
-of a fogged greenhouse wall* before reading anything, found that directory in
-`git status`, recognised how close it was, and declined to open it. **So this is not a
-held subject and not a control**, and it is filed as two paintings rather than as one
-subject with two parts, which is what `paintings/lighthouse_greenhouse/` and
-`paintings/heron_lot/` are for. The repository owner's reading of the two pictures,
-recorded as a comparison and not as evidence from a matched pair:
+**It sits next to a near neighbour, and the neighbour is not the same subject.** The
+painter chose *the outside of a fogged greenhouse wall* before reading anything, found
+`paintings/greenhouse_winter/` in `git status`, recognised how close it was, and declined
+to open it. **So this is not a held subject and not a control**, and the two are filed as
+two paintings rather than as one subject with two parts. One thing in them *is* a
+convergence, because it is checkable against their scripts rather than against an
+impression: both painters refused a frontal elevation on the closing checklist's
+layer-cake warning and both answered it with a metric perspective projection written
+before any line was drawn — `P(xm, hm, dm)`, the same three arguments in the same order,
+in each one's `prelude.py`, neither having read the other. Two painters reaching the same
+helper off the same sentence is worth more than any similarity in the pictures.
 
-> Fable stood inside and built the room; Opus stood outside and painted the seeing.
-> Fable's is constructed and a little illustrative; Opus's is spatial and a little
-> empty. Same two hands, same two virtues, same two faults.
-
-**One thing in the two pictures is a genuine convergence, because it is checkable
-against their scripts rather than against an impression.** Both painters opened by
-refusing a frontal elevation on the closing checklist's layer-cake warning, and both
-answered it with a metric perspective projection written before any line was drawn —
-`P(xm, hm, dm)`, the same three arguments in the same order, in each one's `prelude.py`,
-neither having read the other. Two painters reaching the same helper off the same
-sentence is worth more than any similarity in the pictures.
-
-On the painting itself, the owner's reading: the near pane reads as wet misted glass with
-the plants a green blur behind it, the runnels carry the only saturated colour, and the
-far end dissolves instead of stopping. The one pressed leaf and the orange pot seen
-through the film are the two marks that say *through*, and they are enough. The tree is
-what the painter says it is — a grey mass with spokes — and the left third is haze that
-is not fog in one place. The picture is about the wall, and the wall is right.
-
-**Three claims in this section were re-measured before it was written**, by the painter,
+**Three claims in this section were re-measured by the painter before it was written**,
 on its own finished session file: the check bug reproduces from the CLI, the depth-order
 violation is `0.089` of value on a named bar, and the buried ground is `0.07%` of the
-canvas. The other items are reported as observed and say so. Every number in both
-rounds was re-measured again before anything was built on it, and
-`scripts/probe_tenth_session.py` prints all of them.
+canvas. The rest say *observed*. Every number in both rounds was re-measured again before
+anything was built on it, by `scripts/probe_tenth_session.py`.
 
 ### What it found in the engine, and what was done
 
@@ -476,17 +439,12 @@ rounds was re-measured again before anything was built on it, and
   it at all, and it is still the third round in a row where the instrument that exists
   for painting without a reference is used less than the method asks. It did its job
   when it ran: five of six planned places came back inside `0.05`.
-- **The nine exercises were painted, and two paid for themselves inside the first pass** —
-  exercise 3's starved brush on rough canvas became the condensation beading and the
-  frost, and exercise 8's box-against-shape was cited when the painter caught itself
-  laying the yard as `Region` boxes.
-- **Every failure in the session was caught in a rehearsal**, at a cost of nothing: a
-  blue summer sky, a rectangle in the background, a pine forest where the glass should
-  be, a chisel staircase, four haze strokes that read as searchlights, a railing that
-  only became glazing when the horizontal pane laps went on, a cauliflower, three orange
-  bands where the warmth should have pooled, and four orange ovals after that. Forty-four
-  rehearsals against 311 paid strokes. This is the item on *What none of them would
-  change* holding for a tenth painter.
+- **The nine exercises paid for themselves inside the first pass**, twice: exercise 3's
+  starved brush on rough canvas became the condensation beading and the frost, and
+  exercise 8's box-against-shape was cited when the painter caught itself laying the
+  yard as `Region` boxes. And **every failure in the session was caught in a rehearsal**
+  — forty-four of them against 311 paid strokes, none charged. Both are *What none of
+  them would change* holding for a tenth painter.
 
 ---
 
@@ -559,15 +517,11 @@ round's open documentation items above were closed in passing and are marked the
   caught the two touching pairs above before either mass was laid, and it reported one
   stale place with a confident `−0.25` after a pot had been painted over it, which is
   the *re-read the places when a silhouette moves* clause doing its job.
-- **Every failure was caught in a rehearsal and no committed mass was repainted.**
-  Seventeen rehearsals against 297 paid strokes: a sage-green sky, a rounded arch where
-  a gable should be, a bristle roof combed the way the rafters would run, a fan of
-  chisel corners, the sawtooth under the benches, a black cage of glazing bars, a pot
-  recipe at 220 strokes, fat scalloped rims, a saturated green clot. The one scrape of
-  the canvas was none.
+- **Every failure was caught in a rehearsal and no committed mass was repainted** —
+  seventeen rehearsals against 297 paid strokes, and not one scrape of the canvas.
 - **A metric projection written before the first line**, `P(xm, hm, dm)`, the same
-  helper the fogged-glass session wrote independently — recorded in the move notes as a
-  convergence and now a recipe.
+  helper the fogged-glass session wrote independently — a convergence then, a recipe
+  now.
 
 ---
 
@@ -589,42 +543,26 @@ prediction so much as re-describe what the deficit is.
 
 **The post-pass check is built.** It was the cheapest thing on the list for two rounds:
 a check over the pass just painted, printed beside the budget line, from inputs already
-in the log. `Session.report()` is it, `easel run` prints it after every pass
-(`--check` widens it to the painting, `easel log --check` reads it cold), and the MCP
-`run` tool hands it back. Seven rules, every one met by a real pass of a real painting:
-*one brush at one size* for a whole pass of two or more calls; *a stack of passes at one
-angle*; *a graded passage laid too narrow*, which the ninth session asked for by name;
-*a loaded bristle under `size=0.025`*, which the same session had narrowed to a loaded
-one after it ignored the rule twenty-eight times and was right to; *small marks before
-the masses are down*; *a
-pressure list on a short chisel mark*, which the greenhouse painters added; and *the
-subject's share* of the marks so far, against the plan's number when it is given. The
-rule the fourth session proposed and this page dropped — a solid mass whose planned
-and rendered values differ — is still not in it, for the reason given then: the gap is
-`0.000`. The rules that need the *shape* — a mass at the default direction costing
-over 2.5× its axis, a sequence of directions costing over 2.5× its dearest angle, and
-an oriented tip under four pixels — fire at the call instead.
-Every rule that becomes a check can now leave the guide, which is the growth rule
-paying for itself, and the check has had its first outing against a session that had
-never seen it — see the eighth session below, where it fired on twelve horizontal
-passes in the painting's very first mass, on a bristle under `0.025` four times and on
-pressure lists on a chisel tip twice, and every one of those was acted on in the
-rehearsal it fired in.
+in the log. `Session.report()` is it, `easel run` prints it after every pass (`--check`
+widens it to the painting, `easel log --check` reads it cold), and the MCP `run` tool
+hands it back. Its rules are listed once, in `REFERENCE.md`, and every one of them was
+met by a real pass of a real painting. The rule the fourth session proposed and this
+page dropped — a solid mass whose planned and rendered values differ — is still not in
+it, for the reason given then: the gap is `0.000`. The rules that need the *shape* fire
+at the call instead.
 
-**And two rules have now left.** *You will under-vary your marks* went to
-`PAINTING.md` in 0.3.0 and *you will use too many strokes on detail* followed it in
-0.3.0, both because the check names them after the pass that did them, with the
-numbers attached, which a paragraph read once cannot do. Neither left on its merits:
-the front page's word budget left the eighth session's two items and the ninth's
-three nowhere else to come from, which is the growth rule working exactly as it was
-meant to and is now **the binding constraint on every documentation round**. Whether
-a rule can safely leave is still unshown; what has changed is that it is a question a
-session can answer, because there is a guide with two rules missing from it.
-
-The check has seven rules as of 0.3.0. The seventh — a graded passage laid too narrow
-— is the first to arrive from a session *asking for a check rule by name* rather than
-reporting a symptom, and it met the bar the same way: it fires on a real pass of a
-real painting, and the inputs were already in the log.
+**Its first outing was against a session that had never seen it** — the eighth, below,
+where it fired on twelve horizontal passes in the painting's very first mass, on a
+bristle under `0.025` four times and on pressure lists on a chisel tip twice, and every
+one was acted on in the rehearsal it fired in. **And two rules have since left the
+guide**: *you will under-vary your marks* and *you will use too many strokes on detail*,
+both to `PAINTING.md` in 0.3.0, because the check names them after the pass that did
+them with the numbers attached, which a paragraph read once cannot do. Neither left on
+its merits — the front page's word budget left the eighth session's two items and the
+ninth's three nowhere else to come from, which is the growth rule working as meant and
+is now **the binding constraint on every documentation round**. Whether a rule can
+safely leave is still unshown; what has changed is that it is a question a session can
+answer, because there is a guide with two rules missing from it.
 
 ### The greenhouse sessions: three painters on one subject
 
@@ -684,47 +622,38 @@ recipe. It was **three lookups it could not make**, and only one of them is in t
    read the other painting.
 2. **It could not know which numbers existed.** `PAINTER.md` points at
    `CALIBRATION.md` *"when a rehearsal is about to be spent finding a number that is
-   already in there"* — an instruction that requires knowing the number is in there.
-   Three it spent rehearsals on instead: a glaze's strength being distance in **hue** as
-   well as in value, met as an orange sign's reflection that was a solid bar at one
-   opacity and invisible at the next, which is the two-opacity failure the file already
-   records; `opacity` not quieting a scumble, which is the fix it eventually found for a
-   contour-ringed glow by narrowing the two colours' span, and believed it had invented;
-   and `inset()` by half the brush to hold a mass off its neighbour, which it re-derived
-   as a hand-shifted polygon edge on one side only.
+   already in there"* — an instruction that requires knowing the number is in there. It
+   spent rehearsals re-deriving three: a glaze's strength being distance in **hue** as
+   well as in value, `opacity` not quieting a scumble (the fix it found for a
+   contour-ringed glow, and believed it had invented), and `inset()` by half a brush to
+   hold a mass off its neighbour.
 3. **It never ran `compare({place: value})` on the empty canvas.** This is the expensive
    one. Its worst structural fault — the coping reaching `0.50` against water at
    `0.45`–`0.55`, the frame as bright as the subject — is exactly what the pairs
    question exists to ask, and it was found at stroke 137 with `sample()` instead.
-   `REFERENCE.md`'s one-line entry was read and not acted on; *Painting without a
-   reference*, where the reason lives, is in `PAINTING.md`.
 
-**So the essay's contribution to this arm was one section, and it is a section about a
-tool rather than about judgement.** Of what the session could name as saveable —
-roughly twelve to fifteen rehearsals and about twenty-five committed strokes, the latter
-almost all one repainted deck — **the largest single item is not in the essay at all.**
-It is in `paintings/laundromat_night/NOTES.md`: a custom ground at `0.32`, and the
-reason, *no preset goes below `umber_wash` at `0.425`, which is far too light for a
-night picture*. The eighth session took `cool_grey` at `0.53`, knew by its third pass it
-was wrong, and talked itself out of a restart that would have cost 21 strokes.
+**So the essay's contribution to this arm was one section, and it is about a tool rather
+than about judgement.** Of what the session could name as saveable — roughly twelve to
+fifteen rehearsals and about twenty-five committed strokes — **the largest single item
+is not in the essay at all.** It is in `paintings/laundromat_night/NOTES.md`: a custom
+ground at `0.32`, because no preset goes below `umber_wash` at `0.425`. The eighth
+session took `cool_grey` at `0.53`, knew by its third pass it was wrong, and talked
+itself out of a restart that would have cost 21 strokes.
 
-**What this arm cannot answer.** The painting is timid. Six of its twenty-five passes
-exist to take something back rather than to put something down, four of those in the
-last third; it stopped at 221 with 79 strokes in hand, and its own verdict is that the picture is illustrative rather than painterly —
-that the coping is four bands generated from a normal vector and a for-loop, and that
-the one passage it likes is the one where a starved bristle did something it had not
-designed. Whether that is the missing essay or this painter is not separable from one
-run, and the run is n=1 against six of the other arm. **The honest claim is narrower
-than the prediction: the deficit this arm showed was lookup, not judgement** — and two
-of the three lookups were in files the split does not vary.
+**What this arm cannot answer.** The painting is timid — six of its twenty-five passes
+take something back rather than put something down, and it stopped at 221 with 79 in
+hand. Whether that is the missing essay or this painter is not separable from one run,
+and the run is n=1 against six of the other arm. **The honest claim is narrower than the
+prediction: the deficit this arm showed was lookup, not judgement** — and two of the
+three lookups were in files the split does not vary.
 
-**One claim this session made that did not survive its own reading.** Before being shown
-the withheld files it wrote that the guide's repetition "seems not to have noticed its
-own cost", and `LESSONS.md` opens with the measurement that a rule correct, well placed
-and repeated three times still failed every run. Fair as a description of reading it,
-wrong about the cause — which is the same shape as the re-measured claims at the foot
-of this page that did not survive: an observation reasoned back to a mechanism that
-sounded right. It made one of those too, and said so in advance.
+**One claim it made that did not survive its own reading.** Before seeing the withheld
+files it wrote that the guide's repetition *seems not to have noticed its own cost*, and
+`LESSONS.md` opens with the measurement that a rule correct, well placed and repeated
+three times still failed every run. Fair about reading it, wrong about the cause — an
+observation reasoned back to a mechanism that sounded right, which is the shape of every
+re-measured claim at the foot of this page that failed. It made one of those too, and
+said so in advance.
 
 ### What it asked for, and what was done
 
@@ -857,6 +786,9 @@ contact with a repository that had already fixed the thing the session came to r
 ---
 
 ## The engine
+
+*The rounds up to the ninth. Every round since the tenth carries its own tables, in its
+own section above.*
 
 ### What the first session found
 
@@ -1010,6 +942,8 @@ under it, because nothing here needed measuring. It needed running `dir()`.
 ---
 
 ## The documentation
+
+*The same rounds, and the same rule about where the newer ones live.*
 
 ### Rules and numbers that were wrong or missing
 
@@ -1168,33 +1102,21 @@ the essay. What should be done with it?
 time — one session's whole read cost a few minutes and about thirty thousand tokens,
 against far more spent looking at its own rehearsals. It is that a rule read once at the
 start is not in the hand at the moment it applies, and cutting cannot fix that, because
-the rule cut is the one some painter needed. So: the split above, a CI-held budget on the
-front page, and the standing rule that a finding goes to the engine, the recipes, the
-reference or the calibration file and never adds a paragraph to `PAINTER.md`. All four
-are done and written into `LESSONS.md`.
+the rule cut is the one some painter needed. So: the split, a CI-held budget on the front
+page, and the standing rule that a finding goes to the engine, the recipes, the reference
+or the calibration file and never adds a paragraph to `PAINTER.md`. All four are done and
+written into `LESSONS.md`.
 
 **The budget landed at 10,000 words rather than the 5,000–6,000 asked for**, and that is
-the one place the answer differs from the request. The figure was never costed against
-the contents the same list wanted the file to keep: the order of work, *What you are bad
-at*, the checklist and the exercises come to about 8,500 words on their own, so reaching
-6,000 would mean cutting them — which every other item on that list forbids. A budget
-nobody can meet on the day it is written enforces nothing. The honest claim is halving.
+the one place the answer differs from the request: the figure was never costed against
+the contents the same list wanted kept — the order of work, *What you are bad at*, the
+checklist and the exercises come to about 8,500 words on their own. A budget nobody can
+meet on the day it is written enforces nothing. The honest claim is halving.
 
-**Open at the time, deliberately: the split is a hypothesis.** The test is two fresh
-sessions, one given only the method, the recipes and the reference, one given
-everything. The third painter's prediction, written down so it can be wrong: the first
-paints the masses as well and improvises worse, because the essay is where the
-judgement came from when no recipe existed. *Both arms have since been run — see* The
-eighth session *above, where the prediction's first half held and its second did not in
-the form it was written.*
-
-The one data point that exists on reading order is not clean, and it is in `LESSONS.md`
-rather than here. The third session read everything *before* the exercises — the wrong
-order — did all eight anyway, and they still paid: the edge study showed it the smudge's
-thumbprint before it could lay one in the picture, the load study showed the speckle a
-starved bristle leaves, and the wet-versus-dry pair is why every later pass went on dry
-paint. **So the gate held even when the reading ran past it**, which argues for the
-exercises and says nothing either way about the order.
+**The split was a hypothesis and both arms have been run** — see *The eighth session*
+above, where the third painter's prediction (*the restricted arm paints the masses as
+well and improvises worse*) held in its first half and did not, in the form it was
+written, in its second: the deficit that arm showed was lookup rather than judgement.
 
 **On a warnings file.** Would a separate file of the warnings a painter must keep in
 context help?
@@ -1202,92 +1124,62 @@ context help?
 **No, and it is not a close call.** The third session had every warning in context for
 the whole painting — the guide never left its window — and laid a glow as a solid disc,
 planes as slabs and a picture in almost nothing but two brushes regardless. The front
-page lists the mistakes, the checklist repeats them, and `LESSONS.md` already records
-that a rule correct, well placed and repeated three times failed every run. A fourth
-copy is the thing that file says does not work.
+page lists the mistakes, the checklist repeats them, and `LESSONS.md` records that a rule
+correct, well placed and repeated three times failed every run. A fourth copy is the
+thing that file says does not work.
 
-**What was written down instead** is where the idea should go: a check the tool runs
-over the pass it just painted, printed beside the budget line — one brush at one size
-for a whole pass, *n* passes at the same angle, a bristle under `size=0.025`, the
-subject's share of strokes against the plan. Every input is already in the log. Each
-rule that becomes a check can then leave the guide, which is the growth rule paying for
-itself. *That answer is dated: the check was built in the greenhouse round as
-`Session.report()`, and in 0.3.0 the first rule left the guide under it.* The one form
-of the file idea with a real mechanism — a short rules card kept where a `CLAUDE.md` is
-kept, which survives a context compaction where the guide does not — is still unbuilt
-and still cannot be judged, because none of the sessions has ever been compacted.
+**What was written down instead** is where the idea went: a check the tool runs over the
+pass it just painted, printed beside the budget line, from inputs already in the log.
+That is `Session.report()`, built in the greenhouse round, and in 0.3.0 the first rule
+left the guide under it. The one form of the file idea with a real mechanism — a short
+rules card kept where a `CLAUDE.md` is kept, which survives a context compaction where
+the guide does not — is still unbuilt and still cannot be judged, because none of the
+sessions has ever been compacted.
 
 ---
 
 ## What none of them would change
 
-Every session defended the same things unprompted, and none was touched:
+**Every session defended the same short list, unprompted, and none of it was touched.**
+The order of work; no layers, no free undo, no black; the place vocabulary; the values
+view, called *the one that tells you the truth*; back to front and the
+inside-of-a-hollow-thing rule; the nine exercises, which cost two minutes and were repaid
+inside the first pass; and the habit of putting a measured number behind a rule — *the
+numbers changed what I did in a way the prose beside them did not*. Every row of *the
+shape each tool leaves behind* has survived being measured.
 
-the order of work; no layers, no free undo, no black; **rehearsal seeded as the next
-real strokes**, which is where every failure in all three paintings happened — a glow
-that came back a sun, foam that came back a row of discs, a mass that came back a hull,
-a halo that came back a cloud — at a cost of nothing; **the one plan object** shared by
-`cost`, `preview`, `rehearse` and `paint`; `at_value`, asked for nineteen planned values
-in one painting and landing every one to the hundredth; `compare({place: value})`, which
-carried two whole pictures with no photograph to lean on; the place vocabulary; the
-values view, called "the one that tells you the truth"; back to front and the
-inside-of-a-hollow-thing rule; the eight exercises, which cost two minutes and were
-repaid inside the first pass; and the habit of putting a measured number behind a rule —
-*"the numbers changed what I did in a way the prose beside them did not."*
+**Three things are defended above the rest, by every painter that names any:**
 
-Every row of *the shape each tool leaves behind* survived being measured.
+- **Rehearsal seeded as the next real strokes.** It is where the failures happen, at a
+  cost of nothing. A glow that came back a sun, foam that came back a row of discs, a
+  chartreuse searchlight, three flat slabs where a cylinder should have turned, a chisel
+  staircase, ten pots that were ten bricks, a staircased pool, a scumble that came back a
+  contour map, a scumble that buried four fingers whole, four white discs at the focal
+  point, a bowl three times too light. Counts, where a session kept them: 56, 92, about
+  40, and the hands session's **114 against 28 committed passes**. No painting on this
+  page has a repainted mass it rehearsed first. The tenth painter: *the single best thing
+  here, and it's not close.*
+- **`at_value`.** Asked for nine, nineteen and about twenty-five planned values in
+  different paintings and landing every one to the hundredth, including those approached
+  from above — and **raising** rather than clamping when the value is under the floor,
+  which two sessions named as the right behaviour unprompted.
+- **`compare({place: value})`.** It carried whole pictures with no photograph to lean on,
+  and finished their places inside `0.10`.
 
-**The tenth painter defended the same core unprompted**, and named three things it would
-not give up: rehearsal seeded as the next real strokes — *"the single best thing here,
-and it's not close"* — `cost_line` naming the lever rather than only the price, which
-turned a 130-stroke foliage pass into 38; and the engine's refusals, which it called
-teaching errors rather than failures, quoting the one that would not lay a glaze: *the
-paint under this film reads 0.412, at opacity 1.0 it reaches 0.496, a film can only
-travel between those two.* It added the property no earlier session names: the painting
-rebuilds from its own pass scripts, and every repair in it is a pass rather than an
-erasure. It hit five rows of *the shape each tool leaves behind* and defended the table.
+**What individual sessions added.** `cost_line` naming the lever rather than only the
+price, which turned a 130-stroke foliage pass into 38. The engine's refusals, called
+*teaching errors rather than failures* — the glaze that will not be laid says how far the
+paint under it can travel, and one painter says that ended the pass, the film not being
+needed at all. The post-pass check, described as *a linter for painting that fires at the
+moment you can still act*, and by a later session as the thing that taught it by naming
+the mark: *that is one disc printed seven times*. And determinism, leaned on hard enough
+to prove a finding with it: three independent clean rebuilds of one painting are
+byte-identical.
 
-**The fourth session defended the same list**, unprompted and before being asked for an
-opinion, and adds two notes to it. `at_value` was asked for about twenty-five planned
-values and landed every one to the hundredth, including the ones approached from above.
-And the plan object plus seeded rehearsal is the reason that session has six findings
-rather than six damaged passages: **every one of the failures described above was caught
-in a rehearsal and cost nothing** — the venetian-blind interior, the pale-slab
-reflection, the four smudge lobes, the beaded frame, the white cap on the figure's head,
-the amoeba puddle and the black-domino drain were all found, rewritten and found again
-without a stroke being charged for any of them. 56 rehearsals, no repainted mass, no
-`undo` called once. That is the same result the first three sessions reported, from a
-fourth painter who was told to expect it and still had not guessed which passes would
-go wrong.
-
-**The three greenhouse painters defended the same three things above all**, unprompted:
-the seeded rehearsal (a chartreuse searchlight of a beam twice, three flat slabs where a
-cylinder should have turned, a chisel staircase, ten pots that were ten bricks, a halo
-twice the size of the thing it surrounded, a stair read as a hose, a fog that was green
-— all caught on a copy, none charged; 92 and 20 rehearsal images between two of them);
-`at_value`, which landed about twenty-five planned values each to the hundredth and
-raised when asked for a value under the floor; and `compare({place: value})`, which
-carried three pictures with no photograph and finished all their places inside `0.10`.
-One of them leaned on determinism hard enough to prove the `undo` finding with it: three
-independent clean rebuilds of its painting are byte-identical.
-
-**The eighth session defended the same list**, in a critique written before it was shown
-the files it had not been given — and its list is the more interesting one, because it
-is the arm with the least context and it defended the same things anyway. The seeded
-rehearsal above everything: about forty of them, none charged, and every failure in its
-own account was found on a copy — a staircased pool, a combed roof, a rake of bristle
-marks where reflections should have been, a scumble that came back a contour map, a
-mute glaze that read as a dark post and was dropped rather than committed. `at_value`,
-which landed a nine-value plan to the hundredth and **raised** when asked for `0.135`
-against a floor of `0.136`, which that session named as the right behaviour unprompted.
-The values view, the one plan object, and the post-pass check, whose six rules it
-described as "a linter for painting that fires at the moment you can still act" and
-which it acted on every time it fired.
-
-It is also the first session in four rounds to repaint a mass, and its account says why
-without being asked: it chose a ground too light for the picture and found out at pass
-three, which is the one item on its list that was already solved in a painting it had
-not been allowed to read.
+**The two sessions with the least context defended the same list as the ones with the
+most** — the eighth, which had three files, and the twelfth, which had the wheel and
+nothing else. That is the part worth keeping: the core is not something a painter has to
+read the whole corpus to arrive at.
 
 ---
 
@@ -1314,47 +1206,42 @@ when the work was finished. What was worth keeping outlived it:
 - the releases are cut by version in [`CHANGELOG.md`](CHANGELOG.md), which is where to
   look for *which defaults moved*.
 
-**Twenty-eight of the painters' own claims have been re-measured before anything was
-built on them, and seven did not survive.** All seven are recorded above where the fix
-is — the
+**Thirty of the painters' own claims have been re-measured before anything was built on
+them, and eight did not survive.** All eight are recorded above where the fix is — the
 clean contour spilling further than the ragged fill it replaced, the smudge on a slope
 that turned out to be a smudge on a bend, the rendered view that turned out not to lift
 a solid mass at all, the bare boundary at `overhang=0` that turned out to be the comb
 and the brush running dry, the direction sequence that turned out to be priced as a
 sum rather than at its steepest angle, the `rough` ground that turned out not to be
-what a ripple metric was reading, and the `size` threshold that turned out to be a
-pixel threshold. That is `LESSONS.md`'s *check the painters'
-numbers* working as intended, and it is worth noticing **what kind** of claim fails it:
-six of the seven were reported as *observed* — a rehearsal showed it plainly and no
-number was taken — and reasoned back to a mechanism that sounded right. The nine from
-the greenhouse round all held, and two of them held with the wrong mechanism attached —
-the pencil that "advances the stream" advances the log index, and the undo that lost
-"the stream or the wet layer" was losing the stream *and* the log's precision — which is
-the other thing the check is for. A claim that survives it is usually worth more
+what a ripple metric was reading, the `size` threshold that turned out to be a
+pixel threshold, and the sampled spread whose two populations turned out to overlap.
+That is `LESSONS.md`'s *check the painters' numbers* working as intended, and it is
+worth noticing **what kind** of claim fails it: six of the eight were reported as
+*observed* — a rehearsal showed it plainly, no number was taken, and the painter
+reasoned back to a mechanism that sounded right. The nine from the greenhouse round all
+held, and two held with the wrong mechanism attached — the pencil that "advances the
+stream" advances the log index, and the undo that lost "the stream or the wet layer" was
+losing the stream *and* the log's precision. A claim that survives is usually worth more
 afterwards, because the re-measurement says what it is really about.
 
-**One of the seven is the sharpest case the page has, because the painter called it.**
-The eighth session labelled its own mechanism *observed and offered as a guess, which
-this page's own record suggests is the half most likely to be wrong*, and it was; its
-three costs reproduced to the stroke, and the ninth session re-measured the mechanism
-and settled it. A session that can tell which half of its own finding is load-bearing
-is doing the check's work before the check runs, and the register should say so: that
-labelling is worth asking of every round from here.
+**The sharpest case the page has is the one the painter called on itself.** The eighth
+session labelled its own mechanism *observed and offered as a guess, which this page's
+own record suggests is the half most likely to be wrong*, and it was; its three costs
+reproduced to the stroke, and the ninth session settled the mechanism against it. Every
+round since has arrived with that labelling done, which is what makes the re-measurement
+cheap: it says where to look first.
 
-**The tenth round is the first to arrive with the labelling already done**, which is
-what that paragraph asked for. Three of its fourteen items carry a measurement taken on
-its own finished session file — the rehearse-path check bug, reproduced from the CLI
-both ways; the depth-order violation, `0.089` on a named bar; and the buried ground,
-`0.07%` of the canvas against a bare reference — and the other eleven say *observed*.
-One says outright that it is the half most likely to be wrong. **None of it has been
-re-measured by anybody else yet**, which is the difference between that section and
-every other on this page.
-
-**And the seventh is the one that was neither observed nor guessed.** *A warning when
-an oriented tip is handed a `size` under about `0.008`* came with a measured table
-behind it and still had to be rebuilt, because the table was taken on one canvas and
-the threshold is in pixels — the same `size` is 2.4px on a 300px canvas and 9.6px on a
-1200px one. **A measurement is only as general as the conditions it was taken under**,
-which is the rule at the top of `CALIBRATION.md` arriving from the other direction: it
-asks every number to state what it was measured on, and this is what happens when a
-number states it and the *proposal* forgets.
+**And two of the eight were neither observed nor guessed: they were measured, and the
+measurement was not general.** *A warning when an oriented tip is handed a `size` under
+about `0.008`* came with a table behind it and still had to be rebuilt, because the
+table was taken on one canvas and the threshold is in pixels — the same `size` is 2.4px
+on a 300px canvas and 9.6px on a 1200px one. The hands session's *the two populations do
+not overlap* is the same shape one round later: four places on one canvas, every number
+of which reproduces, and the separation between them vanishes at 226 places on two
+paintings — with a mass handed in whole, which is the remedy the warning names, landing
+on the wrong side of the line. **A measurement is only as general as the conditions it
+was taken under**, which is the rule at the top of `CALIBRATION.md` arriving from the
+other direction: it asks every number to state what it was measured on, and this is what
+happens when a number states it and the *proposal* forgets. Both were built, neither as
+asked, and in both cases the thing that fixed the proposal was measuring the *same*
+claim over more of the same kind of thing — which is cheap, and is now the habit.

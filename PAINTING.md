@@ -581,6 +581,8 @@ s.look(reference="ref.jpg")               # reference beside your painting
 s.look(scale=None)                        # full resolution
 s.look(region=cell("D4"), reference="ref.jpg", grid="fine")   # both panels, tenths
 s.look(sketch=False)                      # hide the pencil underdrawing
+s.look(marks=False)                       # hide the landmark labels
+s.look(impasto=False)                     # hide the relief: flat colour, no paint height
 ```
 
 A `region=` crop is at full resolution, and a small one is enlarged so that a single
@@ -590,10 +592,13 @@ anywhere: `region="D4"`, `region="C3:F6"`, `region="upper-band"`.
 
 Each look writes a numbered PNG under `out/` and returns the path; rehearsals have
 their own run of numbers, so a pass can be tried three ways and the three put side by
-side. The numbering belongs to the session, so **give each painting its own
-directory**, or a second painting silently overwrites the first's whole record of
-itself. Use `values=True` far more often than feels necessary, and `diff=True` after a
-pass to confirm you changed what you meant to and nothing else. When a mark seems to
+side. The numbering comes from **what is already in the directory**, so two sessions
+sharing one do not write over each other — but they do interleave, and `path=` is what
+makes nine looks tellable apart afterwards. `marks=False` and `sketch=False` take the
+scaffolding off before you judge the picture: a landmark label sitting on the focal
+point is not something you stop seeing. Use `values=True` far more often than feels
+necessary, and `diff=True` after a pass to confirm you changed what you meant to and
+nothing else. When a mark seems to
 have gone missing, `s.log()` says how much paint each one laid and prints `NO PAINT
 LANDED` for one that changed nothing — usually an opacity of zero, or a glaze into
 paint that is still wet.

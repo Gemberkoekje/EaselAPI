@@ -78,7 +78,13 @@ arrived at their convention on its own.
 - A stroke budget was written down first, along with a value plan, and both were
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
-  painting; run them against a fresh session and the same PNG comes back.
+  painting — **but whether they rebuild it byte for byte is a claim each one makes for
+  itself**, in its own `Reproducible` row below, and seven of the fourteen do not make
+  it. What holds everywhere is that a *saved* painting replays as it was painted: a
+  stroke's randomness comes from `(seed, stroke index)`, and golden-image tests hold
+  that. A rebuild from the committed scripts is a different thing, and a drawing pass
+  re-run, a `look` script laid between two painting ones, or a pass edited after its
+  rehearsal is enough to move it.
 
 **One thing the convention gets wrong, and it is worth knowing before you copy it.**
 Numbered pass scripts make the drawing `p1_draw.py`, and once it is pass 1 it is
@@ -597,8 +603,8 @@ That is the finding, and it is the first on this page aimed at the picture rathe
 the marks: nothing in the method asks whether the reason you chose the subject survived.
 The checklist asks whether the thing you measured most carefully is still attached, which
 is a question about a mark. Its round in [`SUGGESTIONS.md`](SUGGESTIONS.md) proposes the
-two lines that would have caught it — one in the plan, one at the end — and is open at the
-time of writing.
+two lines that would have caught it — one in the plan, one at the end — and both shipped
+in 0.5.0.
 
 By its own account it also leaves the pilings as slabs, cylinders painted as rectangles
 with a stripe down one side that never turn from lit to shadow; crushes almost the whole

@@ -150,3 +150,140 @@ def _cli_options() -> set[str]:
 @pytest.mark.parametrize("flag", sorted(set(re.findall(r"--[a-z][a-z-]+", TEXT))))
 def test_every_flag_the_reference_prints_is_a_flag(flag):
     assert flag in _cli_options()
+
+
+# -- the signature lines, against the signatures ------------------------------------------
+#
+# `look(marks=)` and `look(impasto=)` shipped in 0.4.0 and were named in none of the
+# five documents: this page's signature line listed eight of the ten parameters and
+# stopped. A painter placed six landmarks, judged the picture through fifty-two looks
+# with their labels drawn over it, and never found the way to turn them off -- having
+# found `unguide()` for the scaffolding, because that one *is* named. That was the
+# second of its kind, and the first fix, a sentence, did not generalise: these lines
+# are hand-maintained, and one had been wrong since the parameter shipped.
+#
+# So the page's own claim is the test. It says it checks *every name a painter can
+# say*, and a parameter is the kind of name a painter types. Two checks, because the
+# page names a parameter in two ways and each misses what the other catches: the
+# spelled-out calls have to be complete where they stand, and every call anywhere on
+# the page has to have all of its parameters somewhere in the page's code.
+
+def _documented_calls() -> list[tuple[str, object]]:
+    """Every public call the page is answerable for, as (label, function).
+
+    Everything on :class:`Session` and :class:`Palette` that does not start with an
+    underscore, plus the shape and place constructors and ``Session(...)`` itself --
+    not only the calls the page happens to have written out. That is the page's own
+    claim, and it means **a new public parameter fails this file until it is
+    documented**, which is the point: the one that raised it had shipped a release
+    earlier and nobody noticed.
+    """
+    import easel
+    from easel.palette import Palette
+    from easel.session import Session
+
+    out = [("Session", Session.__init__)]
+    for prefix, owner in (("s.", Session), ("p.", Palette)):
+        for name in dir(owner):
+            fn = getattr(owner, name, None)
+            if not name.startswith("_") and callable(fn):
+                out.append((f"{prefix}{name}", fn))
+    for name in ("polygon", "ellipse", "blob", "hull", "ribbon", "union",
+                 "cell", "span", "region", "horizon", "between", "thirds", "golden"):
+        out.append((name, getattr(easel, name)))
+    return out
+
+
+def _optional(fn) -> list[str]:
+    """The parameters a painter passes by name: the ones with a default.
+
+    A required argument is shown by example instead -- `s.export("painting.png")` --
+    so asking for its name back would be asking the page to write Python twice.
+    """
+    import inspect
+
+    try:
+        params = inspect.signature(fn).parameters.values()
+    except (TypeError, ValueError):  # pragma: no cover - a builtin sneaking in
+        return []
+    return [p.name for p in params
+            if p.name != "self"
+            and p.default is not inspect.Parameter.empty
+            and p.kind is not inspect.Parameter.VAR_KEYWORD]
+
+
+#: The page's code and nothing else: every fenced block, plus every inline span. A
+#: parameter has to be named *as code* -- `path`, `name`, `size` and `note` are all
+#: ordinary English, and prose that happens to contain one is not documentation of it.
+CODE = "\n".join(re.findall(r"```[a-z]*\n(.*?)```", TEXT, re.S)
+                  + re.findall(r"`([^`\n]+)`", TEXT))
+
+CALLS = _documented_calls()
+
+
+@pytest.mark.parametrize("label,fn", CALLS, ids=[c[0] for c in CALLS])
+def test_every_parameter_a_painter_can_name_is_somewhere_on_the_page(label, fn):
+    """The whole page is the scope here: `sweep` takes twelve optional arguments and
+    the page spells them out in a table under the verb rather than on one line."""
+    missing = [p for p in _optional(fn)
+               if not re.search(rf"(?<![\w.]){re.escape(p)}\b", CODE)]
+    assert not missing, (
+        f"REFERENCE.md never names {', '.join(missing)}, which {label} takes. "
+        f"A parameter nobody can find is a parameter nobody has."
+    )
+
+
+def _spelled_out() -> list[tuple[str, object, str]]:
+    """The calls the page writes out as a signature, as (label, fn, the call itself).
+
+    The scope is the call and nothing around it -- its own line, the lines it is
+    continued onto, and the comment on the end of them. Anything wider does not
+    hold: the *Looking* block alone spells out fifteen calls, and `export`'s
+    `impasto=` four lines down was enough to make the missing one on `look` read as
+    documented.
+    """
+    known = dict(_documented_calls())
+    found: dict[str, tuple] = {}
+    for chunk in TEXT.split("```python")[1:]:
+        lines = chunk.partition("```")[0].splitlines()
+        for i, line in enumerate(lines):
+            head = line.strip()
+            label = head.split("(")[0]
+            if label not in known or "(" not in head:
+                continue
+            if "=" not in head.split("(", 1)[1]:
+                # Not a signature: a call written out as an example takes its
+                # arguments positionally, and has nothing to be complete about.
+                continue
+            call = [line]
+            while "".join(call).count("(") > "".join(call).count(")"):
+                i += 1
+                if i >= len(lines):
+                    break
+                call.append(lines[i])
+            found.setdefault(label, (label, known[label], "\n".join(call)))
+    return sorted(found.values(), key=lambda row: row[0])
+
+
+SPELLED = _spelled_out()
+
+
+def test_the_page_still_spells_out_the_calls_this_is_about():
+    """A guard on the guard: a scrape that stops finding lines passes by finding
+    nothing to check."""
+    names = {label for label, _, _ in SPELLED}
+    assert {"s.look", "s.compare", "s.prepare", "p.at_value", "ellipse"} <= names
+    assert len(SPELLED) >= 12, sorted(names)
+
+
+@pytest.mark.parametrize("label,fn,call", SPELLED, ids=[c[0] for c in SPELLED])
+def test_a_spelled_out_signature_names_all_of_it(label, fn, call):
+    """`look(impasto=)` is the case the check above misses: `impasto` *is* named on
+    the page, on `export`'s line, and was missing from the one call a painter reads
+    to find out what looking can do."""
+    missing = [p for p in _optional(fn)
+               if not re.search(rf"(?<![\w.]){re.escape(p)}\b", call)]
+    assert not missing, (
+        f"REFERENCE.md writes {label} out in full and leaves out "
+        f"{', '.join(missing)}:\n{call}"
+    )
