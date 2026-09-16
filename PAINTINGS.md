@@ -693,7 +693,7 @@ left as a straight band.
 | Canvas | 1200×800, linen, `toned_grey` ground, seed 42 |
 | Spent | 50 strokes of a 120 budget |
 | Reproducible | One script (`sunset_paint.py`) rebuilds the PNG from a fresh session; `make_timelapse.py` regenerates the GIF |
-| Files | [`paintings/BigPickle_blind/sunset_landscape/`](paintings/BigPickle_blind/sunset_landscape) — [notes](paintings/BigPickle_blind/sunset_landscape/NOTES.md), [time-lapse](paintings/BigPickle_blind/sunset_landscape/painting.gif) |
+| Files | [`paintings/BigPickle_blind/sunset_landscape/`](paintings/BigPickle_blind/sunset_landscape) — [notes](paintings/BigPickle_blind/sunset_landscape/NOTES.md), [time-lapse](paintings/BigPickle_blind/sunset_landscape/painting.gif), [verdict](paintings/BigPickle_blind/sunset_landscape/verdict.md) |
 
 Its own `report()` found what painting without looking predicts: 30 of 44 long marks
 running within six degrees of horizontal, and 31.94% of the canvas still bare ground
@@ -718,7 +718,7 @@ the light, not the boat.
 | Canvas | 1024×768, linen, `toned_grey` ground, seed 7 |
 | Spent | 68 strokes of a 300 budget |
 | Reproducible | Five pass scripts rebuild it from `prelude.py` against a fresh session |
-| Files | [`paintings/Deepseek/tidal_sky/`](paintings/Deepseek/tidal_sky) — [notes](paintings/Deepseek/tidal_sky/NOTES.md), [time-lapse](paintings/Deepseek/tidal_sky/painting.gif) |
+| Files | [`paintings/Deepseek/tidal_sky/`](paintings/Deepseek/tidal_sky) — [notes](paintings/Deepseek/tidal_sky/NOTES.md), [time-lapse](paintings/Deepseek/tidal_sky/painting.gif), [verdict](paintings/Deepseek/tidal_sky/verdict.md), [what painting felt like](paintings/Deepseek/tidal_sky/feelings.md) |
 
 Its [notes](paintings/Deepseek/tidal_sky/NOTES.md) record a glitter path that first read
 as floating rectangles — vertical `flat` strokes tilted across the water, printing the
@@ -743,7 +743,7 @@ glassy lake mirroring it back, broken by a shimmering glitter path toward the vi
 | Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 42 |
 | Spent | 725 marks, no stroke budget set |
 | Reproducible | One script (`paint_dawn_forest.py`) rebuilds it deterministically |
-| Files | [`paintings/Gemini/misty_pine_forest_at_dawn/`](paintings/Gemini/misty_pine_forest_at_dawn) — [notes](paintings/Gemini/misty_pine_forest_at_dawn/NOTES.md), [time-lapse](paintings/Gemini/misty_pine_forest_at_dawn/painting.gif) |
+| Files | [`paintings/Gemini/misty_pine_forest_at_dawn/`](paintings/Gemini/misty_pine_forest_at_dawn) — [notes](paintings/Gemini/misty_pine_forest_at_dawn/NOTES.md), [time-lapse](paintings/Gemini/misty_pine_forest_at_dawn/painting.gif), [verdict](paintings/Gemini/misty_pine_forest_at_dawn/verdict.md) |
 
 Its [notes](paintings/Gemini/misty_pine_forest_at_dawn/NOTES.md) name two shapes the
 engine keeps producing when asked for radiating light: linear strokes out from a point
@@ -770,7 +770,7 @@ one of six places within `0.10`.
 | Canvas | 1024×768, linen, `#2e332c` ground, seed 7 |
 | Spent | 126 strokes of a 300 budget |
 | Reproducible | Seven pass scripts (plus a free graphite `draw.py`) rebuild it from `prelude.py` |
-| Files | [`paintings/GLM/terminal_window/`](paintings/GLM/terminal_window) — [notes](paintings/GLM/terminal_window/NOTES.md), [time-lapse](paintings/GLM/terminal_window/painting.gif) |
+| Files | [`paintings/GLM/terminal_window/`](paintings/GLM/terminal_window) — [notes](paintings/GLM/terminal_window/NOTES.md), [time-lapse](paintings/GLM/terminal_window/painting.gif), [verdict](paintings/GLM/terminal_window/verdict.md) |
 
 Its [notes](paintings/GLM/terminal_window/NOTES.md) record a halo that came back ringed —
 crossing glazes over a block-in still wet, printing concentric rings — and cost the one
