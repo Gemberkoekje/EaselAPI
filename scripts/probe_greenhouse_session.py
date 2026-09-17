@@ -2,7 +2,7 @@
 
 Three painters were handed one subject -- a lighthouse half way through becoming a
 greenhouse -- and left three request lists beside their paintings under
-``paintings/lighthouse_greenhouse/``. Two of the three carried probes of their own;
+``paintings/Claude/lighthouse_greenhouse/``. Two of the three carried probes of their own;
 this script re-measures every claim the round was built on, on the engine as it now
 is, and prints the numbers quoted in ``CALIBRATION.md``, ``SUGGESTIONS.md`` and the
 docstrings the round changed.

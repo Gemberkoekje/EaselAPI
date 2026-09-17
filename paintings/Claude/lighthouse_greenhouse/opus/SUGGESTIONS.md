@@ -1,7 +1,7 @@
 # What this painting would change
 
 The Opus attempt at the greenhouse subject, 296 strokes of 300, in
-[`paintings/lighthouse_greenhouse/opus/`](.). This is its list, in the shape the
+[`paintings/Claude/lighthouse_greenhouse/opus/`](.). This is its list, in the shape the
 repository's own [`SUGGESTIONS.md`](../../../SUGGESTIONS.md) keeps: **what was
 wrong, and what I would do about it.** Nothing here is done — that file is a
 register of completed work and this is a request against it, left beside the

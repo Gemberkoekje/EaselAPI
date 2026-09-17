@@ -201,7 +201,7 @@ def probe_low_key_ground() -> None:
 # -- 5. the pairs question, on the plan this session wrote ---------------------------------
 def probe_plan_pairs() -> None:
     print("\n== compare({place: value}) on the empty canvas ==")
-    print("  the eighth session's own nine-value plan, off paintings/pool_night/, run")
+    print("  the eighth session's own nine-value plan, off paintings/Claude/pool_night/, run")
     print("  through the question it never asked.")
     plan = {
         Region(0.0, 0.0, 1.0, 0.25, "roof dark"): 0.16,

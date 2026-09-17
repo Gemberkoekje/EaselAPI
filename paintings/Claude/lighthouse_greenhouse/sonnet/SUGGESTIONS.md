@@ -9,7 +9,7 @@ for a reader to discover: the subject (a lighthouse mid-conversion into a greenh
 given, not chosen unprompted or against a reference photograph; nothing here was
 re-measured the way `LESSONS.md`'s *check the painters' numbers* asks for; and this
 session read `PAINTER.md`, `PAINTING.md`, `RECIPES.md`, `REFERENCE.md`, and — because the
-subject was already decided — `paintings/lighthouse_dusk/` in full, before painting. It
+subject was already decided — `paintings/Claude/lighthouse_dusk/` in full, before painting. It
 did **not** open `CALIBRATION.md` until writing this file, and only then to check whether
 what follows was already known. `../../../SUGGESTIONS.md` and `LESSONS.md` were both read
 only after the painting was finished, at the request that produced this file — so nothing

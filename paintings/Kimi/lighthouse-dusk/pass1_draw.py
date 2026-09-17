@@ -1,0 +1,10 @@
+# Pass 1: graphite only. Find the horizon, the point, and the tower before paint.
+s.guide([(0.02, 0.505), (0.42, 0.525), (0.78, 0.505), (1.02, 0.530)], note="horizon")
+s.guide([s.pt("lamp"), (0.44, 0.330), s.pt("beam_far")], note="beam")
+s.pencil([(0.02, 0.505), (0.42, 0.525), (0.78, 0.505), (1.02, 0.530)], pressure=0.45)
+s.pencil(rock_point().closed, pressure=0.60, smooth=False)
+s.pencil(tower().closed, pressure=0.65, smooth=False)
+s.pencil(gallery().closed, pressure=0.55, smooth=False)
+s.pencil(lantern().closed, pressure=0.55, smooth=False)
+s.pencil(cap().closed, pressure=0.55, smooth=False)
+s.look(grid=True, path="pass1_draw.png")

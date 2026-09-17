@@ -172,7 +172,7 @@ subject was fixed before the repository was opened.
 - [`probes/probe_pass_texture.py`](probes/probe_pass_texture.py) — peak-to-peak of the pass
   structure on the tower and the sea.
 
-**Layout note.** This painting lives in `paintings/lighthouse_greenhouse/fable/` rather than
+**Layout note.** This painting lives in `paintings/Claude/lighthouse_greenhouse/fable/` rather than
 directly under `paintings/`, at the owner's request, so `PAINTINGS.md` and `README.md` do
 not index it and `p14_export.py` writes into this subfolder. If it is ever promoted to a
 first-class example, that export path and the two index files are the only things to

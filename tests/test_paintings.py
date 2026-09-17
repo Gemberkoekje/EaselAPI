@@ -46,15 +46,20 @@ LINKED = ("painting.png", "painting.gif", "NOTES.md")
 MARKS = LINKED + ("prelude.py",)
 
 
-def _paintings(under: Path, depth: int = 1) -> list[str]:
+def _paintings(under: Path, depth: int = 2) -> list[str]:
     """Every painting under `paintings/`, as a path relative to it.
 
-    One *subject* may have been painted more than once -- `paintings/<subject>/
-    <painter>/` -- so a directory under `paintings/` is a painting if it looks
-    like one, and a container to descend into if it does not. Before the
-    greenhouse was painted twice this was a flat listing of `paintings/*`, and
-    a nested painting was invisible to every check below while making the
-    container fail all of them.
+    A directory under `paintings/` is a painting if it looks like one, and a
+    container to descend into if it does not. One *subject* may have been
+    painted more than once -- `paintings/<subject>/<painter>/` -- and every
+    painting also sits under the model that painted it --
+    `paintings/<model>/<subject>/` -- so a subject one model painted more than
+    once nests to `paintings/<model>/<subject>/<painter>/`, two containers
+    deep. Before the greenhouse was painted twice this was a flat listing of
+    `paintings/*`, and a nested painting was invisible to every check below
+    while making the container fail all of them; before the paintings were
+    grouped by model this needed one container less than it does now, for the
+    same reason.
     """
     found = []
     for d in sorted(p for p in under.iterdir() if p.is_dir()):
@@ -136,7 +141,7 @@ def test_the_page_does_not_count_its_paintings(phrase: str) -> None:
 # that needs paint underneath raises the same way in both runs and is skipped: what is
 # being held is that counting changes nothing, not that a pass runs out of order.
 
-GREENHOUSE = PAINTINGS / "greenhouse_winter"
+GREENHOUSE = PAINTINGS / "Claude" / "greenhouse_winter"
 PASSES = sorted(GREENHOUSE.glob("p[0-9]*.py"),
                 key=lambda p: int(re.match(r"p(\d+)", p.name).group(1)))
 

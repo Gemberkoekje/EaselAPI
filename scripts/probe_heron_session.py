@@ -6,8 +6,8 @@ arm again, with the symptom index added. It painted the subject twice, and the t
 paintings together left four engine items and ten documentation items.
 
 The session's own probes sit beside its paintings
-(``paintings/heron_lot/1/probe_seq.py``, ``probe_seq2.py``, ``probe_band.py`` and
-``paintings/heron_lot/2/probe_cover.py``); ``probe_band.py`` needs a session file that
+(``paintings/Claude/heron_lot/1/probe_seq.py``, ``probe_seq2.py``, ``probe_band.py`` and
+``paintings/Claude/heron_lot/2/probe_cover.py``); ``probe_band.py`` needs a session file that
 is not committed, and the rest run. This script re-measures every claim the round was
 built on, on the engine as it now is, and prints the numbers quoted in
 ``CALIBRATION.md``, ``SUGGESTIONS.md`` and the docstrings the round changed.

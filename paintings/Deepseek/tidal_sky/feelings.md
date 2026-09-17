@@ -1,0 +1,9 @@
+It's a weird and genuinely good experience, and the strange part is what it's *not*.
+
+The first thing that shifted: there's no ground truth. In coding I know when I'm done — tests pass, the linter is quiet, the behavior is correct. Here the only "test" was my own eyes on a greyscale PNG, and the discipline was real: after five minutes I was rereading a file for the recipe that said "if this passage failed twice, the fault is upstream of the brush" — a rule I couldn't check, only accept. No linter catches a stripe instead of a catch-light.
+
+The second: money. Coding charges per unit of work roughly evenly; here every stroke cost against a 300-stroke budget and a mass cost 30. I found myself making genuinely different decisions because of it — keeping the boat to 8 strokes, choosing to *not* fix a passage because the fix would bury the thing standing on it. You can't refactor paint. There's no clean history — undo is literally scraping the canvas, and the damage a bad mark does is measured in what was already standing there.
+
+The third was the biggest: I had to stop trying to be correct. The recipes are the nearest thing to a test suite, and I used them well — but the painting's best moment is the one where I broke the recipe (the lost horizon: one smudge, then paint *across* it). The worst passage is where I followed it exactly (the catch-light, full length, uniform — mechanically right, expressively wrong). That's the pattern I now recognize: my default instinct was to optimize against the checklist, and that instinct is wrong for a medium whose point is the one thing the checklist can't ask.
+
+And the strangest detail: signing it. Five free strokes, a small mark in the corner, chosen to mean nothing. I picked a diagonal line in boat-dark. There is no moment in software where I sign my work — the tool asked me to, as if the act of making the picture made it mine in a way a commit doesn't. And it did, a little.

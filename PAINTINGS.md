@@ -117,7 +117,7 @@ order followed rather than the convention's.
 
 ![Inside a car wash seen from the driver's seat: a magenta foam arch overhead, a bloom
 of white light down the tunnel, a red stop light, and a foam-covered side brush swinging
-in from the right, past a steering wheel and rear-view mirror](paintings/car_wash/painting.png)
+in from the right, past a steering wheel and rear-view mirror](paintings/Claude/car_wash/painting.png)
 
 The view out of a windscreen mid-cycle: a magenta foam arch overhead, a bloom of white
 light down the tunnel, a red stop light, and a foam-smothered side brush swinging in
@@ -131,9 +131,9 @@ hard edge except the things inside the car.
 | Sittings | Two — it stopped at 185 strokes, then resumed for the passage it had named as its own weakest |
 | Rehearsed and thrown away | 38 marks, none of them charged |
 | Reproducible | Nineteen pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`paintings/car_wash/`](paintings/car_wash) — [notes](paintings/car_wash/NOTES.md), [time-lapse](paintings/car_wash/painting.gif) |
+| Files | [`paintings/Claude/car_wash/`](paintings/Claude/car_wash) — [notes](paintings/Claude/car_wash/NOTES.md), [time-lapse](paintings/Claude/car_wash/painting.gif) |
 
-The [notes](paintings/car_wash/NOTES.md) are the useful part. They record the first
+The [notes](paintings/Claude/car_wash/NOTES.md) are the useful part. They record the first
 bloom coming back as a daisy, the first arch turning the picture into a landscape, three
 round marks reading as pills and then as stickers, a curved mass laid in horizontal
 passes arriving as a staircase, and two smudges dragging finger-shaped lobes of glass
@@ -144,7 +144,7 @@ at all, and far over it the mass stops separating from what is behind it.
 ## Three pears on a kitchen windowsill
 
 ![Three ripe pears on a kitchen windowsill in late-afternoon light, a chipped blue enamel
-mug behind them and a half-drawn curtain at the right](paintings/windowsill_pears/painting.png)
+mug behind them and a half-drawn curtain at the right](paintings/Claude/windowsill_pears/painting.png)
 
 Three ripe pears in late-afternoon light, a chipped blue enamel mug behind them, a
 half-drawn curtain at the right, the sun coming in low through the window.
@@ -154,7 +154,7 @@ half-drawn curtain at the right, the sun coming in low through the window.
 | Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 11 |
 | Spent | 224 strokes, plus two signature marks that did not count |
 | Reproducible | Seventeen pass scripts rebuild it from a fresh session |
-| Files | [`paintings/windowsill_pears/`](paintings/windowsill_pears) — [notes](paintings/windowsill_pears/NOTES.md), [time-lapse](paintings/windowsill_pears/painting.gif) |
+| Files | [`paintings/Claude/windowsill_pears/`](paintings/Claude/windowsill_pears) — [notes](paintings/Claude/windowsill_pears/NOTES.md), [time-lapse](paintings/Claude/windowsill_pears/painting.gif) |
 
 Five masses were repainted while nothing stood on them yet: a stripy saturated curtain
 redone quiet and grey, a sill too orange and its top edge twice, cast shadows that went
@@ -168,7 +168,7 @@ done.
 
 ![A lighthouse on a rocky headland at dusk: a white tower with a red band standing in
 dark rock on the left, its lamp lit, an orange afterglow along the right-hand horizon
-reflected in a calm sea, and a crescent moon in the upper right](paintings/lighthouse_dusk/painting.png)
+reflected in a calm sea, and a crescent moon in the upper right](paintings/Claude/lighthouse_dusk/painting.png)
 
 The sun has just gone down off the right edge. The afterglow lies along the horizon and
 its reflection under it; the tower's right side takes the last warm light and its left
@@ -181,9 +181,9 @@ lantern; a crescent moon hangs over the glow.
 | Spent | 184 strokes of a 300 budget, plus one signature mark that did not count |
 | Rehearsed and thrown away | Eighteen rehearsal runs, none of them charged |
 | Reproducible | Ten pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`paintings/lighthouse_dusk/`](paintings/lighthouse_dusk) — [notes](paintings/lighthouse_dusk/NOTES.md), [time-lapse](paintings/lighthouse_dusk/painting.gif) |
+| Files | [`paintings/Claude/lighthouse_dusk/`](paintings/Claude/lighthouse_dusk) — [notes](paintings/Claude/lighthouse_dusk/NOTES.md), [time-lapse](paintings/Claude/lighthouse_dusk/painting.gif) |
 
-The [notes](paintings/lighthouse_dusk/NOTES.md) record an afterglow that came back as a
+The [notes](paintings/Claude/lighthouse_dusk/NOTES.md) record an afterglow that came back as a
 solid yellow sun three times before it was laid as passes with no outline, a headland
 built three times before it was built from the planes rock is made of, a halo that
 arrived as a dark cloud with a bulb in it, and a beam rehearsed twice and dropped. They
@@ -197,7 +197,7 @@ starts at the right-hand edge. Both are documented now: the first has a verb of 
 ![A laundromat at night seen from the sidewalk opposite: a wide lit shopfront window set
 in a dark building, a row of washing machines with round doors inside it, one person
 sitting alone at the right-hand end, and the window's light broken into streaks down a
-wet road in the foreground](paintings/laundromat_night/painting.png)
+wet road in the foreground](paintings/Claude/laundromat_night/painting.png)
 
 One lit window in a dark street. The shopfront is the only light in the picture except a
 sodium lamp off-canvas to the right; inside it a run of machines, a folding table and a
@@ -212,9 +212,9 @@ every mass would have been a hole in one.
 | Spent | 286 strokes of a 300 budget, plus two signature marks that did not count |
 | Rehearsed and thrown away | 56 rehearsal runs, none of them charged |
 | Reproducible | Fourteen pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`paintings/laundromat_night/`](paintings/laundromat_night) — [notes](paintings/laundromat_night/NOTES.md), [time-lapse](paintings/laundromat_night/painting.gif) |
+| Files | [`paintings/Claude/laundromat_night/`](paintings/Claude/laundromat_night) — [notes](paintings/Claude/laundromat_night/NOTES.md), [time-lapse](paintings/Claude/laundromat_night/painting.gif) |
 
-The [notes](paintings/laundromat_night/NOTES.md) record a lit interior that came back a
+The [notes](paintings/Claude/laundromat_night/NOTES.md) record a lit interior that came back a
 venetian blind and then a slab, a reflection that flooded the whole foreground, four
 smudges that dragged pale finger-shaped lobes out of the glow, a window frame beaded
 into chains of blocks by a default jitter wider than its own members, and a rim light
@@ -246,18 +246,18 @@ where the subject is held still, and the differences below are the painters'.
 rock, a black zig-zag switchback stair crossing it with round orange-and-green pots on
 the treads, green growth trailing down the shaft, a glazed lamp room full of green at
 the top, and a broad pale beam going up to the
-right](paintings/lighthouse_greenhouse/sonnet/painting.png)
+right](paintings/Claude/lighthouse_greenhouse/sonnet/painting.png)
 
 | | |
 |---|---|
 | Canvas | 1024×768, linen, `cool_grey` ground, seed 74 |
 | Spent | 274 strokes of a 340 budget, plus one signature mark that did not count |
 | Reproducible | Nine pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`sonnet/`](paintings/lighthouse_greenhouse/sonnet) — [notes](paintings/lighthouse_greenhouse/sonnet/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/sonnet/painting.gif), [what it would change](paintings/lighthouse_greenhouse/sonnet/SUGGESTIONS.md) |
+| Files | [`sonnet/`](paintings/Claude/lighthouse_greenhouse/sonnet) — [notes](paintings/Claude/lighthouse_greenhouse/sonnet/NOTES.md), [time-lapse](paintings/Claude/lighthouse_greenhouse/sonnet/painting.gif), [what it would change](paintings/Claude/lighthouse_greenhouse/sonnet/SUGGESTIONS.md) |
 
 No pencil at all: the composition was checked with `preview()` and `cost()` against the
 grid instead of graphite, on the argument that a rejected polygon is a one-line edit and
-a rejected pencil line is an `erase()`. Its [notes](paintings/lighthouse_greenhouse/sonnet/NOTES.md)
+a rejected pencil line is an `erase()`. Its [notes](paintings/Claude/lighthouse_greenhouse/sonnet/NOTES.md)
 record a switchback stair drawn as one bent `ribbon` that `cost()` priced at 141 strokes
 of a 340 budget before one was spent — and came in at five once it was cut into straight
 flights, which is the guide's own worked example reproduced almost exactly, caught for
@@ -268,7 +268,7 @@ free.
 ![A lighthouse in thick fog, half converted into a greenhouse: the lamp room at the top
 is packed with dark tomato vine pressing against the glass, terracotta pots stand on the
 turns of the outside stair spiralling down the tower, and the lamp still throws a
-green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/opus/painting.png)
+green-tinted beam out across a foggy sea](paintings/Claude/lighthouse_greenhouse/opus/painting.png)
 
 | | |
 |---|---|
@@ -276,13 +276,13 @@ green-tinted beam out across a foggy sea](paintings/lighthouse_greenhouse/opus/p
 | Spent | 296 strokes of a 300 budget, plus one signature mark that did not count |
 | Rehearsed and thrown away | Every pass, most three or four times; 92 rehearsal images, none charged |
 | Reproducible | Eleven pass scripts rebuild the PNG **byte for byte**, verified by sha256 |
-| Files | [`opus/`](paintings/lighthouse_greenhouse/opus) — [notes](paintings/lighthouse_greenhouse/opus/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/opus/painting.gif), [what it would change](paintings/lighthouse_greenhouse/opus/SUGGESTIONS.md) |
+| Files | [`opus/`](paintings/Claude/lighthouse_greenhouse/opus) — [notes](paintings/Claude/lighthouse_greenhouse/opus/NOTES.md), [time-lapse](paintings/Claude/lighthouse_greenhouse/opus/painting.gif), [what it would change](paintings/Claude/lighthouse_greenhouse/opus/SUGGESTIONS.md) |
 
 This one got the beam the earlier lighthouse rehearsed twice and dropped, and for the
 reason that one could not: a beam over clear sky has only a glaze, and a beam in fog is a
 mass of lit air. It cost two rehearsals to find that the green the brief asks for, mixed
 straight, is a chartreuse searchlight that owns the picture — the fix being hue, not
-opacity. Its [notes](paintings/lighthouse_greenhouse/opus/NOTES.md) also record three
+opacity. Its [notes](paintings/Claude/lighthouse_greenhouse/opus/NOTES.md) also record three
 flat slabs where a cylinder should have turned, a chisel tip staircasing down every
 sloping plane edge it was given, ten pots that were ten bricks until each got a rim, and
 `direction` left off two shaped block-ins — which would have been charged 44 and 57
@@ -295,7 +295,7 @@ finished inside `0.10`.
 on the right standing in dark rock, its glass lamp room packed with green vine and red
 tomatoes, a handrailed stair spiralling down the outside with terracotta pots on the
 treads, a vine trailing down from the gallery, and a soft green beam leaving the lamp
-room leftward into the fog over a grey sea](paintings/lighthouse_greenhouse/fable/painting.png)
+room leftward into the fog over a grey sea](paintings/Claude/lighthouse_greenhouse/fable/painting.png)
 
 | | |
 |---|---|
@@ -303,17 +303,17 @@ room leftward into the fog over a grey sea](paintings/lighthouse_greenhouse/fabl
 | Spent | 284 strokes of a 300 budget, plus one signature mark that did not count |
 | Rehearsed and thrown away | 20 rehearsal runs, none of them charged |
 | Reproducible | Fourteen pass scripts rebuild the PNG **byte for byte**, verified by sha256 from three fresh sessions |
-| Files | [`fable/`](paintings/lighthouse_greenhouse/fable) — [notes](paintings/lighthouse_greenhouse/fable/NOTES.md), [time-lapse](paintings/lighthouse_greenhouse/fable/painting.gif), [what it would change](paintings/lighthouse_greenhouse/fable/SUGGESTIONS.md) |
+| Files | [`fable/`](paintings/Claude/lighthouse_greenhouse/fable) — [notes](paintings/Claude/lighthouse_greenhouse/fable/NOTES.md), [time-lapse](paintings/Claude/lighthouse_greenhouse/fable/painting.gif), [what it would change](paintings/Claude/lighthouse_greenhouse/fable/SUGGESTIONS.md) |
 
 The beam was built five times before it was three glazes mixed close to the fog — a
 bristle wedge came back a ribbed slab, five flat rays a fan of ribbons, and the first
 glazes were lime and brightest at the far end, because a round tip's width and its paint
-both follow pressure. Its [notes](paintings/lighthouse_greenhouse/fable/NOTES.md) also
+both follow pressure. Its [notes](paintings/Claude/lighthouse_greenhouse/fable/NOTES.md) also
 record a tower whose clean contour rose off its top as an arch, a stair that read as a
 hose wound round the tower until it got a handrail, and an `undo`, taken on purpose
 and then measured: the working session drifted `1.06%` of
 its pixels from a clean rebuild of the same scripts, so the committed PNG is the rebuild.
-Its [suggestions](paintings/lighthouse_greenhouse/fable/SUGGESTIONS.md) carry a probe
+Its [suggestions](paintings/Claude/lighthouse_greenhouse/fable/SUGGESTIONS.md) carry a probe
 for each engine claim, and two of the session's own claims did not survive them.
 
 ### Where they agree
@@ -334,7 +334,7 @@ engine; and subdividing each side into six points brings it to 9px. So the trigg
 neither of the two numbers proposed above but the spline the contour is swept along,
 bowing through sparse corners — which is why a tapering tower gets a pointed arch and a
 shallow cap loses its corners. The measurement is
-[`fable/probes/probe_clean_contour.py`](paintings/lighthouse_greenhouse/fable/probes/probe_clean_contour.py).
+[`fable/probes/probe_clean_contour.py`](paintings/Claude/lighthouse_greenhouse/fable/probes/probe_clean_contour.py).
 Since 0.2.0 the engine sweeps the contour along the polygon's own edges, and every one
 of those shapes comes back at 4px — the ragged fill's own half-brush; the share the second
 painter measured survives as the *corners* going past about a quarter, which is what
@@ -351,7 +351,7 @@ Opus through a chisel's pass ends stacking into a staircase.
 diamond crossing the frame, two soft cores of light burning up through it from lamps set
 in the pool's own walls, dark deck all around, a chair and one small orange sign at the
 left, a board entering from the right edge, and roof members crossing the near-black
-band along the top](paintings/pool_night/painting.png)
+band along the top](paintings/Claude/pool_night/painting.png)
 
 One light source, and it is underneath everything, so every form in the room is underlit
 and the value structure cannot fail: one bright plane against near-black. Square on the
@@ -366,16 +366,16 @@ entering from the right.
 | Spent | 221 strokes of a 300 budget, plus two signature marks that did not count |
 | Rehearsed and thrown away | Every pass was rehearsed against a copy before it was committed — about forty runs, none of them charged |
 | Reproducible | **Not claimed.** Each committed pass ran once in its final form and in order, but that was never checked from a clean session, so nothing here says the scripts rebuild the PNG |
-| Files | [`paintings/pool_night/`](paintings/pool_night) — [notes](paintings/pool_night/NOTES.md), [time-lapse](paintings/pool_night/painting.gif) |
+| Files | [`paintings/Claude/pool_night/`](paintings/Claude/pool_night) — [notes](paintings/Claude/pool_night/NOTES.md), [time-lapse](paintings/Claude/pool_night/painting.gif) |
 
 This is the picture painted against the narrowest document set on the page — `PAINTER.md`
 and its nine exercises, `RECIPES.md` and `REFERENCE.md`, and nothing else — and the
-[exercises it worked first](paintings/pool_night/exercises) are committed beside the
+[exercises it worked first](paintings/Claude/pool_night/exercises) are committed beside the
 passes. It is also the only painting here that used `mark` landmarks: three of them, the
 two lamps and the exit sign, pinned in the drawing pass before any paint so that every
 later pass building the glow could find the same points again.
 
-The [notes](paintings/pool_night/NOTES.md) are mostly about measuring rather than
+The [notes](paintings/Claude/pool_night/NOTES.md) are mostly about measuring rather than
 looking, because twice the painter's eye was simply wrong and one line of numbers settled
 it. A deck that *looked* too light at `0.40` was the `0.39` it had been mixed to — local
 contrast against a dark room, the same false alarm the laundromat above talked itself
@@ -405,7 +405,7 @@ pale sky with a yellow dawn band low in it, a dark treeline along the right, a l
 standard still lit at the left and given back by the water as a broken chain of pale
 discs, the bird at the middle right with a white head and a dark bill read against the
 trees, and painted stall lines showing through the water and converging to the bottom
-left](paintings/heron_lot/1/painting.png)
+left](paintings/Claude/heron_lot/1/painting.png)
 
 | | |
 |---|---|
@@ -413,12 +413,12 @@ left](paintings/heron_lot/1/painting.png)
 | Spent | 293 strokes of a 320 budget, plus two signature marks that did not count |
 | Rehearsed and thrown away | About forty rehearsal runs, none of them charged |
 | Reproducible | **Not claimed.** Each pass ran once in its final form and in order, but that was never checked from a clean session |
-| Files | [`1/`](paintings/heron_lot/1) — [notes](paintings/heron_lot/1/NOTES.md), [time-lapse](paintings/heron_lot/1/painting.gif), [exercises](paintings/heron_lot/1/ex) |
+| Files | [`1/`](paintings/Claude/heron_lot/1) — [notes](paintings/Claude/heron_lot/1/NOTES.md), [time-lapse](paintings/Claude/heron_lot/1/painting.gif), [exercises](paintings/Claude/heron_lot/1/ex) |
 
 Its best passage is an absence: water meets sky at `0.07` of value across the whole left
 half, under the reading threshold, so there is no horizon line at all until the trees pick
 the edge up on the right. That began as the repair for a ruled horizon and came off no
-document. Its [notes](paintings/heron_lot/1/NOTES.md) also record a treeline given
+document. Its [notes](paintings/Claude/heron_lot/1/NOTES.md) also record a treeline given
 sixteen directions to break its comb — on the guide's own advice to vary direction — which
 `cost()` priced at **515 strokes against 22 for one direction**, 1.6× the whole budget,
 caught before a stroke was spent. And a fault the picture never quite recovers from: the
@@ -435,14 +435,14 @@ re-run at its own depth.
 frame: a near-black band of trees across the top with a warm yellow reflection under it,
 the bird standing large and high in the picture with a white head and a long ochre bill,
 its own pale reflection directly below it, and painted stall lines running away across the
-water in the foreground](paintings/heron_lot/2/painting.png)
+water in the foreground](paintings/Claude/heron_lot/2/painting.png)
 
 | | |
 |---|---|
 | Canvas | 1024×768, rough, a custom ground `#6d635a` at value `0.394`, seed 23 |
 | Spent | 253 strokes of a 320 budget, plus two signature marks that did not count |
 | Reproducible | **Not claimed**, on the same terms as the first |
-| Files | [`2/`](paintings/heron_lot/2) — [notes](paintings/heron_lot/2/NOTES.md), [time-lapse](paintings/heron_lot/2/painting.gif), [the measurement it produced](paintings/heron_lot/2/probe_cover.py) |
+| Files | [`2/`](paintings/Claude/heron_lot/2) — [notes](paintings/Claude/heron_lot/2/NOTES.md), [time-lapse](paintings/Claude/heron_lot/2/painting.gif), [the measurement it produced](paintings/Claude/heron_lot/2/probe_cover.py) |
 
 The composition throws the horizon away rather than fighting it: a steep downward view in
 which the water *is* the picture and the sky exists only as what it gives back, so there
@@ -454,7 +454,7 @@ the graded field is pass two, and the picture had a light mass at stroke **16** 
 217.
 
 It also produced the page's sharpest engine measurement, in
-[`probe_cover.py`](paintings/heron_lot/2/probe_cover.py): **a solid block-in does not land
+[`probe_cover.py`](paintings/Claude/heron_lot/2/probe_cover.py): **a solid block-in does not land
 its colour.** On bare ground at `0.394`, with every clause of a plane that is a plane set
 — `density=1.0, solid=True, opacity=1.0, pressure="even"` — a mixture at `0.865` comes
 back at `0.403` from a 2.7px `flat`, which is the ground and nothing else, and at 18px is
@@ -486,7 +486,7 @@ it says the opposite and is not quoted as evidence either way.
 sun blooming pale gold behind the fogged end wall, glazing bars and rafters converging
 on it, wooden staging down both sides carrying a row of terracotta pots — most holding
 dry stalks, two or three still green — deep shadow under the benches, and a galvanised
-watering can standing on the dark aisle floor](paintings/greenhouse_winter/painting.png)
+watering can standing on the dark aisle floor](paintings/Claude/greenhouse_winter/painting.png)
 
 Late afternoon, and the whole picture is one problem: light passing through glass,
 through fog on the glass, through thin leaves, and stopping dead at the clay.
@@ -496,7 +496,7 @@ through fog on the glass, through thin leaves, and stopping dead at the clay.
 | Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 3 |
 | Spent | 297 strokes of a 300 budget, plus two signature marks that did not count |
 | Reproducible | **Not claimed** — built pass by pass with rehearsals, and the two `erase()` calls in `p12_export.py` were added after the fact. The scripts are the record of how it was made, not a byte-for-byte rebuild |
-| Files | [`greenhouse_winter/`](paintings/greenhouse_winter) — [notes](paintings/greenhouse_winter/NOTES.md), [time-lapse](paintings/greenhouse_winter/painting.gif) |
+| Files | [`greenhouse_winter/`](paintings/Claude/greenhouse_winter) — [notes](paintings/Claude/greenhouse_winter/NOTES.md), [time-lapse](paintings/Claude/greenhouse_winter/painting.gif) |
 
 **A frontal elevation of a greenhouse is a layer cake** — plinth, glass, transom, eaves,
 ridge, all horizontal — and this painting's first decision was to refuse it. The
@@ -521,7 +521,7 @@ glass running away to the left, dark glazing bars and horizontal pane laps conve
 green blur of plants pressing behind the film, vertical runnels of water where the fog
 has cleared, one leaf pressed flat against the pane and a terracotta pot glowing orange
 through the mist, with frozen ground and a bare tree in haze at the
-left](paintings/fogged_glass/painting.png)
+left](paintings/Claude/fogged_glass/painting.png)
 
 Standing outside on a flat grey afternoon: the glass fogged from the inside, water run
 down it in tracks that clear the film, and the green coming part of the way through. The
@@ -534,7 +534,7 @@ on the near side, the plants behind it, the winter beyond.
 | Spent | 311 strokes of a 320 budget, plus two signature marks that did not count |
 | Rehearsals | About forty-four, none of them charged |
 | Reproducible | **Not claimed** — the drawing pass was run twice and several measuring scripts ran as passes between the painting ones, and a mark's texture is seeded from its place in the log, so a clean rebuild would not come back byte for byte |
-| Files | [`fogged_glass/`](paintings/fogged_glass) — [notes](paintings/fogged_glass/NOTES.md), [time-lapse](paintings/fogged_glass/painting.gif) |
+| Files | [`fogged_glass/`](paintings/Claude/fogged_glass) — [notes](paintings/Claude/fogged_glass/NOTES.md), [time-lapse](paintings/Claude/fogged_glass/painting.gif) |
 
 This picture reached the same first decision as the one above, by the same route and
 independently: a wall of glass painted frontally is a layer cake, so the projection was
@@ -566,7 +566,7 @@ joists receding to the right and diagonal cross-bracing across them, two near pi
 cropping the left and right edges and two more standing further back in the murk, a wedge
 of pale daylight widening to the right between the deck and the water, and dark green
 water below it carrying a broken shimmer of that light and darkening into the
-foreground](paintings/pier_underside/painting.png)
+foreground](paintings/Claude/pier_underside/painting.png)
 
 The first picture here painted from nothing but the installed package. The session was
 told to `pip install easel-paint` and paint from whatever came with it; it read
@@ -581,7 +581,7 @@ coming from.
 | Spent | 257 strokes of a 300 budget, plus two signature marks that did not count |
 | Rehearsals | Twenty-three, none of them charged |
 | Reproducible | **Not claimed** — the drawing pass was rewritten and re-run three times, `look` scripts ran as passes between the painting ones, and each pass script was edited after its rehearsal, so what is committed is the last version of each rather than the sequence that built the canvas |
-| Files | [`pier_underside/`](paintings/pier_underside) — [notes](paintings/pier_underside/NOTES.md), [time-lapse](paintings/pier_underside/painting.gif) |
+| Files | [`pier_underside/`](paintings/Claude/pier_underside) — [notes](paintings/Claude/pier_underside/NOTES.md), [time-lapse](paintings/Claude/pier_underside/painting.gif) |
 
 Its own decision is the cross-bracing, and it arrived late. Deck, slot and water is three
 horizontal bands, and the post-pass check had said so on nearly every pass — *a stack of
@@ -621,7 +621,7 @@ put down on the table beside it, and in the centre a cupped hand seen from the f
 two lit fingers above a dark hollow and a thumb rising across them, a second hand coming
 steeply down from the upper right with its thumb and finger closing on a single bean, and
 both forearms running off the frame and darkening as they
-go](paintings/hands_beans/painting.png)
+go](paintings/Claude/hands_beans/painting.png)
 
 The second painting made from the installed package alone, and the first made against a
 shipped release by a painter who had never seen this repository. `python -m easel guide`,
@@ -636,7 +636,7 @@ round is filed against.
 | Spent | 329 strokes of a 420 budget, plus two signature marks that did not count |
 | Rehearsals | 114 rehearsal views across the session, none of them charged |
 | Reproducible | **Not claimed** — the drawing pass was rewritten three times, `look` and `probe` scripts ran as passes between the painting ones, `prelude.py` was edited between passes as mixtures were rewritten, and each pass was edited after its rehearsal |
-| Files | [`hands_beans/`](paintings/hands_beans) — [notes](paintings/hands_beans/NOTES.md), [time-lapse](paintings/hands_beans/painting.gif), [exercises](paintings/hands_beans/ex) |
+| Files | [`hands_beans/`](paintings/Claude/hands_beans) — [notes](paintings/Claude/hands_beans/NOTES.md), [time-lapse](paintings/Claude/hands_beans/painting.gif), [exercises](paintings/Claude/hands_beans/ex) |
 
 **It is the third painting here to place landmarks, and the first to draw the whole
 arrangement with `s.guide()` rather than the pencil** — which sidesteps the burial
@@ -674,6 +674,187 @@ Two of the engine items it arrived with **died on measurement before they were f
 *A form that turns* holds up at a finger's width, and `edge="clean"` lays no brighter
 contour than a ragged edge does. Its round says so, and says what it had mistaken for
 each.
+
+## A mountain landscape at sunset
+
+![A mountain landscape at sunset: a dark ridge of mountains across the middle of the
+frame under a sky banded blue at the top and orange toward the horizon, a pale sun low
+over the near slope, and a wide strip of bare grey ground left unpainted across the
+bottom third](paintings/BigPickle_blind/sunset_landscape/painting.png)
+
+Painted blind by BigPickle — unable to open a look between passes, so its habit of
+looking every five to fifteen strokes was followed in spirit rather than checked against
+the canvas as it went. Three values stacked into one scene: a dark ridge, a flat
+foreground, a warm sky, with a horizon broken by the mountains themselves rather than
+left as a straight band.
+
+| | |
+|---|---|
+| Canvas | 1200×800, linen, `toned_grey` ground, seed 42 |
+| Spent | 50 strokes of a 120 budget |
+| Reproducible | One script (`sunset_paint.py`) rebuilds the PNG from a fresh session; `make_timelapse.py` regenerates the GIF |
+| Files | [`paintings/BigPickle_blind/sunset_landscape/`](paintings/BigPickle_blind/sunset_landscape) — [notes](paintings/BigPickle_blind/sunset_landscape/NOTES.md), [time-lapse](paintings/BigPickle_blind/sunset_landscape/painting.gif), [verdict](paintings/BigPickle_blind/sunset_landscape/verdict.md) |
+
+Its own `report()` found what painting without looking predicts: 30 of 44 long marks
+running within six degrees of horizontal, and 31.94% of the canvas still bare ground
+where density was left low on purpose and came in lower than intended. The
+[notes](paintings/BigPickle_blind/sunset_landscape/NOTES.md) call this the tool's own
+check catching a fault a painter with eyes would have caught much earlier.
+
+## A small boat crossing a low sun's reflection
+
+![A low golden sun just above the horizon over open water, its light broken into a
+column of short glowing bars reflected down toward the viewer, banded pink and orange
+clouds above, and a small dark boat in silhouette crossing the light to the
+right](paintings/Deepseek/tidal_sky/painting.png)
+
+Painted by DeepSeek. The whole picture is one light — a low sun's amber-to-coral
+reflection running unbroken from sky to water — and the boat is the one dark thing
+standing in it, given deliberately few of the picture's 68 spent strokes: the subject is
+the light, not the boat.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `toned_grey` ground, seed 7 |
+| Spent | 68 strokes of a 300 budget |
+| Reproducible | Five pass scripts rebuild it from `prelude.py` against a fresh session |
+| Files | [`paintings/Deepseek/tidal_sky/`](paintings/Deepseek/tidal_sky) — [notes](paintings/Deepseek/tidal_sky/NOTES.md), [time-lapse](paintings/Deepseek/tidal_sky/painting.gif), [verdict](paintings/Deepseek/tidal_sky/verdict.md), [what painting felt like](paintings/Deepseek/tidal_sky/feelings.md) |
+
+Its [notes](paintings/Deepseek/tidal_sky/NOTES.md) record a glitter path that first read
+as floating rectangles — vertical `flat` strokes tilted across the water, printing the
+tool's own chisel shape — and was rebuilt as horizontal broken flashes, shorter and
+fainter toward the viewer. The standing warnings on a near-flat comb and 0% bare ground
+are kept rather than fixed: a calm sea at golden hour is horizontal, and a full
+sky-and-water field leaves no ground to show.
+
+## A misty pine forest at dawn, across still water
+
+![Four dark pine trees on a headland at the lower left, against a hazy dawn sky banded
+from slate blue-grey at the top through pink to gold, a bright sun low over the far
+shore with its light scattered in broken bars down a still lake in the
+foreground](paintings/Gemini/misty_pine_forest_at_dawn/painting.png)
+
+Painted by Gemini, with no stroke budget set: 725 marks on fine linen, the composition
+split at a horizon of `y = 0.52` into cold twilight air warming toward the sun and a
+glassy lake mirroring it back, broken by a shimmering glitter path toward the viewer.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 42 |
+| Spent | 725 marks, no stroke budget set |
+| Reproducible | One script (`paint_dawn_forest.py`) rebuilds it deterministically |
+| Files | [`paintings/Gemini/misty_pine_forest_at_dawn/`](paintings/Gemini/misty_pine_forest_at_dawn) — [notes](paintings/Gemini/misty_pine_forest_at_dawn/NOTES.md), [time-lapse](paintings/Gemini/misty_pine_forest_at_dawn/painting.gif), [verdict](paintings/Gemini/misty_pine_forest_at_dawn/verdict.md) |
+
+Its [notes](paintings/Gemini/misty_pine_forest_at_dawn/NOTES.md) name two shapes the
+engine keeps producing when asked for radiating light: linear strokes out from a point
+read as a wagon wheel, and continuous horizontal bars centred on a reflection step down
+into a ziggurat. Both were rebuilt as broken, irregular marks instead. A third finding is
+about the engine rather than the picture: `titanium_white` reflects at `0.958` and no
+mixture can be asked for higher, which the first attempt at the sun's core found out from
+a `ValueError`.
+
+## A terminal window glowing green in a dark room
+
+![A CRT monitor glowing green in an otherwise dark room: pale phosphor text scrolling
+down the screen with a bright cursor at the end of the last line, the glow spilling
+across a keyboard and a mug on the desk below and pooling in a soft halo on the wall
+behind](paintings/GLM/terminal_window/painting.png)
+
+Painted by GLM. The only light in the picture is inside it, so the painting is about the
+*fall* of that light — screen to glow to pool to darkness — rather than about a monitor;
+`compare()` checked the block-in against a written value plan and came back with every
+one of six places within `0.10`.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `#2e332c` ground, seed 7 |
+| Spent | 126 strokes of a 300 budget |
+| Reproducible | Seven pass scripts (plus a free graphite `draw.py`) rebuild it from `prelude.py` |
+| Files | [`paintings/GLM/terminal_window/`](paintings/GLM/terminal_window) — [notes](paintings/GLM/terminal_window/NOTES.md), [time-lapse](paintings/GLM/terminal_window/painting.gif), [verdict](paintings/GLM/terminal_window/verdict.md) |
+
+Its [notes](paintings/GLM/terminal_window/NOTES.md) record a halo that came back ringed —
+crossing glazes over a block-in still wet, printing concentric rings — and cost the one
+`undo` in the session to fix, rebuilt as a single tight inward scumble instead. They also
+catch their own summary short: strokes noted `subject` come to 9%, but counting the
+subject's own light along with it — halo, pool, glass, bezel — the true share is closer
+to 46% against a 45% plan, and the notes record both numbers rather than the flattering
+one.
+
+## When the windows come on
+
+![A row of gabled cottages along a curving stone quay at dusk, warm light in their
+windows, a small tower rising near the centre, a hazy violet-pink sky, a dark headland
+across the water to the left, and a red dinghy at rest in the harbour with the windows'
+light broken into streaks toward it](paintings/GPT/seaside-village/painting.png)
+
+Painted by GPT-6 Astra. The little warmth of inhabited windows, carried out into cold
+water, is what makes an ordinary harbour feel like a place to come home to — the red
+dinghy is held by the same quiet that surrounds it, and the reason survived: the windows
+feel inhabited, and their light reaches the boat.
+
+| | |
+|---|---|
+| Canvas | 1440×960, linen, `#746d78` ground, seed 61 |
+| Spent | 408 strokes of a 420 budget, plus 3 free signature marks |
+| Reproducible | One script (`paint.py`, 43 rehearsable passes); reloading the saved session and re-exporting reproduced a **SHA-256-identical PNG** |
+| Files | [`paintings/GPT/seaside-village/`](paintings/GPT/seaside-village) — [notes](paintings/GPT/seaside-village/NOTES.md), [time-lapse](paintings/GPT/seaside-village/painting.gif), [verdict](paintings/GPT/seaside-village/verdict.md), [what painting felt like](paintings/GPT/seaside-village/feelings.md) |
+
+Its [notes](paintings/GPT/seaside-village/NOTES.md) record three holes punched in the
+cottage walls — a shaped block-in path can still wander apart even with `solid=True` —
+closed with loaded flat marks before the windows went in, and a first pass of reflections
+built from seven short strokes that came down as spoon-shaped islands, rebuilt as one
+connected mass with a broken lower edge. Subject share is given twice rather than rounded
+to one figure: 42.2% of the 408 paid marks by the end, against a 61.0% share of the marks
+spent at the point the boat's own structure was finished.
+
+## A quiet harbour at dusk
+
+![Two boat silhouettes and a receding pier as flat dark shapes on a muted grey-teal
+sheet of water, a thin warm gold band at the horizon, a pale blue-grey sky, and a dark
+headland shape at the upper right](paintings/Grok/harbor/painting.png)
+
+Painted by Grok. Dusk flattens the water into one colour, so the painting is mostly edges
+and light rather than detail — the harbour is a single muted sheet, and the boats and
+pier are silhouettes against the afterglow.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `cool_grey` ground, seed 11 |
+| Spent | 132 strokes of a 300 budget |
+| Reproducible | Six pass scripts rebuild it from `prelude.py` against a fresh session |
+| Files | [`paintings/Grok/harbor/`](paintings/Grok/harbor) — [notes](paintings/Grok/harbor/NOTES.md), [time-lapse](paintings/Grok/harbor/painting.gif), [verdict](paintings/Grok/harbor/verdict.md) |
+
+Its [notes](paintings/Grok/harbor/NOTES.md) record a dinghy that failed three times —
+polygons, then stacked rims, then three strokes — and was dropped rather than forced: two
+boats and the pier are enough edges. The pier itself stayed a flat brown wedge, named as
+the weakest passage. Subject share was 19% of 134 marks against a third planned; counting
+the flattened water itself as the subject, which is most of the field, the share is most
+of the picture — that gap is recorded as the point of the painting rather than a miss.
+
+## A lighthouse's lamp holding the dark coast together
+
+![A dark tower with a lit lamp room standing on a dark rocky point, a warm gold band
+glowing along the horizon behind it, a deep blue sea below crossed by a horizontal wave
+band, and a dark blue-violet sky
+above](paintings/Kimi/lighthouse-dusk/painting.png)
+
+Painted by Kimi, on the same brief as the page's earlier [lighthouse on a rocky headland
+at dusk](#a-lighthouse-on-a-rocky-headland-at-dusk): one small warm lamp holding a whole
+dark coast together, everything else arranged around the quiet it makes.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `toned_grey` ground, seed 7 |
+| Spent | 170 strokes of a 420 budget |
+| Reproducible | Five pass scripts rebuild it from `prelude.py` against a fresh session |
+| Files | [`paintings/Kimi/lighthouse-dusk/`](paintings/Kimi/lighthouse-dusk) — [notes](paintings/Kimi/lighthouse-dusk/NOTES.md), [time-lapse](paintings/Kimi/lighthouse-dusk/painting.gif), [verdict](paintings/Kimi/lighthouse-dusk/verdict.md) |
+
+Its [notes](paintings/Kimi/lighthouse-dusk/NOTES.md) record a first reflection built from
+flat horizontal flashes that read as small bricks, and a `cover()` repair that buried
+them but also laid a flat patch over too much sea and in front of the tower — rejected,
+and rebuilt instead as five bent, starved strokes down the sides where the tower and rock
+interrupt the middle. Stopped at 170 of 420 because more sea marks were making the
+picture busier, not better.
 
 ## The log
 

@@ -30,20 +30,20 @@ changed rather than that it worked.
 
 | Where the items came from | Engine | Docs |
 |---|---|---|
-| First session — a still life, 224 strokes, `paintings/windowsill_pears/` | 12 | 12 |
-| Second session — an interior, 206 strokes of 300, `paintings/car_wash/` | 7 | 8 |
-| Third session — a landscape at dusk, 184 strokes of 300, `paintings/lighthouse_dusk/` | 6 | 9 |
+| First session — a still life, 224 strokes, `paintings/Claude/windowsill_pears/` | 12 | 12 |
+| Second session — an interior, 206 strokes of 300, `paintings/Claude/car_wash/` | 7 | 8 |
+| Third session — a landscape at dusk, 184 strokes of 300, `paintings/Claude/lighthouse_dusk/` | 6 | 9 |
 | The synthesis across all three, and two questions from the owner | — | 8 |
 | Fourth session — a night street, 286 strokes of 300, `laundromat_night/` | 6 | 5 |
 | Fifth–seventh — one subject, three painters, `lighthouse_greenhouse/{sonnet,opus,fable}/` | 11 | 8 |
-| Eighth session — a pool at night, 221 strokes of 300, `paintings/pool_night/` | 3 | 5 |
-| Ninth session — a heron in a flooded lot at dawn, 293 of 320, `paintings/heron_lot/1/` | 3 | 6 |
-| …and its second attempt at the same subject, 253 of 320, `paintings/heron_lot/2/` | 1 | 4 |
-| Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/fogged_glass/` | 8 | 6 |
-| The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
+| Eighth session — a pool at night, 221 strokes of 300, `paintings/Claude/pool_night/` | 3 | 5 |
+| Ninth session — a heron in a flooded lot at dawn, 293 of 320, `paintings/Claude/heron_lot/1/` | 3 | 6 |
+| …and its second attempt at the same subject, 253 of 320, `paintings/Claude/heron_lot/2/` | 1 | 4 |
+| Tenth — a fogged greenhouse wall from outside, 311 of 320, `paintings/Claude/fogged_glass/` | 8 | 6 |
+| The winter greenhouse — an interior at a low sun, 297 of 300, `paintings/Claude/greenhouse_winter/`; painted before the tenth, filed after it | 7 | 8, done as the documentation round |
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
-| …and that session painting, 257 of 300, `paintings/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
-| Twelfth — hands sorting dried beans, 329 of 420, `paintings/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
+| …and that session painting, 257 of 300, `paintings/Claude/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
+| Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -82,7 +82,7 @@ It painted from `python -m easel guide`, `--full`, `--painting`, `--reference` a
 `--recipes`, all nine exercises, and nothing else: no `CALIBRATION.md`, no `LESSONS.md`,
 no `DIAGNOSIS.md`, no earlier painting, and **this repository was not opened until after
 the picture was exported and reviewed**. Subject chosen before any of it was read: a
-pair of hands sorting dried beans, `paintings/hands_beans/`, **329 of 420 strokes**.
+pair of hands sorting dried beans, `paintings/Claude/hands_beans/`, **329 of 420 strokes**.
 
 **It painted 0.4.0, which is the last release there has been**, and that cuts both ways.
 Five of the frictions it hit are things the pier round had already fixed in an
@@ -246,7 +246,7 @@ above, continued: told to install `easel-paint` from PyPI
 and paint from whatever the package carried. `python -m easel guide`, `--full`,
 `--reference` and `easel brushes`, and nothing else — the repository was not opened at
 any point. Subject chosen before anything was installed: the underside of a pier at low
-tide, `paintings/pier_underside/`, **257 of 300 strokes**, signed and exported. The
+tide, `paintings/Claude/pier_underside/`, **257 of 300 strokes**, signed and exported. The
 picture is a dark structure over water at dusk.
 
 **It is not a blind run, and its documentation findings should be discounted for it.**
@@ -379,12 +379,12 @@ It read `PAINTER.md` and its nine exercises, then `PAINTING.md`, then `RECIPES.m
 a passage called for one — `CALIBRATION.md` and `REFERENCE.md` were grepped, not read.
 Subject chosen and written down before the repository was opened: a greenhouse wall in
 late winter seen from outside, the glass fogged from the inside,
-`paintings/fogged_glass/`, **311 of 320 strokes**, subject share **29%** against a
+`paintings/Claude/fogged_glass/`, **311 of 320 strokes**, subject share **29%** against a
 planned 37%.
 
 **It sits next to a near neighbour, and the neighbour is not the same subject.** The
 painter chose *the outside of a fogged greenhouse wall* before reading anything, found
-`paintings/greenhouse_winter/` in `git status`, recognised how close it was, and declined
+`paintings/Claude/greenhouse_winter/` in `git status`, recognised how close it was, and declined
 to open it. **So this is not a held subject and not a control**, and the two are filed as
 two paintings rather than as one subject with two parts. One thing in them *is* a
 convergence, because it is checkable against their scripts rather than against an
@@ -463,7 +463,7 @@ corpus was read in full before the first stroke — `PAINTER.md` and its nine ex
 then `PAINTING.md`, `RECIPES.md`, `REFERENCE.md`, `LESSONS.md`, the calibration file in
 part, and three earlier paintings' notes and preludes. Subject chosen before the
 repository was opened: a greenhouse interior in late winter, looking down the aisle at
-a low sun behind the fogged end wall, `paintings/greenhouse_winter/`, **297 of 300
+a low sun behind the fogged end wall, `paintings/Claude/greenhouse_winter/`, **297 of 300
 strokes**, seventeen rehearsals, subject share **40% at the moment the subject was
 finished** against a planned 30%, and two signature marks. Two directives were added to
 the run and belong with it: *keep using the pencil until everything is proportional*,
@@ -573,7 +573,7 @@ answer, because there is a guide with two rules missing from it.
 
 One brief — a lighthouse mid-conversion into a greenhouse — was written down before any
 of the guide was read and handed to three painters unchanged
-(`paintings/lighthouse_greenhouse/{sonnet,opus,fable}/`). Their suggestion files sit
+(`paintings/Claude/lighthouse_greenhouse/{sonnet,opus,fable}/`). Their suggestion files sit
 beside their paintings, and what they asked for is **done**: eleven engine items and
 eight documentation items, in the two tables headed *What the greenhouse sessions
 found* below, each with what was measured before it was built. Every number the three
@@ -596,7 +596,7 @@ close is closed.
 
 Restricted to `PAINTER.md` and its nine exercises, then `RECIPES.md` and
 `REFERENCE.md`. Subject chosen and written down before the repository was opened: a
-municipal pool at night lit from underwater, `paintings/pool_night/`, **221 of 300 strokes**,
+municipal pool at night lit from underwater, `paintings/Claude/pool_night/`, **221 of 300 strokes**,
 about forty rehearsals, subject share 39% at the moment the subject was finished against
 a planned 40%, and a nine-value plan that `at_value` landed to the hundredth. It then
 wrote an unprompted critique of the engine, the documentation and its own painting, and
@@ -621,7 +621,7 @@ recipe. It was **three lookups it could not make**, and only one of them is in t
    volume of lit air* — light in a medium — and the session read it as *a passage light
    in the middle*, which is a bloom on a surface. Four rehearsals on an inward `scumble`
    that cannot lay it, converging to within a mark on the two glazes plus a core that
-   `paintings/lighthouse_dusk/NOTES.md` records reaching twice. Both entries were in the
+   `paintings/Claude/lighthouse_dusk/NOTES.md` records reaching twice. Both entries were in the
    file it had; the sentence that separates them is inside the second one. Its written
    critique called this a gap in the engine, which was wrong, and it said so once it had
    read the other painting.
@@ -640,7 +640,7 @@ recipe. It was **three lookups it could not make**, and only one of them is in t
 **So the essay's contribution to this arm was one section, and it is about a tool rather
 than about judgement.** Of what the session could name as saveable — roughly twelve to
 fifteen rehearsals and about twenty-five committed strokes — **the largest single item
-is not in the essay at all.** It is in `paintings/laundromat_night/NOTES.md`: a custom
+is not in the essay at all.** It is in `paintings/Claude/laundromat_night/NOTES.md`: a custom
 ground at `0.32`, because no preset goes below `umber_wash` at `0.425`. The eighth
 session took `cool_grey` at `0.53`, knew by its third pass it was wrong, and talked
 itself out of a restart that would have cost 21 strokes.
@@ -682,7 +682,7 @@ not say either out loud. The third is a price the walk already knew and never qu
 
 `PAINTER.md` and its nine exercises, then `RECIPES.md`, `REFERENCE.md` and
 `DIAGNOSIS.md`. Subject chosen and written down before the repository was opened: a grey
-heron standing in sheet-flood over a parking lot at dawn, `paintings/heron_lot/1/`, **293 of 320
+heron standing in sheet-flood over a parking lot at dawn, `paintings/Claude/heron_lot/1/`, **293 of 320
 strokes**, about forty rehearsals, subject share **34% at the moment the subject was
 finished** against a planned 32%, a thirteen-value plan `at_value` landed to the
 hundredth, and two signature marks. It wrote an unprompted critique of the engine, the
@@ -730,7 +730,7 @@ against the guess. All of it was re-measured before anything was built, in
 
 After writing the critique above, the ninth session was shown the three withheld files
 and then painted the **same subject again** with all of them in hand
-(`paintings/heron_lot/2/`, 253 of 320, subject share 42% against a planned 40%). It is not a
+(`paintings/Claude/heron_lot/2/`, 253 of 320, subject share 42% against a planned 40%). It is not a
 controlled experiment — same painter, and it knew what it had got wrong — but it
 separates two kinds of fault cleanly, and that is what it is recorded for.
 
@@ -1207,7 +1207,7 @@ when the work was finished. What was worth keeping outlived it:
   `scripts/probe_greenhouse_session.py`, `scripts/probe_pool_session.py`,
   `scripts/probe_heron_session.py` and `scripts/probe_tenth_session.py`, with the
   painters' own probes beside their paintings under
-  `paintings/lighthouse_greenhouse/` and `paintings/heron_lot/`;
+  `paintings/Claude/lighthouse_greenhouse/` and `paintings/Claude/heron_lot/`;
 - the releases are cut by version in [`CHANGELOG.md`](CHANGELOG.md), which is where to
   look for *which defaults moved*.
 
