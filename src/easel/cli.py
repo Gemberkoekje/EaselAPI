@@ -19,14 +19,16 @@ from __future__ import annotations
 import argparse
 import sys
 import traceback
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image as _PILImage
 
-from easel import docs
+from easel import docs, notices
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
+from easel.notices import NOTICES, EaselWarning
 from easel.palette import PIGMENTS
 from easel.prepare import LEVELS
 from easel.regions import REGION_NAMES
@@ -199,6 +201,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_guide.add_argument("--path", action="store_true",
                          help="print where the document is, rather than what it says")
 
+    p_explain = sub.add_parser(
+        "explain",
+        help="print the measurement behind one of the notices the engine gives",
+        description="Every notice the engine gives at a call carries a code -- "
+                    "`chisel-blank`, `spill`, `direction-default`. This prints the "
+                    "passage of the guide that holds its measurement, which is where "
+                    "the reason for the rule lives. With no code: every code there is.",
+    )
+    p_explain.add_argument("code", nargs="?", default="",
+                           help="the notice's code, as the pass printed it")
+
     return parser
 
 
@@ -241,12 +254,39 @@ def _cmd_guide(args) -> int:
     return 0
 
 
+def _cmd_explain(args) -> int:
+    """`easel explain <code>`: the reason, at the moment it applies.
+
+    A rule whose paragraph leaves the reading path has not lost its reason -- the
+    reason stops being read in advance and starts being handed over when the call
+    that trips it is made. The pass prints the code; this turns the code back into
+    the passage that measured it.
+
+    With no code, the table of them, which is the same list `REFERENCE.md` carries
+    and is short enough to read in a shell.
+    """
+    if not args.code:
+        print("The engine says these at a call. `easel explain <code>` for any one.\n")
+        for kind in notices.KINDS:
+            print(f"  {kind}s")
+            for code, spec in sorted(NOTICES.items()):
+                if spec.kind == kind:
+                    print(f"    {code:20s} {spec.about}")
+        return 0
+
+    docs.write(notices.explain(args.code) + "\n")
+    return 0
+
+
 def _dispatch(args) -> int:
     if args.command == "brushes":
         return _cmd_reference()
 
     if args.command == "guide":
         return _cmd_guide(args)
+
+    if args.command == "explain":
+        return _cmd_explain(args)
 
     if args.command == "new":
         if args.session.exists() and not args.force:
@@ -580,17 +620,42 @@ def _cmd_run(session: Session, args) -> int:
     rehearsing = args.rehearse or args.count
     target = session.scratch(count_only=args.count) if rehearsing else session
     before = len(target.history.records)
+    told = len(target.notices())
 
-    result = run_scripts(
-        target,
-        [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
-        prelude=prelude, prelude_name=prelude_name or "prelude.py",
-    )
+    # Every notice the pass gives is kept on the session by `Session._notify` before
+    # it is warned, so the stderr copy is the one that can go: unfiltered it arrives
+    # interleaved with whatever else is on the stream, in the middle of the pass,
+    # apart from the check it belongs beside, and once per source line rather than
+    # once per thing said. Filtered here and printed below, it is said once, in
+    # order, on stdout, under one heading with the check. Only `EaselWarning`: a
+    # painter's own script, and every library under it, warns exactly as before.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=EaselWarning)
+        result = run_scripts(
+            target,
+            [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
+            prelude=prelude, prelude_name=prelude_name or "prelude.py",
+        )
     # The post-pass check, beside the budget line: what the pass just laid would be
     # warned about, read off the log. Over the pass alone unless asked for the whole
     # painting -- and a rehearsal is checked too, because that is where a pass gets
     # changed for free.
     check = target.report() if args.check else target.report(since=before)
+    said = target.notices(since=told)
+
+    def failed() -> None:
+        """A pass that raised still laid marks and still said things.
+
+        The notices go out with the error rather than with the check, because there
+        is no check: they are what the engine said about the calls that did run, and
+        dropping them here would make a failing pass say *less* than it did before
+        there was a channel to collect them.
+        """
+        if said:
+            print(f"{notices.block(said)}\n", file=sys.stderr)
+        print(f"{result.report}\n", file=sys.stderr)
+        if result.trace:
+            print(result.trace, file=sys.stderr, end="")
 
     if rehearsing:
         if result.code == 0:
@@ -605,26 +670,22 @@ def _cmd_run(session: Session, args) -> int:
                 # No look: a counted pass lays no paint, and a picture of the canvas
                 # it borrowed is a picture of the last pass, which is worse than none.
                 print(f"Counted {names}: {cost}. Nothing painted, nothing committed.")
-                print(check)
+                print(notices.block(said, check))
             else:
                 print(f"Rehearsed {names}: {cost}. Nothing committed.")
-                print(check)
+                print(notices.block(said, check))
                 print(target.look(path=None))
         else:
-            print(f"{result.report}\n", file=sys.stderr)
-            if result.trace:
-                print(result.trace, file=sys.stderr, end="")
+            failed()
         return result.code
 
     if result.save:
         session.save(args.session)
     if result.code == 0:
         print(result.report)
-        print(check)
+        print(notices.block(said, check))
     else:
-        print(f"{result.report}\n", file=sys.stderr)
-        if result.trace:
-            print(result.trace, file=sys.stderr, end="")
+        failed()
     return result.code
 
 

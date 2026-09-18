@@ -39,6 +39,8 @@ from easel.measure import (
     heat_sheet,
     plan_sheet,
 )
+from easel.notices import NOTICES, EaselWarning, Notice
+from easel.notices import explain as notice_text
 from easel.palette import Palette
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
@@ -234,6 +236,11 @@ class Session:
         # What such a copy has already said it cannot answer, so it says each thing
         # once however many times the pass asks.
         self._uncounted: list[str] = []
+        # Everything this session has said at a call, in order. Beside the log and
+        # never in it: a mark's texture is seeded from its place in
+        # `history.records`, so a notice that took an index would move every painting
+        # made before it. See :meth:`_notify`.
+        self._notices: list[Notice] = []
         # The last clip mask built, and the outline it came from.
         # See :meth:`_clip_cover`.
         self._clip_memo: tuple | None = None
@@ -353,7 +360,7 @@ class Session:
             if self._stream_mark is None:
                 # A mark the painter laid by hand rather than a pass of a mass: the
                 # one place a pressure list is likely to be asking for a *width*.
-                _check_pressure_on_tip(b, pressure, pts, self.canvas)
+                _check_pressure_on_tip(self, b, pressure, pts, self.canvas)
             result = paint_stroke(
                 self.canvas,
                 pts,
@@ -483,7 +490,7 @@ class Session:
             pressure: pressure profile along the pass.
             **kw: any other :meth:`stroke` argument.
         """
-        _check_smudge_size(size)
+        _check_smudge_size(self, size)
         return self.stroke(_smudge_path(edge, size), brush="smudge",
                            color="titanium_white", pressure=pressure, size=size, **kw)
 
@@ -637,7 +644,8 @@ class Session:
             else:
                 hi = mid
         if best < _GLAZE_MIN_OPACITY:
-            warnings.warn(
+            self._notify(
+                "glaze-nothing",
                 f"glaze(to_value={target:.3f}) solved to opacity={best:.3g}, which is "
                 f"a film that changes nothing: the paint under it already reads "
                 f"{field:.3f}. It still costs a stroke. Ask for a value further from "
@@ -846,7 +854,8 @@ class Session:
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
         held = place if edge == "hard" else None
         if edge == "clean" and b.tip == "bristle":
-            warnings.warn(
+            self._notify(
+                "clean-comb",
                 f"block_in(edge='clean') with a bristle brush ({b.name!r}) leaves a "
                 f"stringier contour than the ragged fill it replaces: one comb pass "
                 f"covers about three-quarters of its width. Use a solid tip "
@@ -860,9 +869,9 @@ class Session:
             _check_direction_sequence(self, fill, b, direction, density, overhang,
                                       stacklevel=3)
         if edge == "clean" and shaped:
-            _check_clean_size(place, b, self.canvas, stacklevel=3)
+            _check_clean_size(self, place, b, self.canvas, stacklevel=3)
         elif edge == "ragged" and shaped:
-            _check_round_block(place, b, self.canvas, stacklevel=3)
+            _check_round_block(self, place, b, self.canvas, stacklevel=3)
 
         with self._one_call("block_in"):
             for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
@@ -1408,7 +1417,8 @@ class Session:
             {"load": 1.0, "load_falloff": 0.0, "opacity": 1.0, **brush_overrides},
         )
         if b.tip == "bristle":
-            warnings.warn(
+            self._notify(
+                "cover-comb",
                 f"cover() was given a bristle brush ({b.name!r}), which does not "
                 f"bury: its comb leaves the old paint showing between the streaks "
                 f"at any opacity. Use 'flat', 'knife' or 'round_hard'.",
@@ -1580,8 +1590,8 @@ class Session:
                 size = _inward_size(place, n)
             b = self._resolve_brush(brush, size, opacity,
                                     {"load_falloff": 0.0, **brush_overrides})
-            _check_inward_brush(place, b, n)
-            _check_inward_comb(place, b, n, named)
+            _check_inward_brush(self, place, b, n)
+            _check_inward_comb(self, place, b, n, named)
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
         step = _normal_extent(place, degrees) / n
@@ -1594,8 +1604,8 @@ class Session:
         if size is None and not isinstance(brush, Brush):
             size = _linear_size(step)
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
-        _check_linear_brush(b, step, n)
-        _check_scumble_ends(place, degrees, b, n, stacklevel=3)
+        _check_linear_brush(self, b, step, n)
+        _check_scumble_ends(self, place, degrees, b, n, stacklevel=3)
         shaped = isinstance(place, Polygon)
         paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
                  else self._angled_paths(place, degrees, step, b.size * overhang))
@@ -2237,6 +2247,7 @@ class Session:
         trial = self._trial_session()
         for kind, spec in self._plan_specs(strokes):
             trial._lay(kind, spec)
+        self._adopt_notices(trial)
 
         ref_img = None if reference is None else load_reference(reference)
         img = render_look(
@@ -2412,13 +2423,15 @@ class Session:
         worst = max((p for p in priced if p[1]), key=lambda p: p[0], default=None)
         because = f" Its {worst[0]}-stroke entry: {worst[1]}." if worst else ""
         if left <= 0:
-            warnings.warn(
+            self._notify(
+                "budget-spent",
                 f"This plan costs {total} strokes, and the {self.budget}-stroke "
                 f"budget is already spent.{because}",
                 stacklevel=3,
             )
         elif total > share * left:
-            warnings.warn(
+            self._notify(
+                "budget-share",
                 f"This plan costs {total} strokes -- {total / left:.0%} of the "
                 f"{left} left of a {self.budget}-stroke budget.{because}",
                 stacklevel=3,
@@ -2463,6 +2476,7 @@ class Session:
             else:
                 _check_direction_sequence(trial, fill, b, direction, density,
                                           spec.get("overhang"), stacklevel=5)
+            self._adopt_notices(trial)
             return (laid + int(edge == "clean"),
                     _mass_reason(fill, b, direction, density, laid))
 
@@ -2479,6 +2493,7 @@ class Session:
         why = f"{min(n_passes, laid)} passes, {depth:.2f} deep"
         if cross is not None and laid > n_passes:
             why += f", and {laid - n_passes} more crossing them at {abs(cross):.0f} degrees"
+        self._adopt_notices(trial)
         return laid, why
 
     def scratch(self, count_only: bool = False) -> Session:
@@ -2579,6 +2594,10 @@ class Session:
         trial._prior = self._prior + self.history.records
         trial._counting = self._counting
         trial._uncounted = []
+        # Its own, empty: a rehearsal says what the paid pass will say, and it says
+        # it about the copy. Carrying the painting's notices in would have `easel run
+        # --rehearse` print every notice the painting has ever given.
+        trial._notices = []
         trial._clip_memo = self._clip_memo
         return trial
 
@@ -2694,9 +2713,9 @@ class Session:
             # them.
             edge = spec.get("edge", "ragged")
             if edge == "clean":
-                _check_clean_size(place, b, self.canvas, stacklevel=4)
+                _check_clean_size(self, place, b, self.canvas, stacklevel=4)
             elif edge == "ragged":
-                _check_round_block(place, b, self.canvas, stacklevel=4)
+                _check_round_block(self, place, b, self.canvas, stacklevel=4)
         return {"points": points, "width": b.size, "fill": True,
                 "label": self._priced("mass", spec, label)}
 
@@ -2853,7 +2872,8 @@ class Session:
             # still a measurement of the mass.
             return
         here = float(linear_to_srgb(luminance(mean)))
-        warnings.warn(
+        self._notify(
+            "sample-split",
             f"sample({what}) is averaging more than one mass: {dark.size / v.size:.0%} "
             f"of it reads about {dark.mean():.3f} and {light.size / v.size:.0%} about "
             f"{light.mean():.3f}, so the {here:.3f} this returns is a measurement of "
@@ -3392,6 +3412,89 @@ class Session:
 
         return wanted
 
+    # -- what the engine says at the call ---------------------------------------
+    def _notify(self, code: str, text: str, stacklevel: int = 1) -> None:
+        """Say one thing, under the code it is registered as.
+
+        The one route out for everything the engine says at a call. It keeps the
+        notice -- so a pass can print what it said, and an MCP painter can be told at
+        all -- and then warns, which is what a painter at a Python prompt has always
+        seen and what every ``pytest.warns(UserWarning, ...)`` in the suite reads.
+
+        Kept **beside** ``history.records`` and never in it: rule 8 of the plan this
+        came from, and the reason is that a mark's texture is seeded from its index in
+        the log. Anything new that took an index would repaint every painting made
+        before it.
+
+        ``code`` must be a key of :data:`easel.notices.NOTICES`; an unregistered one
+        raises here rather than reaching a painter, because the registry is what
+        `REFERENCE.md` and `easel explain` are held against and a code that is in one
+        of the three and not the others is the drift this channel exists to stop.
+
+        ``stacklevel`` counts from whatever called this, exactly as it counted when
+        each of these sites called ``warnings.warn`` itself. The frame this method
+        adds is put back here, so no site's number had to change when the channel
+        went in -- and a number that was right for the painter's own line goes on
+        pointing at it. It defaults to 1, meaning *whoever called this*, which is
+        ``warnings.warn``'s own default read from the same place; every site here
+        says a number, because a notice points at the painter's line and not at the
+        engine's.
+        """
+        if code not in NOTICES:
+            raise KeyError(
+                f"{code!r} is not a registered notice. Add it to easel.notices.NOTICES "
+                f"and to REFERENCE.md's table, which tests/test_notices.py holds "
+                f"against each other."
+            )
+        self._notices.append(Notice(code, text))
+        warnings.warn(EaselWarning(text, code), stacklevel=stacklevel + 1)
+
+    def _adopt_notices(self, trial: Session) -> None:
+        """Take what a throwaway copy said, because this session is what said it.
+
+        :meth:`rehearse` and the price walk both work on a copy -- the copy is how a
+        rehearsal spends a copy of the stream instead of the real one -- and a notice
+        that landed on it would be thrown away with it. A painter at a Python prompt
+        never noticed, because ``warnings.warn`` had already reached their console;
+        through the MCP server, where the returned text is the only channel there is,
+        it was the difference between being told and not.
+
+        Named apart from :meth:`_adopt`, which takes on a whole session -- canvas,
+        log and stream -- and is what :meth:`undo` rebuilds through. This one moves
+        a list. Calling the wrong one here made ``rehearse`` commit its trial to the
+        painting, which the *planning verbs leave nothing behind* test caught within
+        the minute.
+        """
+        self._notices.extend(trial._notices)
+
+    def notices(self, since: int | None = None) -> list[Notice]:
+        """What this session has said at a call, oldest first.
+
+        ``since`` is an index into this list -- ``len(s.notices())`` taken before the
+        pass -- and not a log index, because a notice is not a mark: a plan that is
+        priced and never painted says things and lays nothing. ``easel run`` prints
+        ``s.notices(since=...)`` above the post-pass check, collapsed by code, facts
+        before habits; see :func:`easel.notices.block`.
+
+        A rehearsal copy starts with none of its own and keeps what it says, the way
+        :meth:`scratch` handles every other kind of bookkeeping -- so a pass rehearsed
+        and then painted says the same things twice, once on the copy and once for
+        real, which is what a painter rehearsing expects.
+        """
+        if since is None:
+            return list(self._notices)
+        return list(self._notices[max(0, int(since)):])
+
+    def explain(self, code: str) -> str:
+        """The passage behind one notice, from the document that holds the measurement.
+
+        ``s.explain("chisel-blank")``, and ``easel explain chisel-blank`` from a
+        shell. This is where a rule's *reason* goes when its paragraph leaves the
+        reading path: not deleted, delivered at the moment it applies. Raises
+        ``KeyError`` naming every code there is.
+        """
+        return notice_text(code)
+
     def _note_assisted(self, what: str) -> None:
         """Record an assisted mode, once. See :attr:`assisted`."""
         if what not in self.assisted:
@@ -3445,6 +3548,10 @@ class Session:
                              else [int(self._banding_told[0]), int(self._banding_told[1])]),
             "has_sketch": bool(self.canvas.has_sketch),
             "assisted": list(self.assisted),
+            # What the engine has said at a call, in order. Beside the log, never in
+            # it -- see :meth:`_notify` -- and a key an older build does not read, so
+            # a 0.5.0 Easel opens a file this one wrote.
+            "notices": [[n.code, n.text] for n in self._notices],
         }
         frames = self.history._frames
         # Written through an open handle: np.savez_compressed appends ".npz" to a
@@ -3503,10 +3610,22 @@ class Session:
                         f"format {_EASEL_FORMAT}."
                     )
                 s = cls.__new__(cls)
+                # Before anything that can say something, because the first thing
+                # this build says about a loaded file is often the out_dir line below.
+                # A code this build does not know is dropped rather than kept: the
+                # file may have been written by a later Easel, and a notice whose
+                # registry row is missing has no kind to sort by and no reason to
+                # print. New keys only, read with `.get`, so an older Easel opens a
+                # file this one wrote and simply has no notices in it.
+                s._notices = [
+                    Notice(str(code), str(text))
+                    for code, text in meta.get("notices", [])
+                    if str(code) in NOTICES
+                ]
                 s.seed = int(meta["seed"])
                 s.rng = _decode_rng(meta["rng_state"])
                 s.out_dir = Path(meta["out_dir"])
-                _warn_foreign_out_dir(p, s.out_dir)
+                _warn_foreign_out_dir(s, p, s.out_dir)
                 budget = meta.get("budget")
                 s.budget = None if budget is None else int(budget)
                 s.timelapse = bool(meta["timelapse"])
@@ -3771,7 +3890,7 @@ class Session:
         if what in self._uncounted:
             return
         self._uncounted.append(what)
-        warnings.warn(f"scratch(count_only=True): {what}", stacklevel=4)
+        self._notify("count-only", f"scratch(count_only=True): {what}", stacklevel=4)
 
     def _clip_cover(self, outline: Polygon) -> np.ndarray:
         """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
@@ -3815,9 +3934,9 @@ class Session:
         # in whole is the painter's own and is left alone, the way a named scumble
         # brush is.
         if "size" in changes:
-            _check_tip_pixels(b, self.canvas)
+            _check_tip_pixels(self, b, self.canvas)
         if "jitter" in overrides:
-            _check_jitter(b, float(overrides["jitter"]))
+            _check_jitter(self, b, float(overrides["jitter"]))
         return b
 
     def _resolve_color(self, color) -> np.ndarray:
@@ -3885,7 +4004,7 @@ def _highest_numbered(out_dir: Path, prefix: str) -> int:
     return highest
 
 
-def _check_smudge_size(size: float) -> None:
+def _check_smudge_size(session, size: float) -> None:
     """Warn when a smudge is wide enough to drag a lobe instead of softening a join.
 
     The same shape as the scumble's two warnings: the verb still does exactly what it
@@ -3896,7 +4015,8 @@ def _check_smudge_size(size: float) -> None:
     """
     if float(size) <= SMUDGE_MAX:
         return
-    warnings.warn(
+    session._notify(
+        "smudge-wide",
         f"smudge(size={float(size):.3g}) is past the {SMUDGE_MAX:.3g} where one pass "
         f"stops softening a join and starts dragging a lobe. Measured on a steep "
         f"step, one pass carries the lighter mass 1.3% of the canvas height into the "
@@ -3923,7 +4043,7 @@ _CHISEL_TIPS = ("flat", "bristle", "knife")
 _CHISEL_MIN_PX = 4.0
 
 
-def _check_tip_pixels(b: Brush, canvas, stacklevel: int = 4) -> None:
+def _check_tip_pixels(session, b: Brush, canvas, stacklevel: int = 4) -> None:
     """Warn when an oriented tip is too few pixels wide to lay any paint.
 
     Not an aesthetic rule like the comb floor, which a painter can want to break: a
@@ -3945,7 +4065,8 @@ def _check_tip_pixels(b: Brush, canvas, stacklevel: int = 4) -> None:
     px = b.size * float(canvas.long_side)
     if px >= _CHISEL_MIN_PX:
         return
-    warnings.warn(
+    session._notify(
+        "chisel-blank",
         f"a {b.tip} tip at size={b.size:.4g} is {px:.1f} pixels wide on this canvas, "
         f"under the {_CHISEL_MIN_PX:.0f} where an oriented tip stops depositing paint "
         f"at all -- the mark is charged and lands nothing. Measured, a solid mass laid "
@@ -3991,7 +4112,7 @@ _JITTER_MULTIPLE = 5.0
 _JITTER_WIDTHS = 5.3
 
 
-def _check_jitter(b: Brush, asked: float) -> None:
+def _check_jitter(session, b: Brush, asked: float) -> None:
     """Warn when a ``jitter=`` override is a multiple of the default rather than a tweak.
 
     The same shape as the comb floor and the chisel-pixel floor: a number a painter
@@ -4003,7 +4124,8 @@ def _check_jitter(b: Brush, asked: float) -> None:
     default = float(next(f for f in dataclass_fields(Brush) if f.name == "jitter").default)
     if asked <= _JITTER_MULTIPLE * default:
         return
-    warnings.warn(
+    session._notify(
+        "jitter-beads",
         f"jitter={asked:g} is {asked / default:.0f} times the default of {default:g}. "
         f"It is the wander of each dab in tip diameters, so it comes out as width: a "
         f"stroke lands about {1.2 + _JITTER_WIDTHS * (asked - default):.1f} brushes "
@@ -4014,7 +4136,7 @@ def _check_jitter(b: Brush, asked: float) -> None:
     )
 
 
-def _check_pressure_on_tip(b: Brush, pressure, pts: np.ndarray, canvas) -> None:
+def _check_pressure_on_tip(session, b: Brush, pressure, pts: np.ndarray, canvas) -> None:
     """Warn when a pressure list on a chisel tip is asking for a width it cannot give.
 
     The documentation already says an oriented tip keeps its chisel under any
@@ -4038,7 +4160,8 @@ def _check_pressure_on_tip(b: Brush, pressure, pts: np.ndarray, canvas) -> None:
     if math.hypot(dx, dy) > _SHORT_MARK_WIDTHS * b.size:
         return
     shown = ", ".join(f"{float(v):g}" for v in arr[:4]) + (", ..." if arr.size > 4 else "")
-    warnings.warn(
+    session._notify(
+        "chisel-pressure",
         f"pressure=[{shown}] on a {b.tip} tip changes the paint, not the width: a "
         f"chisel keeps the width it was given, so this mark comes back a rectangle "
         f"with a lighter end rather than a taper. A mark that tapers wants "
@@ -4073,7 +4196,8 @@ def _check_default_direction(session, place, b: Brush, density: float, overhang,
     along = sum(1 for _ in trial._block_in_paths(place, b, "axis", density, overhang))
     if laid <= _DIRECTION_RATIO * max(along, 1):
         return
-    warnings.warn(
+    session._notify(
+        "direction-default",
         f"block_in of {place.name or 'this shape'} with direction= left off runs its "
         f"passes horizontally and lays {laid} of them, stepping down the whole "
         f"height; along the mass's own axis it is {along} (direction=\"axis\", or "
@@ -4128,7 +4252,8 @@ def _check_direction_sequence(session, place, b: Brush, direction, density: floa
     # `("axis", 180)`, which is horizontal written the long way round.
     across = (place.axis + 90.0) % 180.0
     pair = price(("axis", across))
-    warnings.warn(
+    session._notify(
+        "direction-sequence",
         f"block_in of {place.name or 'this shape'} with a sequence of {len(dirs)} "
         f"directions lays one whole pass at every one of them and is charged the "
         f"sum: {total} strokes, from {' + '.join(str(e) for e in each)}. No single "
@@ -4159,7 +4284,7 @@ _ROUND_TIPS = ("round_soft", "round_hard")
 _ROUND_FEATURE = 0.1
 
 
-def _check_round_block(place, b: Brush, canvas, stacklevel: int = 3) -> None:
+def _check_round_block(session, place, b: Brush, canvas, stacklevel: int = 3) -> None:
     """Warn when a round tip is blocking in a shape too small to hold it.
 
     A chisel's overhang is across its pass; a disc's is all the way round, laid at
@@ -4208,7 +4333,8 @@ def _check_round_block(place, b: Brush, canvas, stacklevel: int = 3) -> None:
     share = b.size / short
     if share <= _CLEAN_SHARE:
         return
-    warnings.warn(
+    session._notify(
+        "round-fringe",
         f"block_in({place.name or 'a shape'}) with a round tip ({b.name!r}) at "
         f"size={b.size:.3g}, on a feature {short:.3f} across at its narrowest: the "
         f"brush is {share:.0%} of that. A round tip's overhang goes out all the way "
@@ -4220,7 +4346,7 @@ def _check_round_block(place, b: Brush, canvas, stacklevel: int = 3) -> None:
     )
 
 
-def _check_clean_size(place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> None:
+def _check_clean_size(session, place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> None:
     """Warn when a clean edge's brush is a large share of the mass's shorter extent.
 
     ``edge="clean"`` insets the fill by half the brush all the way round, which is a
@@ -4239,7 +4365,8 @@ def _check_clean_size(place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> 
     if share <= _CLEAN_SHARE:
         return
     kept = place.inset(b.size * 0.5).area / max(place.area, 1e-12)
-    warnings.warn(
+    session._notify(
+        "clean-small",
         f"block_in(edge='clean') at size={b.size:.3g} on {place.name or 'a shape'} "
         f"{short:.3f} across at its narrowest: the brush is {share:.0%} of that, so "
         f"the half-brush inset keeps {kept:.0%} of the shape to fill and the contour "
@@ -4371,7 +4498,7 @@ def _inward_size(place, n: int) -> float:
 _INWARD_MIN_RINGS = 5
 
 
-def _check_inward_comb(place, b: Brush, n: int, named: bool) -> None:
+def _check_inward_comb(session, place, b: Brush, n: int, named: bool) -> None:
     """Warn when a centred scumble's brush is too *narrow* to be a brush.
 
     :func:`_check_inward_brush` is the other side of this one wall, and until now
@@ -4418,7 +4545,8 @@ def _check_inward_comb(place, b: Brush, n: int, named: bool) -> None:
                   f"under the floor. A glow this shallow is not a bloom on a "
                   f"surface -- lay it as a volume of lit air, three glazes along "
                   f"the axis of the light (RECIPES.md).")
-    warnings.warn(
+    session._notify(
+        "inward-comb",
         f"scumble(direction='inward', n={n}) on a patch {depth:.3g} deep lays its "
         f"rings with a bristle {b.size:.3g} wide, under the {_REPORT_SMALL_BRISTLE} "
         f"where a comb is four streaks with gaps rather than a brush. {remedy}",
@@ -4426,7 +4554,7 @@ def _check_inward_comb(place, b: Brush, n: int, named: bool) -> None:
     )
 
 
-def _check_inward_brush(place, b: Brush, n: int) -> None:
+def _check_inward_brush(session, place, b: Brush, n: int) -> None:
     """Warn when a centred scumble's brush is wide enough to fill the patch flat.
 
     The same shape of warning ``cost()`` gives for a plan that would eat the
@@ -4437,7 +4565,8 @@ def _check_inward_brush(place, b: Brush, n: int) -> None:
     widest = _INWARD_STEPS * step
     if b.size <= widest * 1.05:
         return
-    warnings.warn(
+    session._notify(
+        "inward-flat",
         f"scumble(direction='inward') with a brush {b.size:.3g} wide on a patch "
         f"whose rings step {step:.3g} apart: {b.size / step:.1f} steps. The last "
         f"rings bury the first, so the middle comes back one flat colour with a "
@@ -4480,7 +4609,7 @@ def _linear_size(step: float) -> float:
     return float(min(max(_LINEAR_STEPS * step, 0.01), 1.0))
 
 
-def _check_linear_brush(b: Brush, step: float, n: int) -> None:
+def _check_linear_brush(session, b: Brush, step: float, n: int) -> None:
     """Warn when a banded scumble's brush is too narrow to close its own joins.
 
     The inward case has warned about a brush wider than its rings since the third
@@ -4492,7 +4621,8 @@ def _check_linear_brush(b: Brush, step: float, n: int) -> None:
     steps = b.size / max(step, 1e-9)
     if steps >= _LINEAR_MIN_STEPS:
         return
-    warnings.warn(
+    session._notify(
+        "scumble-bars",
         f"scumble() with a brush {b.size:.3g} wide on a band whose {n} passes step "
         f"{step:.3g} apart: {steps:.1f} steps. The passes do not overlap, so the "
         f"passage comes back as bars with the ground showing between them. Use about "
@@ -4531,7 +4661,8 @@ def _pass_lengths(place, degrees: float, n: int) -> tuple[float, float]:
 _WEDGE_RATIO = 2.0
 
 
-def _check_scumble_ends(place, degrees: float, b: Brush, n: int, stacklevel: int = 2) -> None:
+def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
+                        stacklevel: int = 2) -> None:
     """Warn when a banded scumble's brush is wider than its passes at one end.
 
     The brush is picked from the *step* between passes (three of them), which closes
@@ -4550,7 +4681,8 @@ def _check_scumble_ends(place, degrees: float, b: Brush, n: int, stacklevel: int
     if narrow <= 0.0 or b.size <= narrow:
         return
     if wide >= _WEDGE_RATIO * narrow:
-        warnings.warn(
+        session._notify(
+            "scumble-wedge",
             f"scumble on {place.name or 'this shape'}: its width varies "
             f"{wide / narrow:.0f}x along the direction the passes step -- the passes "
             f"run {narrow:.3f} long at one end and {wide:.3f} at the other, and the "
@@ -4561,7 +4693,8 @@ def _check_scumble_ends(place, degrees: float, b: Brush, n: int, stacklevel: int
             stacklevel=stacklevel,
         )
     else:
-        warnings.warn(
+        session._notify(
+            "scumble-dabs",
             f"scumble on {place.name or 'this shape'}: every pass is shorter "
             f"({narrow:.3f}) than the brush laying it ({b.size:.3g}), so the passes "
             f"are dabs and the paint blooms past the outline. The passes run the "
@@ -5744,7 +5877,7 @@ def _decode_rng(state: dict) -> np.random.Generator:
     return gen
 
 
-def _warn_foreign_out_dir(session_path: Path, out_dir: Path) -> None:
+def _warn_foreign_out_dir(session, session_path: Path, out_dir: Path) -> None:
     """Say so when a loaded session will write its looks outside the working directory.
 
     ``out_dir`` round-trips through the session file because that is how ``easel look
@@ -5772,7 +5905,8 @@ def _warn_foreign_out_dir(session_path: Path, out_dir: Path) -> None:
         return
     if any(resolved == root or root in resolved.parents for root in roots):
         return
-    warnings.warn(
+    session._notify(
+        "foreign-out-dir",
         f"{session_path} writes its looks to {resolved}, which is neither in the "
         f"working directory nor beside the session file. That path came from the "
         f"session file, not from you. Set session.out_dir, or pass --out-dir, to "

@@ -39,6 +39,7 @@ from easel.color import (
 from easel.history import History, StrokeRecord
 from easel.look import load_reference, render_look
 from easel.measure import CellCompare, Comparison, compare_images
+from easel.notices import NOTICES, EaselWarning, Notice
 from easel.palette import PIGMENTS, Palette
 from easel.prepare import LEVELS, Area, Preparation, prepare_reference
 from easel.regions import (
@@ -142,6 +143,10 @@ __all__ = [
     "LEVELS",
     "History",
     "StrokeRecord",
+    # what the engine says at a call, and the codes it says it under
+    "EaselWarning",
+    "Notice",
+    "NOTICES",
     # the method. `guide` is the older name for `docs` and still works; it is not
     # what to reach for, because `Session.guide()` is a different thing entirely.
     "docs",

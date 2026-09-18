@@ -4,15 +4,21 @@ _To understand this, start by reading: this file; then [`LESSONS.md`](LESSONS.md
 this plan is written under its rules for how the engine and the guide may change; then
 the seven verdicts under `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/*/verdict.md`
 with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line 3214),
-`_pass_findings` (4935) and the `_check_*` family (3888-4571), which is where every
-warning the tool gives today lives._
+`_pass_findings` and the `_check_*` family, which is where every notice the tool gives
+today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
+step 3._
 
-**Status: steps 1 and 2 are done; steps 3 onward are still a plan and nothing in
-workstreams A to G is built.** Step 1 filed the round in `SUGGESTIONS.md` with its
+**Status: steps 1, 2 and 3 are done; steps 4 onward are still a plan, and of
+workstreams A to G only A is built.** Step 1 filed the round in `SUGGESTIONS.md` with its
 evidence. Step 2 is `scripts/probe_cohort_session.py`: it rebuilds the corpus, re-measures
 every claim in 2a and 2d, and counts what every candidate in D, E and F would cost. Its
 numbers are in `CALIBRATION.md` under *The 0.5.0 cohort's round*, and **what they decide
-is under section 6 below**. Written 2026-09-18 against `main` at `8192736`, engine 0.5.0
+is under section 6 below**. Step 3 is the notice channel (A, all five rows):
+`src/easel/notices.py`, `Session._notify` with all 21 sites converted, delivery through
+`easel run` and the MCP `run` / `cost` / `preview` / `rehearse` results, `easel explain`,
+and `REFERENCE.md`'s *What the tool will tell you* held against the registry by
+`tests/test_notices.py`. **Every check D adds from here lands on that channel rather than
+beside it.** Written 2026-09-18 against `main` at `8192736`, engine 0.5.0
 (tagged). Working file: delete it, or fold what survives into `SUGGESTIONS.md` /
 `CHANGELOG.md`, when the round is cut.
 
@@ -144,6 +150,16 @@ Taken from `LESSONS.md`, because a plan that ignores them will be re-litigated i
 ## 4. Workstreams
 
 ### A. Delivery: one notice channel -- the prerequisite
+
+**Built, step 3.** All five rows, as written, with two additions the inventory below
+missed: `_say_uncounted` and the foreign-`out_dir` warning are codes too (`count-only`,
+`foreign-out-dir`), which makes the registry the whole of what the engine says rather
+than most of it, and lets `tests/test_notices.py` assert that no bare `warnings.warn`
+is left in `src/easel/`. 21 codes; 3 of them habits. Two things worth carrying forward:
+`rehearse` and the price walk both work on a throwaway copy, so what they say has to be
+carried back to the session (`Session._adopt_notices`) or it is lost -- which is
+precisely what an MCP painter was losing; and a notice must not touch the log, which the
+*planning verbs leave nothing behind* test proved by catching a first attempt that did.
 
 **Today** (inventory, `session.py`): every call-time warning is a bare
 `warnings.warn(str)` from one of twelve `_check_*` functions, two methods and three

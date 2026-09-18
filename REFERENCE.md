@@ -278,6 +278,7 @@ s.compare({place: value, ...})                  # ...against your own value plan
                                                 # the pairs it puts within 0.10: do they touch?
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
 s.report(since=None, subject_share=None)        # the post-pass check, read off the log
+s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
 s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
@@ -324,6 +325,57 @@ for.
 
 ---
 
+## What the tool will tell you
+
+Everything the engine says at a call carries a **code**, and `easel explain <code>` —
+`s.explain(code)` from Python, `explain` through the MCP server — prints the passage
+that measured it. That is where a rule's reason lives once it is no longer in the
+reading path: not deleted, handed over at the one moment it applies.
+
+`easel run` prints them above the post-pass check, in one block, said once each
+however many calls tripped them, and **facts first**. A *fact* is a number about what
+this call is going to do — the mark lands nothing, the mass costs 3.9× its own axis,
+the value that comes back measures neither mass. A *habit* is a rule of thumb about
+the picture that a painter can be right to break, and one painting broke the comb
+floor twenty-eight times and was right every time.
+
+| Code | Kind | What it says | Measured under |
+|---|---|---|---|
+| `budget-share` | fact | a plan would eat more than its share of what is left of the budget | `CALIBRATION.md`, *Budget* |
+| `budget-spent` | fact | a plan was priced against a budget that is already spent | `CALIBRATION.md`, *Budget* |
+| `chisel-blank` | fact | an oriented tip under four pixels wide lays no paint, and is charged for it | `CALIBRATION.md`, *What a solid mass actually lands at* |
+| `chisel-pressure` | fact | a pressure list on a chisel tip changes the paint, not the width | `CALIBRATION.md`, *Pressure* |
+| `clean-small` | fact | a clean edge whose brush is a large share of the shape: the inset takes the mass rather than a rim off it | `CALIBRATION.md`, *A clean edge on a narrow mass* |
+| `count-only` | fact | a counted copy was asked something counting cannot answer | `PAINTING.md`, *Try the mark before you spend it* |
+| `cover-comb` | fact | `cover()` with a bristle does not bury: the comb leaves the old paint showing between the streaks at any opacity | `CALIBRATION.md`, *The bristle comb* |
+| `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
+| `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
+| `foreign-out-dir` | fact | a loaded session file writes its looks somewhere that is neither the working directory nor beside the file | `REFERENCE.md`, *The session, and the shell* |
+| `glaze-nothing` | fact | a film aimed at a value the paint under it already reads solves to no opacity, and still costs a stroke | `CALIBRATION.md`, *Aiming a film at a value* |
+| `inward-flat` | fact | an inward scumble's brush wider than about three ring steps: the last rings bury the first and the middle comes back flat | `CALIBRATION.md`, *`scumble`* |
+| `jitter-beads` | fact | `jitter=` a multiple of its default, which comes out as width: a chain of beads rather than a line | `PAINTING.md`, *Per-stroke overrides* |
+| `round-fringe` | fact | a round tip blocking in a feature lays about half again the shape's area, and the fringe is the silhouette | `CALIBRATION.md`, *A clean edge on a narrow mass* |
+| `sample-split` | fact | `sample()` averaged two masses, so the value it returns is a measurement of neither | `PAINTING.md`, *Colour* |
+| `scumble-bars` | fact | a banded scumble whose passes do not overlap: bars with the ground showing between them | `CALIBRATION.md`, *The band, and the brush that closes its joins* |
+| `scumble-dabs` | fact | a scumble whose every pass is shorter than the brush laying it: dabs, and the paint blooms past the outline | `CALIBRATION.md`, *The band across a wedge* |
+| `scumble-wedge` | fact | a scumble across a shape whose width varies: no one brush is right for both ends, and the narrow end blooms | `CALIBRATION.md`, *The band across a wedge* |
+| `clean-comb` | habit | a clean edge drawn with a bristle, whose comb covers about three-quarters of its width | `CALIBRATION.md`, *The contour of a clean edge* |
+| `inward-comb` | habit | an inward scumble laid with a bristle under the comb floor: four streaks with gaps rather than a brush | `CALIBRATION.md`, *The bristle comb* |
+| `smudge-wide` | habit | a smudge past `0.02`, where one pass stops softening a join and starts dragging a lobe | `CALIBRATION.md`, *`smudge`* |
+
+A pass prints the code and the sentence; the measurement stays where it was
+measured. So `chisel-blank` after a pass means a mark was charged and landed nothing,
+and `easel explain chisel-blank` is the table of what a solid mass lands at, at four
+pixels and either side of it.
+
+`s.notices(since=None)` is the list itself, oldest first, and it is saved in the
+`.easel` file, so a painting worked from the shell keeps what it was told. Notices
+live **beside** `history.records` and never in it: a mark's texture is seeded from its
+place in the log, so anything new that took an index would repaint every painting made
+before it.
+
+---
+
 ## The session, and the shell
 
 ```python
@@ -352,6 +404,7 @@ easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
 easel log p.easel [-n 20] [--check]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]
+easel explain [code]
 ```
 
 A script run by `easel run` gets the session as `s`, with the whole public API already
