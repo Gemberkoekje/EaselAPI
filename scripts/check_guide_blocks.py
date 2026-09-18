@@ -60,14 +60,46 @@ REFERENCE = make_reference(OUT / "ref.png")
 
 DOCUMENTS = ("PAINTER.md", "PAINTING.md", "RECIPES.md")
 
-blocks: list[tuple[str, str]] = []
-for name in DOCUMENTS:
-    found = re.findall(r"```python\n(.*?)```", (ROOT / name).read_text(encoding="utf-8"), re.S)
-    # A fenced block nested under a list item carries the list's indentation, which
-    # is valid markdown and an IndentationError to `exec`.
-    blocks += [(name, textwrap.dedent(b)) for b in found]
-    print(f"{len(found):>3} python blocks in {name}")
-print()
+
+def guide_blocks(echo: bool = True) -> list[tuple[str, str]]:
+    """Every python block of the guide, in order, dedented so `exec` will take it.
+
+    A function rather than a module-level loop because this script is not the only
+    thing that wants the list: `scripts/probe_cohort_session.py` runs the same blocks
+    past the checks it is measuring, which is `LESSONS.md`'s rule 2 -- *ask what the
+    rule says to a painter doing the right thing* -- made runnable. Two copies of the
+    block list would drift the first time a recipe was added.
+    """
+    blocks: list[tuple[str, str]] = []
+    for name in DOCUMENTS:
+        found = re.findall(r"```python\n(.*?)```",
+                           (ROOT / name).read_text(encoding="utf-8"), re.S)
+        # A fenced block nested under a list item carries the list's indentation,
+        # which is valid markdown and an IndentationError to `exec`.
+        blocks += [(name, textwrap.dedent(b)) for b in found]
+        if echo:
+            print(f"{len(found):>3} python blocks in {name}")
+    if echo:
+        print()
+    return blocks
+
+
+def is_pseudo_code(block: str) -> bool:
+    """Signature listings and elided pseudo-code, which are not meant to run."""
+    return bool(
+        re.search(r"^\s*s\.\w+\(.*[=,]\s*(brush|color|points|region|reference|strokes)\b",
+                  block, re.M)
+        or re.search(r"\.\.\.", block)
+    )
+
+
+def runnable(block: str) -> str:
+    """One block, with the placeholders a fresh reader would replace resolved."""
+    src = block.replace('"ref.jpg"', repr(str(REFERENCE)))
+    for name in ("painting.png", "painting.gif"):          # the guide's export block
+        src = src.replace(f'"{name}"', repr(str(OUT / name)))
+    return src
+
 
 PREAMBLE = (
     "from easel import Session, Region, region, cell, span, horizon, below, above\n"
@@ -101,31 +133,32 @@ PREAMBLE = (
     "patch = ellipse(span('D4', 'F5'))\n"
     "bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)\n"
 )
-ok = bad = skipped = 0
-for i, (doc, b) in enumerate(blocks, 1):
-    head = b.strip().splitlines()[0][:60]
-    where = f"{doc.removesuffix('.md').lower():<8}"
-    if re.search(r"^\s*s\.\w+\(.*[=,]\s*(brush|color|points|region|reference|strokes)\b", b, re.M) \
-       or re.search(r"\.\.\.", b):
-        # signature listings and elided pseudo-code
-        skipped += 1
-        print(f"  {i:>3} {where} SKIP (pseudo-code)  {head}")
-        continue
-    src = b.replace('"ref.jpg"', repr(str(REFERENCE)))
-    for name in ("painting.png", "painting.gif"):          # the guide's export block
-        src = src.replace(f'"{name}"', repr(str(OUT / name)))
-    try:
-        exec(compile(PREAMBLE + src, f"<block {i}>", "exec"), {})
-        ok += 1
-        print(f"  {i:>3} {where} ok               {head}")
-    except Exception as e:
-        bad += 1
-        print(f"  {i:>3} {where} FAIL             {head}\n       {type(e).__name__}: {e}")
-print(f"\nok {ok}  failed {bad}  skipped {skipped}")
+def main() -> int:
+    blocks = guide_blocks()
+    ok = bad = skipped = 0
+    for i, (doc, b) in enumerate(blocks, 1):
+        head = b.strip().splitlines()[0][:60]
+        where = f"{doc.removesuffix('.md').lower():<8}"
+        if is_pseudo_code(b):
+            skipped += 1
+            print(f"  {i:>3} {where} SKIP (pseudo-code)  {head}")
+            continue
+        try:
+            exec(compile(PREAMBLE + runnable(b), f"<block {i}>", "exec"), {})
+            ok += 1
+            print(f"  {i:>3} {where} ok               {head}")
+        except Exception as e:
+            bad += 1
+            print(f"  {i:>3} {where} FAIL             {head}\n       {type(e).__name__}: {e}")
+    print(f"\nok {ok}  failed {bad}  skipped {skipped}")
 
-# The front page's word budget, the other thing that keeps the guide usable.
-words = len((ROOT / "PAINTER.md").read_text(encoding="utf-8").split())
-budget = FRONT_PAGE_WORDS
-verdict = "over budget" if words > budget else f"{budget - words} to spare"
-print(f"PAINTER.md {words} words against a budget of {budget} -- {verdict}")
-sys.exit(1 if bad or words > budget else 0)
+    # The front page's word budget, the other thing that keeps the guide usable.
+    words = len((ROOT / "PAINTER.md").read_text(encoding="utf-8").split())
+    budget = FRONT_PAGE_WORDS
+    verdict = "over budget" if words > budget else f"{budget - words} to spare"
+    print(f"PAINTER.md {words} words against a budget of {budget} -- {verdict}")
+    return 1 if bad or words > budget else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -7,11 +7,14 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 `_pass_findings` (4935) and the `_check_*` family (3888-4571), which is where every
 warning the tool gives today lives._
 
-**Status: a plan. Nothing here is built or committed, and only workstream B (the
-reported bugs) has been checked against the code; every proposed check, measurement and
-default move is still a candidate.** Written 2026-09-18 against `main` at `8192736`,
-engine 0.5.0 (tagged). Working file: delete it, or fold
-what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the round is cut.
+**Status: steps 1 and 2 are done; steps 3 onward are still a plan and nothing in
+workstreams A to G is built.** Step 1 filed the round in `SUGGESTIONS.md` with its
+evidence. Step 2 is `scripts/probe_cohort_session.py`: it rebuilds the corpus, re-measures
+every claim in 2a and 2d, and counts what every candidate in D, E and F would cost. Its
+numbers are in `CALIBRATION.md` under *The 0.5.0 cohort's round*, and **what they decide
+is under section 6 below**. Written 2026-09-18 against `main` at `8192736`, engine 0.5.0
+(tagged). Working file: delete it, or fold what survives into `SUGGESTIONS.md` /
+`CHANGELOG.md`, when the round is cut.
 
 ---
 
@@ -443,6 +446,65 @@ One round, cut as 0.6.0, in PRs that each stand alone. The repository's rhythm i
 9. **Docs**: `demo`, `diagnose`, `explain`, the new recipe, the fixes, the voice pass,
    the entry path, the budgets (G).
 10. **Cut 0.6.0**: `CHANGELOG.md` without the claim, tag, then the claim.
+
+### What step 2 measured, and what it decides
+
+`scripts/probe_cohort_session.py` rebuilt all 21 paintings — **343 passes, 5,422 strokes**
+— re-measured every claim in 2a and 2d, and ran each candidate in D, E and F against the
+corpus and against the guide's own 70 runnable code blocks. The numbers are in
+`CALIBRATION.md`; what they do to the rows above:
+
+**Dropped, or not built as written.**
+
+| Row | Why |
+|---|---|
+| `mass-is-a-stroke` (D1) | fires on **18%** of passes and on **9** of the guide's blocks, including `PAINTER.md`'s first `block_in`. Rule 2: wrong, not noisy |
+| `shallow-box` (D1) | fires on **18%** of passes — the graded sky and sea bands that are the right thing |
+| `wet-under` (D2) | fires on **22%** of passes and **8** guide blocks. Wetness is no gate: a fifth of every mark in the corpus lands on paint over `0.15` wet. B18 still shows the wet bezel moving pixels by `0.13`, so what is left is a *fact* line at the call, not a habit rule |
+| `ring-steps`, `ring-rim` (D1, D2) | fire on **nothing** in the corpus and on one guide block each. Every committed inward `scumble` steps `0.014`-`0.021` a ring, well under any contour threshold. Their only evidence is GLM's lost take |
+| `round-soft-mass` (D1) | never fires |
+| F4, halved `jitter` on a `flat` scumble | the halved pair moves the ripple from `0.0053` to `0.0059`: nothing this measures |
+| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all |
+| F2, a round tip to `pressure="even"` | **0 committed calls** would move |
+
+**Survive, with the threshold the corpus gives.**
+
+| Row | Number |
+|---|---|
+| `chisel-staircase` (D1) | 6% of passes, 5 guide blocks — three more than the two recipe blocks the plan already fixes. Name them in the same commit |
+| `spill` (D1) | 4% of passes, 5 guide blocks. B17 is confirmed to the second decimal: **1.42x / 2.99x / 3.62x** at axis / 30 / 60 degrees |
+| `glaze-far` (D2) | 4% of passes, 1 guide block, and `0.08` **is the corpus's own p90** |
+| `smudge-across` (D2) | 5% of passes, **0** guide blocks |
+| `radiating` (D3) | 7% of passes, **0** guide blocks |
+| `buried` (D3) | 17% of passes, 0 guide blocks — over the ceiling, so it needs a narrower gate than *four marks at half covered* before it is built |
+| `smudge-long` (D2) | 6% of passes but **3** guide blocks, and the corpus median smudge is `0.168` long. The `0.10` threshold is far too low |
+| `holes:` (E) | fires after 8% of passes. **A hole is a contrast, not a gap**: the same comb leaves `0.16%` on `toned_grey` and **`3.16%` on a dark ground** |
+| F3, a banded `scumble` to `load=1.0, load_falloff=0.0` | **40 of 60** committed banded scumbles type the clause by hand; bare `5.17%` to `0.01%` |
+| F5, `edge="hard"` to two brushes of overhang | **55 committed calls, none naming an overhang**: every one moves, so the goldens are the cost |
+
+**Tier 3, on the evidence.** `one-loop`, `cross-small`, `scumble-few`, `smudge-again` and
+`inset-lost` fire on one or two passes each. `one-loop` is the one to keep on the list
+anyway: four of the seven painters reported the fault and the committed scripts hold it
+twice, because they **rewrote the passage before delivering the painting**. The corpus
+cannot see a fault that was repaired before it was committed, which is a limit of this
+instrument.
+
+**Two of section 2's own findings changed shape.**
+
+- **Finding 15 is the cohort's and not the engine's.** Five of the six budgeted cohort
+  paintings stopped under 45% of budget, median 42% spent; **none of the thirteen
+  budgeted paintings before them did**, median 86%.
+- **Finding 11 is older than this round.** Half the corpus finishes under the bare-ground
+  floor, cohort or not. Resolving the contradiction (C) is still the right move; blaming
+  the graded-field recipe for the cohort is not.
+
+**And the rebuild found two things of its own**, neither of which belongs to this round:
+`car_wash` and `pears` claim a rebuild and come back five marks over (`car_wash`
+re-checked with only the nineteen passes its notes name, so it is not the pass list), and
+two committed passes -- `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` -- do not
+run at all from a clean session, because each uses a name the passes before it never
+define. Both want an issue against `PAINTINGS.md`'s reproducibility claims rather than a
+row above.
 
 ---
 
