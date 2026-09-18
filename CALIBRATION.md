@@ -58,6 +58,7 @@ their own sessions rather than measurements of the engine.
 | A rehearsal is the next strokes; `pencil`, `dry` and `erase` are logged | *The log, undo, and the stream* |
 | What a mass costs, before the call | *Budget* |
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
+| What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
 
 ---
 
@@ -1406,3 +1407,295 @@ named weakest at the end.
 **Reading.** Reading the guide, the reasons, the reference, the calibration file and
 two paintings' notes cost one session a few minutes and about thirty thousand tokens,
 against far more spent looking at its own rehearsals.
+
+---
+
+## The 0.5.0 cohort's round
+
+Seven painters who are not Claude installed `easel-paint` 0.5.0 from the package, painted
+a picture each, and left a verdict on the tool. Acting on them is one round, and its
+measuring step is [`scripts/probe_cohort_session.py`](scripts/probe_cohort_session.py):
+it rebuilds **every committed painting from its own pass scripts, pass by pass**,
+re-measures each claim the round is built on, and counts what each proposed check would
+cost in lines printed. Everything in this section is that script's output. Re-run it
+rather than trusting the numbers here — it takes about an hour, and `--claims`,
+`--corpus` and `--only <name>` cut it down.
+
+**Why a corpus replay at all.** `LESSONS.md`'s first rule is *measure the condition
+before writing the rule*, and its seventh is *a warning that fires on almost every pass
+is a warning nobody reads*. Neither can be settled by reading code: both are questions
+about what a painter would have been told, at the moment they were painting. Replaying
+the corpus is the instrument that answers them, and for four of the round's proposed
+checks the answer was *no*.
+
+### The corpus, rebuilt
+
+Every painting under `paintings/`, on a fresh session with the canvas arguments
+`PAINTINGS.md` records. A pass is a numbered pass script — `p3_rocks.py`,
+`pass04_bowl.py` — and for the three cohort painters who wrote one script instead, a pass
+is their own numbered section. The painters' `check`, `cost` and `probe` scripts are not
+passes and are not run, and nothing that writes a file is allowed to.
+
+| Painting | passes | marks | spent | the page says | rebuild |
+|---|---|---|---|---|---|
+| `car_wash` | 21 | 212 | 211 | 206 | **off by 5** |
+| `pears` | 17 | 241 | 229 | 224 | **off by 5**, and one pass raised |
+| `dusk` | 12 | 185 | 184 | 184 | matches |
+| `laundromat` | 16 | 301 | 286 | 286 | matches |
+| `sonnet` | 10 | 275 | 274 | 274 | matches |
+| `opus` | 13 | 313 | 296 | 296 | matches |
+| `fable` | 16 | 288 | 284 | 284 | matches |
+| `pool` | 31 | 281 | 242 | 221 | not claimed |
+| `heron1` | 18 | 302 | 293 | 293 | matches, and one pass raised |
+| `heron2` | 14 | 273 | 253 | 253 | matches |
+| `greenhouse` | 14 | 422 | 297 | 297 | matches |
+| `fogged` | 21 | 354 | 312 | 311 | not claimed |
+| `pier` | 15 | 267 | 257 | 257 | matches |
+| `hands` | 28 | 350 | 325 | 329 | not claimed |
+| `bigpickle` | 8 | 53 | 50 | 50 | matches |
+| `deepseek` | 5 | 76 | 68 | 68 | matches |
+| `gemini` | 21 | 738 | 725 | 725 | matches |
+| `glm` | 8 | 138 | 126 | 126 | matches |
+| `gpt` | 44 | 483 | 408 | 408 | matches |
+| `grok` | 6 | 155 | 132 | 132 | matches |
+| `kimi` | 5 | 183 | 170 | 170 | matches |
+
+**21 paintings, 343 passes, 5,422 strokes paid for**, and 16 of the 21 come back at the
+stroke count their own page records. Three things the rebuild turned up that nothing
+else would have:
+
+- **`car_wash` and `pears` claim a rebuild and do not come back at their own stroke
+  count** — five marks over, each. `car_wash` was re-run with only the nineteen passes
+  its notes name, leaving out the two free planning passes, and came back at 211 again:
+  it is not the pass list. A stroke count is a weaker test than the byte comparison the
+  page claims, and it already fails.
+- **Two committed passes do not run at all from a clean session.** `pears`'
+  `p9_rehearse_pear.py` asks the palette for `pear_rim`, which no pass before it mixes;
+  `heron1`'s `pass1_draw.py` uses `TREES`, which its prelude does not define. Both were
+  written in a session that already had the name in scope.
+- **`pool` comes back 21 strokes over**, and it is the one painting whose pass order had
+  to be guessed: two of its passes share the number 5. Its page claims no rebuild.
+
+### The noise budget, as 0.5.0 stands
+
+What the tool says today, per pass, over that corpus. Lines marked `!` are call-time
+warnings; the rest are `report()` findings.
+
+| The rule | passes | share |
+|---|---|---|
+| bars: a stack of passes at one angle | 47 | **14%** |
+| ! pressure changes the paint, not the width | 18 | 6% |
+| round tips printing one disc | 21 | 6% |
+| a loaded comb under the bristle floor | 17 | 5% |
+| ! a clean edge on a narrow mass | 16 | 5% |
+| a graded passage laid too narrow | 8 | 2% |
+| a pressure list on a chisel | 8 | 2% |
+| ! scumble: passes shorter than the brush | 5 | 2% |
+| ! a smudge past the size that buys anything | 4 | 1% |
+| ! scumble: a brush wider than the band | 3 | 1% |
+| ! a tip too small to deposit paint | 3 | 1% |
+| ! a round tip blocking in a feature | 2 | 1% |
+| detail before the masses are down | 2 | 1% |
+| ! sample() averaging over a mixed area | 1 | 0% |
+
+**229 of 325 painted passes (70%) say nothing at all. The median pass prints 0 lines and
+the busiest prints 11.** So the engine is quiet today, and the bars rule is half of what
+noise there is — it fires on one pass in seven even with its said-once decay, which is
+the number behind *it taught two painters to skim*.
+
+### What each proposed check would cost
+
+Prototypes of the checks the round proposes, run against every call and every pass of the
+corpus. *Passes* is how many of the 325 painted passes it fires on; *guide* is how many
+of the guide's 70 runnable python blocks it fires on, which is `LESSONS.md` rule 2 — *ask
+what the rule says to a painter doing the right thing* — as a number.
+
+| Candidate | from | fires | passes | share | guide blocks |
+|---|---|---|---|---|---|
+| `wet-under` | D2 | 241 | 71 | **22%** | **8** |
+| `mass-is-a-stroke` | D1 | 118 | 60 | **18%** | **9** |
+| `shallow-box` | D1 | 105 | 60 | **18%** | 1 |
+| `buried` | D3 | 54 | 54 | **17%** | 0 |
+| `holes` | E | 32 | 25 | 8% | 1 |
+| `radiating` | D3 | 23 | 23 | 7% | 0 |
+| `smudge-long` | D2 | 27 | 20 | 6% | 3 |
+| `chisel-staircase` | D1 | 27 | 18 | 6% | 5 |
+| `smudge-across` | D2 | 19 | 15 | 5% | 0 |
+| `spill` | D1 | 17 | 14 | 4% | 5 |
+| `glaze-far` | D2 | 25 | 12 | 4% | 1 |
+| `inset-lost` | D1 | 5 | 3 | 1% | 2 |
+| `cross-small` | D1 | 2 | 2 | 1% | 0 |
+| `one-loop` | D3 | 2 | 2 | 1% | 0 |
+| `scumble-few` | D1 | 1 | 1 | 0% | 0 |
+| `smudge-again` | D2 | 1 | 1 | 0% | 0 |
+| `ring-steps` | D1 | 0 | 0 | 0% | 1 |
+| `ring-rim` | D2 | 0 | 0 | 0% | 1 |
+| `round-soft-mass` | D1 | 0 | 0 | 0% | 0 |
+
+**Four are over the ceiling.** `wet-under` at 22% of passes, `mass-is-a-stroke` and
+`shallow-box` at 18%, `buried` at 17% — against about one pass in six for a habit rule.
+The first three also fire on the guide's own blocks, so they are not merely noisy:
+`mass-is-a-stroke` fires on **nine** of seventy runnable blocks, including `PAINTER.md`'s
+first `block_in`, and `wet-under` on **eight**, because laying an opaque mass over paint
+that is still wet is what the guide teaches and `dry()` is the exception.
+
+**Two never fire on a real pass at all.** `ring-steps` and `ring-rim` fire on nothing in
+the corpus and on one guide block each — and the pass they were proposed for, GLM's first
+take, is the one whose calls were overwritten. Their evidence is seven frames and a
+reconstruction, not a pass anybody can replay.
+
+**`spill` and `chisel-staircase` fire where they should and on the guide too.** Each
+fires on about one pass in twenty; each fires on five guide blocks, where the plan
+expected two. The other three are the bill for the rule, and the round has to say whether
+the block or the rule is wrong.
+
+**Five are nearly silent**: `cross-small` (2 passes), `one-loop` (2), `scumble-few` (1),
+`smudge-again` (1), `round-soft-mass` (0). `one-loop` is the one that matters: four of the
+seven cohort painters reported the fault it names, and the committed scripts hold it
+twice — because those painters **rewrote the passage before delivering the painting**.
+The reports are real and the corpus cannot see them, which is a limit of this instrument
+and not a verdict on the check.
+
+### Where a threshold would sit
+
+Every number the prototypes measured, fired or not. A threshold chosen from the tail that
+happened to be over it is not a threshold.
+
+| Measurement | n | median | p90 | max |
+|---|---|---|---|---|
+| `wet-under`: wetness under an opaque mark | 1749 | 0.091 | 0.410 | 0.654 |
+| `mass-is-a-stroke`: brushes across the shorter extent | 299 | 2.33 | 5.17 | 13.49 |
+| `spill`: `block_in` painted / place asked for | 234 | 1.126 | 1.474 | 4.249 |
+| `spill`: `block_in` share of the paint outside the place | 234 | 0.148 | 0.355 | 1.000 |
+| `spill`: `scumble` painted / place asked for | 65 | 1.287 | 1.573 | 2.525 |
+| `spill`: `scumble` share of the paint outside the place | 65 | 0.256 | 0.408 | 0.604 |
+| `buried`: share of earlier small or subject marks covered | 232 | 0.000 | 0.136 | 1.000 |
+| `glaze-far`: value shift over the film's own footprint | 221 | 0.033 | 0.082 | 0.221 |
+| `holes`: bare share inside a solid `flat` mass | 124 | 0.000 | 0.061 | 0.660 |
+| `holes`: bare share inside a solid `bristle` mass | 18 | 0.000 | 0.042 | 0.092 |
+| `radiating`: degrees fanned by the marks sharing a start | 96 | 11.9 | 75.2 | 90.0 |
+| `chisel-staircase`: sloped share of the outline | 81 | 0.000 | 0.689 | 1.000 |
+| `one-loop`: spread of the mark lengths, over their mean | 67 | 0.332 | 0.566 | 1.249 |
+| `one-loop`: spread of the spacing along their own line | 67 | 0.723 | 1.255 | 3.162 |
+| `smudge-long`: path length, in brush units | 37 | 0.168 | 0.527 | 0.721 |
+| `smudge-across`: change along the path over change across it | 37 | 1.268 | 4.732 | 9.156 |
+| `inset-lost`: share of the area kept | 32 | 0.784 | 0.876 | 0.927 |
+| `ring-steps`: value step per ring | 5 | 0.014 | 0.019 | 0.021 |
+| `ring-rim`: first ring against what the patch meets | 5 | 0.008 | 0.014 | 0.017 |
+
+Three of these settle a threshold by themselves. **`glaze-far`'s `0.08` is the corpus's
+own p90**: the films painters lay sit at `0.033` and the ones that make a new mass are
+the top tenth, which is the shape a check wants. **A mass is 2.33 brushes across at the
+median**, so `mass-is-a-stroke` at two brushes fired on 118 of the corpus's 299 masses —
+two in five — which is a rule against the way masses are actually laid. And **every
+inward `scumble` anybody committed steps `0.014`-`0.021` a ring**, well under the `0.05`
+that draws a contour, so the five committed rings are the cure and not the fault.
+
+### The measurement lines, on the finished canvases
+
+`values:`, `edges:`, `pencil:`, `boxes:` and `unspent:` on every painting are what the
+script prints. Three of the cohort's findings are decided by them, and two of those split
+the cohort from the paintings that came before it:
+
+| | all 21 | the seven | the fourteen before them |
+|---|---|---|---|
+| finish under the `0.5%` of bare ground the checklist asks for | 12 of 21 | 5 of 7 | 7 of 14 |
+| median bare ground at the end | `0.38%` | `0.06%` | `0.49%` |
+| budgeted paintings that stopped under 45% of budget | 5 of 19 | **5 of 6** | **0 of 13** |
+| median share of the budget spent | 81% | 42% | 86% |
+| share of edges under 2 px wide | 12%-44%, median 27% | 12%-37%, median 19% | 14%-44%, median 27% |
+
+**Finding 15 is the cohort's, and it is sharp.** Five of the six budgeted cohort
+paintings stopped under 45% of their budget, at a median of 42% spent; **none of the
+thirteen budgeted paintings before them did**, at a median of 86%. Whatever that is, it
+is not a property of the engine.
+
+**Finding 11 is not the cohort's.** Half the corpus finishes under the bare-ground floor
+the checklist asks for, and half of the fourteen paintings made before the cohort do
+too — the seven are further down the same slope, not off it. The contradiction between
+the graded-field recipe and the ground line is older than this round.
+
+### The default moves
+
+Each move, with what it buys measured on a scratch canvas and what it would cost measured
+over the corpus.
+
+| Move | What it buys | What the corpus leans on |
+|---|---|---|
+| `cover()` to `edge="hard"` | `ragged` paints **2.32x** the area it is handed, `clean` 1.06x, `hard` 1.01x | **No committed pass script calls `cover()` at all** — the move is free, and so is the evidence for it |
+| a round tip on `block_in`/`sweep` to `pressure="even"` | not re-measured; the docs' own claim | **0 committed calls** would move |
+| a banded `scumble` to `load=1.0, load_falloff=0.0` | bare **5.17% to 0.01%**, ripple **0.0111 to 0.0031** | **40 of 60** committed banded scumbles type the clause by hand |
+| a `scumble` with a `flat` to halved `jitter`/`size_jitter` | ripple down the band **0.0053 to 0.0059**, scallop across it 0.0052 either way | 15 committed scumbles use a `flat`; the halved pair changes nothing this measures |
+| `edge="hard"` to two brushes of overhang | B8's table: `0.80%`-`2.86%` bare inside the line to `0.055%`-`0.285%` on a round tip | **55 committed calls at `edge="hard"`, none naming an overhang** — every one would move |
+
+The banded-scumble default is the one the corpus argues for loudest: two painters in three
+type the clause by hand. The `cover()` move costs nothing because nothing uses `cover()`,
+and the halved-jitter move buys nothing this measurement can see.
+
+### The claims, re-measured
+
+One row per claim the round is built on, against the engine as it is. *Survived* means
+the claim is true and its number is close to what was reported; the others say what
+moved.
+
+| Claim | What the probe found |
+|---|---|
+| **The chisel staircase** (finding 1) | **Survived, and it is a comparison and not a constant.** On the lit band: `flat` at `0.020` leaves **22%** of its strong edges within ten degrees of horizontal and `0.010` leaves **15%**, against **1%** for a `bristle` and **1%** for `round_hard`. On Kimi's rock face, whose boundary slopes the other way, the same brushes give **7% / 19%** against **4%** and **2%**. Several times as many pass ends from a chisel, every time — but the share belongs to the band as much as to the brush. `edge="hard"` does not close it: these are pass ends *inside* the mask. |
+| **Holes inside a `solid=True` mass** (finding 2, B2) | **Survived, with the mechanism corrected twice.** A `flat` leaves `0.0000%` bare at every size and density tried. The comb leaves them: `bristle` at `size=0.04, density=0.8` leaves **0.1552%** in **47** blobs, the largest **198 px**; at `density=1.2` it is **0.0000%**. `solid=` cannot close them — it sets `load` and `load_falloff` and nothing else. **And a hole is a contrast, not a gap**: the same call leaves `0.1552%` on `toned_grey`, `0.1357%` on white, and **3.1550% in 373 blobs, the largest 2270 px**, on the dark `#2e332c`. *Bare* means within `10/255` of the ground, which is what `ground_showing()` means by it and what an eye means by it — so a dark mass on a dark ground is where the comb's holes are visible at all. |
+| **A smudge drags a thumbprint** (finding 3) | **Survived, and it is a depth.** A hard step from `0.20` to `0.78`, one smudge at `size=0.04`: run **along** the join it lifts 11,024 px and stops **0.5 brushes** into the dark; run **across** it lifts 1,561 px and carries them **4.1 brushes** in — the length of its own path. At 30 degrees, 1.9 brushes. |
+| **A glaze far from its ground** (finding 4) | **Survived, with the window measured.** One film at `opacity=0.15` over a mass at `0.30` moves the value `0.014` when it is mixed `0.05` away, `0.052` at `0.25`, **`0.080` at `0.40`** and `0.110` at `0.55`. So the `0.08` that makes a *new* mass rather than shifting an old one is a film mixed about `0.40` off what it lands on, at that opacity. |
+| **A scumble lands outside its band** (finding 8, B17) | **Survived, to the second decimal.** A band `0.20` tall at `n=8` with the auto brush paints **1.42x** its own area at `"axis"`, **2.99x** at 30 degrees and **3.62x** at 60 — against the plan's 1.43x / 2.84x / 3.53x. At 60 degrees **72%** of the paint lands outside the band, and the auto brush has gone from `0.075` to `0.297`, because the step is measured across the *bounding box*. |
+### The eighteen reported bugs, re-measured
+
+| # | What the probe found |
+|---|---|
+| B1 | **Confirmed.** `stroke`, `dab`, `glaze` and `smudge` take `clip=`; `block_in`, `sweep`, `cover` and `scumble` raise *`clip=` is not a brush field*, which names neither `stroke(clip=)` nor `edge="hard"`. `scumble(edge="hard")` raises an error that names `block_in()` and `sweep()` and not the caller. |
+| B2 | See *Holes inside a `solid=True` mass* above. |
+| B3 | **Confirmed.** A rehearsal copy comes back with `timelapse=False` and 0 frames, and `timelapse_gif` on it raises *No time-lapse frames were recorded. Create the session with `timelapse=True`* — which is the one thing the painting already did. |
+| B4 | **Confirmed.** A frame of a 1440×960 painting is **360×240**, and nothing on `Session` or the CLI can ask for another size. |
+| B5 | **Confirmed, and it prices what it cannot paint.** A stroke plan costs 1 and a mass plan 11; a `sweep` plan raises for a missing `into=` and a `cover` plan raises *a stroke spec needs 'points'*. A scumble-shaped plan carrying `shape=` **quotes 5 where the call lays 8**. |
+| B6 | **Confirmed.** A log of four records holding two strokes: `undo(1)` leaves three records and **still two strokes** — it scraped back the `dry`. `log(last=3)` counts the same three records. |
+| B7 | **Confirmed to the character.** **35** characters outside cp1252 across the five shipped documents — **31 of them in this file** — and exactly four distinct ones: a rightwards arrow x18, a true minus x10, *approximately equal* x2 and *less-than-or-equal* x1. **0** non-ASCII characters in `src/easel/`, so no notice and no `report()` line can do it: it is `print(easel.docs.read(...))` that dies. (This section says which characters they are rather than showing them, which is the fix the round makes to all five documents.) |
+| B8 | **Confirmed, and it is the round tip's bug more than the chisel's.** The 3 px strip inside a sloping outline, `solid=True`: a `flat` leaves `0.02%`–`2.88%` at `ragged` and `0.00%`–`0.41%` at `hard`; a `round_hard` leaves **6.78%–11.07%** at `ragged` and **0.80%–2.86%** at `hard`. At `overhang=2.0` every case is **0.000%–0.285%**. The bites are pass ends arriving at part pressure, so a round tip — which loses width with pressure — is worst. |
+| B9 | **Confirmed and reproduced exactly.** Five subject marks, three signature marks and one pencil line: `stroke_count` is **5** and `report()` says *subject: 5 of 8 marks so far (62%)*. |
+| B10 | **Confirmed.** `import easel_paint` raises `ModuleNotFoundError`. README's install line is line 103 and its nearest import is line 27 — **76 lines away**; `llms.txt` and the package docstring both put the import beside the install. |
+| B11 | **Confirmed both ways.** `palette['toned_grey']` lists every pigment and slot and never mentions that the name is a ground; `Session(ground='ultramarine')` lists every ground and never mentions that the name is a pigment. |
+| B12 | **Confirmed, and it is a ninth.** `top`, `bottom`, `left`, `right` and `center` are 0.33 × 0.33 cells of a 3×3. The full-width places are `lower-band` (y 0.600–1.000) and `lower-half` (y 0.500–1.000). |
+| B13 | **Confirmed.** `[200, 100, 50]` is accepted in silence and comes back **`#ffffff`**. |
+| B14 | **Confirmed.** `solid=True` is accepted by `block_in` and refused by `cover`, `stroke`, `sweep` and `scumble`, with an error that explains it is a pair of brush defaults — which is the argument for accepting it. |
+| B15 | **Confirmed as a fixed cost per stroke.** At 1024×768: a snapshot 3.6 ms, a 360 px frame **42.3 ms**, one wide `bristle` pass 330.7 ms. At 1440×960: 6.3 ms, **60.5 ms**, 436.9 ms. One snapshot is 19 MB / 33 MB and 24 are kept — **453 MB / 796 MB resident**. The frame is an order of magnitude dearer than the snapshot, and both land before a dab does. |
+| B16 | A feature, as the plan says. A rehearsal is free — the count does not move — and `rehearse(vary=)` does not exist, so a sheet of one mark at four sizes is four rehearsals, each rendering the whole canvas. |
+| B17 | See *A scumble lands outside its band* above. |
+| B18 | See *GLM's rings* below. |
+### GLM's rings (B18)
+
+The concentric rings on the wall right of GLM's monitor cost that session its one
+`undo`, and three accounts of them have been wrong: the painter's (*six crossing glazes
+laid wet, then a block-in*), the round's first check, and the round's second. The calls
+are gone — the first takes of `pass1b.py` and `pass2.py` were overwritten and their
+marks undone — so what is left is seven frames from the painter's own working folder,
+committed under [`paintings/GLM/terminal_window/rings/`](paintings/GLM/terminal_window/rings/),
+and one thing nobody had noticed: **the patch is still in the prelude.** `halo =
+blob(span("C1","G6"))` sits beside the `halo2 = blob(span("C2","F4"))` that take three
+replaced it with, and the larger one overshoots the glass onto the wall exactly where
+frame 6 puts the rings.
+
+Rebuilt on GLM's own canvas after `pass1a.py`, an inward `scumble` over that patch, with
+the bezel under it:
+
+| value span | `n` | step per ring | value steps across the patch | darkest band | a wet bezel moves it by |
+|---|---|---|---|---|---|
+| 0.20–0.26 (take three) | 5 | 0.015 | 3 | 0.20 | 0.075 |
+| 0.20–0.26 | 10 | 0.007 | 4 | 0.18 | 0.071 |
+| 0.14–0.30 | 5 | 0.040 | 8 | 0.14 | 0.098 |
+| 0.14–0.30 | 10 | 0.018 | 8 | 0.14 | 0.078 |
+| 0.14–0.35 | 5 | 0.052 | 9 | 0.16 | 0.133 |
+| 0.14–0.35 | 10 | 0.023 | 10 | 0.14 | 0.098 |
+
+**Two answers, and both halves of the round's reading survive.** The rings are the
+inward scumble's own contours — a step of `0.04` a ring prints eight visible bands
+across the patch, and the low-contrast take that replaced it prints three. And the wet
+bezel is not innocent: laying the rings over it wet moves pixels by up to **0.13**,
+which is past the `0.10` that makes a new mass. The bezel reads `0.14`, and the darkest
+band in the wide-span reconstructions reads `0.14` too — which is the band frame 5
+shows.

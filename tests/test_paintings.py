@@ -191,3 +191,49 @@ def test_a_counted_pass_logs_what_a_painted_one_logs(script: Path, tmp_path) -> 
     # and is still drawn -- it is free against the budget and cheap to lay.
     assert all(r.paint == 0.0 for r in counted.history.records if r.kind != "pencil")
     assert counted.canvas.ground_showing() == 1.0
+
+
+# --------------------------------------------------------------------------------------
+# The cohort probe's corpus, against the paintings there actually are
+# --------------------------------------------------------------------------------------
+# `scripts/probe_cohort_session.py` replays every committed painting to count how often
+# a proposed check would fire, and the share of *passes* it fires on is the number that
+# decides whether a rule is built. A painting missing from its corpus is not an error
+# anyone hits: the probe runs, prints a table, and the table is quietly about twenty
+# paintings instead of twenty-one. This is the same promise `PAINTINGS.md` makes one
+# file over -- a painting is added by committing its directory -- held for the probe.
+
+
+def _corpus():
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    try:
+        import probe_cohort_session
+    finally:
+        sys.path.remove(str(ROOT / "scripts"))
+    return probe_cohort_session
+
+
+def test_the_cohort_probe_replays_every_painting() -> None:
+    probe = _corpus()
+    listed = {entry.where for entry in probe.CORPUS}
+    missing = sorted(set(DIRECTORIES) - listed)
+    assert not missing, (
+        f"scripts/probe_cohort_session.py does not replay {missing}. Add a Painting "
+        f"entry with its canvas arguments from PAINTINGS.md, or every count the probe "
+        f"prints is over a corpus one painting short."
+    )
+    extra = sorted(listed - set(DIRECTORIES))
+    assert not extra, f"the probe's corpus names directories that are not paintings: {extra}"
+
+
+@pytest.mark.parametrize("name", DIRECTORIES)
+def test_every_painting_in_the_corpus_has_passes_to_replay(name: str) -> None:
+    probe = _corpus()
+    entry = next(e for e in probe.CORPUS if e.where == name)
+    assert entry.driver or entry.passes, (
+        f"paintings/{name}/ has no pass scripts the probe can find and no driver "
+        f"script named. The probe would replay it as nothing at all."
+    )
+    assert entry.spent > 0, f"paintings/{name}/ has no stroke count to check a rebuild against"
