@@ -79,7 +79,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the fourteen do not make
+  itself**, in its own `Reproducible` row below, and seven of the twenty-one do not make
   it. What holds everywhere is that a *saved* painting replays as it was painted: a
   stroke's randomness comes from `(seed, stroke index)`, and golden-image tests hold
   that. A rebuild from the committed scripts is a different thing, and a drawing pass
@@ -496,7 +496,7 @@ through fog on the glass, through thin leaves, and stopping dead at the clay.
 | Canvas | 1024×768, linen, `toned_warm_grey` ground, seed 3 |
 | Spent | 297 strokes of a 300 budget, plus two signature marks that did not count |
 | Reproducible | **Not claimed** — built pass by pass with rehearsals, and the two `erase()` calls in `p12_export.py` were added after the fact. The scripts are the record of how it was made, not a byte-for-byte rebuild |
-| Files | [`greenhouse_winter/`](paintings/Claude/greenhouse_winter) — [notes](paintings/Claude/greenhouse_winter/NOTES.md), [time-lapse](paintings/Claude/greenhouse_winter/painting.gif) |
+| Files | [`greenhouse_winter/`](paintings/Claude/greenhouse_winter) — [notes](paintings/Claude/greenhouse_winter/NOTES.md), [time-lapse](paintings/Claude/greenhouse_winter/painting.gif), [verdict](paintings/Claude/greenhouse_winter/verdict.md) |
 
 **A frontal elevation of a greenhouse is a layer cake** — plinth, glass, transom, eaves,
 ridge, all horizontal — and this painting's first decision was to refuse it. The
@@ -534,7 +534,7 @@ on the near side, the plants behind it, the winter beyond.
 | Spent | 311 strokes of a 320 budget, plus two signature marks that did not count |
 | Rehearsals | About forty-four, none of them charged |
 | Reproducible | **Not claimed** — the drawing pass was run twice and several measuring scripts ran as passes between the painting ones, and a mark's texture is seeded from its place in the log, so a clean rebuild would not come back byte for byte |
-| Files | [`fogged_glass/`](paintings/Claude/fogged_glass) — [notes](paintings/Claude/fogged_glass/NOTES.md), [time-lapse](paintings/Claude/fogged_glass/painting.gif) |
+| Files | [`fogged_glass/`](paintings/Claude/fogged_glass) — [notes](paintings/Claude/fogged_glass/NOTES.md), [time-lapse](paintings/Claude/fogged_glass/painting.gif), [verdict](paintings/Claude/fogged_glass/verdict.md) |
 
 This picture reached the same first decision as the one above, by the same route and
 independently: a wall of glass painted frontally is a layer cake, so the projection was
@@ -770,11 +770,18 @@ one of six places within `0.10`.
 | Canvas | 1024×768, linen, `#2e332c` ground, seed 7 |
 | Spent | 126 strokes of a 300 budget |
 | Reproducible | Seven pass scripts (plus a free graphite `draw.py`) rebuild it from `prelude.py` |
-| Files | [`paintings/GLM/terminal_window/`](paintings/GLM/terminal_window) — [notes](paintings/GLM/terminal_window/NOTES.md), [time-lapse](paintings/GLM/terminal_window/painting.gif), [verdict](paintings/GLM/terminal_window/verdict.md) |
+| Files | [`paintings/GLM/terminal_window/`](paintings/GLM/terminal_window) — [notes](paintings/GLM/terminal_window/NOTES.md), [time-lapse](paintings/GLM/terminal_window/painting.gif), [verdict](paintings/GLM/terminal_window/verdict.md), [the rings, frame by frame](paintings/GLM/terminal_window/rings/README.md) |
 
 Its [notes](paintings/GLM/terminal_window/NOTES.md) record a halo that came back ringed —
-crossing glazes over a block-in still wet, printing concentric rings — and cost the one
-`undo` in the session to fix, rebuilt as a single tight inward scumble instead. They also
+the painter's own account is crossing glazes over a block-in still wet, printing
+concentric rings — and cost the one `undo` in the session to fix, rebuilt as a single
+tight inward scumble instead. **That account is the one thing on this page a later
+reading has overturned**, and seven frames out of the painter's own working folder are
+committed beside the painting rather than the conclusion: the wall is clean after the
+glazes and before the block-in, and what the rings actually are is an inward scumble's
+own contour rings around a patch that overshoots the glass. The frames, and the three
+accounts written of them, are in
+[`rings/`](paintings/GLM/terminal_window/rings/README.md). They also
 catch their own summary short: strokes noted `subject` come to 9%, but counting the
 subject's own light along with it — halo, pool, glass, bezel — the true share is closer
 to 46% against a 45% plan, and the notes record both numbers rather than the flattering

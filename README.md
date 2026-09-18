@@ -329,11 +329,12 @@ every painting.** The one that holds everywhere is that **the log replays byte f
 byte**: a stroke's randomness is drawn from `(seed, stroke index)`, so a saved painting
 comes back exactly as it was painted, and golden-image tests hold that. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
-painting — seven of the fourteen say **Reproducible: not claimed** in their own table in
+painting — seven of the twenty-one say **Reproducible: not claimed** in their own table in
 [`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
 or `look` scripts ran as passes between the painting ones, and a mark's texture is
 seeded from its place in the log. Each painting's table says which of the two it
-claims; the ones that claim the stronger one were checked by sha256.
+claims; the older ones that claim the stronger one were checked by sha256, and the seven
+newest carry their own painter's claim, not yet re-run here.
 
 **`PAINTER.md` points here with a condition attached**, and the condition is the whole
 trade: *if you chose your subject before opening this repository, these are yours; if
@@ -355,10 +356,11 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what thirteen painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Every item on it is done — including the eight that were answered by measuring
-them and finding nothing to fix, which say so.
+each. Everything on it is done — including the eight that were answered by measuring
+them and finding nothing to fix, which say so — except the round at the top, which is
+open and says so on every line.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
 defaults moved, and what a script that leaves an argument off will paint differently

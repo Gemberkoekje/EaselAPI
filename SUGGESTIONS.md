@@ -1,21 +1,25 @@
 # What the painters asked for, and what was done
 
-Thirteen sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — fourteen paintings, because the ninth painted its
+Twenty sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — twenty-one paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**Nothing here is open.** 72 engine items and 90 documentation items, all of them: the
-eighth session's eight and the ninth's fourteen in 0.3.0, the tenth and the greenhouse's
-fifteen engine items and three left-over documentation items in 0.4.0 with the install
-session's three, the pier session's ten in 0.5.0 plus the one that was neither, and the
-hands session's six in 0.5.0 as well — that release was cut for the pier round, never
-tagged, and the round filed after it went into it rather than into one of its own. The
-long arguments that produced each one have been cut, because a request list is worth
-keeping only while somebody still has to act on it. What
+**One round is open: the 0.5.0 cohort, at the top** — seven painters that are not Claude,
+one picture each, **32 engine items and 6 documentation items**, none of them acted on. It
+is written where every open round before it has been written, and will be folded in where
+it stands rather than moved once it is acted on. Everything below it is done: 72 engine
+items and 90 documentation items, all of them — the eighth session's eight and the
+ninth's fourteen in 0.3.0, the tenth and the greenhouse's fifteen engine items and three
+left-over documentation items in 0.4.0 with the install session's three, the pier
+session's ten in 0.5.0 plus the one that was neither, and the hands session's six in
+0.5.0 as well — that release was cut for the pier round, never tagged, and the round
+filed after it went into it rather than into one of its own. The long arguments that
+produced each one have been cut, because a request list is worth keeping only while
+somebody still has to act on it. What
 survives is the finding, because a finding is still true after the fix, and the handful
 of places where the answer differed from the request. Three of the sessions painted one
 shared subject; their lists were deduplicated into one round, and every number any of
@@ -44,6 +48,7 @@ changed rather than that it worked.
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
 | …and that session painting, 257 of 300, `paintings/Claude/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
 | Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
+| The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | **32 open** | **6 open** |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -67,6 +72,241 @@ disagree, it may be the context talking.
   repository until its picture was finished, exported and reviewed. The first **blind**
   run of the package-only arm; the pier session before it had spent that morning inside
   the checkout, and its reading of the guide was discounted for it.
+- **The 0.5.0 cohort were told nothing about what to read at all** — *install it and
+  paint* — so for the first time what a painter read is the documentation's own choice
+  rather than the owner's, and the entry path is a finding rather than a control. They
+  read a great deal: ~2,600 lines, ~2,500 lines and *2000+ lines of docstrings* are the
+  three counts they took themselves, and one of them read all five files. That is the
+  round's largest documentation item and it is measured by the people who did it.
+
+---
+
+## The 0.5.0 cohort: seven painters that are not Claude
+
+**OPEN.** Thirty-two engine items and six documentation items, from seven painters —
+GPT, GLM, DeepSeek, Gemini, Grok, Kimi and BigPickle — each of whom installed
+`easel-paint` 0.5.0 from the package and painted one picture. **The right-hand column of
+every table below is empty because nothing has been done yet.** The candidate answers,
+and the measurements that will decide which of these survive, are in
+[`PLAN-0.6.0.md`](PLAN-0.6.0.md); a row gets filled in when its PR lands, not before.
+
+**Kind** is this project's own distinction and every finding below carries it: **M**
+measured by the painter, **O** observed, **R** reasoned. It is the first thing to check
+before acting on a row — and the uncomfortable half of this round is that **all four of
+the reported mechanisms that have already died on checking were reported as *observed***,
+which is exactly the shape [`LESSONS.md`](LESSONS.md) predicts: a painter watching its own
+canvas sees the symptom truly and the cause not at all. See *Four reported mechanisms
+that did not survive* below.
+
+**They were told to install it and paint, and nothing about what to read.** That is the
+one thing that makes this round different from every other on this page: the ~2,600 lines
+three of them counted before their first stroke is the documentation's own entry path
+being followed, not a reading list somebody handed them. So the entry path is a finding
+here rather than a control, and *how much each painter had read* is, for once, the
+documentation's own answer rather than the owner's.
+
+**None of them is Claude**, which is the second difference and the reason a repeated
+finding here is worth more than a repeated finding above. Where seven painters that
+share no architecture hit the same wall, it is the wall.
+
+**One painter could not see its own picture.** BigPickle has no image input and painted
+the whole landscape without opening a single look. The decision taken on that is that
+**vision is a requirement of this tool and the documentation should say so** — one
+documentation item below, and the reason the rest of BigPickle's verdict is weighted as a
+reader of the documentation rather than as a painter of the picture. Its stack-of-bars
+warning, alone in this round, was a true positive, which is the one thing keeping that
+rule alive.
+
+**What every one of them defended, unprompted, and this round does not touch:** rehearsal
+seeded as the next real strokes, `at_value` and errors that teach, `cost_line` naming the
+lever, one plan object for `cost`/`preview`/`rehearse`/`paint`, determinism. Recorded
+under *What worked* below, because a finding is still true afterwards.
+
+### What the tool did not catch, though the documentation names it
+
+**Nine failures the guide describes in prose and the check is silent about.** This is the
+round's centre and the reason it is one round: the owner's goal is that wherever the tool
+can know a thing, the warning comes out of the tool and the paragraph leaves the guide,
+which is [`LESSONS.md`](LESSONS.md)'s own growth rule asked for at scale.
+
+| What was wrong | Who | Kind | What was done |
+|---|---|---|---|
+| **Chisel staircase down a sloped boundary.** Kimi's rock faces are `RECIPES.md`'s *mass built of planes* call character for character (`pass4_lighthouse.py:16`) — a ragged `flat` on sloped polygons — and came out stair-stepped, which its verdict names as the picture's first weakness. *A worked example is an instruction*: the recipe produces the defect the guide warns about. Today: prose and a table row in `PAINTING.md`, no check. | Kimi; winter greenhouse ×4, Opus (earlier) | O | |
+| **Holes inside a `solid=True` mass.** GPT closed three by hand (`paint.py:630 solid_joins`), Grok one (`pass6_repair.py`). The holes are real; the reported cause — shaped block-in paths wandering apart — did not survive checking. Today: nothing fires. | GPT, Grok | O | |
+| **Smudge drags a bright thumbprint** out of the light mass and into the dark one. Grok took every smudge back out of the painting because of it. Today: prose, and a warning that fires only on `size > 0.03`. | GPT, Grok; laundromat 4 of 5, car wash ×2 (earlier) | O | |
+| **A glaze far from its ground**: green blooming over blue water; a downward glaze of afterglow reading as a searchlight on a flat sheet. Today: prose and a table; `to_value=` exists and nothing fires. | GPT, Grok; Opus, Fable, pool, heron (earlier) | O | |
+| **Paint laid over a still-wet film printed concentric rings** and cost the session's one `undo`. Today: prose (*`dry()` first*); nothing fires. The rings are real — the painter's own frames show the glazes did not print them, and the cause is still open. | GLM; Opus ×2, laundromat (earlier) | O | |
+| **Strokes radiating from one point**: a wagon wheel where light was wanted. Today: prose in three places. | Gemini; fogged glass ×2, Fable, car wash (earlier) | O | |
+| **One loop's signature.** A column of same-length marks for a reflection on water — *floating rectangles*, *small bricks*, *a ziggurat*, *spoon-shaped islands*, four painters' own words for the same thing. **Four of seven failed the same passage the same way first, and `RECIPES.md` has no entry for it.** Today: one table row (*any loop you write*). | DeepSeek, Gemini, Kimi, GPT | O | |
+| **`scumble` and `cover` land well outside the place they were given.** A water scumble covered part of the sky; a `cover()` repair laid a flat patch in front of the tower and was rejected. Checked against the code, and larger than claimed: a band at 60 degrees paints **3.5×** its own area, and no warning can fire for a rectangle. Today: a wedge warning, only on a `Polygon`; `cover(edge="hard")` exists and the card does not name it. | GPT, Kimi, Grok | O | |
+| **A late pass buries what stands in front of it** — weathering over a nearer cottage, a rope repainted after the wall. `LESSONS.md` lists the depth-order paragraph as failed in three runs and still open; this is the fourth and fifth. Today: prose and a checklist line. | GPT, Kimi; fogged glass, heron 1, pool (earlier) | O / M | |
+
+### Warnings the tool gives, that were noise
+
+**Painters accepted a standing warning by hand in their own notes rather than acting on
+it — four for the bars, five for the ground.** *A warning that fires on almost every pass
+is a warning nobody reads* is this
+project's own rule, and the bars warning had already taught two earlier painters to skim.
+**These four painted 0.5.0, where that rule is already said once and repeated only when a
+long mark crosses it at 30 degrees or more** — so *said less often* was not the fix, and
+the thing the tool still cannot know is whether the subject runs that way.
+
+| What was wrong | Who | Kind | What was done |
+|---|---|---|---|
+| **Stack of bars, on a subject that is horizontal.** A horizon, a calm sea, a beam and a reflection: accepted in the notes as the subject running that way. Gemini's counted 392 of 583 long marks within six degrees of horizontal, over the whole painting, and the analysis under it in its own notes begins *standing warning accepted*. BigPickle's was a true positive — it was painting blind — which is the one thing keeping the rule alive. | DeepSeek, Kimi, Gemini, GLM | O | |
+| **`ground: 0.0x% … the checklist asks for some`**, accepted by hand by five painters. Three give the same cause in nearly the same words: the `density=0.8` breather was buried by the graded fields. **The graded-field recipe and the ground line contradict each other**, and five of seven cannot all be wrong. | DeepSeek, Grok, Kimi, GPT (0.06%), Gemini (0.38%) | M | |
+| **The small-bristle and round-disc rules fired on a whole painting** — *265 marks with a bristle under `size=0.025`*, *that is one disc printed 176 times* — and were argued with in the notes rather than acted on: the bristle separation was the needle texture it wanted. A rule that reports a count over 726 marks is not a rule about a pass. | Gemini | O | |
+| **There is no way to tell the tool anything.** *Useful heuristics, but they're philosophy, not errors, and it doesn't know which.* Inventoried and true: no acknowledge, suppress or declare mechanism exists anywhere in the API. The painter cannot say *my subject is horizontal* and the tool cannot ask. | DeepSeek | R | |
+
+### What the check cannot see
+
+Three findings, of which **one is an item and two are being kept out of the engine on
+purpose.** `LESSONS.md` and `report()`'s own docstring both say the check cannot see a
+composition; this round restates that boundary rather than moving it — the check reads
+marks and measures the canvas, and still does not judge an arrangement.
+
+| What was wrong | Who | Kind | What was done |
+|---|---|---|---|
+| **`report()` said *nothing to report* over flat cut-out shapes, uniform edge handling and a banded sky.** The painter's own closing line: the check passed a picture whose named weaknesses were all still in it. Measurable things, none of them measured. | GPT; pier (earlier) | O | |
+
+**Not items, and recorded so they are not filed again.** *No linter catches a stripe
+instead of a catch-light* — a recipe followed exactly and expressively wrong (DeepSeek,
+O). And the safe, frontal, centred compositions: **five of seven stopped under 45% of
+budget** — 68/300, 126/300, 132/300, 170/420, 50/120 — with two of them saying in as many
+words that further marks were making the picture worse, and a third leaving its 70
+unspent strokes to the passage it had itself named as the weakest (GLM, DeepSeek, Grok,
+Kimi, BigPickle; M). Both findings stay with the painter, and the instrument for them is
+the painter's own written reason for the subject, not a rule.
+
+### Bugs and API gaps
+
+Eighteen items, **every one checked against `src/` on 2026-09-18** by reading the code
+and, where it was cheap, painting the case on a scratch canvas. That check did what this
+project's checks usually do: **four reported mechanisms did not survive**, one bug turned
+out larger than reported, and one turned up a second, silent bug beside it. What is below
+is the finding as it stands after that check, not as it was reported.
+
+| What was wrong | Who | Kind | What was done |
+|---|---|---|---|
+| **`scumble(clip=)` raises `TypeError`.** Confirmed: `clip` is a named parameter of `stroke()` alone; `dab`, `smudge` and `glaze` reach it through `**kw`, and `block_in`, `sweep`, `cover` and `scumble` cannot. The error is the generic *`clip=` is not a brush field* and names neither `stroke(clip=)` nor `edge="hard"`, because the table it reads from has rows for `solid`, `glaze`, `edge`, `density`, `overhang` and `pressure` and none for `clip`. | GPT | O | |
+| **Holes inside a `solid=True` mass**, reported as shaped paths wandering apart. **The holes are real and the mechanism is not the one reported.** A `flat` left 0.0000% bare at every size, direction and density tried. A `bristle` — `block_in`'s own default — leaves them: 22 bare blobs at `size=0.06, direction=37, density=1.0`, the largest 187 px. It is the comb covering about three-quarters of its width, and `solid=` cannot close it because it sets `load` and `load_falloff` and nothing else. GPT's own three holes were laid with a `flat`, at the joins between hard-edged walls, so they are most likely the hard-edge bites below. | GPT, Grok | O | |
+| **`timelapse_gif()` fails on a rehearsal copy.** Confirmed: the copy is created with `timelapse = False`, so it has no frames and raises a clean `ValueError` — whose first remedy is wrong here, because it says to create the session with `timelapse=True` and the painting already had it. | DeepSeek | O | |
+| **Time-lapse frames are 360 px beside a 1440 px painting.** Confirmed, and the size is unreachable: `max_side=360` is a default nothing passes, from `Session` or the CLI, and the frames are stored in the `.easel` file at that size. `scale=` only shrinks. | GPT | O | |
+| **`cost_line` failed on a `scumble`.** Confirmed, **and there is a worse one beside it.** The planner knows three kinds — mass, sweep, stroke — so `scumble`, `cover`, `glaze` and `smudge` cannot be planned, priced, previewed or rehearsed at all. And a scumble-shaped plan carrying `shape=` **prices silently as a block-in** (6 strokes where the scumble costs 8), raising only when `paint()` reaches the extra keys. The MCP server refuses unknown keys before pricing; the library does not. | GLM | O | |
+| **`replay(upto=)`, `undo(n)` and `log(last=)`: records or strokes?** Partly. All three count log records, free ones included. `replay`'s docstring says so and `REFERENCE.md` says so for `undo`; `undo`'s own docstring says *scrape back `n` strokes*, and `log(last=)` says nothing. | GLM | R | |
+| **The Windows cp1252 console chokes on the docs' unicode.** **Not reproduced for the tool**: `easel guide` writes UTF-8 bytes past the codec on purpose and exits 0 under cp1252, and no string in `src/easel/` contains a non-ASCII character, so no notice or `report()` line can do it. What does die is a painter's own `print(easel.docs.read(...))` — four characters in the five shipped files are outside cp1252, 35 occurrences, 31 of them in `CALIBRATION.md`. Reading a document from Python is the most natural thing a painter does with `easel.docs`. | GLM | O | |
+| **`edge="hard"` leaves pass-end bites at the outline.** Confirmed, and isolated: `hard` cuts the bites three- to four-fold against `ragged` and still leaves **1.9%** (`flat`) to **4.9%** (`round_hard`) of the 3 px strip inside a slanted outline unpainted. The cause is pressure, not load — `hard` gets one brush of overhang and the default `pressure="taper"` reaches zero one brush out, so every pass arrives at the outline at part pressure. At two brushes of overhang it is 0.016% and 0.000%. | GLM | O | |
+| **Subject share counts free signature marks** — 172 of 411 where it should be 172 of 408. Confirmed and reproduced on a five-mark canvas: the subject line builds its total without the exemption `History.stroke_count` already applies. | GPT | M | |
+| **`import easel_paint` fails.** Partly: `llms.txt` and the package docstring put `from easel import` straight after the install line, and `README.md` does not — its install section has no import at all and its nearest one is 76 lines above. **And PyPI carries an unrelated distribution named `easel`**, which is what a painter who guesses the install name from the import name gets. | DeepSeek; the install session (earlier) | O | |
+| **A ground name used as a colour, and three namespaces.** Partly: the palette lists every valid pigment and slot on failure but does not notice that the name it was handed is a valid *ground*, and the canvas is blind the other way round. Nothing exposes a ground as a colour, so sampling bare canvas is today's only route to the value a painter can already see. | Gemini | O | |
+| **`region("bottom")` is the bottom third, not a foreground band.** **It is smaller than reported: a ninth.** `top`, `bottom`, `left`, `right` and `center` are cells of a 3×3, so `bottom` is x 1/3–2/3, y 2/3–1. The full-width places are `lower-band` and `lower-half`. `REFERENCE.md` lists the names and none of their extents. | GLM | O | |
+| **A 0–255 integer list clamps to white in silence**, which `PAINTING.md` documents as a trap. Not re-checked; documented behaviour. **A documented trap the engine can detect is a bug.** | the docs | R | |
+| **`solid=True` is refused on `stroke` and `scumble`**, with a good teaching error that names the pair to type by hand. It is `load=1.0, load_falloff=0.0` everywhere, and it is the clause painters type most often. | Gemini; laundromat (earlier) | O | |
+| **30–45 s for 500–800 marks.** Confirmed as a fixed cost per stroke, and nothing is quadratic. Every stroke snapshots rgb, wetness, thickness and sketch for `undo` — about 33 MB and 6.4 ms at 1440×960, roughly 800 MB resident at 24 snapshots — and with `timelapse=True`, the default, every stroke also builds its 360 px frame from a full-canvas composite at 25.6 ms. About 32 ms of bookkeeping per mark before a dab lands, ~26 s over 800 marks. | Gemini | M | |
+| **No easy calibration of size, load and pressure before committing** to a passage. A feature, not a bug: one labelled sheet of the same mark at several settings, in place, on a copy — a request for more of the one thing every painter in this round defended. | GPT | R | |
+| **A wide angled `scumble` lands far outside its band.** Confirmed, **and larger than claimed.** The auto brush is `3 × step`, and `step` is the band's *bounding box* projected on the pass normal, so an oblique angle on a wide, low band inflates it: a band 0.20 tall at `n=8` paints **1.43×** its own area along its axis, 2.84× at 30 degrees and **3.53× at 60** — a brush 1.65× the band's own height. **Nothing fires**: the narrow-brush check looks the other way, and the ends check returns immediately for a `Region`, so the guide's own `span(...)` bands can never trip it. | GPT, Kimi, Grok | O | |
+| **Glazes crossed wet, then a block-in, printed concentric rings.** **The rings are real; both accounts of their cause are wrong, and the painter's own folder shows it.** The seven frames are committed at [`paintings/GLM/terminal_window/rings/`](paintings/GLM/terminal_window/rings/README.md): the wall is clean after the six glazes and before the block-in; a film at `opacity=0.15` leaves about 0.13 wetness rather than 0.90, and had twenty-odd strokes at ~6% each to fade; and the rings first appear in a **rehearsal**, landing identically when the pass was paid for — so *what you rehearse is what lands* held and the painter did not see them. What they are: wobbly closed loops concentric with a blob-shaped patch that overshoots the glass — an inward scumble's own contour rings, the failure `RECIPES.md` already names. The calls are gone; the first takes were overwritten and their marks undone. | GLM | O | |
+
+### The documentation
+
+Six items, **most of them about what a painter meets before the first stroke** — and they
+arrive from painters who were told nothing about what to read, which is what makes them
+evidence rather than preference.
+
+| Gap | Who | Kind | What was done |
+|---|---|---|---|
+| **Too long before the first stroke.** ~2,600 lines, ~2,500 lines, *2000+ lines of docstrings*, 10,000+ words across five files — three painters counted it independently and a fourth asked for the cheat-sheet without counting. Every one of them wants a quick start. | DeepSeek, GLM, BigPickle, Kimi | M | |
+| **Too prescriptive.** Stroke allocations, bare-ground percentages and marks-per-object read as universal rather than as adjustable defaults; *supervised by a very earnest painting instructor*. | GPT, Kimi | O | |
+| **The voice hides the call.** *The runtime warnings are clearer in the moment than the prose*, and *a few rules fight each other in practice until you've failed each one once*. | Grok | O | |
+| **Wants small runnable visual comparisons**: the recommended call, what it looks like, the common failure, the smallest fix. With the sharper half of it — *the documentation sometimes compensates for difficult tool behaviour with additional rules*, and some of that belongs in defaults and API consistency instead. | GPT | R | |
+| **The two things that cost real work were not in it** — the ring interaction and the hard-edge bites — and *it is written for a painter who already knows painting; the first steps are assumed*. | GLM, DeepSeek | O | |
+| **Nothing says that vision is required.** *I can't see it (the model doesn't support image input), so I'm trusting the tool* — a painter that followed the method exactly, could not open a single look, and had to hand the question of whether the picture works back to the owner. Every instrument this tool has for judging a picture is an image. `README.md`, `llms.txt` and the package docstring all stay silent about it. | BigPickle | O | |
+
+### Four reported mechanisms that did not survive checking
+
+Recorded before anything is built on them, because a retraction is as much a finding as
+an item, and because **every one of these was reported as *observed*** — which is the
+shape `LESSONS.md` predicts and the reason the measuring step comes before the building
+one.
+
+- **The holes are not passes wandering apart.** They are the comb covering
+  three-quarters of its width, or the hard-edge bites at a join. A `flat` leaves none.
+- **cp1252 does not break the tool.** It breaks a painter printing a shipped document
+  from Python, which is a real bug and a different one.
+- **`region("bottom")` is a ninth, not a third.**
+- **GLM's rings are not the crossing glazes.** **And the first check of that was wrong
+  too**, until the painter's own frames were opened — three accounts written, at least
+  two of them wrong, which is why the frames are committed rather than the conclusion.
+
+### Found while filing the round, not by a painter
+
+**The reproducibility count had gone stale the moment the seven paintings landed**, in
+the same two sentences the hands round fixed a version of. `README.md` and
+`PAINTINGS.md` both said *seven of the fourteen* carry **Reproducible: not claimed**;
+`paintings/` now holds twenty-one and the number that do not claim it is still seven, so
+the fraction was quietly reporting half the corpus as unproven when it is a third.
+Corrected in both places.
+
+**The sentence beside it is the one to watch**: *the ones that claim the stronger one
+were checked by sha256*. All seven of the cohort's paintings claim a script rebuild, and
+none has been re-run here — only GPT's carries a sha256, and it is the painter's own.
+Both pages now say so. **Re-running every painting from its committed pass scripts is the
+first thing the round's measuring step does**, so this answers itself rather than needing
+an item.
+
+### The two Claude verdicts, filed as corroboration
+
+Two verdicts that had never been committed are committed with this round —
+[`paintings/Claude/fogged_glass/verdict.md`](paintings/Claude/fogged_glass/verdict.md)
+and
+[`paintings/Claude/greenhouse_winter/verdict.md`](paintings/Claude/greenhouse_winter/verdict.md),
+now linked from [`PAINTINGS.md`](PAINTINGS.md). **Both paintings predate 0.4.0 and their
+engine items were closed there, so nothing in them is filed as an item.** They are here
+for the sentence both of them lead with, which is the argument this whole round rests on:
+
+> *Reading it did not stop me making the mistakes it describes … what stopped me was the
+> post-pass check and the rehearsal image.* — the fogged glass, having painted a box in
+> the background, filled an outline, got the tool's own shape four times and drawn a
+> daisy, each after reading the paragraph naming it.
+
+> *The same five warnings appear three or four times, and none of them stopped me making
+> the mistakes. I painted bars too heavy and laid shadows as a fan of same-width rays
+> after reading both warnings. The rehearsal stopped me, not the paragraph.* — the winter
+> greenhouse.
+
+They are the sixth and seventh painters to say it, and this round's whole shape is that
+sentence taken at its word.
+
+### What worked, recorded because a finding is still true afterwards
+
+Every one of the seven defended these unprompted, and **nothing in this round touches
+them**:
+
+- **Rehearsal seeded as the next real strokes.** What you preview is what lands, pixel
+  for pixel — and this round has the first case where that cut the other way, because
+  GLM's rings were in the rehearsal and went in anyway.
+- **`at_value` and errors that teach.** *Titanium white reflects at 0.958 and no mixture
+  can be asked for higher* ended a pass for one painter; another calls them the best
+  error messages in the Python ecosystem and quotes three back.
+- **`cost_line` naming the lever**, not just the price.
+- **One plan object for `cost` / `preview` / `rehearse` / `paint`** — *what you check is
+  literally what lands*, which one verdict calls the design decision most tools miss.
+- **Determinism**, and a reload that re-exports the same bytes: GPT reports a
+  SHA-256-identical PNG from the saved session.
+- **The post-pass check teaching by naming the mark**, where it fires on something real.
+
+### The paintings, and what the painters own
+
+- **Five of seven stopped under 45% of budget.** That is either the right stop or an
+  unfinished picture, and the two that explain it say both in the same breath.
+- **The compositions are safe** — near-frontal, centred, the obvious arrangement — and
+  three of them say so in their own words: *dead-center and symmetric*, *the composition
+  is the obvious one*, *poster-simple*. One states the consequence plainly: the fixes are
+  all upstream of the brush, and a viewpoint change would move the picture further than
+  any amount of texture work.
+- **Flat cut-out shapes**, named by both painters who laid every form as a clipped
+  polygon. It is also where two of this round's candidate remedies point, which is the
+  risk this round carries into whatever run follows it.
 
 ---
 
