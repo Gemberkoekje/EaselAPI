@@ -963,7 +963,8 @@ def build_server() -> MCPServer:
     def rehearse(session: str, plan: list[Any] | dict[str, Any] | str,
                  reference: str = "", region: Place | None = None,
                  grid: bool | str = False, values: bool = False,
-                 scale: int | None = None, output: str = "") -> list:
+                 scale: int | None = None, output: str = "",
+                 vary: dict[str, list[Any]] | None = None) -> list:
         """Paint the plan on a *copy* of the canvas, and look at the result.
 
         Nothing is committed and nothing is logged. The preview shows where a mark
@@ -984,8 +985,14 @@ def build_server() -> MCPServer:
             region: crop both panels, enlarged.
             grid: as look. "fine" for tenths.
             values: greyscale.
-            scale: long-side pixels. 0 for full resolution.
+            scale: long-side pixels. 0 for full resolution. With vary, the sheet's.
             output: where to write the PNG.
+            vary: settings to try the same marks at, {"size": [0.02, 0.05, 0.08]} --
+                one labelled panel per combination, in place, in one image. Every
+                entry of the plan takes the setting, so this is for one mark being
+                calibrated rather than for a pass. Free, like any rehearsal, and a
+                question about size is a question only comparison answers. At most
+                twelve panels: two arguments vary together as their combinations.
         """
         s = Session.load(session)
         told = len(s.notices())
@@ -993,7 +1000,7 @@ def build_server() -> MCPServer:
         path = s.rehearse(specs, reference=reference or None,
                           region=None if region is None else _place(region),
                           grid=_grid(grid), values=values, scale=_scale(scale),
-                          path=output or None)
+                          path=output or None, vary=vary or None)
         s.save(session)
         return [_join(_notices.block(s.notices(since=told)),
                       f"{path}\n\n# Paints as:\n" + "\n".join(lines)),

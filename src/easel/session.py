@@ -32,7 +32,13 @@ from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
 from easel.color import linear_to_srgb, luminance, parse_color
 from easel.history import DEFAULT_FRAME_PX, History, StrokeRecord
-from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
+from easel.look import (
+    DEFAULT_LOOK_SIZE,
+    label_sheet,
+    load_reference,
+    render_look,
+    save_look,
+)
 from easel.measure import (
     Comparison,
     compare_images,
@@ -2331,6 +2337,7 @@ class Session:
         values: bool = False,
         path: str | Path | None = None,
         scale: int | None = DEFAULT_LOOK_SIZE,
+        vary: dict | None = None,
     ) -> Path:
         """Paint the strokes on a *copy* of the canvas and look at the result.
 
@@ -2373,8 +2380,27 @@ class Session:
             grid: as :meth:`look`.
             values: greyscale.
             path: where to write. Defaults to ``out_dir/rehearse_NNN.png``.
-            scale: long-side pixel limit.
+            scale: long-side pixel limit. With ``vary``, the whole sheet's.
+            vary: settings to try the same marks at, ``{argument: [values]}`` --
+                one panel per combination, in place, labelled with what it is::
+
+                    s.rehearse(plan, region=span("D4", "F6"),
+                               vary={"size": [0.02, 0.035, 0.05, 0.08]})
+
+                Every entry of the plan takes the setting, which is what makes it a
+                calibration rather than a plan: it is usually one mark. Four sizes
+                used to be four rehearsals, each rendering the whole canvas and
+                none of them next to the others -- and a question about size is a
+                question only comparison answers. Free, like any rehearsal, and it
+                spends no stream: each panel is its own copy, seeded as the next
+                marks of the real painting, so whichever one is chosen lands as it
+                was shown. Two arguments vary together as their combinations, which
+                is why there is a ceiling on how many.
         """
+        if vary:
+            return self._rehearse_sheet(strokes, vary, reference=reference,
+                                        region=region, grid=grid, values=values,
+                                        path=path, scale=scale)
         trial = self._trial_session()
         for kind, spec in self._plan_specs(strokes):
             trial._lay(kind, spec)
@@ -2391,6 +2417,30 @@ class Session:
             marks=self.marks or None,
         )
         return save_look(img, self._look_path(path, "rehearse"))
+
+    def _rehearse_sheet(self, strokes, vary: dict, reference=None, region=None,
+                        grid: bool | str = False, values: bool = False,
+                        path=None, scale: int | None = DEFAULT_LOOK_SIZE) -> Path:
+        """:meth:`rehearse` with ``vary``: one panel per setting, in one image."""
+        settings = _vary_settings(vary)
+        ref_img = None if reference is None else load_reference(reference)
+        columns = min(len(settings), 4)
+        panel = None if scale is None else max(int(scale) // columns, 200)
+        panels: list[tuple[str, Image.Image]] = []
+        for setting in settings:
+            trial = self._trial_session()
+            for kind, spec in self._plan_specs(strokes):
+                trial._lay(kind, dict(spec, **setting))
+            # Every panel's notices, not the first panel's: which settings the engine
+            # has something to say about is half of what the sheet is being asked.
+            self._adopt_notices(trial)
+            panels.append((
+                " ".join(f"{k}={_setting_text(v)}" for k, v in setting.items()),
+                render_look(trial.canvas, scale=panel, grid=grid, values=values,
+                            region=region, reference=ref_img, marks=self.marks or None),
+            ))
+        return save_look(label_sheet(panels, columns=columns),
+                         self._look_path(path, "rehearse"))
 
     def _lay(self, kind: str, spec: dict) -> list[StrokeRecord]:
         """Paint one plan entry on this session.
@@ -4353,6 +4403,40 @@ def _within(bounds, box, canvas) -> bool:
             and bx1 * (canvas.width - 1) <= x1 + 1.0
             and by0 * (canvas.height - 1) >= y0 - 1.0
             and by1 * (canvas.height - 1) <= y1 + 1.0)
+
+
+#: How many panels one calibration sheet may hold. Two arguments vary together as
+#: their combinations, so three sizes and four loads are already twelve marks and
+#: twelve renders -- and a sheet nobody can compare at a glance is a contact sheet of
+#: a question rather than an answer to it.
+_MAX_PANELS = 12
+
+
+def _vary_settings(vary: dict) -> list[dict]:
+    """``{argument: [values]}`` as one dict per panel: every combination, in order."""
+    combos: list[dict] = [{}]
+    for key, values in vary.items():
+        tried = list(values)
+        if not tried:
+            raise ValueError(
+                f"rehearse(vary={{{key!r}: []}}) has nothing to try. Give the values "
+                f"to lay the mark at: {{{key!r}: [0.02, 0.05]}}."
+            )
+        combos = [{**seen, key: value} for seen in combos for value in tried]
+    if len(combos) > _MAX_PANELS:
+        raise ValueError(
+            f"rehearse(vary=...) would lay {len(combos)} panels, past the "
+            f"{_MAX_PANELS} a sheet can be compared at a glance: the arguments vary "
+            f"together, so their combinations multiply. Try one argument at a time."
+        )
+    return combos
+
+
+def _setting_text(value) -> str:
+    """One varied setting, as a label: short for a number, plain for anything else."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return str(value)
+    return f"{float(value):.3g}"
 
 
 def _as_timelapse(value) -> bool | int:

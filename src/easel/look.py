@@ -436,12 +436,43 @@ def _side_by_side(img: Image.Image, reference: Image.Image, gap: int = 12) -> Im
     return out
 
 
-def _label_panel(img: Image.Image, x: int, width: int, text: str) -> None:
-    """Say which panel is which, bottom-left, out of the way of the grid labels."""
+def _label_panel(img: Image.Image, x: int, width: int, text: str,
+                 y: int | None = None) -> None:
+    """Say which panel is which, bottom-left, out of the way of the grid labels.
+
+    ``y`` is the panel's own bottom, for a sheet whose panels do not all end where
+    the image does; left out, it is the image's.
+    """
     draw = ImageDraw.Draw(img)
-    y = img.size[1] - 13
+    y = (img.size[1] if y is None else int(y)) - 13
     draw.rectangle([x, y, x + 8 + 6 * len(text), y + 13], fill=_PANEL_LABEL_BG)
     draw.text((x + 4, y + 1), text, fill=_PANEL_LABEL_INK)
+
+
+def label_sheet(panels: list[tuple[str, Image.Image]], columns: int | None = None,
+                gap: int = 12) -> Image.Image:
+    """Several renders of the same place in one image, each labelled with what it is.
+
+    What a scrap of canvas is really for is comparison: the same mark at four sizes,
+    seen together, answers a question that four separate rehearsals only ask four
+    times. Panels are laid left to right in the order given, wrapped into rows, and
+    each one carries its own setting in the corner the way the reference panel
+    carries its name.
+    """
+    if not panels:
+        raise ValueError("A sheet needs at least one panel.")
+    columns = columns or min(len(panels), 4)
+    rows = (len(panels) + columns - 1) // columns
+    cell_w = max(im.size[0] for _, im in panels)
+    cell_h = max(im.size[1] for _, im in panels)
+    out = Image.new("RGB", (columns * cell_w + gap * (columns + 1),
+                            rows * cell_h + gap * (rows + 1)), (24, 24, 24))
+    for i, (label, im) in enumerate(panels):
+        x = gap + (i % columns) * (cell_w + gap)
+        y = gap + (i // columns) * (cell_h + gap)
+        out.paste(im, (x, y))
+        _label_panel(out, x, im.size[0], label, y=y + im.size[1])
+    return out
 
 
 def _apply_diff(arr: np.ndarray, previous: np.ndarray) -> np.ndarray:

@@ -292,7 +292,12 @@ Textures: `smooth`, `linen`, `rough`.
 s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, marks=, impasto=,
        path=)                                   # the last three are on unless turned off
 s.preview(plan, reference=, region=, grid=, values=, scale=, path=)   # where a mark goes
-s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=)  # what it looks like
+s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=, vary=)
+                                                # what it looks like -- and with
+                                                # vary={"size": [0.02, 0.05, 0.08]},
+                                                # one labelled panel per setting, in
+                                                # place, in one image. At most twelve:
+                                                # two arguments multiply
 s.cost(plan, share=0.25)   s.cost_line(plan)    # what it charges, and why; share= is
                                                 # how much of what is left it may eat
 s.paint(plan, note="")                          # the same plan, now paid for

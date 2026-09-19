@@ -3561,3 +3561,48 @@ def test_a_long_painting_stops_building_frames_it_would_throw_away(tmp_path,
               "burnt_umber", size=0.01)
     assert s.history.frame_count <= MAX_FRAMES
     assert len(built) < marks * 0.75
+
+
+# -- calibrating a mark before committing to it ----------------------------------------
+def test_one_sheet_of_the_same_mark_at_several_settings(tmp_path):
+    """*Easier calibration of size, load and pressure before committing.* A rehearsal
+    already answers it one setting at a time, which makes four sizes four rehearsals,
+    four whole-canvas renders, and four pictures nobody can hold side by side -- and a
+    question about size is a question only comparison answers."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plan = [{"points": [(0.3, 0.4), (0.6, 0.55)], "brush": "round_hard",
+             "color": "dark"}]
+    sheet = s.rehearse(plan, region=span("C3", "F6"),
+                       vary={"size": [0.01, 0.02, 0.04, 0.07]})
+    one = s.rehearse(plan, region=span("C3", "F6"))
+    wide, tall = Image.open(sheet).size
+    was_wide, was_tall = Image.open(one).size
+    # Four panels of the same place, side by side, inside the long side asked for --
+    # against one rehearsal of it, which is the shape of the place itself.
+    assert wide > 3 * tall and was_wide < 2 * was_tall
+    assert s.spent == 0                                 # free, like any rehearsal
+    # Two arguments vary together, which is why there is a ceiling on how many.
+    s.rehearse(plan, vary={"size": [0.02, 0.05], "pressure": ["taper", "even"]})
+    with pytest.raises(ValueError, match="past the 12"):
+        s.rehearse(plan, vary={"size": [0.01, 0.02, 0.04, 0.07],
+                               "load": [0.2, 0.5, 1.0, 1.0]})
+    with pytest.raises(ValueError, match="nothing to try"):
+        s.rehearse(plan, vary={"size": []})
+
+
+def test_a_rehearsed_setting_is_the_one_that_lands(tmp_path):
+    """The whole bargain of a rehearsal: what it shows is what the painting gets. A
+    sheet spends no stream either -- each panel is its own copy -- so the setting
+    chosen off it lands as it was shown."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plan = [{"points": [(0.3, 0.4), (0.6, 0.55)], "brush": "round_hard",
+             "color": "dark", "size": 0.04}]
+    s.rehearse(plan, vary={"size": [0.01, 0.02, 0.04]})
+    after_sheet = s.scratch()
+    after_sheet.paint(plan)
+    plain = make(tmp_path)
+    plain.palette["dark"] = plain.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plain.paint(plan)
+    assert np.array_equal(after_sheet.canvas.rgb, plain.canvas.rgb)
