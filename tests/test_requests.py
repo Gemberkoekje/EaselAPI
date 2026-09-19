@@ -3199,8 +3199,13 @@ def test_the_check_reads_the_paint_and_not_the_place(tmp_path):
 
 # -- clip=, edge= and solid= on every verb that lays paint -----------------------------
 def _held_outside(s, place, before) -> float:
-    """The share of the pixels outside ``place`` that this session's paint moved."""
-    outside = ~place.mask(s.canvas.width, s.canvas.height)
+    """The share of the pixels outside ``place`` that this session's paint moved.
+
+    *Outside* is where the place covers nothing at all, rather than where a pixel's
+    centre falls outside it: a clip multiplies by coverage, so the boundary's own
+    half-covered pixels take half a dab and are inside the promise.
+    """
+    outside = place.coverage(s.canvas.width, s.canvas.height) <= 0.0
     moved = np.abs(s.canvas.rgb - before).sum(axis=2) > 1e-4
     return float((moved & outside).sum()) / float(max(outside.sum(), 1))
 
@@ -3304,3 +3309,65 @@ def test_a_band_scumbled_the_short_way_says_its_passes_are_dabs(tmp_path):
         warnings.simplefilter("error")
         s.scumble(span("A1", "B8"), "c", "titanium_white", 8)            # the long way
         s.scumble(span("A1", "H4"), "c", "titanium_white", 8, direction=30)
+
+
+# -- a plan that holds every verb that lays a passage ----------------------------------
+def test_a_passage_and_a_burial_are_planned_priced_and_painted_as_themselves(tmp_path):
+    """The planner knew three kinds -- mark, mass, sweep -- so a ``scumble`` or a
+    ``cover`` could not be planned, priced, previewed or rehearsed at all: the first
+    raised *a stroke spec needs 'points'* and the second was quoted as something else.
+    They are the two verbs a painter reaches for after looking at what is there, which
+    is exactly when a plan is being written."""
+    s = make(tmp_path)
+    s.palette["a"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.palette["b"] = s.palette.tint("yellow_ochre", 0.5)
+    plan = [{"band": span("B3", "G5"), "color_a": "a", "color_b": "b", "n": 8},
+            {"cover": cell("D7"), "color": "a"},
+            {"shape": ellipse(span("C6", "E8")), "color_a": "a", "color_b": "b",
+             "n": 5, "direction": "inward"}]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quoted = s.cost(plan, share=0)
+        line = s.cost_line(plan)
+        s.preview(plan)
+        s.rehearse(plan)
+        laid = s.paint(plan)
+    assert quoted == len(laid), line
+    assert "passes stepping across" in line and "rings stepping in" in line
+    # A rehearsal is free, and the plan it rehearsed is the plan it painted.
+    assert s.spent == len(laid)
+
+
+def test_a_scumble_shaped_plan_is_not_priced_as_a_block_in(tmp_path):
+    """The silent half of that bug: an entry carrying ``shape=`` and the two colours a
+    passage steps between went down the mass branch and was quoted as a block-in --
+    five where the call lays eight -- and raised only when ``paint`` reached the keys
+    ``block_in`` does not take. The two colours are what tell a passage from a mass
+    filling the same place."""
+    s = make(tmp_path)
+    s.palette["a"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.palette["b"] = s.palette.tint("yellow_ochre", 0.5)
+    band = {"shape": ellipse(span("C3", "F5")), "color_a": "a", "color_b": "b", "n": 8}
+    mass = {"shape": ellipse(span("C3", "F5")), "color": "a"}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert s.cost(band, share=0) == 8
+        assert s.cost(band, share=0) != s.cost(mass, share=0)
+        assert len(s.paint(band)) == 8
+
+
+def test_a_plan_that_cannot_be_painted_is_not_priced(tmp_path):
+    """``cost`` walks the passes and never touches the brush overrides, so a misspelled
+    ``size`` priced happily at the default and raised when the same plan was painted --
+    a quote for a plan that cannot be painted, which is worse than no quote. The MCP
+    server has refused these since it was built; the library priced them."""
+    s = make(tmp_path)
+    for entry, says in (
+        ({"shape": cell("D5"), "color": "burnt_umber", "sise": 0.04}, "A mass"),
+        ({"points": [(0.2, 0.2), (0.8, 0.8)], "to_value": 0.5}, "A stroke"),
+        ({"band": span("B3", "G5"), "color_a": "burnt_umber", "color_b": "white",
+          "into": "down"}, "A scumble"),
+        ({"cover": cell("D5"), "color": "burnt_umber", "wander": False}, "A cover"),
+    ):
+        with pytest.raises(ValueError, match=says):
+            s.cost(entry, share=0)

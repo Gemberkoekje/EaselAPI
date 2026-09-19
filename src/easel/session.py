@@ -11,6 +11,7 @@ jittered dab in every stroke is drawn from this one stream in the same order.
 
 from __future__ import annotations
 
+import inspect
 import json
 import math
 import os
@@ -1446,14 +1447,7 @@ class Session:
             drying is free and is not a mark.
         """
         target = as_place(place)
-        if overhang is not None:
-            reach = float(overhang)
-        elif edge == "clean":
-            reach = 0.0          # the inset plus the contour already reach the line
-        elif edge == "hard":
-            reach = None         # nothing can cross the outline: block_in's own rule
-        else:
-            reach = 1.0          # the recipe: ends outside, where no edge is drawn
+        reach = _cover_overhang(edge, overhang)
         b = self._resolve_brush(
             brush, size, None,
             {"load": 1.0, "load_falloff": 0.0, "opacity": 1.0, **brush_overrides},
@@ -1645,6 +1639,41 @@ class Session:
         held = _mass_hold(place, edge, clip)
         if solid:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
+        b, inward, paths = self._scumble_paths(place, n, brush, size, opacity,
+                                               direction, overhang, brush_overrides)
+        if inward:
+            return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
+                                        paths, clip=held)
+
+        records: list[StrokeRecord] = []
+        laid = 0
+        with self._one_call("scumble"):
+            for path, flipped in paths:
+                t = laid / max(n - 1, 1)
+                records.append(self.stroke(
+                    path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
+                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                    clip=held,
+                    note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
+                ))
+                laid += 1
+        return records
+
+    def _scumble_paths(self, place, n: int, brush, size, opacity: float, direction,
+                       overhang: float, brush_overrides: dict, stacklevel: int = 3):
+        """The brush a scumble lays, and every pass it would lay -- before any is paint.
+
+        Split out for the reason :meth:`_block_in_paths` is: :meth:`cost`,
+        :meth:`preview` and :meth:`rehearse` have to be able to say what a passage
+        charges without laying it, and a second copy of *which brush, how many
+        passes* is a second answer waiting to disagree with the first. It stays a
+        generator for the same reason too -- the pass wander is drawn from the stream
+        between the ``stroke()`` calls, so collecting the paths up front would
+        reorder it.
+
+        Returns the brush, whether this is the centred (``"inward"``) case, and the
+        paths themselves.
+        """
         if direction == "inward":
             # A ring is two or three times the length of a pass across the same patch,
             # and it has no far end to run dry at -- it comes back to where it started.
@@ -1661,8 +1690,11 @@ class Session:
                                     {"load_falloff": 0.0, **brush_overrides})
             _check_inward_brush(self, place, b, n)
             _check_inward_comb(self, place, b, n, named)
-            return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
-                                        clip=held)
+            outline = place.closed if isinstance(place, Polygon) else polygon(place).closed
+            # In to the middle: half the shorter extent, which is the radius of a round
+            # patch and the half-width of a long one, where the ramp lands on its spine.
+            depth = _inward_depth(place, b.size)
+            return b, True, self._ring_paths(outline, depth / n, n)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
         step = _normal_extent(place, degrees) / n
         # The same mechanism as the inward case, and for the same reason: the passes
@@ -1675,27 +1707,14 @@ class Session:
             size = _linear_size(step)
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
         _check_linear_brush(self, b, step, n)
-        _check_scumble_ends(self, place, degrees, b, n, stacklevel=3)
+        _check_scumble_ends(self, place, degrees, b, n, stacklevel=stacklevel)
         shaped = isinstance(place, Polygon)
         paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
                  else self._angled_paths(place, degrees, step, b.size * overhang))
-
-        records: list[StrokeRecord] = []
-        laid = 0
-        with self._one_call("scumble"):
-            for path, flipped in paths:
-                t = laid / max(n - 1, 1)
-                records.append(self.stroke(
-                    path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
-                    pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    clip=held,
-                    note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
-                ))
-                laid += 1
-        return records
+        return b, False, paths
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
-                        pressure, note: str, clip=None) -> list[StrokeRecord]:
+                        pressure, note: str, paths, clip=None) -> list[StrokeRecord]:
         """A centred fall-off: ``n`` rings stepping in from the boundary.
 
         The band version grades edge to edge, which is what a band wants and is not a
@@ -1713,13 +1732,9 @@ class Session:
         *passes that follow the form rather than combing across it* -- with the colour
         moving as it goes inward.
         """
-        outline = place.closed if isinstance(place, Polygon) else polygon(place).closed
-        # In to the middle: half the shorter extent, which is the radius of a round
-        # patch and the half-width of a long one, where the ramp lands on its spine.
-        depth = _inward_depth(place, b.size)
         records: list[StrokeRecord] = []
         with self._one_call("scumble"):
-            for k, path, flipped in self._ring_paths(outline, depth / n, n):
+            for k, path, flipped in paths:
                 records.append(self.stroke(
                     path, brush=b,
                     color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
@@ -2342,13 +2357,17 @@ class Session:
         and one on the real one.
         """
         # ``edge`` is dropped for a sweep, whose edge is passed positionally, and
-        # kept for a mass, where it is block_in's ragged-or-clean contour.
-        drop = ("label", "place") if kind == "mass" else ("label", "place", "edge")
+        # kept for the place-filling verbs, where it is the ragged-or-clean contour.
+        drop = ("label", "place", "edge") if kind == "sweep" else ("label", "place")
         kwargs = {k: v for k, v in spec.items() if k not in drop}
         if kind == "mass":
             return self.block_in(spec["place"], **kwargs)
         if kind == "sweep":
             return self.sweep(spec["edge"], **kwargs)
+        if kind == "scumble":
+            return self.scumble(spec["place"], **kwargs)
+        if kind == "cover":
+            return self.cover(spec["place"], **kwargs)
         return [self.stroke(**kwargs)]
 
     def paint(self, plan, note: str = "") -> list[StrokeRecord]:
@@ -2526,6 +2545,11 @@ class Session:
         """
         if kind == "stroke":
             return 1, ""
+        if kind == "cover":
+            # A burial is a block-in with the recipe already set, so it is priced as
+            # the block-in it lays -- through the same arithmetic, not beside it.
+            # The dry is free and is not a mark.
+            return self._plan_price("mass", _cover_as_mass(spec))
         trial = self._trial_session()
         b = trial._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
                                  spec.get("opacity"), {})
@@ -2551,6 +2575,26 @@ class Session:
             self._adopt_notices(trial)
             return (laid + int(edge == "clean"),
                     _mass_reason(fill, b, direction, density, laid))
+
+        if kind == "scumble":
+            place = spec["place"]
+            n = int(spec.get("n", 8))
+            b, inward, paths = trial._scumble_paths(
+                place, n, spec.get("brush", "bristle"), spec.get("size"),
+                float(spec.get("opacity", 0.5)), spec.get("direction", "axis"),
+                float(spec.get("overhang", 0.35)), _brush_overrides_of(spec),
+                stacklevel=5)
+            laid = sum(1 for _ in paths)
+            self._adopt_notices(trial)
+            if inward:
+                why = f"{laid} rings stepping in from the boundary"
+                if laid < n:
+                    why += f", of the {n} asked for: the rest fold past the middle"
+            else:
+                why = f"{laid} passes stepping across {place.name or 'the band'}"
+                if laid != n:
+                    why += f", not the {n} asked for: the outline cuts them"
+            return laid, why
 
         # A sweep works its pass count out from the depth before any geometry is
         # walked, so the quote goes through the same arithmetic the painted one does
@@ -2694,6 +2738,7 @@ class Session:
                         f"(x, y) points, or a dict like "
                         f"{{'points': [...], 'brush': 'liner', 'size': 0.004}}."
                     )
+                _check_plan_keys("stroke", spec)
             else:
                 spec = {"points": entry}
             pts = np.atleast_2d(np.asarray(spec["points"], dtype=np.float32))
@@ -2706,14 +2751,20 @@ class Session:
         return out
 
     def _plan_specs(self, entries) -> list[tuple[str, dict]]:
-        """Split what ``preview`` and ``rehearse`` accept into marks and masses.
+        """Split what ``preview`` and ``rehearse`` accept into the calls that lay them.
 
-        A plan entry is a mark -- a path, or a dict of :meth:`stroke` arguments -- or
-        a mass. A mass is described the way the call that lays it is: a shape or
-        region, or a dict with ``shape=`` and any :meth:`block_in` argument, is a
-        block-in; a dict with ``edge=`` and any :meth:`sweep` argument is a sweep.
-        One list holds all three, so a plan is previewed, rehearsed and painted
+        A plan entry is described the way the call that lays it is. A mark is a path,
+        or a dict of :meth:`stroke` arguments. A dict with ``shape=`` (or ``region=``)
+        and any :meth:`block_in` argument is a **mass**; with ``edge=`` and any
+        :meth:`sweep` argument, a **sweep**; with ``band=`` -- or a place and the two
+        colours a passage steps between -- a **scumble**; with ``cover=``, a burial.
+        One list holds all five, so a plan is previewed, rehearsed and painted
         without being rewritten in between, which is when a plan drifts.
+
+        Until this took the last two, a scumble could not be planned, priced,
+        previewed or rehearsed at all -- and a scumble-shaped entry carrying
+        ``shape=`` was **priced as a block-in**, quoting 5 where the call lays 8,
+        raising only when ``paint()`` reached the keys block_in does not take.
         """
         if isinstance(entries, (dict, Polygon, Region)) or _is_path(entries):
             entries = [entries]
@@ -2721,27 +2772,46 @@ class Session:
         for entry in entries:
             if isinstance(entry, (Polygon, Region)):
                 out.append(("mass", {"place": as_place(entry)}))
-            elif isinstance(entry, dict) and "points" not in entry and (
-                    "shape" in entry or "region" in entry):
+                continue
+            if not isinstance(entry, dict) or "points" in entry:
+                out.append(("stroke", self._stroke_specs([entry])[0]))
+                continue
+            spec = dict(entry)
+            if "cover" in spec:
+                # The verb names itself, because cover's own first argument is the
+                # generic `place` and a plan needs a word that says which call it is.
+                kind, place = "cover", spec.pop("cover")
+            elif "band" in spec or (("shape" in spec or "region" in spec)
+                                    and ("color_a" in spec or "color_b" in spec)):
+                kind = "scumble"
+                place = spec.pop("band", None)
+                if place is None:
+                    place = spec.pop("shape", spec.pop("region", None))
+            elif "shape" in spec or "region" in spec:
                 # Tested before the sweep branch, because ``edge`` means two things:
-                # the boundary a sweep follows, and block_in's ragged-or-clean
-                # contour. A ``shape``/``region`` key settles it -- an entry that
-                # names the mass is a mass, and its ``edge`` is the contour.
-                spec = dict(entry)
+                # the boundary a sweep follows, and the ragged-or-clean contour of a
+                # place being filled. A ``shape``/``region`` key settles it -- an
+                # entry that names the mass is a mass, and its ``edge`` is the
+                # contour.
+                kind = "mass"
                 place = spec.pop("shape", None)
-                fallback = spec.pop("region", None)
-                spec["place"] = as_place(place if place is not None else fallback)
-                out.append(("mass", spec))
-            elif isinstance(entry, dict) and "points" not in entry and "edge" in entry:
-                out.append(("sweep", dict(entry)))
+                if place is None:
+                    place = spec.pop("region", None)
+            elif "edge" in spec:
+                kind, place = "sweep", None
             else:
                 out.append(("stroke", self._stroke_specs([entry])[0]))
+                continue
+            _check_plan_keys(kind, entry)
+            if place is not None:
+                spec["place"] = as_place(place)
+            out.append((kind, spec))
         return out
 
     def _preview_entry(self, kind: str, spec: dict, index: int) -> dict:
-        """What the overlay needs, whichever of the three kinds this entry is."""
-        if kind == "mass":
-            return self._preview_mass(spec, index)
+        """What the overlay needs, whichever of the five kinds this entry is."""
+        if kind in ("mass", "scumble", "cover"):
+            return self._preview_mass(spec, index, kind)
         if kind == "sweep":
             return self._preview_sweep(spec, index)
         return self._preview_shape(spec, index)
@@ -2769,17 +2839,24 @@ class Session:
         return {"points": points, "width": b.size, "fill": True,
                 "label": self._priced("sweep", spec, label)}
 
-    def _preview_mass(self, spec: dict, index: int) -> dict:
-        """What the overlay needs for a mass: its outline and the brush filling it."""
+    def _preview_mass(self, spec: dict, index: int, kind: str = "mass") -> dict:
+        """What the overlay needs for a mass: its outline and the brush filling it.
+
+        A passage and a burial fill a place too, so they draw the same way -- with
+        their own default brush and their own price, which is the half of this that
+        matters: the overlay says what the entry charges, and a scumble charges its
+        passes rather than a block-in's.
+        """
         place = spec["place"]
-        b = self._resolve_brush(spec.get("brush", "bristle"), spec.get("size"),
+        default = {"scumble": "bristle", "cover": "flat"}.get(kind, "bristle")
+        b = self._resolve_brush(spec.get("brush", default), spec.get("size"),
                                 spec.get("opacity"), {})
         points = (place.closed if isinstance(place, Polygon)
                   else [(place.x0, place.y0), (place.x1, place.y0),
                         (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
         label = str(spec.get("label", spec.get("note") or place.name
-                              or f"mass {index + 1}"))
-        if isinstance(place, Polygon):
+                              or f"{kind} {index + 1}"))
+        if kind == "mass" and isinstance(place, Polygon):
             # The same lines block_in gives, here too: the guide already says to
             # preview the inset shape, and these are those sentences with numbers on
             # them.
@@ -2789,7 +2866,7 @@ class Session:
             elif edge == "ragged":
                 _check_round_block(self, place, b, self.canvas, stacklevel=4)
         return {"points": points, "width": b.size, "fill": True,
-                "label": self._priced("mass", spec, label)}
+                "label": self._priced(kind, spec, label)}
 
     def _preview_shape(self, spec: dict, index: int) -> dict:
         """What the overlay needs: the path, the brush's width, and a label."""
@@ -4039,6 +4116,49 @@ class Session:
 #: instead. The guide's own promise is *"any brush field is also an override on any
 #: painting call"*, so a painter who reads ``solid`` and ``glaze`` in an argument table
 #: with no call named beside them has every reason to try this.
+def _accepts(method) -> frozenset[str]:
+    """Every keyword one of the painting calls takes, off its own signature.
+
+    Read from the call rather than listed here, so that an argument added to a verb
+    is an argument a plan may carry on the same day -- which is what went wrong the
+    other way round: ``clip=`` was on ``stroke`` and a plan carrying it was refused.
+    """
+    return frozenset({n for n, q in inspect.signature(method).parameters.items()
+                      if q.kind not in (q.VAR_KEYWORD, q.VAR_POSITIONAL)} - {"self"})
+
+
+#: The brush fields, which are an override on any painting call and so on any entry
+#: of a plan. One set, built from the dataclass, for the two checks that use it.
+_BRUSH_FIELDS = frozenset(f.name for f in dataclass_fields(Brush))
+
+
+#: What each kind of plan entry may carry, and the word that names the place it fills.
+#: A plan is checked against this **before it is priced**, because pricing walks the
+#: passes and never touches the brush overrides -- so a misspelled ``size`` prices
+#: happily at the default and then raises when the same plan is painted. A quote for
+#: a plan that cannot be painted is worse than no quote: it is the drift a plan object
+#: exists to prevent, arriving as a price. The MCP server has refused these since it
+#: was built (``_ACCEPTS`` there is this, imported); the library priced them.
+PLAN_ACCEPTS = {
+    "stroke": _accepts(Session.stroke),
+    "mass": _accepts(Session.block_in) | {"shape"},
+    "sweep": _accepts(Session.sweep),
+    "scumble": _accepts(Session.scumble) | {"shape", "region"},
+    "cover": _accepts(Session.cover) | {"cover"},
+}
+
+
+def _check_plan_keys(kind: str, entry: dict) -> None:
+    """Refuse a keyword the call would not take, while the plan is still free."""
+    unknown = sorted(set(entry) - PLAN_ACCEPTS[kind] - _BRUSH_FIELDS - {"label"})
+    if unknown:
+        raise ValueError(
+            f"A {kind} does not take {', '.join(repr(k) for k in unknown)}. It takes "
+            f"{', '.join(sorted(PLAN_ACCEPTS[kind]))} -- and any brush field, to "
+            f"override one for this mark alone."
+        )
+
+
 _NOT_BRUSH_FIELDS = {
     "solid": (
         "solid= is an argument of block_in(), stroke(), sweep() and scumble() -- the "
@@ -5460,6 +5580,37 @@ def _masks_meet(a: np.ndarray, b: np.ndarray, gap_px: float) -> bool:
             out |= moved
         grown = out
     return bool(np.any(grown & b))
+
+
+def _cover_overhang(edge: str, overhang):
+    """How far a burial's passes run past their ends, once ``edge`` has had its say.
+
+    Here rather than inside :meth:`Session.cover` because :meth:`Session.cost` has to
+    charge what the call lays, and a burial is priced as the block-in it becomes.
+    """
+    if overhang is not None:
+        return float(overhang)
+    if edge == "clean":
+        return 0.0          # the inset plus the contour already reach the line
+    if edge == "hard":
+        return None         # nothing can cross the outline: block_in's own rule
+    return 1.0              # the recipe: ends outside, where no edge is drawn
+
+
+def _cover_as_mass(spec: dict) -> dict:
+    """A burial as the block-in it lays, for the one pricing walk to charge."""
+    edge = spec.get("edge", "ragged")
+    mass = {k: v for k, v in spec.items()
+            if k in ("place", "brush", "size", "direction", "density", "edge", "note")}
+    mass.setdefault("brush", "flat")
+    mass.setdefault("direction", "horizontal")
+    mass["overhang"] = _cover_overhang(edge, spec.get("overhang"))
+    return mass
+
+
+def _brush_overrides_of(spec: dict) -> dict:
+    """The brush fields carried by a plan entry, which override that call's brush."""
+    return {k: v for k, v in spec.items() if k in _BRUSH_FIELDS}
 
 
 def _mass_overhang(edge: str, overhang):
