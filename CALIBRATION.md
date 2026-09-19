@@ -1233,6 +1233,39 @@ bristles in, so only the missing ones show — two to seven streaks across a mar
 any size. The comb shows at its own scale where the stroke is starved or the tooth
 is biting. `bristle_count` still pins a comb if you want a fixed one.
 
+### The holes a solid comb leaves
+
+`solid=True` sets `load=1.0` and `load_falloff=0.0` and nothing else, so it fills the
+gaps a brush leaves *along* a pass as it runs dry — and leaves the ones the comb's own
+missing bristles leave *across* it. A `flat` laying the same mass leaves `0.0000%` bare
+at every size and density tried. Measured on a 1440×960 canvas, one shaped mass,
+`solid=True`, *bare* meaning within `10/255` of the ground, which is what
+`ground_showing()` means by it and what an eye means by it:
+
+| brush | `size` | `density` | bare | blobs | largest |
+|---|---|---|---|---|---|
+| `flat` | 0.04 | 0.8 | `0.0000%` | 0 | — |
+| `bristle` | 0.04 | 0.8 | `0.1552%` | 47 | 198 px |
+| `bristle` | 0.04 | 1.2 | `0.0000%` | 0 | — |
+
+**And a hole is a contrast, not a gap.** The same call, the same holes, on three
+grounds:
+
+| ground | bare | blobs | largest |
+|---|---|---|---|
+| `toned_grey` | `0.1552%` | 47 | 198 px |
+| white | `0.1357%` | 41 | 176 px |
+| a dark `#2e332c` | **`3.1550%`** | 373 | 2270 px |
+
+So the comb's holes are a dark mass's problem. The passes sit `size × (1 − 0.45 ×
+density)` apart, so `density=1.2` is about a fifth more passes than `1.0` and closes
+them; a solid tip closes them at any density for the same money; crossed passes close
+them at twice the price. `solid-comb` says this at the call, with the share and the
+prices, and moves no default: a comb is the right brush for foliage, cloth and
+anything with strands in it, and its holes only read where the ground is darker than
+the paint. Two painters reported them as *shaped block-in paths wandering apart*,
+which they are not — [`SUGGESTIONS.md`](SUGGESTIONS.md), B2.
+
 **The round tips repeat themselves, and `tip_wobble` is the same idea for them.** Two
 `dab(press=3)` marks at `size=0.05`, each silhouette cropped to its own box and laid
 over the other, as a share of the area either covers:

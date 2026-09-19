@@ -88,10 +88,21 @@ class Palette:
             return self._slots[key]
         if key in self._pigments:
             return parse_color(self._pigments[key])
+        from easel.canvas import GROUNDS  # see canvas._PIGMENT_NAMES
+        ground = ""
+        if key in GROUNDS:
+            # The third namespace, and the one a painter meets first: a ground is
+            # named in the same breath as a size and then used as a colour. It is a
+            # real colour and this is not the way to it.
+            ground = (f" {name!r} is a ground, not a pigment: the two are different "
+                      f"namespaces. The canvas's own ground is s.ground, ready to "
+                      f"mix with -- p.at_value(s.ground, 0.62) and "
+                      f"p.mix(s.ground, 'ultramarine', 0.3) both work.")
         raise KeyError(
             f"No pigment or mixed slot named {name!r}. "
             f"Pigments: {', '.join(sorted(set(self._pigments)))}. "
             f"Mixed slots: {', '.join(sorted(self._slots)) or '(none yet)'}"
+            f"{ground}"
         )
 
     def __setitem__(self, name: str, color) -> None:

@@ -102,8 +102,9 @@ s.palette.value_of(s.sample(mass))                  # the paint
 s.palette.value_of(s.sample(mass, rendered=True))   # the view of it
 ```
 
-A list of 0–255 integers is not one of the forms, and it does not raise — it clamps,
-so `[13, 12, 16]` gives you white. Reach for a supplied colour when a reference
+A list of 0–255 integers is not one of the forms: it **raises**, and names both
+fixes — the same numbers divided by 255, and the hex they spell. It used to clamp, so
+`[13, 12, 16]` gave you white in silence. Reach for a supplied colour when a reference
 genuinely goes below the palette's floor of `0.14` (*What the box reaches* in
 [`CALIBRATION.md`](CALIBRATION.md#what-the-box-reaches)), and not otherwise.
 

@@ -371,6 +371,7 @@ floor twenty-eight times and was right every time.
 | `chisel-pressure` | fact | a pressure list on a chisel tip changes the paint, not the width | `CALIBRATION.md`, *Pressure* |
 | `clean-small` | fact | a clean edge whose brush is a large share of the shape: the inset takes the mass rather than a rim off it | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `count-only` | fact | a counted copy was asked something counting cannot answer | `PAINTING.md`, *Try the mark before you spend it* |
+| `solid-comb` | fact | a mass laid solid with a bristle: `solid=` closes the gaps along a pass and not the ones the comb leaves across it | `CALIBRATION.md`, *The holes a solid comb leaves* |
 | `cover-comb` | fact | `cover()` with a bristle does not bury: the comb leaves the old paint showing between the streaks at any opacity | `CALIBRATION.md`, *The bristle comb* |
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |

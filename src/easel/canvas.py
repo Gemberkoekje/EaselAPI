@@ -102,6 +102,17 @@ GROUNDS: dict[str, str] = {
     "cool_grey": "#828A90",
 }
 
+def _PIGMENT_NAMES() -> frozenset[str]:
+    """The pigment names, for naming the other namespace when one is used here.
+
+    Imported inside the call rather than at the top: :mod:`easel.palette` imports
+    :mod:`easel.color`, which is this module's own dependency, and a module-level
+    import here would close the circle for the sake of one error message.
+    """
+    from easel.palette import PIGMENTS
+    return frozenset(PIGMENTS)
+
+
 # Wetness left after one stroke elapses. Slow enough that wet-into-wet is usable
 # for a passage, fast enough that the painter is not fighting mud twenty strokes on.
 _WET_DECAY_PER_STROKE = 0.94
@@ -195,6 +206,21 @@ class Canvas:
         """Normalised (x, y) to pixel coordinates. Internal use."""
         return x * (self.width - 1), y * (self.height - 1)
 
+    @property
+    def ground_color(self) -> np.ndarray:
+        """The ground as a colour, ready to paint with or to mix.
+
+        A ground is a third namespace beside the pigments and the painter's own
+        slots, and it was the only one with no way out: ``ground_name`` and
+        ``ground_spec`` say what it is called and what it was made from, and a
+        painter who wanted the value they can plainly see had to
+        :meth:`~easel.session.Session.sample` an unpainted corner of canvas for it.
+        This is that colour, without the tooth's shading on it -- so
+        ``p.at_value(s.ground, 0.62)`` and ``p.mix(s.ground, "ultramarine", 0.3)``
+        both mean what they look like.
+        """
+        return self._resolve_ground(self.ground_spec)
+
     def bare(self) -> np.ndarray:
         """The linear RGB this canvas started as: its ground, shaded by its own tooth.
 
@@ -241,9 +267,19 @@ class Canvas:
         if isinstance(ground, str) and not ground.startswith("#"):
             key = ground.lower().replace(" ", "_").replace("-", "_")
             if key not in GROUNDS:
+                # A pigment name here is not a typo, it is the other namespace: the
+                # painter meant the colour and this argument takes the canvas it is
+                # painted on. Say which is which rather than listing the grounds at
+                # somebody who named a paint.
+                paint = ""
+                if key in _PIGMENT_NAMES():
+                    paint = (f" {ground!r} is a pigment, not a ground: the two are "
+                             f"different namespaces. To lay the canvas in it, pass "
+                             f"its hex -- Session(ground=p['{key}']) takes a colour "
+                             f"as well as a name.")
                 raise ValueError(
                     f"Unknown ground {ground!r}. Choose one of: {', '.join(sorted(GROUNDS))}, "
-                    f"or pass a hex string."
+                    f"or pass a hex string.{paint}"
                 )
             return parse_color(GROUNDS[key])
         return parse_color(ground)

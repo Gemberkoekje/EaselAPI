@@ -270,6 +270,16 @@ class Session:
         return (self.canvas.width, self.canvas.height)
 
     @property
+    def ground(self) -> np.ndarray:
+        """The canvas's own ground, as a colour to mix with or to paint in.
+
+        See :attr:`~easel.canvas.Canvas.ground_color`. Sampling an unpainted corner
+        was the only route to it, which is a measurement of the tooth's shading as
+        well as of the ground.
+        """
+        return self.canvas.ground_color
+
+    @property
     def spent(self) -> int:
         """Strokes charged so far. The same number as :attr:`stroke_count`, named
         for the budget rather than for the log."""
@@ -680,6 +690,7 @@ class Session:
         edge: str = "ragged",
         solid: bool = False,
         clip=None,
+        dry_first: bool = False,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -838,6 +849,16 @@ class Session:
                 somewhere else, which is how a mass is held inside a window, a pane,
                 or a neighbour it must not cross. Given both, the paint lands where
                 they agree.
+            dry_first: dry the place before laying the mass, so this paint covers
+                what is under it instead of mixing with it. Free, and off by
+                default, because wet-into-wet is most of what makes a passage soft
+                and a mass laid over a dried one is a decision. What it is for is the
+                case that cost a painter their one ``undo``: a patch laid over a
+                bezel still wet from the pass before it picked the bezel's value up
+                and printed it -- a film at ``opacity=0.15`` leaves about ``0.13``
+                behind, which is past the ``0.10`` that makes a new mass
+                (``CALIBRATION.md``, *GLM's rings*). :meth:`cover` has had this
+                since it was built, and has it on.
             note: recorded in the log.
 
         Returns:
@@ -873,6 +894,7 @@ class Session:
         # and the contour pass below draws it.
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
         held = _mass_hold(place, edge, clip)
+        _check_solid_comb(self, b, density, solid, stacklevel=3)
         if edge == "clean" and b.tip == "bristle":
             self._notify(
                 "clean-comb",
@@ -894,6 +916,8 @@ class Session:
             _check_round_block(self, place, b, self.canvas, stacklevel=3)
 
         with self._one_call("block_in"):
+            if dry_first:
+                self.dry(1.0, place)
             for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
                                                                 density, overhang):
                 records.append(
@@ -3496,7 +3520,10 @@ class Session:
         earlier = len(before) + sum(
             1 for r in records[:start] if r.kind not in History.UNPAINTED_KINDS
         )
-        paid = before + [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        # The marks this painting has been charged for -- the same set the budget
+        # counts, signature allowance and all, rather than every mark of paint. The
+        # subject line divided by the second and was compared against the first.
+        paid = History.paid_marks(list(self._prior) + list(records))
         # The stack-of-bars line decays over a pass and not over the painting: what
         # makes a warning skimmable is being printed after every pass unasked, and
         # `--check` is asked for. An audit says everything it has.
@@ -4226,6 +4253,47 @@ def _check_smudge_size(session, size: float) -> None:
         f"no softer than {SMUDGE_SIZE:.3g} already leaves it. Rehearse it, or use "
         f"size={SMUDGE_SIZE:.3g} and put the rest in with paint.",
         stacklevel=3,
+    )
+
+
+#: The density at which a comb's own gaps close on a solid mass. Below it the passes
+#: are further apart than the width the comb actually covers -- about three-quarters
+#: of its own -- and the mass keeps the holes. Measured on a shaped mass at
+#: ``size=0.04``: ``0.1552%`` bare at ``density=0.8`` and ``0.0000%`` at this.
+_COMB_CLOSES_AT = 1.2
+
+
+def _check_solid_comb(session, b: Brush, density: float, solid: bool,
+                      stacklevel: int = 3) -> None:
+    """Say, at the call, what share of a solid comb mass will come back bare.
+
+    Two painters reported holes inside a ``solid=True`` mass as *shaped block-in
+    paths wandering apart*. They are not: a ``flat`` leaves ``0.0000%`` bare at every
+    size and density tried, and the comb leaves them at any spacing under
+    ``_COMB_CLOSES_AT`` -- because ``solid=`` sets ``load`` and ``load_falloff`` and
+    nothing else, so it closes the gaps *along* a pass and not the ones the comb's
+    own missing bristles leave *across* it.
+
+    A **fact**, not a habit: nothing here says the comb is the wrong brush, and no
+    default moves. A comb is the right tip for foliage, cloth and anything with
+    strands in it, and its holes only read where the ground is darker than the paint
+    -- ``0.16%`` of the mass on a mid ground and ``3.16%`` on a dark one, which is
+    the number worth printing at the call.
+    """
+    asked = solid or (b.load >= 1.0 and b.load_falloff <= 0.0)
+    if not asked or b.tip != "bristle" or float(density) >= _COMB_CLOSES_AT:
+        return
+    session._notify(
+        "solid-comb",
+        f"block_in(solid=True) with a bristle ({b.name!r}): solid= sets load=1.0 and "
+        f"load_falloff=0.0, which closes the gaps along each pass and not the ones "
+        f"the comb leaves across it. Measured at size=0.04, density=0.8, a shaped "
+        f"mass comes back 0.16% bare in 47 blobs on a mid ground -- and 3.16% in 373 "
+        f"blobs, the largest 2270 px, on a dark one, because a hole is a contrast "
+        f"rather than a gap. density={_COMB_CLOSES_AT:.3g} closes them, at about a "
+        f"fifth more passes; a 'flat' or 'knife' closes them at this density for the "
+        f"same money; crossed passes for twice it.",
+        stacklevel=stacklevel,
     )
 
 

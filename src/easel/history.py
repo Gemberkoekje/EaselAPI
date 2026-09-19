@@ -102,16 +102,32 @@ class History:
     def _is_signature(record: StrokeRecord) -> bool:
         return "signature" in str(record.note).lower()
 
-    @property
-    def stroke_count(self) -> int:
-        """How many marks of paint have been paid for.
+    @staticmethod
+    def paid_marks(records) -> list[StrokeRecord]:
+        """The marks of paint that are charged, out of any run of records.
 
         Drawing and drying do not count, and neither do the first
-        :data:`SIGNATURE_ALLOWANCE` marks noted ``signature``.
+        :data:`SIGNATURE_ALLOWANCE` marks noted ``signature``. A list rather than a
+        count, because the other place that needs this needs the marks themselves:
+        :meth:`~easel.session.Session.report`'s subject line divides one set of
+        records by another, and built its total without this exemption -- so a
+        painting with three signature marks read *172 of 411* where the budget it is
+        compared against said 408, and the share was wrong by the same three marks.
         """
-        paint = [r for r in self.records if r.kind not in History.UNPAINTED_KINDS]
-        signed = sum(1 for r in paint if History._is_signature(r))
-        return len(paint) - min(signed, History.SIGNATURE_ALLOWANCE)
+        paint = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        free = History.SIGNATURE_ALLOWANCE
+        charged: list[StrokeRecord] = []
+        for record in paint:
+            if free and History._is_signature(record):
+                free -= 1
+                continue
+            charged.append(record)
+        return charged
+
+    @property
+    def stroke_count(self) -> int:
+        """How many marks of paint have been paid for."""
+        return len(History.paid_marks(self.records))
 
     def summary(self, last: int = 10) -> str:
         """A short text log of recent actions, for the painter to re-read."""

@@ -3371,3 +3371,105 @@ def test_a_plan_that_cannot_be_painted_is_not_priced(tmp_path):
     ):
         with pytest.raises(ValueError, match=says):
             s.cost(entry, share=0)
+
+
+# -- the count the subject line divides by ---------------------------------------------
+def test_the_subject_line_counts_what_the_budget_counts(tmp_path):
+    """*subject: 172 of 411 marks* against a budget that said 408: the line built its
+    total out of every mark of paint, and the budget exempts the first five marks noted
+    ``signature``. Two counts of the same painting, printed a line apart."""
+    s = make(tmp_path)
+    for i in range(5):
+        s.stroke([(0.1 + i * 0.1, 0.3), (0.2 + i * 0.1, 0.4)], "flat", "burnt_umber",
+                 size=0.04, note="subject rock")
+    for i in range(3):
+        s.stroke([(0.80, 0.90 - i * 0.02), (0.88, 0.92 - i * 0.02)], "liner",
+                 "burnt_umber", note="signature")
+    s.pencil([(0.1, 0.1), (0.2, 0.2)])
+    assert s.stroke_count == 5
+    line = [ln for ln in s.report().splitlines() if "subject:" in ln][0]
+    assert "5 of 5 marks" in line and "(100%)" in line
+
+
+# -- three namespaces, and the one with no way out -------------------------------------
+def test_a_ground_is_a_colour_and_says_so_when_it_is_used_as_one(tmp_path):
+    """A ground is named in the same breath as a size and then reached for as a colour,
+    and the palette listed every pigment and slot without noticing that the name it was
+    handed is a valid ground. Nothing exposed the ground as a colour either, so sampling
+    an unpainted corner -- which measures the tooth's shading too -- was the only route
+    to the value a painter can plainly see."""
+    s = make(tmp_path)
+    with pytest.raises(KeyError, match="is a ground, not a pigment"):
+        s.palette["toned_grey"]
+    with pytest.raises(ValueError, match="is a pigment, not a ground"):
+        Session(80, 60, ground="ultramarine", out_dir=tmp_path)
+    # ...and the ground is a colour, ready for the calls that take one.
+    assert s.palette.value_of(s.ground) == pytest.approx(
+        s.palette.value_of(s.sample(cell("A1"))), abs=0.02)
+    s.palette["sky"] = s.palette.mix(s.ground, "ultramarine", 0.3)
+    s.block_in(cell("D5"), "flat", s.palette.at_value(s.ground, 0.62), size=0.05)
+
+
+# -- a documented trap the engine can detect -------------------------------------------
+def test_a_0_to_255_colour_raises_and_names_both_fixes(tmp_path):
+    """It clamped, so `[13, 12, 16]` -- a dark read straight off a photograph -- came
+    back **white**, in silence, and `PAINTING.md` documented the trap. A documented trap
+    the engine can see is a bug."""
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match=r"0\.\.1, not 0\.\.255"):
+        s.stroke([(0.2, 0.2), (0.6, 0.6)], "flat", [13, 12, 16])
+    try:
+        s.palette["dark"] = [200, 100, 50]
+    except ValueError as caught:
+        assert "(0.7843, 0.3922, 0.1961)" in str(caught) and "#c86432" in str(caught)
+    # The form it names works, and so does every form that always did.
+    s.palette["dark"] = [0.051, 0.047, 0.063]
+    s.palette["same"] = "#0d0c10"
+
+
+# -- the holes inside a solid mass, and whose they are ---------------------------------
+def test_a_solid_comb_says_what_share_of_the_mass_comes_back_bare(tmp_path):
+    """Reported twice as *shaped block-in paths wandering apart*, and it is neither the
+    paths nor the shape: a `flat` leaves 0.0000% bare at every size and density tried,
+    and a comb leaves holes because `solid=` sets `load` and `load_falloff` and nothing
+    else. A fact at the call with the prices on it, and no default moved -- a comb is
+    the right brush for anything with strands in it."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="closes the gaps along each pass"):
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04, solid=True)
+    # The same, typed out by hand, is the same mass and says the same thing.
+    with pytest.warns(UserWarning, match="3.16%"):
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04,
+                   load=1.0, load_falloff=0.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.block_in(span("B3", "F6"), "flat", "burnt_umber", size=0.04, solid=True)
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04, solid=True,
+                   density=1.2)
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04)
+
+
+# -- a mass laid over paint that is still wet ------------------------------------------
+def test_a_mass_can_dry_what_it_is_laid_over_first(tmp_path):
+    """The rings that cost one painter their only `undo` were laid over a bezel still
+    wet from the pass before: a film at `opacity=0.15` leaves about 0.13 wetness behind,
+    which is past the 0.10 that makes a new mass. `cover()` has dried what it is about
+    to bury since it was built; a mass could not, short of a `dry()` of its own."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    s.palette["pale"] = s.palette.tint("yellow_ochre", 0.6)
+
+    def over_wet(**kw):
+        t = s.scratch()
+        t.block_in(cell("D5"), "flat", "dark", size=0.05, solid=True)
+        t.block_in(cell("D5"), "flat", "pale", size=0.05, solid=True, **kw)
+        return t.palette.value_of(t.sample(cell("D5").inset(0.02)))
+
+    wet, dried = over_wet(), over_wet(dry_first=True)
+    dark = s.palette.value_of(s.palette["dark"])
+    pale = s.palette.value_of(s.palette["pale"])
+    # Wet, the pale mass takes some of the dark under it and lands between the two;
+    # dried, it lands as itself. Neither reaches the mixture exactly -- a mass is
+    # paint over paint, not a fill.
+    assert dark < wet < dried < pale
+    assert dried - wet > 0.02
