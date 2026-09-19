@@ -3606,3 +3606,311 @@ def test_a_rehearsed_setting_is_the_one_that_lands(tmp_path):
     plain.palette["dark"] = plain.palette.mix("ultramarine", "burnt_umber", 0.45)
     plain.paint(plan)
     assert np.array_equal(after_sheet.canvas.rgb, plain.canvas.rgb)
+
+
+# -- the plan a painter declares: workstream C -----------------------------------------
+#
+# *Useful heuristics, but they're philosophy, not errors, and it doesn't know which.*
+# Inventoried and true: before 0.6.0 no acknowledge, suppress or declare mechanism
+# existed anywhere in the API, so a painter whose subject really was horizontal could
+# only read the same warning again. Every test here is one thing a painter can now write
+# down, and what the check does with it -- because a declaration that changes nothing is
+# a comment.
+def _plan_line(session, label: str, since=None) -> str:
+    """The one line of the post-pass check that starts with `label`, or ''."""
+    return next((line.strip() for line in session.report(since=since).split("\n")
+                 if line.strip().startswith(label)), "")
+
+
+def test_a_plan_says_which_close_places_meet_and_stays_quiet_about_the_rest(tmp_path):
+    """A plan finished all-green with two of its places planned `0.00` apart: they were
+    the two that met, and one dissolved into the other exactly there. Three of that
+    plan's four close pairs were fine, because those masses never met -- so *touching*
+    is the whole of what picks a pair out, and the question is asked on the empty canvas,
+    where it is free."""
+    s = make(tmp_path)
+    upper, lower = span("A1", "H4"), span("A5", "H8")
+    with pytest.warns(UserWarning, match="read as one where they meet") as caught:
+        s.plan(values={upper: 0.40, lower: 0.44})
+    assert caught[0].message.code == "plan-pairs"
+    assert "0.04 apart" in str(caught[0].message)
+
+    # Two places just as close in value, nowhere near each other on the canvas.
+    apart = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")           # any notice at all fails the test
+        apart.plan(values={cell("A1"): 0.40, cell("H8"): 0.44})
+    assert apart.plan_pairs() and not apart.plan_pairs()[0][3]
+
+
+def test_the_same_plan_declared_again_says_nothing(tmp_path):
+    """A `prelude.py` runs before every pass, so re-declaring is the ordinary case and
+    not the odd one. Without this the pairs notice would be a thing printed once a pass,
+    which is rule 7 broken by the one declaration meant to quieten the check down."""
+    s = make(tmp_path)
+    values = {span("A1", "H4"): 0.40, span("A5", "H8"): 0.44}
+    with pytest.warns(UserWarning, match="plan"):
+        s.plan(values=values)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.plan(values=values)                    # same plan
+        s.plan(why="and a sentence about it")     # a different field, same values
+    # Changing the values is news again.
+    with pytest.warns(UserWarning, match="read as one where they meet"):
+        s.plan(values={span("A1", "H4"): 0.41, span("A5", "H8"): 0.44})
+
+
+def test_the_check_measures_the_canvas_against_the_declared_values(tmp_path):
+    """The `plan:` line: what a painter promised, against what is there. The sign is
+    the canvas minus the plan, so `+` is lighter than promised."""
+    s = make(tmp_path)
+    upper, lower = span("A1", "H4"), span("A5", "H8")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(values={upper: 0.95, lower: 0.30})
+        since = len(s.history.records)
+        s.block_in(upper, "flat", "white", direction="axis")
+    line = _plan_line(s, "plan:", since)
+    assert line.startswith("plan: 1 of 2 places inside 0.10"), line
+    # The one that is out is the one nobody painted, and it is named with its miss.
+    assert "A5:H8 +0.2" in line, line
+    # No values declared, no line: the check does not ask for a plan.
+    assert not _plan_line(make(tmp_path), "plan:", 0)
+
+
+def test_the_check_says_when_something_else_took_the_light(tmp_path):
+    """One painting reached stroke 217 before it had any light at all. The declaration
+    is the place the picture is lit by; the line ranks the plan's places and says when
+    the light is somewhere else."""
+    s = make(tmp_path)
+    lamp, wall = span("A1", "D4"), span("E1", "H4")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(values={lamp: 0.70, wall: 0.30}, lightest=lamp)
+        since = len(s.history.records)
+        s.block_in(wall, "flat", "white", direction="axis")      # the wall, not the lamp
+    line = _plan_line(s, "lightest:", since)
+    assert line.startswith("lightest: E1:H4 reads"), line
+    assert "the plan's own light" in line and "under" in line
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(lamp, "flat", "white", direction="axis")      # and now the lamp
+    assert "the lightest of the 2 places planned" in _plan_line(s, "lightest:", since)
+
+
+def test_the_subject_share_is_compared_without_being_passed_in(tmp_path):
+    """`report(subject_share=)` has taken this since 0.4.0 and neither `easel run` nor
+    the MCP `run` tool ever passed it, so a painter working anywhere but a Python prompt
+    had never once seen the comparison. Declared, it is always there."""
+    s = make(tmp_path)
+    s.plan(subject_share=0.40)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.stroke([(0.2, 0.3), (0.5, 0.35)], "flat", "burnt_umber", note="subject")
+    assert "against 40% planned" in _plan_line(s, "subject:")
+    # The argument is the more specific of the two and wins.
+    assert "against 90% planned" in s.report(subject_share=0.9)
+
+
+def test_declaring_the_bands_turns_the_bars_warning_into_a_count(tmp_path):
+    """The noisiest rule the engine has -- 47 of the corpus's 325 painted passes, 14%,
+    after the decay that already cut the pier's seven firings to three -- and the one two
+    painters learnt to skim. Its own text concedes *unless the subject runs that way*,
+    it cannot tell whether the subject does, and the painter can. Declared, it stops
+    warning and asks the method's next question instead."""
+    s = make(tmp_path)
+    s.plan(bands="subject")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        since = _lay_bars(s, 0.10)
+    line = _plan_line(s, "- bands declared as the subject:", since)
+    assert line, s.report(since=since)
+    assert "nothing crosses them yet" in line
+    assert not _bar_line(s, since), "declared, and still warned about"
+
+    # And what crosses them is counted over the picture, which is the question.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        _lay_bars(s, 0.10, angle=90.0)
+        since = _lay_bars(s, 0.30)
+    assert "14 long marks in the picture cross them" in s.report(since=since)
+
+    # Undeclared, the warning is unchanged -- and names the declaration.
+    plain = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        since = _lay_bars(plain, 0.10)
+    assert _bar_line(plain, since)
+    assert "s.plan(bands='subject')" in plain.report(since=since)
+
+
+def test_declaring_a_buried_ground_prints_the_number_without_asking_for_some(tmp_path):
+    """Five of seven painters in one round accepted `ground: 0.0x% … the checklist asks
+    for some` by hand, three naming the same cause: the breather they were told to leave
+    was buried by the field they were told to lay. Both are right, and the picture
+    decides which."""
+    def bury(session):
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            session.block_in("canvas", "flat", "white", direction="axis", solid=True)
+        return session
+
+    asked = bury(make(tmp_path))
+    assert "the checklist asks for some" in _plan_line(asked, "ground:")
+
+    declared = make(tmp_path)
+    declared.plan(ground="buried")
+    bury(declared)
+    line = _plan_line(declared, "ground:")
+    assert "buried, as the plan says" in line, line
+    assert "the checklist asks for some" not in line
+    # The number is still printed: a declaration is not a silence.
+    assert "% of the canvas is still bare ground" in line
+
+
+def test_a_plan_changes_what_it_is_given_and_keeps_the_rest(tmp_path):
+    """So the values can be declared once in a `prelude.py` and the lightest place added
+    from a pass, without the pass having to retype a plan it did not write."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="the light arrives from below", values={span("A1", "H4"): 0.70},
+               subject_share=0.40)
+        added = s.plan(lightest=span("A1", "H4"))
+    assert added.why == "the light arrives from below"
+    assert [p.name for p in added.values] == ["A1:H4"] and added.subject_share == 0.40
+    assert added.lightest.name == "A1:H4"
+    # The empty version of a field clears that one; `clear` starts again.
+    assert s.plan(values={}).values == ()
+    assert not s.plan(clear=True).declared
+    with pytest.raises(ValueError, match="runs 0..1"):
+        s.plan(subject_share=40)
+    with pytest.raises(ValueError, match="the word is 'subject'"):
+        s.plan(bands="horizontal")
+    # A place in a value plan promises a value; a place named for another reason is what
+    # lightest= is for. And a place has to be somewhere on this canvas, or every line the
+    # check prints about it would be a `nan` with nothing to say why.
+    with pytest.raises(ValueError, match="no value"):
+        s.plan(values={cell("D5"): None})
+    with pytest.raises(ValueError, match="covers no pixels"):
+        s.plan(values={ellipse((0.5, 0.5), 0.0005, 0.0005): 0.5})
+
+
+def test_a_plan_survives_the_session_file_and_an_older_one_has_none(tmp_path):
+    """A painting worked from the shell is loaded and saved once a pass -- which is how
+    the pier was painted -- so a plan that did not survive that would have to be
+    re-declared by every script that wanted it. New key, read with `.get`, so a 0.5.0
+    file opens with no plan and a 0.5.0 build opens this one."""
+    path = tmp_path / "p.easel"
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="a sentence", values={span("A1", "H4"): 0.70},
+               lightest=span("A1", "H4"), subject_share=0.4, bands="subject",
+               ground="buried")
+    s.save(path)
+    back = Session.load(path)
+    assert back.plan() == s.plan()               # every field, through JSON
+    assert back.plan().values[0].outline == s.plan().values[0].outline
+    # And equal well enough that re-declaring it says nothing. This is the whole painter
+    # path: a `prelude.py` runs before every pass and declares the plan again, against a
+    # session loaded from the file, so a plan that came back merely *similar* would have
+    # the pairs notice printed once a pass for the rest of the painting.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        back.plan(why="a sentence", values={span("A1", "H4"): 0.70},
+                  lightest=span("A1", "H4"), subject_share=0.4, bands="subject",
+                  ground="buried")
+
+    # The same helper `tests/test_notices.py` wrote for the `notices` key, since this is
+    # the same guard one key over: a differently-versioned Easel's meta, in place.
+    from test_notices import _rewrite_meta
+
+    _rewrite_meta(path, lambda meta: meta.pop("plan"))
+    reopened = Session.load(path)
+    assert not reopened.plan().declared
+    assert "the checklist asks for some" not in reopened.report()  # nothing painted yet
+
+
+def test_declaring_a_plan_leaves_the_log_and_the_stream_exactly_where_they_were(tmp_path):
+    """Rule 8, which is why the plan lives beside `history.records` and not in it: a
+    mark's texture is seeded from its index in the log, so anything new that took one
+    would repaint every painting made before it."""
+    def build(declare):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            if declare:
+                s.plan(why="a sentence", values={span("A1", "H4"): 0.70,
+                                                 span("A5", "H8"): 0.72},
+                       bands="subject", ground="buried")
+            s.stroke([(0.1, 0.2), (0.9, 0.25)], "bristle", "burnt_umber", size=0.05)
+            s.block_in(cell("D5"), "flat", "burnt_umber", size=0.04, direction="axis")
+        return s
+
+    plain, declared = build(False), build(True)
+    assert declared.plan().declared and not plain.plan().declared
+    assert len(plain.history.records) == len(declared.history.records)
+    assert np.array_equal(plain.canvas.rgb, declared.canvas.rgb)
+    assert plain.rng.bit_generator.state == declared.rng.bit_generator.state
+
+
+def test_the_plan_can_be_handed_to_compare_unchanged(tmp_path):
+    """A plan that has to be retyped to be checked is a plan that drifts, and the drift
+    arrives as paint. `s.plan()` hands back what the session holds; `compare()` takes
+    it."""
+    s = make(tmp_path)
+    upper, lower = span("A1", "H4"), span("A5", "H8")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(values={upper: 0.95, lower: 0.30})
+        result = s.compare(s.plan())
+    assert {c.label for c in result.cells} == {"A1:H4", "A5:H8"}
+    assert result.pairs == []                    # 0.65 apart, so no pair to report
+    assert result.path.exists()
+    with pytest.raises(ValueError, match="no values in it"):
+        make(tmp_path).compare(make(tmp_path).plan())
+
+
+def test_the_shell_declares_the_same_plan_the_api_does(tmp_path, capsys):
+    """`easel plan`, so a painting worked from a shell can say what it is for. Its
+    places are names rather than shapes, because a shell has no `blob()`."""
+    path = tmp_path / "p.easel"
+    make(tmp_path).save(path)
+    assert main(["plan", str(path), "--value", "A1:H4=0.70", "--value", "A5:H8=0.74",
+                 "--bands", "subject", "--ground", "buried",
+                 "--why", "the light arrives from below"]) == 0
+    printed = capsys.readouterr().out
+    assert 'why: "the light arrives from below"' in printed
+    assert "A1:H4 / A5:H8: 0.04 apart, and they meet" in printed
+
+    back = Session.load(path)
+    assert back.plan().bands == "subject" and back.plan().ground == "buried"
+    assert [p.name for p in back.plan().values] == ["A1:H4", "A5:H8"]
+    # And the notice is on the session, saved, rather than only on a console.
+    assert [n.code for n in back.notices()] == ["plan-pairs"]
+
+    assert main(["plan", str(path), "--clear"]) == 0
+    assert not Session.load(path).plan().declared
+
+
+def test_a_new_session_is_given_the_prelude_that_holds_the_call(tmp_path):
+    """The decision taken on a painter who never declares a plan was *say it where it
+    costs*: no message at the first stroke, no nag. So the one place the call is put in
+    front of a painter is the file they are about to edit anyway -- a worked example is
+    an instruction, and this is the instruction that has somewhere to be."""
+    path = tmp_path / "p.easel"
+    assert main(["new", str(path), "--size", "320x240"]) == 0
+    prelude = tmp_path / "prelude.py"
+    assert prelude.exists()
+    body = prelude.read_text(encoding="utf-8")
+    assert "s.plan(" in body and "subject_share" in body
+    # Commented out: a plan filled in with somebody else's numbers is worse than none.
+    assert all(line.startswith("#") or not line.strip()
+               for line in body.split('"""')[-1].strip().split("\n"))
+
+    # A painter's own prelude is never overwritten -- their mixtures live in it.
+    prelude.write_text("# mine\n", encoding="utf-8")
+    assert main(["new", str(path), "--size", "320x240", "--force"]) == 0
+    assert prelude.read_text(encoding="utf-8") == "# mine\n"

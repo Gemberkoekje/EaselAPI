@@ -270,15 +270,15 @@ back the mixture of `base` that reads at `target` — **from whichever side it s
 mixing in white to raise a value and a dark to lower one. It raises when a value is out
 of reach rather than handing back the nearest it managed.
 
-Two masses within `0.10` read as one — but only where the two places actually meet. Put
-the plan through `compare()` on the empty canvas: it lists every pair planned within
-`0.10`, marks each `(touch)` or `(apart)`, and names the touching ones as the ones that
-will read as one. Two rounds of painters were asked that question instead of told the
-answer, and both got it wrong.
+Two masses within `0.10` read as one, where the two places meet. **Write the plan down
+where the engine can see it** and it names those pairs on the empty canvas —
+`plan-pairs` — then says after every pass which places are painted as promised.
 
 ```python
 upper, lower = span("A1", "H4"), span("A5", "H8")
-s.compare({upper: 0.72, lower: 0.38})       # the sheet, the outlines, and the pairs
+s.plan(why="the light comes off the water", values={upper: 0.72, lower: 0.38},
+       lightest=upper, subject_share=0.40)  # everything you decided, held to
+s.compare(s.plan())                         # and the sheet, whenever you want it
 ```
 
 Re-read the places whenever you move a silhouette: a place is a rectangle, and one that
@@ -628,11 +628,10 @@ only ones that ask whether you are done, and they are the ones to answer slowly.
 
 - Does the greyscale view have a clear light, mid and dark?
 - Are the edges varied — some hard, some soft, at least one lost?
-- Is there anywhere the ground still shows through? There should be. `report()`
+- Is there anywhere the ground still shows through? There should be, unless this
+  picture buries it on purpose — say `s.plan(ground="buried")` if it does. `report()`
   prints the share — it diffs the canvas against a bare one at your own ground,
-  texture and seed — and says so under `0.5%`. One painter chose a warm ground to
-  be seen through, laid the passage over it at `density=1.0, load=1.0`, and
-  finished at `0.07%` without noticing.
+  texture and seed — and says so under `0.5%`.
 - Are the highlights few and deliberate?
 - Is anything mechanically repeated — a perfectly straight line, a row of identical
   marks? **Is any small mark a disc, a capsule or a rectangle — the tool's own shape
@@ -642,7 +641,8 @@ only ones that ask whether you are done, and they are the ones to answer slowly.
   what is left and look.
 - Is every mass laid along its own axis, or are the big shapes stacks of bars? **And
   are the bands in the marks, or in the subject you chose?** A frontal elevation is a
-  layer cake before a brush is picked.
+  layer cake before a brush is picked — and if the subject does run one way,
+  `s.plan(bands="subject")` makes the check count what crosses them instead.
 - Is any mass a rectangle that should have been a shape? Check the background hardest.
 - **Is the thing you measured most carefully still attached to the picture?** Cover
   it and look at what is left. And is the lightest mass the one you planned to be

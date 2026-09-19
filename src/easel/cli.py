@@ -70,6 +70,22 @@ def _parse_size(text: str) -> tuple[int, int]:
         raise argparse.ArgumentTypeError(str(exc)) from None
 
 
+def _example_codes() -> str:
+    """One code of each kind, for `easel explain --help` to show what one looks like.
+
+    Read off the registry rather than typed, because a typed one went stale: the help
+    offered `spill` as an example for a while, which was a code this round had planned
+    and not built, so the one place the tool demonstrates its own vocabulary was
+    advertising a word it answers *unknown notice* to. A list that cannot be wrong is
+    better than a list somebody has to remember to update -- and one fact beside one
+    habit says more about the vocabulary than three facts would.
+    """
+    first = [next((code for code, spec in sorted(NOTICES.items()) if spec.kind == kind),
+                  None)
+             for kind in notices.KINDS]
+    return ", ".join(f"`{code}`" for code in first if code)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="easel",
@@ -94,6 +110,11 @@ def build_parser() -> argparse.ArgumentParser:
                             "does that is not paint")
     p_new.add_argument("--force", action="store_true",
                        help="overwrite an existing session file")
+    p_new.add_argument("--no-prelude", action="store_true",
+                       help="do not write a prelude.py beside the session. The "
+                            "scaffold holds the s.plan(...) call every pass then runs "
+                            "before it, which is where what the painting is for gets "
+                            "written down")
 
     p_run = sub.add_parser("run", help="run one or more painting scripts against a session")
     p_run.add_argument("session", type=Path)
@@ -181,6 +202,40 @@ def build_parser() -> argparse.ArgumentParser:
                            "are built at rather than a shrink. Costs a full repaint, "
                            "and works on a painting that recorded none")
 
+    p_plan = sub.add_parser(
+        "plan",
+        help="declare what this painting is for, and what the check should hold it to",
+        description="What a painter is told to write down before the first mark, "
+                    "written where the engine can see it. With no arguments it prints "
+                    "the plan the session is holding. Each argument changes one thing "
+                    "and keeps the rest, so the values can be declared once and the "
+                    "lightest place added later.",
+    )
+    p_plan.add_argument("session", type=Path)
+    p_plan.add_argument("--why", default=None,
+                        help="what the picture is for, in a sentence. Nothing measures "
+                             "it; the closing check quotes it back")
+    p_plan.add_argument("--value", action="append", default=None, metavar="PLACE=VALUE",
+                        help="a place and the value you mean to paint it: "
+                             "--value 'A1:H3=0.70'. Repeatable, and the whole set "
+                             "replaces any declared before. The check then says how "
+                             "many places are painted as promised")
+    p_plan.add_argument("--lightest", default=None, metavar="PLACE",
+                        help="the place meant to be the lightest thing in the picture")
+    p_plan.add_argument("--subject-share", type=float, default=None, metavar="SHARE",
+                        help="the share of the budget the subject gets, 0..1")
+    p_plan.add_argument("--bands", choices=["subject", ""], default=None,
+                        help="'subject' declares that this picture's subject really "
+                             "does run in one direction, so the stack-of-bars line "
+                             "counts what crosses the bars instead of warning")
+    p_plan.add_argument("--ground", choices=["showing", "buried", ""], default=None,
+                        help="'buried' says this picture covers its ground on purpose, "
+                             "so the ground line stops asking for some back. 'showing' "
+                             "is the default expectation, and '' takes the declaration "
+                             "back, as it does for --bands")
+    p_plan.add_argument("--clear", action="store_true",
+                        help="forget the plan entirely and start again")
+
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
     p_log.add_argument("-n", type=int, default=20)
@@ -213,10 +268,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain = sub.add_parser(
         "explain",
         help="print the measurement behind one of the notices the engine gives",
-        description="Every notice the engine gives at a call carries a code -- "
-                    "`chisel-blank`, `spill`, `direction-default`. This prints the "
-                    "passage of the guide that holds its measurement, which is where "
-                    "the reason for the rule lives. With no code: every code there is.",
+        description=f"Every notice the engine gives at a call carries a code -- "
+                    f"{_example_codes()}. This prints the passage of the guide that "
+                    f"holds its measurement, which is where the reason for the rule "
+                    f"lives. With no code: every code there is.",
     )
     p_explain.add_argument("code", nargs="?", default="",
                            help="the notice's code, as the pass printed it")
@@ -317,6 +372,10 @@ def _dispatch(args) -> int:
         s.save(args.session)
         print(f"Created {args.session} ({w}x{h}, {args.texture}, ground {args.ground}, "
               f"seed {args.seed})")
+        if not args.no_prelude:
+            written = _write_prelude(args.session)
+            if written is not None:
+                print(f"Wrote {written} -- fill in s.plan(...) before the first pass")
         return 0
 
     session = Session.load(args.session)
@@ -353,6 +412,9 @@ def _dispatch(args) -> int:
     if args.command == "mark":
         return _cmd_mark(session, args)
 
+    if args.command == "plan":
+        return _cmd_plan(session, args)
+
     if args.command == "undo":
         n = session.undo(args.n)
         session.save(args.session)
@@ -381,6 +443,109 @@ def _dispatch(args) -> int:
         return 0
 
     return 1
+
+
+#: The `prelude.py` `easel new` writes beside a new session. `_resolve_prelude` already
+#: runs a file of this name before every pass, and this is what goes in it.
+#:
+#: **A worked example is an instruction**, which is `LESSONS.md`'s own rule and the
+#: reason this file exists at all. The decision taken on a painter who never declares a
+#: plan was *say it where it costs*: no message at the first stroke, no nag. So the one
+#: place the call is put in front of a painter is here, in the file they are about to
+#: edit anyway -- commented out, because a plan filled in with somebody else's numbers
+#: is worse than no plan.
+PRELUDE_STUB = '''"""Run before every pass, in the same scope: helpers, mixtures, and the plan.
+
+`easel run` executes this first and then the pass, so anything defined here is in
+scope for every script -- and `s.plan(...)` declared here is declared once for the
+whole painting rather than once per pass.
+"""
+
+# What the painting is for, and what the post-pass check should hold it to. Fill in
+# what you have decided and leave out what you have not; `easel explain` has the
+# reason behind every line the check prints.
+#
+# s.plan(
+#     why="one sentence: what this picture is for",
+#     # The places and the values you mean to paint them. Declaring them prices the
+#     # pairs -- two places closer than 0.10 read as one where they meet -- and the
+#     # check then says how many are painted as promised.
+#     values={span("A1", "H3"): 0.70, span("A4", "H6"): 0.39},
+#     lightest=span("A1", "H3"),   # the place meant to be the lightest thing in it
+#     subject_share=0.40,          # the share of the budget the subject gets
+#     # bands="subject",           # this picture's subject really does run one way
+#     # ground="buried",           # and it covers its ground on purpose
+# )
+'''
+
+
+def _write_prelude(session: Path) -> Path | None:
+    """The `prelude.py` scaffold, beside a new session file. Returns where it went.
+
+    ``None`` when one is already there: a prelude is the painter's own file and the
+    one place their mixtures live, and `easel new --force` is about the session.
+    Overwriting a prelude would throw away work that is not the session's to throw.
+    """
+    path = Path(session).resolve().parent / "prelude.py"
+    if path.exists():
+        return None
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(PRELUDE_STUB, encoding="utf-8")
+    return path
+
+
+def _parse_value(text: str) -> tuple[str, float]:
+    """``--value 'A1:H3=0.70'`` as the place and the value it promises.
+
+    A place is a name here rather than a shape, because a shell has no ``blob()``.
+    Everything ``region()`` accepts is a name -- cells, spans, the bands and halves --
+    and a plan whose places are shapes is a plan written in a ``prelude.py``, which is
+    where the shapes already live.
+    """
+    place, sep, value = str(text).rpartition("=")
+    if not sep or not place.strip():
+        raise ValueError(
+            f"--value {text!r} is a place and the value you mean to paint it, joined "
+            f"by '=': --value 'A1:H3=0.70'. `easel brushes` lists every place name."
+        )
+    try:
+        number = float(value)
+    except ValueError:
+        raise ValueError(
+            f"--value {text!r} gives {value!r} as a value, and a value is a number "
+            f"0..1 -- the way palette.value_of() reports it. 0.70, not '70%'."
+        ) from None
+    return place.strip(), number
+
+
+def _cmd_plan(session: Session, args) -> int:
+    """`easel plan`: the declarations, from a shell, saved in the session file.
+
+    The plan is the shell's half of `Session.plan`. A painter working from a prelude
+    writes shapes; a painter working from a shell writes place names, and both end up
+    in the same `.easel` file, which is what the post-pass check reads after every
+    pass. Printed rather than merely stored, because a plan the painter cannot read
+    back is a plan nobody trusts.
+    """
+    values = (dict(_parse_value(one) for one in args.value)
+              if args.value is not None else None)
+    # The pairs notice is filtered here and printed below as the table it came from:
+    # this command's whole output is the plan, the stderr copy would arrive above it
+    # pointing at a line of this file, and the table says the same thing in full. It is
+    # still kept on the session and saved, as every notice is.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=EaselWarning)
+        plan = session.plan(why=args.why, values=values, lightest=args.lightest,
+                            subject_share=args.subject_share, bands=args.bands,
+                            ground=args.ground, clear=args.clear)
+    # Always, as every other command here does. `easel plan p.easel` with nothing to
+    # declare is a read and writes the file back unchanged; a declaration that was not
+    # saved is the thing this whole command exists to stop.
+    session.save(args.session)
+    print(plan)
+    if plan.values:
+        print(plan.pairs_text(session.plan_pairs()))
+    return 0
 
 
 def _cmd_prepare(session: Session, args) -> int:

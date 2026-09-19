@@ -455,6 +455,18 @@ These are the rest, which you need before changing it.
 - **Mixbox is an opt-in extra, not a dependency.** A better pigment model, but its
   reference implementation is CC BY-NC and this repo is MIT. `EASEL_DISABLE_MIXBOX=1`
   forces the built-in model.
+- **What the painter knows and the engine cannot, the painter declares up front — and is
+  then held to.** `Session(budget=)` was the first of these and `s.plan(...)` is the rest:
+  the values, the place meant to be lightest, the subject's share, and the two standing
+  rules that concede something only the painter can know (*unless the subject runs that
+  way*, *there should be some ground showing*). It is deliberately **not** an `accept()`
+  called after a warning has fired. A declaration made before painting is a thing the
+  check can measure the canvas against and the painter can be wrong about, and it turns
+  the rule into a number: *how much crosses the bars*, *how many places are painted as
+  promised*. A suppression can only ever say *stop talking*, and a rule that can be
+  switched off is a rule that gets switched off on the pass where it was right. The
+  corollary is that a painter who declares nothing is not nagged for a plan: the
+  declarations buy lines, and buying nothing is allowed.
 
 ---
 

@@ -73,17 +73,22 @@ working through a client, *the tool warns you* was false for everything except
   points at a heading that exists in the document it names. A renamed heading in the
   guide is now a failing test rather than an empty answer.
 
-**0.5.0 is not released, and this section said for a day that it had been.** The line
-here announced it as done and told the next change to bump the version — written when
-that round was cut, in anticipation of a tag push that never happened. The newest tag is
-`v0.4.0` and PyPI's newest file is 0.4.0, which is the pair to check rather than this
-paragraph. So 0.5.0 was still free, and the round filed after it went into it rather
-than into a version of its own. Releasing is a tag push — `git tag v0.5.0 && git push origin
-v0.5.0` — and `publish.yml` refuses a tag that disagrees with
-`pyproject.toml` before it uploads anything, because a PyPI version number cannot be
-reused once taken. The version is written by hand in `pyproject.toml` and copied into
-`src/easel/__init__.py` and both entries in `server.json`; `tests/test_version.py` and
-`tests/test_server_json.py` hold every copy to the one in `pyproject.toml`.
+**0.5.0 is released**, and this paragraph spent a while saying the opposite. `v0.5.0` is
+tagged at `54c2a0b` and `publish.yml` ran on it and succeeded, twenty minutes after the
+merge that wrote the denial — so the denial was true when it was typed and false by the
+time anybody read it. That is trap 15 in `LESSONS.md` twice over from one act: the first
+version of this paragraph claimed a release *before* the tag push, and its correction
+outlived the tag push that made it wrong. **The pair to check is the tag list and PyPI,
+never a paragraph**; `tests/test_version.py` now checks the claim against the tags rather
+than against anybody's memory, which is what that trap asked for.
+
+What still holds: releasing is a tag push — `git tag v0.6.0 && git push origin v0.6.0` —
+and `publish.yml` refuses a tag that disagrees with `pyproject.toml` before it uploads
+anything, because a PyPI version number cannot be reused once taken. The version is
+written by hand in `pyproject.toml` and copied into `src/easel/__init__.py` and both
+entries in `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold
+every copy to the one in `pyproject.toml`. This round has no number yet: it gets one
+when it is cut, which is the last step of `PLAN-0.6.0.md`.
 
 ### Eighteen reported bugs, and the API gaps behind them
 
@@ -183,6 +188,73 @@ a Windows console, where 35 characters used to break it; and **`import easel_pai
 works**, because the distribution is `easel-paint` and the guess in the other direction
 installs an unrelated package called `easel`. Both import names are the same objects,
 and the documents keep teaching the short one.
+
+### What the painter writes down, where the engine can see it
+
+Step 5 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream C). One painter put the
+whole of it in a sentence: *useful heuristics, but they're philosophy, not errors, and it
+doesn't know which*. Inventoried and true — before this there was no acknowledge, suppress
+or declare mechanism anywhere in the API, so a painter whose subject really was horizontal
+could only read the same warning again.
+
+- **`s.plan(why=, values=, lightest=, subject_share=, bands=, ground=)`**, and
+  `easel.plan` behind it. `Session(budget=)` was the first of these declarations — a
+  number the painter writes down and the engine then holds them to — and these are the
+  rest of them. Saved in the `.easel` file under a new `plan` key, read with `.get`, so a
+  0.5.0 Easel opens a file this one wrote and a 0.5.0 file opens with no plan. Beside
+  `history.records` and never in it, for the reason the notices are: a mark's texture is
+  seeded from its place in the log.
+- **A declaration, not an acknowledgement.** Written up front rather than as an
+  `accept()` called after a warning has fired — the decision taken when this round was
+  planned, and the difference is that a painter can be held to a plan and can be wrong
+  about it. The check says so either way; a suppression only ever says *stop talking*.
+- **Every declaration changes a line of the check.** `values` adds
+  *plan: 5 of 6 places inside 0.10; halo +0.14*, and registering it says which planned
+  pairs are within `0.10` **and meet** (`plan-pairs`) — asked on the empty canvas, where
+  it is free, which three rounds of painters skipped and the two that answered it
+  answered wrong. `lightest` says when something else took the light. `subject_share`
+  puts *against 40% planned* on the subject line, which `report(subject_share=)` has
+  taken since 0.4.0 and **neither `easel run` nor the MCP `run` tool ever passed**, so
+  from a shell the comparison had never once been printed.
+- **Two standing warnings become numbers.** `bands="subject"` answers what the
+  stack-of-bars line concedes it cannot know, and the line then counts what crosses the
+  bars instead of warning about them: it is the noisiest rule the engine has — **47 of
+  the corpus's 325 painted passes, 14%**, after the decay that already cut the pier's
+  seven firings to three, and half of every line the engine prints — and the one two
+  painters learnt to skim. `ground="buried"` does the same for the bare-ground floor,
+  which five of seven painters in this round accepted by hand.
+- **The finding-11 contradiction is resolved in both halves, in one commit.** The
+  graded-field recipe buries the ground and the closing checklist asks for some back;
+  both are right, so the picture decides. `RECIPES.md` names the declaration where it
+  buries the ground and `PAINTER.md`'s checklist line concedes the case, and the floor is
+  unchanged for a painting that has not said — because the corpus shows what it is for:
+  half of all 21 paintings finish under it, cohort or not, and an earlier one chose a
+  warm ground *to be seen through* and finished at `0.07%` without noticing.
+- **Declared once, from wherever the painter is.** A `prelude.py` — which `easel new` now
+  writes, holding the call commented out, because a worked example is an instruction and
+  a plan filled in with somebody else's numbers is worse than none — or `easel plan
+  p.easel --value 'A1:H3=0.70' --bands subject`, whose places are names because a shell
+  has no `blob()`, or the MCP `plan` tool. Calling it again changes what it is given and
+  keeps the rest, and re-declaring the same values says nothing the second time, which is
+  what lets a prelude run before every pass without the pairs notice becoming a thing
+  printed once a pass.
+- **`s.compare(s.plan())`** measures the canvas against the plan the session is holding,
+  sheet and all. A plan that has to be retyped to be checked is a plan that drifts, and
+  the drift arrives as paint.
+
+**Four claims this round found stale, and the two checks that stop them recurring.**
+`PLAN-0.6.0.md` still said only workstream A was built; `SUGGESTIONS.md` said the
+right-hand column of every table in the open round was empty, with two of them filled in;
+the paragraph above about 0.5.0's release outlived the tag that made it wrong; and `easel
+explain --help` offered `spill` as an example of a code, which is one this round planned
+and did not build — so the one place the tool demonstrates its own vocabulary was
+advertising a word it answers *unknown notice* to. The examples are **generated from the
+registry** now, and `scripts/check_guide_overlap.py` **runs in the suite**
+(`test_one_home_per_rule`), which is how the fifth one was found: it had been reporting a
+duplicate since the notice channel put *a mark's texture is seeded from its place in the
+log* into `REFERENCE.md`, where `PAINTING.md` already had it, while `SUGGESTIONS.md` went
+on claiming it reported zero. A script somebody has to remember to run is the preference
+that rule is about.
 
 ## [0.5.0] — 2026-09-16
 

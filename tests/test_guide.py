@@ -114,6 +114,26 @@ def test_the_essay_is_where_the_length_went() -> None:
     assert len(guide.read("painting").split()) > 5_000
 
 
+def test_one_home_per_rule(capsys) -> None:
+    """`scripts/check_guide_overlap.py`, in the suite, for the reason the word budget is
+    in the suite: a rule nothing enforces is a preference.
+
+    Six rules were each stated in full in four to six of the five guide files before the
+    restructure, and `SUGGESTIONS.md` has claimed ever since that the checker reports
+    zero. It stopped being true without anybody noticing -- the notice channel added
+    *a mark's texture is seeded from its place in the log* to `REFERENCE.md`, where
+    `PAINTING.md` already had it -- because the script was something a person had to
+    remember to run. Over the line, the fix is to say it once and link, not to raise the
+    window.
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    try:
+        import check_guide_overlap
+    finally:
+        sys.path.pop(0)
+    assert check_guide_overlap.main([]) == 0, capsys.readouterr().out
+
+
 @pytest.mark.parametrize("argv", [
     ["guide"],
     ["guide", "--full"],
