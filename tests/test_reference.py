@@ -13,11 +13,13 @@ knowing about the engine was found by looking at a picture.
 from __future__ import annotations
 
 import re
+import warnings
 from dataclasses import fields
 from pathlib import Path
 
 import pytest
 
+from easel import Region, Session
 from easel.brush import BRUSHES, Brush
 from easel.canvas import GROUNDS
 from easel.cli import build_parser
@@ -287,3 +289,81 @@ def test_a_spelled_out_signature_names_all_of_it(label, fn, call):
         f"REFERENCE.md writes {label} out in full and leaves out "
         f"{', '.join(missing)}:\n{call}"
     )
+
+
+# -- the verb x hold matrix ------------------------------------------------------------
+def _hold_matrix() -> list[tuple[str, str, str, str]]:
+    """*Which verb takes which hold*, as rows of (verb, clip, solid, edge)."""
+    rows = []
+    for line in TEXT.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 4 and re.fullmatch(r"`\w+\(\)`", cells[0]) and cells[1] in (
+                "yes", "no"):
+            rows.append((cells[0].strip("`").removesuffix("()"), *cells[1:]))
+    return rows
+
+
+MATRIX = _hold_matrix()
+
+
+def test_the_matrix_still_has_every_verb_that_lays_paint():
+    """A guard on the guard: a scrape that stops finding rows passes by finding none."""
+    assert {verb for verb, _, _, _ in MATRIX} == {
+        "stroke", "dab", "smudge", "glaze", "block_in", "sweep", "scumble", "cover"}
+
+
+def _call(s, verb: str, **kw):
+    """One of each verb, as small as it can be, with ``kw`` on the end of it."""
+    place = Region(0.2, 0.2, 0.8, 0.6, name="place")
+    path = [(0.2, 0.3), (0.8, 0.35)]
+    if verb == "stroke":
+        return s.stroke(path, "flat", "burnt_umber", size=0.05, **kw)
+    if verb == "dab":
+        return s.dab(0.5, 0.5, "round_hard", "burnt_umber", size=0.05, **kw)
+    if verb == "smudge":
+        return s.smudge(path, **kw)
+    if verb == "glaze":
+        return s.glaze(path, "burnt_umber", **kw)
+    if verb == "block_in":
+        return s.block_in(place, "flat", "burnt_umber", size=0.05, **kw)
+    if verb == "sweep":
+        return s.sweep(path, "flat", "burnt_umber", into="down", depth=0.1,
+                       size=0.05, **kw)
+    if verb == "scumble":
+        return s.scumble(place, "burnt_umber", "titanium_white", 4, size=0.05, **kw)
+    return s.cover(place, "burnt_umber", size=0.05, **kw)
+
+
+@pytest.mark.parametrize("verb,clip,solid,edge", MATRIX,
+                         ids=[row[0] for row in MATRIX])
+def test_the_hold_matrix_is_what_the_verbs_take(tmp_path, verb, clip, solid, edge):
+    """Every cell of it, against the call it names -- by making the call rather than by
+    reading the signature, because three of these verbs take their holds through
+    ``**kw`` and a signature does not show that.
+
+    This is the row that drifted: ``clip=`` was documented as *`stroke`, `glaze`* and
+    was a named argument of ``stroke`` alone, so four verbs answered a question about
+    where their paint may land with *`clip=` is not a brush field*.
+    """
+    s = Session(160, 120, seed=4, timelapse=False, out_dir=tmp_path).scratch(
+        count_only=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if clip == "yes":
+            _call(s, verb, clip=Region(0.0, 0.0, 0.5, 1.0))
+        else:
+            with pytest.raises(TypeError):
+                _call(s, verb, clip=Region(0.0, 0.0, 0.5, 1.0))
+        if solid == "yes":
+            _call(s, verb, solid=True)
+        else:
+            with pytest.raises(TypeError):
+                _call(s, verb, solid=True)
+        if "`" in edge:                       # the cell names the values it takes
+            for value in re.findall(r"`(\w+)`", edge):
+                _call(s, verb, edge=value)
+            with pytest.raises(ValueError):
+                _call(s, verb, edge="nonsense")
+        elif edge == "—":
+            with pytest.raises(TypeError):
+                _call(s, verb, edge="hard")

@@ -1263,10 +1263,14 @@ def test_solid_and_glaze_name_the_call_that_takes_them(tmp_path):
     a keyword belonging to a neighbouring call lands in ``**brush_overrides`` and comes
     back as ``Brush.__init__() got an unexpected keyword argument`` -- a class the
     painter never mentioned. Both of these are real arguments one call over, and the
-    reference lists them without saying which call takes them."""
+    reference lists them without saying which call takes them.
+
+    ``solid=`` is now an argument of the four verbs that lay a mass or a mark, so the
+    row that teaches it is left for the one call that does not take it because it
+    lays that pair already."""
     s = make(tmp_path)
-    with pytest.raises(TypeError, match=r"block_in\(\) argument"):
-        s.scumble("upper-half", "burnt_umber", "titanium_white", 4, solid=True)
+    with pytest.raises(TypeError, match="the burying recipe"):
+        s.cover("upper-half", "burnt_umber", solid=True)
     with pytest.raises(TypeError, match=r"stroke\(\) argument"):
         s.block_in("upper-half", "flat", "burnt_umber", glaze=True)
     with pytest.raises(TypeError, match="Did you mean load"):
@@ -3191,3 +3195,112 @@ def test_the_check_reads_the_paint_and_not_the_place(tmp_path):
         s.sample()
         s.sample(span("A1", "H8"))
     assert not caught, [str(w.message) for w in caught]
+
+
+# -- clip=, edge= and solid= on every verb that lays paint -----------------------------
+def _held_outside(s, place, before) -> float:
+    """The share of the pixels outside ``place`` that this session's paint moved."""
+    outside = ~place.mask(s.canvas.width, s.canvas.height)
+    moved = np.abs(s.canvas.rgb - before).sum(axis=2) > 1e-4
+    return float((moved & outside).sum()) / float(max(outside.sum(), 1))
+
+
+def test_every_verb_that_lays_paint_takes_clip(tmp_path):
+    """``clip=`` was a named argument of ``stroke`` alone, so the four mass verbs came
+    back with *clip= is not a brush field* -- an error that named neither ``stroke``
+    nor ``edge="hard"``, the two things that would have answered the question. A mass
+    is the call that most wants to end on a line rather than on its own tip."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    window = polygon([(0.05, 0.05), (0.45, 0.05), (0.45, 0.95), (0.05, 0.95)],
+                     name="window")
+    for lay in (
+        lambda: s.block_in(span("C3", "F6"), "flat", "c", size=0.05, clip=window),
+        lambda: s.sweep([(0.2, 0.30), (0.8, 0.34)], "flat", "c", into="down",
+                        depth=0.12, size=0.05, clip=window),
+        lambda: s.cover(span("C3", "F6"), "c", size=0.05, clip=window),
+        lambda: s.scumble(span("C3", "F6"), "c", "titanium_white", 4, size=0.05,
+                          clip=window),
+    ):
+        before = s.canvas.rgb.copy()
+        assert lay(), "the call lays paint"
+        assert _held_outside(s, window, before) == 0.0
+
+
+def test_a_mass_held_by_two_places_lands_where_they_agree(tmp_path):
+    """``edge="hard"`` is a clip pointed at the mass's own outline, so a mass given both
+    is held by both. The log carries one outline as it always has and a pair as a pair,
+    which is what makes a held mass replay as itself."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    mass = polygon([(0.2, 0.2), (0.8, 0.25), (0.7, 0.8), (0.25, 0.7)], name="mass")
+    window = polygon([(0.0, 0.0), (0.5, 0.0), (0.5, 1.0), (0.0, 1.0)], name="window")
+    before = s.canvas.rgb.copy()
+    records = s.block_in(mass, "flat", "c", size=0.05, edge="hard", clip=window)
+    assert _held_outside(s, mass, before) == 0.0
+    assert _held_outside(s, window, before) == 0.0
+    # One hold is logged as one outline, as it has been since edge="hard" was built;
+    # two are logged as two, so an older build refuses the file rather than reading
+    # the pair as a single outline and painting something else.
+    held = records[0].params["clip"]
+    assert len(held) == 2 and isinstance(held[0][0], list)
+    one = s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "c", size=0.05, clip=mass)
+    assert isinstance(one.params["clip"][0][0], float)
+    assert np.array_equal(s.replay().canvas.rgb, s.canvas.rgb)
+
+
+def test_scumble_takes_the_hard_edge_a_mass_takes(tmp_path):
+    """A wide band scumbled at an angle paints up to three times its own area, because
+    the auto brush is measured across the band's bounding box. ``edge="hard"`` is the
+    remedy the plan names, and it was a ``block_in`` word: on a scumble it raised an
+    error naming ``block_in()`` and ``sweep()`` and not the caller."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    band = span("B3", "G5")
+    before = s.canvas.rgb.copy()
+    s.scumble(band, "c", "titanium_white", 8, direction=30, edge="hard")
+    assert _held_outside(s, polygon(band), before) == 0.0
+    loose = make(tmp_path)
+    loose.palette["c"] = loose.palette.mix("ultramarine", "burnt_umber", 0.4)
+    was = loose.canvas.rgb.copy()
+    loose.scumble(band, "c", "titanium_white", 8, direction=30)
+    assert _held_outside(loose, polygon(band), was) > 0.05
+    with pytest.raises(ValueError, match="a passage has none to draw"):
+        s.scumble(band, "c", "titanium_white", 8, edge="clean")
+
+
+def test_solid_is_taken_wherever_it_has_a_meaning(tmp_path):
+    """``solid=True`` is ``load=1.0, load_falloff=0.0`` -- the clause painters type by
+    hand most often, and the one ``block_in`` has always had a word for. Everywhere
+    else it raised a teaching error that explained the pair rather than taking it."""
+    def paint(**kw):
+        s = make(tmp_path)
+        s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+        s.stroke([(0.1, 0.2), (0.9, 0.25)], "flat", "c", size=0.06, **kw)
+        s.sweep([(0.15, 0.5), (0.85, 0.55)], "flat", "c", into="down", depth=0.1,
+                size=0.05, **kw)
+        s.scumble(span("B6", "G8"), "c", "titanium_white", 4, size=0.05, **kw)
+        return s.canvas.rgb
+
+    assert np.array_equal(paint(solid=True), paint(load=1.0, load_falloff=0.0))
+    # ...and an explicit load= beside it still wins, as it does on block_in.
+    assert np.array_equal(paint(solid=True, load=0.3), paint(load=0.3, load_falloff=0.0))
+    s = make(tmp_path)
+    with pytest.raises(TypeError, match="lays that pair already"):
+        s.cover("upper-half", "burnt_umber", solid=True)
+
+
+def test_a_band_scumbled_the_short_way_says_its_passes_are_dabs(tmp_path):
+    """The ends check returned at once for a rectangle, so the guide's own ``span(...)``
+    bands could never trip it: a band crossed the short way came back as a row of dabs
+    blooming past it, in silence. A band is not a wedge -- its passes vary only at the
+    corners -- so what it is asked is whether the whole band is narrower than its
+    brush."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    with pytest.warns(UserWarning, match="every pass is shorter"):
+        s.scumble(span("A1", "B8"), "c", "titanium_white", 8, direction="horizontal")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.scumble(span("A1", "B8"), "c", "titanium_white", 8)            # the long way
+        s.scumble(span("A1", "H4"), "c", "titanium_white", 8, direction=30)

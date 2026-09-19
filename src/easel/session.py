@@ -46,6 +46,8 @@ from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
     Polygon,
     Region,
+    _looks_like_bounds,
+    _looks_like_point,
     as_place,
     as_region,
     blob,
@@ -310,6 +312,7 @@ class Session:
         smooth: bool = True,
         press: int = 1,
         clip=None,
+        solid: bool = False,
         note: str = "",
         **brush_overrides,
     ) -> StrokeRecord:
@@ -328,25 +331,35 @@ class Session:
             smooth: fit a spline through the points. Off gives hard corners.
             press: for a one-point mark, how many times to stamp the same spot.
                 See :meth:`dab`. One mark either way, in the log and in the budget.
-            clip: a place -- a shape, a region, a name -- outside which none of this
-                stroke's paint may land. What ``block_in(edge="hard")`` is made of,
-                and available by hand for the same reason: it is the only way a mark
-                ends on a line rather than on its own tip. It changes where the paint
-                goes and nothing else, so a clipped stroke and its unclipped twin lay
-                the same dabs from the same draws.
+            clip: a place -- a shape, a region, a name, a run of points -- outside
+                which none of this stroke's paint may land. What
+                ``block_in(edge="hard")`` is made of, and available by hand for the
+                same reason: it is the only way a mark ends on a line rather than on
+                its own tip. It changes where the paint goes and nothing else, so a
+                clipped stroke and its unclipped twin lay the same dabs from the same
+                draws. **A list of places holds the paint inside all of them** -- it
+                lands where they agree -- which is what a mass masked to its own
+                outline and to a window besides is made of.
+            solid: lay this mark as solid paint -- ``load=1.0`` and
+                ``load_falloff=0.0``, so the brush does not run dry along the stroke.
+                The same pair :meth:`block_in` has always taken under this name, and
+                the clause painters type by hand most often. An explicit ``load=`` or
+                ``load_falloff=`` beside it wins.
             note: a line recorded in the log, for the painter's own benefit.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
         Returns:
             The :class:`~easel.history.StrokeRecord` that was logged.
         """
+        if solid:
+            brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         b = self._resolve_brush(brush, size, opacity, brush_overrides)
         col = self._resolve_color(color)
         stamps = int(press)
         if stamps < 1:
             raise ValueError(f"press must be at least 1, got {press}.")
-        hold = None if clip is None else _as_outline(clip)
-        cover = None if hold is None or self._counting else self._clip_cover(hold)
+        holds = _as_outlines(clip)
+        cover = None if not holds or self._counting else self._clip_cover(holds)
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         # A count-only copy has nothing to undo to and nothing to undo, and copying
@@ -388,9 +401,8 @@ class Session:
                     note=note,
                     params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps,
                                          rng=self._stream_state(),
-                                         **({"clip": [[float(x), float(y)]
-                                                      for x, y in hold.points]}
-                                            if hold is not None else {}),
+                                         **({"clip": _clip_params(holds)}
+                                            if holds else {}),
                                          **({"via": self._call_verb} if self._call_verb
                                             else {})),
                 )
@@ -666,6 +678,7 @@ class Session:
         overhang: float | None = None,
         edge: str = "ragged",
         solid: bool = False,
+        clip=None,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -818,6 +831,12 @@ class Session:
                 before this existed replays as it was. An explicit ``load=`` or
                 ``load_falloff=`` beside it wins: a painter asking for a starved
                 brush means it.
+            clip: a place -- or a list of places -- outside which none of this mass's
+                paint may land, as on :meth:`stroke`. ``edge="hard"`` is this same
+                clip pointed at the mass's **own** outline; this one points it
+                somewhere else, which is how a mass is held inside a window, a pane,
+                or a neighbour it must not cross. Given both, the paint lands where
+                they agree.
             note: recorded in the log.
 
         Returns:
@@ -852,7 +871,7 @@ class Session:
         # fill's own overhang then carries the paint back out to the true outline,
         # and the contour pass below draws it.
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
-        held = place if edge == "hard" else None
+        held = _mass_hold(place, edge, clip)
         if edge == "clean" and b.tip == "bristle":
             self._notify(
                 "clean-comb",
@@ -893,10 +912,12 @@ class Session:
                     fill, b, color, pressure,
                     note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
                              f"{traced}"),
+                    clip=held,
                 ))
         return records
 
-    def _clean_contour(self, fill, b: Brush, color, pressure, note: str) -> list[StrokeRecord]:
+    def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
+                       clip=None) -> list[StrokeRecord]:
         """The one pass ``edge="clean"`` lays along the inset outline.
 
         Along the *inset* outline, not the drawn one, so that the outer half of the
@@ -925,6 +946,7 @@ class Session:
             out.append(self.stroke(
                 path, brush=b, color=color,
                 pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                clip=clip,
                 note=note,
             ))
         return out
@@ -1118,6 +1140,8 @@ class Session:
         density: float = 1.0,
         pressure="taper",
         wander: bool = True,
+        solid: bool = False,
+        clip=None,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -1184,6 +1208,15 @@ class Session:
                 here: ``3.45px`` and ``3.89px``. It is this, not the tip.) Off for
                 the contour of :meth:`block_in`'s ``edge="clean"``, whose whole
                 bargain is landing on the line.
+            solid: lay the passes as solid paint -- ``load=1.0`` and
+                ``load_falloff=0.0``, so no pass runs dry partway along. The same
+                pair :meth:`block_in` takes under this name; a long pass along an
+                edge is where a brush runs out soonest.
+            clip: a place, or a list of places, outside which none of this mass's
+                paint may land, as on :meth:`stroke`. A sweep has no ``edge=``
+                setting of its own -- its first argument *is* the boundary -- so
+                this is how its passes are held to a silhouette instead of breaking
+                past it.
             note: recorded in the log.
 
         Returns:
@@ -1198,6 +1231,8 @@ class Session:
                 self._note_assisted(f"traced outline swept: {edge.name or 'shape'}")
             edge = edge.closed
 
+        if solid:
+            brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         b = self._resolve_brush(brush, size, None, brush_overrides)
         depth, step, n_passes, cross = self._sweep_passes(b, depth, passes, cross, density)
 
@@ -1210,6 +1245,7 @@ class Session:
                         path,
                         brush=b, color=color,
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                        clip=clip,
                         note=note or kind,
                     )
                 )
@@ -1333,6 +1369,7 @@ class Session:
         overhang: float | None = None,
         edge: str = "ragged",
         dry_first: bool = True,
+        clip=None,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -1397,6 +1434,11 @@ class Session:
             dry_first: dry the area before covering it. Free, and part of the
                 recipe; only the area, so a wet neighbour it must blend into stays
                 wet.
+            clip: a place, or a list of places, outside which none of the burial's
+                paint may land, as on :meth:`stroke` and :meth:`block_in`. The
+                recipe's ends run *outside* the area on purpose, so this is what to
+                reach for when the repair has to stop at something else -- the pane
+                it sits in, the form it is on.
             note: recorded in the log.
 
         Returns:
@@ -1429,7 +1471,7 @@ class Session:
                 self.dry(1.0, target)
             return self.block_in(
                 target, brush=b, color=color, direction=direction, density=density,
-                pressure="even", overhang=reach, edge=edge,
+                pressure="even", overhang=reach, edge=edge, clip=clip,
                 note=note or f"cover {target.name or 'area'}",
             )
 
@@ -1445,6 +1487,9 @@ class Session:
         direction="axis",
         overhang: float = 0.35,
         pressure="even",
+        solid: bool = False,
+        edge: str = "ragged",
+        clip=None,
         note: str = "",
         **brush_overrides,
     ) -> list[StrokeRecord]:
@@ -1564,6 +1609,20 @@ class Session:
             pressure: pressure profile for each pass. ``"even"`` by default: a taper
                 at both ends of every pass would print the band's own edges back
                 into the passage.
+            solid: lay the passes as solid paint -- ``load=1.0`` and
+                ``load_falloff=0.0`` -- the same pair :meth:`block_in` takes under
+                this name. A passage is many wide passes, which is where a brush
+                running dry shows as a stripe down one side of it.
+            edge: ``"ragged"``, the default -- each pass breaks past the band the way
+                a brush does. ``"hard"`` masks every dab to the band, so **no paint
+                lands outside it**: this is :meth:`block_in`'s own setting, and it is
+                the answer to a wide passage laid at an angle, whose auto brush is
+                measured across the band's bounding box and can paint three times the
+                band's area. (``"clean"`` is a :meth:`block_in` word: a passage has no
+                contour to draw.)
+            clip: a place, or a list of places, outside which none of the passage's
+                paint may land, as on :meth:`stroke`. ``edge="hard"`` is this clip
+                pointed at the band itself; this one points it somewhere else.
             note: recorded in the log.
 
         Returns:
@@ -1574,8 +1633,18 @@ class Session:
                 f"scumble(n={n!r}) needs at least two passes -- a passage from one "
                 f"value to another is at least two. Eight is the usual number."
             )
+        if edge not in ("ragged", "hard"):
+            raise ValueError(
+                f"scumble(edge={edge!r}) is 'ragged' -- the passes break past the "
+                f"band, the default -- or 'hard', which masks every dab to the band "
+                f"so no paint lands outside it. 'clean' is block_in's: it draws a "
+                f"contour along the outline, and a passage has none to draw."
+            )
         place = as_place(band)
         n = int(n)
+        held = _mass_hold(place, edge, clip)
+        if solid:
+            brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         if direction == "inward":
             # A ring is two or three times the length of a pass across the same patch,
             # and it has no far end to run dry at -- it comes back to where it started.
@@ -1592,7 +1661,8 @@ class Session:
                                     {"load_falloff": 0.0, **brush_overrides})
             _check_inward_brush(self, place, b, n)
             _check_inward_comb(self, place, b, n, named)
-            return self._scumble_inward(place, color_a, color_b, n, b, pressure, note)
+            return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
+                                        clip=held)
         degrees = place.axis if direction == "axis" else _angle_of(direction)
         step = _normal_extent(place, degrees) / n
         # The same mechanism as the inward case, and for the same reason: the passes
@@ -1618,13 +1688,14 @@ class Session:
                 records.append(self.stroke(
                     path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                    clip=held,
                     note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
                 ))
                 laid += 1
         return records
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
-                        pressure, note: str) -> list[StrokeRecord]:
+                        pressure, note: str, clip=None) -> list[StrokeRecord]:
         """A centred fall-off: ``n`` rings stepping in from the boundary.
 
         The band version grades edge to edge, which is what a band wants and is not a
@@ -1653,6 +1724,7 @@ class Session:
                     path, brush=b,
                     color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
+                    clip=clip,
                     note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
                 ))
         return records
@@ -2725,7 +2797,8 @@ class Session:
             spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
             {k: v for k, v in spec.items()
              if k not in ("points", "brush", "size", "opacity", "color", "pressure",
-                          "glaze", "smooth", "press", "note", "label")},
+                          "glaze", "smooth", "press", "clip", "solid", "note",
+                          "label")},
         )
         # The band stands for how wide the mark will be, and on a round tip that now
         # depends on the pressure it is planned with -- a lone stamp most of all.
@@ -3802,8 +3875,7 @@ class Session:
                 glaze = bool(params.pop("glaze", False))
                 smooth = bool(params.pop("smooth", True))
                 held = params.pop("clip", None)
-                clip = None if held is None else polygon([(float(x), float(y))
-                                                          for x, y in held])
+                clip = None if held is None else _clips_from_params(held)
                 # Logs written before press existed have no key for it, and one stamp
                 # is what they meant: they replay unchanged.
                 press = int(params.pop("press", 1))
@@ -3892,21 +3964,27 @@ class Session:
         self._uncounted.append(what)
         self._notify("count-only", f"scratch(count_only=True): {what}", stacklevel=4)
 
-    def _clip_cover(self, outline: Polygon) -> np.ndarray:
+    def _clip_cover(self, holds: tuple[Polygon, ...]) -> np.ndarray:
         """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
 
         ``block_in(edge="hard")`` hands every one of its passes the same outline, and
         building the mask is the one expensive thing about a clipped stroke: 78ms on
         a smoothed shape at 1200x800, against a few milliseconds for the dabs. A
         one-entry memo is the whole of what a mass needs, because its passes come one
-        after another with nothing between. Keyed on the outline's own points rather
-        than on the object, so two equal shapes share the answer and a freed one
+        after another with nothing between. Keyed on the outlines' own points rather
+        than on the objects, so two equal shapes share the answer and a freed one
         cannot be mistaken for a live one.
+
+        Held inside more than one place, a dab lands where every one of them agrees:
+        the masks multiply, which is what the word *and* means to a coverage between
+        zero and one, and the memo holds the product so a mass pays for it once.
         """
-        key = (outline.points, self.canvas.width, self.canvas.height)
+        key = (tuple(one.points for one in holds), self.canvas.width, self.canvas.height)
         if self._clip_memo is not None and self._clip_memo[0] == key:
             return self._clip_memo[1]
-        cover = outline.coverage(self.canvas.width, self.canvas.height)
+        cover = holds[0].coverage(self.canvas.width, self.canvas.height)
+        for extra in holds[1:]:
+            cover = cover * extra.coverage(self.canvas.width, self.canvas.height)
         self._clip_memo = (key, cover)
         return cover
 
@@ -3963,8 +4041,10 @@ class Session:
 #: with no call named beside them has every reason to try this.
 _NOT_BRUSH_FIELDS = {
     "solid": (
-        "solid= is a block_in() argument, not a brush field. It is a pair of brush "
-        "defaults, so pass the pair here: load=1.0, load_falloff=0.0."
+        "solid= is an argument of block_in(), stroke(), sweep() and scumble() -- the "
+        "pair of brush defaults load=1.0, load_falloff=0.0, which keeps a brush from "
+        "running dry partway along -- and not a brush field. cover() lays that pair "
+        "already: it is the burying recipe."
     ),
     "glaze": (
         "glaze= is a stroke() argument, not a brush field, and s.glaze(points, color) "
@@ -3972,8 +4052,10 @@ _NOT_BRUSH_FIELDS = {
         "over paint that is already there: lay the mass, s.dry(), then glaze it."
     ),
     "edge": (
-        "edge= is a block_in() argument ('ragged' or 'clean'), not a brush field, and "
-        "sweep() takes the boundary itself as its first argument."
+        "edge= is a block_in() argument ('ragged', 'clean' or 'hard') and a scumble() "
+        "one ('ragged' or 'hard'), not a brush field, and sweep() takes the boundary "
+        "itself as its first argument. To hold a mark inside a place that is not the "
+        "one it fills, every verb that lays paint takes clip=."
     ),
     "density": (
         "density= is a block_in(), sweep() and cover() argument -- how far apart the "
@@ -4632,13 +4714,17 @@ def _check_linear_brush(session, b: Brush, step: float, n: int) -> None:
     )
 
 
-def _pass_lengths(place, degrees: float, n: int) -> tuple[float, float]:
-    """How long the first and the last of ``n`` passes across a shape are.
+def _pass_lengths(place, degrees: float, n: int) -> tuple[float, float, float]:
+    """How long the first, the middle and the last of ``n`` passes across a place are.
 
     The passes of a banded scumble step across the place along the normal of
     ``degrees`` and run along it; each one is cut to the outline, so on a wedge the
     first pass and the last are very different lengths. Measured the way
-    :meth:`Session._shape_paths` lays them, at the two end offsets.
+    :meth:`Session._shape_paths` lays them, at the two end offsets -- and at the
+    middle one, because a **rectangle** is not a wedge and its ends say nothing: a
+    band crossed at an angle has short passes at both corners and its longest pass
+    through the centre, which is the one that answers *is this band narrower than the
+    brush*.
     """
     pts = np.asarray(place.points, dtype=np.float64)
     cx, cy = place.box.center
@@ -4653,7 +4739,8 @@ def _pass_lengths(place, degrees: float, n: int) -> tuple[float, float]:
         return sum(t1 - t0 for t0, t1 in _spans_inside(place, origin, (dx, dy)))
 
     half = 0.5 * (hi_n - lo_n) / max(n, 1)
-    return length_at(lo_n + half), length_at(hi_n - half)
+    return (length_at(lo_n + half), length_at(0.5 * (lo_n + hi_n)),
+            length_at(hi_n - half))
 
 
 #: A shape whose pass length at one end is this many times the other's is a wedge,
@@ -4674,10 +4761,29 @@ def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
     the mouth and read as barely there at the wide end, and was abandoned for a
     hand-built version in five pieces each sized to its own width.
     """
-    if not isinstance(place, Polygon):
-        return
-    first, last = _pass_lengths(place, degrees, n)
+    shape = place if isinstance(place, Polygon) else polygon(as_region(place))
+    first, middle, last = _pass_lengths(shape, degrees, n)
     narrow, wide = min(first, last), max(first, last)
+    if not isinstance(place, Polygon):
+        # A band is not a wedge: its passes are all one length along its own axes,
+        # and vary only at the two corners when they cross it at an angle. So the
+        # question its ends answer is not *which end is the brush wrong for* -- it is
+        # whether the **whole band** is narrower than the brush laying it, which is
+        # the case the shape branch below calls dabs. A band crossed at an angle
+        # paints well outside itself for a different reason, measured on the brush
+        # rather than on the passes.
+        if middle <= 0.0 or b.size <= middle:
+            return
+        session._notify(
+            "scumble-dabs",
+            f"scumble on {place.name or 'this band'}: every pass is shorter "
+            f"({middle:.3f} at its longest) than the brush laying it ({b.size:.3g}), "
+            f"so the passes are dabs and the paint blooms past the band. The passes "
+            f"run the short way across this place -- turn direction=, or lay a band "
+            f"this narrow as a stroke.",
+            stacklevel=stacklevel,
+        )
+        return
     if narrow <= 0.0 or b.size <= narrow:
         return
     if wide >= _WEDGE_RATIO * narrow:
@@ -5373,11 +5479,69 @@ def _as_outline(place) -> Polygon:
     """Whatever a painter hands ``clip=``, as one closed outline.
 
     A shape is itself; a region, a name or a 4-tuple becomes the polygon of its
-    rectangle. One place, because ``clip`` is also what goes in the log and comes
-    back out of it on a replay, and it has to be the same thing both ways.
+    rectangle; a run of points is the outline it draws. One place, because ``clip``
+    is also what goes in the log and comes back out of it on a replay, and it has to
+    be the same thing both ways.
     """
+    if (isinstance(place, (list, tuple)) and len(place) > 2
+            and all(_looks_like_point(one) for one in place)):
+        return polygon([(float(x), float(y)) for x, y in place])
     held = as_place(place)
     return held if isinstance(held, Polygon) else polygon(held)
+
+
+def _as_outlines(clip) -> tuple[Polygon, ...]:
+    """Whatever a painter hands ``clip=``, as every outline the paint is held inside.
+
+    One place is one outline, which is what a clip has been since
+    ``block_in(edge="hard")`` was built. A **list** of places is all of them at once,
+    and the paint lands only where they all agree -- which is what
+    ``block_in(shape, edge="hard", clip=window)`` means and is the only honest thing
+    for it to mean: held to its own outline, and to the window as well.
+    """
+    if clip is None:
+        return ()
+    if isinstance(clip, (Polygon, Region, str)):
+        return (_as_outline(clip),)
+    if (isinstance(clip, (list, tuple)) and len(clip) > 0
+            and not _looks_like_bounds(clip)
+            and not all(_looks_like_point(one) for one in clip)):
+        return tuple(_as_outline(one) for one in clip)
+    return (_as_outline(clip),)
+
+
+def _clip_params(holds: tuple[Polygon, ...]):
+    """The outlines a held stroke was clipped to, as the log carries them.
+
+    One hold is **one outline**, exactly as every clipped stroke has been logged
+    since the first one -- so a painting made before a mark could be held by two
+    places replays unchanged, and one made now still loads in a build that only
+    knows about one. Two or more are a list of outlines, which such a build refuses
+    to read rather than reading as a single outline and painting something else.
+    """
+    outlines = [[[float(x), float(y)] for x, y in one.points] for one in holds]
+    return outlines[0] if len(outlines) == 1 else outlines
+
+
+def _clips_from_params(held) -> tuple[Polygon, ...]:
+    """The other way round: what :func:`_clip_params` wrote, back as outlines."""
+    many = bool(held) and not _looks_like_point(held[0])
+    return tuple(polygon([(float(x), float(y)) for x, y in one])
+                 for one in (held if many else [held]))
+
+
+def _mass_hold(place, edge: str, clip):
+    """Every outline a mass's passes are held inside: its own, and whatever was asked.
+
+    ``edge="hard"`` is a clip -- the mass held to the place it is filling -- and
+    ``clip=`` is a clip, so a mass given both is held by both. One place for it,
+    because :meth:`Session.block_in`, :meth:`Session.cover` and
+    :meth:`Session.scumble` all have to answer the same question the same way.
+    """
+    holds = _as_outlines(clip)
+    if edge == "hard":
+        holds = (_as_outline(place),) + holds
+    return holds or None
 
 
 def _smudge_path(edge, size: float) -> list:

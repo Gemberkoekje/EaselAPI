@@ -70,6 +70,30 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `erase(region=None)` | takes **both** drawings out — the graphite and the `guide()` overlay | 0 |
 | `dry(amount=1.0, region=None)` | takes the wetness out so new paint covers rather than mixes | 0 |
 
+### Which verb takes which hold
+
+Where the paint is allowed to land, and whether the brush is allowed to run dry, are
+the same two questions on every verb that lays paint — so every one of them answers
+both. `clip=` is a place, or a list of places, outside which none of the call's paint
+may land; `solid=` is the pair `load=1.0, load_falloff=0.0`; `edge=` is what the call
+does at the boundary of the place it is filling.
+
+| Verb | `clip` | `solid` | `edge` |
+|---|---|---|---|
+| `stroke()` | yes | yes | — |
+| `dab()` | yes | yes | — |
+| `smudge()` | yes | yes | the path it drags along, positional |
+| `glaze()` | yes | yes | — |
+| `block_in()` | yes | yes | `ragged` `clean` `hard` |
+| `sweep()` | yes | yes | the boundary it follows, positional |
+| `scumble()` | yes | yes | `ragged` `hard` |
+| `cover()` | yes | already solid | `ragged` `clean` `hard` |
+
+`edge="hard"` **is** a clip, pointed at the place the call is filling; `clip=` points
+one somewhere else. A call given both is held by both, and the paint lands where they
+agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
+`load=1.0, load_falloff=0.0` already, because that pair is the burying recipe.
+
 ---
 
 ## The arguments that mean something particular
@@ -77,11 +101,11 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | Argument | Default | What it does |
 |---|---|---|
 | `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
+| `solid` (`block_in`, `stroke`, `sweep`, `scumble`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
 | `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
 | `overhang` (`cover`) | `1.0` | one full brush width, so a repair's ends sit outside the mistake it is covering rather than stopping at its edge |
-| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview`. `"hard"` masks every dab to the outline instead — no inset, no contour pass, no extra stroke, and no paint outside the shape: the one setting that ends a pass on a line rather than on its own tip. `overhang` defaults to a full brush there, since nothing can cross the outline. `cover()` takes both |
+| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview`. `"hard"` masks every dab to the outline instead — no inset, no contour pass, no extra stroke, and no paint outside the shape: the one setting that ends a pass on a line rather than on its own tip. `overhang` defaults to a full brush there, since nothing can cross the outline. `cover()` takes both, and `scumble()` takes `"hard"` — a passage has no contour to draw, and a band crossed at an angle is the place a mass lands furthest outside itself |
 | `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, a **line of two points** to run along, or a sequence of any of those. A pair of points is a line; a pair of numbers is two angles. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
@@ -98,7 +122,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `cross` (sweep) | `None` | a second set of passes leaning this many degrees off the boundary. 20–30 is usual |
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
 | `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
-| `clip` (`stroke`, `glaze`) | `None` | a place — a shape, a region, a name — outside which none of the mark lands. `block_in(edge="hard")` is this applied to a mass |
+| `clip` (every verb that lays paint) | `None` | a place — a shape, a region, a name, a run of points — outside which none of the call's paint lands. A **list** of places holds it inside all of them at once: the paint lands where they agree. `block_in(edge="hard")` is this same clip pointed at the mass's own outline |
 | `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
