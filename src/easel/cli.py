@@ -88,6 +88,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="how many strokes this painting is allowed; "
                             "`run` then prints spent and remaining")
     p_new.add_argument("--no-timelapse", action="store_true")
+    p_new.add_argument("--frame-px", type=int, default=None,
+                       help="the long side of each time-lapse frame, in pixels "
+                            "(default 360). A frame is the dearest thing a mark "
+                            "does that is not paint")
     p_new.add_argument("--force", action="store_true",
                        help="overwrite an existing session file")
 
@@ -171,6 +175,11 @@ def build_parser() -> argparse.ArgumentParser:
                       help="keep every nth frame (GIF only); the last frame is always kept")
     p_tl.add_argument("--scale", type=int, default=None,
                       help="long side in pixels (GIF only)")
+    p_tl.add_argument("--from-log", action="store_true",
+                      help="rebuild the frames by replaying the painting instead of "
+                           "using the ones it recorded, so --scale is the size they "
+                           "are built at rather than a shrink. Costs a full repaint, "
+                           "and works on a painting that recorded none")
 
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
@@ -300,7 +309,8 @@ def _dispatch(args) -> int:
             texture=args.texture,
             ground=args.ground,
             seed=args.seed,
-            timelapse=not args.no_timelapse,
+            timelapse=(False if args.no_timelapse
+                       else (True if args.frame_px is None else args.frame_px)),
             out_dir=args.out_dir,
             budget=args.budget,
         )
@@ -359,7 +369,8 @@ def _dispatch(args) -> int:
         out = Path(args.output)
         path = (session.contact_sheet(out) if out.suffix.lower() == ".png"
                 else session.timelapse_gif(out, fps=args.fps, every=args.every,
-                                           scale=args.scale))
+                                           scale=args.scale,
+                                           from_log=args.from_log))
         print(path)
         return 0
 

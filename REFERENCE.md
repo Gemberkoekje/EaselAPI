@@ -70,18 +70,42 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `erase(region=None)` | takes **both** drawings out — the graphite and the `guide()` overlay | 0 |
 | `dry(amount=1.0, region=None)` | takes the wetness out so new paint covers rather than mixes | 0 |
 
+### Which verb takes which hold
+
+Where the paint is allowed to land, and whether the brush is allowed to run dry, are
+the same two questions on every verb that lays paint — so every one of them answers
+both. `clip=` is a place, or a list of places, outside which none of the call's paint
+may land; `solid=` is the pair `load=1.0, load_falloff=0.0`; `edge=` is what the call
+does at the boundary of the place it is filling.
+
+| Verb | `clip` | `solid` | `edge` |
+|---|---|---|---|
+| `stroke()` | yes | yes | — |
+| `dab()` | yes | yes | — |
+| `smudge()` | yes | yes | the path it drags along, positional |
+| `glaze()` | yes | yes | — |
+| `block_in()` | yes | yes | `ragged` `clean` `hard` |
+| `sweep()` | yes | yes | the boundary it follows, positional |
+| `scumble()` | yes | yes | `ragged` `hard` |
+| `cover()` | yes | already solid | `ragged` `clean` `hard` |
+
+`edge="hard"` **is** a clip, pointed at the place the call is filling; `clip=` points
+one somewhere else. A call given both is held by both, and the paint lands where they
+agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
+`load=1.0, load_falloff=0.0` already, because that pair is the burying recipe.
+
 ---
 
 ## The arguments that mean something particular
 
 | Argument | Default | What it does |
 |---|---|---|
-| `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` (`block_in`, `cover`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
+| `density` | `1.0` | how close the passes run: `size × (1 - 0.45 × density)` apart. **Spacing, not coverage** |
+| `solid` (`block_in`, `stroke`, `sweep`, `scumble`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
 | `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
 | `overhang` (`cover`) | `1.0` | one full brush width, so a repair's ends sit outside the mistake it is covering rather than stopping at its edge |
-| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview`. `"hard"` masks every dab to the outline instead — no inset, no contour pass, no extra stroke, and no paint outside the shape: the one setting that ends a pass on a line rather than on its own tip. `overhang` defaults to a full brush there, since nothing can cross the outline. `cover()` takes both |
+| `edge` | `"ragged"` | `"clean"` insets the fill half a brush and draws the contour along the inset outline — along its **own edges**, not a spline through its corners, which bowed 65px off a four-cornered tower. The contour does not wander: the line is the drawing. On a mass whose shorter extent is under four brushes it says so, and so does `preview`. `"hard"` masks every dab to the outline instead — no inset, no contour pass, no extra stroke, and no paint outside the shape: the one setting that ends a pass on a line rather than on its own tip. `overhang` defaults to a full brush there, since nothing can cross the outline. `cover()` takes both, and `scumble()` takes `"hard"` — a passage has no contour to draw, and a band crossed at an angle is the place a mass lands furthest outside itself |
 | `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, a **line of two points** to run along, or a sequence of any of those. A pair of points is a line; a pair of numbers is two angles. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
@@ -98,7 +122,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `cross` (sweep) | `None` | a second set of passes leaning this many degrees off the boundary. 20–30 is usual |
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
 | `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
-| `clip` (`stroke`, `glaze`) | `None` | a place — a shape, a region, a name — outside which none of the mark lands. `block_in(edge="hard")` is this applied to a mass |
+| `clip` (every verb that lays paint) | `None` | a place — a shape, a region, a name, a run of points — outside which none of the call's paint lands. A **list** of places holds it inside all of them at once: the paint lands where they agree. `block_in(edge="hard")` is this same clip pointed at the mass's own outline |
 | `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
@@ -136,7 +160,7 @@ pass's side and not every pass's.
 | `bristle` | bristle | `0.11` | `0.88` | `0.65` | `0.9` | `0.55` | the workhorse: broken, streaky, alive |
 | `flat` | flat | `0.10` | `0.90` | `0.75` | `1.0` | `0.60` | masses, chisel edges, planes |
 | `knife` | knife | `0.09` | `1.00` | `0.97` | `1.0` | `1.10` | thick slabs with a hard edge; drags what it crosses |
-| `round_soft` | round | `0.06` | `0.75` | `0.20` | `1.0` | `0.35` | blending and soft edges; above `size≈0.05` it airbrushes |
+| `round_soft` | round | `0.06` | `0.75` | `0.20` | `1.0` | `0.35` | blending and soft edges; above `size~0.05` it airbrushes |
 | `round_hard` | round | `0.045` | `0.95` | `0.85` | `1.0` | `0.50` | deliberate marks, accents, small shapes |
 | `liner` | round | `0.005` | `0.95` | `1.00` | `1.0` | `0.18` | fine lines at feature scale; no jitter, holds its load |
 | `smudge` | round | `0.07` | `0.60` | `0.25` | `1.0` | `0.00` | carries no paint; moves what is already there. **The `smudge()` verb passes `0.02`** unless you name a size — this row is the preset a `stroke()` would get |
@@ -184,6 +208,40 @@ between(a, b)            # the gap between two places
 thirds()   golden()      # the x and y lines, to hang a composition on
 r.point(u, v)  r.inset(a)  r.scaled(f)  r.shifted(dx, dy)  r.split_h(n)  r.split_v(n)
 ```
+
+**What each name actually covers.** `top`, `bottom`, `left`, `right` and `center` are
+cells of a 3x3 -- so `bottom` is a **ninth** of the canvas, not the bottom third, and a
+painter who reaches for it to mean *the foreground* gets the middle of it. The
+full-width places are `lower-band`, `lower-half` and `middle-band`.
+
+| `region(...)` | x | y |
+|---|---|---|
+| `all` | `0.000`-`1.000` | `0.000`-`1.000` |
+| `canvas` | `0.000`-`1.000` | `0.000`-`1.000` |
+| `top-left` | `0.000`-`0.333` | `0.000`-`0.333` |
+| `top` | `0.333`-`0.667` | `0.000`-`0.333` |
+| `top-right` | `0.667`-`1.000` | `0.000`-`0.333` |
+| `left` | `0.000`-`0.333` | `0.333`-`0.667` |
+| `center` | `0.333`-`0.667` | `0.333`-`0.667` |
+| `right` | `0.667`-`1.000` | `0.333`-`0.667` |
+| `bottom-left` | `0.000`-`0.333` | `0.667`-`1.000` |
+| `bottom` | `0.333`-`0.667` | `0.667`-`1.000` |
+| `bottom-right` | `0.667`-`1.000` | `0.667`-`1.000` |
+| `upper-half` | `0.000`-`1.000` | `0.000`-`0.500` |
+| `lower-half` | `0.000`-`1.000` | `0.500`-`1.000` |
+| `left-half` | `0.000`-`0.500` | `0.000`-`1.000` |
+| `right-half` | `0.500`-`1.000` | `0.000`-`1.000` |
+| `upper-left` | `0.000`-`0.500` | `0.000`-`0.500` |
+| `upper-right` | `0.500`-`1.000` | `0.000`-`0.500` |
+| `lower-left` | `0.000`-`0.500` | `0.500`-`1.000` |
+| `lower-right` | `0.500`-`1.000` | `0.500`-`1.000` |
+| `middle-band` | `0.000`-`1.000` | `0.333`-`0.667` |
+| `upper-band` | `0.000`-`1.000` | `0.000`-`0.400` |
+| `lower-band` | `0.000`-`1.000` | `0.600`-`1.000` |
+| `inner` | `0.120`-`0.880` | `0.120`-`0.880` |
+
+Any of them takes hyphens or underscores, and a `Region` prints its own box, so
+`print(region("bottom"))` answers this question too.
 
 ## Shapes
 
@@ -268,7 +326,12 @@ Textures: `smooth`, `linen`, `rough`.
 s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, marks=, impasto=,
        path=)                                   # the last three are on unless turned off
 s.preview(plan, reference=, region=, grid=, values=, scale=, path=)   # where a mark goes
-s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=)  # what it looks like
+s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=, vary=)
+                                                # what it looks like -- and with
+                                                # vary={"size": [0.02, 0.05, 0.08]},
+                                                # one labelled panel per setting, in
+                                                # place, in one image. At most twelve:
+                                                # two arguments multiply
 s.cost(plan, share=0.25)   s.cost_line(plan)    # what it charges, and why; share= is
                                                 # how much of what is left it may eat
 s.paint(plan, note="")                          # the same plan, now paid for
@@ -281,9 +344,14 @@ s.report(since=None, subject_share=None)        # the post-pass check, read off 
 s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
 s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
-s.log(last=10)                                  # last=10_000 for the whole record
+s.log(last=10)                                  # last=10_000 for the whole record.
+                                                # Log records, as undo(n) and
+                                                # replay(upto=) count: a dry or a
+                                                # pencil line is one and is free
 s.export("painting.png", impasto=True, sketch=True)
-s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None)
+s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None, from_log=False)
+                                                # from_log rebuilds the frames by
+                                                # replaying, at any size
 s.contact_sheet("sheet.png", columns=6)
 ```
 
@@ -347,6 +415,7 @@ floor twenty-eight times and was right every time.
 | `chisel-pressure` | fact | a pressure list on a chisel tip changes the paint, not the width | `CALIBRATION.md`, *Pressure* |
 | `clean-small` | fact | a clean edge whose brush is a large share of the shape: the inset takes the mass rather than a rim off it | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `count-only` | fact | a counted copy was asked something counting cannot answer | `PAINTING.md`, *Try the mark before you spend it* |
+| `solid-comb` | fact | a mass laid solid with a bristle: `solid=` closes the gaps along a pass and not the ones the comb leaves across it | `CALIBRATION.md`, *The holes a solid comb leaves* |
 | `cover-comb` | fact | `cover()` with a bristle does not bury: the comb leaves the old paint showing between the streaks at any opacity | `CALIBRATION.md`, *The bristle comb* |
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
@@ -381,18 +450,21 @@ before it.
 ```python
 Session(width=1024, height=768, texture="linen", ground="white", seed=0,
         timelapse=True, out_dir="out", texture_strength=1.0, budget=None)
-s.size   s.aspect   s.stroke_count   s.spent   s.remaining   s.budget_line()
+                   # timelapse=<px> is the frame's long side; the default is 360
+s.size   s.aspect   s.ground   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
 s.guides s.guide(points, note="")        s.unguide(note=None)
 s.scratch(count_only=False)   # a throwaway copy: the painter's scrap of canvas,
 s.undo(n)          # counting on log entries, not marks you paid for; puts the
                    # stream back too. count_only skips the pixel work
-s.replay(upto=None)
+s.replay(upto=None, frames=None)   # frames=<px> records a time-lapse as it rebuilds,
+                   # which is what timelapse_gif(from_log=True) is made of: the film
+                   # at any size, from a painting that recorded no frames at all
 s.save(path)       Session.load(path)
 ```
 
 ```bash
-easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
+easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
@@ -400,7 +472,7 @@ easel compare p.easel ref.jpg [--region D4]
 easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3
 easel export p.easel painting.png
-easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
+easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240] [--from-log]
 easel log p.easel [-n 20] [--check]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]

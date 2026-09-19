@@ -85,6 +85,105 @@ reused once taken. The version is written by hand in `pyproject.toml` and copied
 `src/easel/__init__.py` and both entries in `server.json`; `tests/test_version.py` and
 `tests/test_server_json.py` hold every copy to the one in `pyproject.toml`.
 
+### Eighteen reported bugs, and the API gaps behind them
+
+Step 4 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream B). Seven painters
+reported eighteen bugs and API gaps; **every one was checked against the source before
+it was planned, and measured again by the corpus probe** — which is how four of the
+reported mechanisms turned out to be something else, one bug turned out larger than
+reported, and one turned up a second, silent bug beside it.
+
+**Where the paint may land, and whether the brush may run dry, are now questions every
+verb answers.**
+
+- **`clip=` on `block_in`, `sweep`, `cover` and `scumble`.** It was a named argument of
+  `stroke` alone, so the four mass verbs answered a question about where their paint
+  goes with *`clip=` is not a brush field* — an error naming neither `stroke(clip=)`
+  nor `edge="hard"`. `edge="hard"` **is** a clip pointed at the place the call fills,
+  so a mass given both is held by both: the coverage masks multiply and the paint lands
+  where they agree. A run of points is a clip too, which is what a painter has in hand
+  when the boundary came off the reference.
+- **`scumble(edge="hard")`**, its mass form. A band crossed at an angle paints up to
+  **3.6×** its own area, because the auto brush is measured across the bounding box;
+  this is the remedy for it, and `"clean"` is refused with the reason — a passage has
+  no contour to draw. The scumble ends check runs on rectangles too, so the guide's own
+  `span(...)` bands can trip it at last: a band is not a wedge, so what it is asked is
+  whether the **whole band** is narrower than the brush laying it.
+- **`solid=` on `stroke`, `sweep` and `scumble`**, as `block_in` has always had it. It
+  is `load=1.0, load_falloff=0.0` everywhere, it is the clause painters type by hand
+  most often, and an explicit `load=` beside it still wins. `cover()` lays that pair
+  already and is the one call that still says so instead of taking it.
+- `REFERENCE.md` grows **Which verb takes which hold**, and `tests/test_reference.py`
+  holds every cell of it by *making the call* rather than by reading the signature:
+  three of these verbs take their holds through `**kw`.
+
+**A plan can hold a passage and a burial, and cannot hold what it cannot paint.**
+`scumble` and `cover` could not be planned, priced, previewed or rehearsed at all, and
+a scumble-shaped entry carrying `shape=` was **priced as a block-in** — five where the
+call lays eight — raising only when `paint()` reached the keys `block_in` does not
+take. `{"band": place, "color_a": ..., "color_b": ...}` is a passage now and
+`{"cover": place, "color": ...}` a burial, priced by walking the same geometry the
+painting walks. And `PLAN_ACCEPTS`, read off the signatures, refuses a key the call
+would not take **before the entry is priced**: `cost` never touches the brush
+overrides, so a misspelled `size` used to price happily at the default and raise when
+the same plan was painted. The MCP server has refused these since it was built and now
+imports the registry rather than keeping a second one.
+
+**The time-lapse, and what a mark costs before it is paint.**
+
+- **`Session(timelapse=<px>)`** and **`timelapse_gif(from_log=True, scale=)`**. Frames
+  were recorded at 360 px beside a 1440 px painting, stored in the `.easel` file at
+  that size, with nothing able to ask for another — so a painting already made could
+  not be helped. The film can now be rebuilt by replaying the painting, at any size,
+  storing nothing, and that works on a painting that recorded no frames at all.
+- **A frame is built only if the thinning would keep it.** Past 200 frames the sequence
+  is halved, so most of the 42–60 ms a mark spent building one was spent and thrown
+  away. The film that comes out is the one that came out before.
+- **A stroke snapshots the box it can reach**, not the whole canvas: 15.7 MB and 5.2 ms
+  become 3.5 MB and 1.85 ms at 1024×768, and 377 MB resident becomes 107. Wetness stays
+  whole, because drying touches every pixel. Undo is exact or it is nothing: the stack
+  unwinds newest first, and a mark that ever landed outside its box drops the stack
+  rather than restoring it wrongly, leaving `undo` to rebuild from the log.
+- **A rehearsal says where its frames are.** `timelapse_gif` on a rehearsal copy said
+  *create the session with `timelapse=True`*, which is the one thing the painting
+  already did.
+
+**`s.rehearse(plan, vary={"size": [0.02, 0.05, 0.08]})`** — one labelled panel per
+setting, in place, in one image. Calibrating a mark meant four rehearsals, four
+whole-canvas renders and four pictures nobody can hold side by side, and a question
+about size is a question only comparison answers. Free, like any rehearsal, and each
+panel is its own copy seeded as the next marks of the painting, so the setting chosen
+lands as it was shown.
+
+**Five smaller ones, each an answer somebody went looking for and did not find.**
+
+- `report()`'s **subject line** built its total out of every mark of paint while the
+  budget exempts the first five noted `signature`: a painting read *172 of 411 marks* a
+  line under a budget that said 408.
+- A **ground name used as a colour** listed every pigment and slot without noticing it
+  is a valid ground, and the canvas was blind the other way round. Both say which
+  namespace the name belongs to now, and **`s.ground`** is the ground as a colour —
+  sampling an unpainted corner was the only route to it.
+- A list of **0–255 integers** clamped, so `[13, 12, 16]` came back **white**, in
+  silence, and `PAINTING.md` documented the trap. It raises and names both fixes. A
+  documented trap the engine can see is a bug.
+- **`solid-comb`**, a fact at the call: `solid=` closes the gaps *along* a pass and not
+  the ones a comb leaves *across* it — `0.16%` of the mass bare on a mid ground and
+  `3.16%` on a dark one, because a hole is a contrast rather than a gap — with what
+  each remedy costs. No default moved: a comb is the right brush for anything with
+  strands in it.
+- **`block_in(dry_first=)`**, off by default, as `cover()` has always had it on.
+
+**And four answers to *where would a painter find that out*.** `undo(n)` and
+`log(last=)` say they count **log records**, which is what `replay(upto=)` already
+said; `region("bottom")` is a **ninth** of the canvas and `REFERENCE.md` now prints
+every named region's extents, held against the engine by a test; the five shipped
+documents are held to **cp1252**, so `print(easel.docs.read("calibration"))` prints on
+a Windows console, where 35 characters used to break it; and **`import easel_paint`
+works**, because the distribution is `easel-paint` and the guess in the other direction
+installs an unrelated package called `easel`. Both import names are the same objects,
+and the documents keep teaching the short one.
+
 ## [0.5.0] — 2026-09-16
 
 **Two rounds, and both painted from the installed package alone** — the first two

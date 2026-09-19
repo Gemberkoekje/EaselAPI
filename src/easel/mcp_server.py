@@ -39,7 +39,6 @@ from __future__ import annotations
 import argparse
 import dataclasses
 import functools
-import inspect
 import os
 import traceback
 from pathlib import Path
@@ -54,7 +53,7 @@ from easel.brush import Brush
 from easel.cli import parse_size, reference_text, run_script
 from easel.look import DEFAULT_LOOK_SIZE
 from easel.regions import Region, as_place
-from easel.session import Session
+from easel.session import PLAN_ACCEPTS, Session
 
 try:
     from mcp.server.mcpserver import Image, MCPServer
@@ -85,28 +84,14 @@ Place = str | list[float] | list[list[float]] | dict[str, Any]
 _BRUSH_FIELDS = frozenset(f.name for f in dataclasses.fields(Brush))
 
 
-def _accepts(method) -> frozenset[str]:
-    """A painting call's own keywords, read off its signature rather than listed.
-
-    So the check below follows the API instead of having to be remembered when the
-    API moves.
-    """
-    return frozenset({n for n, p in inspect.signature(method).parameters.items()
-                      if p.kind not in (p.VAR_KEYWORD, p.VAR_POSITIONAL)} - {"self"})
-
-
-#: What each kind of plan entry may carry. A plan is checked against these *before*
-#: it is priced, because `cost` walks the passes and never touches the brush
-#: overrides -- so a misspelled `size` prices happily at the default and then raises
-#: when the echoed Python is pasted into `run`. A quote for a plan that cannot be
+#: What each kind of plan entry may carry, from the engine, which now refuses the
+#: same keys at the same moment -- while the plan is still free. This check was the
+#: server's alone for a release: `cost` walks the passes and never touches the brush
+#: overrides, so a misspelled `size` priced happily at the default and then raised
+#: when the echoed Python was pasted into `run`. A quote for a plan that cannot be
 #: painted is worse than no quote: it is the drift the echo exists to prevent,
-#: arriving as a price. `session.py` already holds this principle for `sweep` --
-#: a plan that cannot be swept raises when it is priced, not when it is paid for.
-_ACCEPTS = {
-    "stroke": _accepts(Session.stroke),
-    "mass": _accepts(Session.block_in) | {"shape"},
-    "sweep": _accepts(Session.sweep),
-}
+#: arriving as a price.
+_ACCEPTS = PLAN_ACCEPTS
 
 #: The shape builders, by the key that names one in a place object. The value under
 #: that key is the builder's first argument; everything else in the object is a
@@ -140,7 +125,10 @@ _PLAN_HELP = (
     "showing through it. "
     "A sweep is an object with 'edge' (a place, or "
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
-    "'passes', 'closed'. A bare place on its own is a mass."
+    "'passes', 'closed'. A passage is an object with 'band' (a place), 'color_a', "
+    "'color_b' and any scumble argument -- 'n', 'direction': \"inward\" for a "
+    "centred fall-off. A burial is an object with 'cover' (a place) and 'color'. "
+    "A bare place on its own is a mass."
 )
 
 
@@ -254,7 +242,26 @@ def _plan(entries) -> tuple[list, list[str]]:
             lines.append(f"s.block_in({_py_place(entry)})")
             continue
 
-        if "points" not in entry and ("shape" in entry or "region" in entry):
+        if "cover" in entry:
+            _check("cover", entry)
+            source = entry["cover"]
+            specs.append(dict(entry, cover=_place(source)))
+            lines.append(f"s.cover({_py_place(source)}"
+                         f"{_echo_args(entry, 'cover', 'points', 'label')})")
+        elif "points" not in entry and ("band" in entry or (
+                ("shape" in entry or "region" in entry)
+                and ("color_a" in entry or "color_b" in entry))):
+            # A passage names the two colours it steps between, which is what tells
+            # it from a mass filling the same place -- and what used to be missed:
+            # a scumble-shaped entry carrying `shape=` was priced as a block-in.
+            _check("scumble", entry)
+            source = entry.get("band", entry.get("shape", entry.get("region")))
+            key = "band" if "band" in entry else (
+                "shape" if "shape" in entry else "region")
+            specs.append(dict(entry, **{key: _place(source)}))
+            lines.append(f"s.scumble({_py_place(source)}"
+                         f"{_echo_args(entry, 'band', 'shape', 'region', 'points', 'label')})")
+        elif "points" not in entry and ("shape" in entry or "region" in entry):
             # ``edge`` is kept here and dropped for a sweep: on a mass it is
             # block_in's ragged/clean/hard boundary and belongs in the echoed call,
             # and on a sweep it is the boundary, which is passed positionally.
@@ -276,9 +283,10 @@ def _plan(entries) -> tuple[list, list[str]]:
                          f"{_echo_args(entry, 'shape', 'region', 'edge', 'points', 'label')})")
         else:
             raise ValueError(
-                f"A plan entry is a mark ('points'), a mass ('shape') or a sweep "
-                f"('edge'), and {sorted(entry)} is none of them. A place on its own "
-                f"is a mass, and a bare list of points is a mark."
+                f"A plan entry is a mark ('points'), a mass ('shape'), a sweep "
+                f"('edge'), a passage ('band' with 'color_a' and 'color_b') or a "
+                f"burial ('cover'), and {sorted(entry)} is none of them. A place on "
+                f"its own is a mass, and a bare list of points is a mark."
             )
     return specs, lines
 
@@ -479,7 +487,7 @@ def build_server() -> MCPServer:
     @_tool
     def new(session: str, size: str = "1024x768", texture: str = "linen",
             ground: str = "white", seed: int = 0, out_dir: str = "out",
-            timelapse: bool = True, force: bool = False,
+            timelapse: bool | int = True, force: bool = False,
             budget: int | None = None) -> str:
         """Create a session file: the canvas, and the painting's only state.
 
@@ -491,7 +499,9 @@ def build_server() -> MCPServer:
                 Painting on white is the hardest thing to judge values against.
             seed: the determinism seed. Same seed and same calls, same painting.
             out_dir: where look(), preview() and compare() write their PNGs.
-            timelapse: record a frame after every mark, for the time-lapse.
+            timelapse: record a frame after every mark, for the time-lapse. A
+                number is the frame's long side in pixels; the default is 360, and
+                a frame is the dearest thing a mark does that is not paint.
             force: overwrite an existing session file.
             budget: how many strokes this painting is allowed. Nothing is refused
                 when it runs out, but `run` then reports spent and remaining and
@@ -806,7 +816,7 @@ def build_server() -> MCPServer:
     @server.tool()
     @_tool
     def timelapse(session: str, output: str, fps: float = 8.0, every: int = 1,
-                  scale: int | None = None) -> str:
+                  scale: int | None = None, from_log: bool = False) -> str:
         """Write the painting happening: .gif for the animation, .png for a contact sheet.
 
         Args:
@@ -817,12 +827,19 @@ def build_server() -> MCPServer:
                 stroke, so a couple of hundred marks make a couple of megabytes at
                 every=1 and a third of that at every=3, reading the same. The
                 finished painting is always the last frame.
-            scale: long side in pixels (GIF only). Frames are recorded at 360.
+            scale: long side in pixels (GIF only). Frames are recorded at 360
+                unless the session asked for another size, and this only shrinks
+                them -- with from_log it is the size they are built at instead.
+            from_log: rebuild the frames by replaying the painting rather than using
+                the ones it recorded. The whole painting is in the log, so the film
+                can be made at any resolution afterwards -- including for a painting
+                that recorded no frames at all. Costs a full repaint.
         """
         s = Session.load(session)
         out = Path(output)
         path = (s.contact_sheet(out) if out.suffix.lower() == ".png"
-                else s.timelapse_gif(out, fps=fps, every=every, scale=scale))
+                else s.timelapse_gif(out, fps=fps, every=every, scale=scale,
+                                     from_log=from_log))
         return str(path)
 
     @server.tool()
@@ -946,7 +963,8 @@ def build_server() -> MCPServer:
     def rehearse(session: str, plan: list[Any] | dict[str, Any] | str,
                  reference: str = "", region: Place | None = None,
                  grid: bool | str = False, values: bool = False,
-                 scale: int | None = None, output: str = "") -> list:
+                 scale: int | None = None, output: str = "",
+                 vary: dict[str, list[Any]] | None = None) -> list:
         """Paint the plan on a *copy* of the canvas, and look at the result.
 
         Nothing is committed and nothing is logged. The preview shows where a mark
@@ -967,8 +985,14 @@ def build_server() -> MCPServer:
             region: crop both panels, enlarged.
             grid: as look. "fine" for tenths.
             values: greyscale.
-            scale: long-side pixels. 0 for full resolution.
+            scale: long-side pixels. 0 for full resolution. With vary, the sheet's.
             output: where to write the PNG.
+            vary: settings to try the same marks at, {"size": [0.02, 0.05, 0.08]} --
+                one labelled panel per combination, in place, in one image. Every
+                entry of the plan takes the setting, so this is for one mark being
+                calibrated rather than for a pass. Free, like any rehearsal, and a
+                question about size is a question only comparison answers. At most
+                twelve panels: two arguments vary together as their combinations.
         """
         s = Session.load(session)
         told = len(s.notices())
@@ -976,7 +1000,7 @@ def build_server() -> MCPServer:
         path = s.rehearse(specs, reference=reference or None,
                           region=None if region is None else _place(region),
                           grid=_grid(grid), values=values, scale=_scale(scale),
-                          path=output or None)
+                          path=output or None, vary=vary or None)
         s.save(session)
         return [_join(_notices.block(s.notices(since=told)),
                       f"{path}\n\n# Paints as:\n" + "\n".join(lines)),

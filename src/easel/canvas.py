@@ -31,6 +31,7 @@ import math
 import numpy as np
 
 from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_to_linear
+from easel.history import DEFAULT_FRAME_PX
 from easel.texture import make_texture, value_noise
 
 __all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
@@ -101,6 +102,17 @@ GROUNDS: dict[str, str] = {
     "umber_wash": "#7A6A57",
     "cool_grey": "#828A90",
 }
+
+def _PIGMENT_NAMES() -> frozenset[str]:
+    """The pigment names, for naming the other namespace when one is used here.
+
+    Imported inside the call rather than at the top: :mod:`easel.palette` imports
+    :mod:`easel.color`, which is this module's own dependency, and a module-level
+    import here would close the circle for the sake of one error message.
+    """
+    from easel.palette import PIGMENTS
+    return frozenset(PIGMENTS)
+
 
 # Wetness left after one stroke elapses. Slow enough that wet-into-wet is usable
 # for a passage, fast enough that the painter is not fighting mud twenty strokes on.
@@ -195,6 +207,21 @@ class Canvas:
         """Normalised (x, y) to pixel coordinates. Internal use."""
         return x * (self.width - 1), y * (self.height - 1)
 
+    @property
+    def ground_color(self) -> np.ndarray:
+        """The ground as a colour, ready to paint with or to mix.
+
+        A ground is a third namespace beside the pigments and the painter's own
+        slots, and it was the only one with no way out: ``ground_name`` and
+        ``ground_spec`` say what it is called and what it was made from, and a
+        painter who wanted the value they can plainly see had to
+        :meth:`~easel.session.Session.sample` an unpainted corner of canvas for it.
+        This is that colour, without the tooth's shading on it -- so
+        ``p.at_value(s.ground, 0.62)`` and ``p.mix(s.ground, "ultramarine", 0.3)``
+        both mean what they look like.
+        """
+        return self._resolve_ground(self.ground_spec)
+
     def bare(self) -> np.ndarray:
         """The linear RGB this canvas started as: its ground, shaded by its own tooth.
 
@@ -241,9 +268,19 @@ class Canvas:
         if isinstance(ground, str) and not ground.startswith("#"):
             key = ground.lower().replace(" ", "_").replace("-", "_")
             if key not in GROUNDS:
+                # A pigment name here is not a typo, it is the other namespace: the
+                # painter meant the colour and this argument takes the canvas it is
+                # painted on. Say which is which rather than listing the grounds at
+                # somebody who named a paint.
+                paint = ""
+                if key in _PIGMENT_NAMES():
+                    paint = (f" {ground!r} is a pigment, not a ground: the two are "
+                             f"different namespaces. To lay the canvas in it, pass "
+                             f"its hex -- Session(ground=p['{key}']) takes a colour "
+                             f"as well as a name.")
                 raise ValueError(
                     f"Unknown ground {ground!r}. Choose one of: {', '.join(sorted(GROUNDS))}, "
-                    f"or pass a hex string."
+                    f"or pass a hex string.{paint}"
                 )
             return parse_color(GROUNDS[key])
         return parse_color(ground)
@@ -531,7 +568,7 @@ class Canvas:
         """
         return (linear_to_srgb(self.composite(impasto, sketch)) * 255.0 + 0.5).astype(np.uint8)
 
-    def thumbnail_srgb8(self, max_side: int = 360) -> np.ndarray:
+    def thumbnail_srgb8(self, max_side: int = DEFAULT_FRAME_PX) -> np.ndarray:
         """A small 8-bit sRGB view, for time-lapse frames.
 
         Downsamples in linear space *before* the sRGB conversion. Converting the
@@ -567,23 +604,59 @@ class Canvas:
         return (linear_to_srgb(lum) * 255.0 + 0.5).astype(np.uint8)
 
     # -- state -----------------------------------------------------------------------
-    def snapshot(self) -> dict[str, np.ndarray]:
-        """A copy of every mutable channel, for undo."""
+    def snapshot(self, box: tuple[int, int, int, int] | None = None) -> dict:
+        """A copy of every mutable channel, for undo -- of all of it, or of one box.
+
+        A mark touches a few percent of a canvas and the undo stack used to keep
+        twenty-four copies of the whole of it: about **33 MB a stroke** at 1440x960,
+        so roughly **800 MB resident**, and 6.3 ms of copying before a dab lands
+        (``CALIBRATION.md``, B15). Given the box the mark can reach, this copies that
+        box instead, and :meth:`restore` writes it back where it came from. The
+        stack is then unwound newest first -- see
+        :meth:`easel.history.History.pop_snapshots` -- because a box holds the state
+        before *its own* mark and nothing about the marks laid after it.
+        """
+        if box is None:
+            return {
+                "rgb": self.rgb.copy(),
+                "wetness": self.wetness.copy(),
+                "thickness": self.thickness.copy(),
+                # Paint buries graphite destructively, so undoing a stroke has to
+                # bring back the drawing it covered. ``None`` records "there was no
+                # drawing here yet", which is not the same as "leave the drawing
+                # alone" -- and it keeps a painting that never draws from carrying
+                # twenty-four spare colour planes around in its undo stack.
+                "sketch": self.sketch.copy() if self.has_sketch else None,
+                "stroke_count": np.int64(self.stroke_count),
+            }
+        x0, y0, x1, y1 = box
         return {
-            "rgb": self.rgb.copy(),
+            "box": (int(x0), int(y0), int(x1), int(y1)),
+            "rgb": self.rgb[y0:y1, x0:x1].copy(),
+            "thickness": self.thickness[y0:y1, x0:x1].copy(),
+            "sketch": self.sketch[y0:y1, x0:x1].copy() if self.has_sketch else None,
+            # Whole, because wetness is the one channel a mark changes everywhere:
+            # :meth:`tick_wetness` dries the entire canvas a little per stroke, so
+            # there is no box that holds what a mark did to it. It is one plane
+            # against the colour's three, and it is the cheap one to keep.
             "wetness": self.wetness.copy(),
-            "thickness": self.thickness.copy(),
-            # Paint buries graphite destructively, so undoing a stroke has to bring
-            # back the drawing it covered. ``None`` records "there was no drawing
-            # here yet", which is not the same as "leave the drawing alone" -- and
-            # it keeps a painting that never draws from carrying twenty-four spare
-            # colour planes around in its undo stack.
-            "sketch": self.sketch.copy() if self.has_sketch else None,
             "stroke_count": np.int64(self.stroke_count),
         }
 
     def restore(self, snap: dict) -> None:
-        """Restore a snapshot taken by :meth:`snapshot`."""
+        """Restore a snapshot taken by :meth:`snapshot`, whole or by its box."""
+        box = snap.get("box")
+        if box is not None:
+            x0, y0, x1, y1 = box
+            self.rgb[y0:y1, x0:x1] = snap["rgb"]
+            self.thickness[y0:y1, x0:x1] = snap["thickness"]
+            self.wetness = np.array(snap["wetness"], dtype=np.float32, copy=True)
+            stored = snap.get("sketch")
+            if stored is not None:
+                self.sketch[y0:y1, x0:x1] = stored
+                self.has_sketch = True
+            self.stroke_count = int(snap["stroke_count"])
+            return
         self.rgb = np.array(snap["rgb"], dtype=np.float32, copy=True)
         self.wetness = np.array(snap["wetness"], dtype=np.float32, copy=True)
         self.thickness = np.array(snap["thickness"], dtype=np.float32, copy=True)
