@@ -367,3 +367,36 @@ def test_the_hold_matrix_is_what_the_verbs_take(tmp_path, verb, clip, solid, edg
         elif edge == "—":
             with pytest.raises(TypeError):
                 _call(s, verb, edge="hard")
+
+
+# -- the extents behind the region names -----------------------------------------------
+def test_the_places_table_is_the_places():
+    """`region("bottom")` is a **ninth** -- x 0.333-0.667, y 0.667-1.000 -- because the
+    nine are cells of a 3x3, and a painter reached for it meaning the foreground band,
+    blocked one in, and got the middle of one. The page listed the names and none of
+    their extents, so there was nowhere to find that out short of printing one."""
+    from easel.regions import _NAMED
+
+    rows = {}
+    for line in TEXT.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) == 3 and re.fullmatch(r"`[a-z-]+`", cells[0]) and all(
+                re.fullmatch(r"`\d\.\d+`-`\d\.\d+`", c) for c in cells[1:]):
+            x0, x1 = (float(v) for v in re.findall(r"\d\.\d+", cells[1]))
+            y0, y1 = (float(v) for v in re.findall(r"\d\.\d+", cells[2]))
+            rows[cells[0].strip("`")] = (x0, y0, x1, y1)
+    assert set(rows) == set(_NAMED), "REFERENCE.md lists a region the engine has not"
+    for name, box in rows.items():
+        assert box == pytest.approx(_NAMED[name], abs=0.001), name
+
+
+@pytest.mark.parametrize("name", ["undo", "log", "replay"])
+def test_the_calls_that_count_records_say_records(name):
+    """`undo`'s own docstring said *scrape back n strokes* and `log(last=)` said
+    nothing at all, while `replay(upto=)` said records: all three count log entries,
+    and a dry or a pencil line is one of those and is free. A painter asked which,
+    because the three answers did not agree."""
+    from easel.session import Session
+
+    doc = getattr(Session, name).__doc__ or ""
+    assert "record" in doc.lower(), f"Session.{name} does not say what it counts"

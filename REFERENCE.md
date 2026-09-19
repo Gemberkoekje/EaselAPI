@@ -100,7 +100,7 @@ agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
 
 | Argument | Default | What it does |
 |---|---|---|
-| `density` | `1.0` | how close the passes run: `size × (1 − 0.45 × density)` apart. **Spacing, not coverage** |
+| `density` | `1.0` | how close the passes run: `size × (1 - 0.45 × density)` apart. **Spacing, not coverage** |
 | `solid` (`block_in`, `stroke`, `sweep`, `scumble`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
 | `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
@@ -160,7 +160,7 @@ pass's side and not every pass's.
 | `bristle` | bristle | `0.11` | `0.88` | `0.65` | `0.9` | `0.55` | the workhorse: broken, streaky, alive |
 | `flat` | flat | `0.10` | `0.90` | `0.75` | `1.0` | `0.60` | masses, chisel edges, planes |
 | `knife` | knife | `0.09` | `1.00` | `0.97` | `1.0` | `1.10` | thick slabs with a hard edge; drags what it crosses |
-| `round_soft` | round | `0.06` | `0.75` | `0.20` | `1.0` | `0.35` | blending and soft edges; above `size≈0.05` it airbrushes |
+| `round_soft` | round | `0.06` | `0.75` | `0.20` | `1.0` | `0.35` | blending and soft edges; above `size~0.05` it airbrushes |
 | `round_hard` | round | `0.045` | `0.95` | `0.85` | `1.0` | `0.50` | deliberate marks, accents, small shapes |
 | `liner` | round | `0.005` | `0.95` | `1.00` | `1.0` | `0.18` | fine lines at feature scale; no jitter, holds its load |
 | `smudge` | round | `0.07` | `0.60` | `0.25` | `1.0` | `0.00` | carries no paint; moves what is already there. **The `smudge()` verb passes `0.02`** unless you name a size — this row is the preset a `stroke()` would get |
@@ -208,6 +208,40 @@ between(a, b)            # the gap between two places
 thirds()   golden()      # the x and y lines, to hang a composition on
 r.point(u, v)  r.inset(a)  r.scaled(f)  r.shifted(dx, dy)  r.split_h(n)  r.split_v(n)
 ```
+
+**What each name actually covers.** `top`, `bottom`, `left`, `right` and `center` are
+cells of a 3x3 -- so `bottom` is a **ninth** of the canvas, not the bottom third, and a
+painter who reaches for it to mean *the foreground* gets the middle of it. The
+full-width places are `lower-band`, `lower-half` and `middle-band`.
+
+| `region(...)` | x | y |
+|---|---|---|
+| `all` | `0.000`-`1.000` | `0.000`-`1.000` |
+| `canvas` | `0.000`-`1.000` | `0.000`-`1.000` |
+| `top-left` | `0.000`-`0.333` | `0.000`-`0.333` |
+| `top` | `0.333`-`0.667` | `0.000`-`0.333` |
+| `top-right` | `0.667`-`1.000` | `0.000`-`0.333` |
+| `left` | `0.000`-`0.333` | `0.333`-`0.667` |
+| `center` | `0.333`-`0.667` | `0.333`-`0.667` |
+| `right` | `0.667`-`1.000` | `0.333`-`0.667` |
+| `bottom-left` | `0.000`-`0.333` | `0.667`-`1.000` |
+| `bottom` | `0.333`-`0.667` | `0.667`-`1.000` |
+| `bottom-right` | `0.667`-`1.000` | `0.667`-`1.000` |
+| `upper-half` | `0.000`-`1.000` | `0.000`-`0.500` |
+| `lower-half` | `0.000`-`1.000` | `0.500`-`1.000` |
+| `left-half` | `0.000`-`0.500` | `0.000`-`1.000` |
+| `right-half` | `0.500`-`1.000` | `0.000`-`1.000` |
+| `upper-left` | `0.000`-`0.500` | `0.000`-`0.500` |
+| `upper-right` | `0.500`-`1.000` | `0.000`-`0.500` |
+| `lower-left` | `0.000`-`0.500` | `0.500`-`1.000` |
+| `lower-right` | `0.500`-`1.000` | `0.500`-`1.000` |
+| `middle-band` | `0.000`-`1.000` | `0.333`-`0.667` |
+| `upper-band` | `0.000`-`1.000` | `0.000`-`0.400` |
+| `lower-band` | `0.000`-`1.000` | `0.600`-`1.000` |
+| `inner` | `0.120`-`0.880` | `0.120`-`0.880` |
+
+Any of them takes hyphens or underscores, and a `Region` prints its own box, so
+`print(region("bottom"))` answers this question too.
 
 ## Shapes
 
@@ -310,7 +344,10 @@ s.report(since=None, subject_share=None)        # the post-pass check, read off 
 s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
 s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
-s.log(last=10)                                  # last=10_000 for the whole record
+s.log(last=10)                                  # last=10_000 for the whole record.
+                                                # Log records, as undo(n) and
+                                                # replay(upto=) count: a dry or a
+                                                # pencil line is one and is free
 s.export("painting.png", impasto=True, sketch=True)
 s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None, from_log=False)
                                                 # from_log rebuilds the frames by

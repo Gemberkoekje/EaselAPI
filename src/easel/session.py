@@ -2120,7 +2120,14 @@ class Session:
         )
 
     def undo(self, n: int = 1) -> int:
-        """Scrape back ``n`` strokes. Returns how many were actually undone.
+        """Scrape back ``n`` **log records**. Returns how many were actually undone.
+
+        Records, not marks you paid for: a ``dry``, a ``pencil`` line and an
+        ``erase`` are free against the budget and are entries in the log like any
+        other, so ``undo(1)`` after a ``dry()`` takes back the drying and leaves the
+        stroke before it alone. :meth:`replay` counts the same way, and so does
+        :meth:`log`; what the budget counts is :attr:`stroke_count`. ``s.log()``
+        prints the records in order, which is where to look before undoing several.
 
         This is not free and it is not the usual repair. Painting over a mistake is
         almost always the better move, and it is what a painter does.
@@ -3803,7 +3810,14 @@ class Session:
             self.assisted.append(what)
 
     def log(self, last: int = 10) -> str:
-        """A short text summary of recent marks, and any assisted mode used."""
+        """A short text summary of recent marks, and any assisted mode used.
+
+        ``last`` is a count of **log records** -- the same thing :meth:`undo` and
+        :meth:`replay` count, so the last three here are exactly what ``undo(3)``
+        would take back. A ``dry``, a ``pencil`` and an ``erase`` are records and
+        are free against the budget, so this number and :attr:`stroke_count` are
+        not the same number.
+        """
         text = self.history.summary(last)
         if self.assisted:
             text += "\nAssisted: " + "; ".join(self.assisted)

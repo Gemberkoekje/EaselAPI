@@ -141,3 +141,60 @@ def test_path_prints_a_path_rather_than_the_document(capsys) -> None:
     out = capsys.readouterr().out.strip()
     assert Path(out).is_file()
     assert "\n" not in out
+
+
+@pytest.mark.parametrize("name", sorted(guide.DOCUMENTS))
+def test_a_shipped_document_prints_on_a_cp1252_console(name: str) -> None:
+    """`print(easel.docs.read("calibration"))` is the most natural thing a painter does
+    with the guide from Python, and on a Windows console it died: **35 characters**
+    across the five documents sit outside cp1252 -- a rightwards arrow, a true minus,
+    *approximately* and *less-or-equal* -- and 31 of them were in `CALIBRATION.md`.
+
+    The tool itself was never the problem (`easel guide` writes UTF-8 bytes past the
+    codec on purpose, and no string in `src/easel/` is non-ASCII); what died was the
+    painter's own print. So the documents are held to the narrower codec, and the four
+    characters are spelled `->`, `-`, `~` and `<=`.
+    """
+    text = guide.document_path(name).read_text(encoding="utf-8")
+    try:
+        text.encode("cp1252")
+    except UnicodeEncodeError as bad:
+        offender = text[bad.start:bad.end]
+        line = text[:bad.start].count("\n") + 1
+        pytest.fail(
+            f"{guide.DOCUMENTS[name]} line {line} has {offender!r} "
+            f"(U+{ord(offender[0]):04X}), which a cp1252 console cannot print."
+        )
+
+
+def test_the_installed_name_is_an_import_name(tmp_path) -> None:
+    """The distribution is `easel-paint` and the import the documents teach is `easel`,
+    which is one name too many for something met in the first two minutes: a session
+    installed the wheel, typed `import easel_paint` because that is what it had just
+    installed, and got ModuleNotFoundError. The guess the other way round is worse --
+    PyPI carries an unrelated distribution called `easel`.
+
+    So both names are real, and they are the same objects rather than a copy: a name
+    added to one is exported by the other the same day.
+    """
+    import easel
+    import easel_paint
+
+    assert easel_paint.Session is easel.Session
+    assert set(easel.__all__) <= set(easel_paint.__all__)
+    assert easel_paint.__version__ == easel.__version__
+    # Submodules too, so `easel_paint.docs.read(...)` is not a narrower thing than
+    # the documents describe.
+    assert easel_paint.session is easel.session
+    assert easel_paint.docs.front_page() == easel.docs.front_page()
+
+
+def test_the_wheel_ships_both_import_names() -> None:
+    """The half of that which is not Python: a package left out of the build table is
+    a package that works in a checkout, where the tests run, and is missing from every
+    install."""
+    packages = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))[
+        "tool"]["hatch"]["build"]["targets"]["wheel"]["packages"]
+    assert sorted(packages) == ["src/easel", "src/easel_paint"]
+    for package in packages:
+        assert (ROOT / package / "__init__.py").is_file()

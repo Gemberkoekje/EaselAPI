@@ -513,7 +513,7 @@ The body is **one chisel mark, and a rectangle on purpose** — the one place a 
 own geometry is allowed to stand for the thing, because a `flat`'s chisel really is
 that shape. The rim is a second, narrower chisel mark, *wider* than the body and
 lighter, sitting on its top edge; it is what makes a block a container. What spills is
-one starved stroke going up and over: a `bristle` above `size≈0.025`, and below that
+one starved stroke going up and over: a `bristle` above `size~0.025`, and below that
 `round_hard` with `pressure="lift_off"`, because a comb that small is four streaks. Then
 vary one thing per container — the tilt, which side the spill falls, whether there is a
 rim at all.

@@ -66,7 +66,12 @@ Changelog = "https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md"
 Issues = "https://github.com/Gemberkoekje/EaselAPI/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/easel"]
+# Two import names for one engine. The distribution is `easel-paint` and the import
+# the documents teach is `easel`; `easel_paint` re-exports it, because a painter who
+# has just typed `pip install easel-paint` and then `import easel_paint` should not
+# meet a ModuleNotFoundError -- and because PyPI carries an unrelated `easel`, so the
+# guess in the other direction installs somebody else's package.
+packages = ["src/easel", "src/easel_paint"]
 
 # The guide is the deliverable, so it ships with the engine rather than only in
 # the repository. These land as `easel/docs/*.md` inside the wheel and are found

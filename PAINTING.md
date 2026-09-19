@@ -283,7 +283,7 @@ chose. What each one leaves when you are not watching:
 | `flat` / `knife` filling a mass whose boundary is not parallel to the passes | **a staircase down that boundary** — each pass ends in a chisel square to its travel, and where the boundary slopes the ends stop at different heights and stack |
 | `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
 | `round_hard` or `liner`, several small marks | **one disc, printed over and over** — unless `tip_wobble=0.7` redraws the outline per mark. `report()` counts them |
-| `bristle` below `size≈0.025` | a comb: a woven strap across a band, or a ladder of ticks along an edge |
+| `bristle` below `size~0.025` | a comb: a woven strap across a band, or a ladder of ticks along an edge |
 | `sweep` round a closed shape, or an inward `scumble` with too many rings | **concentric rings** |
 | several overlapping `blob`s | a dome — blobs of similar size average to a circle |
 | a shallow shape, passes along its long axis | **its bounding box** |

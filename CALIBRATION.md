@@ -568,7 +568,7 @@ painted across. Measured on a blob covering `0.23` of a 900×675 canvas, against
   shapes on record.
 - **One sweep leaves the boundary stringy**, because a bristle brush covers about
   three-quarters of its width. `direction=("axis", 90)` crosses it and closes it up,
-  at twice the passes (7 → 17 on the blob above). **On a small mass, don't**: the two
+  at twice the passes (7 -> 17 on the blob above). **On a small mass, don't**: the two
   pass directions meet the outline at different angles and serrate it into a sawtooth.
   The crossing is for masses several brushes across.
 - **`"axis"`** resolves to the long axis of the outline, weighted by edge length:
@@ -730,10 +730,10 @@ eye.
 
 ### Spacing, depth and how many passes
 
-- Passes step **one part-brush** apart: `size × (1 − 0.45 × density)`, the same rule
+- Passes step **one part-brush** apart: `size × (1 - 0.45 × density)`, the same rule
   `block_in` spaces its passes by. At `density=1.0` that is `0.55` of the brush
   width. The recipe this call replaced stepped `0.27` of a brush width, which is
-  `density≈1.6`.
+  `density~1.6`.
 - `depth` and the step are in **normalised canvas units**, so on a canvas that is
   not square a sweep stepped `"down"` steps in fractions of the *height* while the
   brush is measured against the *long side*. On 520×400 a `0.0715` step down is 29
@@ -777,13 +777,13 @@ of radius `0.20`, bristle at `0.13`:
   |---|---|---|---|
   | `0.008` | `1.233` | nothing | `0.4%` |
   | `0.011` | `1.191` | nothing | `0.6%` |
-  | `0.016` | `0.651` | `−46%` | `1.0%` |
-  | **`0.020`** (the default) | `0.581` | `−52%` | `1.3%` |
-  | `0.024` | `0.614` | `−49%` | `1.5%` |
-  | `0.028` | `0.608` | `−50%` | `1.7%` |
-  | `0.032` | `0.493` | `−59%` | `1.9%` |
-  | `0.040` | `0.376` | `−69%` | `2.3%` |
-  | `0.070` | `0.215` | `−82%` | `4.4%` |
+  | `0.016` | `0.651` | `-46%` | `1.0%` |
+  | **`0.020`** (the default) | `0.581` | `-52%` | `1.3%` |
+  | `0.024` | `0.614` | `-49%` | `1.5%` |
+  | `0.028` | `0.608` | `-50%` | `1.7%` |
+  | `0.032` | `0.493` | `-59%` | `1.9%` |
+  | `0.040` | `0.376` | `-69%` | `2.3%` |
+  | `0.070` | `0.215` | `-82%` | `4.4%` |
 
   Three things are in that table. Below about `0.014` the tip is too small to straddle
   the join and **the pass does nothing at all** — which is worth knowing before
@@ -866,13 +866,13 @@ well as in value.** Measured on a 512×384 canvas: a warm light mixture (`0.62`)
 over a solid cool dark mass (`0.30`), `flat` at `size=0.18`, `pressure="even"`, sampled
 over the middle of the film:
 
-| `opacity` | value under it | change | hex, before → after |
+| `opacity` | value under it | change | hex, before -> after |
 |---|---|---|---|
-| `0.05` | `0.310` → `0.338` | `+0.028` | `#4d4c6d` → `#5c5459` |
-| `0.07` | `0.310` → `0.351` | `+0.041` | `#4d4c6d` → `#625754` |
-| `0.10` | `0.310` → `0.371` | `+0.061` | `#4d4c6d` → `#6b5c4e` |
-| `0.14` | `0.310` → `0.397` | `+0.087` | `#4d4c6d` → `#776247` |
-| `0.20` | `0.310` → `0.433` | `+0.123` | `#4d4c6d` → `#876940` |
+| `0.05` | `0.310` -> `0.338` | `+0.028` | `#4d4c6d` -> `#5c5459` |
+| `0.07` | `0.310` -> `0.351` | `+0.041` | `#4d4c6d` -> `#625754` |
+| `0.10` | `0.310` -> `0.371` | `+0.061` | `#4d4c6d` -> `#6b5c4e` |
+| `0.14` | `0.310` -> `0.397` | `+0.087` | `#4d4c6d` -> `#776247` |
+| `0.20` | `0.310` -> `0.433` | `+0.123` | `#4d4c6d` -> `#876940` |
 
 Read the hex column rather than the value column. By `0.05` the underlying violet is
 already gone and the glaze's own warmth has not arrived — the film is a neutral grey,
@@ -924,7 +924,7 @@ What closes a join a smudge only softened: `n` overlapping passes at closely spa
 values, charged as `n`.
 
 **The default grades edge to edge, which is a band and not a glow.** Nine passes
-`0.20`→`0.90` over a **round patch of radius `0.16`** on a 512×384 canvas, `bristle`,
+`0.20`->`0.90` over a **round patch of radius `0.16`** on a 512×384 canvas, `bristle`,
 `opacity=0.7`, read off the values view at five points across the patch and five down
 it:
 
@@ -960,7 +960,7 @@ edge to `0.75` at the centre — so the rings step `0.017` apart. The second col
 share of the patch sitting within `0.06` of the centre value, which is the measure of
 how much of it has gone flat:
 
-| brush | flat at the centre value | profile, edge → centre |
+| brush | flat at the centre value | profile, edge -> centre |
 |---|---|---|
 | `0.09` (five steps) | **44%** | `0.52 0.55 0.62 0.69 0.70 0.69 0.71` |
 | `0.05` (three steps) | 12% | `0.49 0.49 0.59 0.61 0.64 0.69 0.65` |
@@ -980,7 +980,7 @@ guide carries no `size=`.
 The brush is `3 × depth / n`, so **more rings on a shallow patch buy a narrower
 brush, not finer banding** — and the bristle comb has a floor of `0.025`, below which
 it is four streaks with gaps (*The bristle comb*, below). Putting the two together,
-the derived brush is still a brush only while `n ≤ 120 × depth`, where `depth` is
+the derived brush is still a brush only while `n <= 120 × depth`, where `depth` is
 half the patch's shorter extent:
 
 | `depth` | most rings that fit | the brush there |
@@ -1112,7 +1112,7 @@ a long pass is how a passage brightens toward one side and is left alone.
 ### The chisel staircase
 
 A chisel's pass ends stack into steps down a boundary that is not parallel to the
-passes — the *shallow shape → its bounding box* row of *the shape each tool leaves
+passes — the *shallow shape -> its bounding box* row of *the shape each tool leaves
 behind*, one dimension over. A painter's lit band, `0.06 × 0.64`, its sides sloping
 about three degrees off vertical, filled with vertical passes and laid solid, 1120×860
 linen on `toned_warm_grey`. The mass has no horizontal feature in it, so every
@@ -1180,7 +1180,7 @@ one stroke, not two of different sizes.
   and it costs one stroke; three *separate* dabs reach 0.45 on `toned_grey` and
   cost three.
 - **Scale a mark off the thing it describes, not off the canvas.** Inside a mass
-  `0.3` of the canvas across, a plane within it wants about `size≈0.015–0.025` and a
+  `0.3` of the canvas across, a plane within it wants about `size~0.015–0.025` and a
   detail within that plane `0.004–0.010`. Carrying "use a bigger brush than feels
   comfortable" — which is advice about masses — down to this scale costs a repaint;
   A rehearsal run did it three times and put the cost at about forty strokes.
@@ -1225,7 +1225,7 @@ which wants `flat` at `pressure="even"` or `round_hard` instead.
 The comb — spacing, phase, and which bristles are missing — is drawn once per
 stroke and held for all of that stroke's dabs, so striations stay put along a mark
 and differ from the next mark's. Two strokes of one brush used to be identical to
-the last bit; their combs now correlate +0.39, −0.05 and +0.33 over three pairs.
+the last bit; their combs now correlate +0.39, -0.05 and +0.33 over three pairs.
 
 The pitch is the comb in the tip. What *reads* on a fully loaded straight stroke is
 coarser, because consecutive dabs overlap by more than 90% and fill the weaker
@@ -1257,7 +1257,7 @@ grounds:
 | white | `0.1357%` | 41 | 176 px |
 | a dark `#2e332c` | **`3.1550%`** | 373 | 2270 px |
 
-So the comb's holes are a dark mass's problem. The passes sit `size × (1 − 0.45 ×
+So the comb's holes are a dark mass's problem. The passes sit `size × (1 - 0.45 ×
 density)` apart, so `density=1.2` is about a fifth more passes than `1.0` and closes
 them; a solid tip closes them at any density for the same money; crossed passes close
 them at twice the price. `solid-comb` says this at the call, with the share and the
@@ -1335,11 +1335,11 @@ the pass will see when it is run for real, and what the copy itself laid is its 
 A whole painting is usually a few hundred marks, not a few thousand. `s.stroke_count`
 keeps the tally; `pencil()`, `erase()`, `mark()`, `look()`, `preview()`, `rehearse()`
 and `compare()` do not count. **`smudge()` and `glaze()` do** — they are marks like any
-other, and a rehearsal run measured that (297 → 299 for two smudges) with three
+other, and a rehearsal run measured that (297 -> 299 for two smudges) with three
 strokes of budget left.
 
 **A mass can be costed before the call rather than discovered after it.** Passes step
-`size × (1 − 0.45 × density)` apart, so a mass takes about `extent / step` of them,
+`size × (1 - 0.45 × density)` apart, so a mass takes about `extent / step` of them,
 times about three if crossed:
 
 ```python
@@ -1367,7 +1367,7 @@ the middle.
 
 **Crossing a direction is where a price runs away, and it is one cause wearing three
 hats.** The same shape, one direction against crossed, `bristle` at `size=0.05`: a
-thin full-width band **5 → 41**; a small concave shape **12 → 32**. And a ribbon
+thin full-width band **5 -> 41**; a small concave shape **12 -> 32**. And a ribbon
 `0.032` wide at `size=0.015`: **4** straight, **75** with a bend in it. All three are
 the same thing — the passes step across the *bounding box*, once per direction, and
 each pass line comes back as however many pieces of it lie inside the shape.
