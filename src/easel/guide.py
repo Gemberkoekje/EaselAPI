@@ -15,6 +15,7 @@ from easel.docs import (
     document_path,
     front_page,
     read,
+    section,
     write,
 )
 
@@ -25,5 +26,6 @@ __all__ = [
     "document_path",
     "front_page",
     "read",
+    "section",
     "write",
 ]

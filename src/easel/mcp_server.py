@@ -48,6 +48,7 @@ from typing import Any
 from PIL import Image as _PILImage
 
 from easel import docs as _docs
+from easel import notices as _notices
 from easel import regions as _regions
 from easel.brush import Brush
 from easel.cli import parse_size, reference_text, run_script
@@ -396,6 +397,15 @@ def _tool(fn):
     return wrapper
 
 
+def _join(*parts: str) -> str:
+    """The parts of a result that are present, one per block.
+
+    A notice block is empty when the call said nothing, and an empty line at the top
+    of an answer is the kind of thing a painter reads as a missing sentence.
+    """
+    return "\n".join(p for p in parts if p)
+
+
 def _grid(value) -> bool | str:
     """``grid`` as the API takes it, with a JSON client's near-misses refused.
 
@@ -559,25 +569,32 @@ def build_server() -> MCPServer:
         trying = rehearse or count
         target = s.scratch(count_only=count) if trying else s
         before = len(target.history.records)
+        told = len(target.notices())
         result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
-        # The post-pass check the CLI prints beside the budget line, here too: the
-        # same words for the same pass, whichever way the pass was run.
+        # The post-pass check the CLI prints beside the budget line, here too, and
+        # above it what the engine said at the calls themselves. Until 0.6.0 that
+        # second half reached nobody through this server: the warnings went to the
+        # process's stderr, which a painter working through a client never sees, so
+        # "the tool warns you" was false here for everything except this check.
         check = target.report(since=before)
+        said = target.notices(since=told)
         if trying:
             if result.code != 0:
-                return result.text
+                return _join(_notices.block(said), result.text)
             left = s.remaining
             laid = target.history.stroke_count      # the copy's own log: this pass
             cost = (f"{laid} strokes" if left is None
                     else f"{laid} strokes of the {left} left")
             if count:
                 return (f"Counted {Path(name).name}: {cost}. Nothing painted, "
-                        f"nothing committed.\n{check}")
+                        f"nothing committed.\n{_notices.block(said, check)}")
             return (f"Rehearsed {Path(name).name}: {cost}. Nothing committed.\n"
-                    f"{check}\n{target.look()}")
+                    f"{_notices.block(said, check)}\n{target.look()}")
         if result.save:
             s.save(session)
-        return result.text if result.code != 0 else f"{result.text}\n{check}"
+        if result.code != 0:
+            return _join(_notices.block(said), result.text)
+        return f"{result.text}\n{_notices.block(said, check)}"
 
     @server.tool()
     @_tool
@@ -862,6 +879,29 @@ def build_server() -> MCPServer:
             return _docs.read(document)
         return _docs.read("guide") if full else _docs.front_page()
 
+    @server.tool()
+    @_tool
+    def explain(code: str = "") -> str:
+        """Why the engine said that: the passage that holds the measurement.
+
+        Every notice a call gives carries a code -- `chisel-blank`,
+        `direction-default`, `scumble-wedge` -- printed above the post-pass check by
+        `run`, `cost`, `preview` and `rehearse`. This turns one back into the section
+        of the guide that measured it, so the reason arrives at the moment it
+        applies rather than having to have been read in advance.
+
+        Args:
+            code: the notice's code, exactly as the pass printed it. Left off, every
+                code there is with a line saying what each one is about.
+        """
+        if not code:
+            rows = "\n".join(
+                f"  {name:20s} {spec.kind:6s} {spec.about}"
+                for name, spec in sorted(_notices.NOTICES.items())
+            )
+            return f"The engine says these at a call. Ask for any one by its code:\n{rows}"
+        return _notices.explain(code)
+
     # -- the three questions about a mark that has not been made yet ---------------
     @server.tool()
     @_tool
@@ -890,13 +930,16 @@ def build_server() -> MCPServer:
             output: where to write the PNG.
         """
         s = Session.load(session)
+        told = len(s.notices())
         specs, lines = _plan(plan)
         path = s.preview(specs, reference=reference or None,
                          region=None if region is None else _place(region),
                          grid=_grid(grid), values=values, scale=_scale(scale),
                          path=output or None)
         s.save(session)
-        return [f"{path}\n\n# Paints as:\n" + "\n".join(lines), Image(path=str(path))]
+        return [_join(_notices.block(s.notices(since=told)),
+                      f"{path}\n\n# Paints as:\n" + "\n".join(lines)),
+                Image(path=str(path))]
 
     @server.tool()
     @_tool
@@ -928,13 +971,16 @@ def build_server() -> MCPServer:
             output: where to write the PNG.
         """
         s = Session.load(session)
+        told = len(s.notices())
         specs, lines = _plan(plan)
         path = s.rehearse(specs, reference=reference or None,
                           region=None if region is None else _place(region),
                           grid=_grid(grid), values=values, scale=_scale(scale),
                           path=output or None)
         s.save(session)
-        return [f"{path}\n\n# Paints as:\n" + "\n".join(lines), Image(path=str(path))]
+        return [_join(_notices.block(s.notices(since=told)),
+                      f"{path}\n\n# Paints as:\n" + "\n".join(lines)),
+                Image(path=str(path))]
 
     @server.tool()
     @_tool
@@ -956,6 +1002,7 @@ def build_server() -> MCPServer:
             plan: """ + _PLAN_HELP + """
         """
         s = Session.load(session)
+        told = len(s.notices())
         specs, lines = _plan(plan)
         # Why, not only how much: a number four to twelve times what a painter would
         # have guessed is a crossed direction, a bounding box much bigger than the
@@ -968,7 +1015,11 @@ def build_server() -> MCPServer:
         body = "\n".join(f"{line}  # {n}{': ' + why if why else ''}"
                           for n, why, line in priced)
         left = "" if s.remaining is None else f" {s.budget_line()}."
-        return f"{total} stroke(s).{left} Paints as:\n\n{body}"
+        # A price walk says things -- a mass with `direction` left off costing many
+        # times its axis is exactly what a quote is asked for -- and the walk happens
+        # on a throwaway copy, so `Session._adopt_notices` carries them back here.
+        return _join(_notices.block(s.notices(since=told)),
+                     f"{total} stroke(s).{left} Paints as:\n\n{body}")
 
     return server
 

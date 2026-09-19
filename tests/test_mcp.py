@@ -498,3 +498,58 @@ def test_run_hands_back_the_post_pass_check(call, painting):
     assert "from 2 calls" in counted.text and ".png" not in counted.text
     laid = re.search(r"Rehearsed .*?: (\d+) strokes", reply.text).group(1)
     assert f"Counted <script>: {laid} strokes" in counted.text
+
+
+# -- what the calls themselves said ----------------------------------------------------
+#
+# The half of the post-pass check that never arrived here. Every call-time warning was a
+# `warnings.warn` going to this process's stderr, which a painter working through a
+# client never sees -- so `the tool warns you` was false through this server for
+# everything except the check above. Since 0.6.0 each one carries a code and rides in
+# the returned text; see `easel.notices`.
+def test_run_hands_back_what_the_calls_said(call, painting):
+    reply = call("run", session=painting,
+                 script="s.block_in(cell('D5'), 'flat', 'ochre', size=0.001)\n"
+                        "s.block_in(cell('E5'), 'flat', 'ochre', size=0.001)\n")
+    assert "at the call" in reply.text
+    # Said once for the two calls that said it, and above the check it belongs beside.
+    assert reply.text.count("chisel-blank") == 1
+    assert "(2 calls)" in reply.text
+    assert reply.text.index("at the call") < reply.text.index("check over this pass")
+
+
+def test_a_pass_that_raised_still_hands_back_what_it_said(call, painting):
+    reply = call("run", session=painting,
+                 script="s.block_in(cell('D5'), 'flat', 'ochre', size=0.001)\n"
+                        "raise ValueError('stopped here')\n")
+    assert "chisel-blank" in reply.text and "script raised" in reply.text
+
+
+def test_a_quote_says_why_it_is_that_large(call, painting):
+    """A mass with `direction` left off costing many times its own axis is exactly what
+    a quote is asked for -- and the walk that works it out happens on a throwaway copy,
+    so what it says has to be carried back to the session to reach here at all."""
+    tall = {"shape": {"ellipse": "D5", "rx": 0.02, "ry": 0.30}, "brush": "flat",
+            "color": "ochre", "size": 0.01}
+    assert "direction-default" in call("cost", session=painting, plan=tall).text
+
+
+def test_rehearse_and_preview_say_what_they_found(call, painting):
+    small = {"shape": {"ellipse": "D5", "rx": 0.10, "ry": 0.10}, "brush": "flat",
+             "color": "ochre", "size": 0.001}
+    assert "chisel-blank" in call("rehearse", session=painting, plan=small).text
+    assert "chisel-blank" in call("preview", session=painting, plan=small).text
+
+
+def test_explain_hands_back_the_passage_that_measured_it(call):
+    """Where the reason goes once its paragraph leaves the reading path: not deleted,
+    handed over at the moment it applies -- and a client has no repository to read."""
+    reply = call("explain", code="chisel-blank")
+    assert "What a solid mass actually lands at" in reply.text
+    assert "chisel-blank (fact)" in reply.text
+
+    everything = call("explain").text
+    assert "chisel-blank" in everything and "smudge-wide" in everything
+
+    with pytest.raises(ToolError, match="unknown notice"):
+        call("explain", code="chisel-blanc")

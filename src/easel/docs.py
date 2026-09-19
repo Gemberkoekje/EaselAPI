@@ -100,19 +100,62 @@ def read(name: str = "guide") -> str:
     return document_path(name).read_text(encoding="utf-8")
 
 
+def section(name: str, heading: str) -> str:
+    """One section of a document: from `heading` to the next one of its level or above.
+
+    `easel explain <code>` is built on this. A notice's registry row points at the
+    heading that holds its measurement, and this is what turns that pointer into the
+    passage -- so a reason that leaves the reading path is not deleted, it is
+    delivered at the moment it applies. See `easel.notices`.
+
+    `heading` is the heading line exactly as the document writes it, `#`s and all
+    (`"### The band across a wedge"`). Matched against a whole line rather than
+    anywhere in the text, so a heading quoted in a table or a link is not mistaken
+    for the section itself.
+
+    Fenced code blocks are stepped over: half the passages here end in an example,
+    and a Python comment is a line starting with `#` that has nothing to do with the
+    document's structure.
+
+    Raises `KeyError` for a heading the document does not have, which is what makes
+    a renamed heading a broken test rather than an empty answer.
+    """
+    lines = read(name).splitlines(keepends=True)
+    level = len(heading) - len(heading.lstrip("#"))
+    start = next((i for i, line in enumerate(lines) if line.rstrip() == heading), None)
+    if start is None:
+        raise KeyError(f"{DOCUMENTS[name]} has no heading {heading!r}")
+
+    end, fenced = len(lines), False
+    for j in range(start + 1, len(lines)):
+        text = lines[j].lstrip()
+        if text.startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        hashes = len(text) - len(text.lstrip("#"))
+        if 0 < hashes <= level and text[hashes:hashes + 1] == " ":
+            end = j
+            break
+
+    body = "".join(lines[start:end]).rstrip()
+    # The `---` rule that separates two sections belongs to neither of them.
+    if body.endswith("\n---"):
+        body = body[: -len("\n---")].rstrip()
+    return body + "\n"
+
+
 def front_page() -> str:
     """`The first hour` on its own: the whole method, and enough to start.
 
     Falls back to the entire guide if the heading has been renamed, on the
     grounds that too much of the right document beats an empty page.
     """
-    text = read("guide")
-    start = text.find(FRONT_PAGE)
-    if start == -1:
-        return text
-
-    end = text.find("\n## ", start + len(FRONT_PAGE))
-    return text[start:] if end == -1 else text[start:end].rstrip() + "\n"
+    try:
+        return section("guide", FRONT_PAGE)
+    except KeyError:
+        return read("guide")
 
 
 def write(text: str) -> None:

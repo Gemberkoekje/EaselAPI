@@ -31,7 +31,47 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-Nothing yet.
+### One channel for everything the engine says at a call
+
+Step 3 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream A). Nothing the engine
+says has changed its words; what has changed is that it is now one thing with a name,
+and that it reaches the painter it was said to.
+
+**The problem.** Every call-time warning was a bare `warnings.warn(str)` from one of
+twelve `_check_*` functions, two methods and three inline sites. No class, no code, no
+collection — so a pass could say four things and the only place they existed was the
+console's scrollback; **and through the MCP server they reached nobody at all**, because
+`mcp_server.py` never touched `warnings` and converts exceptions only. For a painter
+working through a client, *the tool warns you* was false for everything except
+`report()`.
+
+- **`easel.notices`**, new: `EaselWarning`, which subclasses `UserWarning` and carries a
+  stable `code`; `Notice`; and `NOTICES`, the registry of all 21 codes with what each one
+  is and which passage of the guide measured it. Each is a **fact** — a number about what
+  this call will do — or a **habit**, a rule of thumb a painter can be right to break.
+- **`Session._notify`**, and all 21 warning sites converted to it. A notice is kept on the
+  session and then warned, so a painter at a Python prompt sees exactly what they saw
+  before. `s.notices(since=None)` is the list; it round-trips through the `.easel` file
+  under a new `notices` key, which older builds do not read, so a 0.5.0 Easel still opens
+  a file this one wrote.
+- **Notices live beside `history.records`, never in it.** A mark's texture is seeded from
+  its place in the log, so anything new that took an index would repaint every painting
+  ever made. The *planning verbs leave nothing behind* test covers it, and caught a
+  mistake in this very change.
+- **`easel run` prints them in one block with the post-pass check**: *at the call* first,
+  *over the pass* second, facts before habits, one line per code however many calls
+  tripped it, with the stderr copy filtered so it is said once and in order. A pass that
+  raised says them too, beside the error. The MCP `run`, `cost`, `preview` and `rehearse`
+  results carry the same block — which is the half of this that did not exist.
+- **`easel explain <code>`**, `s.explain(code)`, and an `explain` MCP tool: the passage of
+  `CALIBRATION.md` or `PAINTING.md` that holds the measurement. This is where a rule's
+  reason goes when its paragraph leaves the reading path — not deleted, delivered at the
+  moment it applies. `easel.docs.section()` is the new function underneath it.
+- **`REFERENCE.md` grows *What the tool will tell you***, a row per code, and
+  `tests/test_notices.py` holds the three surfaces against each other: every code the
+  engine says is registered, every registered code is a row of that table, and every row
+  points at a heading that exists in the document it names. A renamed heading in the
+  guide is now a failing test rather than an empty answer.
 
 **0.5.0 is not released, and this section said for a day that it had been.** The line
 here announced it as done and told the next change to bump the version — written when
