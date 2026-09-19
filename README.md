@@ -104,6 +104,16 @@ pip install easel-paint          # the engine, the CLI and the Python API
 pip install "easel-paint[mcp]"   # and the MCP server
 ```
 
+```python
+from easel import Session, blob, cell      # the import the documents teach
+import easel_paint                         # the same engine under the installed name
+```
+
+**The distribution is `easel-paint`, never `easel`.** PyPI carries an unrelated
+package called `easel`, so `pip install easel` gets somebody else's. Both import
+names work here — `easel_paint` re-exports `easel` — and every example is written
+with the short one.
+
 From a checkout, `pip install -e .` and `pip install -e ".[mcp]"` do the same two
 things.
 

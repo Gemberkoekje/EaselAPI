@@ -229,6 +229,15 @@ def region(name: str) -> Region:
 
     Accepts hyphens or underscores: ``region("top-left")`` and ``region("top_left")``
     are the same. See :data:`REGION_NAMES` for the full list.
+
+    **The nine are a 3x3.** ``top``, ``bottom``, ``left``, ``right`` and ``center``
+    are cells of the grid of thirds, so ``region("bottom")`` is a **ninth** of the
+    canvas -- x ``0.333``-``0.667``, y ``0.667``-``1.000`` -- and not the bottom
+    third. A painter reached for it as *the foreground band*, blocked in a
+    foreground, and got the middle of one. The full-width places are
+    ``lower-band`` (y ``0.600``-``1.000``), ``lower-half`` and ``middle-band``; the
+    halves and the quarters are the other names below. Every extent is in
+    ``REFERENCE.md``'s *Places* table, and a :class:`Region` prints its own box.
     """
     key = str(name).strip().lower().replace("_", "-").replace(" ", "-")
     if key not in _NAMED:

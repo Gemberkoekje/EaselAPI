@@ -29,6 +29,14 @@ MAX_SNAPSHOTS = 24
 #: while bounding both memory and the size of a saved session.
 MAX_FRAMES = 200
 
+#: The long side a time-lapse frame is recorded at, unless the painter asks for
+#: another. It was unreachable from `Session` or the CLI until 0.6.0 -- a 1440x960
+#: painting had a 360x240 time-lapse and no way to say otherwise, and the frames are
+#: stored in the `.easel` file at that size, so raising it later could not help a
+#: painting already made. `Session(timelapse=<px>)` sets it, and
+#: `timelapse_gif(from_log=True)` rebuilds the film at any size from the log.
+DEFAULT_FRAME_PX = 360
+
 
 @dataclass
 class StrokeRecord:
@@ -77,6 +85,11 @@ class History:
         self.records: list[StrokeRecord] = []
         self._snapshots: list[dict] = []
         self._frames: list[np.ndarray] = []
+        # How many marks pass between the frames that are kept, and how many have
+        # passed since the last one. Both move only when the sequence is thinned:
+        # see :meth:`wants_frame`.
+        self._frame_stride = 1
+        self._since_frame = 0
 
     # -- log ---------------------------------------------------------------------
     def add(self, record: StrokeRecord) -> StrokeRecord:
@@ -102,16 +115,32 @@ class History:
     def _is_signature(record: StrokeRecord) -> bool:
         return "signature" in str(record.note).lower()
 
-    @property
-    def stroke_count(self) -> int:
-        """How many marks of paint have been paid for.
+    @staticmethod
+    def paid_marks(records) -> list[StrokeRecord]:
+        """The marks of paint that are charged, out of any run of records.
 
         Drawing and drying do not count, and neither do the first
-        :data:`SIGNATURE_ALLOWANCE` marks noted ``signature``.
+        :data:`SIGNATURE_ALLOWANCE` marks noted ``signature``. A list rather than a
+        count, because the other place that needs this needs the marks themselves:
+        :meth:`~easel.session.Session.report`'s subject line divides one set of
+        records by another, and built its total without this exemption -- so a
+        painting with three signature marks read *172 of 411* where the budget it is
+        compared against said 408, and the share was wrong by the same three marks.
         """
-        paint = [r for r in self.records if r.kind not in History.UNPAINTED_KINDS]
-        signed = sum(1 for r in paint if History._is_signature(r))
-        return len(paint) - min(signed, History.SIGNATURE_ALLOWANCE)
+        paint = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        free = History.SIGNATURE_ALLOWANCE
+        charged: list[StrokeRecord] = []
+        for record in paint:
+            if free and History._is_signature(record):
+                free -= 1
+                continue
+            charged.append(record)
+        return charged
+
+    @property
+    def stroke_count(self) -> int:
+        """How many marks of paint have been paid for."""
+        return len(History.paid_marks(self.records))
 
     def summary(self, last: int = 10) -> str:
         """A short text log of recent actions, for the painter to re-read."""
@@ -160,15 +189,36 @@ class History:
         if self._snapshots:
             self._snapshots.pop()
 
-    def pop_snapshots(self, n: int) -> dict | None:
-        """Take the state from ``n`` steps back, discarding what is undone."""
+    def pop_snapshots(self, n: int) -> list[dict] | None:
+        """The states to unwind to get ``n`` steps back, **newest first**.
+
+        A list rather than one state, because a snapshot may hold one box of the
+        canvas rather than all of it -- the box its own mark could reach. Restored
+        in this order, each one puts back what its mark covered, and the marks laid
+        after it have already been put back; a whole-canvas snapshot among them
+        simply overwrites what the ones after it restored, which is the same answer.
+        Returns ``None`` when there is nothing to unwind.
+        """
         if n <= 0 or not self._snapshots:
             return None
         n = min(n, len(self._snapshots))
-        snap = self._snapshots[-n]
+        unwind = self._snapshots[-1:-n - 1:-1]
         del self._snapshots[-n:]
         del self.records[-n:]
-        return snap
+        return unwind
+
+    def invalidate_snapshots(self) -> None:
+        """Forget that the canvas can be unwound at all -- not that it can be undone.
+
+        A boxed snapshot promises that its mark landed inside the box it was given.
+        Nothing has ever broken that promise (the box is the path's own reach with
+        the brush's jitter at six standard deviations on it, and a hard margin
+        besides), but if one ever did, restoring it would leave paint behind and say
+        nothing. So the stack is dropped instead, and
+        :meth:`easel.session.Session.undo` rebuilds from the log, which is exact and
+        is already how it undoes a session that came off disk.
+        """
+        self._snapshots.clear()
 
     @property
     def undo_depth(self) -> int:
@@ -176,7 +226,24 @@ class History:
         return len(self._snapshots)
 
     # -- time-lapse --------------------------------------------------------------
-    def add_frame(self, rgb8: np.ndarray, max_side: int = 360) -> None:
+    def wants_frame(self) -> bool:
+        """Whether the next mark's frame is one this time-lapse would keep.
+
+        Building a frame is the dearest thing a mark does that is not paint -- 42 ms
+        at 1024x768 and 60 ms at 1440x960 against 3.6 and 6.3 for the undo snapshot
+        (``CALIBRATION.md``, B15) -- and past :data:`MAX_FRAMES` the sequence is
+        thinned by halves anyway, so most of that work used to be done and then
+        thrown away. Once the stride has doubled, the frames that would be dropped
+        are simply not built: the time-lapse that comes out is the one that came out
+        before, for a fraction of the time.
+        """
+        self._since_frame += 1
+        if self._since_frame < self._frame_stride:
+            return False
+        self._since_frame = 0
+        return True
+
+    def add_frame(self, rgb8: np.ndarray, max_side: int = DEFAULT_FRAME_PX) -> None:
         """Record a small frame for the time-lapse."""
         img = Image.fromarray(rgb8, mode="RGB")
         longest = max(img.size)
@@ -188,8 +255,10 @@ class History:
         self._frames.append(np.asarray(img, dtype=np.uint8))
         if len(self._frames) > MAX_FRAMES:
             # Thin the sequence rather than dropping the beginning: the early
-            # block-in is the most interesting part of a time-lapse.
+            # block-in is the most interesting part of a time-lapse. From here on
+            # the frames that would be thinned away are not built at all.
             self._frames = self._frames[::2]
+            self._frame_stride *= 2
 
     def drop_last_frames(self, n: int) -> None:
         """Remove the most recent ``n`` time-lapse frames, for ``undo``.
@@ -217,7 +286,9 @@ class History:
         if not self._frames:
             raise ValueError(
                 "No time-lapse frames were recorded. Create the session with "
-                "timelapse=True, or call session.capture_frame() as you paint."
+                "timelapse=True, or call session.capture_frame() as you paint. "
+                "s.timelapse_gif(path, from_log=True) builds one from the log "
+                "instead, at whatever size you ask for."
             )
         if int(every) < 1:
             raise ValueError(

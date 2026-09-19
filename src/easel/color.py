@@ -145,6 +145,19 @@ def parse_color(value) -> np.ndarray:
         # pixel a stamp() using it ever touches -- which renders as solid black
         # with no error anywhere near the actual cause.
         raise ValueError(f"Colour components must be finite numbers, got {value!r}")
+    if float(arr.max()) > 1.0:
+        # A list of 0-255 integers, which is the form every other imaging library
+        # takes and the one form this one does not. It used to clip -- so a dark
+        # read off a photograph, [13, 12, 16], came back **white**, in silence, and
+        # PAINTING.md documented the trap rather than the engine detecting it. A
+        # documented trap the engine can see is a bug.
+        scaled = tuple(round(float(v) / 255.0, 4) for v in arr)
+        hexed = "#" + "".join(f"{int(round(min(float(v), 255.0))):02x}" for v in arr)
+        raise ValueError(
+            f"Colour components are 0..1, not 0..255: {value!r} would clip to white. "
+            f"Divide by 255 -- that is {scaled} -- or pass the hex it spells, "
+            f"{hexed!r}."
+        )
     return srgb_to_linear(np.clip(arr, 0.0, 1.0))
 
 

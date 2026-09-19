@@ -1263,10 +1263,14 @@ def test_solid_and_glaze_name_the_call_that_takes_them(tmp_path):
     a keyword belonging to a neighbouring call lands in ``**brush_overrides`` and comes
     back as ``Brush.__init__() got an unexpected keyword argument`` -- a class the
     painter never mentioned. Both of these are real arguments one call over, and the
-    reference lists them without saying which call takes them."""
+    reference lists them without saying which call takes them.
+
+    ``solid=`` is now an argument of the four verbs that lay a mass or a mark, so the
+    row that teaches it is left for the one call that does not take it because it
+    lays that pair already."""
     s = make(tmp_path)
-    with pytest.raises(TypeError, match=r"block_in\(\) argument"):
-        s.scumble("upper-half", "burnt_umber", "titanium_white", 4, solid=True)
+    with pytest.raises(TypeError, match="the burying recipe"):
+        s.cover("upper-half", "burnt_umber", solid=True)
     with pytest.raises(TypeError, match=r"stroke\(\) argument"):
         s.block_in("upper-half", "flat", "burnt_umber", glaze=True)
     with pytest.raises(TypeError, match="Did you mean load"):
@@ -3191,3 +3195,414 @@ def test_the_check_reads_the_paint_and_not_the_place(tmp_path):
         s.sample()
         s.sample(span("A1", "H8"))
     assert not caught, [str(w.message) for w in caught]
+
+
+# -- clip=, edge= and solid= on every verb that lays paint -----------------------------
+def _held_outside(s, place, before) -> float:
+    """The share of the pixels outside ``place`` that this session's paint moved.
+
+    *Outside* is where the place covers nothing at all, rather than where a pixel's
+    centre falls outside it: a clip multiplies by coverage, so the boundary's own
+    half-covered pixels take half a dab and are inside the promise.
+    """
+    outside = place.coverage(s.canvas.width, s.canvas.height) <= 0.0
+    moved = np.abs(s.canvas.rgb - before).sum(axis=2) > 1e-4
+    return float((moved & outside).sum()) / float(max(outside.sum(), 1))
+
+
+def test_every_verb_that_lays_paint_takes_clip(tmp_path):
+    """``clip=`` was a named argument of ``stroke`` alone, so the four mass verbs came
+    back with *clip= is not a brush field* -- an error that named neither ``stroke``
+    nor ``edge="hard"``, the two things that would have answered the question. A mass
+    is the call that most wants to end on a line rather than on its own tip."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    window = polygon([(0.05, 0.05), (0.45, 0.05), (0.45, 0.95), (0.05, 0.95)],
+                     name="window")
+    for lay in (
+        lambda: s.block_in(span("C3", "F6"), "flat", "c", size=0.05, clip=window),
+        lambda: s.sweep([(0.2, 0.30), (0.8, 0.34)], "flat", "c", into="down",
+                        depth=0.12, size=0.05, clip=window),
+        lambda: s.cover(span("C3", "F6"), "c", size=0.05, clip=window),
+        lambda: s.scumble(span("C3", "F6"), "c", "titanium_white", 4, size=0.05,
+                          clip=window),
+    ):
+        before = s.canvas.rgb.copy()
+        assert lay(), "the call lays paint"
+        assert _held_outside(s, window, before) == 0.0
+
+
+def test_a_mass_held_by_two_places_lands_where_they_agree(tmp_path):
+    """``edge="hard"`` is a clip pointed at the mass's own outline, so a mass given both
+    is held by both. The log carries one outline as it always has and a pair as a pair,
+    which is what makes a held mass replay as itself."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    mass = polygon([(0.2, 0.2), (0.8, 0.25), (0.7, 0.8), (0.25, 0.7)], name="mass")
+    window = polygon([(0.0, 0.0), (0.5, 0.0), (0.5, 1.0), (0.0, 1.0)], name="window")
+    before = s.canvas.rgb.copy()
+    records = s.block_in(mass, "flat", "c", size=0.05, edge="hard", clip=window)
+    assert _held_outside(s, mass, before) == 0.0
+    assert _held_outside(s, window, before) == 0.0
+    # One hold is logged as one outline, as it has been since edge="hard" was built;
+    # two are logged as two, so an older build refuses the file rather than reading
+    # the pair as a single outline and painting something else.
+    held = records[0].params["clip"]
+    assert len(held) == 2 and isinstance(held[0][0], list)
+    one = s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "c", size=0.05, clip=mass)
+    assert isinstance(one.params["clip"][0][0], float)
+    assert np.array_equal(s.replay().canvas.rgb, s.canvas.rgb)
+
+
+def test_scumble_takes_the_hard_edge_a_mass_takes(tmp_path):
+    """A wide band scumbled at an angle paints up to three times its own area, because
+    the auto brush is measured across the band's bounding box. ``edge="hard"`` is the
+    remedy the plan names, and it was a ``block_in`` word: on a scumble it raised an
+    error naming ``block_in()`` and ``sweep()`` and not the caller."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    band = span("B3", "G5")
+    before = s.canvas.rgb.copy()
+    s.scumble(band, "c", "titanium_white", 8, direction=30, edge="hard")
+    assert _held_outside(s, polygon(band), before) == 0.0
+    loose = make(tmp_path)
+    loose.palette["c"] = loose.palette.mix("ultramarine", "burnt_umber", 0.4)
+    was = loose.canvas.rgb.copy()
+    loose.scumble(band, "c", "titanium_white", 8, direction=30)
+    assert _held_outside(loose, polygon(band), was) > 0.05
+    with pytest.raises(ValueError, match="a passage has none to draw"):
+        s.scumble(band, "c", "titanium_white", 8, edge="clean")
+
+
+def test_solid_is_taken_wherever_it_has_a_meaning(tmp_path):
+    """``solid=True`` is ``load=1.0, load_falloff=0.0`` -- the clause painters type by
+    hand most often, and the one ``block_in`` has always had a word for. Everywhere
+    else it raised a teaching error that explained the pair rather than taking it."""
+    def paint(**kw):
+        s = make(tmp_path)
+        s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+        s.stroke([(0.1, 0.2), (0.9, 0.25)], "flat", "c", size=0.06, **kw)
+        s.sweep([(0.15, 0.5), (0.85, 0.55)], "flat", "c", into="down", depth=0.1,
+                size=0.05, **kw)
+        s.scumble(span("B6", "G8"), "c", "titanium_white", 4, size=0.05, **kw)
+        return s.canvas.rgb
+
+    assert np.array_equal(paint(solid=True), paint(load=1.0, load_falloff=0.0))
+    # ...and an explicit load= beside it still wins, as it does on block_in.
+    assert np.array_equal(paint(solid=True, load=0.3), paint(load=0.3, load_falloff=0.0))
+    s = make(tmp_path)
+    with pytest.raises(TypeError, match="lays that pair already"):
+        s.cover("upper-half", "burnt_umber", solid=True)
+
+
+def test_a_band_scumbled_the_short_way_says_its_passes_are_dabs(tmp_path):
+    """The ends check returned at once for a rectangle, so the guide's own ``span(...)``
+    bands could never trip it: a band crossed the short way came back as a row of dabs
+    blooming past it, in silence. A band is not a wedge -- its passes vary only at the
+    corners -- so what it is asked is whether the whole band is narrower than its
+    brush."""
+    s = make(tmp_path)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    with pytest.warns(UserWarning, match="every pass is shorter"):
+        s.scumble(span("A1", "B8"), "c", "titanium_white", 8, direction="horizontal")
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.scumble(span("A1", "B8"), "c", "titanium_white", 8)            # the long way
+        s.scumble(span("A1", "H4"), "c", "titanium_white", 8, direction=30)
+
+
+# -- a plan that holds every verb that lays a passage ----------------------------------
+def test_a_passage_and_a_burial_are_planned_priced_and_painted_as_themselves(tmp_path):
+    """The planner knew three kinds -- mark, mass, sweep -- so a ``scumble`` or a
+    ``cover`` could not be planned, priced, previewed or rehearsed at all: the first
+    raised *a stroke spec needs 'points'* and the second was quoted as something else.
+    They are the two verbs a painter reaches for after looking at what is there, which
+    is exactly when a plan is being written."""
+    s = make(tmp_path)
+    s.palette["a"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.palette["b"] = s.palette.tint("yellow_ochre", 0.5)
+    plan = [{"band": span("B3", "G5"), "color_a": "a", "color_b": "b", "n": 8},
+            {"cover": cell("D7"), "color": "a"},
+            {"shape": ellipse(span("C6", "E8")), "color_a": "a", "color_b": "b",
+             "n": 5, "direction": "inward"}]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quoted = s.cost(plan, share=0)
+        line = s.cost_line(plan)
+        s.preview(plan)
+        s.rehearse(plan)
+        laid = s.paint(plan)
+    assert quoted == len(laid), line
+    assert "passes stepping across" in line and "rings stepping in" in line
+    # A rehearsal is free, and the plan it rehearsed is the plan it painted.
+    assert s.spent == len(laid)
+
+
+def test_a_scumble_shaped_plan_is_not_priced_as_a_block_in(tmp_path):
+    """The silent half of that bug: an entry carrying ``shape=`` and the two colours a
+    passage steps between went down the mass branch and was quoted as a block-in --
+    five where the call lays eight -- and raised only when ``paint`` reached the keys
+    ``block_in`` does not take. The two colours are what tell a passage from a mass
+    filling the same place."""
+    s = make(tmp_path)
+    s.palette["a"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.palette["b"] = s.palette.tint("yellow_ochre", 0.5)
+    band = {"shape": ellipse(span("C3", "F5")), "color_a": "a", "color_b": "b", "n": 8}
+    mass = {"shape": ellipse(span("C3", "F5")), "color": "a"}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        assert s.cost(band, share=0) == 8
+        assert s.cost(band, share=0) != s.cost(mass, share=0)
+        assert len(s.paint(band)) == 8
+
+
+def test_a_plan_that_cannot_be_painted_is_not_priced(tmp_path):
+    """``cost`` walks the passes and never touches the brush overrides, so a misspelled
+    ``size`` priced happily at the default and raised when the same plan was painted --
+    a quote for a plan that cannot be painted, which is worse than no quote. The MCP
+    server has refused these since it was built; the library priced them."""
+    s = make(tmp_path)
+    for entry, says in (
+        ({"shape": cell("D5"), "color": "burnt_umber", "sise": 0.04}, "A mass"),
+        ({"points": [(0.2, 0.2), (0.8, 0.8)], "to_value": 0.5}, "A stroke"),
+        ({"band": span("B3", "G5"), "color_a": "burnt_umber", "color_b": "white",
+          "into": "down"}, "A scumble"),
+        ({"cover": cell("D5"), "color": "burnt_umber", "wander": False}, "A cover"),
+    ):
+        with pytest.raises(ValueError, match=says):
+            s.cost(entry, share=0)
+
+
+# -- the count the subject line divides by ---------------------------------------------
+def test_the_subject_line_counts_what_the_budget_counts(tmp_path):
+    """*subject: 172 of 411 marks* against a budget that said 408: the line built its
+    total out of every mark of paint, and the budget exempts the first five marks noted
+    ``signature``. Two counts of the same painting, printed a line apart."""
+    s = make(tmp_path)
+    for i in range(5):
+        s.stroke([(0.1 + i * 0.1, 0.3), (0.2 + i * 0.1, 0.4)], "flat", "burnt_umber",
+                 size=0.04, note="subject rock")
+    for i in range(3):
+        s.stroke([(0.80, 0.90 - i * 0.02), (0.88, 0.92 - i * 0.02)], "liner",
+                 "burnt_umber", note="signature")
+    s.pencil([(0.1, 0.1), (0.2, 0.2)])
+    assert s.stroke_count == 5
+    line = [ln for ln in s.report().splitlines() if "subject:" in ln][0]
+    assert "5 of 5 marks" in line and "(100%)" in line
+
+
+# -- three namespaces, and the one with no way out -------------------------------------
+def test_a_ground_is_a_colour_and_says_so_when_it_is_used_as_one(tmp_path):
+    """A ground is named in the same breath as a size and then reached for as a colour,
+    and the palette listed every pigment and slot without noticing that the name it was
+    handed is a valid ground. Nothing exposed the ground as a colour either, so sampling
+    an unpainted corner -- which measures the tooth's shading too -- was the only route
+    to the value a painter can plainly see."""
+    s = make(tmp_path)
+    with pytest.raises(KeyError, match="is a ground, not a pigment"):
+        s.palette["toned_grey"]
+    with pytest.raises(ValueError, match="is a pigment, not a ground"):
+        Session(80, 60, ground="ultramarine", out_dir=tmp_path)
+    # ...and the ground is a colour, ready for the calls that take one.
+    assert s.palette.value_of(s.ground) == pytest.approx(
+        s.palette.value_of(s.sample(cell("A1"))), abs=0.02)
+    s.palette["sky"] = s.palette.mix(s.ground, "ultramarine", 0.3)
+    s.block_in(cell("D5"), "flat", s.palette.at_value(s.ground, 0.62), size=0.05)
+
+
+# -- a documented trap the engine can detect -------------------------------------------
+def test_a_0_to_255_colour_raises_and_names_both_fixes(tmp_path):
+    """It clamped, so `[13, 12, 16]` -- a dark read straight off a photograph -- came
+    back **white**, in silence, and `PAINTING.md` documented the trap. A documented trap
+    the engine can see is a bug."""
+    s = make(tmp_path)
+    with pytest.raises(ValueError, match=r"0\.\.1, not 0\.\.255"):
+        s.stroke([(0.2, 0.2), (0.6, 0.6)], "flat", [13, 12, 16])
+    try:
+        s.palette["dark"] = [200, 100, 50]
+    except ValueError as caught:
+        assert "(0.7843, 0.3922, 0.1961)" in str(caught) and "#c86432" in str(caught)
+    # The form it names works, and so does every form that always did.
+    s.palette["dark"] = [0.051, 0.047, 0.063]
+    s.palette["same"] = "#0d0c10"
+
+
+# -- the holes inside a solid mass, and whose they are ---------------------------------
+def test_a_solid_comb_says_what_share_of_the_mass_comes_back_bare(tmp_path):
+    """Reported twice as *shaped block-in paths wandering apart*, and it is neither the
+    paths nor the shape: a `flat` leaves 0.0000% bare at every size and density tried,
+    and a comb leaves holes because `solid=` sets `load` and `load_falloff` and nothing
+    else. A fact at the call with the prices on it, and no default moved -- a comb is
+    the right brush for anything with strands in it."""
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="closes the gaps along each pass"):
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04, solid=True)
+    # The same, typed out by hand, is the same mass and says the same thing.
+    with pytest.warns(UserWarning, match="3.16%"):
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04,
+                   load=1.0, load_falloff=0.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        s.block_in(span("B3", "F6"), "flat", "burnt_umber", size=0.04, solid=True)
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04, solid=True,
+                   density=1.2)
+        s.block_in(span("B3", "F6"), "bristle", "burnt_umber", size=0.04)
+
+
+# -- a mass laid over paint that is still wet ------------------------------------------
+def test_a_mass_can_dry_what_it_is_laid_over_first(tmp_path):
+    """The rings that cost one painter their only `undo` were laid over a bezel still
+    wet from the pass before: a film at `opacity=0.15` leaves about 0.13 wetness behind,
+    which is past the 0.10 that makes a new mass. `cover()` has dried what it is about
+    to bury since it was built; a mass could not, short of a `dry()` of its own."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    s.palette["pale"] = s.palette.tint("yellow_ochre", 0.6)
+
+    def over_wet(**kw):
+        t = s.scratch()
+        t.block_in(cell("D5"), "flat", "dark", size=0.05, solid=True)
+        t.block_in(cell("D5"), "flat", "pale", size=0.05, solid=True, **kw)
+        return t.palette.value_of(t.sample(cell("D5").inset(0.02)))
+
+    wet, dried = over_wet(), over_wet(dry_first=True)
+    dark = s.palette.value_of(s.palette["dark"])
+    pale = s.palette.value_of(s.palette["pale"])
+    # Wet, the pale mass takes some of the dark under it and lands between the two;
+    # dried, it lands as itself. Neither reaches the mixture exactly -- a mass is
+    # paint over paint, not a fill.
+    assert dark < wet < dried < pale
+    assert dried - wet > 0.02
+
+
+# -- the time-lapse: its size, and where a rehearsal's frames are -----------------------
+def test_a_rehearsal_says_where_the_frames_are(tmp_path):
+    """A rehearsal copy is created with the time-lapse off -- a film of a scrap of
+    canvas is not what anybody wants -- so ``timelapse_gif`` on one raised *No
+    time-lapse frames were recorded. Create the session with `timelapse=True`*, which
+    is the one thing the painting already did."""
+    s = make(tmp_path, timelapse=True)
+    s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    trial = s.scratch()
+    trial.stroke([(0.1, 0.6), (0.9, 0.6)], "flat", "burnt_umber", size=0.05)
+    with pytest.raises(ValueError, match="rehearsal copy"):
+        trial.timelapse_gif(tmp_path / "nope.gif")
+    with pytest.raises(ValueError, match="rehearsal copy"):
+        trial.contact_sheet(tmp_path / "nope.png")
+    # The painting it came from has them, which is what the message says.
+    assert s.timelapse_gif(tmp_path / "yes.gif").exists()
+
+
+def test_the_frame_size_is_reachable_and_the_film_can_be_rebuilt(tmp_path):
+    """Frames were recorded at 360 px beside a 1440 px painting, stored in the .easel
+    file at that size, and nothing on the session or the CLI could ask for another --
+    so a painting already made could not be helped. Two answers: say the size up
+    front, or rebuild the film from the log afterwards, which needs no frames at all."""
+    s = make(tmp_path, timelapse=120)
+    for i in range(4):
+        s.stroke([(0.1, 0.2 + i * 0.15), (0.9, 0.25 + i * 0.15)], "flat",
+                 "burnt_umber", size=0.05)
+    assert s.frame_px == 120
+    # A frame is downsampled by a whole number of pixels, so the size asked for is a
+    # ceiling rather than an exact width -- and it is a real one: left alone, this
+    # canvas is under the 360 default and records its frames full size.
+    assert max(Image.open(s.timelapse_gif(tmp_path / "small.gif")).size) <= 120
+    # ...and from the log, at whatever size is asked for, this painting's own by default.
+    assert max(Image.open(s.timelapse_gif(tmp_path / "big.gif", from_log=True)).size) == 320
+    assert 120 < max(Image.open(
+        s.timelapse_gif(tmp_path / "mid.gif", from_log=True, scale=200)).size) <= 200
+    # A painting that recorded nothing is the case this really answers.
+    off = make(tmp_path, timelapse=False)
+    off.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    with pytest.raises(ValueError, match="No time-lapse frames"):
+        off.timelapse_gif(tmp_path / "none.gif")
+    assert off.timelapse_gif(tmp_path / "rebuilt.gif", from_log=True).exists()
+
+
+def test_a_mark_snapshots_the_box_it_can_reach_and_undoes_exactly(tmp_path):
+    """Every stroke copied the whole canvas for undo -- 33 MB at 1440x960, about 800 MB
+    over the twenty-four kept, and 6.3 ms before a dab lands. A mark touches a few
+    percent of a canvas. The box is the path's own reach with the brush's jitter at six
+    standard deviations on it, and undo is exact or it is nothing."""
+    s = make(tmp_path, timelapse=False)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.block_in("upper-half", "bristle", "c", size=0.08, density=0.7)
+    before, wet_before = s.canvas.rgb.copy(), s.canvas.wetness.copy()
+    s.dab(0.5, 0.7, "round_hard", "c", size=0.05)
+    s.stroke([(0.15, 0.8), (0.85, 0.78)], "flat", "c", size=0.04)
+    kept = s.history._snapshots[-1]
+    assert kept["box"] is not None
+    assert kept["rgb"].nbytes < s.canvas.rgb.nbytes / 4
+    assert s.undo(2) == 2
+    assert np.array_equal(before, s.canvas.rgb)
+    assert np.array_equal(wet_before, s.canvas.wetness)
+
+
+def test_a_long_painting_stops_building_frames_it_would_throw_away(tmp_path,
+                                                                   monkeypatch):
+    """Past MAX_FRAMES the sequence is thinned by halves, so most of the frames a long
+    painting built were built and then dropped -- at 42 ms each, on the dearest thing a
+    mark does that is not paint. The film is the same one; the work is not done."""
+    from easel.canvas import Canvas
+    from easel.history import MAX_FRAMES
+
+    built = []
+    real = Canvas.thumbnail_srgb8
+
+    def counted(self, *args, **kwargs):
+        built.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(Canvas, "thumbnail_srgb8", counted)
+    s = make(tmp_path, timelapse=True)
+    marks = MAX_FRAMES * 3
+    for i in range(marks):
+        s.dab(0.05 + (i % 20) * 0.045, 0.05 + (i // 20) * 0.03, "round_hard",
+              "burnt_umber", size=0.01)
+    assert s.history.frame_count <= MAX_FRAMES
+    assert len(built) < marks * 0.75
+
+
+# -- calibrating a mark before committing to it ----------------------------------------
+def test_one_sheet_of_the_same_mark_at_several_settings(tmp_path):
+    """*Easier calibration of size, load and pressure before committing.* A rehearsal
+    already answers it one setting at a time, which makes four sizes four rehearsals,
+    four whole-canvas renders, and four pictures nobody can hold side by side -- and a
+    question about size is a question only comparison answers."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plan = [{"points": [(0.3, 0.4), (0.6, 0.55)], "brush": "round_hard",
+             "color": "dark"}]
+    sheet = s.rehearse(plan, region=span("C3", "F6"),
+                       vary={"size": [0.01, 0.02, 0.04, 0.07]})
+    one = s.rehearse(plan, region=span("C3", "F6"))
+    wide, tall = Image.open(sheet).size
+    was_wide, was_tall = Image.open(one).size
+    # Four panels of the same place, side by side, inside the long side asked for --
+    # against one rehearsal of it, which is the shape of the place itself.
+    assert wide > 3 * tall and was_wide < 2 * was_tall
+    assert s.spent == 0                                 # free, like any rehearsal
+    # Two arguments vary together, which is why there is a ceiling on how many.
+    s.rehearse(plan, vary={"size": [0.02, 0.05], "pressure": ["taper", "even"]})
+    with pytest.raises(ValueError, match="past the 12"):
+        s.rehearse(plan, vary={"size": [0.01, 0.02, 0.04, 0.07],
+                               "load": [0.2, 0.5, 1.0, 1.0]})
+    with pytest.raises(ValueError, match="nothing to try"):
+        s.rehearse(plan, vary={"size": []})
+
+
+def test_a_rehearsed_setting_is_the_one_that_lands(tmp_path):
+    """The whole bargain of a rehearsal: what it shows is what the painting gets. A
+    sheet spends no stream either -- each panel is its own copy -- so the setting
+    chosen off it lands as it was shown."""
+    s = make(tmp_path)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plan = [{"points": [(0.3, 0.4), (0.6, 0.55)], "brush": "round_hard",
+             "color": "dark", "size": 0.04}]
+    s.rehearse(plan, vary={"size": [0.01, 0.02, 0.04]})
+    after_sheet = s.scratch()
+    after_sheet.paint(plan)
+    plain = make(tmp_path)
+    plain.palette["dark"] = plain.palette.mix("ultramarine", "burnt_umber", 0.45)
+    plain.paint(plan)
+    assert np.array_equal(after_sheet.canvas.rgb, plain.canvas.rgb)

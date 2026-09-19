@@ -7,11 +7,11 @@ this: yes, if you can run Python or call an MCP server, and if you can look at a
 you have made. Start with the code below, then read `PAINTER.md`.
 
 ```bash
-pip install easel-paint
+pip install easel-paint          # never `pip install easel` -- that is somebody else's
 ```
 
 ```python
-from easel import Session, blob, cell
+from easel import Session, blob, cell      # `import easel_paint` is the same engine
 
 s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
 s.palette["shadow"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
