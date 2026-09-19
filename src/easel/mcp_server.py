@@ -487,7 +487,7 @@ def build_server() -> MCPServer:
     @_tool
     def new(session: str, size: str = "1024x768", texture: str = "linen",
             ground: str = "white", seed: int = 0, out_dir: str = "out",
-            timelapse: bool = True, force: bool = False,
+            timelapse: bool | int = True, force: bool = False,
             budget: int | None = None) -> str:
         """Create a session file: the canvas, and the painting's only state.
 
@@ -499,7 +499,9 @@ def build_server() -> MCPServer:
                 Painting on white is the hardest thing to judge values against.
             seed: the determinism seed. Same seed and same calls, same painting.
             out_dir: where look(), preview() and compare() write their PNGs.
-            timelapse: record a frame after every mark, for the time-lapse.
+            timelapse: record a frame after every mark, for the time-lapse. A
+                number is the frame's long side in pixels; the default is 360, and
+                a frame is the dearest thing a mark does that is not paint.
             force: overwrite an existing session file.
             budget: how many strokes this painting is allowed. Nothing is refused
                 when it runs out, but `run` then reports spent and remaining and
@@ -814,7 +816,7 @@ def build_server() -> MCPServer:
     @server.tool()
     @_tool
     def timelapse(session: str, output: str, fps: float = 8.0, every: int = 1,
-                  scale: int | None = None) -> str:
+                  scale: int | None = None, from_log: bool = False) -> str:
         """Write the painting happening: .gif for the animation, .png for a contact sheet.
 
         Args:
@@ -825,12 +827,19 @@ def build_server() -> MCPServer:
                 stroke, so a couple of hundred marks make a couple of megabytes at
                 every=1 and a third of that at every=3, reading the same. The
                 finished painting is always the last frame.
-            scale: long side in pixels (GIF only). Frames are recorded at 360.
+            scale: long side in pixels (GIF only). Frames are recorded at 360
+                unless the session asked for another size, and this only shrinks
+                them -- with from_log it is the size they are built at instead.
+            from_log: rebuild the frames by replaying the painting rather than using
+                the ones it recorded. The whole painting is in the log, so the film
+                can be made at any resolution afterwards -- including for a painting
+                that recorded no frames at all. Costs a full repaint.
         """
         s = Session.load(session)
         out = Path(output)
         path = (s.contact_sheet(out) if out.suffix.lower() == ".png"
-                else s.timelapse_gif(out, fps=fps, every=every, scale=scale))
+                else s.timelapse_gif(out, fps=fps, every=every, scale=scale,
+                                     from_log=from_log))
         return str(path)
 
     @server.tool()

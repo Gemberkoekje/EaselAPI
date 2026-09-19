@@ -307,7 +307,9 @@ s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record
 s.export("painting.png", impasto=True, sketch=True)
-s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None)
+s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None, from_log=False)
+                                                # from_log rebuilds the frames by
+                                                # replaying, at any size
 s.contact_sheet("sheet.png", columns=6)
 ```
 
@@ -406,18 +408,21 @@ before it.
 ```python
 Session(width=1024, height=768, texture="linen", ground="white", seed=0,
         timelapse=True, out_dir="out", texture_strength=1.0, budget=None)
-s.size   s.aspect   s.stroke_count   s.spent   s.remaining   s.budget_line()
+                   # timelapse=<px> is the frame's long side; the default is 360
+s.size   s.aspect   s.ground   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
 s.guides s.guide(points, note="")        s.unguide(note=None)
 s.scratch(count_only=False)   # a throwaway copy: the painter's scrap of canvas,
 s.undo(n)          # counting on log entries, not marks you paid for; puts the
                    # stream back too. count_only skips the pixel work
-s.replay(upto=None)
+s.replay(upto=None, frames=None)   # frames=<px> records a time-lapse as it rebuilds,
+                   # which is what timelapse_gif(from_log=True) is made of: the film
+                   # at any size, from a painting that recorded no frames at all
 s.save(path)       Session.load(path)
 ```
 
 ```bash
-easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
+easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
@@ -425,7 +430,7 @@ easel compare p.easel ref.jpg [--region D4]
 easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3
 easel export p.easel painting.png
-easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240]
+easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240] [--from-log]
 easel log p.easel [-n 20] [--check]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]

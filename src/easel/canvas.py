@@ -31,6 +31,7 @@ import math
 import numpy as np
 
 from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_to_linear
+from easel.history import DEFAULT_FRAME_PX
 from easel.texture import make_texture, value_noise
 
 __all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
@@ -567,7 +568,7 @@ class Canvas:
         """
         return (linear_to_srgb(self.composite(impasto, sketch)) * 255.0 + 0.5).astype(np.uint8)
 
-    def thumbnail_srgb8(self, max_side: int = 360) -> np.ndarray:
+    def thumbnail_srgb8(self, max_side: int = DEFAULT_FRAME_PX) -> np.ndarray:
         """A small 8-bit sRGB view, for time-lapse frames.
 
         Downsamples in linear space *before* the sRGB conversion. Converting the
@@ -603,23 +604,59 @@ class Canvas:
         return (linear_to_srgb(lum) * 255.0 + 0.5).astype(np.uint8)
 
     # -- state -----------------------------------------------------------------------
-    def snapshot(self) -> dict[str, np.ndarray]:
-        """A copy of every mutable channel, for undo."""
+    def snapshot(self, box: tuple[int, int, int, int] | None = None) -> dict:
+        """A copy of every mutable channel, for undo -- of all of it, or of one box.
+
+        A mark touches a few percent of a canvas and the undo stack used to keep
+        twenty-four copies of the whole of it: about **33 MB a stroke** at 1440x960,
+        so roughly **800 MB resident**, and 6.3 ms of copying before a dab lands
+        (``CALIBRATION.md``, B15). Given the box the mark can reach, this copies that
+        box instead, and :meth:`restore` writes it back where it came from. The
+        stack is then unwound newest first -- see
+        :meth:`easel.history.History.pop_snapshots` -- because a box holds the state
+        before *its own* mark and nothing about the marks laid after it.
+        """
+        if box is None:
+            return {
+                "rgb": self.rgb.copy(),
+                "wetness": self.wetness.copy(),
+                "thickness": self.thickness.copy(),
+                # Paint buries graphite destructively, so undoing a stroke has to
+                # bring back the drawing it covered. ``None`` records "there was no
+                # drawing here yet", which is not the same as "leave the drawing
+                # alone" -- and it keeps a painting that never draws from carrying
+                # twenty-four spare colour planes around in its undo stack.
+                "sketch": self.sketch.copy() if self.has_sketch else None,
+                "stroke_count": np.int64(self.stroke_count),
+            }
+        x0, y0, x1, y1 = box
         return {
-            "rgb": self.rgb.copy(),
+            "box": (int(x0), int(y0), int(x1), int(y1)),
+            "rgb": self.rgb[y0:y1, x0:x1].copy(),
+            "thickness": self.thickness[y0:y1, x0:x1].copy(),
+            "sketch": self.sketch[y0:y1, x0:x1].copy() if self.has_sketch else None,
+            # Whole, because wetness is the one channel a mark changes everywhere:
+            # :meth:`tick_wetness` dries the entire canvas a little per stroke, so
+            # there is no box that holds what a mark did to it. It is one plane
+            # against the colour's three, and it is the cheap one to keep.
             "wetness": self.wetness.copy(),
-            "thickness": self.thickness.copy(),
-            # Paint buries graphite destructively, so undoing a stroke has to bring
-            # back the drawing it covered. ``None`` records "there was no drawing
-            # here yet", which is not the same as "leave the drawing alone" -- and
-            # it keeps a painting that never draws from carrying twenty-four spare
-            # colour planes around in its undo stack.
-            "sketch": self.sketch.copy() if self.has_sketch else None,
             "stroke_count": np.int64(self.stroke_count),
         }
 
     def restore(self, snap: dict) -> None:
-        """Restore a snapshot taken by :meth:`snapshot`."""
+        """Restore a snapshot taken by :meth:`snapshot`, whole or by its box."""
+        box = snap.get("box")
+        if box is not None:
+            x0, y0, x1, y1 = box
+            self.rgb[y0:y1, x0:x1] = snap["rgb"]
+            self.thickness[y0:y1, x0:x1] = snap["thickness"]
+            self.wetness = np.array(snap["wetness"], dtype=np.float32, copy=True)
+            stored = snap.get("sketch")
+            if stored is not None:
+                self.sketch[y0:y1, x0:x1] = stored
+                self.has_sketch = True
+            self.stroke_count = int(snap["stroke_count"])
+            return
         self.rgb = np.array(snap["rgb"], dtype=np.float32, copy=True)
         self.wetness = np.array(snap["wetness"], dtype=np.float32, copy=True)
         self.thickness = np.array(snap["thickness"], dtype=np.float32, copy=True)

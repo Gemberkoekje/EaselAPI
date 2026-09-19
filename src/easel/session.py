@@ -31,7 +31,7 @@ from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
 from easel.color import linear_to_srgb, luminance, parse_color
-from easel.history import History, StrokeRecord
+from easel.history import DEFAULT_FRAME_PX, History, StrokeRecord
 from easel.look import DEFAULT_LOOK_SIZE, load_reference, render_look, save_look
 from easel.measure import (
     Comparison,
@@ -151,8 +151,15 @@ class Session:
         ground: a named ground, a hex colour, or an (r, g, b) tuple.
         seed: the determinism seed. The same seed and the same calls give the same
             painting, down to the pixel.
-        timelapse: record a frame after every mark. Cheap, and the human watching
-            gets to see the painting happen.
+        timelapse: record a frame after every mark. The human watching gets to see
+            the painting happen. **A number is the frame's long side in pixels**
+            (the default is 360), which used to be unreachable: a 1440x960 painting
+            had a 360x240 time-lapse, the frames are stored in the ``.easel`` file
+            at that size, and no argument anywhere could say otherwise. A frame is
+            the dearest thing a mark does that is not paint -- 60 ms at 1440x960
+            against 6 for the undo snapshot -- so the size is worth choosing, and
+            ``timelapse_gif(from_log=True)`` rebuilds one at any size afterwards,
+            from a painting that has no frames at all.
         out_dir: where ``look()`` writes its PNGs.
         budget: how many strokes this painting is allowed, if you want the engine to
             hold the number. A painter is told to write the split down before
@@ -176,7 +183,7 @@ class Session:
         texture: str = "linen",
         ground: str = "white",
         seed: int = 0,
-        timelapse: bool = True,
+        timelapse: bool | int = True,
         out_dir: str | Path = "out",
         texture_strength: float = 1.0,
         budget: int | None = None,
@@ -187,7 +194,7 @@ class Session:
         self.palette = Palette()
         self.history = History()
         self.out_dir = Path(out_dir)
-        self.timelapse = bool(timelapse)
+        self.timelapse = _as_timelapse(timelapse)
         #: The stroke budget, or ``None``. See :meth:`budget_line` and :meth:`cost`.
         self.budget = None if budget is None else int(budget)
         self._last_look: np.ndarray | None = None
@@ -248,7 +255,7 @@ class Session:
         # See :meth:`_clip_cover`.
         self._clip_memo: tuple | None = None
         if self.timelapse:
-            self.history.add_frame(self.canvas.thumbnail_srgb8())
+            self.capture_frame()
 
     # -- properties -------------------------------------------------------------
     @property
@@ -377,7 +384,12 @@ class Session:
         # three canvas-sized arrays per stroke is most of what it is trying not to
         # spend: without this the pot recipe above counted in 2.1s against 3.1s
         # painted, and with it in 0.06s.
-        self._snapshot()
+        #
+        # Of the box this mark can reach rather than of the whole canvas -- the
+        # marks are what they were, and the undo stack is a few megabytes instead of
+        # several hundred. See :func:`_stroke_box`.
+        box = None if self._counting else _stroke_box(self.canvas, points, b, smooth)
+        self._snapshot(box)
         try:
             index = self._index_base + len(self.history.records)
             pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
@@ -399,6 +411,13 @@ class Session:
                 dry_run=self._counting,
             )
 
+            if box is not None and not _within(result.bounds, box, self.canvas):
+                # Never seen, and the one way a boxed snapshot could be wrong: the
+                # box is the path's own reach with the brush's jitter at six
+                # standard deviations and a margin besides. Restoring it would leave
+                # paint behind and say nothing, so the stack is dropped and undo()
+                # rebuilds from the log, which is exact.
+                self.history.invalidate_snapshots()
             record = self.history.add(
                 StrokeRecord(
                     index=index,
@@ -426,8 +445,7 @@ class Session:
             # undoing nothing.
             self.history.discard_snapshot()
             raise
-        if self.timelapse:
-            self.history.add_frame(self.canvas.thumbnail_srgb8())
+        self._auto_frame()
         return record
 
     def dab(self, x: float, y: float, brush="round_hard", color="burnt_umber",
@@ -1849,8 +1867,7 @@ class Session:
             # not leave it orphaned against the wrong record.
             self.history.discard_snapshot()
             raise
-        if self.timelapse:
-            self.history.add_frame(self.canvas.thumbnail_srgb8())
+        self._auto_frame()
         return record
 
     def erase(self, region=None, note: str = "") -> StrokeRecord:
@@ -1886,11 +1903,10 @@ class Session:
                 params={**_place_params(place), "rng": self._stream_state()},
             )
         )
-        if self.timelapse:
-            # erase() visibly changes the rendered canvas (it clears the sketch
-            # channel, which the thumbnail includes) the same way stroke() and
-            # pencil() do, so it belongs in the time-lapse the same way they are.
-            self.history.add_frame(self.canvas.thumbnail_srgb8())
+        # erase() visibly changes the rendered canvas (it clears the sketch
+        # channel, which the thumbnail includes) the same way stroke() and pencil()
+        # do, so it belongs in the time-lapse the same way they are.
+        self._auto_frame()
         return record
 
     def sketch_lines(self) -> list[list[tuple[float, float]]]:
@@ -2108,9 +2124,13 @@ class Session:
         depth = self.history.undo_depth
         if depth >= n:
             undone = self.history.records[-n:]
-            snap = self.history.pop_snapshots(n)
-            if snap is not None:
-                self.canvas.restore(snap)
+            unwind = self.history.pop_snapshots(n)
+            if unwind is not None:
+                # Newest first: a snapshot holds the state before its own mark, over
+                # the box that mark could reach, so the marks after it have to be
+                # put back before it is.
+                for snap in unwind:
+                    self.canvas.restore(snap)
                 # And the generator, to where it stood before the first undone mark's
                 # call began. The undone marks may have been the passes of a mass, and
                 # a mass draws its wander from the stream: left where it was, the next
@@ -3377,7 +3397,7 @@ class Session:
         return p
 
     def timelapse_gif(self, path: str | Path, fps: float = 8.0, every: int = 1,
-                      scale: int | None = None) -> Path:
+                      scale: int | None = None, from_log: bool = False) -> Path:
         """Write the time-lapse as an animated GIF.
 
         Args:
@@ -3388,22 +3408,77 @@ class Session:
                 differ by one stroke; ``every=3`` is a third of the size and reads
                 the same. The finished painting is always the last frame, whatever
                 ``every`` would have landed on.
-            scale: long side in pixels. Frames are recorded at 360 and this only
-                shrinks them further.
+            scale: long side in pixels. On the recorded frames this only shrinks
+                them, because they were stored at
+                :data:`~easel.history.DEFAULT_FRAME_PX` unless the session asked for
+                another size. With ``from_log`` it is the size they are **built** at,
+                and it defaults to the canvas's own.
+            from_log: rebuild the frames by replaying the painting rather than using
+                the ones it recorded. The whole painting is in the log, so the film
+                can be made at any resolution **afterwards** -- which is the answer
+                to a 1440x960 painting whose recorded frames are 360 px wide, and to
+                one that was painted with the time-lapse off altogether. It costs a
+                full repaint, and it stores nothing: the frames are built, written
+                and dropped.
 
         Example::
 
             s.timelapse_gif("painting.gif", every=3, scale=240)   # small enough to send
+            s.timelapse_gif("big.gif", from_log=True, scale=960)  # rebuilt, full size
         """
+        if from_log:
+            px = max(self.canvas.width, self.canvas.height) if scale is None else int(scale)
+            rebuilt = self.replay(frames=px)
+            return rebuilt.history.save_gif(path, fps=fps, every=every)
+        self._no_frames_here()
         return self.history.save_gif(path, fps=fps, every=every, scale=scale)
 
     def contact_sheet(self, path: str | Path, columns: int = 6) -> Path:
         """Write the time-lapse as a grid of thumbnails."""
+        self._no_frames_here()
         return self.history.save_contact_sheet(path, columns=columns)
+
+    def _no_frames_here(self) -> None:
+        """Say what happened when a *rehearsal* is asked for a time-lapse.
+
+        A rehearsal copy is created with the time-lapse off -- it is a scrap of
+        canvas, and a film of a scrap is not what anybody wants -- so the frames a
+        painter went looking for are on the painting this copy came from. The
+        general message says to create the session with ``timelapse=True``, which is
+        the one thing the painting already did.
+        """
+        if self._is_trial and not self.history.frame_count:
+            raise ValueError(
+                "This is a rehearsal copy, and a rehearsal records no frames: the "
+                "painting it was copied from keeps its own. Run the pass for real, "
+                "or ask the painting itself -- easel timelapse <session> <out.gif>."
+            )
 
     def capture_frame(self) -> None:
         """Record a time-lapse frame by hand, when ``timelapse`` is off."""
-        self.history.add_frame(self.canvas.thumbnail_srgb8())
+        px = self.frame_px
+        self.history.add_frame(self.canvas.thumbnail_srgb8(px), max_side=px)
+
+    def _auto_frame(self) -> None:
+        """Record a frame after a mark, if the time-lapse is on and wants one.
+
+        Past :data:`~easel.history.MAX_FRAMES` the sequence is thinned by halves, so
+        most of the frames a long painting built used to be built and then dropped.
+        :meth:`~easel.history.History.wants_frame` says which ones survive, and the
+        rest are not built: the same film, for a fraction of the 42-60 ms a frame
+        costs. Nothing here touches the log or the stream -- frames live beside
+        both -- so no painting moves.
+        """
+        if self.timelapse and self.history.wants_frame():
+            self.capture_frame()
+
+    @property
+    def frame_px(self) -> int:
+        """The long side this painting's time-lapse frames are recorded at."""
+        size = self.timelapse
+        if size is True or size is False:
+            return DEFAULT_FRAME_PX
+        return max(int(size), 1)
 
     def report(self, since: int | None = None, subject_share: float | None = None) -> str:
         """The post-pass check: what the marks just laid would be warned about, off the log.
@@ -3805,7 +3880,7 @@ class Session:
                 _warn_foreign_out_dir(s, p, s.out_dir)
                 budget = meta.get("budget")
                 s.budget = None if budget is None else int(budget)
-                s.timelapse = bool(meta["timelapse"])
+                s.timelapse = _as_timelapse(meta["timelapse"])
                 s.marks = {
                     k: (float(v[0]), float(v[1])) for k, v in meta.get("marks", {}).items()
                 }
@@ -3903,12 +3978,17 @@ class Session:
         """
         return np.random.default_rng([self.seed, index])
 
-    def replay(self, upto: int | None = None) -> Session:
+    def replay(self, upto: int | None = None, frames: bool | int | None = None) -> Session:
         """Rebuild this painting from its log, optionally stopping after ``upto`` records.
 
         Returns a **new** session. The whole painting is reproducible from the log
         plus the seed, so this is also how the CLI undoes strokes: session files do
         not carry snapshots, but they do carry the log.
+
+        ``frames`` overrides the rebuilt session's ``timelapse``, which is how
+        :meth:`timelapse_gif` builds a film at a size nothing recorded: the marks
+        land again, and this time a frame is kept after each of them at the size
+        asked for. Nothing else about the rebuild changes.
         """
         records = self.history.records if upto is None else self.history.records[:upto]
         fresh = Session(
@@ -3917,7 +3997,7 @@ class Session:
             texture=self.canvas.texture_name,
             ground=self.canvas.ground_spec,
             seed=self.seed,
-            timelapse=self.timelapse,
+            timelapse=self.timelapse if frames is None else frames,
             out_dir=self.out_dir,
             texture_strength=self.canvas.texture_strength,
             budget=self.budget,
@@ -4092,14 +4172,17 @@ class Session:
         self._clip_memo = (key, cover)
         return cover
 
-    def _snapshot(self) -> None:
+    def _snapshot(self, box: tuple[int, int, int, int] | None = None) -> None:
         """Push the canvas onto the undo stack, unless this session lays no paint.
 
         One place, because every verb that marks the canvas has to do it and a
-        count-only copy has to do it nowhere -- see :meth:`scratch`.
+        count-only copy has to do it nowhere -- see :meth:`scratch`. ``box`` is the
+        part of the canvas the action about to happen can reach, where the caller
+        knows it; the verbs that can touch anywhere (``dry``, ``erase``, ``pencil``)
+        pass nothing and copy the lot.
         """
         if not self._counting:
-            self.history.push_snapshot(self.canvas.snapshot())
+            self.history.push_snapshot(self.canvas.snapshot(box))
 
     def _resolve_brush(self, brush, size, opacity, overrides: dict) -> Brush:
         b = brush if isinstance(brush, Brush) else get_brush(str(brush))
@@ -4217,6 +4300,77 @@ _NOT_BRUSH_FIELDS = {
         "profile along one stroke rather than a property of the brush."
     ),
 }
+
+
+#: How far past its own path a mark can reach, in brush diameters, before the
+#: jitter is counted: the dab mask is at most ``1.7`` radii across (``size_jitter``
+#: is clipped there), which is ``0.85`` of a diameter from the centre.
+_MARK_REACH = 0.85
+
+#: How many standard deviations of the per-dab wander to allow for. The wander is
+#: smoothed unit-variance noise scaled by ``jitter x diameter``, so six of them is
+#: about one in a billion dabs -- and if one ever does land outside, the undo stack
+#: is dropped rather than restored wrongly. See :meth:`Session.stroke`.
+_MARK_SIGMA = 6.0
+
+
+def _stroke_box(canvas, points, b: Brush, smooth: bool) -> tuple[int, int, int, int] | None:
+    """The box of canvas one mark can reach, in pixels, before it is laid.
+
+    The undo stack used to hold a copy of the whole canvas per mark -- 33 MB at
+    1440x960, about 800 MB over the twenty-four that are kept, and 6.3 ms of copying
+    before a dab lands. A mark touches a few percent of a canvas, and this is that
+    few percent: the path it will be stamped along (the spline, where there is one,
+    because a spline bows outside the points it was fitted through), grown by the
+    dab's own radius, by the wander the brush is allowed, and by a hard margin for
+    the tooth and the rounding.
+    """
+    pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+    if pts.ndim != 2 or pts.shape[1] != 2 or not np.isfinite(pts).all():
+        # A path this cannot measure is one `paint_stroke` is about to refuse in its
+        # own words. Copy the whole canvas and let it: a box is an optimisation, and
+        # an optimisation may not take an error message away from the painter.
+        return None
+    path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
+    diameter = max(b.size * canvas.long_side, 1.5)
+    reach = diameter * (_MARK_REACH + _MARK_SIGMA * max(b.jitter, 0.0)) + 8.0
+    xs = path[:, 0] * (canvas.width - 1)
+    ys = path[:, 1] * (canvas.height - 1)
+    x0 = int(np.clip(np.floor(xs.min() - reach), 0, canvas.width))
+    x1 = int(np.clip(np.ceil(xs.max() + reach) + 1, 0, canvas.width))
+    y0 = int(np.clip(np.floor(ys.min() - reach), 0, canvas.height))
+    y1 = int(np.clip(np.ceil(ys.max() + reach) + 1, 0, canvas.height))
+    return x0, y0, max(x1, x0), max(y1, y0)
+
+
+def _within(bounds, box, canvas) -> bool:
+    """Whether what a stroke actually stamped lies inside the box it was given."""
+    if bounds is None:
+        return True
+    bx0, by0, bx1, by1 = bounds
+    x0, y0, x1, y1 = box
+    return (bx0 * (canvas.width - 1) >= x0 - 1.0
+            and bx1 * (canvas.width - 1) <= x1 + 1.0
+            and by0 * (canvas.height - 1) >= y0 - 1.0
+            and by1 * (canvas.height - 1) <= y1 + 1.0)
+
+
+def _as_timelapse(value) -> bool | int:
+    """``timelapse=`` as it is kept: ``True``/``False``, or a frame size in pixels.
+
+    A bool is a bool and an int is a size, which ``isinstance(True, int)`` makes
+    worth being careful about. Saved under the same key it always was, so a build
+    that only knows the flag reads ``bool(360)`` and is right.
+    """
+    if isinstance(value, bool) or value is None:
+        return bool(value)
+    px = int(value)
+    if px < 1:
+        raise ValueError(
+            f"Session(timelapse={value!r}) is True, False, or the frame's long side "
+            f"in pixels, which is at least 1. The default is {DEFAULT_FRAME_PX}."
+        )
+    return px
 
 
 def _highest_numbered(out_dir: Path, prefix: str) -> int:

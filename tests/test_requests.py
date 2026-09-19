@@ -3473,3 +3473,91 @@ def test_a_mass_can_dry_what_it_is_laid_over_first(tmp_path):
     # paint over paint, not a fill.
     assert dark < wet < dried < pale
     assert dried - wet > 0.02
+
+
+# -- the time-lapse: its size, and where a rehearsal's frames are -----------------------
+def test_a_rehearsal_says_where_the_frames_are(tmp_path):
+    """A rehearsal copy is created with the time-lapse off -- a film of a scrap of
+    canvas is not what anybody wants -- so ``timelapse_gif`` on one raised *No
+    time-lapse frames were recorded. Create the session with `timelapse=True`*, which
+    is the one thing the painting already did."""
+    s = make(tmp_path, timelapse=True)
+    s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    trial = s.scratch()
+    trial.stroke([(0.1, 0.6), (0.9, 0.6)], "flat", "burnt_umber", size=0.05)
+    with pytest.raises(ValueError, match="rehearsal copy"):
+        trial.timelapse_gif(tmp_path / "nope.gif")
+    with pytest.raises(ValueError, match="rehearsal copy"):
+        trial.contact_sheet(tmp_path / "nope.png")
+    # The painting it came from has them, which is what the message says.
+    assert s.timelapse_gif(tmp_path / "yes.gif").exists()
+
+
+def test_the_frame_size_is_reachable_and_the_film_can_be_rebuilt(tmp_path):
+    """Frames were recorded at 360 px beside a 1440 px painting, stored in the .easel
+    file at that size, and nothing on the session or the CLI could ask for another --
+    so a painting already made could not be helped. Two answers: say the size up
+    front, or rebuild the film from the log afterwards, which needs no frames at all."""
+    s = make(tmp_path, timelapse=120)
+    for i in range(4):
+        s.stroke([(0.1, 0.2 + i * 0.15), (0.9, 0.25 + i * 0.15)], "flat",
+                 "burnt_umber", size=0.05)
+    assert s.frame_px == 120
+    # A frame is downsampled by a whole number of pixels, so the size asked for is a
+    # ceiling rather than an exact width -- and it is a real one: left alone, this
+    # canvas is under the 360 default and records its frames full size.
+    assert max(Image.open(s.timelapse_gif(tmp_path / "small.gif")).size) <= 120
+    # ...and from the log, at whatever size is asked for, this painting's own by default.
+    assert max(Image.open(s.timelapse_gif(tmp_path / "big.gif", from_log=True)).size) == 320
+    assert 120 < max(Image.open(
+        s.timelapse_gif(tmp_path / "mid.gif", from_log=True, scale=200)).size) <= 200
+    # A painting that recorded nothing is the case this really answers.
+    off = make(tmp_path, timelapse=False)
+    off.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    with pytest.raises(ValueError, match="No time-lapse frames"):
+        off.timelapse_gif(tmp_path / "none.gif")
+    assert off.timelapse_gif(tmp_path / "rebuilt.gif", from_log=True).exists()
+
+
+def test_a_mark_snapshots_the_box_it_can_reach_and_undoes_exactly(tmp_path):
+    """Every stroke copied the whole canvas for undo -- 33 MB at 1440x960, about 800 MB
+    over the twenty-four kept, and 6.3 ms before a dab lands. A mark touches a few
+    percent of a canvas. The box is the path's own reach with the brush's jitter at six
+    standard deviations on it, and undo is exact or it is nothing."""
+    s = make(tmp_path, timelapse=False)
+    s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    s.block_in("upper-half", "bristle", "c", size=0.08, density=0.7)
+    before, wet_before = s.canvas.rgb.copy(), s.canvas.wetness.copy()
+    s.dab(0.5, 0.7, "round_hard", "c", size=0.05)
+    s.stroke([(0.15, 0.8), (0.85, 0.78)], "flat", "c", size=0.04)
+    kept = s.history._snapshots[-1]
+    assert kept["box"] is not None
+    assert kept["rgb"].nbytes < s.canvas.rgb.nbytes / 4
+    assert s.undo(2) == 2
+    assert np.array_equal(before, s.canvas.rgb)
+    assert np.array_equal(wet_before, s.canvas.wetness)
+
+
+def test_a_long_painting_stops_building_frames_it_would_throw_away(tmp_path,
+                                                                   monkeypatch):
+    """Past MAX_FRAMES the sequence is thinned by halves, so most of the frames a long
+    painting built were built and then dropped -- at 42 ms each, on the dearest thing a
+    mark does that is not paint. The film is the same one; the work is not done."""
+    from easel.canvas import Canvas
+    from easel.history import MAX_FRAMES
+
+    built = []
+    real = Canvas.thumbnail_srgb8
+
+    def counted(self, *args, **kwargs):
+        built.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(Canvas, "thumbnail_srgb8", counted)
+    s = make(tmp_path, timelapse=True)
+    marks = MAX_FRAMES * 3
+    for i in range(marks):
+        s.dab(0.05 + (i % 20) * 0.045, 0.05 + (i // 20) * 0.03, "round_hard",
+              "burnt_umber", size=0.01)
+    assert s.history.frame_count <= MAX_FRAMES
+    assert len(built) < marks * 0.75
