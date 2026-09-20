@@ -857,6 +857,27 @@ def build_server() -> MCPServer:
 
     @server.tool()
     @_tool
+    def check(session: str, subject_share: float | None = None) -> str:
+        """The closing checklist, answered -- run it when the painting looks finished.
+
+        Every line of the guide's closing checklist that has a number behind it: the
+        values and whether the picture has a clear light, how the edges divide
+        between hard and soft, what is left of the ground, how many masses were laid
+        in a rectangle, the subject's share, and what is left of the budget. Then the
+        three questions nothing can measure, with your own `why` quoted back.
+
+        The `run` tool's post-pass check is the same measurements after one pass.
+        This is the end of the painting, and it is read-only: it changes nothing.
+
+        Args:
+            session: the .easel file.
+            subject_share: the share of the budget the subject was to get, 0..1.
+                The plan's own is used when this is left off.
+        """
+        return Session.load(session).checklist(subject_share=subject_share)
+
+    @server.tool()
+    @_tool
     def brushes() -> str:
         """Every name that can be said: brushes, pigments, grounds, textures, regions
         and the shape builders. The same reference `easel brushes` prints."""

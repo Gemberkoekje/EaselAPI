@@ -27,6 +27,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from easel import checklist
 from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
@@ -238,6 +239,9 @@ class Session:
         # :meth:`_one_call`. ``None`` between calls.
         self._stream_mark: dict | None = None
         self._call_verb = ""
+        # Whether that call was handed a rectangle rather than a shape -- the
+        # ``boxes:`` line's own input. See :meth:`_one_call`.
+        self._call_boxed = False
         # Marks charged before this session's own log began: zero for a painting,
         # and the painting's own count on a rehearsal copy, so that ``spent`` and
         # ``remaining`` inside a rehearsed pass are the painting's numbers.
@@ -449,6 +453,8 @@ class Session:
                                          **({"clip": _clip_params(holds)}
                                             if holds else {}),
                                          **({"via": self._call_verb} if self._call_verb
+                                            else {}),
+                                         **({"boxed": True} if self._call_boxed
                                             else {})),
                 )
             )
@@ -953,7 +959,7 @@ class Session:
             _check_chisel_staircase(self, place, b, direction, density, self.canvas,
                                     stacklevel=3)
 
-        with self._one_call("block_in"):
+        with self._one_call("block_in", place):
             if dry_first:
                 self.dry(1.0, place)
             for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
@@ -977,6 +983,13 @@ class Session:
                              f"{traced}"),
                     clip=held,
                 ))
+        # The same test `_check_solid_comb` asks, and for the same reason: what
+        # matters is what the paint did, not which keyword was typed. `cover()` lays
+        # `load=1.0, load_falloff=0.0` itself and refuses `solid=` as a duplicate of
+        # its own recipe, so a burying pass would otherwise be the one solid mass
+        # nobody measured -- and burying is exactly where a hole is worth knowing.
+        if solid or (b.load >= 1.0 and b.load_falloff <= 0.0):
+            _check_holes(self, place, b, color, stacklevel=3)
         return records
 
     def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
@@ -1522,7 +1535,7 @@ class Session:
                 f"at any opacity. Use 'flat', 'knife' or 'round_hard'.",
                 stacklevel=2,
             )
-        with self._one_call("cover"):
+        with self._one_call("cover", target):
             if dry_first:
                 self.dry(1.0, target)
             return self.block_in(
@@ -1709,7 +1722,7 @@ class Session:
 
         records: list[StrokeRecord] = []
         laid = 0
-        with self._one_call("scumble"):
+        with self._one_call("scumble", place):
             for path, flipped in paths:
                 t = laid / max(n - 1, 1)
                 records.append(self.stroke(
@@ -1795,7 +1808,7 @@ class Session:
         moving as it goes inward.
         """
         records: list[StrokeRecord] = []
-        with self._one_call("scumble"):
+        with self._one_call("scumble", place):
             for k, path, flipped in paths:
                 records.append(self.stroke(
                     path, brush=b,
@@ -2817,6 +2830,7 @@ class Session:
         trial._index_base = self._index_base + len(self.history.records)
         trial._stream_mark = None
         trial._call_verb = ""
+        trial._call_boxed = False
         trial._spent_base = self.spent
         # The log behind that count, for the rules that read across passes. Same
         # marks, kept as records rather than as a number; concatenated rather than
@@ -3713,41 +3727,215 @@ class Session:
             for line in (self._plan.value_line(view), self._plan.lightest_line(view)):
                 if line:
                     lines.append(f"  {line}")
-        on_it = [r for r in paid if "subject" in str(r.note).lower()]
-        if on_it:
-            share = len(on_it) / max(len(paid), 1)
-            line = f"  subject: {len(on_it)} of {len(paid)} marks so far ({share:.0%})"
-            # The argument wins over the plan: it is the more specific of the two, and
-            # a pass measuring one passage against its own share should be able to say
-            # so. Without either there is no comparison to print -- which is what
-            # every painter working through `easel run` or the MCP server got, because
-            # neither passed the argument and there was nowhere to declare it.
-            declared = (subject_share if subject_share is not None
-                        else self._plan.subject_share)
-            if declared is not None:
-                planned = float(declared)
-                line += f", against {planned:.0%} planned"
-                if share < planned - 0.005:
-                    line += " -- behind, if the subject is finished"
-            lines.append(line)
+        subject = self._subject_line(paid, subject_share)
+        if subject:
+            lines.append(f"  {subject}")
         if paid and not self._counting:
             # A count-only copy has laid no paint on the canvas it borrowed, so the
             # honest answer is the one it started with and the useful one does not
             # exist. Every other line here comes off the log and is exact.
-            bare = self.canvas.ground_showing()
-            line = f"  ground: {bare:.2%} of the canvas is still bare ground"
-            if bare < _GROUND_FLOOR:
-                if self._plan.ground == "buried":
-                    # Declared, so the number is the whole of what there is to say.
-                    # Five of seven painters in one cohort accepted this line by hand,
-                    # three of them naming the same cause: the graded field they were
-                    # told to lay buried the breather they were told to leave.
-                    line += " -- buried, as the plan says"
-                else:
-                    line += (f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks "
-                             f"for some")
-            lines.append(line)
+            lines += [f"  {one}" for one in self._canvas_lines()]
         return "\n".join(lines)
+
+    def checklist(self, subject_share: float | None = None) -> str:
+        """The closing checklist, answered: every measured line with its number.
+
+        `PAINTER.md` has ended with a list of questions to ask a finished painting
+        since the first version of it, and until 0.6.0 every one was answered by
+        looking. The questions with a *number* behind them were the ones answered
+        wrongly -- looking afresh is what a painter who has been at the canvas for
+        four hours cannot do -- and each cohort produced the same evidence: a
+        painting planned around a warm ground finished with ``0.07%`` of it left, and
+        five of the next six budgeted paintings stopped with more than half the
+        budget unspent. So the measured lines answer themselves here, and
+        `PAINTER.md`'s list shrinks to the three that cannot be measured plus this
+        call.
+
+        Everything :meth:`report` prints over the whole painting, plus the three
+        lines that only make sense at the end -- ``boxes:``, ``unspent:`` and the
+        three questions. It is :meth:`report` with ``since=None`` and not a second
+        instrument: a number that disagreed with the one printed after the last pass
+        would make both useless.
+
+        **And then the three it cannot answer**, printed as questions with the
+        painter's own ``why`` quoted back. *Is the thing you measured most carefully
+        still attached*, *which passage is the weakest*, and *is the reason you chose
+        this subject still in the picture* are not withheld for tidiness -- nothing
+        in this engine can ask them. The check reads marks and measures pixels, and a
+        picture can pass every line above and have quietly become a different
+        picture, competently painted. That boundary is `LESSONS.md`'s and it is kept
+        here on purpose.
+
+        Args:
+            subject_share: the share of the marks the subject was to get, ``0..1``.
+                The plan's own is used when this is left off.
+
+        Returns:
+            The lines to print.
+
+        Example::
+
+            print(s.checklist())
+
+        Prints::
+
+            checklist for this painting -- 128 of 300 marks spent
+              subject: 41 of 128 marks so far (32%), against 32% planned
+              values: 0.15-0.35 of a box that reaches 0.13-0.96, clusters at 0.17,
+                0.25, 0.32; no clear light -- nothing above 0.35, ...
+              edges: 27% of edges are under 2 px wide, median 3.4 px
+              ground: 2.16% of the canvas is still bare ground
+              boxes: 2 of 9 masses were laid in a rectangle (22%) -- check the
+                background hardest
+              unspent: 172 of 300 unspent (57%) -- name the weakest passage and
+                spend them there
+
+            three this cannot answer, and they are the ones to answer slowly:
+              - Cover the thing you measured most carefully. Is it still attached to
+                the picture -- and is the lightest mass the one you planned to be?
+              - Which passage would you apologise for? That is the one the marks
+                left are for, not the one you have most recently been enjoying.
+              - You wrote: "a hot afternoon, and the light coming off the water".
+                Is that reason still in the picture?
+        """
+        records = self.history.records
+        marks = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
+        paid = History.paid_marks(list(self._prior) + list(records))
+        head = (f"checklist for this painting -- {self.spent} of {self.budget} marks "
+                f"spent" if self.budget is not None
+                else f"checklist for this painting -- {self.spent} marks spent")
+        lines = [head]
+        # The audit's own findings, over the whole painting rather than a pass: the
+        # discs, the bars, the small marks before the masses. `since=None` is what
+        # turns the one rule that decays back on -- a closing check asked for says
+        # everything it has.
+        findings = _pass_findings(marks, 0, self.canvas, banding=None,
+                                  bands=self._plan.bands)
+        lines += [f"  - {line}" for line in findings]
+        if paid and not self._counting and (self._plan.values
+                                            or self._plan.lightest is not None):
+            view = self._value_view()
+            for line in (self._plan.value_line(view), self._plan.lightest_line(view)):
+                if line:
+                    lines.append(f"  {line}")
+        subject = self._subject_line(paid, subject_share)
+        if subject:
+            lines.append(f"  {subject}")
+        if paid and not self._counting:
+            lines += [f"  {one}" for one in self._canvas_lines()]
+        lines.append(f"  {checklist.boxes_line(*checklist.mass_counts(records))}")
+        lines.append(f"  {checklist.unspent_line(self.spent, self.budget)}")
+        lines.append("")
+        lines.append("three this cannot answer, and they are the ones to answer slowly:")
+        lines += [f"  - {one}" for one in self._questions()]
+        return "\n".join(lines)
+
+    def _questions(self) -> list[str]:
+        """The three the check cannot answer, with ``why`` quoted back.
+
+        Kept apart from the measured lines and printed as questions, because the
+        difference between them is the whole boundary: every line above is a number
+        about a mark or a pixel, and these three are about a picture. The wording is
+        `PAINTER.md`'s own, so that a painter who read the file meets the same
+        sentence here rather than a paraphrase of it.
+
+        The third is the one nothing else can ask at all, and it is quoted rather
+        than summarised: a reason read back in the painter's own words is the
+        instrument, and a reason the engine reworded would be the engine's.
+        """
+        why = (self._plan.why or "").strip()
+        return [
+            "Cover the thing you measured most carefully. Is it still attached to "
+            "the picture -- and is the lightest mass the one you planned to be?",
+            "Which passage would you apologise for? That is the one the marks left "
+            "are for, not the one you have most recently been enjoying.",
+            (f"You wrote: {why!r}. Is that reason still in the picture?" if why else
+             "You did not write down why you chose this subject, so nothing can read "
+             "it back. s.plan(why=...) before the next painting: it is the one line "
+             "here no measurement can replace."),
+        ]
+
+    def _subject_line(self, paid: list[StrokeRecord], subject_share=None) -> str:
+        """The subject's share of the marks so far, against what was planned for it.
+
+        Empty when no mark carries ``note="subject"``: there is nothing to divide,
+        and a painting that never named its subject's marks is not being told it
+        spent 0% on them.
+
+        Args:
+            paid: the marks charged against the budget, the painting's own included.
+            subject_share: the share the caller declared, which wins over the plan's.
+        """
+        on_it = [r for r in paid if "subject" in str(r.note).lower()]
+        if not on_it:
+            return ""
+        share = len(on_it) / max(len(paid), 1)
+        line = f"subject: {len(on_it)} of {len(paid)} marks so far ({share:.0%})"
+        # The argument wins over the plan: it is the more specific of the two, and
+        # a pass measuring one passage against its own share should be able to say
+        # so. Without either there is no comparison to print -- which is what
+        # every painter working through `easel run` or the MCP server got, because
+        # neither passed the argument and there was nowhere to declare it.
+        declared = (subject_share if subject_share is not None
+                    else self._plan.subject_share)
+        if declared is not None:
+            planned = float(declared)
+            line += f", against {planned:.0%} planned"
+            if share < planned - 0.005:
+                line += " -- behind, if the subject is finished"
+        return line
+
+    def _ground_line(self) -> str:
+        """How much ground is still showing, with the one judgement in it named.
+
+        Split out of :meth:`report` when :meth:`checklist` came to need the same
+        sentence: two places printing the same measurement in two wordings is how a
+        document and a tool drift apart, which is the whole argument of
+        :mod:`easel.notices` applied to a line that is not a notice.
+        """
+        bare = self.canvas.ground_showing()
+        line = f"ground: {bare:.2%} of the canvas is still bare ground"
+        if bare < _GROUND_FLOOR:
+            if self._plan.ground == "buried":
+                # Declared, so the number is the whole of what there is to say.
+                # Five of seven painters in one cohort accepted this line by hand,
+                # three of them naming the same cause: the graded field they were
+                # told to lay buried the breather they were told to leave.
+                line += " -- buried, as the plan says"
+            else:
+                line += f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks for some"
+        return line
+
+    def _canvas_lines(self) -> list[str]:
+        """The standing measurements, off as few readings of the canvas as they need.
+
+        `values:`, `edges:`, `ground:` and `pencil:` -- the four that can only be had
+        by looking at the picture, as against the ones that come off the log and are
+        exact. They print after every pass, beside the findings, because the fault
+        each one names is one that three cohorts of painters did not see by looking:
+        a picture with no clear light, boundaries that are all the same width, a
+        warm ground spent without noticing, a drawing left showing.
+
+        **Two composites at most.** The rise widths and the clusters both read the
+        canvas without its graphite, so they share one array; ``pencil:`` is the
+        difference between that and the canvas with it, and is skipped outright when
+        there is no graphite to find -- which is the common case by the end of a
+        painting and costs a composite to discover otherwise. The cost guard in the
+        plan this came from is *one canvas pass per report()*, and the third reading
+        here (:meth:`_value_view`, for a declared plan) was already being taken.
+
+        Never called on a counted copy: it has laid no paint on the canvas it
+        borrowed, so every number here would be the canvas's and not the pass's.
+        """
+        without = self.canvas.values(sketch=False)
+        view = without.astype(np.float32) / 255.0
+        reach = (self.palette.darkest_value, self.palette.lightest_value)
+        lines = [checklist.values_line(view, reach=reach),
+                 checklist.edges_line(view),
+                 self._ground_line()]
+        if self.canvas.has_sketch:
+            lines.append(checklist.pencil_line(self.canvas.values(sketch=True), without))
+        return lines
 
     def _value_view(self) -> np.ndarray:
         """The whole canvas as values, 0..1, the way :func:`compare_plan` reads it.
@@ -4171,6 +4359,7 @@ class Session:
                 s._is_trial = False
                 s._stream_mark = None
                 s._call_verb = ""
+                s._call_boxed = False
                 s._spent_base = 0
                 s._prior = []
                 s._counting = False
@@ -4356,7 +4545,7 @@ class Session:
             # The record's own account of the stream and of the call that laid it,
             # carried over verbatim: a replay never draws the wander, so what its
             # own marks would record is the seed, which is nowhere the painting was.
-            for key in ("rng", "via"):
+            for key in ("rng", "via", "boxed"):
                 if key in record.params:
                     made.params[key] = record.params[key]
                 else:
@@ -4375,12 +4564,20 @@ class Session:
 
     # -- internals --------------------------------------------------------------
     @contextmanager
-    def _one_call(self, verb: str = ""):
+    def _one_call(self, verb: str = "", place=None):
         """Hold the generator's state for the length of one painting call.
 
         ``verb`` names the mass verb the call is, and rides on every record the call
         makes as ``params["via"]``, so that the log can tell a pass of a mass from a
         mark laid by hand -- which :meth:`report` needs and nothing else did.
+
+        ``place`` is what the call was handed to fill, and rides the same way as
+        ``params["boxed"]`` when it is a rectangle rather than a shape. The closing
+        checklist asks *is any mass a rectangle that should have been a shape*, and
+        until 0.6.0 nothing could answer it: a mass records the points of each of its
+        passes and never the outline it was filling, so a box and the shape inscribed
+        in it leave the same log. Written only when true, and read with ``.get``, so
+        a 0.5.0 file opens unchanged and the key costs a painting nothing.
 
         Every record a call makes carries the state the stream was in when the call
         *began* -- see :meth:`_stream_state` -- so that undoing the call, whole or in
@@ -4397,11 +4594,13 @@ class Session:
             return
         self._stream_mark = _stream_of(self.rng)
         self._call_verb = verb
+        self._call_boxed = isinstance(place, Region) if place is not None else False
         try:
             yield
         finally:
             self._stream_mark = None
             self._call_verb = ""
+            self._call_boxed = False
 
     def _stream_state(self) -> dict:
         """The generator's state to record on a mark: the call's, or now."""
@@ -4759,6 +4958,87 @@ def _check_solid_comb(session, b: Brush, density: float, solid: bool,
         f"rather than a gap. density={_COMB_CLOSES_AT:.3g} closes them, at about a "
         f"fifth more passes; a 'flat' or 'knife' closes them at this density for the "
         f"same money; crossed passes for twice it.",
+        stacklevel=stacklevel,
+    )
+
+
+#: How much of a mass has to come back bare before the ``holes:`` line says so. The
+#: corpus's own solid masses run ``0.000`` at the median and ``0.066`` at p90 for a
+#: ``flat``, so half a percent is comfortably above what a mass that worked leaves
+#: and well under the ``3.16%`` a comb leaves where the holes actually read.
+_HOLES_FLOOR = 0.005
+
+#: How far the paint has to sit from the ground before a hole in it is visible, in
+#: value. **A hole is a contrast, not a gap** (`CALIBRATION.md`, B2): the same comb,
+#: the same call, leaves ``0.16%`` bare on ``toned_grey`` and ``3.16%`` on a dark
+#: ground -- not because it left more holes, but because *bare* means within
+#: ``10/255`` of the ground and a mass painted near its own ground has nothing to
+#: show through. Under this, the holes are there and nobody can see them, so saying
+#: so is the noise `LESSONS.md` rule 2 is about.
+_HOLES_CONTRAST = 0.15
+
+
+def _check_holes(session, place, b: Brush, color, stacklevel: int = 1) -> None:
+    """What a mass laid solid actually came back with, measured (finding 2).
+
+    Solid by ``solid=True`` or by a brush already carrying ``load=1.0,
+    load_falloff=0.0``, which is what :meth:`~easel.session.Session.cover` lays and
+    refuses ``solid=`` as a duplicate of.
+
+    :func:`_check_solid_comb` predicts this at the call from the brush and the
+    density; this measures the canvas once the paint is on it, which is the only way
+    to answer for the *shape*, the *ground* and the *overlap* a prediction cannot
+    see. The two are one pair on purpose: a painter who ignores the prediction and
+    lays it anyway gets the number, and a painter who took the advice gets silence.
+
+    **The share is of the shape's own interior**, a brush in from the outline, so
+    that a ragged edge -- which is what ``edge="ragged"`` is *for* -- is not counted
+    as a hole. And *bare* is :meth:`~easel.canvas.Canvas.ground_showing`'s own
+    definition, within ``10/255`` of the bare canvas, which is what that method means
+    by it and what an eye means by it.
+
+    Silent under :data:`_HOLES_CONTRAST`, because a hole is a contrast and not a
+    gap. A mass painted within a seventh of its own ground has holes nobody can see.
+    Ungated, this fired after **8%** of the 343 passes of the corpus replay
+    (`CALIBRATION.md`), which is over the plan's noise ceiling; the gate is what
+    makes it worth printing, and it is the reason B2's own ``3.16%`` on a dark ground
+    does not print -- that number is burnt umber failing to register on near-black,
+    not a hole anybody can see.
+    """
+    if session._counting:
+        # A counted copy borrowed the canvas and laid nothing on it: the paint this
+        # call would have put down is not there to find holes in, so every pixel of
+        # the shape would read bare and the line would be a lie about a real mass.
+        return
+    inner = _clean_fill(place, b.size * 0.6)
+    mask = session.canvas._mask_of(inner)
+    if mask is None:
+        x0, y0, x1, y1 = session.canvas.region_px(inner)
+        mask = np.zeros((session.canvas.height, session.canvas.width), dtype=bool)
+        mask[y0:y1, x0:x1] = True
+    if int(mask.sum()) < 64:
+        # Smaller than the brush that laid it: the inset has eaten the shape, which
+        # `clean-small` is the notice for, and there is no interior left to measure.
+        return
+    share = session.canvas.ground_showing(where=mask)
+    if share < _HOLES_FLOOR:
+        return
+    # Both through the palette's own instrument, so the two numbers are comparable
+    # and are the ones `look(values=True)` shows -- sRGB-encoded luminance, not
+    # linear. The ground is averaged over the bare canvas rather than read off the
+    # spec, because a ground is shaded by its own tooth and a painter may have
+    # given a mixture.
+    ground = float(linear_to_srgb(luminance(session.canvas.bare())).mean())
+    laid = session.palette.value_of(session._resolve_color(color))
+    if abs(laid - ground) < _HOLES_CONTRAST:
+        return
+    session._notify(
+        "holes",
+        f"holes: {share:.2%} of this solid {b.name!r} mass came back bare -- the "
+        f"ground showing through it, at {abs(laid - ground):.2f} of value between "
+        f"the two, which is enough to read. solid= sets load and load_falloff and "
+        f"closes the gaps along a pass, not the ones a comb leaves across it: a "
+        f"denser pass, a 'flat' or 'knife', or crossed passes close these.",
         stacklevel=stacklevel,
     )
 

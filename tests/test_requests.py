@@ -3967,3 +3967,292 @@ def test_the_staircase_is_silent_on_a_curve_and_on_a_square_end(tmp_path):
         quiet.block_in(span("A5", "H8"), "flat", "white", size=0.06,
                        direction="horizontal", density=1.0, solid=True)
     assert not [n for n in quiet.notices() if n.code == "chisel-staircase"]
+
+# -- E: the standing measurement lines, and G4: the checklist --------------------------
+#
+# Every one of these answers a line of `PAINTER.md`'s closing checklist that a painter
+# used to answer by looking. The thresholds are `CALIBRATION.md`'s, measured on the 21
+# finished paintings of the corpus; the tests below are the two cases each line has to
+# get right -- it fires with the exact words on the fault, and is silent on the
+# neighbouring right thing.
+
+def _values(session):
+    """The canvas the measurement lines read: values, 0..1, graphite left out."""
+    return session.canvas.values(sketch=False).astype(np.float32) / 255.0
+
+
+def test_the_values_line_names_which_end_the_picture_is_missing(tmp_path):
+    """Finding 12, and the pier's own verdict: *no clear light*. A picture can have
+    three well-separated clusters and still have nothing light in it, because all
+    three sit in the bottom third of what the box can reach -- so the range is asked
+    against the palette before the clusters are asked against each other.
+
+    The prototype printed the closest pair and nothing else, which says neither which
+    end is missing nor that one is."""
+    from easel.checklist import values_line
+
+    reach = (0.13, 0.96)
+    dark = np.full((200, 200), 0.24, dtype=np.float32)
+    dark[:60] = 0.17
+    dark[60:120] = 0.31
+    assert "no clear light" in values_line(dark, reach=reach)
+    assert "nothing above" in values_line(dark, reach=reach)
+
+    light = np.full((200, 200), 0.93, dtype=np.float32)
+    assert "no clear dark" in values_line(light, reach=reach)
+
+    # The right thing, and the line has to be silent on it: three masses a clear step
+    # apart, spanning the box. `LESSONS.md` rule 2 -- a picture that did the thing the
+    # checklist asks for must not be told it did not.
+    good = np.concatenate([np.full((66, 200), 0.20, dtype=np.float32),
+                           np.full((67, 200), 0.52, dtype=np.float32),
+                           np.full((67, 200), 0.88, dtype=np.float32)])
+    said = values_line(good, reach=reach)
+    assert "a clear light, mid and dark" in said
+    assert "no clear" not in said
+
+
+def test_the_values_line_says_when_two_masses_read_as_one(tmp_path):
+    """The fogged glass: its two largest areas came in `0.008` apart, which is under
+    the `0.10` that separates two masses, so the picture has two values and not three.
+    The line says which pair and quotes the threshold, because a painter whose subject
+    really is a fog bank should be able to read it and disagree."""
+    from easel.checklist import values_line
+
+    # A clear dark, and two lights that are the same light twice. The two close
+    # masses carry most of the picture, which is what makes the clusterer split them
+    # and is the fogged glass's own shape: its *two largest areas* were the pair.
+    view = np.concatenate([np.full((50, 200), 0.22, dtype=np.float32),
+                           np.full((75, 200), 0.80, dtype=np.float32),
+                           np.full((75, 200), 0.81, dtype=np.float32)])
+    said = values_line(view, reach=(0.13, 0.96))
+    assert "top two clusters" in said and "read as one mass" in said
+    assert "0.10" in said
+
+
+def test_the_edges_line_divides_the_picture_between_hard_and_soft(tmp_path):
+    """Finding 13: `report()` said *nothing to report* over a picture whose every
+    boundary was crisp, and GPT's own verdict on it names *equally crisp boundaries*.
+    Nothing in the log can see it -- an edge is what two neighbouring masses do to
+    each other, not either one's arguments -- so this is measured off the canvas.
+
+    **The prototype measured the wrong pixels.** Taking the top percentile of the
+    gradient samples the sharpest pixels of whatever picture it is handed, so every
+    canvas came back between 1.5 and 2.1 px and the `2.0` threshold was a coin flip:
+    it called a hard-edged mass 41% hard and a ragged comb 84%, which is the wrong
+    way round. The ridge-and-step selection here separates the one passage of the
+    four below that a painter would call soft, which is what the line is for."""
+    from easel.checklist import edges_line
+
+    shape = polygon([(0.15, 0.15), (0.85, 0.20), (0.80, 0.80), (0.10, 0.75)])
+    laid = {}
+    for name, call in (("hard", dict(brush="flat", size=0.05, density=1.0,
+                                     solid=True, edge="hard", pressure="even")),
+                       ("soft", dict(brush="round_soft", size=0.09, density=0.6))):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.block_in(shape, color="titanium_white", **call)
+        said = edges_line(s.canvas.values(sketch=False).astype(np.float32) / 255.0)
+        laid[name] = (float(re.search(r"(\d+)%", said).group(1)),
+                      float(re.search(r"median ([\d.]+) px", said).group(1)))
+    assert laid["hard"][0] > laid["soft"][0], laid
+    assert laid["soft"][0] == 0.0, laid
+    assert laid["soft"][1] > laid["hard"][1], laid
+
+    # A canvas with nothing on it has no boundary between two masses to measure, and
+    # says so rather than reporting the tooth's own gradients as edges.
+    assert edges_line(np.full((60, 60), 0.4, dtype=np.float32)) ==         "edges: nothing with an edge yet"
+
+
+def test_the_pencil_line_counts_graphite_and_not_paint(tmp_path):
+    """The checklist's own question, and the one line here whose right answer is not
+    zero: a drawing showing through thin paint is a good thing and worth keeping. So
+    this is a number and not a warning -- and it has to fall when the paint goes over
+    the drawing."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.pencil([(0.10, 0.30), (0.90, 0.32)])
+        drawn = float(re.search(r"([\d.]+)%", s._canvas_lines()[-1]).group(1))
+        s.block_in(span("A1", "H8"), "flat", "titanium_white", size=0.08,
+                   density=1.0, solid=True, pressure="even")
+    assert drawn > 0.0
+    # Buried under a solid white field: the graphite is still on the canvas and is no
+    # longer showing, which is what the line measures and what a painter sees.
+    lines = [one for one in s._canvas_lines() if one.startswith("pencil:")]
+    assert lines and float(re.search(r"([\d.]+)%", lines[0]).group(1)) < drawn
+
+
+def test_a_solid_mass_says_what_came_back_bare_where_it_would_read(tmp_path):
+    """Finding 2, and B2's correction to it. `solid-comb` predicts the holes from the
+    brush and the density; this measures the canvas once the paint is on it, which is
+    the only way to answer for the shape, the ground and the overlap.
+
+    **A hole is a contrast, not a gap** -- `CALIBRATION.md`'s own words. The same comb
+    over the same shape leaves `0.16%` bare on `toned_grey` and `3.16%` on a dark
+    ground, because *bare* means within `10/255` of the ground and a mass painted near
+    its own ground has nothing to show through. The 3.16% is the measurement finding
+    paint that barely registered, not a hole anybody can see, so the line is gated on
+    the contrast and says the number it measured."""
+    shape = polygon([(0.20, 0.20), (0.80, 0.25), (0.75, 0.80), (0.15, 0.75)])
+    lay = dict(size=0.04, density=0.8, solid=True)
+
+    s = Session(512, 384, ground="#2e332c", seed=3, out_dir=tmp_path, timelapse=False)
+    with pytest.warns(UserWarning, match="came back bare"):
+        s.block_in(shape, "bristle", "titanium_white", **lay)
+    said = [n for n in s.notices() if n.code == "holes"]
+    assert len(said) == 1 and "of value between the two" in said[0].text
+
+    # The same comb, the same shape, the same ground -- and a colour that sits on that
+    # ground. The holes are still there and nobody can see them.
+    quiet = Session(512, 384, ground="#2e332c", seed=3, out_dir=tmp_path,
+                    timelapse=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quiet.block_in(shape, "bristle", "burnt_umber", **lay)
+    assert not [n for n in quiet.notices() if n.code == "holes"]
+
+    # And the brush that closes them: a flat leaves nothing bare at any size tried.
+    flat = Session(512, 384, ground="#2e332c", seed=3, out_dir=tmp_path,
+                   timelapse=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        flat.block_in(shape, "flat", "titanium_white", **lay)
+    assert not [n for n in flat.notices() if n.code == "holes"]
+
+
+def test_the_holes_line_measures_what_calibration_measured(tmp_path):
+    """The same three numbers `CALIBRATION.md` prints for B2, off the engine's own
+    method rather than off the probe's. The point of `ground_showing(where=)` is that
+    there is one definition of *bare* and the document and the tool read it from the
+    same place; two definitions is how the two drift apart."""
+    place = Region(0.10, 0.10, 0.90, 0.90)
+    got = {}
+    for ground in ("toned_grey", "#2e332c"):
+        s = Session(1440, 960, ground=ground, seed=7, out_dir=tmp_path, timelapse=False)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.block_in(place, "bristle", "burnt_umber", size=0.04, density=0.8,
+                       solid=True, direction=37)
+        inner = place.inset(0.04 * 0.8)
+        x0, y0, x1, y1 = s.canvas.region_px(inner)
+        mask = np.zeros((960, 1440), dtype=bool)
+        mask[y0:y1, x0:x1] = True
+        got[ground] = s.canvas.ground_showing(where=mask)
+    # 0.1552% and 3.1550% in the document, off a different seed.
+    assert 0.001 < got["toned_grey"] < 0.003, got
+    assert 0.030 < got["#2e332c"] < 0.034, got
+    assert got["#2e332c"] > got["toned_grey"] * 15
+
+
+def test_the_boxes_line_counts_calls_and_not_passes(tmp_path):
+    """*Is any mass a rectangle that should have been a shape? Check the background
+    hardest.* A mass is many records -- one per pass -- so counting records would
+    report one wide band as thirty rectangles. The log separates one call from the
+    next by the generator's state at the call's start, which every record of that call
+    carries, and that is what the count walks."""
+    from easel.checklist import mass_counts
+
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(span("A1", "D4"), "flat", "titanium_white", size=0.05)
+        s.block_in(span("E1", "H4"), "flat", "burnt_umber", size=0.05)
+        s.block_in(polygon([(0.2, 0.5), (0.8, 0.55), (0.7, 0.9)]), "flat",
+                   "burnt_umber", size=0.05)
+        s.stroke([(0.1, 0.95), (0.4, 0.96)], "liner", "titanium_white", size=0.01)
+    assert mass_counts(s.history.records) == (2, 3)
+    assert "2 of 3 masses" in s.checklist()
+    # The hand-laid mark is not a mass, and two calls in a row are two and not one.
+    assert "check the background hardest" in s.checklist()
+
+
+def test_the_unspent_line_asks_for_the_weakest_passage(tmp_path):
+    """Finding 15, and the sharpest number the 0.5.0 cohort produced: five of its six
+    budgeted paintings stopped under 45% of budget at a median of 42% spent, and none
+    of the thirteen before them did. It is not a property of the engine, so the line
+    prints the number and names the job rather than warning."""
+    from easel.checklist import unspent_line
+
+    assert "name the weakest passage" in unspent_line(120, 300)
+    # Spent down to the last sixth: nothing left to redirect, so nothing is asked.
+    assert "name the weakest passage" not in unspent_line(250, 300)
+    assert "no budget set" in unspent_line(40, None)
+
+
+def test_the_checklist_answers_the_measured_lines_and_asks_the_other_three(tmp_path):
+    """G4: the closing checklist as output. Every line with a number behind it
+    answered, and the three that nothing here can ask printed as questions with the
+    painter's own `why` quoted back.
+
+    The boundary is the point. `LESSONS.md` and `report()` both say *the check cannot
+    see a composition*: a picture can pass every measured line and have quietly become
+    a different picture, competently painted."""
+    s = make(tmp_path, budget=300)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="the light coming off the water", subject_share=0.32)
+        s.block_in(span("A1", "H4"), "flat", "cerulean", size=0.06)
+        s.stroke([(0.3, 0.7), (0.6, 0.72)], "liner", "burnt_umber", size=0.01,
+                 note="subject")
+    said = s.checklist()
+    for line in ("values:", "edges:", "ground:", "boxes:", "unspent:", "subject:"):
+        assert line in said, line
+    assert "the light coming off the water" in said
+    assert "three this cannot answer" in said
+    # The three are questions and not measurements, and the budget line is the
+    # painting's own rather than a share of the pass.
+    assert said.count("?") >= 3
+    assert "300 marks spent" in said
+
+
+def test_the_checklist_says_so_when_nothing_wrote_down_why(tmp_path):
+    """The one line no measurement can replace, and the only honest thing to print
+    when it was never written: say that it was not, and name the call. A painting with
+    no `why` is not given a blank quotation to nod at."""
+    s = make(tmp_path, budget=100)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(span("A1", "H4"), "flat", "cerulean", size=0.06)
+    said = s.checklist()
+    assert "did not write down why" in said and "s.plan(why=...)" in said
+
+
+def test_easel_check_prints_the_checklist_and_changes_nothing(tmp_path, capsys):
+    """`easel check` is G4's other half, for a painter working from a shell. Read-only
+    on purpose: a checklist asks the painting questions and changes nothing about it,
+    so the file is not written back."""
+    path = tmp_path / "p.easel"
+    s = make(tmp_path, budget=200)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="a pier at low tide")
+        s.block_in(span("A1", "H4"), "flat", "cerulean", size=0.06)
+    s.save(path)
+    before = path.read_bytes()
+
+    assert main(["check", str(path)]) == 0
+    said = capsys.readouterr().out
+    assert "checklist for this painting" in said
+    assert "a pier at low tide" in said
+    assert path.read_bytes() == before
+
+
+def test_the_standing_lines_are_left_off_a_counted_copy(tmp_path):
+    """Rule: a counted copy borrowed the canvas and laid no paint on it, so every
+    number read off that canvas would be the painting's and not the pass's. The ground
+    line has been gated this way since 0.4.0 and the four canvas lines are gated with
+    it -- including `holes:`, which would otherwise report every pixel of a counted
+    mass as bare."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(span("A1", "H4"), "flat", "cerulean", size=0.06)
+        counted = s.scratch(count_only=True)
+        counted.block_in(polygon([(0.2, 0.5), (0.8, 0.55), (0.7, 0.9)]), "bristle",
+                         "titanium_white", size=0.04, density=0.8, solid=True)
+    said = counted.report()
+    for line in ("values:", "edges:", "ground:", "pencil:"):
+        assert line not in said, line
+    assert not [n for n in counted.notices() if n.code == "holes"]

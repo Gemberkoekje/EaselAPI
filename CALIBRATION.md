@@ -1734,6 +1734,42 @@ the checklist asks for, and half of the fourteen paintings made before the cohor
 too — the seven are further down the same slope, not off it. The contradiction between
 the graded-field recipe and the ground line is older than this round.
 
+#### The `edges:` row above is measured with an instrument that did not work
+
+Building workstream E turned this one over, which is the fourth mechanism this round
+has had to correct after reporting it as *observed*, and the shape `LESSONS.md`
+predicts.
+
+**The rise width was measured on the top percentile of the gradient.** That selection
+returns the *sharpest* pixels of whatever picture it is handed, so every canvas comes
+back at the same place: painted for the purpose, a hard-edged `flat` mass, a ragged
+comb and a fine scumble measured p25–p90 of **1.5–2.1 px** all three. And the
+threshold was `2.0` px — which is exactly what the sharpest transition a pixel grid
+can hold measures, because a one-pixel step of size *s* has a central-difference
+gradient of *s/2* and a rise of `s / (s/2)`. A threshold sitting **on** the
+discretisation limit is a coin flip, and it flipped the wrong way: the prototype
+called the hard-edged mass **41%** hard and the ragged comb **84%**.
+
+So **the 12%–44%, median 27% in the table above is float dust either side of `2.0`,
+not a measurement**, and finding 13 has no number behind it until the corpus is
+replayed with the instrument that shipped.
+
+What shipped selects edges two ways instead, neither of them a percentile: a
+**ridge** — the gradient at least as large as the gradient a pixel either side along
+its own direction, which throws out both the tooth, whose gradients are not ridges,
+and the broad interior slope of a graded mass, which has no crest — and a **step of
+at least `0.10`** across it, because two masses closer than that read as one and a
+transition smaller than that is not a boundary. The threshold moved to **`2.5` px**,
+clear of the limit. The same four canvases then sit at 49%, 49%, 53% and **0%**, the
+one at zero being the round soft brush, which is the only one of the four a painter
+would call soft; and a canvas blurred numerically moves from 2.0 px median to 6.8.
+
+**Still open:** the corpus replay wants re-running with this instrument before 0.6.0
+states a spread for finding 13. Nothing else in workstream E is affected — `values:`,
+`pencil:`, `holes:`, `boxes:` and `unspent:` all reproduce their prototypes, and
+`holes:` reproduces B2's three grounds to the third decimal (`0.1543%` / `0.1350%` /
+`3.1601%` against `0.1552%` / `0.1357%` / `3.1550%`, off a different seed).
+
 ### The default moves
 
 Each move, with what it buys measured on a scratch canvas and what it would cost measured

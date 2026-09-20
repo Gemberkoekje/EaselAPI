@@ -296,6 +296,22 @@ class Palette:
         """
         return min(self.value_of(name) for name in set(self.pigment_names))
 
+    @property
+    def lightest_value(self) -> float:
+        """The highest value anything in this box reaches -- about ``0.96``.
+
+        The other end of :attr:`darkest_value`, and the same argument: mixing never
+        takes a channel above the lighter of its two ingredients, so the lightest
+        pigment is the ceiling. It is titanium white unless a painter has put
+        something lighter in a slot.
+
+        The pair of them is what the ``values:`` line means by *a box that reaches
+        0.14-0.96*: a picture occupying a fifth of that range is flat against what
+        it had available, and the painter should be told what was available rather
+        than left to assume the range is 0 to 1. It never is -- paint is not light.
+        """
+        return max(self.value_of(name) for name in set(self.pigment_names))
+
     def _resolve(self, color):
         if isinstance(color, str) and not color.startswith("#"):
             return self[color]
