@@ -866,9 +866,17 @@ class Session:
                 the boundary's own feathering. Its cost is the thing ragged is for
                 -- a mass
                 *behind* other things wants the brush to break past its boundary --
-                so ragged stays the default and this is opt-in. ``overhang`` defaults
-                to a full brush here, since nothing can land outside the outline and
-                the only thing it still does is carry every pass end up to it.
+                so ragged stays the default and this is opt-in. ``overhang``
+                defaults to **two** brushes here, since nothing can land outside the
+                outline and the only thing it still does is carry every pass end up
+                to it. One was not enough: the default ``pressure="taper"`` reaches
+                zero one brush out, so at one brush every pass met the outline at
+                part pressure -- and a round tip, which loses *width* with pressure,
+                met it at part width. Measured on the 3 px strip just inside a
+                sloping outline, laid solid: a ``round_hard`` left ``0.85%`` to
+                ``3.26%`` of it bare at one brush and ``0.055%`` to ``0.33%`` at
+                two. The pass count does not move, so neither does what
+                :meth:`cost` quotes.
             solid: lay the mass as solid paint -- ``load=1.0`` and
                 ``load_falloff=0.0``, so no pass runs dry partway across. Density
                 spaces the passes; this is what fills the gaps *along* them.
@@ -1500,8 +1508,12 @@ class Session:
             density: as :meth:`block_in`. Leave it at 1.0 -- a correction that lets
                 the old paint through is not a correction.
             overhang: how far past the area each pass runs, in brush widths. The
-                default is one full width, which is what puts the ends outside, or
-                ``0`` beside ``edge="clean"``, which is what keeps them in.
+                default is one full width, which is what puts the ends outside;
+                ``0`` beside ``edge="clean"``, which is what keeps them in; and
+                **two** beside ``edge="hard"``, which is :meth:`block_in`'s own rule
+                -- nothing can cross the mask, so the only thing left for an
+                overhang to do is carry every pass end up to the outline, and one
+                brush left the boundary bitten between them.
             edge: ``"ragged"``, the default -- the passes run past the area, which is
                 the recipe. ``"clean"`` is :meth:`block_in`'s clean edge: the fill
                 inset by half the brush and the boundary drawn. ``"hard"`` masks
@@ -6647,8 +6659,19 @@ def _mass_overhang(edge: str, overhang):
     that walk because the walk is handed a fill and never learns which edge asked
     for it -- and :meth:`Session.cost` has to charge what :meth:`Session.block_in`
     lays.
+
+    **Two brushes and not one** (0.6.0, the default moved). One was not enough,
+    because the fault is pressure and not reach: the default ``pressure="taper"``
+    arrives at zero one brush out, so at ``overhang=1.0`` every pass met the outline
+    at part pressure -- and a round tip, which loses *width* with pressure, met it
+    at part width too. Measured on a 3 px strip just inside a sloping outline, laid
+    solid: a ``round_hard`` left ``0.85%``-``3.26%`` of it bare at one brush and
+    ``0.055%``-``0.33%`` at two; a ``flat``, ``0.00%``-``0.66%`` against ``0.000%``.
+    Nothing can cross the mask, so the whole cost is a few more dabs on each pass --
+    the stroke count is identical at 15, 18, 22 and 25 passes, which is why
+    :meth:`Session.cost` quotes the same number either way.
     """
-    return 1.0 if edge == "hard" and overhang is None else overhang
+    return 2.0 if edge == "hard" and overhang is None else overhang
 
 
 def _as_outline(place) -> Polygon:

@@ -352,6 +352,38 @@ rather than a rule painters keep forgetting.
   the bullet it spent on the clause, and its code block lost the clause with it — the
   paragraph leaving in the commit that made it untrue.
 
+**`edge="hard"` gets two brushes of overhang instead of one** (`block_in`, and `cover`,
+which is priced and laid as the block-in it becomes). `"hard"` masks every dab to the
+outline, so no paint lands outside it — and it still left the boundary bitten from the
+*inside*, in scallops between the pass ends. B8, reported by a painter and isolated
+here: the cause is pressure and not reach. The default `pressure="taper"` arrives at
+zero one brush out, so at `overhang=1.0` every pass met the outline at part pressure,
+and a round tip — which loses *width* with pressure — met it at part width too. On the
+3 px strip just inside a sloping outline a `round_hard` left **`0.85%`–`3.26%`** of it
+bare at one brush and **`0.055%`–`0.33%`** at two; a `flat`, `0.00%`–`0.66%` against
+`0.000%`.
+
+- **It costs dabs and not strokes.** The pass count is identical at one brush and at
+  two, so `cost()` quotes exactly what it quoted before. Nothing can cross the mask, so
+  the outline does not move either: paint outside it went from 225 px to 227 px on a
+  measured case, that difference being the boundary's own feathering, while bare inside
+  it went `0.220%` to `0.024%`.
+- **`scumble` keeps its own `0.35`.** Its passes are already `pressure="even"`, which is
+  the whole mechanism, and it leaves `0.000%` of the same strip bare at every overhang
+  tried — so there was nothing to close and nothing was moved.
+- **What this changes in an existing script.** Every `edge="hard"` mass that did not
+  name an `overhang` — 55 committed calls, none of which do — lays the same passes, the
+  same number of them, to the same outline, with the scallops between their ends filled
+  in. Looked at as well as measured, on a sloped mass laid with a round tip.
+
+**Three proposed moves were declined, and the probe is why.** `cover()` to
+`edge="hard"`: **no committed pass script calls `cover()` at all**, so the move is free
+and so is the evidence for it — it waits for the `spill` notice. A round tip on
+`block_in`/`sweep` to `pressure="even"`: **0 committed calls** would move. A `scumble`
+with a `flat` to halved `jitter`/`size_jitter`: the halved pair moves the ripple down a
+band from `0.0053` to `0.0059` and the scallop across it not at all, which is nothing
+this instrument can see.
+
 ## [0.5.0] — 2026-09-16
 
 **Two rounds, and both painted from the installed package alone** — the first two

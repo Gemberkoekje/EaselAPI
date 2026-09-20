@@ -8,23 +8,32 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1 to 5 are done; steps 6 onward are still a plan, and of workstreams A
-to G, A, B and C are built.** Step 1 filed the round in `SUGGESTIONS.md` with its
-evidence. Step 2 is `scripts/probe_cohort_session.py`: it rebuilds the corpus, re-measures
-every claim in 2a and 2d, and counts what every candidate in D, E and F would cost. Its
-numbers are in `CALIBRATION.md` under *The 0.5.0 cohort's round*, and **what they decide
-is under section 6 below**. Step 3 is the notice channel (A, all five rows):
-`src/easel/notices.py`, `Session._notify` with all 21 sites converted, delivery through
-`easel run` and the MCP `run` / `cost` / `preview` / `rehearse` results, `easel explain`,
-and `REFERENCE.md`'s *What the tool will tell you* held against the registry by
-`tests/test_notices.py`. **Every check D adds from here lands on that channel rather than
-beside it.** Step 4 is workstream B, every row of it except B8, which was held back to
-the default moves (F5) because it repaints 55 committed calls. Step 5 is the plan object
-(C): `src/easel/plan.py`, `Session.plan()`, its five effects on the check, `easel plan`
-and an MCP `plan` tool, and the finding-11 contradiction resolved in both the engine and
-the recipe. Written 2026-09-18 against `main` at `8192736`, engine 0.5.0 (released:
-`v0.5.0` is tagged at `54c2a0b`). Working file: delete it, or fold what survives into
-`SUGGESTIONS.md` / `CHANGELOG.md`, when the round is cut.
+**Status: steps 1 to 5, 7 and 8 are done and step 6 is part-done; step 9 onward is still
+a plan, and of workstreams A to G, A, B, C, E and F are built.** Step 1 filed the round
+in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
+rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
+candidate in D, E and F would cost. Its numbers are in `CALIBRATION.md` under *The 0.5.0
+cohort's round*, and **what they decide is under section 6 below**. Step 3 is the notice
+channel (A, all five rows): `src/easel/notices.py`, `Session._notify` with all 21 sites
+converted, delivery through `easel run` and the MCP `run` / `cost` / `preview` /
+`rehearse` results, `easel explain`, and `REFERENCE.md`'s *What the tool will tell you*
+held against the registry by `tests/test_notices.py`. **Every check D adds from here
+lands on that channel rather than beside it.** Step 4 is workstream B, every row of it
+except B8, which was held back to the default moves (F5) because it repaints 55
+committed calls. Step 5 is the plan object (C): `src/easel/plan.py`, `Session.plan()`,
+its five effects on the check, `easel plan` and an MCP `plan` tool, and the finding-11
+contradiction resolved in both the engine and the recipe. **Step 6 is part-done**:
+`chisel-staircase` (D1) is built, and `spill` (D1), D2 and D3 are not started. Step 7 is
+workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
+`edges:` / `holes:` / `pencil:` / `boxes:` / `unspent:` lines, `easel check` and the MCP
+`check` tool; `NOTES-step7.md` has its gotchas, including one published `edges:` number
+withdrawn. Step 8 is the two default moves the step-2 probe left standing -- a banded
+`scumble` laid solid (F3) and two brushes of overhang under `edge="hard"` (F5) -- with
+F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
+they are not re-argued; `NOTES-step8.md` has its gotchas. Written 2026-09-18 against
+`main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
+file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
+round is cut.
 
 ---
 
@@ -322,6 +331,17 @@ it still does not judge an arrangement. Findings 14 and 15 stay with the painter
 `why` line is the instrument for them.
 
 ### F. Default moves -- each behind a probe
+
+**Built, step 8, and two of the five survived the probe.** F3 (a banded `scumble` laid
+`load=1.0, load_falloff=0.0`) and F5 (`_mass_overhang` returning `2.0` under `"hard"`),
+each its own commit with a before-and-after rendered and looked at. **F1, F2 and F4
+were declined** on the numbers under *What step 2 measured* below, and the declines are
+written into `CHANGELOG.md` so they are not re-argued. Two things the build found that
+the table did not: the inward `scumble`'s `load` is **not** already `1.0` -- the reason
+column says it is -- and was measured (`0.005%` of a patch against `0.012%`) and left
+alone; and `scumble` never called `_mass_overhang`, so F5 does not reach it, which it
+does not need, because its passes are `pressure="even"` already and it has no pass-end
+bites at any overhang. `NOTES-step8.md` has the rest.
 
 | Candidate | Reason | Probe question |
 |---|---|---|

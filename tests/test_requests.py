@@ -4327,3 +4327,102 @@ def test_a_band_comes_back_off_the_ground_now_it_is_laid_solid(tmp_path):
     mask = np.zeros((240, 320), dtype=bool)
     mask[y0:y1, x0:x1] = True
     assert s.canvas.ground_showing(where=mask) < 0.005
+
+
+# -- F5: the overhang a hard edge carries ----------------------------------------------
+def test_a_hard_edge_carries_two_brushes_of_overhang(tmp_path):
+    """The default move of `PLAN-0.6.0.md` workstream F, row 5, and the fix for B8.
+
+    ``edge="hard"`` masks every dab to the outline, so the one thing an overhang still
+    does there is carry every pass end up to it -- and one brush did not, because the
+    default ``pressure="taper"`` reaches zero one brush out and every pass met the
+    outline at part pressure.
+    """
+    from easel.session import _mass_overhang
+    assert _mass_overhang("hard", None) == 2.0
+    assert _mass_overhang("ragged", None) is None
+    assert _mass_overhang("clean", None) is None
+    # An overhang the painter named is the painter's, whatever the edge.
+    assert _mass_overhang("hard", 0.0) == 0.0
+    assert _mass_overhang("hard", 0.5) == 0.5
+
+
+def test_two_brushes_close_the_bites_inside_a_sloping_hard_edge(tmp_path):
+    """`CALIBRATION.md`'s own case, on the canvas rather than off the constant.
+
+    The 3 px strip just inside a mass whose sides slope, laid solid with a round tip
+    -- which loses *width* with pressure and is therefore the worst case. The
+    document measures `0.85%`-`3.26%` bare at one brush against `0.055%`-`0.33%` at
+    two; this asks only for the order of magnitude, on a small canvas.
+    """
+    lean = math.tan(math.radians(14)) * 0.6
+    place = polygon([(0.30, 0.18), (0.70, 0.18),
+                     (0.70 + lean, 0.82), (0.30 + lean, 0.82)])
+    share = {}
+    for over in (1.0, None):
+        s = Session(512, 384, texture="linen", ground="white", seed=7,
+                    timelapse=False, out_dir=tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.block_in(place, "round_hard", "burnt_umber", size=0.05, density=1.0,
+                       solid=True, edge="hard", overhang=over, direction="vertical")
+        strip = (place.mask(512, 384) & ~place.inset(3.0 / 512).mask(512, 384))
+        share[over] = s.canvas.ground_showing(where=strip)
+    assert share[None] < share[1.0] / 2.0, share
+
+
+def test_the_hard_edge_overhang_costs_dabs_and_not_strokes(tmp_path):
+    """Why this move is cheap enough to make: nothing can cross the mask, so the extra
+    reach buys dabs. The pass count is what `cost()` quotes, and it does not move."""
+    lean = math.tan(math.radians(14)) * 0.6
+    place = polygon([(0.30, 0.18), (0.70, 0.18),
+                     (0.70 + lean, 0.82), (0.30 + lean, 0.82)])
+    laid = {}
+    for over in (1.0, None):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            laid[over] = len(s.block_in(place, "flat", "burnt_umber", size=0.05,
+                                        density=1.0, edge="hard", overhang=over,
+                                        direction="vertical"))
+    assert laid[None] == laid[1.0]
+    s = make(tmp_path)
+    quoted = s.cost({"shape": place, "brush": "flat", "color": "burnt_umber",
+                     "size": 0.05, "density": 1.0, "edge": "hard",
+                     "direction": "vertical"})
+    assert quoted == laid[None]
+
+
+def test_a_hard_edge_still_lets_nothing_outside_the_outline(tmp_path):
+    """The promise the move must not break. Two brushes of reach past a pass's end is
+    two brushes into the mask, which stops it -- so the outline does not move."""
+    place = polygon([(0.30, 0.20), (0.70, 0.20), (0.72, 0.80), (0.28, 0.80)])
+    s = Session(512, 384, texture="linen", ground="white", seed=7,
+                timelapse=False, out_dir=tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(place, "round_hard", "burnt_umber", size=0.06, density=1.0,
+                   solid=True, edge="hard", direction="vertical")
+    outside = ~place.mask(512, 384)
+    # Everything outside the outline is still the bare ground it started as, bar the
+    # boundary's own feathering.
+    assert s.canvas.ground_showing(where=outside) > 0.99
+
+
+def test_a_scumbles_hard_edge_was_left_where_it_was(tmp_path):
+    """Measured separately and not moved: a scumble's passes are `pressure="even"`
+    already, which is the whole of B8's mechanism, so it has no pass-end bites to
+    close and keeps its own `0.35`."""
+    import inspect
+    assert inspect.signature(Session.scumble).parameters["overhang"].default == 0.35
+    lean = math.tan(math.radians(14)) * 0.6
+    place = polygon([(0.30, 0.18), (0.70, 0.18),
+                     (0.70 + lean, 0.82), (0.30 + lean, 0.82)])
+    s = Session(512, 384, texture="linen", ground="white", seed=7,
+                timelapse=False, out_dir=tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(place, "burnt_umber", "umber", 8, edge="hard",
+                  direction="vertical")
+    strip = (place.mask(512, 384) & ~place.inset(3.0 / 512).mask(512, 384))
+    assert s.canvas.ground_showing(where=strip) < 0.001

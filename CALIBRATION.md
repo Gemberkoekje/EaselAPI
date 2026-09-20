@@ -642,6 +642,42 @@ say so past a quarter, naming the share and what the inset keeps, and the fix is
 smaller brush or the ragged edge. Clean still spills half what ragged does at every
 size, which is what it is for.
 
+### The bites just inside a hard edge (0.6.0: the default moved)
+
+`edge="hard"` masks every dab to the outline, so nothing can land outside it — and
+until 0.6.0 it still left the boundary *bitten* from the inside, in scallops between
+the pass ends. The cause is pressure and not reach: the default `pressure="taper"`
+arrives at zero one brush out, so at the old `overhang=1.0` every pass met the outline
+at part pressure, and a round tip — which loses *width* with pressure — met it at part
+width as well. Measured on the 3 px strip just inside a mass whose left and right edges
+slope, `size=0.05`, `density=1.0`, `solid=True`, `direction="vertical"`, 1024×768; the
+share of that strip that came back bare:
+
+| brush | slope | `ragged` | `hard`, one brush | `hard`, two (the default now) |
+|---|---|---|---|---|
+| `flat` | 0° | `0.09%` | `0.000%` | `0.000%` |
+| `flat` | 10° | `3.37%` | `0.657%` | `0.000%` |
+| `flat` | 20° | `1.71%` | `0.000%` | `0.000%` |
+| `flat` | 30° | `0.19%` | `0.000%` | `0.000%` |
+| `round_hard` | 0° | `10.01%` | `3.016%` | `0.274%` |
+| `round_hard` | 10° | `11.77%` | `3.260%` | `0.226%` |
+| `round_hard` | 20° | `7.55%` | `1.032%` | `0.329%` |
+| `round_hard` | 30° | `8.43%` | `0.854%` | `0.055%` |
+
+**It is the round tip's fault more than the chisel's**, which is the opposite of the
+staircase above. And **the cost is dabs, not strokes**: the pass count is identical at
+one brush and at two — 15, 18, 22 and 25 for the four slopes — so `cost()` quotes the
+same number it always did. Nothing can cross the mask, so the outline does not move
+either: on a mass laid with a `round_hard` at 14°, paint outside the outline went from
+225 px to 227 px, that difference being the boundary's own feathering, while bare
+inside it went `0.220%` to `0.024%`.
+
+**`scumble` keeps its own `0.35` and needs no more.** Its passes are `pressure="even"`
+by default, which is the whole mechanism, and it leaves `0.000%` of the same strip bare
+at `0.35`, `1.0` and `2.0` alike with either brush. `cover` does move, because it is
+priced and laid as the block-in it becomes; its published area ratios are unchanged
+(`1.00x` the area it was handed at `hard`, at every overhang).
+
 ### A shaped mass with `direction` left off
 
 `direction` defaults to horizontal, and on a shape taller than it is wide the passes
@@ -1808,7 +1844,7 @@ over the corpus.
 | a round tip on `block_in`/`sweep` to `pressure="even"` | not re-measured; the docs' own claim | **0 committed calls** would move |
 | a banded `scumble` to `load=1.0, load_falloff=0.0` | bare **5.17% to 0.01%**, ripple **0.0111 to 0.0031** | **40 of 60** committed banded scumbles type the clause by hand — **moved in 0.6.0**, and re-measured where it landed under *The load a band is laid at* |
 | a `scumble` with a `flat` to halved `jitter`/`size_jitter` | ripple down the band **0.0053 to 0.0059**, scallop across it 0.0052 either way | 15 committed scumbles use a `flat`; the halved pair changes nothing this measures |
-| `edge="hard"` to two brushes of overhang | B8's table: `0.80%`-`2.86%` bare inside the line to `0.055%`-`0.285%` on a round tip | **55 committed calls at `edge="hard"`, none naming an overhang** — every one would move |
+| `edge="hard"` to two brushes of overhang | B8's table: `0.80%`-`2.86%` bare inside the line to `0.055%`-`0.285%` on a round tip | **55 committed calls at `edge="hard"`, none naming an overhang** — every one would move. **Moved in 0.6.0**, and re-measured where it landed under *The bites just inside a hard edge* |
 
 The banded-scumble default is the one the corpus argues for loudest: two painters in three
 type the clause by hand. The `cover()` move costs nothing because nothing uses `cover()`,
