@@ -280,7 +280,7 @@ chose. What each one leaves when you are not watching:
 | Reach for | and if you are not watching, you get |
 |---|---|
 | `flat` / `knife`, short | a rectangle with chisel ends |
-| `flat` / `knife` filling a mass whose boundary is not parallel to the passes | **a staircase down that boundary** — each pass ends in a chisel square to its travel, and where the boundary slopes the ends stop at different heights and stack |
+| `flat` / `knife` filling a mass along a straight side it runs *nearly* along | **a staircase down that side** — each pass ends in a chisel square to its travel, so where the side slopes the ends stop at different heights and stack. The call counts them: `chisel-staircase` |
 | `round_hard`, short | a capsule. It needs to be about **7×** longer than it is wide before it stops reading as one |
 | `round_hard` or `liner`, several small marks | **one disc, printed over and over** — unless `tip_wobble=0.7` redraws the outline per mark. `report()` counts them |
 | `bristle` below `size~0.025` | a comb: a woven strap across a band, or a ladder of ticks along an edge |
@@ -290,21 +290,10 @@ chose. What each one leaves when you are not watching:
 | any loop or generator you write | its own statistical signature: one density, one mark length, no clumps and no holes |
 | repair laid on repair, always additive | horizontal strata, one visible edge per repaint |
 
-Three of those need more than a row.
-
-**The staircase is the most common way a mass goes wrong here, and it is measured.** A
-chisel leaves three to four times as many horizontal pass-ends down a sloping boundary
-as a comb or a round tip, and a *smaller* chisel is worse (*The chisel staircase* in
-[`CALIBRATION.md`](CALIBRATION.md#the-chisel-staircase)). Four repairs, cheapest
-first: run the passes *along* the sloped boundary — `direction=` in degrees, or the
-two points of the boundary itself — so the chisel ends fall on an edge that is square
-to them; lay the plane with a comb and put the core back with one solid stroke down its
-middle; `edge="clean"`, which draws the contour along the outline for one stroke more
-(*Masses that are not rectangles*, below); or `edge="hard"`, which masks every dab to
-the outline, costs no extra stroke and takes the staircase out rather than hiding it —
-`13%` of strong edges horizontal against `4%`, on a mass with no horizontal feature.
-It is opt-in because a mass standing *behind* other things wants the brush to break
-past its boundary, which is what ragged is for.
+Two of those need more than a row. The staircase used to be a third and is now a
+notice: the call counts the pass ends that will land on a side it runs nearly along
+and how far each one steps from the last, and `easel explain chisel-staircase` prints
+the repairs in price order with what each was measured to leave.
 
 **The shallow shape is not covered by the brush-width rule.** An ellipse `0.256 ×
 0.128` filled with a `flat` at `0.022` — a twelfth of its width — came out a rectangle.

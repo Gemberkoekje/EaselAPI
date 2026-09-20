@@ -99,8 +99,8 @@ fall of light, a shadow, a path.
 ```python
 field = polygon([(0.0, 0.62), (1.0, 0.55), (1.0, 0.76), (0.0, 0.76)])   # a band
 near  = polygon([(0.0, 0.76), (0.55, 0.80), (1.0, 1.0), (0.0, 1.0)])    # cut to a wedge
-s.block_in(field, "flat", "mid", size=0.10, direction="axis")
-s.block_in(near, "flat", "dark", size=0.08, direction="axis")
+s.block_in(field, "bristle", "mid", size=0.10, direction="axis")
+s.block_in(near, "bristle", "dark", size=0.08, direction="axis")
 s.stroke([(0.34, 0.62), (0.70, 0.60), (1.05, 0.58)], "flat", "pale",
          size=0.012, opacity=0.6, pressure=[0.0, 0.7, 1.0])            # a horizon found late
 ```
@@ -181,14 +181,15 @@ A mass that is round rather than flat — the thing a value ramp across its widt
 not give you. Three marks: the mass, the lit side, and the join.
 
 ```python
-form = polygon([(0.30, 0.72), (0.44, 0.72), (0.42, 0.24), (0.32, 0.24)])
-lit  = polygon([(0.36, 0.72), (0.44, 0.72), (0.42, 0.24), (0.37, 0.24)])
+form = polygon([(0.31, 0.72), (0.45, 0.72), (0.43, 0.24), (0.29, 0.24)])
+lit  = polygon([(0.37, 0.72), (0.45, 0.72), (0.43, 0.24), (0.35, 0.24)])
+side = [(0.31, 0.72), (0.29, 0.24)]      # the form's own side: run the passes along it
 
 s.block_in(form, "flat", "shadow", size=0.02, density=1.0, solid=True,
-           direction=90, edge="clean")                         # the whole mass, dark
+           direction=side, edge="clean")                       # the whole mass, dark
 s.block_in(lit, "flat", "light", size=0.016, density=1.0, solid=True,
-           direction=90, opacity=1.0, pressure="even")         # the lit side, on it
-s.stroke([(0.362, 0.71), (0.366, 0.46), (0.370, 0.25)], "flat",
+           direction=side, opacity=1.0, pressure="even")       # the lit side, on it
+s.stroke([(0.370, 0.71), (0.359, 0.46), (0.351, 0.25)], "flat",
          s.palette.mix("shadow", "light", 0.5),
          size=0.012, opacity=0.6, load=1.0, load_falloff=0.0,
          pressure="even")                                      # the join, half strength
@@ -230,7 +231,7 @@ faces = [(polygon([(0.06, 0.61), (0.24, 0.58), (0.38, 0.65), (0.30, 0.70),
 s.block_in(whole, "flat", "dark", size=0.06, density=1.0, solid=True,
            direction="axis", edge="clean")
 for face, colour, size in faces:
-    s.block_in(face, "flat", colour, size=size, density=1.0, solid=True,
+    s.block_in(face, "bristle", colour, size=size, density=1.2, solid=True,
                direction="axis", opacity=1.0, pressure="even")
 s.stroke([(0.27, 0.66), (0.32, 0.71), (0.40, 0.77)], "round_hard", "dark",
          size=0.014, opacity=0.9, pressure="taper")            # one crevice

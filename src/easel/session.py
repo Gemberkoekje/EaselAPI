@@ -947,6 +947,11 @@ class Session:
             _check_clean_size(self, place, b, self.canvas, stacklevel=3)
         elif edge == "ragged" and shaped:
             _check_round_block(self, place, b, self.canvas, stacklevel=3)
+        if edge == "ragged":
+            # Regions too: a rectangle swept at an angle stairs down all four sides,
+            # and `span(...)` is how most of the corpus's bands are written.
+            _check_chisel_staircase(self, place, b, direction, density, self.canvas,
+                                    stacklevel=3)
 
         with self._one_call("block_in"):
             if dry_first:
@@ -4992,6 +4997,156 @@ def _check_direction_sequence(session, place, b: Brush, direction, density: floa
         f"stacked, it is {len(dirs)} passes. Two directions are what breaks a comb "
         f"and {len(dirs)} do not break it further: a cross at the mass's own angle, "
         f"direction=(\"axis\", {across:.0f}), is {pair} here.",
+        stacklevel=stacklevel,
+    )
+
+
+#: The tips whose pass end is a straight line across the pass, and so stacks into a
+#: step. Narrower than :data:`_CHISEL_TIPS`, which is about width following pressure
+#: and counts the comb among them: a comb's end is broken into bristles and a disc's
+#: is round, which is why both measure at a twentieth of a chisel's on the same shape
+#: (``CALIBRATION.md``, *The chisel staircase*).
+_STAIR_TIPS = ("flat", "knife")
+
+#: How tall a ledge has to be, in brush widths, before it reads as a step down the
+#: boundary rather than as the ragged edge a ``block_in`` has anyway.
+_STAIR_RISE = 2.0
+
+#: ...and how many ledges the outline has to take before it is a staircase and not a
+#: single jag. Three is where the corpus and the guide part company: the band
+#: ``CALIBRATION.md`` measures the staircase on takes **5.8**, Kimi's rock face
+#: **5.0** and *a mass built of planes* **11.7** on its lit plane, while the one
+#: guide block that comes near without being one -- a half-canvas rectangle swept six
+#: degrees off its own top edge, which takes a single end on the top and one on the
+#: bottom -- takes **2.0**.
+_STAIR_LEDGES = 3.0
+
+
+def _outline_sides(place) -> list:
+    """A place's outline, as the straight sides a pass can end against."""
+    if isinstance(place, Polygon):
+        pts = list(place.closed)
+    else:
+        r = as_region(place)
+        pts = [(r.x0, r.y0), (r.x1, r.y0), (r.x1, r.y1), (r.x0, r.y1), (r.x0, r.y0)]
+    return list(zip(pts, pts[1:], strict=False))
+
+
+def _pass_unit(place, direction, canvas) -> tuple[float, float]:
+    """The direction a pass runs, as a unit vector **in brush units**.
+
+    ``direction=`` and :attr:`Polygon.axis` are angles in the normalised ``0..1``
+    space a place is written in; a brush ``size`` is a share of the long side, and
+    the staircase a painter sees is in pixels. On 1024x768 the two readings of *45
+    degrees* are seven degrees apart -- more than the whole window this rule lives in
+    -- so both ends of every comparison below are brought into brush units first.
+    :func:`_line_angle` exists for the same reason, one layer up.
+    """
+    degrees = place.axis if direction == "axis" else _angle_of(direction)
+    theta = math.radians(degrees)
+    long = float(canvas.long_side)
+    dx = math.cos(theta) * canvas.width / long
+    dy = math.sin(theta) * canvas.height / long
+    length = math.hypot(dx, dy) or 1.0
+    return dx / length, dy / length
+
+
+def _stair_ledges(place, direction, size: float, density: float, canvas) -> list:
+    """Per straight side of a place: how many pass ends land on it, and how far apart.
+
+    The mechanism, rather than a window of angles fitted to it. Passes run along
+    ``d``, spaced ``step`` apart along the normal ``n``, and each one ends where it
+    leaves the outline. A side whose extent **across** the passes is ``across`` takes
+    ``across / step`` of those ends, and they are spread over its extent **along**
+    them -- so each step down it is
+
+        rise = along / (across / step) = step x cot(theta)
+
+    and that one line says the whole of it. At ``theta = 0`` the passes run along the
+    side and none of them ends on it. At ``theta = 90`` every end lands on the same
+    line and the rise goes to nothing. The fault is in between, and because ``cot``
+    is steep near zero it is **nearest parallel that it is worst**: a side three
+    degrees off the passes takes its handful of ends eight brush widths apart, which
+    is the lit band ``CALIBRATION.md`` measures at 22% horizontal edges against 1%
+    for a comb.
+
+    Returns ``(ledges, rise_in_brush_widths, side_length)`` per side, tallest step
+    first. ``direction`` is read the way :meth:`Session._block_in_paths` reads it --
+    left off is horizontal, ``"cross"`` and a sequence are one pass per angle -- and
+    every angle is walked, because a mass swept twice stairs on whichever of the two
+    it is nearest one of its sides.
+    """
+    long = float(canvas.long_side)
+    ux, uy = canvas.width / long, canvas.height / long
+    step = _pass_step(size, density)
+    out = []
+    for pass_dir in _pass_directions("horizontal" if direction is None else direction):
+        dx, dy = _pass_unit(place, pass_dir, canvas)
+        nx, ny = -dy, dx
+        for p0, p1 in _outline_sides(place):
+            ex, ey = (p1[0] - p0[0]) * ux, (p1[1] - p0[1]) * uy
+            across, along = abs(ex * nx + ey * ny), abs(ex * dx + ey * dy)
+            ledges = across / step
+            if ledges < 1.0:
+                # Fewer than one whole pass end: no ledge on this side at all, and a
+                # `rise` that is the arithmetic running away towards parallel -- 110
+                # brush widths on a canvas one wide. Dropped before it is read off.
+                continue
+            out.append((ledges, (along / ledges) / size, math.hypot(ex, ey)))
+    return sorted(out, key=lambda row: -row[1])
+
+
+def _check_chisel_staircase(session, place, b: Brush, direction, density: float,
+                            canvas, stacklevel: int = 2) -> None:
+    """Warn when a chisel fills a mass along a straight side it runs *nearly* along.
+
+    Finding 1 of the 0.5.0 cohort, and the commonest way a mass comes back wrong:
+    Kimi's rock faces are ``RECIPES.md``'s *a mass built of planes* character for
+    character, and a worked example is an instruction.
+
+    **The rule is the mechanism and not a window of angles**, because the window the
+    plan proposed did not survive being measured. It asked what share of the outline
+    lay more than fifteen degrees from both parallel and square to the passes -- which
+    measures how irregular a shape is, not how it stairs. It was **silent on the lit
+    band** ``CALIBRATION.md`` measures the staircase on and silent on Kimi's rock
+    face, while firing on an ellipse, a blob and a rectangle swept at 28 degrees:
+    three shapes with no straight side to align to, and so nothing to offer a painter
+    who reads it. :func:`_stair_ledges` has the arithmetic that replaced it; the short
+    of it is that ``cot`` is steep near zero, so it is *nearest parallel* that a
+    chisel steps worst, which is the half of the range that window excluded.
+
+    Two remedies, and the measurement decides which is named how. Passes **along** the
+    side are free and exact -- ``direction=`` takes the side's own two points, the form
+    that exists because three painters worked the screen angle out by hand and typed a
+    number that meant something else (:func:`_line_angle`) -- but only where the sides
+    run **parallel**: on a tapered shape no one angle serves both, and aligning to the
+    silhouette took ``RECIPES.md``'s cylinder from twenty brush widths to seven rather
+    than to nothing. The comb always works, because its pass end is broken into
+    bristles instead of being a line: 22% of the lit band's strong edges horizontal
+    against **1%**, on the same shape at the same density.
+
+    ``edge="hard"`` is **not** offered, and ``PAINTING.md`` claimed it closed this
+    until 0.6.0. These are pass ends *inside* the mask, so masking the outline does
+    not move them: 22% to **20%**. ``edge="clean"`` halves it to 11% and is not
+    enough either, which is why this fires on ``"ragged"`` and would be right to fire
+    on ``"clean"`` if the table in ``CALIBRATION.md`` did not say so plainly instead.
+    """
+    if b.tip not in _STAIR_TIPS or not isinstance(place, (Polygon, Region)):
+        return
+    rows = [row for row in _stair_ledges(place, direction, b.size, density, canvas)
+            if row[1] >= _STAIR_RISE]
+    ends = sum(row[0] for row in rows)
+    if ends < _STAIR_LEDGES:
+        return
+    session._notify(
+        "chisel-staircase",
+        f"a {b.name!r} filling {getattr(place, 'name', '') or 'this shape'} ends "
+        f"{ends:.0f} of its passes on straight sides it runs nearly along, and steps "
+        f"up to {rows[0][1]:.0f} brush widths from one end to the next: those sides "
+        f"come back as a staircase rather than as the line they were drawn as. Give "
+        f"direction= that side's own two points, which closes it exactly where the "
+        f"sides run parallel; or lay it with a comb ('bristle'), whose pass ends "
+        f"break rather than stack.",
         stacklevel=stacklevel,
     )
 
