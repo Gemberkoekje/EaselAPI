@@ -919,6 +919,62 @@ def build_server() -> MCPServer:
             return f"The engine says these at a call. Ask for any one by its code:\n{rows}"
         return _notices.explain(code)
 
+    @server.tool()
+    @_tool
+    def plan(session: str, why: str = "", values: dict[str, float] | None = None,
+             lightest: str = "", subject_share: float | None = None,
+             bands: str = "", ground: str = "", clear: bool = False) -> str:
+        """Declare what this painting is for, and what the check should hold it to.
+
+        Not to be confused with the `plan` **argument** of `cost`, `preview` and
+        `rehearse`, which is a list of marks to be priced. This is the painter's plan
+        for the *picture*: the four things the guide asks to be settled before the
+        first mark, plus the two standing warnings a picture can declare its way out
+        of. `Session(budget=)` was the first of these declarations; these are the rest.
+
+        Every one of them changes what the post-pass check says after each pass, so
+        declaring them is how the check stops being generic advice. Called with only a
+        session it prints the plan already declared.
+
+        Args:
+            session: the .easel file.
+            why: what the picture is for, in a sentence. Nothing measures it; the
+                closing check quotes it back.
+            values: `{place: value}` -- a place name and the value you mean to paint
+                it, `{"A1:H3": 0.70, "lower-band": 0.39}`. The check then says how
+                many places are painted as promised, and declaring them prices the
+                pairs: two places closer than 0.10 read as one where they meet, which
+                is the question that is free to answer now and expensive later.
+            lightest: the place meant to be the lightest thing in the picture. The
+                check ranks the plan's places and says when something else has taken
+                the light.
+            subject_share: the share of the budget the subject gets, 0..1. The
+                subject line then always carries *against N% planned*.
+            bands: "subject" declares that this picture's subject really does run in
+                one direction, so the stack-of-bars line counts what crosses the bars
+                instead of warning about them.
+            ground: "showing", the default expectation, or "buried" -- this picture
+                covers its ground on purpose, as a graded field edge to edge does, so
+                the ground line stops asking for some back.
+            clear: start from nothing rather than from what is already declared.
+        """
+        s = Session.load(session)
+        told = len(s.notices())
+        declared = s.plan(
+            why=why or None,
+            values=values,
+            lightest=lightest or None,
+            subject_share=subject_share,
+            bands=bands or None,
+            ground=ground or None,
+            clear=clear,
+        )
+        s.save(session)
+        parts = [str(declared)]
+        if declared.values:
+            parts.append(declared.pairs_text(s.plan_pairs()))
+        return _join(_notices.block(s.notices(since=told)), *parts)
+
     # -- the three questions about a mark that has not been made yet ---------------
     @server.tool()
     @_tool

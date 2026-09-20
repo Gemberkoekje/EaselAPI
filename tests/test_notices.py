@@ -151,6 +151,27 @@ def test_a_document_asking_for_a_code_asks_for_one_that_exists() -> None:
     assert asked <= set(NOTICES), f"named in the guide and not registered: {asked - set(NOTICES)}"
 
 
+def test_the_help_that_shows_what_a_code_looks_like_shows_real_ones() -> None:
+    """The same drift, one layer in. `easel explain --help` offered `chisel-blank`,
+    `spill` and `direction-default` as the sort of thing a code looks like, and `spill`
+    was one this round had planned and not built -- so the one place the tool
+    demonstrates its own vocabulary was advertising a word it answers *unknown notice*
+    to. The test above could not see it, because a parser's help string is not a shipped
+    document.
+
+    The examples are generated from the registry now, so this holds the generator: every
+    code the help offers is answerable, and one of each kind is offered."""
+    from easel.cli import _example_codes
+
+    offered = re.findall(r"`([a-z][a-z0-9-]+)`", _example_codes())
+    assert offered, "the help offers no example code at all"
+    assert set(offered) <= set(NOTICES), f"offered and not registered: {offered}"
+    assert {NOTICES[code].kind for code in offered} == set(KINDS)
+    # And the command answers each of them, which is the promise the help is making.
+    for code in offered:
+        assert main(["explain", code]) == 0
+
+
 # -- what a notice is ------------------------------------------------------------------
 def test_a_notice_is_still_a_user_warning_saying_what_it_always_said(tmp_path) -> None:
     """`EaselWarning` subclasses `UserWarning` and `str()` is the message alone, so

@@ -397,6 +397,14 @@ s.stroke([(1.06, 0.72), (0.55, 0.68), (-0.06, 0.73)], "bristle", "shadow",
 however closed its joins. Two or three starved passes at an angle, ends running off the
 canvas, none of them parallel to each other.
 
+**This buries the ground, and the closing checklist asks for some back.** Both are
+right, and the picture decides which: a field over a third of the canvas at
+`load=1.0, opacity=0.95` leaves nothing of the ground under it, and five painters in one
+round accepted `ground: 0.0x% … the checklist asks for some` by hand for exactly this
+reason. Say `s.plan(ground="buried")` and the line prints its number without asking.
+Say nothing and the floor holds, which is what you want on a picture whose warm ground
+was meant to be seen through.
+
 **Goes wrong as:** horizontal strata (the `load_falloff` clause); a stack of bands with
 a different name (nothing crossing it); or a field that reads as two fields (two ramps
 that do not overlap).

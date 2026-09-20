@@ -1388,6 +1388,60 @@ itself is slightly cheaper, because it is laid into the shape inset by half a br
 
 ---
 
+## The plan a painter declares
+
+`Session(budget=)` above is the first of these: a number the painter writes down and
+the engine then holds them to. `s.plan(...)` is the rest of them — the values, the
+place meant to be lightest, the subject's share, and the two standing warnings a
+picture can declare its way out of. The numbers here are why each one is worth a line
+of the check.
+
+**The pairs in a value plan.** A plan finished all-green with two of its places
+planned `0.00` apart; they were the two that met on the canvas, and one dissolved into
+the other exactly there. Three of that plan's four close pairs were fine, because those
+masses never met. So the pairs are worth printing and *touching* is the whole of what
+picks them out: `plan-pairs` says only the pairs that are both inside `0.10` and within
+`0.01` of the canvas long side of each other. It is asked at registration, on the empty
+canvas, because that is the one moment the answer is free — and it was asked of the
+painter rather than answered for them for two rounds, both of which got it wrong, while
+three rounds skipped the empty-canvas run that would have raised the question at all.
+
+**The subject's share** is measured under *From the sessions* below, and this changes
+nothing about the number — only who has it. `report(subject_share=)` has taken it since
+0.4.0 and **neither `easel run` nor the MCP `run` tool ever passed it**, so a painter
+working anywhere but a Python prompt had never once seen the comparison, whatever they
+had written down.
+
+**The stack of bars is the noisiest rule the engine has**, and declaring the bands is
+what quietens it. Over the 325 painted passes of the corpus it fires on **47 of them,
+14%** — one pass in seven, *after* the said-once decay that already cut the pier's own
+seven firings to three — and it is half of all the lines the engine prints. It is also
+the rule two painters learnt to skim, and one cohort painter's was the only true
+positive in its round. Its own text concedes *unless the subject runs that way*: it
+cannot tell whether the subject does, and the painter can. Declared, the line stops
+warning and starts counting what crosses the bars, at `_REPORT_CROSSING_DEG` — 30
+degrees, the middle of a plateau where every threshold from 20 to 60 prints the same
+three lines on the pier. **The 14% is not re-measured here and does not need to be**: no
+painting in the corpus declares a plan, because there was nothing to declare one with
+until now, so a replay would print the same table. What a declaration changes is the
+text of the line, not how often the condition is met — the share to watch is the one the
+next round measures, over paintings that had the declaration available.
+
+**The bare-ground floor is older than the round that reported it.** Five of seven
+painters in the 0.5.0 cohort accepted `ground: 0.0x% … the checklist asks for some` by
+hand, three of them naming the same cause in nearly the same words — the `density=0.8`
+breather they were told to leave was buried by the graded fields they were told to lay.
+But the corpus replay puts **half of all 21 paintings under the floor, cohort or not**,
+so the contradiction is between the graded-field recipe and the checklist line rather
+than anything the cohort did. An earlier painting shows the other half of it: it chose a
+warm ground *to be seen through*, laid the passage over it at `density=1.0, load=1.0`,
+and finished at `0.07%` without noticing — which is the case the floor is for, and is
+not the same picture as one that buries its ground on purpose. `ground="buried"` is
+which of the two the painter meant, and the floor is unchanged for a painting that has
+not said.
+
+---
+
 ## From the sessions
 
 The guide used to quote these beside its rules. They are what painters reported about
@@ -1422,11 +1476,6 @@ ceiling the guide quotes beside its `0.10` floor.
 **A cast shadow on a lit surface.** On a surface at `0.60`, the darkest mixture at
 `0.16` read as a hole punched through it, `0.50` as a shadow, and `0.42` as a shadow
 with weight.
-
-**The pairs in a value plan.** A plan finished all-green with two of its places
-planned `0.00` apart; they were the two that met on the canvas, and one dissolved into
-the other exactly there. Three of that plan's four close pairs were fine, because those
-masses never met.
 
 **A cool mass on a warm ground.** A painter concluded three times that its subject was
 far too light, and `compare()` said it was inside `0.05` every time — about two steps

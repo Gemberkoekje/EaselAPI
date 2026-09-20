@@ -165,6 +165,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "a counted copy was asked something counting cannot answer",
             "painting", "## Try the mark before you spend it",
         ),
+        _spec(
+            "plan-pairs", "fact",
+            "two places a plan puts closer than `0.10` meet on the canvas, so one will "
+            "read as the other exactly where they join",
+            "calibration", "## The plan a painter declares",
+        ),
         # -- the brush, at the size it was given --------------------------------------
         _spec(
             "chisel-blank", "fact",

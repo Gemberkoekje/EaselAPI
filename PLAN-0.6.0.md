@@ -8,8 +8,8 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1, 2 and 3 are done; steps 4 onward are still a plan, and of
-workstreams A to G only A is built.** Step 1 filed the round in `SUGGESTIONS.md` with its
+**Status: steps 1 to 5 are done; steps 6 onward are still a plan, and of workstreams A
+to G, A, B and C are built.** Step 1 filed the round in `SUGGESTIONS.md` with its
 evidence. Step 2 is `scripts/probe_cohort_session.py`: it rebuilds the corpus, re-measures
 every claim in 2a and 2d, and counts what every candidate in D, E and F would cost. Its
 numbers are in `CALIBRATION.md` under *The 0.5.0 cohort's round*, and **what they decide
@@ -18,9 +18,13 @@ is under section 6 below**. Step 3 is the notice channel (A, all five rows):
 `easel run` and the MCP `run` / `cost` / `preview` / `rehearse` results, `easel explain`,
 and `REFERENCE.md`'s *What the tool will tell you* held against the registry by
 `tests/test_notices.py`. **Every check D adds from here lands on that channel rather than
-beside it.** Written 2026-09-18 against `main` at `8192736`, engine 0.5.0
-(tagged). Working file: delete it, or fold what survives into `SUGGESTIONS.md` /
-`CHANGELOG.md`, when the round is cut.
+beside it.** Step 4 is workstream B, every row of it except B8, which was held back to
+the default moves (F5) because it repaints 55 committed calls. Step 5 is the plan object
+(C): `src/easel/plan.py`, `Session.plan()`, its five effects on the check, `easel plan`
+and an MCP `plan` tool, and the finding-11 contradiction resolved in both the engine and
+the recipe. Written 2026-09-18 against `main` at `8192736`, engine 0.5.0 (released:
+`v0.5.0` is tagged at `54c2a0b`). Working file: delete it, or fold what survives into
+`SUGGESTIONS.md` / `CHANGELOG.md`, when the round is cut.
 
 ---
 
@@ -559,6 +563,7 @@ Small, and none of it blocks step 1.
 | File | Change |
 |---|---|
 | `src/easel/notices.py` (new) | `EaselWarning`, `Notice`, the `NOTICES` registry |
+| `src/easel/plan.py` (new) | `Plan`, `Planned`, the `plan:` and `lightest:` lines, and the pairs. Not in this map when it was written: `plan()` was to be a method of `session.py` alone, and the value object plus its serialisation is a module's worth of anything. The `bands` and `ground` effects stay in `session.py`, where the rules they change already are |
 | `src/easel/session.py` | `_notify`; the 17 existing sites; `plan()`; new `_check_*` functions; new rows in `_pass_findings`; measurement lines in `report()`; `checklist()`; `explain()`; `clip=` / `edge=` / `solid=` across verbs; B2, B3, B8, B9 |
 | `src/easel/canvas.py`, `measure.py` | value clusters, edge widths, holes, graphite share |
 | `src/easel/history.py` | signature exemption shared with `report()`; frame capture and the rehearsal-copy message (B3, B4, B15) |

@@ -30,7 +30,7 @@ from PIL import Image
 from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
-from easel.color import linear_to_srgb, luminance, parse_color
+from easel.color import linear_to_srgb, luminance, parse_color, srgb_to_linear
 from easel.history import DEFAULT_FRAME_PX, History, StrokeRecord
 from easel.look import (
     DEFAULT_LOOK_SIZE,
@@ -40,6 +40,7 @@ from easel.look import (
     save_look,
 )
 from easel.measure import (
+    VALUE_THRESHOLD,
     Comparison,
     compare_images,
     compare_plan,
@@ -49,6 +50,9 @@ from easel.measure import (
 from easel.notices import NOTICES, EaselWarning, Notice
 from easel.notices import explain as notice_text
 from easel.palette import Palette
+from easel.plan import Plan
+from easel.plan import build as build_plan
+from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
     Polygon,
@@ -257,6 +261,11 @@ class Session:
         # `history.records`, so a notice that took an index would move every painting
         # made before it. See :meth:`_notify`.
         self._notices: list[Notice] = []
+        # What the painter wrote down before painting: the values, the place meant to
+        # be lightest, the subject's share, and the two standing warnings this picture
+        # has declared its way out of. Beside the log for the same reason the notices
+        # are. See :meth:`plan`.
+        self._plan = Plan()
         # The last clip mask built, and the outline it came from.
         # See :meth:`_clip_cover`.
         self._clip_memo: tuple | None = None
@@ -2815,6 +2824,11 @@ class Session:
         # it about the copy. Carrying the painting's notices in would have `easel run
         # --rehearse` print every notice the painting has ever given.
         trial._notices = []
+        # The plan itself is carried, because a rehearsal is meant to say what the paid
+        # pass will say and every line the plan adds to the check is one of those. It
+        # is immutable, so a trial that re-declares its own plan leaves the painting's
+        # alone -- the same reason `_banding_told` is passed as a tuple.
+        trial._plan = self._plan
         trial._clip_memo = self._clip_memo
         return trial
 
@@ -3196,6 +3210,18 @@ class Session:
         rectangle or a shape, so whether two of them overlap or come within ``near``
         of each other is arithmetic, not a question for the painter.
         """
+        if isinstance(reference, Plan):
+            # The plan the session is already holding, handed straight back: `s.plan()`
+            # returns one, so `s.compare(s.plan())` measures the canvas against what
+            # was written down, sheet and all. A plan that has to be retyped to be
+            # checked is a plan that drifts, and the drift arrives as paint.
+            if not reference.values:
+                raise ValueError(
+                    "compare() was handed a plan with no values in it. Declare them "
+                    "first -- s.plan(values={sky: 0.70, water: 0.39}) -- or hand "
+                    "compare() the dict itself."
+                )
+            reference = reference.as_dict()
         if isinstance(reference, dict):
             return self._compare_plan(reference, path=path, threshold=threshold,
                                       near=near)
@@ -3244,28 +3270,15 @@ class Session:
         planned = np.zeros((h, w), dtype=np.float32)
 
         for i, (where, target) in enumerate(plan.items()):
-            try:
-                place = as_place(where)
-            except (KeyError, ValueError) as exc:
-                raise KeyError(
-                    f"{where!r} is not a place, so it cannot carry a planned value. "
-                    f"The keys of a value plan are places -- a cell like 'D5', a "
-                    f"span like 'C3:F6', a Region, or a shape. To see a name of your "
-                    f"own in the table, build the shape with one: "
-                    f"blob(cell('D5'), name='near_mass')."
-                ) from exc
-            poly = place if isinstance(place, Polygon) else polygon(place)
-            name = (place.name or poly.name
-                    or (where if isinstance(where, str) else f"place {i + 1}"))
+            # The same entry `s.plan(values=)` builds, from the same place: a value plan
+            # is written once and read by both, so a mass called `near_mass` in one table
+            # is not `place 3` in the other, and a value out of range is refused in one
+            # sentence rather than two copies of one.
+            entry = planned_place(where, target, i)
+            name, poly, value = entry.name, entry.outline, float(entry.value)
             mask = poly.mask(w, h)
-            value = float(target)
-            if not 0.0 <= value <= 1.0:
-                raise ValueError(
-                    f"The plan gives {name!r} a value of {value}, and a value runs "
-                    f"0..1 the way palette.value_of() reports it."
-                )
-            places.append((str(name), mask, value))
-            outlines.append((str(name), list(poly.closed)))
+            places.append((name, mask, value))
+            outlines.append((name, list(poly.closed)))
             # Later places sit in front of earlier ones, as they would be painted.
             planned[mask] = value
 
@@ -3548,7 +3561,8 @@ class Session:
         after a pass. Every input is already in the log, which carries brush, size,
         path, pressure and note per mark. Seven rules, each of which a real pass of a
         real painting would have tripped, and two standing measurements printed
-        under them:
+        under them -- plus, for a painting that has declared a plan
+        (:meth:`plan`), a line per declaration it can measure:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
@@ -3559,7 +3573,9 @@ class Session:
           *unless the subject runs that way*, it cannot tell whether the subject
           does, and on a subject that does -- joists, a waterline, a reflection -- it
           fired on five passes running until the painter stopped reading it, which
-          means it was unread on the pass where it was right;
+          means it was unread on the pass where it was right. Under
+          ``plan(bands="subject")`` the painter has answered that, and the line stops
+          warning and counts what crosses the bars instead;
         - **a graded passage laid too narrow** -- five or more long parallel marks at
           three or more colours, in one run with no gap wider than four brushes and
           with their colours turning at most once, stepped further apart than half
@@ -3585,8 +3601,13 @@ class Session:
           so *several small marks with ``round_hard`` or ``liner``* is the failure
           nobody has to ask for. The closing checklist's *is any small mark a disc, a
           capsule or a rectangle* is this rule's own question;
+        - **what the plan promised**, for a painting that declared one: how many of
+          its places are painted within ``0.10`` of the value they were promised, and
+          whether the place meant to be lightest is the lightest of them. Both read
+          the canvas, so both are left off a counted copy;
         - **the subject's share** of the marks so far, whenever a mark is noted
-          ``subject``, against ``subject_share`` if the plan's number is given. The
+          ``subject``, against ``subject_share`` -- the argument here, or the plan's
+          own, the argument winning. The
           share to measure at the moment the subject is finished, and meant to fall
           afterwards. A measurement, not a rule: it is printed under the findings and
           not counted among them;
@@ -3597,7 +3618,10 @@ class Session:
           0.4.0 there was no way to answer it short of building that canvas and
           diffing it -- which one painter did after the painting was finished, having
           already spent the warm ground the whole picture had been planned around.
-          It says so under ``_GROUND_FLOOR``, which is the one judgement in here.
+          It says so under ``_GROUND_FLOOR``, which is the one judgement in here --
+          and under ``plan(ground="buried")`` it prints the number without asking,
+          because whether this picture covers its ground on purpose is the painter's
+          to say.
 
         **What this cannot see is a composition**, and it says ``nothing to report`` to
         a dead one. Every rule here is about a mark, because a mark is what the log
@@ -3635,9 +3659,11 @@ class Session:
             print(s.budget_line())
             print(s.report(since=before, subject_share=0.32))
 
-        Prints, on a pass that tripped nothing::
+        Prints, on a pass that tripped nothing, for a painting that declared a plan::
 
             check over this pass, 9 marks: nothing to report
+              plan: 5 of 6 places inside 0.10; halo +0.14
+              lightest: lamp reads 0.78, the lightest of the 6 places planned
               subject: 41 of 128 marks so far (32%), against 32% planned
               ground: 2.16% of the canvas is still bare ground
         """
@@ -3662,6 +3688,7 @@ class Session:
         findings = _pass_findings(
             marks, earlier, self.canvas,
             banding=None if since is None else self._banding_wanted(paid),
+            bands=self._plan.bands,
         )
         scope = "this pass" if since is not None else "the painting"
         head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
@@ -3670,12 +3697,30 @@ class Session:
         else:
             head += "nothing to report"
         lines = [head] + [f"  - {line}" for line in findings]
+        # The lines the plan itself asked for, before the two standing ones: they are
+        # measurements of what the painter said they would do, so they read first. Gated
+        # exactly as the ground line below is -- they read the canvas, so a counted copy
+        # has nothing of its own to read, and a painting with no paint on it yet would be
+        # told how far its plan is from the bare ground.
+        if paid and not self._counting and (self._plan.values
+                                            or self._plan.lightest is not None):
+            view = self._value_view()
+            for line in (self._plan.value_line(view), self._plan.lightest_line(view)):
+                if line:
+                    lines.append(f"  {line}")
         on_it = [r for r in paid if "subject" in str(r.note).lower()]
         if on_it:
             share = len(on_it) / max(len(paid), 1)
             line = f"  subject: {len(on_it)} of {len(paid)} marks so far ({share:.0%})"
-            if subject_share is not None:
-                planned = float(subject_share)
+            # The argument wins over the plan: it is the more specific of the two, and
+            # a pass measuring one passage against its own share should be able to say
+            # so. Without either there is no comparison to print -- which is what
+            # every painter working through `easel run` or the MCP server got, because
+            # neither passed the argument and there was nowhere to declare it.
+            declared = (subject_share if subject_share is not None
+                        else self._plan.subject_share)
+            if declared is not None:
+                planned = float(declared)
                 line += f", against {planned:.0%} planned"
                 if share < planned - 0.005:
                     line += " -- behind, if the subject is finished"
@@ -3687,10 +3732,26 @@ class Session:
             bare = self.canvas.ground_showing()
             line = f"  ground: {bare:.2%} of the canvas is still bare ground"
             if bare < _GROUND_FLOOR:
-                line += (f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks for "
-                         f"some")
+                if self._plan.ground == "buried":
+                    # Declared, so the number is the whole of what there is to say.
+                    # Five of seven painters in one cohort accepted this line by hand,
+                    # three of them naming the same cause: the graded field they were
+                    # told to lay buried the breather they were told to leave.
+                    line += " -- buried, as the plan says"
+                else:
+                    line += (f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks "
+                             f"for some")
             lines.append(line)
         return "\n".join(lines)
+
+    def _value_view(self) -> np.ndarray:
+        """The whole canvas as values, 0..1, the way :func:`compare_plan` reads it.
+
+        One array per :meth:`report`, shared by every place the plan names: the same
+        arithmetic per place would be the canvas converted five times over to answer
+        five questions about it.
+        """
+        return _values_of(self.canvas.to_srgb8(impasto=False))
 
     def _banding_wanted(self, painting: list[StrokeRecord]):
         """Whether the stack-of-bars line is worth printing, as a test on its angle.
@@ -3708,16 +3769,23 @@ class Session:
         painting's mark count at its end, so ``report()`` called twice over one pass
         answers twice, and only a *later* pass is measured against what the picture
         has picked up since.
+
+        Returns a callable that answers with **the crossing count, or ``None`` for do
+        not print** -- rather than with a bool, because since 0.6.0 the count is not
+        just the gate but the line: a painting that has declared ``bands="subject"``
+        is not warned about its bars, it is told how much crosses them. ``None`` and
+        not ``0``: nothing crossing is a number worth printing, and the two would be
+        the same answer under a plain truth test.
         """
         here = len(painting)
 
-        def wanted(centre: float) -> bool:
+        def wanted(centre: float) -> int | None:
             crossings = _crossing_marks(painting, centre, self.canvas)
             told = self._banding_told
             if told is None or told[0] == here or crossings > told[1]:
                 self._banding_told = (here, crossings)
-                return True
-            return False
+                return crossings
+            return None
 
         return wanted
 
@@ -3794,6 +3862,134 @@ class Session:
             return list(self._notices)
         return list(self._notices[max(0, int(since)):])
 
+    # -- what the painter says before painting -----------------------------------
+    def plan(self, why=None, values=None, lightest=None, subject_share=None,
+             bands=None, ground=None, clear: bool = False) -> Plan:
+        """Write the plan down where the engine can see it. Returns it; print it.
+
+        The guide has always asked a painter to settle these before the first mark,
+        and until 0.6.0 there was nowhere to put any of them: *useful heuristics, but
+        they're philosophy, not errors, and it doesn't know which*. ``Session(budget=)``
+        was the first of these declarations; this is the rest of them::
+
+            s.plan(why="under a pier the light arrives from below, so every form is "
+                       "lit backwards",
+                   values={sky: 0.70, water: 0.39, quay: 0.22},
+                   lightest=lamp,
+                   subject_share=0.40,
+                   bands="subject",
+                   ground="buried")
+
+        Args:
+            why: what the picture is for, in a sentence. Nothing measures it;
+                :meth:`checklist` quotes it back at the end, which is the moment it
+                is worth reading again.
+            values: ``{place: value}``, the same dict :meth:`compare` takes -- so a
+                plan written here can be handed to ``compare()`` unchanged. The
+                post-pass check then carries a ``plan:`` line saying how many places
+                are painted as promised, and registering it prices the **pairs**: two
+                places planned closer than ``0.10`` read as one where they meet, and
+                this is the one moment that question is free to ask.
+            lightest: the place meant to be the lightest thing in the picture. The
+                check ranks the plan's places and says when something else has taken
+                the light -- one painting reached stroke 217 before it had any.
+            subject_share: the share of the budget the subject gets, 0..1. The
+                ``subject:`` line then always carries *against N% planned*, which
+                needed ``report(subject_share=)`` by hand before -- and neither
+                ``easel run`` nor the MCP ``run`` tool passed it, so from a shell the
+                comparison had never once been printed.
+            bands: ``"subject"`` declares that this picture's subject really does run
+                in one direction. The stack-of-bars line then stops warning and starts
+                counting: *how much crosses them*. It is the rule the corpus shows
+                firing on one pass in seven, and the one two painters learnt to skim.
+            ground: ``"showing"``, the default expectation, or ``"buried"`` -- this
+                picture covers its ground on purpose, which is what a graded field
+                edge to edge does. The ground line then prints its number without
+                asking for some back.
+
+            clear: start from nothing rather than from the plan already declared, so
+                this call is the whole of it.
+
+        Called with no arguments it simply hands back the plan the session is holding,
+        which is what ``easel plan p.easel`` prints.
+
+        Called again with some, it **changes what it is given and keeps the rest**, so
+        a pass can add the lightest place to a plan written in a ``prelude.py`` without
+        retyping its values; pass the empty version of a field to clear that one
+        (``values={}``, ``bands=""``). A ``prelude.py`` re-registering the same plan
+        before every pass says nothing the second time, which is what stops the pairs
+        notice becoming a thing printed once a pass.
+
+        The plan is saved in the ``.easel`` file, beside the log and never in it: a
+        mark's texture is seeded from its place in ``history.records``, so anything
+        new that took an index would repaint every painting made before it.
+        """
+        wanted = build_plan(why=why, values=values, lightest=lightest,
+                            subject_share=subject_share, bands=bands, ground=ground,
+                            onto=None if clear else self._plan)
+        # Here rather than in `easel.plan`, because whether a place is anywhere on the
+        # painting is a question about this canvas. `compare()` asks it of the same dict
+        # and says the same thing; without it the check would print a `nan` after every
+        # pass and the plan would be the only thing that could have said why.
+        for place in [*wanted.values, wanted.lightest]:
+            if place is not None and not place.outline.mask(*self.size).any():
+                raise ValueError(
+                    f"The planned place {place.name!r} covers no pixels of the canvas. "
+                    f"A place in a plan has to be somewhere on the painting."
+                )
+        # The same values again are not news. A `prelude.py` runs before every pass, so
+        # re-declaring is the ordinary case rather than the odd one, and without this the
+        # pairs below would be said once a pass -- which is `LESSONS.md`'s seventh rule
+        # broken by the one declaration meant to quieten the check down. The **values**
+        # and not the whole plan, because they are all the pairs are read off: adding the
+        # lightest place, or a sentence saying what the picture is for, is not a new
+        # answer to a question about which masses meet.
+        fresh = wanted.values != self._plan.values
+        self._plan = wanted
+        if fresh and wanted.values:
+            self._say_pairs()
+        return wanted
+
+    def plan_pairs(self, near: float = _PLAN_TOUCH):
+        """The plan's own pairs closer than the value threshold, and whether they meet.
+
+        ``(a, b, gap, meets)`` tuples, closest first -- the same shape
+        :attr:`easel.measure.Comparison.pairs` carries, because it is the same question
+        asked of the same plan. Read off the plan and not off the canvas, so the answer
+        arrives on the **empty** canvas: the one run the guide already tells a painter
+        to make, and the one three rounds of painters skipped.
+
+        ``near`` is how close two places have to come, as a fraction of the canvas long
+        side, before they count as meeting; as :meth:`compare`, and for the same reason
+        a plan carries no brushes.
+        """
+        gap_px = max(float(near) * float(self.canvas.long_side), 0.0)
+        return self._plan.pairs(
+            self.canvas.width, self.canvas.height,
+            lambda a, b: _masks_meet(a, b, gap_px),
+        )
+
+    def _say_pairs(self) -> None:
+        """The planned pairs that will read as one where they meet. See :meth:`plan`.
+
+        Only the pairs that **meet** are said: three of one plan's four close pairs were
+        masses that never touched, and the fourth was planned ``0.00`` apart and
+        dissolved into its neighbour exactly where they met.
+        """
+        touching = [row for row in self.plan_pairs() if row[3]]
+        if not touching:
+            return
+        said = "; ".join(f"{a} and {b} {gap:.2f} apart" for a, b, gap, _ in touching)
+        self._notify(
+            "plan-pairs",
+            f"{len(touching)} planned pair{'s' if len(touching) != 1 else ''} "
+            f"read as one where they meet: {said}. Two values closer than "
+            f"{VALUE_THRESHOLD:.2f} read as one mass, and these places touch -- so "
+            f"separate them in the plan now, or decide that the join is where the "
+            f"edge goes.",
+            stacklevel=3,
+        )
+
     def explain(self, code: str) -> str:
         """The passage behind one notice, from the document that holds the measurement.
 
@@ -3868,6 +4064,12 @@ class Session:
             # it -- see :meth:`_notify` -- and a key an older build does not read, so
             # a 0.5.0 Easel opens a file this one wrote.
             "notices": [[n.code, n.text] for n in self._notices],
+            # What the painter wrote down before painting. Also a new key read with
+            # `.get`, and beside the log for the same reason: a painting worked from
+            # the shell is loaded and saved once a pass, so without this the plan
+            # would have to be re-declared in every script that wanted it -- which is
+            # exactly how the budget behaved before it was saved.
+            "plan": self._plan.to_json(),
         }
         frames = self.history._frames
         # Written through an open handle: np.savez_compressed appends ".npz" to a
@@ -3938,6 +4140,9 @@ class Session:
                     for code, text in meta.get("notices", [])
                     if str(code) in NOTICES
                 ]
+                # New in 0.6.0, read with `.get` and forgiving about its own contents:
+                # a 0.5.0 file has no plan and opens with none. See `easel.plan`.
+                s._plan = Plan.from_json(meta.get("plan"))
                 s.seed = int(meta["seed"])
                 s.rng = _decode_rng(meta["rng_state"])
                 s.out_dir = Path(meta["out_dir"])
@@ -4072,6 +4277,10 @@ class Session:
         fresh.guides = [dict(g) for g in self.guides]
         fresh.assisted = list(self.assisted)
         fresh._banding_told = self._banding_told
+        # The plan is beside the log rather than in it, so a rebuild from the log
+        # alone would come back with none -- and a painting that has been undone back
+        # a few marks has not changed its mind about what it is painting.
+        fresh._plan = self._plan
         # The replayed session shares this one's out_dir. Numbering a look from the
         # directory rather than from a per-session counter is what keeps its very
         # next look()/preview()/rehearse()/compare() off a file this one already
@@ -5612,12 +5821,22 @@ def _crossing_marks(records, centre: float, canvas) -> int:
 
 
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
-                   banding=None) -> list[str]:
+                   banding=None, bands: str = "") -> list[str]:
     """The lines :meth:`Session.report` prints, one per rule that fired.
 
     ``banding`` decides whether the stack-of-bars line is worth printing this time,
-    given the angle it would be printed about. Left off, it always is; the session
-    passes :meth:`Session._banding_wanted`, which is what makes that one rule decay.
+    given the angle it would be printed about, and answers with the number of long
+    marks crossing the bars or ``None`` for *not this time*. Left off, it always
+    prints and the crossings are counted over ``marks`` -- which is the whole painting
+    on the audit that leaves it off. The session passes
+    :meth:`Session._banding_wanted`, which is what makes that one rule decay.
+
+    ``bands`` is the painter's own declaration, from :meth:`Session.plan`. Given
+    ``"subject"`` the stack-of-bars **warning** becomes the method's next **question**,
+    as a number: the warning's own text concedes *unless the subject runs that way*,
+    and a painter who has declared that it does has answered the only part of it the
+    engine could not. It is the rule the corpus shows firing on one pass in seven even
+    with its decay, and the one two painters learnt to skim.
     """
     out: list[str] = []
     if not marks:
@@ -5649,14 +5868,38 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
     if (len(best) >= _REPORT_ANGLE_MARKS and len(best) >= 0.6 * len(long_marks)
             and len({_call_of(r) for r, _ in best}) >= 2):
         centre = _angle_centre(a for _, a in best)
-        if banding is None or banding(centre):
-            out.append(
-                f"{len(best)} of {len(long_marks)} long marks run within "
-                f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
-                f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars unless "
-                f"the subject runs that way. Vary direction= between passes, or sweep "
-                f"each mass along its own axis."
-            )
+        crossings = (_crossing_marks(marks, centre, canvas) if banding is None
+                     else banding(centre))
+        if crossings is not None:
+            if bands == "subject":
+                # Declared, so the bars are the subject and not the fault. What is left
+                # to ask is the next question of the method -- whether anything crosses
+                # them -- because a picture of nothing but parallel marks is a layer
+                # cake whether or not the subject runs that way.
+                # A bare count and no denominator: the crossings are counted over the
+                # whole picture -- which is the question, since what crosses the bars
+                # need not have been laid in this pass -- and `long_marks` is this
+                # pass's. Printing one over the other read as *14 of 14* on a picture
+                # holding 42.
+                crossed = (f"{crossings} long mark{'s' if crossings != 1 else ''} in "
+                           f"the picture cross them at {_REPORT_CROSSING_DEG:.0f} "
+                           f"degrees or more"
+                           if crossings else "nothing crosses them yet")
+                out.append(
+                    f"bands declared as the subject: {len(best)} long marks run within "
+                    f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, and "
+                    f"{crossed}."
+                )
+            else:
+                out.append(
+                    f"{len(best)} of {len(long_marks)} long marks run within "
+                    f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
+                    f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars "
+                    f"unless the subject runs that way. Vary direction= between "
+                    f"passes, or sweep each mass along its own axis. Say "
+                    f"s.plan(bands='subject') if it does, and this line will count "
+                    f"what crosses them instead."
+                )
 
     # A hand-laid graded passage whose brush is too narrow for its own step.
     band = _graded_band(long_marks, canvas)
@@ -6427,13 +6670,20 @@ def _is_path(value) -> bool:
     return True
 
 
+def _values_of(rgb8: np.ndarray) -> np.ndarray:
+    """An 8-bit RGB array as values, 0..1: what ``look(values=True)`` shows.
+
+    One home for it, because the value of a place is what half of this file measures --
+    the plan's own lines, the greyscale of a comparison sheet, and the clusters a
+    finished canvas is read for.
+    """
+    srgb = np.asarray(rgb8, dtype=np.float32) / 255.0
+    return linear_to_srgb(luminance(srgb_to_linear(srgb)))
+
+
 def _grey(rgb8: np.ndarray) -> Image.Image:
     """An 8-bit RGB array as the greyscale the painter sees, for the comparison sheet."""
-    from easel.color import linear_to_srgb, luminance, srgb_to_linear
-
-    srgb = np.asarray(rgb8, dtype=np.float32) / 255.0
-    lum = linear_to_srgb(luminance(srgb_to_linear(srgb)))
-    grey = (lum * 255.0 + 0.5).astype(np.uint8)
+    grey = (_values_of(rgb8) * 255.0 + 0.5).astype(np.uint8)
     return Image.fromarray(np.repeat(grey[:, :, None], 3, axis=2), mode="RGB")
 
 

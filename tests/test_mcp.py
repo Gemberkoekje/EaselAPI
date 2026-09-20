@@ -561,3 +561,36 @@ def test_explain_hands_back_the_passage_that_measured_it(call):
 
     with pytest.raises(ToolError, match="unknown notice"):
         call("explain", code="chisel-blanc")
+
+
+# -- what the painter declares ---------------------------------------------------------
+def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, painting):
+    """The third way of declaring one, beside `s.plan()` and `easel plan`. It is the one
+    that matters most for this server: a painter working through a client cannot write a
+    `prelude.py`, so without a tool the declarations would be reachable from a shell and
+    from Python and not from here."""
+    reply = call("plan", session=painting, values={"A1:H4": 0.40, "A5:H8": 0.44},
+                 lightest="A1:H4", subject_share=0.4, bands="subject", ground="buried",
+                 why="the light arrives from below")
+    assert 'why: "the light arrives from below"' in reply.text
+    # The pairs, on the empty canvas, and through the notice channel as well as the table.
+    assert "plan-pairs" in reply.text
+    assert "A1:H4 / A5:H8: 0.04 apart, and they meet" in reply.text
+
+    # Saved, so the next pass through any of the three routes is held to it.
+    held = Session.load(painting).plan()
+    assert held.bands == "subject" and held.ground == "buried"
+    assert held.subject_share == 0.4 and held.lightest.name == "A1:H4"
+
+    # And the declarations reach the check the `run` tool hands back.
+    ran = call("run", session=painting,
+               script="s.block_in(span('A1', 'H4'), 'flat', 'titanium_white',\n"
+                      "           direction='axis', note='subject')\n")
+    assert "plan: " in ran.text and "lightest: " in ran.text
+    assert "against 40% planned" in ran.text
+
+    # Called again it changes one thing and keeps the rest, and clears on request.
+    again = call("plan", session=painting, why="a different sentence")
+    assert "a different sentence" in again.text and "bands: subject" in again.text
+    assert Session.load(painting).plan().values, "the values were dropped"
+    assert "no plan registered" in call("plan", session=painting, clear=True).text

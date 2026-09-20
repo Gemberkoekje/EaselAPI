@@ -339,6 +339,10 @@ s.compare("ref.jpg", region=, threshold=0.10, near=0.01, path=)
                                                 # per-cell value of both, and the miss
 s.compare({place: value, ...})                  # ...against your own value plan, and
                                                 # the pairs it puts within 0.10: do they touch?
+s.compare(s.plan())                             # ...against the plan this session holds
+s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, clear=False)
+                                                # what you decided before painting, where
+                                                # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
 s.report(since=None, subject_share=None)        # the post-pass check, read off the log
 s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
@@ -391,6 +395,37 @@ tenth of the canvas across — that is less than four of its brushes wide. Over 
 width the same brush is a mass with a soft silhouette, which is what a round tip is
 for.
 
+### What the plan changes
+
+`s.plan(...)` is what a painter is told to settle before the first mark, written where
+the engine can see it. `Session(budget=)` was the first of these declarations; these are
+the rest. Every one of them changes a line of the check, and two of them **replace a
+standing warning with a number** — which is the point: a rule that concedes *unless the
+subject runs that way* cannot tell whether the subject does, and the painter can.
+
+| Declared | What the check does with it |
+|---|---|
+| `values={place: 0.70, ...}` | at registration, on the empty canvas, `plan-pairs` names the pairs planned within `0.10` **that meet**. After every pass: `plan: 5 of 6 places inside 0.10; halo +0.14`, the sign being the canvas minus the plan |
+| `lightest=place` | `lightest: lamp reads 0.78, the lightest of the 4 places planned` — or which place took the light instead, and by how much |
+| `subject_share=0.40` | the `subject:` line always carries *against 40% planned*, with no `report(subject_share=)` to remember. It is the one declaration that was reachable before and unreachable from a shell |
+| `bands="subject"` | the stack-of-bars line stops warning and counts: *bands declared as the subject: 14 long marks run within 6 degrees of horizontal, and nothing crosses them yet* |
+| `ground="buried"` | the ground line prints its number and says *buried, as the plan says* instead of asking for some back |
+| `why="..."` | nothing measures it. It is quoted back at the end, which is the moment it is worth reading again |
+| nothing | nothing is said at the first stroke, and no line nags for a plan. What a declaration buys is the lines above; what it costs is writing it down |
+
+Called again it **changes what it is given and keeps the rest**, so the values can be
+declared in a `prelude.py` and the lightest place added from a pass; pass the empty
+version of a field (`values={}`, `bands=""`) to clear it, or `clear=True` to start
+again. Re-registering the same plan says nothing the second time, which is what lets a
+`prelude.py` run before every pass without `plan-pairs` becoming a thing printed once a
+pass. From a shell it is `easel plan p.easel --value 'A1:H3=0.70' --bands subject`,
+whose places are names rather than shapes, and `easel new` writes a `prelude.py`
+holding the call.
+
+The plan is saved in the `.easel` file, and lives beside `history.records` and never in
+it, for the reason the notices do — see *What the tool will tell you* below. A 0.5.0 file
+has no plan and opens with none.
+
 ---
 
 ## What the tool will tell you
@@ -423,6 +458,7 @@ floor twenty-eight times and was right every time.
 | `glaze-nothing` | fact | a film aimed at a value the paint under it already reads solves to no opacity, and still costs a stroke | `CALIBRATION.md`, *Aiming a film at a value* |
 | `inward-flat` | fact | an inward scumble's brush wider than about three ring steps: the last rings bury the first and the middle comes back flat | `CALIBRATION.md`, *`scumble`* |
 | `jitter-beads` | fact | `jitter=` a multiple of its default, which comes out as width: a chain of beads rather than a line | `PAINTING.md`, *Per-stroke overrides* |
+| `plan-pairs` | fact | two places a plan puts closer than `0.10` meet on the canvas, so one will read as the other exactly where they join | `CALIBRATION.md`, *The plan a painter declares* |
 | `round-fringe` | fact | a round tip blocking in a feature lays about half again the shape's area, and the fringe is the silhouette | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `sample-split` | fact | `sample()` averaged two masses, so the value it returns is a measurement of neither | `PAINTING.md`, *Colour* |
 | `scumble-bars` | fact | a banded scumble whose passes do not overlap: bars with the ground showing between them | `CALIBRATION.md`, *The band, and the brush that closes its joins* |
@@ -438,10 +474,11 @@ and `easel explain chisel-blank` is the table of what a solid mass lands at, at 
 pixels and either side of it.
 
 `s.notices(since=None)` is the list itself, oldest first, and it is saved in the
-`.easel` file, so a painting worked from the shell keeps what it was told. Notices
-live **beside** `history.records` and never in it: a mark's texture is seeded from its
-place in the log, so anything new that took an index would repaint every painting made
-before it.
+`.easel` file, so a painting worked from the shell keeps what it was told. Notices and
+the plan both live **beside** `history.records` and never in it, because the log indexes
+the random stream (*Try the mark before you spend it* in
+[`PAINTING.md`](PAINTING.md#try-the-mark-before-you-spend-it)): anything new that took an
+index would repaint every painting made before it.
 
 ---
 
@@ -464,10 +501,12 @@ s.save(path)       Session.load(path)
 ```
 
 ```bash
-easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720]
+easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
 easel mark p.easel top_l 0.335 0.315
+easel plan p.easel [--why "..."] [--value 'A1:H3=0.70' ...] [--lightest A1:H3]
+                   [--subject-share 0.4] [--bands subject] [--ground buried] [--clear]
 easel compare p.easel ref.jpg [--region D4]
 easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3
@@ -481,7 +520,10 @@ easel explain [code]
 
 A script run by `easel run` gets the session as `s`, with the whole public API already
 in scope and no imports needed. A `prelude.py` beside the session file runs first in the
-same scope, so helpers, mixtures and landmarks survive between passes.
+same scope, so helpers, mixtures and landmarks survive between passes — and it is where
+`s.plan(...)` goes, declared once for the painting rather than once per pass. `easel new`
+writes one holding the call, unless there is already one there or `--no-prelude` says not
+to.
 
 Several scripts run in the order given, each in its own scope with the prelude in front
 of it — the same painting as running them one at a time, and with `--rehearse` they go
