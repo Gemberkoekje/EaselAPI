@@ -1041,6 +1041,33 @@ wrong way round, and put the mechanism down to canvas texture on a `rough` groun
 and `rough` to four decimals, and on a *starved* pass `rough` reads `0.0011` against
 linen's `0.0031` — lower, not higher. It is the window.
 
+### The load a band is laid at (0.6.0: the default moved)
+
+A ring has no far end to run dry at, so the inward case has defaulted
+`load_falloff=0.0` since it was written. A band's passes *do* have ends, and until
+0.6.0 they were laid on the brush's own load — which on `bristle`, the verb's own
+default brush and the one preset that does not start full, is `load=0.9,
+load_falloff=0.55`. Measured on a band `0.10–0.90 × 0.40–0.60`, `n=8`, burnt umber to
+titanium white, 1024×768 linen on `toned_grey`, the share of the band still within
+`10/255` of bare ground and the ripple down it:
+
+| the band's load | bare | ripple |
+|---|---|---|
+| `load=0.9, load_falloff=0.55` — the brush's own, as 0.5.0 laid it | **`5.17%`** | `0.0110` |
+| `load=1.0, load_falloff=0.0` — the default since 0.6.0 | **`0.01%`** | `0.0031` |
+| `load_falloff=0.9`, named beside the call | `8.94%` | `0.0094` |
+
+Five per cent of a passage coming back as bare ground is strata, not a ramp, and it is
+the fault the graded-field recipe used to spend a bullet on: **40 of the 60 committed
+banded scumbles in the corpus typed the pair by hand**, which is the corpus saying the
+default was in the wrong place. The third row is the same default being overridden, and
+is why this is a default and not a rule: a starved band is still one keyword away.
+
+**`solid=` therefore moves nothing on a band any more.** It is still taken — scripts
+type it — and on `direction="inward"` it still raises `load` from the brush's own to
+`1.0`, which on a patch is worth `0.005%` bare against `0.012%`: nothing, and so not
+moved, because nothing measured asked for it.
+
 ### The band across a wedge
 
 The step-sized brush closes the joins on a band whose passes are all about one length.
@@ -1779,7 +1806,7 @@ over the corpus.
 |---|---|---|
 | `cover()` to `edge="hard"` | `ragged` paints **2.32x** the area it is handed, `clean` 1.06x, `hard` 1.01x | **No committed pass script calls `cover()` at all** — the move is free, and so is the evidence for it |
 | a round tip on `block_in`/`sweep` to `pressure="even"` | not re-measured; the docs' own claim | **0 committed calls** would move |
-| a banded `scumble` to `load=1.0, load_falloff=0.0` | bare **5.17% to 0.01%**, ripple **0.0111 to 0.0031** | **40 of 60** committed banded scumbles type the clause by hand |
+| a banded `scumble` to `load=1.0, load_falloff=0.0` | bare **5.17% to 0.01%**, ripple **0.0111 to 0.0031** | **40 of 60** committed banded scumbles type the clause by hand — **moved in 0.6.0**, and re-measured where it landed under *The load a band is laid at* |
 | a `scumble` with a `flat` to halved `jitter`/`size_jitter` | ripple down the band **0.0053 to 0.0059**, scallop across it 0.0052 either way | 15 committed scumbles use a `flat`; the halved pair changes nothing this measures |
 | `edge="hard"` to two brushes of overhang | B8's table: `0.80%`-`2.86%` bare inside the line to `0.055%`-`0.285%` on a round tip | **55 committed calls at `edge="hard"`, none naming an overhang** — every one would move |
 

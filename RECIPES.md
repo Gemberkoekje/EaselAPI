@@ -372,21 +372,18 @@ upper = polygon([(-0.06, 0.13), (0.34, 0.19), (0.62, 0.15), (1.06, 0.10),
                  (1.06, 0.59), (-0.06, 0.62)])       # where the light changes along
 lower = polygon([(-0.06, 0.50), (1.06, 0.47), (1.06, 1.06), (-0.06, 1.06)])
 s.scumble(upper, "light", "mid", 7, direction=4,     # the field, it is two ramps
-          load=1.0, load_falloff=0.0, opacity=0.95)
-s.scumble(lower, "mid", "shadow", 8, direction=3,
-          load=1.0, load_falloff=0.0, opacity=0.95)
+          opacity=0.95)
+s.scumble(lower, "mid", "shadow", 8, direction=3, opacity=0.95)
 s.stroke([(-0.06, 0.31), (0.42, 0.37), (1.06, 0.34)], "bristle", "mid",
          size=0.075, load=0.40, opacity=0.45, pressure="swell")   # and two crossers
 s.stroke([(1.06, 0.72), (0.55, 0.68), (-0.06, 0.73)], "bristle", "shadow",
          size=0.065, load=0.35, opacity=0.40, pressure="swell")
 ```
 
-**Four things, and the last one is the one that gets left off.**
+**Three things, and the middle one is the one that gets left off.**
 
 - **The verb, over the whole field, with `size` left off.** It picks a brush from its
   own step; a hand-laid band is where this goes wrong.
-- **`load=1.0, load_falloff=0.0`.** A scumble does *not* default to solid on a band,
-  so the passes run dry along their length and print strata with bare ground in them.
 - **A direction a few degrees off the frame.** The passes of a field that runs exactly
   along the frame are a stack of bands parallel to the edge of the picture, which the
   eye finds and a row profile does not.

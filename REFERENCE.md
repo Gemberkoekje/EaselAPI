@@ -92,7 +92,8 @@ does at the boundary of the place it is filling.
 `edge="hard"` **is** a clip, pointed at the place the call is filling; `clip=` points
 one somewhere else. A call given both is held by both, and the paint lands where they
 agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
-`load=1.0, load_falloff=0.0` already, because that pair is the burying recipe.
+`load=1.0, load_falloff=0.0` already, because that pair is the burying recipe, and
+`scumble` lays it too — so `solid=` is still taken there and no longer moves anything.
 
 ---
 
@@ -101,7 +102,7 @@ agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
 | Argument | Default | What it does |
 |---|---|---|
 | `density` | `1.0` | how close the passes run: `size × (1 - 0.45 × density)` apart. **Spacing, not coverage** |
-| `solid` (`block_in`, `stroke`, `sweep`, `scumble`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md` |
+| `solid` (`block_in`, `stroke`, `sweep`, `scumble`) | `False` | `load=1.0, load_falloff=0.0`, so no pass runs dry along its length. A solid mass still lands a little short of its mixture on any brush but a round one, and an oriented tip under four pixels wide lands the ground and says so: *What a solid mass actually lands at* in `CALIBRATION.md`. **On `scumble` it is already the default** and the argument is kept only because scripts type it |
 | `overhang` (`block_in`) | `0.35` box, `0` shape | how far each pass runs **past the ends of the pass**, in brush widths. It moves the ends only, never the sides, and which two edges are the ends turns with `direction`. A shape defaults to `0` because its outline is the drawing; a rectangle stopping short of its corners reads as cropped |
 | `overhang` (`scumble`) | `0.35` | the same measure as `block_in`'s, but flat — `scumble` does not vary its default between a box and a shape |
 | `overhang` (`cover`) | `1.0` | one full brush width, so a repair's ends sit outside the mistake it is covering rather than stopping at its edge |
@@ -109,8 +110,8 @@ agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
 | `direction` | left off: `"horizontal"` | `"horizontal"`, `"vertical"`, `"diagonal"`, `"cross"`, `"axis"` (the place's own), degrees clockwise from horizontal, a **line of two points** to run along, or a sequence of any of those. A pair of points is a line; a pair of numbers is two angles. **A sequence lays a full stack per angle and is priced as the sum**; `"cross"` is two angles and the affordable way to break a comb. On `scumble`, also `"inward"`. Left off on a shape, `block_in` and `cost` say so when horizontal passes cost over 2.5× `"axis"`; given a sequence, when it costs over 2.5× its own dearest angle. **Where the stack starts** is below |
 | `pressure` | `"taper"` | see *Pressure* below |
 | `opacity` | the brush's | per-dab strength. Dabs overlap, so a low one accumulates back toward full colour |
-| `load` | the brush's | how much paint the brush carries. It spends itself along the stroke |
-| `load_falloff` | the brush's | how fast it spends. `0` never runs dry |
+| `load` | the brush's; `1.0` on `scumble` and `cover` | how much paint the brush carries. It spends itself along the stroke |
+| `load_falloff` | the brush's; `0.0` on `scumble` and `cover` | how fast it spends. `0` never runs dry. A passage and a repair are many wide passes laid over each other, and a brush running dry along one of them prints a stripe the passes after it do not close — so both verbs lay the pair themselves, and naming either beside the call still wins |
 | `size` | the brush's | tip diameter, as a fraction of the canvas long side. On **either** direction of `scumble`, left off, it is picked from that verb's own step: `3 × depth / n` inward, `3 × extent / n` on a band. Named too narrow, both say so — and on a shape whose width varies along the stepping axis, so that the brush is wider than the passes at one end, the band case says so too, naming both lengths |
 | `wander` (sweep) | `True` | whether each pass wanders off the offset curve, so a stack is not parallel rules. A **single** pass has no parallel to break and the wander only moves it off the line drawn; off for the contour of `edge="clean"` |
 | `tip_wobble` | `0.0` | a round tip's own silhouette, redrawn per mark. `0.35` a brush set down once, `0.7`+ a clot |

@@ -4256,3 +4256,74 @@ def test_the_standing_lines_are_left_off_a_counted_copy(tmp_path):
     for line in ("values:", "edges:", "ground:", "pencil:"):
         assert line not in said, line
     assert not [n for n in counted.notices() if n.code == "holes"]
+
+
+# -- F3: the load a banded scumble is laid at ------------------------------------------
+def test_a_banded_scumble_lays_its_passes_solid(tmp_path):
+    """The default move of `PLAN-0.6.0.md` workstream F, row 3.
+
+    A ring has no far end to run dry at, so the inward case has defaulted
+    ``load_falloff=0.0`` since it was written; a band's passes do have ends, and until
+    0.6.0 they were laid on the brush's own load. The verb's own default brush is the
+    one preset that does not start full (``bristle``, ``load=0.9,
+    load_falloff=0.55``), which is why 40 of the 60 committed banded scumbles in the
+    corpus type the pair by hand. Asked of the log rather than of the signature,
+    because the pair reaches the passes through ``_resolve_brush`` and a signature
+    does not show that.
+    """
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(Region(0.1, 0.4, 0.9, 0.6), "burnt_umber", "titanium_white", 8)
+    assert s.history.records, "a scumble lays passes"
+    for rec in s.history.records:
+        assert rec.params["load"] == 1.0
+        assert rec.params["load_falloff"] == 0.0
+
+
+def test_a_starved_band_is_still_one_keyword_away(tmp_path):
+    """A default, not an override -- which is what makes it a default move and not a
+    rule. `LESSONS.md`: *a default is worth more than a warning*, and a painter who
+    wants a band that runs dry says so and is obeyed."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(Region(0.1, 0.4, 0.9, 0.6), "burnt_umber", "titanium_white", 8,
+                  load_falloff=0.9, load=0.5)
+    for rec in s.history.records:
+        assert rec.params["load"] == 0.5
+        assert rec.params["load_falloff"] == 0.9
+
+
+def test_the_band_default_does_not_reach_the_inward_case(tmp_path):
+    """The two directions are measured separately and only the band was moved.
+
+    An inward scumble's ``load`` is worth `0.005%` of a patch against `0.012%` -- so
+    nothing measured asked for it, and `LESSONS.md`'s first rule is that a default
+    moves where a probe says it sits outside its window and nowhere else.
+    """
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(s.circle((0.5, 0.5), 0.2), "burnt_umber", "titanium_white", 6,
+                  direction="inward")
+    for rec in s.history.records:
+        assert rec.params["load"] == brush("bristle").load == 0.9
+        assert rec.params["load_falloff"] == 0.0
+
+
+def test_a_band_comes_back_off_the_ground_now_it_is_laid_solid(tmp_path):
+    """The canvas rather than the log: five per cent of a passage coming back as bare
+    ground is strata and not a ramp, and that is what this move is for. Measured on
+    the full-size band in `CALIBRATION.md` at `5.17%` before and `0.01%` after; this
+    is the same call on a small canvas, asking only that the band be covered."""
+    s = Session(320, 240, texture="linen", ground="toned_grey", seed=7,
+                timelapse=False, out_dir=tmp_path)
+    band = Region(0.1, 0.4, 0.9, 0.6)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(band, "burnt_umber", "titanium_white", 8)
+    x0, y0, x1, y1 = s.canvas.region_px(band)
+    mask = np.zeros((240, 320), dtype=bool)
+    mask[y0:y1, x0:x1] = True
+    assert s.canvas.ground_showing(where=mask) < 0.005

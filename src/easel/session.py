@@ -1584,6 +1584,14 @@ class Session:
         each other and the passage comes back a venetian blind. Hand it a narrower
         brush than that on purpose and it says so.
 
+        **The passes are laid solid** -- ``load=1.0, load_falloff=0.0`` -- because a
+        wide pass that runs dry along its own length prints a stripe down the passage
+        that the passes after it do not close. Measured on a band eight passes wide:
+        ``5.17%`` of it came back within a hair of bare ground on the brush's own
+        load, ``0.01%`` on this pair. Both are defaults: ``load=`` or
+        ``load_falloff=`` beside the call still wins, which is how a starved band is
+        asked for on purpose.
+
         **Opacity does not make a passage quieter; it slows the passes down.** The
         passes overlap, so a low opacity accumulates back toward full colour rather
         than thinning what arrives. Measured on a band of 8 passes from ``0.30`` to
@@ -1680,8 +1688,16 @@ class Session:
                 into the passage.
             solid: lay the passes as solid paint -- ``load=1.0`` and
                 ``load_falloff=0.0`` -- the same pair :meth:`block_in` takes under
-                this name. A passage is many wide passes, which is where a brush
-                running dry shows as a stripe down one side of it.
+                this name. **A band lays its passes that way already**, and
+                ``"inward"`` has defaulted ``load_falloff=0.0`` since it was written,
+                so this argument now moves nothing on a band and only an inward
+                pass's ``load`` -- the brush's own, `0.9` on the default `bristle`,
+                worth `0.005%` of a patch against `0.012%`. It is kept because
+                scripts type it. A passage is many wide passes, which is where a
+                brush running dry shows as a stripe down one side of it, and that is
+                now the default rather than the thing to remember. To starve a
+                passage on purpose, name ``load=`` or ``load_falloff=`` beside the
+                call: those still win.
             edge: ``"ragged"``, the default -- each pass breaks past the band the way
                 a brush does. ``"hard"`` masks every dab to the band, so **no paint
                 lands outside it**: this is :meth:`block_in`'s own setting, and it is
@@ -1780,7 +1796,18 @@ class Session:
         # carrying one, it is the painter's and is left alone.
         if size is None and not isinstance(brush, Brush):
             size = _linear_size(step)
-        b = self._resolve_brush(brush, size, opacity, brush_overrides)
+        # And the same pair the inward case takes, for the same reason one step down:
+        # a band is many wide passes laid over each other, and a brush running dry
+        # along one of them prints a stripe down the passage that the passes after it
+        # do not close. The band's own default brush is the one preset that is not
+        # already full -- `bristle` at `load=0.9, load_falloff=0.55` -- which is why
+        # two committed banded scumbles in three type this clause by hand. Measured on
+        # a band `0.10-0.90 x 0.40-0.60`, eight passes, burnt umber to titanium white
+        # over `toned_grey`: bare `5.17%` without it and `0.01%` with, ripple `0.0110`
+        # against `0.0031`. A default, not an override: `load=` or `load_falloff=`
+        # beside the call still wins, which is how a starved band is still asked for.
+        b = self._resolve_brush(brush, size, opacity,
+                                {"load": 1.0, "load_falloff": 0.0, **brush_overrides})
         _check_linear_brush(self, b, step, n)
         _check_scumble_ends(self, place, degrees, b, n, stacklevel=stacklevel)
         shaped = isinstance(place, Polygon)
