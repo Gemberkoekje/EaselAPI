@@ -236,6 +236,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_plan.add_argument("--clear", action="store_true",
                         help="forget the plan entirely and start again")
 
+    p_check = sub.add_parser(
+        "check",
+        help="the closing checklist, answered: every measured line with its number",
+        description="What to run when the painting looks finished. Every line of "
+                    "PAINTER.md's closing checklist that has a number behind it, "
+                    "answered -- the values, the edges, the ground, the boxes, the "
+                    "subject's share, what is left of the budget -- and then the "
+                    "three questions nothing can measure, with the plan's own `why` "
+                    "quoted back. `easel log --check` is the same measurements after "
+                    "a pass; this one is the end of the painting.",
+    )
+    p_check.add_argument("session", type=Path)
+    p_check.add_argument("--subject-share", type=float, default=None, metavar="SHARE",
+                         help="the share of the budget the subject was to get, 0..1. "
+                              "The plan's own is used when this is left off")
+
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
     p_log.add_argument("-n", type=int, default=20)
@@ -434,6 +450,13 @@ def _dispatch(args) -> int:
                                            scale=args.scale,
                                            from_log=args.from_log))
         print(path)
+        return 0
+
+    if args.command == "check":
+        # Read-only, and the one command here that does not save: a checklist asks
+        # the painting questions and changes nothing about it, so writing the file
+        # back would only move its timestamp.
+        print(session.checklist(subject_share=args.subject_share))
         return 0
 
     if args.command == "log":

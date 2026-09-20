@@ -289,6 +289,71 @@ twice, once by a painter who knew the numbers and once by a painter who did not.
 times this project has done that, and the ninth is the first to close by declining to
 build anything at all.
 
+### The canvas, measured, and the closing checklist answered
+
+Step 7 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstreams E and G4). Everything
+the check could say until now came off the **log** — brush, size, path, pressure, note
+per mark. Four of the closing checklist's questions cannot be answered from a log at
+any length, because they are about the canvas rather than about a call, and every one
+of them was a question a painter answered by looking. Those are the ones three cohorts
+answered wrongly.
+
+**What `report()` now prints after every pass**, beside the findings and the `ground:`
+line that was already there:
+
+- **`values:`** — the 5th to 95th percentile of the values view against what the box
+  can reach, and the three clusters the picture splits into: *0.15-0.35 of a box that
+  reaches 0.13-0.96, clusters at 0.17, 0.25, 0.32; no clear light*. The range is asked
+  against the palette first and the clusters against each other after, because a
+  picture can have three well-separated clusters and still have nothing light in it —
+  which is the pier's own verdict, and heron 1 had nothing light until stroke 217.
+- **`edges:`** — how the picture's edge length divides between hard and soft, by the
+  rise width of each boundary. Finding 13: `report()` said *nothing to report* over a
+  picture whose every boundary was crisp, and GPT's own verdict on it names *equally
+  crisp boundaries*. Nothing in the log can see it — an edge is what two neighbouring
+  masses do to each other, not either one's arguments.
+- **`pencil:`** — graphite still showing, as a share. The one line here whose right
+  answer is not zero: a drawing showing through thin paint is worth keeping.
+
+**And one at the call:** a mass laid `solid=True` now says what actually came back
+bare inside its own outline, a brush in from the edge so a ragged edge is not counted
+as a hole. `solid-comb` predicts the holes from the brush and the density; `holes`
+measures the canvas once the paint is on it, which is the only way to answer for the
+shape, the ground and the overlap. It is silent where the paint sits within `0.15` of
+its ground, because **a hole is a contrast, not a gap**: the same comb leaves `0.16%`
+bare on `toned_grey` and `3.16%` on a dark ground, and the second number is the
+measurement finding paint that barely registered rather than a hole anybody can see.
+
+**`s.checklist()` / `easel check`** is the closing checklist as output: every line
+with a number behind it answered — values, edges, ground, pencil, boxes, the subject's
+share, what the plan promised, what the audit found, and what is left of the budget —
+and then the three that nothing can measure, printed as questions with the painter's
+own `s.plan(why=...)` quoted back. `PAINTER.md`'s checklist shrinks to those three and
+the call, which is 239 words out of the front page.
+
+The boundary is the point, and it is kept: *the check cannot see a composition*. Every
+line above is a number about a mark or a pixel. A picture can pass all of them and
+have quietly become a different picture, competently painted — so *is the thing you
+measured most carefully still attached*, *which passage is the weakest*, and *is the
+reason you chose this subject still in it* are asked and not answered.
+
+**One published number was wrong, and is withdrawn.** `CALIBRATION.md` reported the
+corpus's edges at 12%–44% under 2 px, median 27%. Building the line found that the
+prototype selected the top percentile of the gradient — which returns the sharpest
+pixels of whatever picture it is handed, so every canvas measures 1.5–2.1 px — and put
+its threshold at `2.0` px, which is exactly what the sharpest transition a pixel grid
+can hold measures. It called a hard-edged mass 41% hard and a ragged comb 84%, the
+wrong way round. What shipped selects edge **ridges** with a step of at least `0.10`
+across them and cuts at `2.5` px, which separates a round soft brush (0%) from a
+chisel, a comb and a scumble (49%, 49%, 53%) and moves a numerically blurred canvas
+from 2.0 px to 6.8. The corpus replay wants re-running before finding 13 states a
+spread again; nothing else in workstream E is affected, and `holes:` reproduces B2's
+three grounds to the third decimal.
+
+That is the fourth mechanism this round has had to correct after reporting it as
+*observed*, which is the shape `LESSONS.md` predicts and the reason the plan puts a
+probe in front of every candidate.
+
 ### Added
 
 - **The closing checklist asks whether the reason you chose the subject is still in the

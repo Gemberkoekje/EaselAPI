@@ -345,6 +345,10 @@ s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, clear=False)
                                                 # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
 s.report(since=None, subject_share=None)        # the post-pass check, read off the log
+                                                # and measured off the canvas: values,
+                                                # edges, ground, pencil
+s.checklist(subject_share=None)                 # the closing checklist, answered -- and
+                                                # the three questions it cannot answer
 s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
 s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
@@ -452,6 +456,7 @@ floor twenty-eight times and was right every time.
 | `clean-small` | fact | a clean edge whose brush is a large share of the shape: the inset takes the mass rather than a rim off it | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `count-only` | fact | a counted copy was asked something counting cannot answer | `PAINTING.md`, *Try the mark before you spend it* |
 | `solid-comb` | fact | a mass laid solid with a bristle: `solid=` closes the gaps along a pass and not the ones the comb leaves across it | `CALIBRATION.md`, *The holes a solid comb leaves* |
+| `holes` | fact | what a mass laid solid actually came back with: the share of its own interior still showing ground, measured, and only where that reads | `CALIBRATION.md`, *The holes a solid comb leaves* |
 | `cover-comb` | fact | `cover()` with a bristle does not bury: the comb leaves the old paint showing between the streaks at any opacity | `CALIBRATION.md`, *The bristle comb* |
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
@@ -513,6 +518,7 @@ easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3
 easel export p.easel painting.png
 easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240] [--from-log]
+easel check p.easel [--subject-share 0.32]
 easel log p.easel [-n 20] [--check]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]
@@ -533,6 +539,12 @@ on **one** copy, so a pass that lands on top of another pass is judged on it.
 After every pass, rehearsed or committed, `run` prints the budget line and then the
 post-pass check over that pass; `--check` runs it over the whole painting instead, and
 `easel log --check` does the same without painting anything.
+
+`easel check` is the **closing** checklist rather than the post-pass one: the same
+measured lines plus `boxes:` and `unspent:`, and then the three questions nothing can
+measure, with the plan's own `why` quoted back. `s.checklist()` is the same from
+Python and `check` through the MCP server. It is read-only and does not write the
+session file.
 
 `--count` is `--rehearse` with the pixel work skipped: the pass is worked out stroke for
 stroke and none of it is laid, so a helper that calls a dozen verbs has a price and a

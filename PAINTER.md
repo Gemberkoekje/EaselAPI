@@ -97,8 +97,9 @@ one scale down, and the band count is the instrument for both. **What is this th
 foreshortening?** Draw the view, not the object: a cupped hand seen from the front is
 a cluster coming toward you, not four fingers laid out sideways, and no brush repairs
 the difference. Write the three values down as numbers, and the split of the budget as
-numbers. **Write down why this subject and not another**, in a sentence — the checklist
-asks for it back at the end, and nothing else can.
+numbers. **Write down why this subject and not another**, in a sentence — put it in
+`s.plan(why=...)`, because `s.checklist()` quotes it back at the end and nothing else
+can ask for it.
 
 **The six things you will get wrong.** Each has been made by every painter so far, so
 the fix is on the same row as the mistake.
@@ -112,10 +113,11 @@ the fix is on the same row as the mistake.
 | **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped side | give a mark a length, or `tip_wobble=0.7`. The tool says the rest: `chisel-staircase` at the call, and `report()` counts the discs | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
 | **Repainting a passage that has failed twice** | four treatments of one passage — vary the brushes, break the lights, lay core darks, give up on part of it — each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | *What you are bad at*, below |
 
-**When you think it is finished**, the checklist is at the end of this file. Three of
-its lines are about finishing rather than about faults: the last third of the budget
-goes on what surrounds the subject, the last marks are about the picture rather than a
-score, and the reason you chose the subject is still in it.
+**When you think it is finished**, run `s.checklist()`. It answers every line that
+has a number behind it, and leaves you three that nothing can measure — they are at
+the end of this file, and they are about finishing rather than about faults: the last
+third of the budget goes on what surrounds the subject, the last marks are about the
+picture rather than a score, and the reason you chose the subject is still in it.
 
 **Now go and paint the nine exercises**, at the end of this file. Then read
 [`PAINTING.md`](PAINTING.md) once, and start.
@@ -623,65 +625,52 @@ s.look()            # the hues beside each other, which the numbers cannot show
 ## A checklist before you call it finished
 
 **Passing this list means the painting is not *wrong*. It does not mean it is
-finished.** Every line but the last three is a fault to look for; the last three are the
-only ones that ask whether you are done, and they are the ones to answer slowly.
+finished.** Most of it is measured, and the tool answers it:
 
-- Does the greyscale view have a clear light, mid and dark?
-- Are the edges varied — some hard, some soft, at least one lost?
-- Is there anywhere the ground still shows through? There should be, unless this
-  picture buries it on purpose — say `s.plan(ground="buried")` if it does. `report()`
-  prints the share — it diffs the canvas against a bare one at your own ground,
-  texture and seed — and says so under `0.5%`.
-- Are the highlights few and deliberate?
-- Is anything mechanically repeated — a perfectly straight line, a row of identical
-  marks? **Is any small mark a disc, a capsule or a rectangle — the tool's own shape
-  rather than the thing's?** `report()` counts the discs — three or more small round-tip
-  marks at `tip_wobble=0` are one silhouette printed three times — and a `block_in` with
-  a round tip on a feature under four brushes across says so at the call. Crop into
-  what is left and look.
-- Is every mass laid along its own axis, or are the big shapes stacks of bars? **And
-  are the bands in the marks, or in the subject you chose?** A frontal elevation is a
-  layer cake before a brush is picked — and if the subject does run one way,
-  `s.plan(bands="subject")` makes the check count what crosses them instead.
-- Is any mass a rectangle that should have been a shape? Check the background hardest.
+```python
+print(s.checklist())          # or `easel check painting.easel` from a shell
+```
+
+That prints a number for every line that has one behind it — whether the greyscale
+view has a clear light, mid and dark; how the edges divide between hard and soft;
+what is left of the ground; how many masses were laid in a rectangle; the subject's
+share of the marks; what is left of the budget; and whatever the post-pass check has
+to say about the painting as a whole. Read it, and then answer the three below.
+
+**These three are the ones to answer slowly**, because nothing can ask them for you.
+The check reads marks and measures pixels; every line it prints is one or the other.
+A picture can pass all of them and have quietly become a different picture,
+competently painted.
+
 - **Is the thing you measured most carefully still attached to the picture?** Cover
   it and look at what is left. And is the lightest mass the one you planned to be
   lightest? A mass that has quietly become the brightest thing takes the eye whatever
   the picture is about.
-- Was it painted back to front — is every hollow thing's far edge under its contents
-  and its contents under its near edge? Did a correction bury something standing on the
-  mass you repainted?
-- Is there pencil still showing where you did not mean it to? `s.erase()` takes it out,
-  and `s.export(path, sketch=False)` hides all of it; a drawing showing through thin
-  paint is a good thing and worth keeping.
-- **What share of your strokes went on the subject? Write the number down, against the
-  share you planned.** Not "did you spend enough" — a number, measured at the moment the
-  subject is finished, and the log will count it if you say which marks they are:
-
-  ```python
-  s.stroke([(0.30, 0.40), (0.45, 0.44)], "round_hard", "light",
-           size=0.02, note="subject")               # as you paint it
-  paid = [r for r in s.history.records
-          if r.kind not in ("dry", "look", "pencil", "erase")]
-  on_it = [r for r in paid if "subject" in r.note]
-  print(f"{len(on_it)} of {len(paid)} marks — {len(on_it) / max(len(paid), 1):.0%}")
-  ```
-
-  After that the number is *meant* to fall: **the last third of the budget goes on
-  what surrounds the subject**, because a well-built feature in an unfinished picture
-  reads as a detail come loose, and a rough one in a picture that holds together reads
-  as the thing itself.
-- **You have named the weakest passage. How many strokes are left? Spend them there.**
-  A painter who stops with a third of the budget unspent has left the picture short
-  without deciding to. The passage you would apologise for is the one that wants them —
-  not the one you have most recently been enjoying — and the last marks are about the
-  picture, never about a score.
+- **You have named the weakest passage. How many strokes are left? Spend them
+  there.** A painter who stops with a third of the budget unspent has left the
+  picture short without deciding to. The passage you would apologise for is the one
+  that wants them — not the one you have most recently been enjoying — and the last
+  marks are about the picture, never about a score.
 - **Read back why you chose this subject. Is that reason still in the picture?** Not
-  *is the painting good* — is the thing you wanted there. It is the one line here that
-  nothing else can ask: the check reads marks, and every other line above is about a
-  mark. A picture can pass all of them and have quietly become a different picture,
-  competently painted. If the reason is gone and strokes are left, that is what they
-  are for.
+  *is the painting good* — is the thing you wanted there. `checklist()` quotes your
+  own `s.plan(why=...)` back at you, which is the whole of what an instrument can do
+  for it. If the reason is gone and strokes are left, that is what they are for.
+
+Two of the measured lines are worth knowing the shape of before you read them. **The
+subject's share** is counted off the log, so say which marks they are — and after the
+number is taken it is *meant* to fall, because the last third of the budget goes on
+what surrounds the subject: a well-built feature in an unfinished picture reads as a
+detail come loose, and a rough one in a picture that holds together reads as the
+thing itself.
+
+```python
+s.stroke([(0.30, 0.40), (0.45, 0.44)], "round_hard", "light",
+         size=0.02, note="subject")               # as you paint it
+```
+
+**The ground line** says so under 0.5%, unless this picture buries its ground on
+purpose — `s.plan(ground="buried")` says it does, and the line then prints the number
+without asking.
 
 If you have a reference, look at them side by side one last time:
 

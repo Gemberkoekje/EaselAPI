@@ -231,6 +231,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "calibration", "### The holes a solid comb leaves",
         ),
         _spec(
+            "holes", "fact",
+            "what a mass laid solid actually came back with: the share of its own "
+            "interior still showing ground, measured, and only where that reads",
+            "calibration", "### The holes a solid comb leaves",
+        ),
+        _spec(
             "cover-comb", "fact",
             "`cover()` with a bristle does not bury: the comb leaves the old paint "
             "showing between the streaks at any opacity",

@@ -236,7 +236,8 @@ class Canvas:
         rgb *= (1.0 + (self.height_map - 0.5) * 0.06)[..., None]
         return np.clip(rgb, 0.0, 1.0, out=rgb)
 
-    def ground_showing(self, tolerance: float = _GROUND_TOLERANCE) -> float:
+    def ground_showing(self, tolerance: float = _GROUND_TOLERANCE,
+                       where: np.ndarray | None = None) -> float:
         """The share of the canvas still within ``tolerance`` of bare ground, ``0..1``.
 
         The closing checklist asks *is there anywhere the ground still shows
@@ -259,10 +260,24 @@ class Canvas:
                 the full range. The default is ``10/255``, which is the tighter of
                 the two the painter measured; ``16/255`` gave ``0.32%`` on the same
                 canvas.
+            where: a boolean mask of the pixels to ask about, the canvas's own shape.
+                Omitted, the whole canvas. It is what the ``holes:`` line asks with:
+                *bare* inside a mass that was just laid solid is the same question as
+                *bare* over the picture, and asking it through one definition is what
+                keeps `CALIBRATION.md`'s number and this method's from drifting. An
+                empty mask has no pixels to average, and answers ``0.0``.
+
+        Returns:
+            The share, ``0..1`` -- of the masked pixels when ``where`` is given, and
+            of the whole canvas otherwise.
         """
         now = linear_to_srgb(self.composite(impasto=False, sketch=False))
         was = linear_to_srgb(self.bare())
-        return float(np.mean(np.abs(now - was).max(axis=2) <= float(tolerance)))
+        bare = np.abs(now - was).max(axis=2) <= float(tolerance)
+        if where is None:
+            return float(np.mean(bare))
+        mask = np.asarray(where, dtype=bool)
+        return float(bare[mask].mean()) if mask.any() else 0.0
 
     def _resolve_ground(self, ground) -> np.ndarray:
         if isinstance(ground, str) and not ground.startswith("#"):
