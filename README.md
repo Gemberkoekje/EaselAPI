@@ -131,9 +131,12 @@ tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
 method on one page, so the nine warm-up exercises come before anything else.
 
-**If you have already installed the package you do not need that link.** All five
+**If you have already installed the package you do not need that link.** All six
 documents ship inside the wheel: `python -m easel guide` prints the first hour,
-`--full` prints the rest, and `easel.docs.read()` hands you any of them as text.
+`--full` prints the rest, and `easel.docs.read()` hands you any of them as text. The
+sixth is [`DIAGNOSIS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/DIAGNOSIS.md),
+an index of symptoms rather than a document to read — you have rehearsed a pass, it is
+wrong, and `easel diagnose concentric rings` prints the passage that measured it.
 
 It is one file of five, and every rule in the five is stated once, in the file it
 belongs to, and linked from everywhere else. `PAINTER.md` is held to a word budget by
@@ -210,6 +213,8 @@ easel guide --full                                   # all of PAINTER.md
 easel guide --painting                               # the reasons under the rules
 easel guide --recipes                                # the calls, in order, for a thing
 easel guide --reference                              # units, defaults, every argument
+easel diagnose concentric rings                      # it is wrong: the passage that says why
+easel explain chisel-blank                           # it warned you: the measurement behind it
 ```
 
 Every one of these also works as `python -m easel ...`, for when the `easel`

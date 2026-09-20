@@ -84,6 +84,7 @@ packages = ["src/easel", "src/easel_paint"]
 "RECIPES.md" = "easel/docs/RECIPES.md"
 "REFERENCE.md" = "easel/docs/REFERENCE.md"
 "CALIBRATION.md" = "easel/docs/CALIBRATION.md"
+"DIAGNOSIS.md" = "easel/docs/DIAGNOSIS.md"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

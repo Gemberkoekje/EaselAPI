@@ -563,6 +563,27 @@ def test_explain_hands_back_the_passage_that_measured_it(call):
         call("explain", code="chisel-blanc")
 
 
+def test_diagnose_hands_back_the_passage_rather_than_the_pointer(call):
+    """`DIAGNOSIS.md` was a file to grep, which over MCP is not a thing a client can
+    do -- and the file was not even in the wheel. The index arrives as an answer here:
+    words describing the canvas in, the measurement out, with the pointer followed.
+
+    The row's own wording is the weakest part of the promise, so the assertion is on
+    the target: `easel.diagnosis` decides which section that is, and this checks the
+    section came through the wire whole."""
+    from easel import diagnosis
+
+    row = next(r for r in diagnosis.rows() if "concentric rings" in r.symptom)
+    reply = call("diagnose", symptom="a glow with concentric rings")
+    assert row.symptom in reply.text
+    assert row.pointers[0].passage().strip() in reply.text
+
+    brief = call("diagnose", symptom="a glow with concentric rings", brief=True).text
+    assert row.symptom in brief and len(brief) < len(reply.text)
+
+    assert call("diagnose").text == diagnosis.listing()
+
+
 # -- what the painter declares ---------------------------------------------------------
 def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, painting):
     """The third way of declaring one, beside `s.plan()` and `easel plan`. It is the one

@@ -384,6 +384,56 @@ with a `flat` to halved `jitter`/`size_jitter`: the halved pair moves the ripple
 band from `0.0053` to `0.0059` and the scallop across it not at all, which is nothing
 this instrument can see.
 
+### The symptom index, answered rather than grepped
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G5). `DIAGNOSIS.md` had two
+problems and neither was its contents.
+
+**It was not in the wheel.** The build shipped five documents and this was the sixth
+file, so `grep -i rings DIAGNOSIS.md` — the interface the file's own first page names —
+worked from a checkout and nowhere else. A painter who ran `pip install easel-paint`
+never had the index at all.
+
+**And the one session that did have it followed none of its pointers.** In 293 strokes
+it recognised five rows on sight — *staircase*, *venetian blind*, *floating discs*,
+*searchlight that owns the picture*, *paper cut-out* — and repaired each from the
+remembered description, though following the pointers was permitted. A recalled row has
+no measurement attached, which is the entire difference between this file and the five
+it points into: the one fault it repaired properly, the chisel staircase, it repaired
+with `edge="clean"` while the row's own target held a cheaper repair at the other end
+of the same table.
+
+- **`easel diagnose <what you can see>`**, `easel.diagnosis.answer()` from Python, and a
+  `diagnose` MCP tool. Describe what is wrong on the canvas in your own words and it
+  matches the rows and prints **the passage**, not the pointer. There is no step left to
+  skip. `--list` (`brief=True`) is the symptoms alone, which is what `grep` used to give.
+- **`easel.diagnosis`**, new: the rows, the matching, and a pointer that resolves itself
+  to its section. Matching is overlapping words and a plural rule — the rows are written
+  in the words a painter uses for the thing in front of them, which is what makes that
+  enough. Words that match no row fall back to the `##` section they belong to, so
+  *gradient* — a word every group heading has and no row uses — is answered rather than
+  refused.
+- **`DIAGNOSIS.md` is the sixth shipped document**: `docs.DOCUMENTS`, the wheel's
+  force-include table, `easel guide --diagnosis`, and the `guide` MCP tool. It is not a
+  sixth guide file — it states no rule, and it still says on its first line that it is
+  not for reading.
+- **`docs.headings()` and `docs.heading_line()`**, new: one scanner for what a heading
+  is, so `section()` and a pointer cannot disagree about where a passage stops, and a
+  pointer can go on being readable prose (*`CALIBRATION.md` -> `block_in`*) while still
+  resolving to a section. `section()` now steps over fenced code blocks when it looks
+  for a heading as well as when it looks for the end of one.
+- **`tests/test_diagnosis.py` resolves every pointer to its passage**, all 92, rather
+  than only checking that the heading exists. A pointer that lands on a heading whose
+  section comes back empty was cosmetic when a person followed it and is a broken
+  answer now.
+
+**The file itself is unchanged except its front page**, which is what `LESSONS.md`
+asked for: the observation is n=1 and the answer to it is not a row that explains
+itself — that row would be the fourth copy the page refuses — but a pointer that costs
+nothing to follow. What did change is the arrow: 92 `→` became `->`, because the file
+ships now and U+2192 is outside cp1252, which is the B7 fault the other five documents
+had already been fixed for.
+
 ## [0.5.0] — 2026-09-16
 
 **Two rounds, and both painted from the installed package alone** — the first two

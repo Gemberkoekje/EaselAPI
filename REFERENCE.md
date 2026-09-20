@@ -481,6 +481,15 @@ measured. So `chisel-blank` after a pass means a mark was charged and landed not
 and `easel explain chisel-blank` is the table of what a solid mass lands at, at four
 pixels and either side of it.
 
+**When nothing was said and it still looks wrong**, the other end of the same
+arrangement is `easel diagnose <what you can see>` — `diagnose` through the MCP server,
+`easel.diagnosis.answer()` from Python. It matches your own words against
+[`DIAGNOSIS.md`](DIAGNOSIS.md)'s symptom index and hands back **the passage the row
+points at**, not the row: `easel diagnose concentric rings` is the `scumble`
+measurement, the same text `explain` would give if there were a code for it. There is
+no code for most of what can go wrong on a canvas, which is what the index is for.
+`--list` is the symptoms alone, for finding the words to ask with.
+
 `s.notices(since=None)` is the list itself, oldest first, and it is saved in the
 `.easel` file, so a painting worked from the shell keeps what it was told. Notices and
 the plan both live **beside** `history.records` and never in it, because the log indexes
@@ -523,8 +532,9 @@ easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240] [--from-log]
 easel check p.easel [--subject-share 0.32]
 easel log p.easel [-n 20] [--check]
 easel brushes
-easel guide [--full | --painting | --recipes | --reference | --calibration] [--path]
+easel guide [--full | --painting | --recipes | --reference | --calibration | --diagnosis] [--path]
 easel explain [code]
+easel diagnose [what you can see ...] [--list]
 ```
 
 A script run by `easel run` gets the session as `s`, with the whole public API already
@@ -592,5 +602,6 @@ object with `shape` and any `block_in` argument, a sweep one with `edge` and any
 
 The server is `easel-mcp`, or `python -m easel.mcp_server` when the scripts directory
 is not on `PATH`. It needs one extra: `pip install easel-paint[mcp]`. The `guide` tool
-returns any of the five documents, so a client with no repository to read still has the
-method.
+returns any of the six documents, so a client with no repository to read still has the
+method, and `explain` and `diagnose` hand over the passage behind a code or a symptom
+without it having to fetch a file at all.

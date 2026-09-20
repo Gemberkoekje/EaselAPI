@@ -25,7 +25,7 @@ from a shell. It teaches the workflow, which matters more than the function list
 
 from __future__ import annotations
 
-from easel import docs, guide
+from easel import diagnosis, docs, guide
 from easel.brush import BRUSHES, TIPS, Brush, brush
 from easel.canvas import GRAPHITE, GROUNDS, Canvas
 from easel.color import (
@@ -151,5 +151,7 @@ __all__ = [
     # what to reach for, because `Session.guide()` is a different thing entirely.
     "docs",
     "guide",
+    # the symptom index, reached by describing what is wrong rather than by name
+    "diagnosis",
     "__version__",
 ]
