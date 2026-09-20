@@ -256,39 +256,6 @@ log* into `REFERENCE.md`, where `PAINTING.md` already had it, while `SUGGESTIONS
 on claiming it reported zero. A script somebody has to remember to run is the preference
 that rule is about.
 
-## [0.5.0] — 2026-09-16
-
-**Two rounds, and both painted from the installed package alone** — the first two
-sessions on this page that never had a checkout to read. The first was cut as this entry
-before the second arrived, and the tag was never pushed, so the second went in here
-rather than into a version of its own.
-
-**The pier.** A session was told to `pip install easel-paint` and paint from whatever the
-wheel carried, in an empty directory. It painted the underside of a pier at low tide, 257
-of 300 strokes, and came back with five engine items, five documentation items and one
-that is neither — the one that is neither being the only one that changed what the method
-*asks*. **It is not blind and `SUGGESTIONS.md` says so**: it had spent that morning inside
-this repository doing packaging work, so it arrived already knowing several of the guide's
-numbers without the method that holds them together. Its engine findings stand, because
-they are about marks it laid and warnings it was shown; its reading of the guide is
-discounted, and that discount is why one documentation item was answered by compressing
-rather than by cutting.
-
-**The hands, and this one is blind.** A session was told to make sure of `easel-paint`
-**0.4.0**, not a local editable install, and to treat that wheel as the only thing
-available. It painted a pair of hands sorting dried beans, 329 of 420 strokes, and did
-not open this repository until the picture was exported and reviewed. Two engine items
-and four documentation items, plus one found while filing them. **Five of the frictions
-it hit are things the pier round had already fixed in this release**, which it never saw,
-so they are an independent painter confirming that round aimed right rather than items of
-their own. And where the two agree — the stack-of-bars warning going unread, the front
-page being long, the reason for the subject going missing — that is the same fault found
-twice, once by a painter who knew the numbers and once by a painter who did not.
-
-**Two items closed by measuring and finding nothing to fix** — the eighth and ninth
-times this project has done that, and the ninth is the first to close by declining to
-build anything at all.
-
 ### The canvas, measured, and the closing checklist answered
 
 Step 7 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstreams E and G4). Everything
@@ -353,6 +320,102 @@ three grounds to the third decimal.
 That is the fourth mechanism this round has had to correct after reporting it as
 *observed*, which is the shape `LESSONS.md` predicts and the reason the plan puts a
 probe in front of every candidate.
+
+### Defaults moved
+
+Step 8 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream F). Five defaults were
+proposed; `scripts/probe_cohort_session.py` measured all five against the corpus and
+**two survived**. The other three are recorded as declined below, because a default
+argued for twice is a default argued for forever.
+
+**A banded `scumble` lays its passes solid** — `load=1.0, load_falloff=0.0`, which is
+the pair the `inward` direction has defaulted half of since it was written. A band's
+passes have ends and run dry at them, and the verb's own default brush is the one
+preset that does not start full (`bristle`, `load=0.9, load_falloff=0.55`), so a wide
+pass printed a stripe down the passage that the passes after it did not close.
+Measured on a band `0.10–0.90 × 0.40–0.60` at `n=8`: **`5.17%` of it came back within a
+hair of bare ground, against `0.01%` now**, with the ripple down it dropping `0.0110`
+to `0.0031`. The corpus is what argued for it — **40 of the 60 committed banded
+scumbles type the pair by hand** — and that is a default sitting in the wrong place
+rather than a rule painters keep forgetting.
+
+- **It is a default and not an override.** `load=` or `load_falloff=` beside the call
+  still wins, which is how a band that runs dry on purpose is still asked for.
+- **`solid=` therefore moves nothing on a band.** It is still taken, because scripts
+  type it; on `direction="inward"` it still raises `load` from the brush's own to
+  `1.0`, worth `0.005%` of a patch against `0.012%`. **The inward default was not
+  moved**: nothing measured asked for it, and `LESSONS.md`'s first rule is that a
+  default moves where a probe says it sits outside its window and nowhere else.
+- **What this changes in an existing script.** A banded `scumble` that named neither
+  `load=` nor `load_falloff=` now covers its band. Scripts that typed the pair by hand
+  paint exactly what they painted before. The graded-field recipe in `RECIPES.md` lost
+  the bullet it spent on the clause, and its code block lost the clause with it — the
+  paragraph leaving in the commit that made it untrue.
+
+**`edge="hard"` gets two brushes of overhang instead of one** (`block_in`, and `cover`,
+which is priced and laid as the block-in it becomes). `"hard"` masks every dab to the
+outline, so no paint lands outside it — and it still left the boundary bitten from the
+*inside*, in scallops between the pass ends. B8, reported by a painter and isolated
+here: the cause is pressure and not reach. The default `pressure="taper"` arrives at
+zero one brush out, so at `overhang=1.0` every pass met the outline at part pressure,
+and a round tip — which loses *width* with pressure — met it at part width too. On the
+3 px strip just inside a sloping outline a `round_hard` left **`0.85%`–`3.26%`** of it
+bare at one brush and **`0.055%`–`0.33%`** at two; a `flat`, `0.00%`–`0.66%` against
+`0.000%`.
+
+- **It costs dabs and not strokes.** The pass count is identical at one brush and at
+  two, so `cost()` quotes exactly what it quoted before. Nothing can cross the mask, so
+  the outline does not move either: paint outside it went from 225 px to 227 px on a
+  measured case, that difference being the boundary's own feathering, while bare inside
+  it went `0.220%` to `0.024%`.
+- **`scumble` keeps its own `0.35`.** Its passes are already `pressure="even"`, which is
+  the whole mechanism, and it leaves `0.000%` of the same strip bare at every overhang
+  tried — so there was nothing to close and nothing was moved.
+- **What this changes in an existing script.** Every `edge="hard"` mass that did not
+  name an `overhang` — 55 committed calls, none of which do — lays the same passes, the
+  same number of them, to the same outline, with the scallops between their ends filled
+  in. Looked at as well as measured, on a sloped mass laid with a round tip.
+
+**Three proposed moves were declined, and the probe is why.** `cover()` to
+`edge="hard"`: **no committed pass script calls `cover()` at all**, so the move is free
+and so is the evidence for it — it waits for the `spill` notice. A round tip on
+`block_in`/`sweep` to `pressure="even"`: **0 committed calls** would move. A `scumble`
+with a `flat` to halved `jitter`/`size_jitter`: the halved pair moves the ripple down a
+band from `0.0053` to `0.0059` and the scallop across it not at all, which is nothing
+this instrument can see.
+
+## [0.5.0] — 2026-09-16
+
+**Two rounds, and both painted from the installed package alone** — the first two
+sessions on this page that never had a checkout to read. The first was cut as this entry
+before the second arrived, and the tag was never pushed, so the second went in here
+rather than into a version of its own.
+
+**The pier.** A session was told to `pip install easel-paint` and paint from whatever the
+wheel carried, in an empty directory. It painted the underside of a pier at low tide, 257
+of 300 strokes, and came back with five engine items, five documentation items and one
+that is neither — the one that is neither being the only one that changed what the method
+*asks*. **It is not blind and `SUGGESTIONS.md` says so**: it had spent that morning inside
+this repository doing packaging work, so it arrived already knowing several of the guide's
+numbers without the method that holds them together. Its engine findings stand, because
+they are about marks it laid and warnings it was shown; its reading of the guide is
+discounted, and that discount is why one documentation item was answered by compressing
+rather than by cutting.
+
+**The hands, and this one is blind.** A session was told to make sure of `easel-paint`
+**0.4.0**, not a local editable install, and to treat that wheel as the only thing
+available. It painted a pair of hands sorting dried beans, 329 of 420 strokes, and did
+not open this repository until the picture was exported and reviewed. Two engine items
+and four documentation items, plus one found while filing them. **Five of the frictions
+it hit are things the pier round had already fixed in this release**, which it never saw,
+so they are an independent painter confirming that round aimed right rather than items of
+their own. And where the two agree — the stack-of-bars warning going unread, the front
+page being long, the reason for the subject going missing — that is the same fault found
+twice, once by a painter who knew the numbers and once by a painter who did not.
+
+**Two items closed by measuring and finding nothing to fix** — the eighth and ninth
+times this project has done that, and the ninth is the first to close by declining to
+build anything at all.
 
 ### Added
 
