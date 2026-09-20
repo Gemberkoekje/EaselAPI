@@ -4,6 +4,19 @@ The guide is the deliverable, and a code block in it that does not run is worse
 than no code block: the fresh session copies it, gets a traceback, and spends its
 first ten minutes debugging the manual instead of painting.
 
+**And a block that runs is not yet a block that is right.** Every recommended block
+has to come back notice-clean, because a worked example is an instruction: finding 1
+of the 0.5.0 cohort is a painter who laid `RECIPES.md`'s *a mass built of planes*
+character for character and got the staircase the guide warns about. Two more were
+found by running this check the first time -- the three answers under *Masses that are
+not rectangles* demonstrated `edge="clean"` at a brush the very next paragraph
+forbids, and the graded field drew its own top boundary inside the canvas, which cut
+the passes reaching it into stubs shorter than the brush. Neither was visible to a
+person reading the prose, because in both cases the prose was right.
+
+This is half of the plan's G3 invariant; the other half -- every *failure* block trips
+exactly the code it names -- waits for the failure blocks to exist.
+
 The guide is three files -- `PAINTER.md` is the method, `PAINTING.md` the reasons
 and `RECIPES.md` the procedures -- and all three are checked here, because a block
 is just as wrong in whichever of them it happens to sit.
@@ -136,6 +149,7 @@ PREAMBLE = (
 def main() -> int:
     blocks = guide_blocks()
     ok = bad = skipped = 0
+    noisy: list[tuple[int, str, str, str]] = []
     for i, (doc, b) in enumerate(blocks, 1):
         head = b.strip().splitlines()[0][:60]
         where = f"{doc.removesuffix('.md').lower():<8}"
@@ -143,21 +157,37 @@ def main() -> int:
             skipped += 1
             print(f"  {i:>3} {where} SKIP (pseudo-code)  {head}")
             continue
+        scope: dict = {}
         try:
-            exec(compile(PREAMBLE + runnable(b), f"<block {i}>", "exec"), {})
+            exec(compile(PREAMBLE + runnable(b), f"<block {i}>", "exec"), scope)
             ok += 1
             print(f"  {i:>3} {where} ok               {head}")
         except Exception as e:
             bad += 1
             print(f"  {i:>3} {where} FAIL             {head}\n       {type(e).__name__}: {e}")
+            continue
+        # What the engine said at the calls the block made. The session is `s` by
+        # the preamble's own construction, and a block that rebinds it answers for
+        # whatever it left there -- which is the session a reader would be holding.
+        for notice in getattr(scope.get("s"), "notices", list)():
+            noisy.append((i, doc, notice.code, str(notice)))
+            print(f"  {i:>3} {where} SAYS             {notice.code}")
     print(f"\nok {ok}  failed {bad}  skipped {skipped}")
+
+    if noisy:
+        print(f"\n{len(noisy)} notice(s) tripped by a recommended block -- fix "
+              f"the block, not the check:")
+        for n, doc, code, text in noisy:
+            print(f"  block {n} ({doc}) {code}\n       {text}")
+    else:
+        print("no recommended block trips a notice")
 
     # The front page's word budget, the other thing that keeps the guide usable.
     words = len((ROOT / "PAINTER.md").read_text(encoding="utf-8").split())
     budget = FRONT_PAGE_WORDS
     verdict = "over budget" if words > budget else f"{budget - words} to spare"
     print(f"PAINTER.md {words} words against a budget of {budget} -- {verdict}")
-    return 1 if bad or words > budget else 0
+    return 1 if bad or noisy or words > budget else 0
 
 
 if __name__ == "__main__":

@@ -17,6 +17,13 @@ here turns a prompt into a picture. You choose and make every mark. There are no
 layers, and no undo that costs nothing: you work in passes, and when something is wrong
 you paint over it.
 
+**You have to be able to see images.** Every pass of the method ends by looking at what
+it did — `s.look()`, the rehearsal, the post-pass check — and none of that reaches a
+painter who cannot take an image back. A model without image input can drive the whole
+API and will get a picture out of the far end, but it cannot tell whether any of it
+landed; one painter in the 0.5.0 cohort said exactly that of its own finished painting.
+Vision is a requirement here, not a feature.
+
 **Read the guide before you paint.** The engine is only the brush;
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
 is the half that matters. It ships inside the package, so there is nothing to go and

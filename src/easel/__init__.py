@@ -5,6 +5,11 @@ and run out. Paint lands wet and mixes with what is already there. The canvas ha
 tooth, and a brush low on paint catches only the high points. Mistakes stay until
 they are painted over.
 
+**Being able to see images is a requirement, not a convenience.** Every pass of the
+method ends by looking at what it did -- :meth:`~easel.session.Session.look`, the
+rehearsal, the post-pass check -- and none of that reaches a painter who cannot take
+an image back.
+
 The whole API runs through one object::
 
     from easel import Session, blob, cell

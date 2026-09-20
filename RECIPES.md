@@ -308,6 +308,7 @@ s.glaze([source, (0.30, 0.33), (-0.08, 0.41)], "air_body", opacity=0.15, size=0.
         pressure=[1.0, 0.8, 0.4])                  # the body, thinning away from the source
 s.glaze([source, (0.42, 0.295), (0.18, 0.355)], "air_core", opacity=0.17, size=0.06,
         pressure=[1.0, 0.7, 0.12])                 # the core: brightest at the source
+s.dry()                                            # and again, before anything crosses it
 ```
 
 **Mix the glazes close to the field, in value and in hue** — a step or two above it,
@@ -316,7 +317,10 @@ opacity. Lay them with the soft round tip along the axis, and **taper by pressur
 round tip's width follows pressure, so `[1.0, ..., 0.1]` is narrow-and-bright at the
 source and wide-and-gone at the far end, which is what a cone of lit air is. The wide
 faint one runs the other way, so the cone opens as it travels. `dry()` first, so the
-film sits on the field rather than mixing into it.
+film sits on the field rather than mixing into it — **and again after**, which is the
+clause that gets left off. The three films leave the beam wet (`0.14` at the core), and
+an opaque mark laid across it afterwards drags what it lands on: up to `0.30` in value
+where a mass crosses it, `0.40` where a stroke does.
 
 **Goes wrong as:** a ribbed slab (a `bristle` block-in of the wedge); a fan of ribbons
 (five `flat` rays); a searchlight that owns the picture (the glaze mixed to the light's
@@ -368,7 +372,7 @@ more, graded, with no outline anywhere in it and no second mass to be a band
 smaller than it.
 
 ```python
-upper = polygon([(-0.06, 0.13), (0.34, 0.19), (0.62, 0.15), (1.06, 0.10),
+upper = polygon([(-0.06, -0.06), (1.06, -0.06),
                  (1.06, 0.59), (-0.06, 0.62)])       # where the light changes along
 lower = polygon([(-0.06, 0.50), (1.06, 0.47), (1.06, 1.06), (-0.06, 1.06)])
 s.scumble(upper, "light", "mid", 7, direction=4,     # the field, it is two ramps
@@ -383,7 +387,11 @@ s.stroke([(1.06, 0.72), (0.55, 0.68), (-0.06, 0.73)], "bristle", "shadow",
 **Three things, and the middle one is the one that gets left off.**
 
 - **The verb, over the whole field, with `size` left off.** It picks a brush from its
-  own step; a hand-laid band is where this goes wrong.
+  own step; a hand-laid band is where this goes wrong. **Run the field off every edge it
+  is not bounded by**, the way `upper` does above: a boundary drawn inside the canvas
+  cuts the passes that reach it into stubs shorter than the brush is wide — `0.210`
+  against a brush of `0.252` on this field's old outline — and the verb says so
+  (`scumble-wedge`).
 - **A direction a few degrees off the frame.** The passes of a field that runs exactly
   along the frame are a stack of bands parallel to the edge of the picture, which the
   eye finds and a row profile does not.

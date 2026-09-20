@@ -31,10 +31,16 @@ workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 withdrawn. Step 8 is the two default moves the step-2 probe left standing -- a banded
 `scumble` laid solid (F3) and two brushes of overhang under `edge="hard"` (F5) -- with
 F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
-they are not re-argued; `NOTES-step8.md` has its gotchas. **Step 9 is part-done**: G5 is
-built -- `src/easel/diagnosis.py`, `easel diagnose`, a `diagnose` MCP tool, and
-`DIAGNOSIS.md` as the sixth shipped document -- and G4 landed with step 7, so what is
-left of G is G2, G3 and G6 to G11; `NOTES-step9.md` has its gotchas. Written 2026-09-18 against
+they are not re-argued; `NOTES-step8.md` has its gotchas. **Step 9 is part-done**, in
+two parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
+`diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
+**G7 and G9** -- the fixes to what is there, and the one small fact of five that was
+genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
+and 6, and two faults it did not know about were found by running every guide block past
+the checks: **every runnable block in the guide is now notice-clean**, and
+`scripts/check_guide_blocks.py` fails if that stops being true. G4 landed with step 7,
+so what is left of G is G2, G3, G6, G8, G10 and G11; `NOTES-step9.md` has the gotchas
+for both parts. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -401,11 +407,36 @@ versions -- GPT's one connected mass with a broken lower edge, Kimi's five bent 
 strokes at the sides, Gemini's scattered broken flashes, DeepSeek's flashes shorter and
 fainter toward the viewer. Its failure block is the `one-loop` demo.
 
-**G7. Fixes to what is there.** *A mass built of planes* and *a form that turns* (finding
-1). *A volume of lit air*: dry after the films (finding 5). The card's `undo` row names
-`cover(..., edge="hard")` -- or the default moves (F). *Do not lay one broken pass across
-the whole canvas* against the graded field's edge-to-edge *crossers*: reconcile. The
-ground contradiction (finding 11).
+**G7. Fixes to what is there. Built, step 9 part two**, and two of the five rows were
+already closed by the steps that carried them. *A mass built of planes* and *a form that
+turns* (finding 1) were **fixed in step 6**, in the commit that landed
+`chisel-staircase`, because a worked example is an instruction and all three offending
+recipes moved with the check. The ground contradiction (finding 11) went in **step 5**,
+in the engine and the recipe together. What was left, and what it turned out to be:
+
+- *A volume of lit air*: **dry after the films**, which was the missing clause. Measured
+  rather than asserted, because B18 debunked the full-wetness story: the three films
+  leave `0.14` at the core, and an opaque mark laid across the beam afterwards drags
+  what it lands on by up to `0.30` in value where a mass crosses it and `0.40` where a
+  stroke does.
+- The card's `undo` row: F1 was declined and `spill` is not built, so the row **names
+  `edge="hard"` itself** -- `2.32x` the area handed at `ragged` against `1.01x`. Finding
+  8 said the card did not mention it; nor did `PAINTER.md`'s *What you are bad at*, and
+  now both do.
+- *Do not lay one broken pass across the whole canvas* against the graded field's
+  *crossers*: **the rule gives**, scoped to what it was earned on -- a broken pass laid
+  *under* work that sits on it -- with the crossers named as the deliberate exception.
+  The rule was prose with no measurement behind it; the recipe came out of paintings.
+- **And two the plan did not know about**, both found by running every guide block past
+  the checks rather than by reading: the three answers under *Masses that are not
+  rectangles* demonstrated `edge="clean"` at `size=0.09`, which is 34% of that mass's
+  narrowest extent and trips `clean-small` -- a block contradicting the paragraph
+  directly under it -- and the graded field drew its own top boundary inside the canvas,
+  which cut the passes reaching it into stubs of `0.210` against a brush of `0.252` and
+  tripped `scumble-wedge`. **Every runnable block in the guide is now notice-clean**,
+  and `scripts/check_guide_blocks.py` fails if that stops being true, which is the first
+  half of G3's invariant landing early because G7's fixes needed something to hold
+  them.
 
 **G8. Voice** (findings 17, 18). Every rule marked as **measured** (its number, its
 `CALIBRATION.md` heading) or as a **habit** (*most painters so far...*). Numbers that
@@ -413,11 +444,21 @@ belong to a plan -- the stroke split, the ground share, three marks per small th
 reworded as defaults `s.plan()` overrides. The call first, the sentence after. The
 thirteen *you will...* in `PAINTER.md` go wherever a check now says it.
 
-**G9. Small facts.** `pip install easel-paint` -> `import easel` on the install line.
-**Vision is required** -- README, `llms.txt`, the package docstring. Named-region
-extents (`top`, `bottom`, `left`, `right` and `center` are *ninths*; the bands and halves
-are the full-width places). What `upto=`, `n` and `last=` count. The verb x (`clip`, `edge`, overrides)
-matrix.
+**G9. Small facts. Built, step 9 part two -- and four of the five were already there**,
+closed by the steps that had reason to touch them: the install line carries both import
+names and the *never `pip install easel`* warning; `REFERENCE.md` has the named-region
+extents as a full table with the ninths called out in prose; what `upto=`, `n` and
+`last=` count is on the `log(last=)` line (*log records, as `undo(n)` and `replay(upto=)`
+count: a dry or a pencil line is one and is free*); and the verb x (`clip`, `edge`,
+`solid`) matrix landed with #58. **Only one was genuinely open.**
+
+**Vision is required** -- and none of the three places said so. All three *described* it
+(*built for an agent that can see what it just did*; *for agents that can look at their
+own work*), which is a design note and not a requirement, and the blind painter of the
+cohort installed it, painted, and wrote *I can't see it ... so I'm trusting the tool*.
+README, `llms.txt` and the package docstring now say it is a requirement and why: every
+pass ends by looking, so a painter without image input can drive the whole API without
+ever learning whether a mark landed.
 
 **G10. Budgets, enforced.** `PAINTER.md` is 6,522 words against a 10,000 ceiling that no
 longer binds. After the migration lower `FRONT_PAGE_WORDS` to what the file then is
@@ -444,7 +485,7 @@ the map back, if a cut turns out to have gone too far.
 | Where it is today | What it says | Carried by | What stays |
 |---|---|---|---|
 | `PAINTER.md` card, *six things*, row 5 | the tool's own shape; staircase | `chisel-staircase`, and the existing round-disc rule | the row, shorter |
-| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | F (default) or `spill` | one line |
+| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | **neither carrier arrived** -- F1 was declined in step 8 (it waits for `spill`), and `spill` is not built. **Settled in step 9: nothing leaves.** The row and the paragraph keep the rule and now name `edge="hard"`, which the tool has had all along and the card never mentioned (finding 8) | the row, and the prose, with the keyword in them |
 | `PAINTER.md` step 3, *a veil of light is a mass at a depth* | depth order of films | `buried` | the rule, one sentence |
 | `PAINTER.md` step 4, *put the plan through `compare()`* | pairs that touch | `s.plan(values=)` | one line |
 | `PAINTER.md` step 5, daisy sentence | radiating strokes | `radiating` | -- |
@@ -456,7 +497,7 @@ the map back, if a cut turns out to have gone too far.
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
 | `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips | one line |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
-| `RECIPES.md`, quiet gradient: a `flat` scallops; under five passes | | F (default); `scumble-few` | -- |
+| `RECIPES.md`, quiet gradient: a `flat` scallops; under five passes | | **neither carrier arrived** -- F4 was declined on the numbers (the halved pair moves the ripple `0.0053` to `0.0059`), and `scumble-few` is not built. **Settled in step 9: nothing leaves**, and the paragraph is unchanged | the whole paragraph |
 | `RECIPES.md`, lost edge: stretch not boundary | | `smudge-long` | the paint-across recipe |
 | `DIAGNOSIS.md` | symptom -> pointer | `easel diagnose` | the file, now shipped |
 

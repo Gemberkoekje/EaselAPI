@@ -401,8 +401,12 @@ of each pass from running dry.
 
 **A loaded brush runs dry along a stroke**, so where a long stroke ends is where its
 texture is loudest — run the next one back the other way. **Do not lay one broken pass
-across the whole canvas**: edge to edge on a single load prints the canvas's own texture
-as an even field over everything, and it stays visible under every later stroke.
+edge to edge under work that has to sit on it**: on a single load it prints the canvas's
+own texture as an even field, and it stays visible under every later stroke. The rule is
+about what is *underneath*, and it has one deliberate exception — the same mark laid
+last, at part opacity, on a passage nothing else will cover. That is what the two
+crossers of [*A graded field*](RECIPES.md#a-graded-field-that-is-most-of-the-picture)
+are, and why the recipe asks for them.
 
 **`tip_wobble` gives a round tip a silhouette of its own**, redrawn for every mark the
 way a bristle's comb is, so a handful of small marks are not a handful of copies of one
@@ -491,7 +495,7 @@ answers:
 mass = blob(span("D4", "F6"), wobble=0.3, seed=2)
 s.block_in(mass.inset(0.045), "flat", "dark", size=0.09)   # inset by half the brush
 s.block_in(mass, "flat", "dark", size=0.06)                # or keep the brush small
-s.block_in(mass, "flat", "dark", size=0.09, edge="clean")  # or ask for a drawn contour
+s.block_in(mass, "flat", "dark", size=0.06, edge="clean")  # or draw the contour too
 ```
 
 **Keep the brush under about a fifth of the mass's width, or `inset()` the shape by
@@ -503,9 +507,12 @@ drawing — and use a solid tip, because one comb pass along a contour leaves a 
 outline than the ragged fill did. It needs a brush under about a quarter of the shape's
 shorter extent; past that the contour pass lays the strip the inset gave up as one
 chisel stroke with rounded corners, and the call says so (*A clean edge on a narrow
-mass* in [`CALIBRATION.md`](CALIBRATION.md#a-clean-edge-on-a-narrow-mass)). Where an
-outline runs off the canvas the inset is dropped, because **a mass that meets the frame
-should run off it**: draw it past the edge and let it.
+mass* in [`CALIBRATION.md`](CALIBRATION.md#a-clean-edge-on-a-narrow-mass)). **It is not
+a way to keep the big brush**, which is why the third call above lays the same `0.06` as
+the second rather than the `0.09` of the first: on this mass `0.09` is 34% of the
+narrowest extent, and `clean-small` fires at the call. Where an outline runs off the
+canvas the inset is dropped, because **a mass that meets the frame should run off it**:
+draw it past the edge and let it.
 
 The default, `edge="ragged"`, is right for everything else: a mass sitting behind other
 things wants the brush to break past its boundary, because the mass in front will cover
