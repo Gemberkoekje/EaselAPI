@@ -1133,6 +1133,43 @@ are more pass ends. The repair that worked costs one stroke: lay the plane with 
 and put the core back with a single solid stroke down its middle. Measured by the
 painter who found it and re-measured here to the percentage point.
 
+**Where the fault sits, and what each repair leaves.** The step down the side is
+`pass step × cot(theta)`, where `theta` is the angle between the side and the passes —
+so it is *nearest parallel* that a chisel steps worst, and a side laid exactly along
+the passes takes no pass ends at all. The same band, swept at a range of angles to its
+own long side:
+
+| passes, against the side | flat `0.020` | bristle `0.022` | `round_hard` `0.020` |
+|---|---|---|---|
+| `0.7°` — along it | 3% | 0% | 0% |
+| **`3.7°`** | **22%** | 1% | 1% |
+| `6.3°` | 8% | 1% | 4% |
+| `16.3°` | 5% | 1% | 1% |
+| `41.3°` | 6% | 0% | 1% |
+| `86.3°` — square to it | 2% | 0% | 1% |
+
+The chisel is several times the others only in the first few degrees; past about six
+the three are the same picture. That is the window `chisel-staircase` fires in, and it
+is why the rule counts pass ends rather than measuring how far from square a boundary
+is — the prototype that asked the second question was silent on this very band.
+
+The repairs, on the band at `3.7°`, cheapest first:
+
+| repair | horizontal edges | costs |
+|---|---|---|
+| as written — `flat`, ragged | 22% | — |
+| `direction=` the side's own two points | 14%, and **nothing** where the sides run parallel | nothing |
+| `edge="clean"` | 11% | one stroke |
+| a comb, `bristle` | **1%** | nothing |
+| a comb with one solid stroke down the core | 7% | one stroke |
+| `edge="hard"` | **20%** | nothing, and it does not work |
+
+**`edge="hard"` does not close a staircase**, and this document said it did until
+0.6.0. It masks every dab to the outline, and these pass ends are *inside* the mask:
+22% to 20%. Passes along the side close it exactly when the sides are parallel, and a
+tapered shape has no one angle that serves both — which is why the comb, whose end is
+broken into bristles rather than being a line, is the repair that always works.
+
 The named profiles, widest and narrowest point of one stroke, same brush:
 
 | profile | widest | narrowest |

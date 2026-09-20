@@ -491,7 +491,7 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 
 | Row | Number |
 |---|---|
-| `chisel-staircase` (D1) | 6% of passes, 5 guide blocks — three more than the two recipe blocks the plan already fixes. Name them in the same commit |
+| `chisel-staircase` (D1) | 6% of passes, 5 guide blocks — three more than the two recipe blocks the plan already fixes. Name them in the same commit. **Built, and not as written:** the prototype's window of angles measured how irregular a shape is, and was silent on the lit band `CALIBRATION.md` measures the staircase on. The rule is the mechanism instead — a pass end lands every `step × cot(theta)` down a side, so it is *nearest parallel* that a chisel steps worst — and comes in at **2% of passes and 3 guide blocks, all recipes, all fixed here** |
 | `spill` (D1) | 4% of passes, 5 guide blocks. B17 is confirmed to the second decimal: **1.42x / 2.99x / 3.62x** at axis / 30 / 60 degrees |
 | `glaze-far` (D2) | 4% of passes, 1 guide block, and `0.08` **is the corpus's own p90** |
 | `smudge-across` (D2) | 5% of passes, **0** guide blocks |

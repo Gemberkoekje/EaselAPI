@@ -3914,3 +3914,56 @@ def test_a_new_session_is_given_the_prelude_that_holds_the_call(tmp_path):
     prelude.write_text("# mine\n", encoding="utf-8")
     assert main(["new", str(path), "--size", "320x240", "--force"]) == 0
     assert prelude.read_text(encoding="utf-8") == "# mine\n"
+
+
+# -- D1: the checks that came out of the 0.5.0 cohort's round --------------------------
+def test_a_chisel_nearly_along_a_straight_side_says_it_will_stair(tmp_path):
+    """Finding 1 of the cohort, and the commonest way a mass comes back wrong: a chisel
+    filling a shape along a straight side it runs *nearly* along ends its passes down
+    that side in ledges instead of drawing it. `CALIBRATION.md` measures the band --
+    22% of its strong edges horizontal against 1% for a comb -- and `RECIPES.md`
+    demonstrated it, which is how Kimi's rock faces came to be that call character for
+    character.
+
+    The threshold is the mechanism: a pass end lands every `step x cot(theta)` along
+    the side, so it is *nearest parallel* that a chisel steps worst. The window of
+    angles the plan proposed measured how irregular a shape was instead, and was
+    silent on this very band."""
+    band = polygon([(0.470, 0.180), (0.530, 0.180), (0.562, 0.820), (0.502, 0.820)])
+    lay = dict(color="titanium_white", size=0.020, density=1.0, solid=True,
+               pressure="even")
+
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="come back as a staircase"):
+        s.block_in(band, "flat", direction="vertical", **lay)
+    said = [n for n in s.notices() if n.code == "chisel-staircase"]
+    assert len(said) == 1 and "brush widths from one end to the next" in said[0].text
+
+    # Both remedies it names, and it must be silent on each: the passes laid along the
+    # side's own two points, and the comb whose ends are bristles rather than a line.
+    for label, call in (("along the side", dict(brush="flat",
+                                                direction=[(0.470, 0.180), (0.502, 0.820)])),
+                        ("a comb", dict(brush="bristle", direction="vertical"))):
+        quiet = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            quiet.block_in(band, **{**lay, **call})
+        assert not [n for n in quiet.notices() if n.code == "chisel-staircase"], label
+
+
+def test_the_staircase_is_silent_on_a_curve_and_on_a_square_end(tmp_path):
+    """`LESSONS.md` rule 2, as the cases that nearly got it wrong. A blob and an ellipse
+    have no straight side to align to, so a rule that fires on them is naming a remedy
+    that does not exist -- and the plan's own prototype fired on both. A rectangle swept
+    square to its sides puts every pass end on one line, which is the thing a chisel is
+    *for*."""
+    quiet = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quiet.block_in(blob(span("C3", "F6"), wobble=0.3, seed=2), "flat", "white",
+                       size=0.06, density=1.0, solid=True)
+        quiet.block_in(ellipse(span("B2", "G5")), "flat", "white", size=0.04,
+                       direction="horizontal", density=1.0, solid=True)
+        quiet.block_in(span("A5", "H8"), "flat", "white", size=0.06,
+                       direction="horizontal", density=1.0, solid=True)
+    assert not [n for n in quiet.notices() if n.code == "chisel-staircase"]

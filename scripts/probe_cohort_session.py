@@ -800,6 +800,27 @@ def _pass_angle(call: Call, session: Session) -> float | None:
 _mark_length_and_angle = session_module._mark_length_and_angle
 _angle_centre = session_module._angle_centre
 _normal_extent = session_module._normal_extent
+_angle_of = session_module._angle_of
+_pass_step = session_module._pass_step
+_pass_directions = session_module._pass_directions
+
+
+def _resolved_size(call: Call, ctx: Seen) -> float:
+    """The brush size the call actually ran at, not the one it was handed.
+
+    ``size=`` is left off in most of the corpus and the brush's own default stands,
+    so reading ``call.bound`` alone measures a third of the calls and skips the rest.
+    Every record carries the resolved brush in ``params``, so the first mark the call
+    laid is asked instead.
+    """
+    if call.bound.get("size"):
+        return float(call.bound["size"])
+    records = ctx.session.history.records[call.first:call.first + call.count]
+    for record in records:
+        size = record.params.get("size")
+        if size:
+            return float(size)
+    return 0.0
 
 
 @dataclass
@@ -907,42 +928,120 @@ def _spread(place, ctx: Seen) -> tuple[float, float] | None:
 #: where between those two an ordinary mass sits.
 SPILL_RATIO = 1.6
 
-#: A boundary is *sloped* when it is this far from both parallel and square to the
-#: passes. Below it the pass ends land in a line and there is no staircase.
-STAIR_DEG = 15.0
-#: ...and the rule needs this share of the outline to be sloped before it says so.
-STAIR_SHARE = 0.25
+#: How tall a ledge has to be, in brush widths, before it reads as a step rather than
+#: as the ragged edge a block-in has anyway. Two brushes is the floor the sweep below
+#: settles on: at the lit band's own `0.020` that is a 40-thousandth ledge, and the
+#: band the calibration measured steps **8.4**.
+STAIR_RISE = 2.0
+#: ...and this many of them have to land on the outline before it is a staircase and
+#: not a jag. The corpus and the guide put a clean break here: every case anybody has
+#: called a staircase leaves **3.4 or more** such ends (the lit band 5.8, Kimi's rock
+#: face 5.0, *a mass built of planes* 11.7 on its lit plane), and the one guide block
+#: that came nearest without being one -- a half-canvas rectangle swept six degrees
+#: off its own top edge, which takes one end on each -- leaves **2.0**.
+STAIR_LEDGES = 3.0
+
+
+def _pass_unit(place, direction, canvas) -> tuple[float, float]:
+    """The pass direction as a unit vector **in brush units**.
+
+    ``direction=`` and ``Polygon.axis`` are both angles in the normalised 0..1 space
+    the places are written in; a segment's angle, and the staircase a painter sees,
+    are in pixels. On a 4:3 canvas the two differ by up to seven degrees, which is
+    more than the whole window this rule lives in -- so both ends of every comparison
+    below are brought here first. The prototype this replaces compared a brush-unit
+    segment against a normalised pass angle and was wrong by that much.
+    """
+    degrees = place.axis if direction == "axis" else _angle_of(direction)
+    ux, uy = _units(canvas)
+    # `_angle_of` has already turned a name or a pair of points into degrees.
+    theta = math.radians(degrees)
+    dx, dy = math.cos(theta) * ux, math.sin(theta) * uy
+    length = math.hypot(dx, dy) or 1.0
+    return dx / length, dy / length
+
+
+def _ledges(place, direction, size: float, density: float, canvas):
+    """Per straight side: how many pass ends land on it, and how far apart they step.
+
+    The mechanism, rather than a window of angles fitted to it. Passes run along
+    ``d`` spaced ``step`` apart along the normal ``n``, and each one ends where it
+    leaves the outline. So a side whose extent **across** the passes is ``across``
+    takes ``across / step`` of those ends, and they are spread over its extent
+    **along** them -- which makes each step
+
+        rise = along / (across / step) = step x cot(theta)
+
+    and says the whole of it. At ``theta = 0`` the passes run along the side and no
+    pass ends on it at all (``across`` is nothing, so is the count). At ``theta =
+    90`` every end lands on the same line and ``rise`` goes to nothing. The fault is
+    in between and, because ``cot`` is steep near zero, it is **nearest parallel that
+    it is worst** -- which is the half of the range the prototype excluded.
+
+    ``direction`` is taken the way ``_block_in_paths`` takes it -- left off means
+    horizontal, ``"cross"`` and a sequence are one pass per angle -- and every angle
+    is walked, because a mass swept twice stairs on whichever of the two is nearest
+    one of its sides.
+
+    Yields ``(ledges, rise_in_brushes, side_length)`` per side, tallest step first.
+    """
+    ux, uy = _units(canvas)
+    step = _pass_step(size, density)
+    out = []
+    for pass_dir in _pass_directions("horizontal" if direction is None else direction):
+        dx, dy = _pass_unit(place, pass_dir, canvas)
+        nx, ny = -dy, dx
+        for p0, p1 in _segments(place):
+            ex, ey = (p1[0] - p0[0]) * ux, (p1[1] - p0[1]) * uy
+            across, along = abs(ex * nx + ey * ny), abs(ex * dx + ey * dy)
+            ledges = across / step
+            if ledges < 1e-9:
+                continue
+            out.append((ledges, (along / ledges) / size, math.hypot(ex, ey)))
+    return sorted(out, key=lambda row: -row[1])
 
 
 @call_check("chisel-staircase", "D1")
 def chisel_staircase(call: Call, ctx: Seen) -> str | None:
-    """A chisel filling a mass whose boundary is neither parallel nor square to it.
+    """A chisel filling a mass along a straight side it is *nearly* parallel to.
 
     Finding 1, and the one the plan calls the most common way a mass goes wrong.
     ``PAINTING.md`` measures it and ``RECIPES.md`` demonstrates it: Kimi's rock faces
     are *a mass built of planes* character for character.
+
+    **Rewritten against the measurement**, which the prototype did not survive. It
+    asked what share of the outline was more than fifteen degrees from both parallel
+    and square, and that is a measure of how irregular a shape is, not of how it
+    stairs: it was **silent on the lit band** ``CALIBRATION.md`` measures the
+    staircase on (22% of its strong edges horizontal against 1% for a comb) and
+    silent on Kimi's rock face, while firing on an ellipse, a blob and a rectangle
+    swept at 28 degrees -- three shapes with no straight side to align to and so no
+    remedy to offer. See :func:`_ledges` for what replaced it.
     """
     if call.verb not in ("block_in", "cover") or call.brush not in CHISEL:
         return None
     if str(call.bound.get("edge", "ragged")) != "ragged":
         return None
-    angle = _pass_angle(call, ctx.session)
-    if angle is None:
+    if not isinstance(call.place, (Polygon, Region)):
         return None
-    sloped = total = 0.0
-    for p0, p1 in _segments(call.place):
-        length = _length(p0, p1, ctx.canvas)
-        total += length
-        edge = _angle(p0, p1, ctx.canvas)
-        if min(_off(edge, angle), _off(edge, angle + 90.0)) >= STAIR_DEG:
-            sloped += length
-    share = ctx.note("chisel-staircase: sloped share of the outline", sloped / total
-                     if total else 0.0)
-    if share < STAIR_SHARE:
+    size, density = _resolved_size(call, ctx), float(call.bound.get("density", 1.0))
+    if not size:
         return None
-    return (f"{sloped / total:.0%} of this outline is neither parallel nor square to "
-            f"the passes at {angle:.0f} degrees: the pass ends stack down it as a "
-            f"staircase. edge=\"hard\", or direction= as the boundary's two points.")
+    rows = _ledges(call.place, call.bound.get("direction"), size, density, ctx.canvas)
+    # A side that does not take one whole pass end has no ledge on it at all, and its
+    # `rise` is the arithmetic running away towards parallel -- 110 brush widths on a
+    # canvas one wide. It is dropped before the step is read off, not after.
+    tall = [row for row in rows if row[0] >= 1.0 and row[1] >= STAIR_RISE]
+    ends = sum(row[0] for row in tall)
+    ctx.note("chisel-staircase: pass ends on a side that steps", ends)
+    if ends < STAIR_LEDGES:
+        return None
+    ctx.note("chisel-staircase: tallest ledge, in brush widths", tall[0][1])
+    return (f"a {call.brush} filling this shape ends {ends:.0f} of its passes on "
+            f"straight sides it runs nearly along, stepping up to {tall[0][1]:.0f} "
+            f"brush widths from one to the next: those sides come back as a "
+            f"staircase. Give direction= the two points of the side that matters, "
+            f"or lay it with a comb and put a solid stroke down its core.")
 
 
 @call_check("spill", "D1")

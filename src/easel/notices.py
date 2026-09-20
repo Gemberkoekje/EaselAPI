@@ -201,6 +201,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "calibration", "### `direction` given a sequence",
         ),
         _spec(
+            "chisel-staircase", "fact",
+            "a chisel filling a mass along a straight side it runs nearly along: the "
+            "pass ends step down that side instead of drawing it",
+            "calibration", "### The chisel staircase",
+        ),
+        _spec(
             "clean-small", "fact",
             "a clean edge whose brush is a large share of the shape: the inset takes the "
             "mass rather than a rim off it",
