@@ -615,8 +615,8 @@ them. The engine itself is untouched by that milestone.
 decided. The last two came out of the ninth session, which was the first to be handed
 [`DIAGNOSIS.md`](DIAGNOSIS.md):
 
-- **Hand the index as a file to grep, not as a file to read, and record which it
-  was.** `DIAGNOSIS.md` opens with *this file is not for reading* and
+- **Record whether the painter used the index, now that using it is one command.**
+  `DIAGNOSIS.md` opens with *this file is not for reading* and used to name
   `grep -i rings DIAGNOSIS.md` as the intended interface. The one session that has
   had it was told to read it front to back, and it then worked entirely from recall:
   it recognised *staircase*, *venetian blind*, *floating discs*, *searchlight that
@@ -625,10 +625,17 @@ decided. The last two came out of the ninth session, which was the first to be h
   them was permitted. The recalled version has no measurement attached, which is the
   whole difference between the index and its targets: the one fault it fixed
   properly, the chisel staircase, it fixed with `edge="clean"` while `CALIBRATION.md`
-  holds a cheaper repair at the other end of the same row. **That is n=1 and it is
-  the only n there is**, so the answer is not to change the file — an index whose
-  rows carried the repair as well as the pointer would be the fourth copy this page
-  refuses — but to run the grep arm and compare.
+  holds a cheaper repair at the other end of the same row.
+
+  **That was n=1, so the file did not change; what changed is the price of following
+  a pointer.** `easel diagnose <what you can see>` matches the rows and prints the
+  passage, which is the grep and the open-the-file-and-find-the-heading in one call —
+  and the index now ships in the wheel, which it did not when the grep arm was
+  proposed, so a painter who installed the package had nothing to grep at all. The
+  question the arm was meant to settle is therefore no longer *grep or read*. It is
+  **whether a painter reaches for it unprompted at the moment they are stuck**, which
+  is what the recall failure above was really about, and the next run should say
+  whether the command was in the instructions and how often it was called.
 - **Decide whether a restricted arm gets the index at all, and record it.** Four of
   the rows most relevant to a painter without the essay point into files that arm
   does not have — *two masses you planned as different that read as one* lands in

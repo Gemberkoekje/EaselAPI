@@ -46,6 +46,7 @@ from typing import Any
 
 from PIL import Image as _PILImage
 
+from easel import diagnosis as _diagnosis
 from easel import docs as _docs
 from easel import notices as _notices
 from easel import regions as _regions
@@ -896,7 +897,7 @@ def build_server() -> MCPServer:
         words, written to be read on its own and enough to start from.
 
         Args:
-            document: which of the five to return.
+            document: which of the six to return.
                 "guide" (PAINTER.md) -- the method: the loop, the order of work,
                     the mistakes, nine warm-up exercises, the closing checklist.
                     Required reading, and the only one that is.
@@ -910,12 +911,42 @@ def build_server() -> MCPServer:
                     argument does.
                 "calibration" (CALIBRATION.md) -- the measured numbers behind
                     the rules, which you do not need in order to paint.
+                "diagnosis" (DIAGNOSIS.md) -- an index of symptoms, and not for
+                    reading: it is a list of ways to fail, which teaches you to
+                    see faults you were not going to make. Use `diagnose`
+                    instead, which is this index with the pointer followed.
             full: for "guide", the whole of it rather than its first page. The
                 other documents always come back whole.
         """
         if document != "guide":
             return _docs.read(document)
         return _docs.read("guide") if full else _docs.front_page()
+
+    @server.tool()
+    @_tool
+    def diagnose(symptom: str = "", brief: bool = False) -> str:
+        """You have looked, it is wrong: the passage of the guide that measured it.
+
+        Describe what is on the canvas in your own words and this returns the
+        passage that says why it happened and what it costs to repair -- `easel
+        diagnose` and `DIAGNOSIS.md`'s symptom index, with the pointer already
+        followed.
+
+        Say what you can **see** (`concentric rings`, `a stringy edge`, `the ground
+        shows through in flecks`) rather than what you think caused it; the index is
+        written in the words a painter uses for the thing in front of them. Reach
+        for this after a rehearsal you do not like, which is the moment it is for.
+
+        The index itself is not worth reading -- it is a list of ways to fail, and
+        a session that read it front to back then repaired five faults from memory
+        rather than from the measurement, one of them the expensive way.
+
+        Args:
+            symptom: what you are looking at. Left off, every symptom it covers.
+            brief: the matching symptoms only, without their passages -- for
+                finding the wording to ask again with.
+        """
+        return _diagnosis.listing(symptom) if brief else _diagnosis.answer(symptom)
 
     @server.tool()
     @_tool

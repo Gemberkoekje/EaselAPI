@@ -8,8 +8,9 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1 to 5, 7 and 8 are done and step 6 is part-done; step 9 onward is still
-a plan, and of workstreams A to G, A, B, C, E and F are built.** Step 1 filed the round
+**Status: steps 1 to 5, 7 and 8 are done, steps 6 and 9 are part-done, and step 10 is
+still a plan; of workstreams A to G, A, B, C, E and F are built and G is started.**
+Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
 candidate in D, E and F would cost. Its numbers are in `CALIBRATION.md` under *The 0.5.0
@@ -30,7 +31,10 @@ workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 withdrawn. Step 8 is the two default moves the step-2 probe left standing -- a banded
 `scumble` laid solid (F3) and two brushes of overhang under `edge="hard"` (F5) -- with
 F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
-they are not re-argued; `NOTES-step8.md` has its gotchas. Written 2026-09-18 against
+they are not re-argued; `NOTES-step8.md` has its gotchas. **Step 9 is part-done**: G5 is
+built -- `src/easel/diagnosis.py`, `easel diagnose`, a `diagnose` MCP tool, and
+`DIAGNOSIS.md` as the sixth shipped document -- and G4 landed with step 7, so what is
+left of G is G2, G3 and G6 to G11; `NOTES-step9.md` has its gotchas. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.

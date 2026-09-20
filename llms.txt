@@ -28,6 +28,10 @@ What to know before reading further:
   the whole method in under a thousand words, and `easel guide --full`, `--painting`,
   `--recipes`, `--reference` and `--calibration` print the rest of it. Nothing below has
   to be fetched over the network if you have installed it.
+- Two commands answer questions rather than printing a document: `easel explain <code>`
+  turns a notice the engine gave you into the passage that measured it, and `easel
+  diagnose <what you can see>` does the same from the other end — describe what is wrong
+  on the canvas in your own words and it prints the measurement, with no code needed.
 - Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
   are never exposed, because they are what a language model is worst at.
 - The engine is built around one habit: **look every five to fifteen strokes**. A stroke

@@ -25,7 +25,7 @@ from pathlib import Path
 
 from PIL import Image as _PILImage
 
-from easel import docs, notices
+from easel import diagnosis, docs, notices
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
 from easel.notices import NOTICES, EaselWarning
@@ -278,8 +278,26 @@ def build_parser() -> argparse.ArgumentParser:
                          help="REFERENCE.md instead: units, defaults, every argument")
     g_which.add_argument("--calibration", action="store_true",
                          help="CALIBRATION.md instead: the measured numbers behind the rules")
+    g_which.add_argument("--diagnosis", action="store_true",
+                         help="DIAGNOSIS.md instead: the symptom index, which `easel "
+                              "diagnose` is the way to use")
     p_guide.add_argument("--path", action="store_true",
                          help="print where the document is, rather than what it says")
+
+    p_diagnose = sub.add_parser(
+        "diagnose",
+        help="you have looked, it is wrong: the passage that says why",
+        description="Describe what you can see on the canvas, in your own words, and "
+                    "this prints the passage of the guide that measured it. It is "
+                    "DIAGNOSIS.md's symptom index with the pointer already followed -- "
+                    "so say what is in front of you (`concentric rings`, `a stringy "
+                    "edge`, `the ground shows through`) rather than what you think "
+                    "caused it. With no words: every symptom it covers.",
+    )
+    p_diagnose.add_argument("words", nargs="*",
+                            help="what you are looking at, in your own words")
+    p_diagnose.add_argument("--list", action="store_true", dest="list_only",
+                            help="the symptoms that match, without their passages")
 
     p_explain = sub.add_parser(
         "explain",
@@ -323,6 +341,7 @@ def _cmd_guide(args) -> int:
             else "recipes" if args.recipes
             else "reference" if args.reference
             else "calibration" if args.calibration
+            else "diagnosis" if args.diagnosis
             else "guide")
 
     if args.path:
@@ -358,6 +377,22 @@ def _cmd_explain(args) -> int:
     return 0
 
 
+def _cmd_diagnose(args) -> int:
+    """`easel diagnose <words>`: the symptom index with the pointer already followed.
+
+    `DIAGNOSIS.md` was built to be grepped, and the one session that had it followed
+    none of its pointers -- it worked from the rows it remembered, and a remembered
+    row has no measurement attached. The row is not the thing; the passage it names
+    is. So this does the following, and what comes back is the passage.
+
+    It also puts the index in the hands of a painter who installed the wheel, who
+    until now had no file to grep at all.
+    """
+    words = " ".join(args.words)
+    docs.write(diagnosis.listing(words) if args.list_only else diagnosis.answer(words))
+    return 0
+
+
 def _dispatch(args) -> int:
     if args.command == "brushes":
         return _cmd_reference()
@@ -367,6 +402,9 @@ def _dispatch(args) -> int:
 
     if args.command == "explain":
         return _cmd_explain(args)
+
+    if args.command == "diagnose":
+        return _cmd_diagnose(args)
 
     if args.command == "new":
         if args.session.exists() and not args.force:
