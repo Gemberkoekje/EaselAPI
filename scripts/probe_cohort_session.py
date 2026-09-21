@@ -393,6 +393,10 @@ class Watcher:
         # what `look(diff=True)` cannot give: that one diffs against the last *look*.
         self.opened = (self.session.canvas.values(sketch=False).astype(np.float32) / 255.0
                        if self.session is not None and self.keep_canvas else None)
+        # ...and the engine's own copy, which is what `report()` reads to say a pass
+        # buried details: `easel run` takes it at the same moment.
+        if self.session is not None:
+            self.session._open_pass()
         self.current = made
         self.replay.passes.append(made)
         return made
@@ -1251,6 +1255,13 @@ def smudge_across(call: Call, ctx: Seen) -> str | None:
     Measured as the value change *along* the path against the change *across* it. A
     smudge run along a join sees one value ahead of it and two either side; run across
     one it sees the step in front of it, and drags a thumbprint out of the light mass.
+
+    **Built in step 6 (D2), and not as this prototype was.** Its test -- the range of
+    the values under the whole path against the mean step across it -- fired on both
+    heron necks, which run *along* a lit edge striped with short marks, and missed
+    the one pass that dragged a dark hull out into the water. The engine locates each
+    crossing on the path instead (``session._smudge_crossing``). So this fires where
+    the engine spoke and goes on measuring the prototype's number beside it.
     """
     if call.verb != "smudge":
         return None
@@ -1270,10 +1281,8 @@ def smudge_across(call: Call, ctx: Seen) -> str | None:
     ran = float(np.percentile(along, 95) - np.percentile(along, 5))
     ctx.note("smudge-across: change along the path, over change across it",
              ran / max(across, 1e-3))
-    if ran < across or ran < 0.06:
-        return None
-    return (f"the value changes {ran:.2f} along this smudge and {across:.2f} across it: "
-            f"the path crosses a boundary instead of following one.")
+    said = [line for line in call.notices if "crosses a boundary" in line]
+    return said[0] if said else None
 
 
 @call_check("smudge-again", "D2")
@@ -1306,24 +1315,27 @@ def smudge_again(call: Call, ctx: Seen) -> str | None:
 
 
 #: A smudge longer than this leaves a mid-value strip rather than a softened join.
-SMUDGE_LONG = 0.10
+SMUDGE_LONG = session_module._SMUDGE_LONG
 
 
 @call_check("smudge-long", "D2")
 def smudge_long(call: Call, ctx: Seen) -> str | None:
-    """A smudge run further than about a tenth of the canvas (the winter greenhouse)."""
+    """A smudge run further than about a tenth of the canvas (the winter greenhouse).
+
+    **Built in step 6 (D2) on the length the path runs *along a boundary***, not on its
+    length: a long pass over one flat mass leaves no strip, and the prototype's bare
+    length fired on most of the corpus's smudges, whose median is ``0.168`` long. This
+    fires where the engine spoke and goes on measuring the whole length beside it.
+    """
     if call.verb != "smudge":
         return None
-    length = ctx.note("smudge-long: path length, in brush units",
-                      _arc(_path(ctx), ctx.canvas))
-    if length < SMUDGE_LONG:
-        return None
-    return (f"a smudge {length:.2f} of the canvas long: over this length it leaves a "
-            f"mid-value strip -- two edges where there was one.")
+    ctx.note("smudge-long: path length, in brush units", _arc(_path(ctx), ctx.canvas))
+    said = [line for line in call.notices if "reads as a third band" in line]
+    return said[0] if said else None
 
 
 #: The value shift at which a film stops shifting a mass and becomes a new one.
-GLAZE_NEW_MASS = 0.08
+GLAZE_NEW_MASS = session_module._FILM_NEW_MASS
 
 
 @call_check("glaze-far", "D2")
@@ -1333,6 +1345,12 @@ def glaze_far(call: Call, ctx: Seen) -> str | None:
     The number is the shift the film actually made over its own footprint, measured
     here rather than predicted: the check the plan proposes predicts it from the
     colour and the canvas under it, and this is what that prediction has to match.
+
+    **Built in step 6 (D2)**, measured and not predicted -- the film is laid and its
+    own box read either side of it, as ``holes`` reads a mass -- and on two lines: the
+    value shift here, and how far the film was *mixed* from what it lands on, which
+    the shift cannot see (``session._film_shift``). So this fires where the engine
+    spoke and goes on measuring the prototype's shift beside it.
     """
     glazing = call.verb == "glaze" or bool(call.bound.get("glaze"))
     if not glazing:
@@ -1340,13 +1358,10 @@ def glaze_far(call: Call, ctx: Seen) -> str | None:
     changed = ctx.changed
     if not changed.any():
         return None
-    shift = ctx.note("glaze-far: value shift over the film's own footprint",
-                     float(np.abs(ctx.after - ctx.before)[changed].mean()))
-    if shift < GLAZE_NEW_MASS:
-        return None
-    return (f"this film moved the value under it by {shift:.3f} -- at {GLAZE_NEW_MASS:.2f} "
-            f"a film stops shifting a mass and becomes a new one. to_value=, or mix it "
-            f"closer to what it lands on.")
+    ctx.note("glaze-far: value shift over the film's own footprint",
+             float(np.abs(ctx.after - ctx.before)[changed].mean()))
+    said = [line for line in call.notices if line.startswith("this film")]
+    return said[0] if said else None
 
 
 #: How far an inward scumble's first ring may sit from what the patch meets its
@@ -1460,8 +1475,7 @@ FAN_RADIUS = 0.06
 FAN_DEGREES = 40.0
 
 
-@pass_check("radiating", "D3")
-def radiating(made: Pass, ctx: Done) -> str | None:
+def _radiating_prototype(made: Pass, ctx: Done) -> str | None:
     """Four or more hand-laid marks starting in one place and fanning out (finding 6).
 
     The daisy: ``PAINTER.md`` step 5 says it, ``RECIPES.md`` says it twice and
@@ -1504,8 +1518,7 @@ LOOP_LENGTH_CV = 0.15
 LOOP_SPACING_CV = 0.30
 
 
-@pass_check("one-loop", "D3")
-def one_loop(made: Pass, ctx: Done) -> str | None:
+def _one_loop_prototype(made: Pass, ctx: Done) -> str | None:
     """One loop's signature: one brush, one colour, one length, evenly spaced (finding 7).
 
     Four of the seven cohort painters failed the same passage the same way -- a column
@@ -1559,8 +1572,7 @@ BURIED_SHARE = 0.5
 BURIED_MARKS = 4
 
 
-@pass_check("buried", "D3")
-def buried(made: Pass, ctx: Done) -> str | None:
+def _buried_prototype(made: Pass, ctx: Done) -> str | None:
     """A pass that covers what was standing in front of it (finding 9).
 
     ``LESSONS.md`` lists the depth-order paragraph as failed in three runs and still
@@ -1591,6 +1603,57 @@ def buried(made: Pass, ctx: Done) -> str | None:
         return None
     return (f"this pass covered {share:.0%} of {len(watch)} earlier small or subject "
             f"marks ({gone} of them): a film is a mass at a depth. Lay it before they go on.")
+
+
+def _engine_said(made: Pass, words: str) -> str | None:
+    said = [line for line in made.findings if words in line]
+    return said[0] if said else None
+
+
+@pass_check("radiating", "D3")
+def radiating(made: Pass, ctx: Done) -> str | None:
+    """The daisy, as ``report()`` says it (``session._daisy``).
+
+    **Built in step 6 (D3), and not as the prototype above was.** Gathering marks that
+    start near one another fired on 22 passes of the corpus, and one of them was a
+    daisy -- the fogged glass's tree; the rest were pine branches, pot rims, perspective
+    bars, fingers and a fan of sun rays. The engine finds the hub where consecutive
+    marks' lines meet and asks for no gap in the circle of their directions over 90
+    degrees, and the tree is the one pass it names. The prototype still runs, for its
+    numbers.
+    """
+    _radiating_prototype(made, ctx)
+    return _engine_said(made, "a daisy")
+
+
+@pass_check("one-loop", "D3")
+def one_loop(made: Pass, ctx: Done) -> str | None:
+    """A loop's signature, as ``report()`` says it (``session._loop_runs``).
+
+    **Built in step 6 (D3) on runs of consecutive marks of one brush**, not on brush and
+    colour -- a loop steps its colour as readily as its place -- and with the gap
+    between neighbours at least a mark's own width, because overlapping passes of one
+    film are a passage and not a row. The prototype fired on two passes: DeepSeek's
+    reflection, which the engine names, and the pier's six sparkles, which it does not --
+    placed by hand, their lengths ramp only in the order they were typed. The prototype
+    still runs, for its numbers.
+    """
+    _one_loop_prototype(made, ctx)
+    return _engine_said(made, "a loop's signature")
+
+
+@pass_check("buried", "D3")
+def buried(made: Pass, ctx: Done) -> str | None:
+    """Details a pass took out of sight, as ``report()`` says it (``session._buried``).
+
+    **Built in step 6 (D3) on what a pass took out of sight and what did it.** Changed
+    pixels fired on 54 passes, most of them a nearer thing painted over a farther
+    thing's details, which is back-to-front done right. The engine counts a detail when
+    the pass cut its contrast with what is round it to under half and the paint over it
+    was a film or the passes of a mass. The prototype still runs, for its numbers.
+    """
+    _buried_prototype(made, ctx)
+    return _engine_said(made, "out of sight")
 
 
 # -- E: the canvas measurements -------------------------------------------------------
@@ -1936,8 +1999,9 @@ def probe_smudge_thumbprint() -> None:
         rows = np.nonzero(lift.any(axis=1))[0]
         deep = (join - int(rows.min())) / (0.04 * 1024) if len(rows) else 0.0
         print(f"  {label:<16}{int(lift.sum()):>23}{deep:>21.1f}")
-    print("  read: along the join the lift stops about a brush in; across it, it is "
-          "carried the length of the path.")
+    print("  read: since 0.6.0 about half a brush either way. Until then the pass across "
+          "carried it 4.1 brushes -- the light cap a smudge laid from its first dab, on a "
+          "pass that started in the dark -- which is what this row measured.")
 
 
 def probe_glaze_far() -> None:
@@ -2554,6 +2618,12 @@ _RULES = (
     ("pixels wide on this canvas", "a tip too small to deposit paint"),
     ("with a round tip", "a round tip blocking in a feature"),
     ("is past the 0.03 where", "a smudge past the size that buys anything"),
+    ("crosses a boundary", "smudge-across: a smudge dragged across a boundary"),
+    ("reads as a third band", "smudge-long: a smudge run along a long boundary"),
+    ("this film", "glaze-far: a film past what a film is for"),
+    ("a daisy", "radiating: marks leaving one point every way"),
+    ("a loop's signature", "one-loop: one length, one spacing"),
+    ("out of sight", "buried: details under a film or a mass"),
     ("is averaging", "sample() averaging over a mixed area"),
     ("direction= left off", "a shaped mass with direction= left off"),
     ("cross the shape", "a mass whose passes cross it"),

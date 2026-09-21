@@ -322,6 +322,14 @@ def paint_stroke(
 
     carried = base_color.copy()
     pickup = 0.45 if brush.smudge > 0.0 else 0.0
+    # A pure smudge (``smudge >= 1.0``) lays nothing of its own, so it carries nothing
+    # until it has touched the canvas: its first dab takes what is under it whole.
+    # Until 0.6.0 it started loaded with its nominal colour and mixed only ``pickup`` of
+    # the canvas into it per dab, so the first dabs laid 55%, 30%, 17% titanium white --
+    # a light cap at the start of every smudge, on a passage of one colour as much as
+    # across a boundary. A brush with some paint of its own (``0 < smudge < 1``) starts
+    # from that paint, which is what it has.
+    tasted = brush.smudge < 1.0
 
     # How readily the brush picks up wet paint it is dragged through.
     #
@@ -376,7 +384,11 @@ def paint_stroke(
         if brush.smudge > 0.0:
             sampled = canvas.sample(float(ix), float(iy), mask)
             if float(sampled.sum()) > 0.0:
-                carried = mix_many([carried, sampled], [1.0 - pickup, pickup])
+                if tasted:
+                    carried = mix_many([carried, sampled], [1.0 - pickup, pickup])
+                else:
+                    carried = np.array(sampled, dtype=carried.dtype, copy=True)
+                    tasted = True
             dab_color = (
                 carried
                 if brush.smudge >= 1.0

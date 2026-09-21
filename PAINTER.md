@@ -244,8 +244,8 @@ to cut the mass behind it carefully around it, which is painting *up to* a line.
 
 - **Let the near mass overlap.** A silhouette that stops exactly on a boundary was
   measured; one that overlaps was painted.
-- **A veil of light is a mass at a depth.** A glaze laid last because it is *light* is
-  still in front of something. `look(diff=True)` shows what a pass covered.
+- **A veil of light is a mass at a depth**: laid last because it is *light*, it is
+  still in front of something, and `report()` says so when it buries details.
 - **A mistake in the background is cheap until something stands on it.** Keep every mass
   in its own named function so the stack can be re-run in depth order for a repair later.
 
@@ -314,8 +314,7 @@ its own step. Below about five passes the steps read as steps again.
 
 **A passage that is light in the *middle* is the same verb turned inward** —
 `direction="inward"`, for a lit patch or a bloom, which is dark at every edge. The first
-ring lands on the boundary, so give it the value the patch meets its surroundings at. Not
-strokes radiating from the centre, which draws a daisy.
+ring lands on the boundary, so give it the value the patch meets its surroundings at.
 
 A field gradated top to bottom is a stack of horizontal bands until its joins are gone
 and something crosses it, and a stack of bands is a composition whether or not you meant
@@ -328,23 +327,19 @@ The step you will be most tempted to skip. Decide where you want attention and l
 every other edge — two masses merging with no boundary at all in places. Lose one edge
 completely rather than four partly.
 
-Three things about `smudge`:
-
-- **Leave `size` off.** What it buys stops at about `0.02`, the default; what it costs —
-  how far it drags the light mass into the dark — keeps growing with the brush.
-- **Run it *along* a boundary, never across one.** Dragged across, it pulls a lobe of
-  the lighter mass into the darker and leaves a finger-shaped thumbprint.
-- **Along means along the boundary's own shape.** Only a straight boundary is two
-  points; hand a curve its points, or hand it the mass and it walks that outline.
+`smudge` softens a *stretch* of a boundary, once. Hand it the stretch you mean to lose —
+under a tenth of the canvas, along the boundary's own shape — and leave `size` off:
 
 ```python
-s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53)])   # a curved edge is the curve
-s.smudge(mass)                                         # a shape is already that curve
+s.smudge([(0.30, 0.40), (0.34, 0.415), (0.38, 0.43)])  # a curve's own points
+s.smudge(mass.closed[3:5])                             # or a stretch of a shape's outline
 ```
 
-One pass, not three. If the boundary is still there afterwards, the answer is paint laid
-across it, not another smudge (*An edge that is actually lost* in
-[`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
+The call says when a path crosses a boundary instead of following it (`smudge-across`),
+runs long enough to leave a band of its own (`smudge-long`), or is wider than one pass
+can use (`smudge-wide`). One pass, not three. If the boundary is still there afterwards,
+the answer is paint laid across it, not another smudge (*An edge that is actually lost*
+in [`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
 
 ### 7. Highlights last, smallest brush, fewest strokes
 
@@ -537,10 +532,10 @@ left, mid, right = region("all").split_h(3)
 for r in (left, mid, right):
     s.block_in(r, "bristle", "burnt_umber", density=1.0, size=0.1)
 s.dry()
-s.block_in(left,  "bristle", s.palette.tint("burnt_umber", 0.6), density=1.0, size=0.1)
-s.stroke([(0.02, 0.5), (0.31, 0.5)], "round_hard",
-         s.palette.tint("burnt_umber", 0.6), size=0.03)      # hard
-s.smudge([(0.35, 0.3), (0.35, 0.7)])                         # soft
+light = s.palette.tint("burnt_umber", 0.6)
+s.block_in(left, "bristle", light, density=1.0, size=0.1, edge="hard")  # its edge on the line
+s.stroke([(0.38, 0.5), (0.62, 0.5)], "round_hard", light, size=0.03)    # hard
+s.smudge([(0.333, 0.40), (0.333, 0.60)])                                # soft: a stretch of it
 s.look()
 ```
 

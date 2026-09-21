@@ -579,7 +579,7 @@ def build_server() -> MCPServer:
         s = Session.load(session)
         trying = rehearse or count
         target = s.scratch(count_only=count) if trying else s
-        before = len(target.history.records)
+        before = target._open_pass()
         told = len(target.notices())
         result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
         # The post-pass check the CLI prints beside the budget line, here too, and

@@ -278,9 +278,9 @@ boundary, so anything darker draws a rim round your glow and melts nothing. On a
 too shallow for any `n` to fit, the verb says so and names the recipe below.
 
 **Goes wrong as:** a solid disc with a thin ramp round it (brush too wide); a daisy
-(strokes radiating out from a shared centre, which is the obvious hand-rolled answer
-and draws petals); a rim with nothing in the middle (first ring darker than what it
-sits in); or visible concentric rings, which is too few rings for the patch
+(strokes radiating from a shared centre, which `report()` names); a rim with nothing in
+the middle (first ring darker than what it sits in); or visible concentric rings, which
+is too few rings for the patch
 (*`scumble`* in [`CALIBRATION.md`](CALIBRATION.md#scumble)).
 
 *The single most rehearsed thing in the repository.*
@@ -603,8 +603,8 @@ A lost edge is one where two masses meet with **no boundary at all** for a stret
 Not a soft edge; an absent one, and the thing most often done by halves.
 
 ```python
-s.smudge([(0.30, 0.40), (0.45, 0.45), (0.60, 0.53), (0.73, 0.63)])
-s.smudge(mass)                                       # or hand it the mass's own outline
+s.smudge([(0.30, 0.40), (0.34, 0.415), (0.38, 0.43)])  # the stretch you mean to lose
+s.smudge(mass.closed[3:5])                             # or a stretch of the mass's outline
 s.stroke([(0.42, 0.30), (0.47, 0.35), (0.45, 0.43)], "bristle", "mid",
          size=0.028, load=0.60, opacity=0.55, pressure="taper")   # then paint across it
 ```
@@ -614,15 +614,9 @@ Run the smudge along the boundary's own shape — only a straight boundary is tw
 in a value between the two masses, at a low opacity with a starved brush: that is what
 actually loses an edge. The smudge softens; the paint is what removes.
 
-**A smudge loses a *stretch*, not a boundary, and on a long one it makes a second
-edge.** Its reach is fixed — `1.3%` of canvas height at the default size, whatever the
-join is — so the band it leaves is the same height over a join `0.05` long and one
-`0.4` long, and what changes is only how far that band runs. Measured on a hard step
-from `0.19` to `0.78`: the strip comes back at `0.51`, almost exactly halfway, which
-over a short join reads as a softened corner and over a long one as *dark, mid, light*
-— two edges where there was one. So past about a tenth of the canvas, go to the
-paint-across recipe from the start, and use the smudge on the stretch you actually mean
-to lose (*`smudge`* in [`CALIBRATION.md`](CALIBRATION.md#smudge)).
+**A smudge loses a *stretch*, not a boundary.** Past about a tenth of the canvas its
+strip reads as a band of its own — *dark, mid, light* — and the call says so
+(`smudge-long`); there, go to the paint-across recipe from the start.
 
 **Goes wrong as:** two edges that are *nearly* lost and read as neither — the commonest
 outcome. Lose one edge completely rather than four edges partly.

@@ -312,6 +312,103 @@ share — and on none of the guide's blocks.
 Nothing paints differently: both are notices, and the only code that changed what it lays
 is the guide's own.
 
+### Three checks that read the canvas under the mark, and a smudge that lays nothing of its own
+
+Step 6 of the round, workstream D2: the tool reads the paint a mark meets. The two smudge
+checks are said at the call, before the smudge lands, off the canvas along the path it
+will be stamped down; the film check reads a glaze once it has landed, as `holes` reads a
+mass.
+
+**Fixed: a smudge started loaded with white.** Its carried colour began as its nominal
+`titanium_white` and took in 45% of the canvas per dab, so its first dabs laid 55%, 30%,
+17% white — a light cap at the start of every smudge, on a passage of one colour as
+much as at a boundary: `0.13` of value over a mass at `0.45`, where it now moves nothing.
+It starts from the first colour it touches. The cap was part of finding 3's
+*thumbprint*, and it was what the round's own probe had measured as crossing: light
+carried **4.1 brushes** into the dark by a pass that started in the dark. With the start
+fixed that pass carries it **0.5**. **This paints differently, and not only for
+scripts**: the first brush-width of every smudge moves, a smudge already saved in an
+`.easel` file replays without its cap, and the three `marks` goldens and the brush
+sampler moved with it — looked at, and regenerated.
+
+**`smudge-across`** (a fact). Dragged across a boundary, a smudge carries the first mass
+about a brush into the second — `1.2` brushes at `size=0.04` across a step from `0.20`
+to `0.78`, either way round. The call says so when its path crosses a step of `0.10`
+or more, with half a brush of path before the line and a quarter after it; a pass that
+only starts or stops on the line is not told. Over the corpus it speaks on 11 of 37
+smudges, in 9 of 325 painted passes (3%), and on none of the guide's blocks. The
+prototype it replaced tested the range of the values under the whole path, fired on both
+heron necks — which run *along* a lit edge striped with short marks — and missed the one
+pass that dragged a dark hull out into the water.
+
+**`smudge-long`** (a habit). Along a boundary a smudge leaves a strip about a brush tall
+at the value halfway between the two, at any length: a softened corner over a short
+stretch, a third band over a long one. The call says so when the path follows a step of
+`0.05` or more for more than `0.10` of the canvas: 14 smudges, in 11 passes (3%), none
+of the guide's blocks. The prototype fired on the path's bare length, and the corpus's
+median smudge is `0.168` long.
+
+**`glaze-far`** (a fact). A film that moved the passage under it by `0.08` or more in
+value — *a stripe of a different colour*, in the guide's own table — or that was mixed
+`0.07` or more from what it lands on in hue and chroma, which no opacity rescues. The
+first is not said about a film given `to_value=`, which asked for its shift; the second
+is, because the search lands a value and not a colour. Over the corpus: 38 of 222
+films, in 17 passes (5%) — 22 by the value line, 16 by the mix line alone — and none
+of the guide's blocks once `PAINTING.md`'s own example stopped glazing raw alizarin.
+
+- **The guide's own examples ran the smudges the new rule is about.** `RECIPES.md`'s
+  *An edge that is actually lost* smudged half the canvas directly above its own
+  paragraph saying not to go past a tenth, and `PAINTER.md`'s step 6 a third of it;
+  both now smudge a stretch. `PAINTER.md`'s edge study laid its *soft* edge as a smudge
+  down the middle of the light panel, 20 px from the boundary it was meant to soften,
+  beside a *hard* line in the panel's own colour, so it showed neither: both are on the
+  canvas now. `PAINTING.md`'s glaze example glazed raw alizarin, against the rule in
+  the paragraph under it, and now mixes its film from what it lands on.
+- The three rules about `smudge` in `PAINTER.md`'s step 6 are one paragraph naming the
+  codes, and `RECIPES.md`'s strip paragraph and `PAINTING.md`'s glaze table are a line
+  each; the measurements live in `CALIBRATION.md`, *Across a boundary, and along a long
+  one* and *A film far from what it lands on*.
+- `CALIBRATION.md`'s first line about `smudge` said it pulls the lighter mass into the
+  darker more than the reverse. On a dried hard step it is symmetric — `0.49` brushes
+  each way, before the fix and after — and the bullet says so now.
+
+### Three findings after the pass: a daisy, a loop's signature, and details a layer buried
+
+Step 6 of the round, workstream D3: three new lines in `report()`, the check `easel run`
+prints after every pass. The step-2 prototypes of all three fired on the wrong passes —
+of the 22 the daisy prototype named, one was a daisy, and the burial prototype's 54 were
+mostly a nearer thing painted over a farther thing's details, which is back-to-front done
+right — and each was looked at pass by pass and rebuilt on what the pictures showed. All
+three are habits: a subject can radiate, a row can be a row, and a pass can bury on
+purpose. None fires on the guide's 71 runnable blocks.
+
+**A daisy.** Five or more hand-laid marks, each at least twice as long as its brush is
+wide, leaving one point in every direction: no gap in the circle of their directions
+over 90 degrees. The point is where consecutive marks' lines meet, so a ray from a
+disc's rim counts as well as a petal from its centre. A tree's fork, a tuft of grass, a
+fan of rays and a glow of wide films are not one. One pass of the corpus's 325: the
+fogged glass's tree, which its painter's verdict calls *spoke-like*.
+
+**A loop's signature.** Six or more consecutive hand-laid marks of one brush at one
+length, or a strict ramp of lengths, evenly spaced on a line and far enough apart to read
+as marks — finding 7's *floating rectangles* and ziggurat. One pass: DeepSeek's glitter
+path, which was the painter's fix for the rectangles — eight flashes meant to shorten
+toward the viewer, all `0.100` long.
+
+**Details a film or a mass buried.** Earlier small or `subject` marks that were showing
+as the pass opened and were left at under half their contrast by a glaze or by the passes
+of a mass. Two passes, both burials: a pier's pile reflections under a graded scumble,
+and a pool's far lamp under the films that lifted its water. It needs the canvas as the
+pass opened, which `easel run` and the MCP `run` tool now keep, and which a script
+calling `report(since=)` after each pass gets from the report before. **It does not see
+a detail taken down a little at a time**: the one burial a painter wrote down, a chair
+under three deck glazes, lost less than half its contrast in every pass and stood too
+close to the deck to count as showing. `CALIBRATION.md` has the numbers; it is open.
+
+- `PAINTER.md` step 5's daisy sentence is gone, and step 3's *veil of light* bullet is
+  one line naming the check. `RECIPES.md`'s daisy, `PAINTING.md`'s *any loop or
+  generator* row and `scumble`'s docstring say that `report()` names them.
+
 ### The canvas, measured, and the closing checklist answered
 
 Step 7 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstreams E and G4). Everything

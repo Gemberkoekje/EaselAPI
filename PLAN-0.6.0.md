@@ -8,9 +8,8 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1 to 5, 7 and 8 are done, steps 6 and 9 are part-done, and step 10 is
-still a plan; of workstreams A to G, A, B, C, E and F are built, D1 is, and G is
-started.**
+**Status: steps 1 to 8 are done, step 9 is part-done, and step 10 is still a plan; of
+workstreams A to G, A to F are built and G is started.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -24,11 +23,15 @@ lands on that channel rather than beside it.** Step 4 is workstream B, every row
 except B8, which was held back to the default moves (F5) because it repaints 55
 committed calls. Step 5 is the plan object (C): `src/easel/plan.py`, `Session.plan()`,
 its five effects on the check, `easel plan` and an MCP `plan` tool, and the finding-11
-contradiction resolved in both the engine and the recipe. **Step 6 is part-done**: both
+contradiction resolved in both the engine and the recipe. **Step 6 is done**: both
 D1 checks the probe left standing are built -- `chisel-staircase`, and `spill`, whose
 multiple is predicted off the passes a call is about to lay and which settled B17's
-open question (the auto brush is not capped) -- and D2 and D3 are not started;
-`NOTES-step6.md` has `spill`'s gotchas. Step 7 is
+open question (the auto brush is not capped) -- and so is D2: `smudge-across`,
+`smudge-long` and `glaze-far`, with an engine bug found on the way (a smudge started
+loaded with white, which was half of finding 3's thumbprint) fixed, and so is D3: a
+daisy, a loop's signature and details a film or a mass buried, three lines after the
+pass, each rebuilt on the corpus's own pictures after its prototype fired on the wrong
+passes. `NOTES-step6.md` has the gotchas of `spill`, of D2 and of D3. Step 7 is
 workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 `edges:` / `holes:` / `pencil:` / `boxes:` / `unspent:` lines, `easel check` and the MCP
 `check` tool; `NOTES-step7.md` has its gotchas, including one published `edges:` number
@@ -494,20 +497,20 @@ the map back, if a cut turns out to have gone too far.
 | Where it is today | What it says | Carried by | What stays |
 |---|---|---|---|
 | `PAINTER.md` card, *six things*, row 5 | the tool's own shape; staircase | `chisel-staircase`, and the existing round-disc rule | the row, shorter |
-| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | **neither carrier arrived** -- F1 was declined in step 8 (it waits for `spill`), and `spill` is not built. **Settled in step 9: nothing leaves.** The row and the paragraph keep the rule and now name `edge="hard"`, which the tool has had all along and the card never mentioned (finding 8) | the row, and the prose, with the keyword in them |
-| `PAINTER.md` step 3, *a veil of light is a mass at a depth* | depth order of films | `buried` | the rule, one sentence |
+| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | **neither carrier arrived** -- F1 was declined in step 8, and `spill`, built in step 6, is silent inside `cover()` by design. **Settled in step 9: nothing leaves.** The row and the paragraph keep the rule and now name `edge="hard"`, which the tool has had all along and the card never mentioned (finding 8) | the row, and the prose, with the keyword in them |
+| `PAINTER.md` step 3, *a veil of light is a mass at a depth* | depth order of films | `buried` -- **arrived in step 6 (D3)**: the bullet is one line naming it. It sees a burial done in one pass, not one done a little at a time over several (the pool's chair) | the rule, one sentence |
 | `PAINTER.md` step 4, *put the plan through `compare()`* | pairs that touch | `s.plan(values=)` | one line |
-| `PAINTER.md` step 5, daisy sentence | radiating strokes | `radiating` | -- |
-| `PAINTER.md` step 6, three things about `smudge` | size, along not across, once | existing size warning, `smudge-across`, `smudge-again` | *lose one edge completely* |
+| `PAINTER.md` step 5, daisy sentence | radiating strokes | `radiating` -- **arrived in step 6 (D3)** as the daisy line, and the sentence is gone | -- |
+| `PAINTER.md` step 6, three things about `smudge` | size, along not across, once | existing size warning, `smudge-across`, `smudge-again` -- **two arrived in step 6 (D2)**: the three rules are one paragraph naming `smudge-across`, `smudge-long` and `smudge-wide`. `smudge-again` is tier 3, so *one pass, not three* stays | *lose one edge completely*; *one pass, not three* |
 | `PAINTER.md` checklist, 13 lines | faults to look for | `s.checklist()` | the three judgement lines |
-| `PAINTING.md`, *Wet paint*: dry first; glaze distance | | `wet-under`, `glaze-far` | the mechanism, short |
-| `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) | the table as an index of codes |
+| `PAINTING.md`, *Wet paint*: dry first; glaze distance | | `wet-under`, `glaze-far` -- **`glaze-far` arrived in step 6 (D2)**: the glaze table is one line naming it, and the example stopped glazing raw alizarin. `wet-under` was dropped in step 2, so *`dry()` first* stays | the mechanism, short; *`dry()` first* |
+| `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) -- **`one-loop` arrived in step 6 (D3)**: the *any loop or generator* row says `report()` names it | the table as an index of codes |
 | `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` -- **`spill` arrived in step 6**, and the spill paragraph is one line naming it; the `inset` paragraph waits for `inset-lost`, which is tier 3 | the three remedies |
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
 | `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips | one line |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
 | `RECIPES.md`, quiet gradient: a `flat` scallops; under five passes | | **neither carrier arrived** -- F4 was declined on the numbers (the halved pair moves the ripple `0.0053` to `0.0059`), and `scumble-few` is not built. **Settled in step 9: nothing leaves**, and the paragraph is unchanged | the whole paragraph |
-| `RECIPES.md`, lost edge: stretch not boundary | | `smudge-long` | the paint-across recipe |
+| `RECIPES.md`, lost edge: stretch not boundary | | `smudge-long` -- **arrived in step 6 (D2)**: the paragraph is a line naming it, and the block above it, which smudged half the canvas, smudges a stretch | the paint-across recipe |
 | `DIAGNOSIS.md` | symptom -> pointer | `easel diagnose` | the file, now shipped |
 
 ---
@@ -567,11 +570,11 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 |---|---|
 | `chisel-staircase` (D1) | 6% of passes, 5 guide blocks — three more than the two recipe blocks the plan already fixes. Name them in the same commit. **Built, and not as written:** the prototype's window of angles measured how irregular a shape is, and was silent on the lit band `CALIBRATION.md` measures the staircase on. The rule is the mechanism instead — a pass end lands every `step × cot(theta)` down a side, so it is *nearest parallel* that a chisel steps worst — and comes in at **2% of passes and 3 guide blocks, all recipes, all fixed here** |
 | `spill` (D1) | 4% of passes, 5 guide blocks. B17 is confirmed to the second decimal: **1.42x / 2.99x / 3.62x** at axis / 30 / 60 degrees. **Built in step 6, predicted rather than measured:** the engine's `spill` fires on 18 calls in 13 of the 325 painted passes -- **4%**, the prototype's own share -- and on none of the guide's blocks once the three that were painting their neighbours moved; where it spoke, the paint measured a median of `1.71x` (p90 `2.42x`) |
-| `glaze-far` (D2) | 4% of passes, 1 guide block, and `0.08` **is the corpus's own p90** |
-| `smudge-across` (D2) | 5% of passes, **0** guide blocks |
-| `radiating` (D3) | 7% of passes, **0** guide blocks |
-| `buried` (D3) | 17% of passes, 0 guide blocks — over the ceiling, so it needs a narrower gate than *four marks at half covered* before it is built |
-| `smudge-long` (D2) | 6% of passes but **3** guide blocks, and the corpus median smudge is `0.168` long. The `0.10` threshold is far too low |
+| `glaze-far` (D2) | 4% of passes, 1 guide block, and `0.08` **is the corpus's own p90**. **Built in step 6, measured once the film lands, on two lines**: the value shift at `0.08`, and how far the film was *mixed* from what it lands on at `0.07` in Oklab -- the case the reports were about, which moves the value too little for the first line to see (the harbour's searchlight moved it `0.020`). 38 of 222 films in 17 passes, **5%**; no guide block once `PAINTING.md`'s own example stopped glazing raw alizarin |
+| `smudge-across` (D2) | 5% of passes, **0** guide blocks. **Built in step 6, and not as the prototype was**: its test fired on both heron necks and missed a hull dragged into the water. The engine finds each crossing on the path the stroke will be stamped down -- 11 of 37 smudges in 9 passes, **3%**, no guide block. And half of what finding 3 reported was an engine bug, fixed here: a smudge started loaded with white |
+| `radiating` (D3) | 7% of passes, **0** guide blocks. **Built in step 6, and not as the prototype was**: of the 22 passes it named, looked at one by one, one was a daisy. The engine finds the point where consecutive marks' lines meet and asks for no gap in their directions over 90 degrees, counting only marks twice as long as they are wide -- **1 pass**, the fogged glass's tree, and no guide block |
+| `buried` (D3) | 17% of passes, 0 guide blocks — over the ceiling, so it needs a narrower gate than *four marks at half covered* before it is built. **Built in step 6 on what a pass took out of sight and what did it**: a detail showing `0.05` as the pass opened, left under half that by a film or a mass, three or more -- **2 passes**, both burials. It misses the one burial a painter wrote down, the pool's chair, which never stood `0.05` off the deck and went a little at a time over three passes; that is open |
+| `smudge-long` (D2) | 6% of passes but **3** guide blocks, and the corpus median smudge is `0.168` long. The `0.10` threshold is far too low. **Built in step 6 on the length a path runs *along a boundary***, not its length: 14 of 37 smudges in 11 passes, **3%**, no guide block. The `0.10` stayed -- a strip along a hard step reads as a drawn line from `0.10` -- and the guide blocks that smudged a third and half of the canvas were the guide's own examples, now a stretch |
 | `holes:` (E) | fires after 8% of passes. **A hole is a contrast, not a gap**: the same comb leaves `0.16%` on `toned_grey` and **`3.16%` on a dark ground** |
 | F3, a banded `scumble` to `load=1.0, load_falloff=0.0` | **40 of 60** committed banded scumbles type the clause by hand; bare `5.17%` to `0.01%` |
 | F5, `edge="hard"` to two brushes of overhang | **55 committed calls, none naming an overhang**: every one moves, so the goldens are the cost |
@@ -579,7 +582,11 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 **Tier 3, on the evidence.** `one-loop`, `cross-small`, `scumble-few`, `smudge-again` and
 `inset-lost` fire on one or two passes each. `one-loop` is the one to keep on the list
 anyway: four of the seven painters reported the fault and the committed scripts hold it
-twice, because they **rewrote the passage before delivering the painting**. The corpus
+twice, because they **rewrote the passage before delivering the painting**. **Built in
+step 6 (D3)**, on runs of consecutive marks rather than brush and colour: it holds it
+once. The prototype's second pass was the pier's six sparkles, placed by hand, and the
+one it keeps is DeepSeek's *fix* -- eight flashes meant to shorten toward the viewer,
+all `0.100` long, which G6 must not copy as they are. The corpus
 cannot see a fault that was repaired before it was committed, which is a limit of this
 instrument.
 
@@ -633,6 +640,19 @@ Small, and none of it blocks step 1.
   lands outside the place*).
 - Whether `easel_paint` should one day become the canonical import, given the unrelated
   `easel` on PyPI (B10). Not this round: the shim keeps the option open.
+- **A fix that changes how a saved stroke replays.** The smudge fixed in step 6 (D2) no
+  longer lays white where it starts, and that moves the first brush-width of every
+  smudge -- including one already saved in an `.easel` file, which `CHANGELOG.md`'s
+  preamble promises *always replays as it was painted*. The entry says so plainly.
+  Whether the promise gains an exception for a stroke the engine got wrong, or a file
+  saved before 0.6.0 should replay its smudges the old way, is the owner's.
+- **A burial spread over passes.** `buried` (step 6, D3) compares a pass with the canvas
+  it opened on, and the one burial a painter wrote down -- the pool's chair, erased by
+  three deck glazes -- went a little at a time and never by half in one pass, on marks
+  that stood only `0.017`-`0.046` off the deck. Seeing it takes a lower floor for
+  *showing* (a corpus count first) and a memory of each detail's contrast that outlives
+  an `easel run` call (a field in the saved file). Whether to build that, and so whether
+  G11 closes `LESSONS.md`'s depth-order item with the check as it stands, is the owner's.
 - **Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
   from the `edges:` prototype that step 7 withdrew, and *The measurement lines, on the
   finished canvases* says the corpus wants replaying with the shipped line before 0.6.0

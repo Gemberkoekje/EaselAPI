@@ -856,7 +856,7 @@ def _cmd_run(session: Session, args) -> int:
     # in a fraction of the time, and nothing to look at. See `Session.scratch`.
     rehearsing = args.rehearse or args.count
     target = session.scratch(count_only=args.count) if rehearsing else session
-    before = len(target.history.records)
+    before = target._open_pass()
     told = len(target.notices())
 
     # Every notice the pass gives is kept on the session by `Session._notify` before
