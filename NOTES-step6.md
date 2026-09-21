@@ -38,6 +38,7 @@ painter who hit it had read the paragraph.
 | `PAINTING.md` | the spill paragraph is one line naming the code; the three answers stay |
 | `CALIBRATION.md` | *Paint that lands outside the place*: the reach table, the pixel floor, the threshold, the three blocks, `cover()`, and B17's cap measured and declined |
 | the probe | fires where the engine speaks, and goes on measuring the paint beside it |
+| over the corpus | 18 calls in 13 of the 325 painted passes, **4%** — the prototype's own share — and none of the guide's 71 runnable blocks; the median pass still prints nothing |
 
 ## Decisions and gotchas
 
@@ -150,6 +151,15 @@ brush that is itself a large share of the mass is measured against the inset sha
 the guide's own numbers it is silent (1.44x), and a test holds that; a much larger brush
 inset the same way would be told it spills onto the outline it was inset to reach.
 Fixing it would mean a field on `Polygon`, which rides in the log.
+
+**Four of the corpus's eighteen fires measured under the line.** Where `spill` spoke, the
+paint measured a median of 1.71x, but on four calls 1.23x–1.58x — two in the sonnet's
+beam, the greenhouse floor's band (predicted 2.2x, measured 1.23x), a pier mass. The
+replay counts a pixel as painted when its value moved by more than `0.004`, so paint laid
+on paint of its own value is invisible to it and the measured multiple is a floor. That
+those four are such cases is a reading, not checked call by call. If they are, the
+question is whether a spill onto paint of its own value is worth saying at all — which
+needs the canvas under the footprint, and is D2's to ask, not D1's.
 
 **`Region.inset` works in canvas fractions on each axis**, so *inset the place by half the
 brush* is exact only on a square canvas; off it, the short axis is inset a little less

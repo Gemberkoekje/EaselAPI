@@ -278,7 +278,9 @@ or more says so — the multiple, the share of the paint outside the place, and 
 share of it — with the answers `PAINTING.md` gives: inset the place by half the brush, a
 brush under a fifth of it, or `edge="hard"`. A banded `scumble` says so at **2.0x**,
 because its own brush breaks past the band by design and the band its brush was tuned on
-covers 1.69x laid along its axis; a planned band says it when `cost()` walks it.
+covers 1.69x laid along its axis; a planned band says it when `cost()` walks it. Over the
+corpus it fires on 18 calls in 13 of 325 painted passes — **4%**, the prototype's own
+share — and on none of the guide's blocks.
 
 - **Predicted off the passes, not read off a rule of thumb.** The plan's version was *a
   brush over a fifth of the shorter extent*, and `PAINTER.md`'s own first `block_in` lays

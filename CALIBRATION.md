@@ -699,6 +699,13 @@ a smear twice their size — and 85% of the second are told. A rule on the mecha
 (*the brush is wider than the band is deep*) was tried and missed angled squares at
 `3.2x`–`3.5x`.
 
+**Over the corpus** the engine's own `spill` fires on 18 calls in 13 of the 325 painted
+passes — **4%**, the prototype's share — and where it spoke the paint measured a median
+of `1.71x` (p90 `2.42x`). On 4 of the 18 it measured under `1.6x` (`1.23x`–`1.58x`). The
+replay's only test for *painted* is a value moved by more than `0.004`, so paint laid on
+paint of its own value is invisible to it and the measured multiple is a floor; that
+those four are such cases is a reading, not checked call by call.
+
 **It fired on three of the guide's own blocks**, and all three were painting their
 neighbours, so the blocks moved and the rule did not:
 
