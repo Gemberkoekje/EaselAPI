@@ -116,7 +116,7 @@ def read(name: str = "guide") -> str:
     return document_path(name).read_text(encoding="utf-8")
 
 
-def headings(name: str) -> list[tuple[int, int, str]]:
+def headings(name: str, text: str | None = None) -> list[tuple[int, int, str]]:
     """Every heading in a document: `(line number, level, the heading line)`.
 
     Fenced code blocks are stepped over. Half the passages here end in an example,
@@ -126,11 +126,13 @@ def headings(name: str) -> list[tuple[int, int, str]]:
 
     One scanner rather than one per caller, because `section` and `heading_line`
     disagreeing about what a heading is would show up as a passage that stops in the
-    wrong place, which nothing in the suite can see.
+    wrong place, which nothing in the suite can see. `text` scans a draft of the
+    document instead of the file, which is how `easel.demo` reads a recipe that has
+    not been saved yet.
     """
     found: list[tuple[int, int, str]] = []
     fenced = False
-    for i, line in enumerate(read(name).splitlines()):
+    for i, line in enumerate((read(name) if text is None else text).splitlines()):
         text = line.lstrip()
         if text.startswith("```"):
             fenced = not fenced

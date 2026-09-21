@@ -34,6 +34,8 @@ What to know before reading further:
   turns a notice the engine gave you into the passage that measured it, and `easel
   diagnose <what you can see>` does the same from the other end — describe what is wrong
   on the canvas in your own words and it prints the measurement, with no code needed.
+  A third shows rather than tells: `easel demo <recipe>` paints a recipe beside its
+  commonest failure and the smallest fix, and quotes what the tool said about each.
 - Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
   are never exposed, because they are what a language model is worst at.
 - The engine is built around one habit: **look every five to fifteen strokes**. A stroke

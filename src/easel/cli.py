@@ -25,7 +25,7 @@ from pathlib import Path
 
 from PIL import Image as _PILImage
 
-from easel import diagnosis, docs, notices
+from easel import demo, diagnosis, docs, notices
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
 from easel.notices import NOTICES, EaselWarning
@@ -310,6 +310,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain.add_argument("code", nargs="?", default="",
                            help="the notice's code, as the pass printed it")
 
+    p_demo = sub.add_parser(
+        "demo",
+        help="a recipe painted beside what it looks like when it goes wrong",
+        description="Paints one recipe of RECIPES.md beside its commonest failure, side "
+                    "by side -- the recipe, the call that goes wrong with what the tool "
+                    "says about it, and the smallest fix where it is not the recipe "
+                    "itself -- and prints what each panel was told. Name the recipe by "
+                    "the words of its heading: `easel demo crosses a boundary`. With no "
+                    "words: every recipe, and which of them have a demo.",
+    )
+    p_demo.add_argument("words", nargs="*",
+                        help="the recipe, by the words of its heading")
+    p_demo.add_argument("--out-dir", type=Path, default=Path("out"),
+                        help="where the sheet is written, as demo-<recipe>.png")
+    p_demo.add_argument("-o", "--output", type=Path, default=None,
+                        help="write the sheet here instead")
+
     return parser
 
 
@@ -393,6 +410,20 @@ def _cmd_diagnose(args) -> int:
     return 0
 
 
+def _cmd_demo(args) -> int:
+    """`easel demo <recipe>`: the failure a recipe describes, painted beside the recipe.
+
+    Finding 19 asked for this in so many words -- the recommended call, what it looks
+    like, the common failure, the smallest fix -- because a failure described in prose
+    is one more rule to carry, and a picture of it is something to hold a rehearsal
+    against. It needs no session: every panel is a fresh canvas with the guide's own
+    context under it, the one `scripts/check_guide_blocks.py` holds each demo to.
+    """
+    text, _ = demo.answer(" ".join(args.words), out_dir=args.out_dir, path=args.output)
+    docs.write(text)
+    return 0
+
+
 def _dispatch(args) -> int:
     if args.command == "brushes":
         return _cmd_reference()
@@ -405,6 +436,9 @@ def _dispatch(args) -> int:
 
     if args.command == "diagnose":
         return _cmd_diagnose(args)
+
+    if args.command == "demo":
+        return _cmd_demo(args)
 
     if args.command == "new":
         if args.session.exists() and not args.force:

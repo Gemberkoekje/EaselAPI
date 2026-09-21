@@ -648,6 +648,72 @@ of the method ends by looking, so a painter without image input can drive the wh
 without ever learning whether a mark landed. The other four small facts G9 listed were
 already in place, closed by the steps that had reason to touch them.
 
+### Recipes that show how they go wrong, and a check that they still do
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G3). Finding 19 asked for *small
+runnable visual comparisons: the recommended call, what it looks like, the common
+failure, the smallest fix* — because *the documentation sometimes compensates for
+difficult tool behaviour with additional rules*, and a failure described in words is one
+more rule to carry.
+
+- **`easel demo <recipe>`** — `demo` through the MCP server, `easel.demo.answer()` from
+  Python — paints one recipe of `RECIPES.md` beside its commonest failure and, where it
+  is not the recipe itself, the smallest fix, and quotes what the tool said about each
+  panel. Name the recipe by the words of its heading (`easel demo crosses a boundary`);
+  with none, it lists which recipes have one. It needs no session. The sheet is cut to
+  where the panels differ and enlarged up to four times, because five discs of a 5 px
+  brush on a whole canvas are five dots nobody can compare.
+- **Twelve of the twenty recipes carry a demo block** under their *Goes wrong as*, each
+  cut by comment lines into the passage it is laid on, what goes wrong, and the fix. The
+  block names what the tool says about the failure: a notice code for eight
+  (`chisel-staircase`, `inward-flat`, `glaze-far`, `scumble-wedge`, `round-fringe`,
+  `jitter-beads`, `smudge-long`, `smudge-across`), a line of `report()` for three, and
+  *nothing says so* for one — flecks where a plane was laid without `solid=True`, which
+  only looking finds. `RECIPES.md` now opens by saying a block under *Goes wrong as* is
+  the failure on purpose, and not to copy it.
+- **The other half of the invariant step 9 began.** `scripts/check_guide_blocks.py`
+  holds every demo to what it names: the failure trips exactly those codes and
+  `report()` lines, and the recipe and the fix, laid on the same passage, trip none of
+  it and say nothing at the call. A recipe can no longer ship producing the fault its
+  own paragraph warns about, and a failure block can no longer quietly stop failing. The
+  script runs in CI now, as a job of its own, where until this release it ran only when
+  somebody remembered to; it takes about two and a quarter minutes here against one and
+  a quarter without the demos.
+- **What its first run found, and what was done about it.** What `report()` says about a
+  recipe that its failure does not name is printed as a note rather than failed on,
+  because the answer is sometimes the rule's to change rather than the recipe's. The
+  first run printed three notes, on two recipes, and one of each kind came of them.
+  - ***A mass built of planes* was the recipe's to change.** As step 6 left it, its
+    faces were a `bristle` at `0.014`–`0.02`, and it painted the *woven surface* its own
+    paragraph names as a failure, under *59 marks with a bristle under size=0.025* and
+    *46 of 64 long marks ... a stack of bars*. Its faces are now a `flat`, laid
+    `edge="clean"`, each run along a side of its own, and nothing is said. The advice
+    that led there changed with it: **`chisel-staircase` offers a comb only at
+    `size=0.025` and over**, and under that `edge="clean"` beside `direction=`.
+  - ***A graded field* was the rule's.** In its own colours it paints a smooth field,
+    and the stack-of-bars rule said *17 of 17 long marks* over it, because each of a
+    `scumble`'s passes counted as a bar. **A `scumble` now counts once** in that rule
+    and in the crossings that re-arm it: its passes are one band sized to overlap, and
+    whether they show as bars is `scumble-bars`' question at the call. Over the corpus
+    that takes 10 of the 46 bars lines painters were shown, each on a pass laid mostly
+    with a scumble, and the probe's own replay has the rule on 38 of the 325 painted
+    passes, 12%, where it was 47, 14%. It costs the one true positive of the 0.5.0 cohort's round:
+    BigPickle's whole-painting line reached its share only by counting the sky passes
+    its own painter called fine, and without them its block-ins and crossers fall under
+    it.
+  - The graded field's demo now lays the field in its own colours, and the planes'
+    demo on a ground, so each recipe panel shows the recipe working rather than the
+    stand-in palette's strata or the first marks of an empty canvas.
+- **One stale line fixed on the way**: the graded field's *Goes wrong as* still blamed
+  horizontal strata on *the `load_falloff` clause*, which a banded `scumble` has laid by
+  default since step 8. It now names what the recipe's own bullet says makes them — the
+  passes run exactly along the frame.
+- **Smaller things.** The names every guide block assumes (`s`, `mass`, the palette)
+  moved from the check script into `easel.demo.preamble()`, so the demo and the check
+  lay the same context under a block. `mcpb/manifest.json` counts seventeen CLI verbs,
+  and a test now holds that sentence to the parser, which nothing did while it said
+  twelve.
+
 
 ## [0.5.0] — 2026-09-16
 

@@ -3683,7 +3683,9 @@ class Session:
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
           degrees of each other, from two or more calls, and most of the long marks
-          in the pass. **Said once**, and again only when the picture has acquired
+          in the pass, **a ``scumble`` counting as one**: its passes are one band,
+          sized to overlap, and whether they show as bars is ``scumble-bars``'
+          question at the call. **Said once**, and again only when the picture has acquired
           a long mark ``_REPORT_CROSSING_DEG`` off the bars it was said about. It is
           the one rule here that can be *right and useless*: its own text concedes
           *unless the subject runs that way*, it cannot tell whether the subject
@@ -5883,6 +5885,15 @@ def _check_chisel_staircase(session, place, b: Brush, direction, density: float,
     not move them: 22% to **20%**. ``edge="clean"`` halves it to 11% and is not
     enough either, which is why this fires on ``"ragged"`` and would be right to fire
     on ``"clean"`` if the table in ``CALIBRATION.md`` did not say so plainly instead.
+
+    **The comb is offered only where a comb is a brush.** Under
+    ``_REPORT_SMALL_BRISTLE`` a bristle is four streaks with gaps, and the post-pass
+    check says so -- so this remedy, taken at the size it fired at, traded one fault
+    for another. It is how *a mass built of planes* came to paint the woven surface
+    its own *Goes wrong as* names, when step 6 of the 0.6.0 round took this advice for
+    faces at ``0.014``-``0.02``. Below the floor the second remedy is ``edge="clean"``
+    beside ``direction=`` -- the sides the passes run along close exactly, and the
+    clean edge halves the rest -- which is what that recipe lays now.
     """
     if b.tip not in _STAIR_TIPS or not isinstance(place, (Polygon, Region)):
         return
@@ -5891,6 +5902,14 @@ def _check_chisel_staircase(session, place, b: Brush, direction, density: float,
     ends = sum(row[0] for row in rows)
     if ends < _STAIR_LEDGES:
         return
+    if b.size >= _REPORT_SMALL_BRISTLE:
+        other = ("; or lay it with a comb ('bristle'), whose pass ends break rather "
+                 "than stack.")
+    else:
+        other = (f", and edge='clean' for the sides it cannot follow, which halves the "
+                 f"steps there. Not a comb: under size={_REPORT_SMALL_BRISTLE:g} a "
+                 f"bristle is four streaks with gaps, a woven plane rather than a flat "
+                 f"one.")
     session._notify(
         "chisel-staircase",
         f"a {b.name!r} filling {getattr(place, 'name', '') or 'this shape'} ends "
@@ -5898,8 +5917,7 @@ def _check_chisel_staircase(session, place, b: Brush, direction, density: float,
         f"up to {rows[0][1]:.0f} brush widths from one end to the next: those sides "
         f"come back as a staircase rather than as the line they were drawn as. Give "
         f"direction= that side's own two points, which closes it exactly where the "
-        f"sides run parallel; or lay it with a comb ('bristle'), whose pass ends "
-        f"break rather than stack.",
+        f"sides run parallel{other}",
         stacklevel=stacklevel,
     )
 
@@ -6987,15 +7005,45 @@ def _crossing_marks(records, centre: float, canvas) -> int:
     four and 0 prints seven, which is the rule with no decay at all. So the number is
     the middle of a plateau rather than a knee, and nothing in reach of it is close.
     """
-    n = 0
+    long_marks = []
     for r in records:
         length, angle = _mark_length_and_angle(r, canvas)
         if length <= 0.0 or length < 2.0 * float(r.params.get("size", 0.0)):
             continue
+        long_marks.append((r, angle))
+    n = 0
+    for _, angle in _one_per_scumble(long_marks):
         off = abs(angle - centre)
         if min(off, 180.0 - off) >= _REPORT_CROSSING_DEG:
             n += 1
     return n
+
+
+def _one_per_scumble(long_marks: list[tuple[StrokeRecord, float]]):
+    """Long marks with each ``scumble`` call kept as its first pass alone.
+
+    A band laid by :meth:`Session.scumble` is one mass at one angle, and its passes are
+    sized to overlap -- three of its own steps -- which is what closes a graded field
+    rather than what stacks bars. Counted one by one, they outvoted everything else a
+    pass laid: the guide's own graded field, in close colours a smooth field, came back
+    *17 of 17 long marks ... a stack of bars*, and over the corpus 10 of the 46 bars
+    lines painters were shown were passes led by a scumble -- skies, fog, water. So the
+    stack-of-bars rule and the crossings that re-arm it count a scumble once, and
+    whether its own passes show as bars is the band's business: ``scumble-bars`` at the
+    call. Ruled 2026-09-21, at a known price -- BigPickle's whole-painting line, the one
+    true positive of its round, reached its share only by counting the sky passes its
+    own painter called fine, and goes silent with them.
+    """
+    seen = set()
+    out = []
+    for r, angle in long_marks:
+        if r.params and r.params.get("via") == "scumble":
+            key = _call_of(r)
+            if key in seen:
+                continue
+            seen.add(key)
+        out.append((r, angle))
+    return out
 
 
 #: A daisy: this many hand-laid marks at least :data:`_DAISY_MIN` long leaving one point
@@ -7298,19 +7346,20 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
             f"the size, the brush or the pressure between things."
         )
 
-    # A stack of passes at one angle, from two or more calls.
+    # A stack of passes at one angle, from two or more calls -- a scumble counting once.
     long_marks = []
     for r in marks:
         length, angle = _mark_length_and_angle(r, canvas)
         if length >= 2.0 * float(r.params.get("size", 0.0)) and length > 0.0:
             long_marks.append((r, angle))
+    bars = _one_per_scumble(long_marks)
     best: list[tuple[StrokeRecord, float]] = []
-    for _, centre in long_marks:
-        near = [(r, a) for r, a in long_marks
+    for _, centre in bars:
+        near = [(r, a) for r, a in bars
                 if min(abs(a - centre), 180.0 - abs(a - centre)) <= _REPORT_ANGLE_DEG]
         if len(near) > len(best):
             best = near
-    if (len(best) >= _REPORT_ANGLE_MARKS and len(best) >= 0.6 * len(long_marks)
+    if (len(best) >= _REPORT_ANGLE_MARKS and len(best) >= 0.6 * len(bars)
             and len({_call_of(r) for r, _ in best}) >= 2):
         centre = _angle_centre(a for _, a in best)
         crossings = (_crossing_marks(marks, centre, canvas) if banding is None

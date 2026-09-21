@@ -46,6 +46,7 @@ from typing import Any
 
 from PIL import Image as _PILImage
 
+from easel import demo as _demo
 from easel import diagnosis as _diagnosis
 from easel import docs as _docs
 from easel import notices as _notices
@@ -483,7 +484,7 @@ def build_server() -> MCPServer:
         ),
     )
 
-    # -- the twelve CLI verbs ------------------------------------------------------
+    # -- the CLI verbs -------------------------------------------------------------
     @server.tool()
     @_tool
     def new(session: str, size: str = "1024x768", texture: str = "linen",
@@ -970,6 +971,29 @@ def build_server() -> MCPServer:
             )
             return f"The engine says these at a call. Ask for any one by its code:\n{rows}"
         return _notices.explain(code)
+
+    @server.tool()
+    @_tool
+    def demo(recipe: str = "", out_dir: str = "out") -> list:
+        """A recipe painted beside what it looks like when it goes wrong, and the fix.
+
+        One recipe of the guide's RECIPES.md, three ways side by side: the recipe, the
+        call that goes wrong -- with what the tool says about it, a notice code or a
+        line of the post-pass check -- and the smallest fix, where that is not the
+        recipe itself. Returns what each panel was told, the calls that differ, and the
+        sheet. Reach for it before painting a thing a recipe covers, or after a
+        rehearsal that came back looking like the failure.
+
+        Needs no session: every panel is a fresh canvas with the guide's own context
+        laid under it.
+
+        Args:
+            recipe: the recipe, by the words of its heading ("crosses a boundary").
+                Left off, every recipe and which of them have a demo.
+            out_dir: where the sheet is written, as demo-<recipe>.png.
+        """
+        text, path = _demo.answer(recipe, out_dir=out_dir)
+        return [text] if path is None else [text, *_shown(path)]
 
     @server.tool()
     @_tool

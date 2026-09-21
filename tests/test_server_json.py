@@ -52,6 +52,23 @@ def test_description_fits_the_registry_limit() -> None:
     assert len(SERVER["description"]) <= 100
 
 
+def test_the_bundle_manifest_counts_the_verbs_the_command_line_has() -> None:
+    """`mcpb/manifest.json` went on saying *the twelve CLI verbs* through three steps
+    that each added a verb, until step 9 of the 0.6.0 round counted sixteen -- and
+    nothing noticed, because nothing held the sentence to the parser. Every verb is a
+    tool (`tests/test_mcp.py`), so the count is a claim about what a desktop client
+    gets, and it moves every time a verb lands.
+    """
+    from easel.cli import build_parser
+
+    manifest = json.loads((ROOT / "mcpb" / "manifest.json").read_text(encoding="utf-8"))
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    words = dict(enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve thirteen "
+        "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()))
+    assert f"the {words[len(sub.choices)]} CLI verbs" in manifest["long_description"]
+
+
 def test_the_launch_command_is_written_where_the_website_url_points() -> None:
     """`websiteUrl` sends a client that cannot assemble the arguments to the
     README, so the README has to actually carry the command."""

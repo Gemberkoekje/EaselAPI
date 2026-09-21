@@ -509,6 +509,14 @@ measurement, the same text `explain` would give if there were a code for it. The
 no code for most of what can go wrong on a canvas, which is what the index is for.
 `--list` is the symptoms alone, for finding the words to ask with.
 
+**Before you lay a recipe, or after a rehearsal that looks like its failure**, `easel
+demo <recipe>` paints it three ways side by side — the recipe, its commonest failure,
+and the smallest fix where that is not the recipe itself — and quotes what the tool
+said about each: `demo` through the MCP server, `easel.demo.answer()` from Python. Name
+the recipe by the words of its heading; with none, it lists which recipes have a demo.
+The blocks it paints sit under each *Goes wrong as* in [`RECIPES.md`](RECIPES.md), and
+`scripts/check_guide_blocks.py` holds every one to what it says goes wrong.
+
 `s.notices(since=None)` is the list itself, oldest first, and it is saved in the
 `.easel` file, so a painting worked from the shell keeps what it was told. Notices and
 the plan both live **beside** `history.records` and never in it, because the log indexes
@@ -554,6 +562,7 @@ easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration | --diagnosis] [--path]
 easel explain [code]
 easel diagnose [what you can see ...] [--list]
+easel demo [recipe ...] [--out-dir out] [-o sheet.png]
 ```
 
 A script run by `easel run` gets the session as `s`, with the whole public API already
@@ -623,4 +632,5 @@ The server is `easel-mcp`, or `python -m easel.mcp_server` when the scripts dire
 is not on `PATH`. It needs one extra: `pip install easel-paint[mcp]`. The `guide` tool
 returns any of the six documents, so a client with no repository to read still has the
 method, and `explain` and `diagnose` hand over the passage behind a code or a symptom
-without it having to fetch a file at all.
+without it having to fetch a file at all. `demo` hands back its sheet inline, like the
+looking tools.

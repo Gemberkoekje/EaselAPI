@@ -135,7 +135,9 @@ Step 6 is still part-done and is untouched by this branch: `spill` (D1) is not b
 and D2 (`glaze-far`, `smudge-across`, `smudge-long`) and D3 (`radiating`, `one-loop`)
 are not started. G4's checklist names a `buried` line, which is D3's check — the plan
 already says `buried` needs a narrower gate before it is built, so the checklist has
-no `buried` line and will gain one when D3 lands.
+no `buried` line and will gain one when D3 lands. **Ruled 2026-09-21: it does not** --
+`checklist()` is `report(since=None)`, and a burial over a whole painting needs a
+per-detail memory that was declined (`PLAN-0.6.0.md`, the decisions table).
 
 ## File map
 

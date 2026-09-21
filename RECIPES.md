@@ -16,6 +16,11 @@ Nothing here names a subject. A recipe that says what a thing is *of* gets paint
 that thing, and the name then does the choosing. Every heading says what the paint
 *does*; you decide what it is a shape of.
 
+**Where a recipe's *Goes wrong as* has a block under it, the block is the failure on
+purpose — do not copy it.** It is cut by comment lines into the passage it is laid on,
+the call that goes wrong with what the tool says about it, and, where it is not the
+recipe itself, the smallest fix. `easel demo <recipe>` paints them side by side.
+
 | | |
 |---|---|
 | **Before the first stroke** | [a scene with straight edges](#a-scene-with-straight-edges) · [a subject that is one thing against a ground](#a-subject-that-is-one-thing-against-a-ground) · [a picture with an empty half](#a-picture-with-an-empty-half) |
@@ -122,6 +127,13 @@ this, checkable.
 **Goes wrong as:** a stack of bands with a subject standing in one of them; or a
 horizon ruled across the whole picture, which cuts the subject at the waist.
 
+```python
+# goes wrong: report() says "a stack of bars"
+for top, size, t in ((0.0, 0.10, 0.9), (0.25, 0.08, 0.2), (0.5, 0.09, 0.6), (0.75, 0.07, 0.1)):
+    s.block_in(Region(0.0, top, 1.0, top + 0.25), "bristle", p.mix("dark", "light", t),
+               size=size, direction="horizontal")          # four bands, and nothing across
+```
+
 ---
 
 ## A picture with an empty half
@@ -171,7 +183,13 @@ passes run the way the plane runs rather than the way the canvas does.
 `density=1.0` without `solid=True`, which spaces the passes rather than filling them.
 Or as faint striping, which is the pass structure itself at about `0.03` of value
 whatever you do to `opacity`: hide it with a bigger brush or a `bristle`, never with an
-argument.
+argument. Neither is anything the tool can see, so look for them.
+
+```python
+# goes wrong: nothing says so
+s.block_in(span("C4", "F6"), "flat", "mid", size=0.05, density=1.0,
+           direction="axis")                               # no solid=True: flecks
+```
 
 ---
 
@@ -222,17 +240,18 @@ between them.
 whole = polygon([(0.05, 0.60), (0.22, 0.56), (0.40, 0.64), (0.52, 0.74),
                  (0.58, 0.92), (0.10, 0.92)])
 faces = [(polygon([(0.06, 0.61), (0.24, 0.58), (0.38, 0.65), (0.30, 0.70),
-                   (0.12, 0.66)]), "pale", 0.014),      # the plane facing the light
+                   (0.12, 0.66)]), "pale", 0.014,
+          [(0.06, 0.61), (0.24, 0.58)]),                # the plane facing the light
          (polygon([(0.40, 0.67), (0.52, 0.76), (0.56, 0.90), (0.42, 0.86)]),
-          "mid", 0.016),                                # the plane facing sideways
+          "mid", 0.016, [(0.40, 0.67), (0.42, 0.86)]),  # the plane facing sideways
          (polygon([(0.10, 0.70), (0.34, 0.74), (0.40, 0.88), (0.14, 0.90)]),
-          "cool", 0.02)]                                # the body between them
+          "cool", 0.02, [(0.10, 0.70), (0.34, 0.74)])]  # the body between them
 
 s.block_in(whole, "flat", "dark", size=0.06, density=1.0, solid=True,
            direction="axis", edge="clean")
-for face, colour, size in faces:
-    s.block_in(face, "bristle", colour, size=size, density=1.2, solid=True,
-               direction="axis", opacity=1.0, pressure="even")
+for face, colour, size, side in faces:                  # each along a side of its own
+    s.block_in(face, "flat", colour, size=size, density=1.0, solid=True,
+               direction=side, edge="clean", opacity=1.0, pressure="even")
 s.stroke([(0.27, 0.66), (0.32, 0.71), (0.40, 0.77)], "round_hard", "dark",
          size=0.014, opacity=0.9, pressure="taper")            # one crevice
 s.stroke([(0.14, 0.72), (0.26, 0.76)], "bristle", "pale",
@@ -242,7 +261,11 @@ s.stroke([(0.14, 0.72), (0.26, 0.76)], "bristle", "pale",
 Three or four planes is enough; the planes carry the form and the crevices are
 punctuation. Keep each plane a brush's half-width inside the silhouette so nothing
 fringes past it, and give the planes different brush sizes — they are different sizes
-of thing.
+of thing. **Run each plane's passes along a side of its own**: the grain then turns
+from plane to plane, the side it runs along closes exactly, and `edge="clean"` draws
+the others rather than stepping down them. A chisel ending on a
+slope is a staircase, and a comb under `size=0.025` is a woven plane — at these sizes
+the flat, laid clean and along a side, is the brush.
 
 **Draw the planes with the silhouette.** A mass like this has two drawings in it, and
 the second is not the finish: decide the tiling *before* the block-in, as polygons
@@ -251,7 +274,22 @@ down, the planes arrive as things laid *on* a hull, which is this recipe's own f
 one level up.
 
 **Goes wrong as:** slabs stuck on a smooth shape (planes laid as marks rather than as
-tiles), or as a woven surface (bristle streaks used instead of planes).
+tiles), or as a woven surface (bristle streaks used instead of planes). Or as a
+staircase down every sloped side, which is a chisel's pass ends stacking on a slope and
+is why the silhouette above is laid `edge="clean"`:
+
+```python
+# the passage: the ground it stands on, and its silhouette drawn
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "surface", size=0.05, solid=True,
+           edge="hard", direction="vertical")
+whole = polygon([(0.05, 0.60), (0.22, 0.56), (0.40, 0.64), (0.52, 0.74),
+                 (0.58, 0.92), (0.10, 0.92)])
+# goes wrong: chisel-staircase
+s.block_in(whole, "flat", "dark", size=0.06, density=1.0, solid=True, direction="axis")
+# the smallest fix: a clean edge draws the sloped sides instead of stepping down them
+s.block_in(whole, "flat", "dark", size=0.06, density=1.0, solid=True, direction="axis",
+           edge="clean")
+```
 
 ---
 
@@ -282,6 +320,13 @@ too shallow for any `n` to fit, the verb says so and names the recipe below.
 the middle (first ring darker than what it sits in); or visible concentric rings, which
 is too few rings for the patch
 (*`scumble`* in [`CALIBRATION.md`](CALIBRATION.md#scumble)).
+
+```python
+# the passage: the dark the patch sits in, which its first ring matches
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "shadow", size=0.1, solid=True, edge="hard")
+# goes wrong: inward-flat
+s.scumble(patch, "shadow", "light", 8, direction="inward", size=0.2)   # a brush past the rings
+```
 
 *The single most rehearsed thing in the repository.*
 
@@ -328,6 +373,15 @@ own colour rather than close to the field — the fix is hue, not opacity); or a
 brightest at the *wrong* end, which is what the taper does when the list runs the other
 way.
 
+```python
+# the passage: a dark field for the air to sit in
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "dark", size=0.1, solid=True, edge="hard")
+# goes wrong: glaze-far
+s.dry()
+s.glaze([(0.64, 0.24), (0.30, 0.33), (-0.08, 0.41)], "light", opacity=0.15, size=0.11,
+        pressure=[1.0, 0.8, 0.4])                  # mixed as the light, not near the field
+```
+
 *Found in five rehearsals, and in two other paintings' notes.*
 
 ---
@@ -361,6 +415,17 @@ the post-pass check reads this off the log and says so.
 **Goes wrong as:** a stack of bars (passes too few or the brush too narrow to overlap);
 or a passage that brightens in stripes, which is a pressure list on hand-written passes
 that alternate direction.
+
+```python
+# goes wrong: report() says "comes back as bars"; report() says "a loop's signature"
+for i in range(6):
+    t = i / 5
+    y = 0.44 + t * 0.14
+    s.stroke([(0.22 + 0.08 * t, y + 0.006), (0.60, y - 0.004), (1.06, y)],
+             "flat", s.palette.mix("shadow", "light", t),
+             size=0.02, opacity=0.5, load=1.0, load_falloff=0.0,
+             pressure=[0.0, 0.55, 1.0])            # a brush under one step, not three
+```
 
 ---
 
@@ -411,9 +476,21 @@ reason. Say `s.plan(ground="buried")` and the line prints its number without ask
 Say nothing and the floor holds, which is what you want on a picture whose warm ground
 was meant to be seen through.
 
-**Goes wrong as:** horizontal strata (the `load_falloff` clause); a stack of bands with
-a different name (nothing crossing it); or a field that reads as two fields (two ramps
-that do not overlap).
+**Goes wrong as:** horizontal strata (passes run exactly along the frame); a stack of
+bands with a different name (nothing crossing it); a field that reads as two fields (two
+ramps that do not overlap); or bare ground along its top, where an outline drawn inside
+the canvas cut the passes into stubs:
+
+```python
+# the passage: the field's own colours, a step or two apart
+p["light"] = p.mix("titanium_white", "cerulean", 0.25)
+p["mid"] = p.mix("titanium_white", "cerulean", 0.45)
+p["shadow"] = p.mix("ultramarine", "titanium_white", 0.55)
+# goes wrong: scumble-wedge
+upper = polygon([(-0.06, 0.13), (0.34, 0.19), (0.62, 0.15), (1.06, 0.10),
+                 (1.06, 0.59), (-0.06, 0.62)])        # its top drawn inside the canvas
+s.scumble(upper, "light", "mid", 7, direction=4, opacity=0.95)
+```
 
 ---
 
@@ -504,6 +581,17 @@ it is **one** mark against your budget. Use it for anything you actually want to
 **Goes wrong as:** several of them. One disc is a thing; five discs are the brush. If
 you want five, vary at least one thing per mark, or use the recipe above.
 
+```python
+# the passage: a dark field
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "dark", size=0.1, solid=True, edge="hard")
+# goes wrong: report() says "one disc printed"
+for x, y in ((0.55, 0.33), (0.58, 0.37), (0.61, 0.32), (0.64, 0.36), (0.67, 0.33)):
+    s.dab(x, y, "round_hard", "pale", size=0.012, press=3)
+# the smallest fix: the tip drawn afresh for every mark
+for x, y in ((0.55, 0.33), (0.58, 0.37), (0.61, 0.32), (0.64, 0.36), (0.67, 0.33)):
+    s.dab(x, y, "round_hard", "pale", size=0.012, press=3, tip_wobble=0.35)
+```
+
 ---
 
 ## A small container with something spilling from it
@@ -543,6 +631,13 @@ one dark stroke for the opening, one lit arc — or the row costs the budget.
 taper, which reads as a bulb); a brick (the body alone); a bite or a frown (a dark arc
 at the rim, which reads as damage rather than as a rim); or a fat scalloped cushion for
 a rim (a round tip block-in fringing past a small ellipse).
+
+```python
+# goes wrong: round-fringe
+x, y, r = 0.46, 0.58, 0.02
+s.block_in(ellipse(Region(x - r, y - r * 0.8, x + r, y - r * 0.25)), "round_hard", "pale",
+           size=0.012)                              # a rim laid as a mass with a round tip
+```
 
 ---
 
@@ -593,7 +688,17 @@ as a chain of separate beads.
 **Goes wrong as:** a mechanical line in a painting that has none — which is why this
 recipe carries a warning rather than a recommendation. Run the ends off the canvas so
 it has no visible termination. A thin member laid as several short marks beads into a
-chain of separate blocks; lay it as one stroke.
+chain of separate blocks; lay it as one stroke. So does one laid with its wander turned
+up, which the call names:
+
+```python
+# goes wrong: jitter-beads
+s.stroke([(-0.05, 0.59), (1.05, 0.59)], "flat", "mid", size=0.026, opacity=0.9,
+         load=1.0, load_falloff=0.0, jitter=0.5, pressure="even")   # 25 times the wander
+# the smallest fix: half the default wander, not twenty-five times it
+s.stroke([(-0.05, 0.59), (1.05, 0.59)], "flat", "mid", size=0.026, opacity=0.9,
+         load=1.0, load_falloff=0.0, jitter=0.01, size_jitter=0.03, pressure="even")
+```
 
 ---
 
@@ -619,7 +724,17 @@ strip reads as a band of its own — *dark, mid, light* — and the call says so
 (`smudge-long`); there, go to the paint-across recipe from the start.
 
 **Goes wrong as:** two edges that are *nearly* lost and read as neither — the commonest
-outcome. Lose one edge completely rather than four edges partly.
+outcome. Lose one edge completely rather than four edges partly. Or a strip of a third
+value where the edge was, which is a smudge run the length of the boundary:
+
+```python
+# the passage: a light field over a dark mass, meeting on a slope
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "light", size=0.1, solid=True, edge="hard")
+s.block_in(polygon([(0.0, 0.2875), (1.0, 0.6625), (1.0, 1.0), (0.0, 1.0)]), "flat", "dark",
+           size=0.08, solid=True, edge="hard")
+# goes wrong: smudge-long
+s.smudge([(0.02, 0.295), (0.62, 0.52)])            # the whole boundary, not a stretch
+```
 
 ---
 
@@ -640,6 +755,14 @@ three of them, no two alike.
 one. That is a smudge run across a boundary instead of along it, and it is the
 expensive kind of damage: burying a thumbprint means repainting the mass it sits on,
 which buries everything else standing there.
+
+```python
+# the passage: two masses that meet
+s.block_in(Region(0.0, 0.0, 0.22, 1.0), "flat", "dark", size=0.08, solid=True, edge="hard")
+s.block_in(Region(0.22, 0.0, 1.0, 1.0), "flat", "light", size=0.08, solid=True, edge="hard")
+# goes wrong: smudge-across
+s.smudge([(0.34, 0.50), (0.10, 0.52)], size=0.03)  # dragged across the join, out of the light
+```
 
 ---
 

@@ -307,7 +307,8 @@ stopped being true without anybody noticing. The block run takes **85 seconds**,
 an overlap check that is instant, and the `test` job is five matrix combinations. So this
 is a cost decision rather than an oversight, and **G3 is the right place for it**: that
 step is extending this script anyway, and `easel demo` will be rendering the same blocks.
-Until then the invariant holds only for whoever runs the script.
+Until then the invariant holds only for whoever runs the script. **Since 2026-09-21 a row
+of `PLAN-0.6.0.md`'s *Loose ends*, owned by G3.**
 
 **Whether the entry path should point at `diagnose` and `explain` before the guide.**
 Untouched here, and still G2's.
@@ -336,3 +337,195 @@ paragraph both stay until `spill` and `scumble-few` exist.
 | `PLAN-0.6.0.md` | two migration-map rows corrected; G7 and G9 record what was already done; the status line |
 | `SUGGESTIONS.md` | findings 5 and 8 gain what landed; the vision documentation row is closed |
 | `CHANGELOG.md` | `### The guide's own examples, run past the guide's own checks` under `[Unreleased]` |
+
+---
+
+# Step 9, part three: the recipes' failures, painted (G3)
+
+**To understand this, start by reading the module docstring of
+[`src/easel/demo.py`](src/easel/demo.py) -- it states the block format and the invariant
+-- then `_parse` and `faults` in it, then the demo block under *A mark that crosses a
+boundary* in [`RECIPES.md`](RECIPES.md), which is the shape of all twelve, then
+`check_demos` in [`scripts/check_guide_blocks.py`](scripts/check_guide_blocks.py).**
+
+Branch: `g3-demo`, off `main` at `89759b4`, after a first commit recording four rulings
+and the plan's *Loose ends* table.
+
+---
+
+## What this step was for
+
+Finding 19: *small runnable visual comparisons -- the recommended call, what it looks
+like, the common failure, the smallest fix*. And the second half of the invariant part
+two began: a recommended block runs notice-clean (landed), and **a failure block trips
+exactly what it names** (this). Two loose ends the plan gave G3 came with it: the
+manifest's verb count, and whether the block run joins CI.
+
+## What landed
+
+| | |
+|---|---|
+| `easel demo <recipe>` | one recipe painted as the recipe, what goes wrong and the smallest fix, side by side, with what the tool said about each panel quoted; `demo` over MCP, `easel.demo.answer()` from Python. No session needed |
+| twelve demo blocks | under the *Goes wrong as* of twelve of the twenty recipes with code: eight notice codes, three `report()` lines, one *nothing says so* |
+| the invariant | `easel.demo.faults`, run over every demo by `scripts/check_guide_blocks.py`: **12 of 12** fail exactly the way they say |
+| CI | a `guide` job runs the whole block check, which until now ran only when somebody remembered to |
+| the manifest | seventeen verbs, held to the parser by `tests/test_server_json.py` |
+
+## Decisions and gotchas
+
+**1. One block per demo, cut by comment lines.** Three blocks per recipe (recipe,
+failure, fix) would have tripled `RECIPES.md`'s code and duplicated whatever the three
+share. So a demo is one block -- `# the passage:`, `# goes wrong:`, `# the smallest
+fix:` -- and the first panel is the recipe's own block rather than a copy of it. The
+passage is laid under every panel, so it is the one place the demo's context lives. A
+demo block is the failure on purpose, and a worked example is an instruction: the
+file's preamble now says not to copy one, and the `# goes wrong:` line sits directly
+above the call.
+
+**2. `report()`'s rules have no codes, so a demo names them by their own words.** D3
+decided the notice channel is for what is said at the call. So a *goes wrong* line says
+`report() says "a stack of bars"`, matched as a substring of a finding line. **Copy the
+words; do not paraphrase them**: the first draft of the narrow-loop demo said *come back
+as bars* and the line says *comes back as bars*, and the check failed it, correctly.
+*nothing says so* is a claim as well, held the same way, for a failure only looking
+finds.
+
+**3. The invariant is exact on the failure and deliberate about the rest.** The
+failure trips exactly its codes and its `report()` lines -- a line it does not name is a
+fault. The recipe and the fix must say nothing at the call and must not trip the
+failure's lines. **What `report()` says about the recipe beyond that is a note, not a
+fault**, because the answer can be the rule's to change rather than the recipe's (the
+graded field below is finding 10's known noise). Notes print on every run, so they
+cannot be forgotten the way a script nobody runs can.
+
+**4. The first run found two recipes the notice check could never have seen.**
+
+- ***A mass built of planes*, as step 6 left it, paints the failure its own paragraph
+  names.** Step 6 moved its faces from a ragged `flat` (the staircase, finding 1) to a
+  `bristle` at `0.014`-`0.02`; `report()` now says *59 marks with a bristle under
+  size=0.025 ... four streaks with gaps* and *46 of 64 long marks ... a stack of bars*,
+  and the render shows hatched faces -- *a woven surface (bristle streaks used instead
+  of planes)*, word for word the recipe's own *Goes wrong as*. The staircase fix traded
+  one named failure for another, and only the notice half of the invariant existed to
+  catch it. **Not fixed here**: it is a recipe change that wants rendering and looking,
+  and `chisel-staircase`'s two remedies pull against the small-comb rule at these sizes
+  (a `bristle` under `0.025` trips it; `direction=` along one side leaves the others
+  stepping). `edge="clean"` on a `flat` is the candidate -- it is what the demo's own fix
+  uses -- and whether `clean-small` lets the smallest face through at `0.014` is not
+  measured.
+- ***A graded field that is most of the picture* trips the stack-of-bars rule on 17 of
+  17 long marks.** Its two crossers run within six degrees of its passes, so to the rule
+  they are more bars. Angling the crossers would not clear it: the fifteen passes alone
+  are over the rule's 60%. This is finding 10 again, on the guide's own recipe.
+
+**5. A recipe presupposes a passage, and without one the demo shows it failing.** On
+bare `toned_grey`, *a passage light in the middle* draws a dark rim, because its first
+ring is `"shadow"` and that is only right when the patch sits in the shadow -- which is
+its own third *Goes wrong as*. Its demo lays the dark first. Every passage is chosen to
+fit the recipe's own coordinates, so the recipe's panel shows the recipe working: the
+crossing mark crosses the join, the lost edge's smudge runs along the slope.
+
+**6. A whole canvas of 400 px cannot show a 5 px disc.** The first sheets were full
+canvases, and the five-disc failure was five dots. Each panel now keeps the box its
+body changed (a channel moving more than `0.004`, the probes' own threshold), and
+`focus` cuts every panel to the union of those boxes, padded, grown to the canvas's
+shape, enlarged at most four times, and not cut at all when the box is over half the
+canvas.
+
+**7. Probe before writing the line.** Four of the twelve changed after the first run:
+the wide inward brush was guessed as *nothing says so* and the engine already says
+`inward-flat`; four bands stepping dark to light also tripped the hand-laid graded-band
+rule, because to that rule a stack of stepping colours *is* a graded passage (the
+bands' colours no longer step monotonically, which is also what a real stack of bands
+does); the planes demo's first face, at `0.014`, also tripped *detail before the masses*
+(fourteen small marks in the first sixty) and moved to the whole silhouette, where the
+staircase is big enough to see; and the crossing demo's fix -- the same smudge run along
+the join -- painted a pill on the boundary, which teaches nothing, so the recipe is the
+fix there.
+
+**8. The context moved into the package.** The names every block assumes -- `s`, the
+palette, `mass`, `patch` -- were the check script's `PREAMBLE`. `easel demo` has to lay
+the same context, or a demo that passes the check paints a different picture in the
+command, so it is `easel.demo.preamble()` now. The script keeps the name
+`PREAMBLE`, because `scripts/probe_cohort_session.py` imports it from there; and its
+`guide_blocks()` leaves demo blocks out, because the probe runs that list past the
+checks it measures and would count every failure as the guide tripping its own rule.
+
+**9. A panel keeps no frames.** The preamble takes `timelapse=`; the check keeps
+`True`, because a guide block exports a time-lapse, and a panel passes `False`.
+
+**10. Time.** The block check went from 75 s to about 2 min 20 s here. The demos with a
+full-canvas passage are the dear ones (the smudge demos about 10 s each), because the
+passage is laid once per panel. That is the price of a CI job, not of a test: the
+pytest half paints only the fastest demo and a few one-stroke drafts.
+
+## Open, and for the owner to rule on
+
+**The planes recipe** (gotcha 4): fix it -- `flat` faces with `edge="clean"`, rendered
+and looked at against the woven version -- or rule the small-comb rule wrong at these
+sizes. Either way the demo already shows which.
+
+**Ruled 2026-09-21, and done: the recipe's.** Five ways of laying the faces were
+painted at 400x300 and 1024x768 and read back through `report()`: the comb weaves;
+finding 1's ragged flat stairs; a clean edge with every face on one axis keeps the
+stack-of-bars line; each face along a side of its own with a clean edge is silent once
+there is a ground under it, and reads as planes; a hard edge is silent everywhere and
+reads cut out. The recipe lays the fourth. The notice that sent step 6 to the comb
+offers it only at `size=0.025` and over now -- `CALIBRATION.md`'s own repair table
+measured its *always works* comb at `0.022`, under the floor, which is how the advice
+and the other rule came to point at each other. On a bare canvas the recipe still
+draws *detail before the masses* (its faces are then the painting's first marks), so
+its demo lays a ground first.
+
+**The graded field and the bars rule** (gotcha 4): the rule's to narrow, or the recipe's
+to answer. `s.plan(bands="subject")` is the engine's current answer and does not fit: a
+sky's bands are not the subject.
+
+**Ruled 2026-09-21, and done: the rule's -- a `scumble` counts once.** Two findings made
+it the rule's. In its own colours the recipe paints a smooth field (the strata in the
+first demo were the stand-in palette's, whose `mid` is `light`), so the line was noise
+on a picture that was right; and the recipe cannot answer it, because crossers at 13
+degrees are not crossings (30 is) and the fifteen passes alone are over the share.
+Replayed over the corpus, the condition holds on 47 passes rather than 62 and 10 of
+the 46 lines painters saw go, every one on a pass laid mostly with a scumble; the
+probe's noise table, decay and all, has the rule at 38 of 325 passes, 12%, against 47. The price
+was paid knowingly: BigPickle's whole-painting line, the round's one true positive,
+reached its share only by counting sky passes its painter called fine, and is silent
+now. The crossings that re-arm the line count a scumble once as well. The graded
+field's demo lays the field in its own colours, so its recipe panel shows the recipe.
+
+**Eight recipes are still words only**: *a scene with straight edges*, *a picture with
+an empty half*, *a form that turns*, *a quiet gradient* (which has no *Goes wrong as*
+paragraph at all), *a small irregular bright mark*, *a tapered arc*, *a hollow thing*
+and *a repair under things that are standing on it* -- the last to wait for F1, since
+its failure is `cover()`'s overrun. Most of them are *nothing says so*: compositions and
+silhouettes the check cannot see, which is the boundary `LESSONS.md` keeps.
+
+## What part three did *not* touch
+
+**G2's `easel demo mistakes`** -- the six mistakes on one sheet -- is not built; the
+module can draw any set of demos, and which six is G2's question. **G6's recipe** will
+need a demo whose failure is the loop's signature, and the narrow-loop block here
+already trips it. `PAINTER.md` is untouched.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/demo.py` | **new** -- `preamble`, `Recipe`, `Demo`, `recipes`, `demos`, `Panel`, `lay`, `panels`, `faults`, `notes`, `focus`, `sheet`, `draw`, `find`, `listing`, `answer` |
+| `src/easel/docs.py` | `headings(name, text=None)`: a draft can be scanned |
+| `src/easel/cli.py`, `src/easel/mcp_server.py` | `easel demo` and the `demo` tool; the server's stale *twelve CLI verbs* comment |
+| `src/easel/__init__.py` | `demo` bound and in `__all__` |
+| `scripts/check_guide_blocks.py` | the preamble from `easel.demo`; demo blocks left out of `guide_blocks()`; `check_demos()`; the docstring |
+| `RECIPES.md` | twelve demo blocks; the preamble's *do not copy*; the graded field's stale strata line; three *Goes wrong as* lines name the failure their block shows; after the rulings, the planes' faces flat and clean along their own sides, a ground under the planes' demo and the graded field's own colours under its demo |
+| `tests/test_demo.py` | **new** -- parsing, the rule on drafts, the sheet's focus, the command |
+| `tests/test_mcp.py`, `tests/test_server_json.py` | `demo` over the wire; the manifest's verb count |
+| `.github/workflows/ci.yml` | the `guide` job |
+| `mcpb/manifest.json` | seventeen verbs, and `demo` |
+| `REFERENCE.md`, `README.md`, `llms.txt` | `easel demo` |
+| `CHANGELOG.md` | `### Recipes that show how they go wrong, and a check that they still do` |
+| `SUGGESTIONS.md` | finding 19's row; findings 1 and 10 gain the two rulings |
+| `PLAN-0.6.0.md` | status; G3; the migration row; *Loose ends*; the two rulings |
+| `src/easel/session.py` | the rulings: `_one_per_scumble` in the stack-of-bars rule and `_crossing_marks`; `chisel-staircase` offers a comb only at `0.025` and over; both docstrings, and `report()`'s |
+| `tests/test_requests.py` | a scumble counts once, as a bar and as a crossing; the staircase's comb above the floor only, and silent on a clean edge |
+| `CALIBRATION.md` | the comb in the staircase's repair table is under the small-comb floor; the stack-of-bars count re-measured |

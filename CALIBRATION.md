@@ -1412,6 +1412,17 @@ The repairs, on the band at `3.7°`, cheapest first:
 tapered shape has no one angle that serves both — which is why the comb, whose end is
 broken into bristles rather than being a line, is the repair that always works.
 
+**Except that the comb in that table is `0.022`, under the small-comb floor**, where a
+bristle is four streaks with gaps (*The bristle comb*): it closes the steps and weaves
+the plane instead. *A mass built of planes* took that repair for faces of `0.014` to
+`0.02` in step 6 of the 0.6.0 round and painted, from then until G3's demo showed it,
+the *woven surface* its own *Goes wrong as* names — while `report()` said *59 marks
+with a bristle under size=0.025* over it. So the notice offers the comb only at
+`size=0.025` and over. Under that it offers `direction=` along a side, which closes the
+sides that run with it, and `edge="clean"`, which halves the rest (`22%` to `11%`
+above) — the pair that recipe lays now, whose faces rendered at 1024×768 read as
+planes (`NOTES-step9.md`, part three).
+
 The named profiles, widest and narrowest point of one stroke, same brush:
 
 | profile | widest | narrowest |
@@ -1706,6 +1717,18 @@ until now, so a replay would print the same table. What a declaration changes is
 text of the line, not how often the condition is met — the share to watch is the one the
 next round measures, over paintings that had the declaration available.
 
+**Since G3 of the 0.6.0 round a `scumble` counts once in it**, and in the crossings that
+re-arm it. `RECIPES.md`'s own graded field — in its own colours a smooth field — came
+back *17 of 17 long marks … a stack of bars*, because every pass of a band laid by the
+one verb that sizes its passes to overlap counted as a bar; whether those passes show as
+bars is `scumble-bars`' question, at the call. Replayed over the corpus, the condition
+holds on 47 passes rather than 62, and the line painters are shown, decay and all, falls
+from **47 passes to 38 — 14% to 12%**. Every line that went was a pass laid mostly with a
+scumble: skies, fog, water, a field. One of them was the round's only true positive —
+BigPickle's, over the whole painting, which reached its share only by counting the sky
+passes its own painter called fine; without them its block-ins and crossers fall under
+it. That was ruled a price worth paying (`PLAN-0.6.0.md`, the decisions table).
+
 **The bare-ground floor is older than the round that reported it.** Five of seven
 painters in the 0.5.0 cohort accepted `ground: 0.0x% … the checklist asks for some` by
 hand, three of them naming the same cause in nearly the same words — the `density=0.8`
@@ -1963,7 +1986,8 @@ warnings; the rest are `report()` findings.
 **229 of 325 painted passes (70%) say nothing at all. The median pass prints 0 lines and
 the busiest prints 11.** So the engine is quiet today, and the bars rule is half of what
 noise there is — it fires on one pass in seven even with its said-once decay, which is
-the number behind *it taught two painters to skim*.
+the number behind *it taught two painters to skim*. Since a `scumble` counts once in it
+(*The plan a painter declares*, above), the same replay gives **38, 12%**.
 
 What this counts is what asks a painter for something: findings and call-time notices.
 The standing lines under a pass are measurements and are not in it — the engine this
