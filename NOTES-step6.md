@@ -145,6 +145,12 @@ paint.
 The probe question the plan wrote for it is unchanged and unmeasured: *does a hard-edged
 repair read as a cut-out patch on a worked passage?*
 
+**Ruled 2026-09-21: it moves**, once the question had been measured on a bench of a flat,
+a graded and a worked passage. It does read as cut out -- a crisp patch the size of the
+place -- where `ragged` repaints `4.55x` the place and takes the neighbouring marks with
+it. The numbers are in `PLAN-0.6.0.md`'s decisions table and the build is in its *Loose
+ends*, beside a `clean` edge the same bench found failing in silence.
+
 **The inset remedy can be told off.** The check sees the place it was handed, and
 `Polygon.inset()` keeps no record of the shape it came from, so a mass inset by half a
 brush that is itself a large share of the mass is measured against the inset shape. At
@@ -326,8 +332,14 @@ saved file *always replays as it was painted*. The entry says so; the preamble i
 unchanged. An exception for a stroke the engine laid wrongly, or a 0.5.0 file replaying
 its smudges the old way, is the owner's call, and it is in the plan's *Still open*.
 
+**Ruled 2026-09-21: the promise is amended.** A saved file stores its canvas, so loading
+never repaints it; a rebuild from the log lays each stroke with the engine installed --
+which includes every `undo` from the shell or MCP, since the file carries no snapshots --
+and each such fix is named under its version. The two sentences are G11's.
+
 **`wet-under`'s fact line** — step 2's *what is left is a fact line at the call* — is not
-built here and nothing in the plan owns it now.
+built here and nothing in the plan owns it now. **Ruled 2026-09-21: not this round**;
+writing the decline into `CHANGELOG.md` is G11's.
 
 ## What step 6 part three did *not* touch
 
@@ -475,9 +487,11 @@ that was looked at is the 22.
 
 **A burial spread over passes** (gotcha 9): whether `buried` should see the pool's chair,
 at the price of a field in the saved file and a lower floor — and so whether G11 closes
-`LESSONS.md`'s depth-order item with the check as it stands.
+`LESSONS.md`'s depth-order item with the check as it stands. **Ruled 2026-09-21: not
+built, and G11 narrows the item rather than closing it** -- the three copy runs that
+define it are not in the repository, so the check has never been run on them.
 
-**The replay promise** from part three is still open.
+**The replay promise** from part three was ruled on 2026-09-21: amended.
 
 ## What step 6 part four did *not* touch
 

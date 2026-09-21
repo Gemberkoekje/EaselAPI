@@ -307,7 +307,8 @@ stopped being true without anybody noticing. The block run takes **85 seconds**,
 an overlap check that is instant, and the `test` job is five matrix combinations. So this
 is a cost decision rather than an oversight, and **G3 is the right place for it**: that
 step is extending this script anyway, and `easel demo` will be rendering the same blocks.
-Until then the invariant holds only for whoever runs the script.
+Until then the invariant holds only for whoever runs the script. **Since 2026-09-21 a row
+of `PLAN-0.6.0.md`'s *Loose ends*, owned by G3.**
 
 **Whether the entry path should point at `diagnose` and `explain` before the guide.**
 Untouched here, and still G2's.
