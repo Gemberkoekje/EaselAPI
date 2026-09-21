@@ -679,14 +679,31 @@ more rule to carry.
   script runs in CI now, as a job of its own, where until this release it ran only when
   somebody remembered to; it takes about two and a quarter minutes here against one and
   a quarter without the demos.
-- **What its first run found, and did not fail on.** What `report()` says about a recipe
-  that its failure does not name is printed as a note, because the answer is sometimes
-  the rule's to change rather than the recipe's. Three notes, on two recipes: *a mass
-  built of planes*, as step 6 left it, trips the small-comb rule on 59 marks and the
-  stack-of-bars rule on 46 of 64, and its faces paint the *woven surface* its own
-  paragraph names as a failure; *a graded field that is most of the picture* trips the
-  stack-of-bars rule on 17 of 17 long marks, because its two crossers run within six
-  degrees of its passes. Both are the owner's to rule on.
+- **What its first run found, and what was done about it.** What `report()` says about a
+  recipe that its failure does not name is printed as a note rather than failed on,
+  because the answer is sometimes the rule's to change rather than the recipe's. The
+  first run printed three notes, on two recipes, and one of each kind came of them.
+  - ***A mass built of planes* was the recipe's to change.** As step 6 left it, its
+    faces were a `bristle` at `0.014`–`0.02`, and it painted the *woven surface* its own
+    paragraph names as a failure, under *59 marks with a bristle under size=0.025* and
+    *46 of 64 long marks ... a stack of bars*. Its faces are now a `flat`, laid
+    `edge="clean"`, each run along a side of its own, and nothing is said. The advice
+    that led there changed with it: **`chisel-staircase` offers a comb only at
+    `size=0.025` and over**, and under that `edge="clean"` beside `direction=`.
+  - ***A graded field* was the rule's.** In its own colours it paints a smooth field,
+    and the stack-of-bars rule said *17 of 17 long marks* over it, because each of a
+    `scumble`'s passes counted as a bar. **A `scumble` now counts once** in that rule
+    and in the crossings that re-arm it: its passes are one band sized to overlap, and
+    whether they show as bars is `scumble-bars`' question at the call. Over the corpus
+    that takes 10 of the 46 bars lines painters were shown, each on a pass laid mostly
+    with a scumble, and the probe's own replay has the rule on 38 of the 325 painted
+    passes, 12%, where it was 47, 14%. It costs the one true positive of the 0.5.0 cohort's round:
+    BigPickle's whole-painting line reached its share only by counting the sky passes
+    its own painter called fine, and without them its block-ins and crossers fall under
+    it.
+  - The graded field's demo now lays the field in its own colours, and the planes'
+    demo on a ground, so each recipe panel shows the recipe working rather than the
+    stand-in palette's strata or the first marks of an empty canvas.
 - **One stale line fixed on the way**: the graded field's *Goes wrong as* still blamed
   horizontal strata on *the `load_falloff` clause*, which a banded `scumble` has laid by
   default since step 8. It now names what the recipe's own bullet says makes them — the

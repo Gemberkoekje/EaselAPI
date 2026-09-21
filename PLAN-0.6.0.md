@@ -51,17 +51,19 @@ the checks: **every runnable block in the guide is now notice-clean**, and
 as* of twelve recipes, and the invariant's other half -- **12 of 12 demos fail exactly
 the way they say** -- with the block check running in CI for the first time; its first
 run found two recipes tripping `report()` rules, one of them painting the failure its
-own paragraph names. G4 landed with step 7, so what is left of G is G2, G6, G8, G10 and
-G11, and eight recipes' demos; `NOTES-step9.md` has the gotchas for all three parts. The three rulings the step notes left for the owner -- the standing
+own paragraph names, and both were ruled on and fixed the same day (the last two rows
+of the decisions table). G4 landed with step 7, so what is left of G is G2, G6, G8, G10
+and G11, and eight recipes' demos; `NOTES-step9.md` has the gotchas for all three parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
 could not give), the replay promise is amended, `buried` ships as it is and narrows the
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
 owned now has an owner**, under *Loose ends, and who owns them* in section 6: F1's build,
-a `clean` edge its bench found failing in silence, the finding-13 replay, two recipes
-G3's first run found tripping `report()`, and three smaller rows; the manifest's verb
-count and the block check in CI left the table with G3. Written 2026-09-18 against
+a `clean` edge its bench found failing in silence, the finding-13 replay, the noise
+table's miscounted `!` rows, and three smaller rows; the manifest's verb count, the
+block check in CI and the two recipes G3's first run found tripping `report()` left the
+table with G3. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -87,7 +89,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18; the last seven 2026-09-21)
+### Decisions already taken (owner, 2026-09-18; the last nine 2026-09-21)
 
 | Question | Decision |
 |---|---|
@@ -111,6 +113,8 @@ the guide*), asked for at scale.
 | The replay promise (`NOTES-step6.md`, part three) | **Amended.** A saved file never repaints on load -- it stores the canvas -- but a rebuild from its log lays every stroke with the engine installed: `replay(upto=)`, `timelapse_gif(from_log=True)`, and **every `undo` from the shell or MCP**, since the file carries no snapshots. So a stroke the engine laid wrongly comes back fixed, and each such fix is named under its version. No committed `.easel` file exists, and 0.5.0 had been out five days. |
 | A burial spread over passes (`NOTES-step6.md`, part four) | **`buried` ships as it is, and G11 narrows `LESSONS.md`'s depth-order item rather than closing it.** It fires on 2 of 325 passes, both burials; it cannot see the pool's chair, which never stood `0.05` off the deck and went `0.035 -> 0.009` over three passes; and the three copy runs whose containment defines the item are not in the repository, so it has never been run on them. `checklist()` gains no `buried:` line: it is `report(since=None)`, and a burial over a whole painting needs the per-detail memory this declines. |
 | `wet-under` as a fact line at the call (step 2; `NOTES-step6.md`, part three) | **Not this round.** Its evidence is B18 -- a reconstruction of GLM's lost take, in which the wet bezel moved pixels `0.13` -- which is what `ring-steps` and `ring-rim` were dropped on. *`dry()` first* stays in `PAINTING.md`. |
+| *A mass built of planes*' faces (G3's first run; `NOTES-step9.md`, part three) | **A `flat`, laid `edge="clean"`, each face along a side of its own -- and `chisel-staircase` offers a comb only at `size=0.025` and over.** Rendered at 400x300 and 1024x768 against the four alternatives: step 6's comb paints the woven surface the recipe names; finding 1's ragged flat stairs; a clean edge with every face along one axis keeps the stack-of-bars line; each face along its own side is silent after a ground and reads as planes; a hard edge is silent everywhere and reads cut out. |
+| The stack-of-bars rule over a graded field (G3's first run) | **A `scumble` counts once**, in the rule and in the crossings that re-arm it. In its own colours the recipe paints a smooth field and the rule said *17 of 17* over it; crossers at 13 degrees would not count (30 is a crossing), and declaring the bands only changes the words. Over the corpus the condition holds on 47 passes rather than 62, 10 of the 46 lines painters were shown go, and the probe's noise table has the rule at 38 of 325 passes, 12% (was 47, 14%) -- knowingly including BigPickle's true positive, which reached its share only by counting sky passes its own painter called fine. |
 
 ---
 
@@ -425,8 +429,9 @@ by comment lines -- the passage, what goes wrong, the smallest fix -- and names 
 tool says about the failure: a notice code, `report() says "<its words>"` (the check's
 rules carry no codes, by D3's decision), or *nothing says so*. `easel.demo.faults` is the
 invariant and `check_guide_blocks.py` runs it over every demo, in CI now. What `report()`
-says about a recipe beyond its failure prints as a note rather than a fault, and the
-first run's notes are two rows of *Loose ends* below. The eight recipes still in words:
+says about a recipe beyond its failure prints as a note rather than a fault; the first
+run's three notes, on two recipes, were ruled on and fixed -- one recipe's, one rule's
+(the decisions table's last two rows). The eight recipes still in words:
 *a scene with straight edges*, *a picture with an empty half*, *a form that turns*, *a
 quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, and
 *a repair under things that are standing on it*, which waits for F1.
@@ -590,10 +595,9 @@ table when what it names is done**, the way a migration row leaves with its para
 | **F1: `cover()` to `edge="hard"`** (ruled 2026-09-21) | the bench in the decisions table; `CHANGELOG.md` still lists it under *three proposed moves were declined* | its own commit in step 8's pattern, **before G3**: `easel demo` and G2's card both show `cover()` | the default moves; `cover()`'s docstring, `REFERENCE.md`'s rows and the card's `undo` row and paragraph say what it does (section 5); the changelog moves it from the declines to *Defaults moved*; the bench joins the probe's F1 section and its numbers go into `CALIBRATION.md` |
 | **`edge="clean"` on a rectangle goes unchecked** -- found by F1's bench | `clean-small` runs only on a shape (`if edge == "clean" and shaped`, in `block_in`), and `cover()` is usually handed a region. `cover(Region(0.44, 0.42, 0.56, 0.52), colour, edge="clean")` at 900x600 with the default `flat` at `size=0.10` puts a 90 px brush on a place 108x60 px, so the half-brush inset leaves nothing to fill: it lays two stubs in the middle and **leaves `15.5%` of the mistake showing** on a graded or worked passage (`3.1%` on a flat one), and nothing is said | F1's commit, which rewrites the docstring that recommends `clean` | a region gets the check a shape gets, and a test holds the bench's case |
 | **Finding 13's number** (was in section 8) | `CALIBRATION.md`'s `12%-44%, median 27%` came from the `edges:` prototype step 7 withdrew, and the probe still carries it as its own `edges_line(session)` (`scripts/probe_cohort_session.py:1695`) | G11, before `SUGGESTIONS.md`'s finding-13 row is filled | the probe calls `easel.checklist.edges_line`, the corpus is replayed, and the number is restated or withdrawn |
+| **The noise table counts notices, not passes, on its `!` rows** -- found replaying the corpus for the bars ruling | `report_noise` in `scripts/probe_cohort_session.py` adds one per line said, and a call-time notice can be said several times in a pass: its *passes* column has `glaze-far` on 38, where step 6 counted 38 films in 17 passes. The `report()` rows are right -- a finding prints once a pass -- which is why the bars figure (38, 12%) stands | G11, before 0.6.0 quotes a noise figure | the column counts each rule once a pass, and `CALIBRATION.md`'s noise table is re-run on the engine as released |
 | **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
 | **`wet-under`, declined** (ruled 2026-09-21) | step 2 left it a fact line, and nothing owned it | G11 | `CHANGELOG.md` names it beside the other declines, and `SUGGESTIONS.md`'s finding-5 row says what was and was not done |
-| ***A mass built of planes* paints its own named failure** -- found by G3's first run | step 6 moved its faces from a ragged `flat` to a `bristle` at `0.014`-`0.02`: `report()` says *59 marks with a bristle under size=0.025* and *46 of 64 long marks ... a stack of bars*, and the render is the *woven surface* its own *Goes wrong as* names (`NOTES-step9.md`, part three, gotcha 4) | **the owner's ruling**, then a recipe fix rendered and looked at | the recipe's demo panel prints no note, or the rule is ruled wrong at these sizes |
-| ***A graded field* trips the stack-of-bars rule** -- found by G3's first run | 17 of 17 long marks within six degrees: the crossers run with the passes, and the fifteen passes alone are over the rule's 60%, so angling the crossers would not clear it. Finding 10 again, on the guide's own recipe | **the owner's ruling**: narrow the rule, or answer it in the recipe | the recipe's demo panel prints no note, or this row says why it may |
 | **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | one GitHub issue exists, and this row links it |
 
 ### What step 2 measured, and what it decides

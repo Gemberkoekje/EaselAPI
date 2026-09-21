@@ -240,17 +240,18 @@ between them.
 whole = polygon([(0.05, 0.60), (0.22, 0.56), (0.40, 0.64), (0.52, 0.74),
                  (0.58, 0.92), (0.10, 0.92)])
 faces = [(polygon([(0.06, 0.61), (0.24, 0.58), (0.38, 0.65), (0.30, 0.70),
-                   (0.12, 0.66)]), "pale", 0.014),      # the plane facing the light
+                   (0.12, 0.66)]), "pale", 0.014,
+          [(0.06, 0.61), (0.24, 0.58)]),                # the plane facing the light
          (polygon([(0.40, 0.67), (0.52, 0.76), (0.56, 0.90), (0.42, 0.86)]),
-          "mid", 0.016),                                # the plane facing sideways
+          "mid", 0.016, [(0.40, 0.67), (0.42, 0.86)]),  # the plane facing sideways
          (polygon([(0.10, 0.70), (0.34, 0.74), (0.40, 0.88), (0.14, 0.90)]),
-          "cool", 0.02)]                                # the body between them
+          "cool", 0.02, [(0.10, 0.70), (0.34, 0.74)])]  # the body between them
 
 s.block_in(whole, "flat", "dark", size=0.06, density=1.0, solid=True,
            direction="axis", edge="clean")
-for face, colour, size in faces:
-    s.block_in(face, "bristle", colour, size=size, density=1.2, solid=True,
-               direction="axis", opacity=1.0, pressure="even")
+for face, colour, size, side in faces:                  # each along a side of its own
+    s.block_in(face, "flat", colour, size=size, density=1.0, solid=True,
+               direction=side, edge="clean", opacity=1.0, pressure="even")
 s.stroke([(0.27, 0.66), (0.32, 0.71), (0.40, 0.77)], "round_hard", "dark",
          size=0.014, opacity=0.9, pressure="taper")            # one crevice
 s.stroke([(0.14, 0.72), (0.26, 0.76)], "bristle", "pale",
@@ -260,7 +261,11 @@ s.stroke([(0.14, 0.72), (0.26, 0.76)], "bristle", "pale",
 Three or four planes is enough; the planes carry the form and the crevices are
 punctuation. Keep each plane a brush's half-width inside the silhouette so nothing
 fringes past it, and give the planes different brush sizes — they are different sizes
-of thing.
+of thing. **Run each plane's passes along a side of its own**: the grain then turns
+from plane to plane, the side it runs along closes exactly, and `edge="clean"` draws
+the others rather than stepping down them. A chisel ending on a
+slope is a staircase, and a comb under `size=0.025` is a woven plane — at these sizes
+the flat, laid clean and along a side, is the brush.
 
 **Draw the planes with the silhouette.** A mass like this has two drawings in it, and
 the second is not the finish: decide the tiling *before* the block-in, as polygons
@@ -274,7 +279,9 @@ staircase down every sloped side, which is a chisel's pass ends stacking on a sl
 is why the silhouette above is laid `edge="clean"`:
 
 ```python
-# the passage: the silhouette, drawn and not yet painted
+# the passage: the ground it stands on, and its silhouette drawn
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "surface", size=0.05, solid=True,
+           edge="hard", direction="vertical")
 whole = polygon([(0.05, 0.60), (0.22, 0.56), (0.40, 0.64), (0.52, 0.74),
                  (0.58, 0.92), (0.10, 0.92)])
 # goes wrong: chisel-staircase
@@ -475,6 +482,10 @@ ramps that do not overlap); or bare ground along its top, where an outline drawn
 the canvas cut the passes into stubs:
 
 ```python
+# the passage: the field's own colours, a step or two apart
+p["light"] = p.mix("titanium_white", "cerulean", 0.25)
+p["mid"] = p.mix("titanium_white", "cerulean", 0.45)
+p["shadow"] = p.mix("ultramarine", "titanium_white", 0.55)
 # goes wrong: scumble-wedge
 upper = polygon([(-0.06, 0.13), (0.34, 0.19), (0.62, 0.15), (1.06, 0.10),
                  (1.06, 0.59), (-0.06, 0.62)])        # its top drawn inside the canvas

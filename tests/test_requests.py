@@ -2959,6 +2959,47 @@ def test_a_horizontal_stack_is_called_horizontal(tmp_path):
     assert line and "horizontal" in line[0], line
 
 
+def test_a_scumble_counts_once_in_a_stack_of_bars(tmp_path):
+    """`RECIPES.md`'s graded field -- two scumbles and two crossers -- came back *17 of
+    17 long marks ... a stack of bars*, in its own colours a smooth field; and over the
+    corpus 10 of the 46 bars lines painters were shown were passes led by a scumble. A
+    scumble is one band at one angle whose passes are sized to overlap, and whether
+    they show as bars is `scumble-bars`' question at the call. So it counts once --
+    and the same bands laid by hand, or as masses, are still a stack."""
+    field = make(tmp_path)
+    since = len(field.history.records)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        field.scumble(polygon([(-0.06, -0.06), (1.06, -0.06), (1.06, 0.59), (-0.06, 0.62)]),
+                      "titanium_white", "cerulean", 7, direction=4)
+        field.scumble(polygon([(-0.06, 0.50), (1.06, 0.47), (1.06, 1.06), (-0.06, 1.06)]),
+                      "cerulean", "ultramarine", 8, direction=3)
+    assert not _bar_line(field, since), "a graded field of two ramps is two bands"
+
+    stacked = make(tmp_path)
+    since = len(stacked.history.records)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for top, size in ((0.0, 0.10), (0.25, 0.08), (0.5, 0.09), (0.75, 0.07)):
+            stacked.block_in(Region(0.0, top, 1.0, top + 0.25), "bristle", "burnt_umber",
+                             size=size, direction="horizontal")
+    assert _bar_line(stacked, since), "four bands of masses are still a layer cake"
+
+
+def test_a_scumble_across_the_bars_is_one_mark_crossing_them(tmp_path):
+    """The crossings that re-arm the line, and that it counts once the bands are
+    declared, count a scumble once too -- or one band laid across the bars would read
+    as eight things crossing them."""
+    from easel.session import _crossing_marks
+
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.scumble(Region(0.2, 0.1, 0.8, 0.9), "titanium_white", "cerulean", 8,
+                  direction="vertical")
+    assert _crossing_marks(s.history.records, 0.0, s.canvas) == 1
+
+
 # -- a look is numbered from the directory, not from the session ------------------------
 def test_two_sessions_in_one_directory_do_not_write_over_each_other(tmp_path):
     """Four of the nine exercises were run from one script, against four sessions
@@ -3939,16 +3980,40 @@ def test_a_chisel_nearly_along_a_straight_side_says_it_will_stair(tmp_path):
     said = [n for n in s.notices() if n.code == "chisel-staircase"]
     assert len(said) == 1 and "brush widths from one end to the next" in said[0].text
 
-    # Both remedies it names, and it must be silent on each: the passes laid along the
-    # side's own two points, and the comb whose ends are bristles rather than a line.
+    # Every remedy it names at one size or another, and it must be silent on each: the
+    # passes laid along the side's own two points, the clean edge it names under the
+    # comb's floor, and the comb whose ends are bristles rather than a line.
     for label, call in (("along the side", dict(brush="flat",
                                                 direction=[(0.470, 0.180), (0.502, 0.820)])),
+                        ("a clean edge", dict(brush="flat", direction="vertical",
+                                              edge="clean")),
                         ("a comb", dict(brush="bristle", direction="vertical"))):
         quiet = make(tmp_path)
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             quiet.block_in(band, **{**lay, **call})
         assert not [n for n in quiet.notices() if n.code == "chisel-staircase"], label
+
+
+def test_the_staircase_offers_a_comb_only_where_a_comb_is_a_brush(tmp_path):
+    """Step 6 of the 0.6.0 round took this notice's second remedy for *a mass built of
+    planes*, whose faces are `0.014`-`0.02` -- and the recipe then painted the woven
+    surface its own *Goes wrong as* names, because under `0.025` a bristle is four
+    streaks with gaps and `report()` says so. A remedy that trips the next rule at the
+    size it was offered at is `LESSONS.md` rule 2 twice over. So under the floor the
+    notice offers the clean edge beside `direction=`, and the comb only above it."""
+    band = polygon([(0.470, 0.180), (0.530, 0.180), (0.562, 0.820), (0.502, 0.820)])
+    said = {}
+    for size in (0.020, 0.030):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.block_in(band, "flat", "titanium_white", size=size, density=1.0,
+                       solid=True, pressure="even", direction="vertical")
+        text, = [n.text for n in s.notices() if n.code == "chisel-staircase"]
+        said[size] = text
+    assert "edge='clean'" in said[0.020] and "lay it with a comb" not in said[0.020]
+    assert "lay it with a comb" in said[0.030] and "edge='clean'" not in said[0.030]
 
 
 def test_the_staircase_is_silent_on_a_curve_and_on_a_square_end(tmp_path):

@@ -465,9 +465,34 @@ pytest half paints only the fastest demo and a few one-stroke drafts.
 and looked at against the woven version -- or rule the small-comb rule wrong at these
 sizes. Either way the demo already shows which.
 
+**Ruled 2026-09-21, and done: the recipe's.** Five ways of laying the faces were
+painted at 400x300 and 1024x768 and read back through `report()`: the comb weaves;
+finding 1's ragged flat stairs; a clean edge with every face on one axis keeps the
+stack-of-bars line; each face along a side of its own with a clean edge is silent once
+there is a ground under it, and reads as planes; a hard edge is silent everywhere and
+reads cut out. The recipe lays the fourth. The notice that sent step 6 to the comb
+offers it only at `size=0.025` and over now -- `CALIBRATION.md`'s own repair table
+measured its *always works* comb at `0.022`, under the floor, which is how the advice
+and the other rule came to point at each other. On a bare canvas the recipe still
+draws *detail before the masses* (its faces are then the painting's first marks), so
+its demo lays a ground first.
+
 **The graded field and the bars rule** (gotcha 4): the rule's to narrow, or the recipe's
 to answer. `s.plan(bands="subject")` is the engine's current answer and does not fit: a
 sky's bands are not the subject.
+
+**Ruled 2026-09-21, and done: the rule's -- a `scumble` counts once.** Two findings made
+it the rule's. In its own colours the recipe paints a smooth field (the strata in the
+first demo were the stand-in palette's, whose `mid` is `light`), so the line was noise
+on a picture that was right; and the recipe cannot answer it, because crossers at 13
+degrees are not crossings (30 is) and the fifteen passes alone are over the share.
+Replayed over the corpus, the condition holds on 47 passes rather than 62 and 10 of
+the 46 lines painters saw go, every one on a pass laid mostly with a scumble; the
+probe's noise table, decay and all, has the rule at 38 of 325 passes, 12%, against 47. The price
+was paid knowingly: BigPickle's whole-painting line, the round's one true positive,
+reached its share only by counting sky passes its painter called fine, and is silent
+now. The crossings that re-arm the line count a scumble once as well. The graded
+field's demo lays the field in its own colours, so its recipe panel shows the recipe.
 
 **Eight recipes are still words only**: *a scene with straight edges*, *a picture with
 an empty half*, *a form that turns*, *a quiet gradient* (which has no *Goes wrong as*
@@ -492,12 +517,15 @@ already trips it. `PAINTER.md` is untouched.
 | `src/easel/cli.py`, `src/easel/mcp_server.py` | `easel demo` and the `demo` tool; the server's stale *twelve CLI verbs* comment |
 | `src/easel/__init__.py` | `demo` bound and in `__all__` |
 | `scripts/check_guide_blocks.py` | the preamble from `easel.demo`; demo blocks left out of `guide_blocks()`; `check_demos()`; the docstring |
-| `RECIPES.md` | twelve demo blocks; the preamble's *do not copy*; the graded field's stale strata line; three *Goes wrong as* lines name the failure their block shows |
+| `RECIPES.md` | twelve demo blocks; the preamble's *do not copy*; the graded field's stale strata line; three *Goes wrong as* lines name the failure their block shows; after the rulings, the planes' faces flat and clean along their own sides, a ground under the planes' demo and the graded field's own colours under its demo |
 | `tests/test_demo.py` | **new** -- parsing, the rule on drafts, the sheet's focus, the command |
 | `tests/test_mcp.py`, `tests/test_server_json.py` | `demo` over the wire; the manifest's verb count |
 | `.github/workflows/ci.yml` | the `guide` job |
 | `mcpb/manifest.json` | seventeen verbs, and `demo` |
 | `REFERENCE.md`, `README.md`, `llms.txt` | `easel demo` |
 | `CHANGELOG.md` | `### Recipes that show how they go wrong, and a check that they still do` |
-| `SUGGESTIONS.md` | finding 19's row |
-| `PLAN-0.6.0.md` | status; G3; the migration row; *Loose ends* |
+| `SUGGESTIONS.md` | finding 19's row; findings 1 and 10 gain the two rulings |
+| `PLAN-0.6.0.md` | status; G3; the migration row; *Loose ends*; the two rulings |
+| `src/easel/session.py` | the rulings: `_one_per_scumble` in the stack-of-bars rule and `_crossing_marks`; `chisel-staircase` offers a comb only at `0.025` and over; both docstrings, and `report()`'s |
+| `tests/test_requests.py` | a scumble counts once, as a bar and as a crossing; the staircase's comb above the floor only, and silent on a clean edge |
+| `CALIBRATION.md` | the comb in the staircase's repair table is under the small-comb floor; the stack-of-bars count re-measured |
