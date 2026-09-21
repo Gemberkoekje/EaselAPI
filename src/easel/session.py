@@ -3616,11 +3616,12 @@ class Session:
         standing warnings take once they can be checked rather than repeated --
         three painters made the same mistakes *after* reading the warnings about
         them, and what did catch a mistake was never a sentence but a line printed
-        after a pass. Every input is already in the log, which carries brush, size,
-        path, pressure and note per mark. Seven rules, each of which a real pass of a
-        real painting would have tripped, and two standing measurements printed
-        under them -- plus, for a painting that has declared a plan
-        (:meth:`plan`), a line per declaration it can measure:
+        after a pass. Every rule's input is already in the log, which carries brush,
+        size, path, pressure and note per mark. Seven rules, each of which a real pass
+        of a real painting would have tripped, and under them the standing lines --
+        measurements rather than findings: the subject's share, and four read off the
+        canvas -- plus, for a painting that has declared a plan (:meth:`plan`), a line
+        per declaration it can measure:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
@@ -3676,10 +3677,19 @@ class Session:
           0.4.0 there was no way to answer it short of building that canvas and
           diffing it -- which one painter did after the painting was finished, having
           already spent the warm ground the whole picture had been planned around.
-          It says so under ``_GROUND_FLOOR``, which is the one judgement in here --
+          It says so under ``_GROUND_FLOOR``, which is the line's one judgement --
           and under ``plan(ground="buried")`` it prints the number without asking,
           because whether this picture covers its ground on purpose is the painter's
-          to say.
+          to say;
+        - **the values, the edges and the pencil**, the other three lines only the
+          canvas can answer: where the picture's values sit against what the palette
+          reaches, how its edge length divides between hard and soft, and how much
+          graphite still shows. Each is a number with its threshold said out loud,
+          and :mod:`easel.checklist` holds each one's evidence. Printed after every
+          pass like the ground line, and like it left off a counted copy. The noise
+          budget counts findings and call-time notices, and these are neither: four
+          lines that print on every pass are the design, and whether a longer block
+          gets skimmed is for a painter's run to show.
 
         **What this cannot see is a composition**, and it says ``nothing to report`` to
         a dead one. Every rule here is about a mark, because a mark is what the log
@@ -3723,6 +3733,8 @@ class Session:
               plan: 5 of 6 places inside 0.10; halo +0.14
               lightest: lamp reads 0.78, the lightest of the 6 places planned
               subject: 41 of 128 marks so far (32%), against 32% planned
+              values: 0.21-0.84 of a box that reaches 0.13-0.96, clusters at 0.27, 0.49, 0.78; a clear light, mid and dark
+              edges: 41% of edges are under 2.5 px wide, median 2.9 px
               ground: 2.16% of the canvas is still bare ground
         """
         records = self.history.records

@@ -1685,6 +1685,13 @@ the busiest prints 11.** So the engine is quiet today, and the bars rule is half
 noise there is — it fires on one pass in seven even with its said-once decay, which is
 the number behind *it taught two painters to skim*.
 
+What this counts is what asks a painter for something: findings and call-time notices.
+The standing lines under a pass are measurements and are not in it — the engine this
+table measured prints `ground:` after every painted pass, and the median is still `0` —
+so the four canvas lines printed after every pass since 0.6.0 cost this budget nothing,
+by design. Whether a longer block gets skimmed is for a painter's run to show, not for
+this table.
+
 ### What each proposed check would cost
 
 Prototypes of the checks the round proposes, run against every call and every pass of the

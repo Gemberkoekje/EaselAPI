@@ -2525,7 +2525,8 @@ def report_noise(replays: list[Replay]) -> None:
     print(f"  {quiet} of {len(painted)} passes said nothing at all "
           f"({quiet / len(painted):.0%}); the median pass prints "
           f"{float(np.median(lines)):.0f} lines, the busiest {max(lines)}")
-    print("  read: the plan's target is fewer than three lines on a median pass.")
+    print("  read: the target is fewer than three findings and call-time notices on a "
+          "median pass; the standing measurement lines under a pass are not counted.")
 
 
 _RULES = (

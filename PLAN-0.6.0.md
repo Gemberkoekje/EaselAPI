@@ -40,7 +40,9 @@ and 6, and two faults it did not know about were found by running every guide bl
 the checks: **every runnable block in the guide is now notice-clean**, and
 `scripts/check_guide_blocks.py` fails if that stops being true. G4 landed with step 7,
 so what is left of G is G2, G3, G6, G8, G10 and G11; `NOTES-step9.md` has the gotchas
-for both parts. Written 2026-09-18 against
+for both parts. The three rulings the step notes left for the owner -- the standing
+lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
+the last three rows of the decisions table below. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -66,7 +68,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18)
+### Decisions already taken (owner, 2026-09-18; the last three 2026-09-21)
 
 | Question | Decision |
 |---|---|
@@ -83,6 +85,9 @@ the guide*), asked for at scale.
 | A painter who never calls `s.plan()` | **Said where it costs**: no message at the first stroke; the card's example and the `easel new` scaffold show it, and the closing check lists what it could not answer (C). |
 | `solid=True` with a comb | **Say so, with prices**: no default move; the call names the bare share to expect and each remedy with its stroke price (B2). |
 | GLM's rings | The owner supplied GLM's working folder; what its frames show is in B18. |
+| The four standing lines after every pass, against *fewer than three lines on a median pass* (`NOTES-step7.md`) | **Kept on every pass.** The target counts findings and call-time notices, which is what the probe has always counted: `ground:` printed after every pass of 0.5.0 while the probe reported a median of `0`. A standing measurement is not a finding. Whether the longer block gets skimmed is the next run's to show. |
+| The inward `scumble`'s `load` (`NOTES-step8.md`, gotcha 3) | **Kept, as intended**: the brush's own `0.9`, where a band has laid `1.0` since F3. `0.005%` of a patch bare against `0.012%` is inside any window, so under *measure, then move* it stays. `REFERENCE.md`'s `solid` and `load` rows now say *a banded `scumble`*, which is all they were ever true of. |
+| Linking notice codes to `DIAGNOSIS.md` rows (`NOTES-step9.md`) | **Not this round.** Sixteen of the twenty-five codes already resolve to the passage a row points at, so `explain` and `diagnose` print the same text and only the name is missing. Revisit once a run shows whether a painter calls either. |
 
 ---
 
@@ -597,7 +602,7 @@ row above.
 
 | Risk | Guard |
 |---|---|
-| More warnings, read less. The project has watched this happen twice. | Noise budget from the corpus replay; facts before habits; said-once with state in the file; `s.plan()` declarations; **fewer than three lines on a median pass** as a target the probe reports. |
+| More warnings, read less. The project has watched this happen twice. | Noise budget from the corpus replay; facts before habits; said-once with state in the file; `s.plan()` declarations; **fewer than three findings and call-time notices on a median pass** as a target the probe reports. The standing measurement lines under a pass are not counted, as `ground:` never was (ruled 2026-09-21). |
 | A check that fires on the right thing. | Rule 2: every block of the guide runs notice-clean in CI. |
 | Canvas-reading checks slow a pass (already ~200 ms a stroke). | Sample along the path; one canvas pass per `report()`; skip all of it on `count_only` copies; time it in the probe. |
 | Notices or the plan shift every later mark's texture. | Rule 8: stored beside `history.records`; asserted by the existing *planning verbs leave nothing behind* test, extended. |
@@ -620,6 +625,12 @@ Small, and none of it blocks step 1.
   extent (B17), or only clipped and warned about.
 - Whether `easel_paint` should one day become the canonical import, given the unrelated
   `easel` on PyPI (B10). Not this round: the shim keeps the option open.
+- **Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
+  from the `edges:` prototype that step 7 withdrew, and *The measurement lines, on the
+  finished canvases* says the corpus wants replaying with the shipped line before 0.6.0
+  states a number. No step owns it. `scripts/probe_cohort_session.py` still carries the
+  prototype as its own `edges_line(session)`, so the replay starts by pointing that at
+  `easel.checklist.edges_line`.
 
 ---
 

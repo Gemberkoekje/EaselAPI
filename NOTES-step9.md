@@ -127,6 +127,12 @@ the code, which would let a painter who saw `chisel-staircase` fly and a painter
 merely *sees* a staircase land in the same place with the same words. Not built, not
 costed, and it would spend lines against a cap that is already met.
 
+**Ruled 2026-09-21: not this round.** Costed since: sixteen of the twenty-five codes
+already resolve to the passage a row points at, nine of them to the same `###`, so the
+two commands print the same text and only the name is missing. The cap is no obstacle
+after all — it counts lines, and a code named inside a row adds none. Revisit once a run
+shows whether a painter calls either command.
+
 ## What step 9 did *not* touch
 
 **G5 is one of eight.** Still open in workstream G: **G2** the entry path, **G3**

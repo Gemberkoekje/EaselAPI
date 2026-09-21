@@ -108,6 +108,10 @@ not three, and it is not this round's.**
 
 **The inward `load` asymmetry** (gotcha 3) — close it or write it down as intended.
 
+**Ruled 2026-09-21: written down as intended.** It already was, in `CALIBRATION.md`,
+`CHANGELOG.md` and `scumble`'s docstring; `REFERENCE.md`'s `solid` and `load` rows were
+the one place that said otherwise, and now say *a banded `scumble`*.
+
 ## What step 8 did *not* touch
 
 Step 6 is still part-done, unchanged by this branch: `spill` (D1) is not built, and D2
