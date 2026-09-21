@@ -163,3 +163,170 @@ paragraph stays and the row is wrong. **That is G7's to settle and it is still o
 | `SUGGESTIONS.md` | the ninth session's `DIAGNOSIS.md` row gains what G5 did |
 | `mcpb/manifest.json` | *twelve CLI verbs* -> sixteen (stale since step 3); `diagnose` named in the guidance line |
 | `PLAN-0.6.0.md` | status: step 9 part-done, G5 built |
+
+---
+
+# Step 9, part two: the fixes and the small facts (G7, G9)
+
+**To understand this, start by reading `main()` in
+[`scripts/check_guide_blocks.py`](scripts/check_guide_blocks.py) — the notice-clean
+invariant is what found the two faults nobody had read — then the three answers under
+*Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md) and *A graded field that
+is most of the picture* in [`RECIPES.md`](RECIPES.md), which are the two blocks that
+moved, then the two corrected rows in section 5 of [`PLAN-0.6.0.md`](PLAN-0.6.0.md).**
+
+Branch: `g-fixes-and-facts`, off `main` at `69254f8`.
+
+---
+
+## What this step was for
+
+G7 is *fixes to what is there* and G9 is *small facts*. Both were picked because neither
+depends on anything step 6 did not build. **Between them the plan listed ten items, and
+four were already done** — closed in passing by the steps that had reason to touch the
+same files. That is the first finding of this step, and it is a process one: a plan row
+is a claim about the repository, and it goes stale exactly like any other claim.
+
+| Plan row | Actually |
+|---|---|
+| G7: *a mass built of planes*, *a form that turns* (finding 1) | **done in step 6**, in the commit that landed `chisel-staircase` — it fixed all three offending recipes |
+| G7: the ground contradiction (finding 11) | **done in step 5**, engine and recipe together |
+| G9: `pip install easel-paint` -> `import easel` | **already there**, with the *never `pip install easel`* warning beside it |
+| G9: named-region extents | **already there**: `REFERENCE.md` has the full table and calls the ninths out in prose |
+| G9: what `upto=`, `n` and `last=` count | **already there**, on the `log(last=)` line |
+| G9: the verb x (`clip`, `edge`, overrides) matrix | **already there**, landed with #58 |
+
+## What landed
+
+| | |
+|---|---|
+| **Every runnable guide block is notice-clean** | and `scripts/check_guide_blocks.py` fails if that stops being true, naming the block, the document and the code |
+| `PAINTING.md`, *Masses that are not rectangles* | the clean-edge answer stops demonstrating a brush the paragraph under it forbids |
+| `RECIPES.md`, *A graded field...* | the field runs off the top of the canvas, so no pass is a stub |
+| `RECIPES.md`, *A volume of lit air* | `dry()` after the films as well as before, with the measurement |
+| `PAINTER.md` | the card's `undo` row and *What you are bad at* name `cover(..., edge="hard")` |
+| `PAINTING.md`, the broken-pass rule | scoped to what it was earned on, with the crossers named as the exception |
+| `README.md`, `llms.txt`, the package docstring | vision is a requirement, and why |
+| `PLAN-0.6.0.md` | two migration-map rows corrected; G7, G9 and the status line brought current |
+
+## Decisions and gotchas
+
+**1. The two real faults were found by running the guide, not by reading it.** Both
+blocks sat under prose that was *correct*, which is why no review had caught them: the
+paragraph under the three answers says a clean edge needs a brush under a quarter of the
+shape's shorter extent, and the block beside it used 34%. Reading either one alone finds
+nothing. **The only thing that finds this is executing the block and asking the engine
+what it said** — which is finding 1's lesson applied to the whole file rather than to the
+three recipes step 6 happened to touch.
+
+**2. A check can be silenced without the picture improving, and that nearly happened
+here.** `scumble-wedge` compares the *ratio* between the first and last pass, and on the
+graded field the ratio falls under the threshold at 6° and 8° — not because the passes
+get better but because **both ends become stubs**. Turning the pass angle two degrees
+would have produced a green check and the same bad field. The middle pass is full width
+at every angle and the ends are short at every angle, which says the shape is the fault,
+not the angle. **The shape moved.** Sweeping the parameter before choosing the fix is
+what showed this; the first candidate fix was the angle.
+
+Both versions were then rendered at 640x480 and **looked at**, which `LESSONS.md` asks
+for and which measurement alone would not have settled: the old recipe leaves **a patch
+of bare toned ground across the top of the field**, plainly visible, where the stub
+passes failed to close. The notice was not being pedantic about a ratio — it was naming
+a hole.
+
+**3. The graded field's outline contradicted its own first sentence.** The recipe opens
+with *a third of the canvas or more, graded, with no outline anywhere in it* and then
+handed the verb a six-vertex polygon whose top edge wobbled across about 1.2 pass steps
+inside the canvas. The fix is the recipe's own sentence, which is the comfortable case:
+**the prose was right and the code was wrong.** Both faults this step found are that way
+round, which is worth remembering the next time a block and a paragraph disagree.
+
+**4. Two migration-map rows had lost both their carriers**, and one of them was already
+flagged in part one. A row says *this prose leaves when that check lands*; when the check
+is declined and the fallback is not built, the row is a promise nothing will keep.
+`PAINTER.md`'s card row 4 (carriers: F1, `spill`) and `RECIPES.md`'s quiet gradient
+(carriers: F4, `scumble-few`) are both in that state — F1 and F4 were declined in step 8,
+`spill` and `scumble-few` are not built. **Both now say so in the map**, and in both cases
+nothing leaves. **A declined default move silently invalidates every migration row that
+named it**, and step 8 did not go back through the map.
+
+**5. Finding 8 is the case where the documentation has to carry it.** `cover(edge="hard")`
+has existed all along; the card never mentioned it; F1 would have made mentioning it
+unnecessary and was declined *pending `spill`*. So the keyword goes in the card and in
+`PAINTER.md`'s *What you are bad at*, with the measured pair. **A deferred default is not
+a closed finding** — it is the same finding with a longer wait, and the prose has to hold
+it in the meantime.
+
+**6. The cover ratio depends on the size of the patch, so the published number needed its
+conditions.** Reproducing it gave `1.57x` on a large span and `2.18x` on the probe's own
+small patch, against the published `2.32x` — the overhang is a brush either way, so the
+smaller the place the worse the ratio, and my recomputation differs from the probe's in
+where it puts the *painted* threshold. **The published figure is quoted and cited**
+rather than a fresh one published beside it, and the sentence says it is a repair-sized
+patch. Two numbers for one quantity in two files is how a document starts lying.
+
+**7. `dry()` after the films is real, and the first measurement said it was not.** A
+`canvas.rgb` that is float `0..1` read as though it were `0..255` turns a `0.30` move
+into "0/255" — the measurement said drying changed nothing, which was the wrong scale
+rather than the wrong conclusion. Corrected: up to `0.30` in value where a mass crosses
+the beam, `0.40` where a stroke does. **Check the units of the array before believing a
+null result**, particularly a convenient one.
+
+**8. The rule gave, not the recipe, and that was an evidence call.** `PAINTING.md`'s *do
+not lay one broken pass across the whole canvas* and the graded field's two edge-to-edge
+crossers at `load=0.40`/`0.35` are a flat contradiction. The rule has no measurement
+behind it anywhere in `CALIBRATION.md`; the recipe was taken out of paintings. So the
+rule was scoped to the mechanism it names — *it stays visible under every later stroke*,
+which is about what sits underneath — and the crossers, laid last on a passage nothing
+will cover, are named as the exception.
+
+**9. A cross-reference can break the one-home-per-rule check.** Linking the graded field
+from `PAINTING.md` in the same words `PAINTER.md` already used put a 12-word run in two
+files, because the checker strips markup and the anchor slug survives as one long token.
+**The link text had to differ, not the rule.** Worth knowing before adding any link to a
+heading that is already linked from somewhere else.
+
+**10. The helper that applied these edits rewrote line endings, and the diff hid it.**
+`.gitattributes` normalises to LF on commit, so `git diff --stat` looked clean while the
+working copies had become CRLF. The only visible symptom was git's *CRLF will be replaced
+by LF* warning naming exactly the files touched. Preserve a file's own endings when
+rewriting it.
+
+## Open, and for the owner to rule on
+
+**`scripts/check_guide_blocks.py` still runs only when somebody remembers to run it.**
+It is not in CI and not in the suite — and `tests/test_guide.py`'s own
+`test_one_home_per_rule` exists because the overlap checker had exactly that problem and
+stopped being true without anybody noticing. The block run takes **85 seconds**, against
+an overlap check that is instant, and the `test` job is five matrix combinations. So this
+is a cost decision rather than an oversight, and **G3 is the right place for it**: that
+step is extending this script anyway, and `easel demo` will be rendering the same blocks.
+Until then the invariant holds only for whoever runs the script.
+
+**Whether the entry path should point at `diagnose` and `explain` before the guide.**
+Untouched here, and still G2's.
+
+## What step 9 part two did *not* touch
+
+**Still open in workstream G: G2** the entry path, **G3** `easel demo <recipe>` with the
+failure blocks and the second half of the notice invariant, **G6** the new recipe, **G8**
+the voice pass, **G10** the budgets (`FRONT_PAGE_WORDS` is still `10_000` against a
+`PAINTER.md` of 6,363 words — the file grew 64 words here), **G11** the rest of the
+record. G4 landed with step 7 and G5 with part one.
+
+Step 6 is unchanged and still part-done: `spill` (D1), D2 and D3 are not started. Two of
+this step's decisions wait on them — the card's `undo` row and the quiet gradient
+paragraph both stay until `spill` and `scumble-few` exist.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `scripts/check_guide_blocks.py` | collects each block's notices, names them, and fails the run; the docstring carries why |
+| `PAINTING.md` | the clean-edge answer drops to `size=0.06`; a sentence saying a clean edge does not buy back a big brush; the broken-pass rule scoped, with the crossers named |
+| `RECIPES.md` | the graded field runs off the top of the canvas, and a bullet says why; *A volume of lit air* gains `s.dry()` after the films and the measurement behind it |
+| `PAINTER.md` | the card's `undo` row and *What you are bad at* name `cover(..., edge="hard")`, `2.32x` against `1.01x` |
+| `README.md`, `llms.txt`, `src/easel/__init__.py` | vision stated as a requirement, with the reason |
+| `PLAN-0.6.0.md` | two migration-map rows corrected; G7 and G9 record what was already done; the status line |
+| `SUGGESTIONS.md` | findings 5 and 8 gain what landed; the vision documentation row is closed |
+| `CHANGELOG.md` | `### The guide's own examples, run past the guide's own checks` under `[Unreleased]` |

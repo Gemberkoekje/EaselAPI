@@ -434,6 +434,68 @@ nothing to follow. What did change is the arrow: 92 `→` became `->`, because t
 ships now and U+2192 is outside cp1252, which is the B7 fault the other five documents
 had already been fixed for.
 
+### The guide's own examples, run past the guide's own checks
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G7 and G9). Finding 1 was a painter
+who laid `RECIPES.md`'s *a mass built of planes* character for character and got the
+staircase the guide warns about — **a worked example is an instruction**, and step 6
+fixed all three recipes that produced it when it landed `chisel-staircase`. This is the
+same question asked of the whole guide, by running every one of its 71 runnable blocks
+past every check the engine has and reading what came back.
+
+**Two blocks were teaching the fault the prose beside them forbade.** Neither is visible
+to somebody reading the file, because in both cases the prose was right.
+
+- **The three answers under *Masses that are not rectangles*** demonstrated
+  `edge="clean"` at `size=0.09` — 34% of that mass's narrowest extent, where the
+  paragraph directly beneath it says *under about a quarter*, and where `clean-small`
+  fires. The appealing reading was that a clean edge buys back a big brush. It does not,
+  and the block now lays the same `0.06` as the answer above it.
+- **The graded field drew its own top boundary inside the canvas**, so the passes that
+  reached it were cut into stubs of `0.210` against a brush `0.252` wide — dabs that
+  bloom past the outline, which is `scumble-wedge`. The recipe's own first line says the
+  field has *no outline anywhere in it*; it now runs off the top of the canvas as well
+  as the sides. **Turning the pass angle would have silenced the notice without fixing
+  the picture** — at 6° and 8° both ends are stubs and the ratio between them falls
+  under the threshold — so the shape moved instead. Rendered and looked at, per
+  `LESSONS.md`: the old recipe leaves **a patch of bare ground across the top of the
+  field**, which is the stub passes failing to close, and the new one covers the canvas.
+
+**Every runnable block in the guide is now notice-clean**, and
+`scripts/check_guide_blocks.py` fails if that stops being true: it collects what each
+block's session said and names the block, the document and the code. That is the first
+half of the plan's G3 invariant, landed early because these fixes needed something to
+hold them; the other half — every *failure* block trips exactly the code it names —
+waits for the failure blocks to exist.
+
+**Three more fixes to what was already there.**
+
+- **`dry()` after the films, not only before**, in *A volume of lit air*. The clause was
+  missing, and the measurement is the reason rather than the story the cohort told: B18
+  had already shown the films are not wet at full strength, but they do leave `0.14` at
+  the core, and an opaque mark laid across the beam afterwards drags what it lands on by
+  up to `0.30` in value where a mass crosses it and `0.40` where a stroke does.
+- **`cover(..., edge="hard")` is named where a painter will meet it** — the card's
+  `undo` row and `PAINTER.md`'s *What you are bad at*. Finding 8 reported that the tool
+  had the keyword and the card did not mention it; the default move that would have made
+  it unnecessary (F1) was declined in step 8 and waits for `spill`, so the documentation
+  carries it: on a repair-sized patch the plain recipe paints **2.32x** the area it is
+  handed against **1.01x** at `"hard"`, and the smaller the patch the worse that gets.
+- **Two rules that contradicted each other, reconciled.** `PAINTING.md` said *do not lay
+  one broken pass across the whole canvas*; the graded field lays two, edge to edge, at
+  `load=0.40` and `0.35`, and calls them required. The rule gives, because it is scoped
+  to what it was earned on — a broken pass laid *under* work that has to sit on it — and
+  the crossers are laid last, at part opacity, on a passage nothing else will cover.
+
+**And vision is stated as a requirement** (G9), in `README.md`, `llms.txt` and the
+package docstring. All three described it — *built for an agent that can see what it
+just did* — which is a design note, not a requirement. The blind painter of the cohort
+installed it, painted, and wrote *I can't see it … so I'm trusting the tool*. Every pass
+of the method ends by looking, so a painter without image input can drive the whole API
+without ever learning whether a mark landed. The other four small facts G9 listed were
+already in place, closed by the steps that had reason to touch them.
+
+
 ## [0.5.0] — 2026-09-16
 
 **Two rounds, and both painted from the installed package alone** — the first two

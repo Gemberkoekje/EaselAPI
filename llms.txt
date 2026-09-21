@@ -4,7 +4,9 @@
 
 If you are a model that has just fetched this page and wants to know whether it can use
 this: yes, if you can run Python or call an MCP server, and if you can look at an image
-you have made. Start with the code below, then read `PAINTER.md`.
+you have made. **That last one is a requirement and not a nicety** — every pass ends by
+looking at what it did, and without image input you can drive the whole API without ever
+learning whether a mark landed. Start with the code below, then read `PAINTER.md`.
 
 ```bash
 pip install easel-paint          # never `pip install easel` -- that is somebody else's
