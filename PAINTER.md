@@ -469,7 +469,8 @@ lo, hi = p.value_of(dark), p.value_of("titanium_white")
 for i in range(9):
     target = lo + (hi - lo) * i / 8
     band = Region(i / 9.0, 0.15, (i + 1) / 9.0, 0.85)
-    s.block_in(band, "flat", p.at_value(dark, target), density=1.0, size=0.06)
+    s.block_in(band, "flat", p.at_value(dark, target), density=1.0, size=0.06,
+               direction="axis")       # along the band, so its ends miss the next one
     print(f"value {target:.2f}  reads {p.value_of(p.at_value(dark, target)):.2f}")
 s.look(values=True)     # nine even steps, 0.14 to 0.96
 ```
@@ -617,7 +618,7 @@ plan = {"haze": p.at_value(p.mix("cerulean", "titanium_white", 0.8), 0.64),
         "lit":  p.at_value(p.mix("yellow_ochre", "titanium_white", 0.6), 0.78)}
 for i, (name, colour) in enumerate(plan.items()):
     band = Region(0.05 + i * 0.225, 0.15, 0.25 + i * 0.225, 0.85)
-    s.block_in(band, "flat", colour, size=0.08, solid=True)
+    s.block_in(band, "flat", colour, size=0.04, solid=True)   # a fifth of its width
     print(f"{name:5s} value {p.value_of(colour):.2f}  chroma {p.chroma_of(colour):.2f}")
 s.look()            # the hues beside each other, which the numbers cannot show
 ```

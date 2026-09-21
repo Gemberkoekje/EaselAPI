@@ -122,6 +122,13 @@ pass since 0.4.0 — so this is the plan as written. But the risk table's target
 the two to move into `checklist()` and `--check` only. **Not changed here** — it is a
 plan decision, not an implementation one.
 
+**Ruled 2026-09-21: kept on every pass.** The target counts findings and call-time
+notices — what `scripts/probe_cohort_session.py` has always counted, which is why
+`ground:` printing after every pass never showed in it. A standing measurement is not a
+finding; whether the longer block gets skimmed is the next run's to show.
+`PLAN-0.6.0.md`'s decisions table has the ruling, and `CALIBRATION.md`'s noise budget
+now says what it counts.
+
 ## What step 7 did *not* touch
 
 Step 6 is still part-done and is untouched by this branch: `spill` (D1) is not built,

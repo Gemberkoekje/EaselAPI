@@ -966,6 +966,10 @@ class Session:
             # and `span(...)` is how most of the corpus's bands are written.
             _check_chisel_staircase(self, place, b, direction, density, self.canvas,
                                     stacklevel=3)
+            if self._call_verb != "cover":
+                # A burial's ends run outside the area on purpose: cover() says why.
+                _check_mass_spill(self, place, fill, b, direction, density, overhang,
+                                  held, stacklevel=3)
 
         with self._one_call("block_in", place):
             if dry_first:
@@ -1743,7 +1747,8 @@ class Session:
         if solid:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         b, inward, paths = self._scumble_paths(place, n, brush, size, opacity,
-                                               direction, overhang, brush_overrides)
+                                               direction, overhang, brush_overrides,
+                                               held=held)
         if inward:
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
                                         paths, clip=held)
@@ -1763,7 +1768,8 @@ class Session:
         return records
 
     def _scumble_paths(self, place, n: int, brush, size, opacity: float, direction,
-                       overhang: float, brush_overrides: dict, stacklevel: int = 3):
+                       overhang: float, brush_overrides: dict, stacklevel: int = 3,
+                       held=None):
         """The brush a scumble lays, and every pass it would lay -- before any is paint.
 
         Split out for the reason :meth:`_block_in_paths` is: :meth:`cost`,
@@ -1773,6 +1779,10 @@ class Session:
         generator for the same reason too -- the pass wander is drawn from the stream
         between the ``stroke()`` calls, so collecting the paths up front would
         reorder it.
+
+        ``held`` is every outline the passage is held inside (:func:`_mass_hold`), which
+        the band's spill is measured through: a band laid ``edge="hard"`` lands nowhere
+        but the band, and saying otherwise would be a rule firing on its own remedy.
 
         Returns the brush, whether this is the centred (``"inward"``) case, and the
         paths themselves.
@@ -1806,7 +1816,8 @@ class Session:
         # 1.5 steps on the band that came back a venetian blind -- and 1 to 1.5 steps
         # is the worst place on the curve. Named, either as `size=` or as a `Brush`
         # carrying one, it is the painter's and is left alone.
-        if size is None and not isinstance(brush, Brush):
+        picked = size is None and not isinstance(brush, Brush)
+        if picked:
             size = _linear_size(step)
         # And the same pair the inward case takes, for the same reason one step down:
         # a band is many wide passes laid over each other, and a brush running dry
@@ -1821,7 +1832,11 @@ class Session:
         b = self._resolve_brush(brush, size, opacity,
                                 {"load": 1.0, "load_falloff": 0.0, **brush_overrides})
         _check_linear_brush(self, b, step, n)
-        _check_scumble_ends(self, place, degrees, b, n, stacklevel=stacklevel)
+        if not _check_scumble_ends(self, place, degrees, b, n, stacklevel=stacklevel):
+            # One notice per bloom: the ends check has already said this band paints
+            # past itself whenever it fires, and said why.
+            _check_band_spill(self, place, b, degrees, step, n, overhang, picked,
+                              direction == "axis", held, stacklevel=stacklevel)
         shaped = isinstance(place, Polygon)
         paths = (self._shape_paths(place, degrees, step, b.size * overhang) if shaped
                  else self._angled_paths(place, degrees, step, b.size * overhang))
@@ -2750,7 +2765,8 @@ class Session:
                 place, n, spec.get("brush", "bristle"), spec.get("size"),
                 float(spec.get("opacity", 0.5)), spec.get("direction", "axis"),
                 float(spec.get("overhang", 0.35)), _brush_overrides_of(spec),
-                stacklevel=5)
+                stacklevel=5,
+                held=_mass_hold(place, spec.get("edge", "ragged"), spec.get("clip")))
             laid = sum(1 for _ in paths)
             self._adopt_notices(trial)
             if inward:
@@ -3616,11 +3632,12 @@ class Session:
         standing warnings take once they can be checked rather than repeated --
         three painters made the same mistakes *after* reading the warnings about
         them, and what did catch a mistake was never a sentence but a line printed
-        after a pass. Every input is already in the log, which carries brush, size,
-        path, pressure and note per mark. Seven rules, each of which a real pass of a
-        real painting would have tripped, and two standing measurements printed
-        under them -- plus, for a painting that has declared a plan
-        (:meth:`plan`), a line per declaration it can measure:
+        after a pass. Every rule's input is already in the log, which carries brush,
+        size, path, pressure and note per mark. Seven rules, each of which a real pass
+        of a real painting would have tripped, and under them the standing lines --
+        measurements rather than findings: the subject's share, and four read off the
+        canvas -- plus, for a painting that has declared a plan (:meth:`plan`), a line
+        per declaration it can measure:
 
         - **one brush at one size** for a whole pass of two or more calls;
         - **a stack of passes at one angle** -- twelve or more long marks within six
@@ -3676,10 +3693,19 @@ class Session:
           0.4.0 there was no way to answer it short of building that canvas and
           diffing it -- which one painter did after the painting was finished, having
           already spent the warm ground the whole picture had been planned around.
-          It says so under ``_GROUND_FLOOR``, which is the one judgement in here --
+          It says so under ``_GROUND_FLOOR``, which is the line's one judgement --
           and under ``plan(ground="buried")`` it prints the number without asking,
           because whether this picture covers its ground on purpose is the painter's
-          to say.
+          to say;
+        - **the values, the edges and the pencil**, the other three lines only the
+          canvas can answer: where the picture's values sit against what the palette
+          reaches, how its edge length divides between hard and soft, and how much
+          graphite still shows. Each is a number with its threshold said out loud,
+          and :mod:`easel.checklist` holds each one's evidence. Printed after every
+          pass like the ground line, and like it left off a counted copy. The noise
+          budget counts findings and call-time notices, and these are neither: four
+          lines that print on every pass are the design, and whether a longer block
+          gets skimmed is for a painter's run to show.
 
         **What this cannot see is a composition**, and it says ``nothing to report`` to
         a dead one. Every rule here is about a mark, because a mark is what the log
@@ -3723,6 +3749,8 @@ class Session:
               plan: 5 of 6 places inside 0.10; halo +0.14
               lightest: lamp reads 0.78, the lightest of the 6 places planned
               subject: 41 of 128 marks so far (32%), against 32% planned
+              values: 0.21-0.84 of a box that reaches 0.13-0.96, clusters at 0.27, 0.49, 0.78; a clear light, mid and dark
+              edges: 41% of edges are under 2.5 px wide, median 2.9 px
               ground: 2.16% of the canvas is still bare ground
         """
         records = self.history.records
@@ -5470,6 +5498,272 @@ def _check_chisel_staircase(session, place, b: Brush, direction, density: float,
     )
 
 
+#: Past this multiple of the place it was handed, a call is painting somewhere else as
+#: well as where it was sent: see :func:`_spill_over`. Over the corpus's own tail rather
+#: than inside it -- over 299 masses of 21 paintings a ``block_in`` covers ``1.126``
+#: times its place at the median and ``1.474`` at p90, a banded ``scumble`` ``1.287``
+#: and ``1.573`` -- and over every mass the guide itself recommends, none of which
+#: lands over ``1.49`` (``CALIBRATION.md``, *Paint that lands outside the place*).
+_SPILL_RATIO = 1.6
+
+#: ...and past this for a banded ``scumble``, whose own brush breaks past the band by
+#: design. The brush is three of the band's steps, and on a canvas that is not square
+#: the step is taken in the canvas's height while the brush is sized against its long
+#: side, so an ordinary band laid along its own axis covers up to about 1.7x itself --
+#: the band the verb's brush was tuned on, ``0.80 x 0.40`` at ``n=8``, covers 1.69x at
+#: 320x240, and would have been told it spilled at 1.6. B17's band crossed at 30
+#: degrees covers 2.95x. Mapped over seven canvases, seven places and six pass counts,
+#: ``2.0`` is silent on three in four bands laid along their own axis (median 1.63x) --
+#: the rest are squares given four to six passes, whose own brush is two-thirds of the
+#: place or more -- and says it on 85% of the same bands crossed at 30 to 60 degrees.
+_SPILL_RATIO_BAND = 2.0
+
+#: Under this many pixels a brush does not land where its outline says it will: a comb
+#: that narrow is a few streaks with gaps, and a chisel lays next to nothing
+#: (``chisel-blank``). On the bench the reach below was fitted on, a 7 px ``flat``
+#: predicted at 1.68x came back at 0.65x and a 10 px comb predicted at 1.65x came back
+#: at 0.47x -- so a spill is not the question there, and the rule stays out of it.
+_SPILL_MIN_PX = 12.0
+
+#: How far each tip's paint reaches past the line its pass runs along, in half-brush
+#: widths: across the pass, and past each of its two ends. Fitted on 126 masses and
+#: bands laid for the purpose on three canvases and measured the way the corpus replay
+#: measures a call -- a pixel whose value moved by more than ``0.004`` is painted --
+#: against the passes the call actually laid. A chisel ends square; a disc ends round,
+#: and narrows under the default taper; a comb that runs dry reaches least.
+_SPILL_REACH = {
+    "flat": (1.00, 0.2),
+    "knife": (1.00, 0.2),
+    "bristle": (0.90, 0.4),
+    "round_hard": (0.80, 0.8),
+    "round_soft": (0.80, 0.8),
+}
+
+#: ...and a comb laid solid, as a banded ``scumble`` has been since 0.6.0, which reaches
+#: the whole of its width because nothing along a pass runs dry.
+_SPILL_REACH_SOLID_COMB = (1.05, 0.2)
+
+
+def _spill_reach(b: Brush) -> tuple[float, float]:
+    """How far ``b``'s paint reaches past its pass line: across it, and past its ends."""
+    if b.tip == "bristle" and b.load >= 1.0 and b.load_falloff <= 0.0:
+        return _SPILL_REACH_SOLID_COMB
+    return _SPILL_REACH.get(b.tip, (1.0, 0.5))
+
+
+def _spill(place, paths, b: Brush, canvas, holds=()) -> tuple[float, float]:
+    """What a call's passes will cover, against the place it was handed.
+
+    Returns ``(covered / place, share of what is covered that lies outside it)``,
+    predicted off the passes themselves rather than measured off the paint: every pass
+    is a strip ``_spill_reach(b)`` half-brushes either side of its line and past its
+    ends -- square ends for a chisel or a comb, round ones for a disc -- laid on a grid
+    of whole pixels over the window the call can reach, clipped to the canvas and to
+    every outline the call is held inside. The grid is coarsened until the window is at
+    most 256 cells across, which keeps a full-canvas mass to a few milliseconds and a
+    small one at full resolution, where one pixel of rounding is a share of the answer.
+
+    Measured on the bench the reach was fitted on, against the paint: off by **1.8%**
+    on average for a chisel, **1.7%** for a banded scumble, **4.2%** for a round tip
+    and **4.7%** for a comb that runs dry.
+    """
+    w, h = int(canvas.width), int(canvas.height)
+    across, end = _spill_reach(b)
+    width = b.size * float(canvas.long_side)
+    r, e = across * width * 0.5, end * width * 0.5
+    round_tip = b.tip.startswith("round")
+    lines = [np.asarray(p, dtype=np.float64).reshape(-1, 2) * (w, h) for p in paths]
+    lines = [p for p in lines if len(p) >= 2]
+    x0, y0, x1, y1 = place.bounds
+    reach = r + e
+    if lines:
+        every = np.concatenate(lines)
+        lo_x, hi_x = float(every[:, 0].min()) - reach, float(every[:, 0].max()) + reach
+        lo_y, hi_y = float(every[:, 1].min()) - reach, float(every[:, 1].max()) + reach
+    else:
+        lo_x, hi_x, lo_y, hi_y = x0 * w, x1 * w, y0 * h, y1 * h
+    lo_x, hi_x = max(0.0, min(lo_x, x0 * w)), min(float(w), max(hi_x, x1 * w))
+    lo_y, hi_y = max(0.0, min(lo_y, y0 * h)), min(float(h), max(hi_y, y1 * h))
+    if hi_x - lo_x < 1.0 or hi_y - lo_y < 1.0:
+        return 0.0, 0.0
+    cell = max(1.0, math.ceil(max(hi_x - lo_x, hi_y - lo_y) / 256.0))
+    nx = max(1, math.ceil((hi_x - lo_x) / cell))
+    ny = max(1, math.ceil((hi_y - lo_y) / cell))
+    xs = lo_x + (np.arange(nx, dtype=np.float64) + 0.5) * cell
+    ys = lo_y + (np.arange(ny, dtype=np.float64) + 0.5) * cell
+    covered = np.zeros((ny, nx), dtype=bool)
+    for line in lines:
+        last = len(line) - 2
+        for i in range(len(line) - 1):
+            (ax, ay), (bx, by) = line[i], line[i + 1]
+            length = math.hypot(bx - ax, by - ay)
+            if length < 1e-9:
+                continue
+            dx, dy = (bx - ax) / length, (by - ay) / length
+            c0 = max(0, int((min(ax, bx) - reach - lo_x) / cell))
+            c1 = min(nx, int((max(ax, bx) + reach - lo_x) / cell) + 2)
+            r0 = max(0, int((min(ay, by) - reach - lo_y) / cell))
+            r1 = min(ny, int((max(ay, by) + reach - lo_y) / cell) + 2)
+            if c1 <= c0 or r1 <= r0:
+                continue
+            sx = xs[None, c0:c1] - ax
+            sy = ys[r0:r1, None] - ay
+            t = sx * dx + sy * dy
+            off = np.abs(sy * dx - sx * dy)
+            if round_tip:
+                strip = (t >= 0.0) & (t <= length) & (off <= r)
+                if i == 0:
+                    strip |= sx * sx + sy * sy <= e * e
+                if i == last:
+                    strip |= (sx - (bx - ax)) ** 2 + (sy - (by - ay)) ** 2 <= e * e
+            else:
+                start = -e if i == 0 else 0.0
+                stop = length + (e if i == last else 0.0)
+                strip = (t >= start) & (t <= stop) & (off <= r)
+            covered[r0:r1, c0:c1] |= strip
+    gx, gy = xs[None, :] / w, ys[:, None] / h
+    if isinstance(place, Polygon):
+        mine = place.inside(gx, gy)
+    else:
+        mine = (gx >= x0) & (gx <= x1) & (gy >= y0) & (gy <= y1)
+    for hold in holds or ():
+        covered &= hold.inside(gx, gy)
+    asked, laid = int(mine.sum()), int(covered.sum())
+    if not asked or not laid:
+        return 0.0, 0.0
+    return laid / asked, float((covered & ~mine).sum()) / laid
+
+
+def _spill_over(session, place, b: Brush, over: float, walk, holds=(),
+                line: float = _SPILL_RATIO):
+    """``(ratio, outside)`` when a call will cover ``line`` times its place or more.
+
+    ``None`` otherwise -- and ``None`` without walking a single pass wherever the
+    arithmetic already says it cannot get there: a brush under :data:`_SPILL_MIN_PX`,
+    or a place whose box, grown by the furthest any pass of this brush can reach, is
+    itself under the ratio. That bound is generous, so an ordinary mass often gets past
+    it; what it saves is the walk on the small brushes and the big places.
+
+    ``over`` is the call's overhang in brush widths, ``walk`` a function of a trial
+    session that yields the call's pass lines -- walked there because the wander is
+    drawn from the stream, and the stream is the real painting's.
+    """
+    canvas = session.canvas
+    if b.size * float(canvas.long_side) < _SPILL_MIN_PX:
+        return None
+    long = float(canvas.long_side)
+    ux, uy = canvas.width / long, canvas.height / long
+    # The furthest a pass can reach past the place: the overhang past its ends, the
+    # tip's own reach past its line (a little over half a brush at most), and the
+    # sideways wander, whose three sigma is about half a brush more.
+    grow = b.size * (max(float(over or 0.0), 0.0) + 1.0)
+    x0, y0, x1, y1 = place.bounds
+    box = ((min(1.0, x1 + grow / ux) - max(0.0, x0 - grow / ux))
+           * (min(1.0, y1 + grow / uy) - max(0.0, y0 - grow / uy)))
+    area = place.area if isinstance(place, Polygon) else (x1 - x0) * (y1 - y0)
+    if area <= 0.0 or box / area < line:
+        return None
+    paths = list(walk(session._trial_session()))
+    ratio, outside = _spill(place, paths, b, canvas, holds)
+    return (ratio, outside) if ratio >= line else None
+
+
+def _shorter_side(place, canvas) -> float:
+    """A place's shorter extent, as a share of the canvas's long side -- a brush's unit."""
+    long = float(canvas.long_side)
+    x0, y0, x1, y1 = place.bounds
+    return min((x1 - x0) * canvas.width / long, (y1 - y0) * canvas.height / long)
+
+
+def _check_mass_spill(session, place, fill, b: Brush, direction, density: float,
+                      overhang, holds, stacklevel: int = 2) -> None:
+    """Warn when a ragged ``block_in`` will lay paint well outside the place it was given.
+
+    Finding 8 of the 0.5.0 cohort and the most expensive first mistake with shapes on
+    record: a pass stops where its *centre* meets the outline and the brush hangs half
+    its width past it, so a brush that is a large part of the mass lays the mass and a
+    rim of the same paint round it, over whatever its neighbours are. The guide's
+    three answers -- inset the place by half the brush, a brush under a fifth of it,
+    ``edge="clean"`` -- have been in ``PAINTING.md`` since shapes existed; this says
+    the number at the call, where one painting lost 72 strokes and its only ``undo``.
+
+    **Measured on the passes, not read off a rule of thumb.** The plan's version was
+    *a brush over a fifth of the shorter extent*, and the guide's own first
+    ``block_in`` lays a brush 60% of its shape and lands 1.48x of it -- silent here,
+    because the multiple is what paints the neighbours and not the fraction.
+
+    Not said inside :meth:`Session.cover`, whose ends run outside the area on purpose:
+    its own docstring's canonical call paints about three times its cell, and a rule
+    that fires on the canonical call is a rule painters learn to ignore.
+    """
+    shaped = isinstance(place, Polygon)
+    over = (0.0 if shaped else 0.35) if overhang is None else float(overhang)
+    found = _spill_over(
+        session, place, b, over,
+        lambda trial: (path for _, path, _ in trial._block_in_paths(fill, b, direction,
+                                                                     density, overhang)),
+        holds,
+    )
+    if found is None:
+        return
+    ratio, outside = found
+    short = _shorter_side(place, session.canvas)
+    session._notify(
+        "spill",
+        f"block_in on {getattr(place, 'name', '') or ('this shape' if shaped else 'this region')} "
+        f"lays about {ratio:.1f}x the place it was handed, {outside:.0%} of the paint "
+        f"outside it: a {b.name!r} at size={b.size:.3g} is {b.size / max(short, 1e-9):.0%} "
+        f"of the place's shorter side ({short:.3f}), and a brush hangs half its width past "
+        f"every pass it lays. Inset the place by half the brush "
+        f"(place.inset({b.size * 0.5:.3g})), or take a brush under a fifth of it "
+        f"(size={short / 5:.3g}); edge=\"hard\" holds the paint to the outline.",
+        stacklevel=stacklevel,
+    )
+
+
+def _check_band_spill(session, place, b: Brush, degrees: float, step: float, n: int,
+                      overhang: float, picked: bool, axis: bool, holds,
+                      stacklevel: int = 2) -> None:
+    """Warn when a banded ``scumble`` will lay paint well outside its band (B17).
+
+    The brush is picked from the step between passes, and the step from the band's
+    extent *across the passes* -- which, crossed at an angle, is most of the band's
+    length rather than its depth. So the brush grows with the angle and lands over
+    whatever is either side of the band: a band ``0.20`` deep at ``n=8`` covers
+    **1.49x** itself laid along its own axis, **2.95x** at 30 degrees and **3.57x** at
+    60, where 72% of the paint is outside it. Nothing warned about the middle of that.
+
+    **Not capped**, which the round measured: capping the brush at the band's own depth
+    still leaves 2.22x and 2.04x, and capping it at half the depth brings the bars
+    back -- 3.2% and 15.8% of the band bare between passes. The angle is the painter's
+    and the gradient runs along it, so the remedy that keeps both is the hold:
+    ``edge="hard"`` lays the same passes and masks every dab to the band.
+    """
+    shaped = isinstance(place, Polygon)
+    found = _spill_over(
+        session, place, b, overhang,
+        lambda trial: (path for path, _ in (
+            trial._shape_paths(place, degrees, step, b.size * overhang) if shaped
+            else trial._angled_paths(place, degrees, step, b.size * overhang))),
+        holds, line=_SPILL_RATIO_BAND,
+    )
+    if found is None:
+        return
+    ratio, outside = found
+    short = _shorter_side(place, session.canvas)
+    turn = "" if axis else " direction=\"axis\" runs them along it instead."
+    session._notify(
+        "spill",
+        f"scumble on {getattr(place, 'name', '') or 'this band'} lays about {ratio:.1f}x "
+        f"the band, {outside:.0%} of the paint outside it: its {n} passes step "
+        f"{step:.3f} apart across it at {degrees:.0f} degrees, so the brush "
+        f"{'picked from that step is' if picked else 'is'} {b.size:.3g} -- "
+        f"{b.size / max(short, 1e-9):.1f}x the band's own depth ({short:.3f}). "
+        f"edge=\"hard\" lays the same passes held to the band.{turn}",
+        stacklevel=stacklevel,
+    )
+
+
 #: Past this share of a shape's shorter extent, a clean edge's half-brush inset is
 #: taking the mass rather than a rim off it: see :func:`_check_clean_size`.
 _CLEAN_SHARE = 0.25
@@ -5872,7 +6166,7 @@ _WEDGE_RATIO = 2.0
 
 
 def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
-                        stacklevel: int = 2) -> None:
+                        stacklevel: int = 2) -> bool:
     """Warn when a banded scumble's brush is wider than its passes at one end.
 
     The brush is picked from the *step* between passes (three of them), which closes
@@ -5883,6 +6177,9 @@ def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
     wedge, ``0.045`` across at the mouth and ``0.42`` at the far edge, bloomed at
     the mouth and read as barely there at the wide end, and was abandoned for a
     hand-built version in five pieces each sized to its own width.
+
+    Returns whether it said anything, because :func:`_check_spill` measures the same
+    bloom as a multiple of the band and one call should hear about it once.
     """
     shape = place if isinstance(place, Polygon) else polygon(as_region(place))
     first, middle, last = _pass_lengths(shape, degrees, n)
@@ -5896,7 +6193,7 @@ def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
         # paints well outside itself for a different reason, measured on the brush
         # rather than on the passes.
         if middle <= 0.0 or b.size <= middle:
-            return
+            return False
         session._notify(
             "scumble-dabs",
             f"scumble on {place.name or 'this band'}: every pass is shorter "
@@ -5906,9 +6203,9 @@ def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
             f"this narrow as a stroke.",
             stacklevel=stacklevel,
         )
-        return
+        return True
     if narrow <= 0.0 or b.size <= narrow:
-        return
+        return False
     if wide >= _WEDGE_RATIO * narrow:
         session._notify(
             "scumble-wedge",
@@ -5931,6 +6228,7 @@ def _check_scumble_ends(session, place, degrees: float, b: Brush, n: int,
             f"narrow as a stroke.",
             stacklevel=stacklevel,
         )
+    return True
 
 
 def _normal_extent(place, degrees: float) -> float:

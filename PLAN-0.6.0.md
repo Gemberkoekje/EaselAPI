@@ -9,7 +9,8 @@ today lives -- all of them through `Session._notify` and `src/easel/notices.py` 
 step 3._
 
 **Status: steps 1 to 5, 7 and 8 are done, steps 6 and 9 are part-done, and step 10 is
-still a plan; of workstreams A to G, A, B, C, E and F are built and G is started.**
+still a plan; of workstreams A to G, A, B, C, E and F are built, D1 is, and G is
+started.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -23,8 +24,11 @@ lands on that channel rather than beside it.** Step 4 is workstream B, every row
 except B8, which was held back to the default moves (F5) because it repaints 55
 committed calls. Step 5 is the plan object (C): `src/easel/plan.py`, `Session.plan()`,
 its five effects on the check, `easel plan` and an MCP `plan` tool, and the finding-11
-contradiction resolved in both the engine and the recipe. **Step 6 is part-done**:
-`chisel-staircase` (D1) is built, and `spill` (D1), D2 and D3 are not started. Step 7 is
+contradiction resolved in both the engine and the recipe. **Step 6 is part-done**: both
+D1 checks the probe left standing are built -- `chisel-staircase`, and `spill`, whose
+multiple is predicted off the passes a call is about to lay and which settled B17's
+open question (the auto brush is not capped) -- and D2 and D3 are not started;
+`NOTES-step6.md` has `spill`'s gotchas. Step 7 is
 workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 `edges:` / `holes:` / `pencil:` / `boxes:` / `unspent:` lines, `easel check` and the MCP
 `check` tool; `NOTES-step7.md` has its gotchas, including one published `edges:` number
@@ -40,7 +44,9 @@ and 6, and two faults it did not know about were found by running every guide bl
 the checks: **every runnable block in the guide is now notice-clean**, and
 `scripts/check_guide_blocks.py` fails if that stops being true. G4 landed with step 7,
 so what is left of G is G2, G3, G6, G8, G10 and G11; `NOTES-step9.md` has the gotchas
-for both parts. Written 2026-09-18 against
+for both parts. The three rulings the step notes left for the owner -- the standing
+lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
+the last three rows of the decisions table below. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -66,7 +72,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18)
+### Decisions already taken (owner, 2026-09-18; the last three 2026-09-21)
 
 | Question | Decision |
 |---|---|
@@ -83,6 +89,9 @@ the guide*), asked for at scale.
 | A painter who never calls `s.plan()` | **Said where it costs**: no message at the first stroke; the card's example and the `easel new` scaffold show it, and the closing check lists what it could not answer (C). |
 | `solid=True` with a comb | **Say so, with prices**: no default move; the call names the bare share to expect and each remedy with its stroke price (B2). |
 | GLM's rings | The owner supplied GLM's working folder; what its frames show is in B18. |
+| The four standing lines after every pass, against *fewer than three lines on a median pass* (`NOTES-step7.md`) | **Kept on every pass.** The target counts findings and call-time notices, which is what the probe has always counted: `ground:` printed after every pass of 0.5.0 while the probe reported a median of `0`. A standing measurement is not a finding. Whether the longer block gets skimmed is the next run's to show. |
+| The inward `scumble`'s `load` (`NOTES-step8.md`, gotcha 3) | **Kept, as intended**: the brush's own `0.9`, where a band has laid `1.0` since F3. `0.005%` of a patch bare against `0.012%` is inside any window, so under *measure, then move* it stays. `REFERENCE.md`'s `solid` and `load` rows now say *a banded `scumble`*, which is all they were ever true of. |
+| Linking notice codes to `DIAGNOSIS.md` rows (`NOTES-step9.md`) | **Not this round.** Sixteen of the twenty-five codes already resolve to the passage a row points at, so `explain` and `diagnose` print the same text and only the name is missing. Revisit once a run shows whether a painter calls either. |
 
 ---
 
@@ -493,7 +502,7 @@ the map back, if a cut turns out to have gone too far.
 | `PAINTER.md` checklist, 13 lines | faults to look for | `s.checklist()` | the three judgement lines |
 | `PAINTING.md`, *Wet paint*: dry first; glaze distance | | `wet-under`, `glaze-far` | the mechanism, short |
 | `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) | the table as an index of codes |
-| `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` | the three remedies |
+| `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` -- **`spill` arrived in step 6**, and the spill paragraph is one line naming it; the `inset` paragraph waits for `inset-lost`, which is tier 3 | the three remedies |
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
 | `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips | one line |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
@@ -549,7 +558,7 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 | `ring-steps`, `ring-rim` (D1, D2) | fire on **nothing** in the corpus and on one guide block each. Every committed inward `scumble` steps `0.014`-`0.021` a ring, well under any contour threshold. Their only evidence is GLM's lost take |
 | `round-soft-mass` (D1) | never fires |
 | F4, halved `jitter` on a `flat` scumble | the halved pair moves the ripple from `0.0053` to `0.0059`: nothing this measures |
-| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all |
+| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all. **`spill` is built (step 6) and says nothing inside `cover()`**, whose canonical call overruns about three times its cell by design -- so the move is the owner's to rule on, and nothing in the engine waits for it |
 | F2, a round tip to `pressure="even"` | **0 committed calls** would move |
 
 **Survive, with the threshold the corpus gives.**
@@ -557,7 +566,7 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 | Row | Number |
 |---|---|
 | `chisel-staircase` (D1) | 6% of passes, 5 guide blocks — three more than the two recipe blocks the plan already fixes. Name them in the same commit. **Built, and not as written:** the prototype's window of angles measured how irregular a shape is, and was silent on the lit band `CALIBRATION.md` measures the staircase on. The rule is the mechanism instead — a pass end lands every `step × cot(theta)` down a side, so it is *nearest parallel* that a chisel steps worst — and comes in at **2% of passes and 3 guide blocks, all recipes, all fixed here** |
-| `spill` (D1) | 4% of passes, 5 guide blocks. B17 is confirmed to the second decimal: **1.42x / 2.99x / 3.62x** at axis / 30 / 60 degrees |
+| `spill` (D1) | 4% of passes, 5 guide blocks. B17 is confirmed to the second decimal: **1.42x / 2.99x / 3.62x** at axis / 30 / 60 degrees. **Built in step 6, predicted rather than measured:** the engine's `spill` fires on 18 calls in 13 of the 325 painted passes -- **4%**, the prototype's own share -- and on none of the guide's blocks once the three that were painting their neighbours moved; where it spoke, the paint measured a median of `1.71x` (p90 `2.42x`) |
 | `glaze-far` (D2) | 4% of passes, 1 guide block, and `0.08` **is the corpus's own p90** |
 | `smudge-across` (D2) | 5% of passes, **0** guide blocks |
 | `radiating` (D3) | 7% of passes, **0** guide blocks |
@@ -597,7 +606,7 @@ row above.
 
 | Risk | Guard |
 |---|---|
-| More warnings, read less. The project has watched this happen twice. | Noise budget from the corpus replay; facts before habits; said-once with state in the file; `s.plan()` declarations; **fewer than three lines on a median pass** as a target the probe reports. |
+| More warnings, read less. The project has watched this happen twice. | Noise budget from the corpus replay; facts before habits; said-once with state in the file; `s.plan()` declarations; **fewer than three findings and call-time notices on a median pass** as a target the probe reports. The standing measurement lines under a pass are not counted, as `ground:` never was (ruled 2026-09-21). |
 | A check that fires on the right thing. | Rule 2: every block of the guide runs notice-clean in CI. |
 | Canvas-reading checks slow a pass (already ~200 ms a stroke). | Sample along the path; one canvas pass per `report()`; skip all of it on `count_only` copies; time it in the probe. |
 | Notices or the plan shift every later mark's texture. | Rule 8: stored beside `history.records`; asserted by the existing *planning verbs leave nothing behind* test, extended. |
@@ -616,10 +625,20 @@ Small, and none of it blocks step 1.
 - What exactly printed the *dark* band in GLM's rings -- a ring in a dark colour, or a
   ring that picked up the wet bezel. The probe's reconstruction answers it (B18), and
   the answer decides whether `wet-under` is built at all.
-- Whether a banded `scumble`'s auto brush should be capped by the band's own shorter
-  extent (B17), or only clipped and warned about.
+- ~~Whether a banded `scumble`'s auto brush should be capped by the band's own shorter
+  extent (B17), or only clipped and warned about.~~ **Settled in step 6: warned about,
+  and not capped.** A cap at the band's depth still leaves `2.22x` at 30 degrees and
+  `2.04x` at 60; a cap at half the depth brings the bars back (`3.2%` and `15.8%` of
+  the band bare). `spill` names `edge="hard"` first (`CALIBRATION.md`, *Paint that
+  lands outside the place*).
 - Whether `easel_paint` should one day become the canonical import, given the unrelated
   `easel` on PyPI (B10). Not this round: the shim keeps the option open.
+- **Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
+  from the `edges:` prototype that step 7 withdrew, and *The measurement lines, on the
+  finished canvases* says the corpus wants replaying with the shipped line before 0.6.0
+  states a number. No step owns it. `scripts/probe_cohort_session.py` still carries the
+  prototype as its own `edges_line(session)`, so the replay starts by pointing that at
+  `easel.checklist.edges_line`.
 
 ---
 

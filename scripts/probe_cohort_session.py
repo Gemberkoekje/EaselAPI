@@ -923,10 +923,11 @@ def _spread(place, ctx: Seen) -> tuple[float, float] | None:
 
 # -- D1: at the call, from geometry alone --------------------------------------------
 
-#: What a mass may paint of the place it was handed before `spill` says so. B17
-#: measured 1.43x for a band at its own axis and 3.53x at 60 degrees; the corpus says
-#: where between those two an ordinary mass sits.
-SPILL_RATIO = 1.6
+#: What a mass may paint of the place it was handed before `spill` says so -- the
+#: engine's own number since step 6 built it (`session._SPILL_RATIO`). B17 measured
+#: 1.43x for a band at its own axis and 3.53x at 60 degrees; the corpus said where
+#: between those two an ordinary mass sits.
+SPILL_RATIO = session_module._SPILL_RATIO
 
 #: How tall a ledge has to be, in brush widths, before it reads as a step rather than
 #: as the ragged edge a block-in has anyway. Two brushes is the floor the sweep below
@@ -1046,28 +1047,31 @@ def chisel_staircase(call: Call, ctx: Seen) -> str | None:
 
 @call_check("spill", "D1")
 def spill(call: Call, ctx: Seen) -> str | None:
-    """Paint that lands well outside the place it was given.
+    """Paint that lands well outside the place it was given -- as the engine says it.
 
     Finding 8 and B17. Two shapes of the same fault: a ragged mass whose brush is a
     large part of the shorter extent, and a banded ``scumble`` whose auto brush is
     three of its own steps and whose steps are measured across the *bounding box*.
-    The number printed is measured, not predicted: what share of the paint this call
-    laid fell outside the place, and what multiple of that place it covered.
+
+    **Built in step 6, and not as the prototype this was.** The prototype fired on the
+    paint -- what multiple of its place a call covered, measured off the canvas -- and
+    the engine cannot see the paint until it has been laid, so it predicts the same
+    multiple off the passes it is about to lay (``session._spill``). So this fires
+    where the engine spoke, and goes on measuring the paint beside it: the samples are
+    what the next round reads to see whether the prediction and the canvas still
+    agree, and ``spill: measured where the engine said so`` is that comparison alone.
     """
     if call.verb not in MASS_VERBS or not isinstance(call.place, (Polygon, Region)):
         return None
     spread = _spread(call.place, ctx)
-    if spread is None:
-        return None
-    ratio, outside = spread
-    ctx.note(f"spill: {call.verb} painted / place asked for", ratio)
-    ctx.note(f"spill: {call.verb} share of the paint outside the place", outside)
-    if ratio < SPILL_RATIO:
-        return None
-    short = min(_extents(call.place, ctx.canvas))
-    return (f"{call.verb} covered {ratio:.2f}x the place it was handed and {outside:.0%} "
-            f"of its paint fell outside it (shorter extent {short:.3f}). "
-            f"clip=, or edge=\"hard\".")
+    said = [line for line in call.notices if "the paint outside it" in line]
+    if spread is not None:
+        ratio, outside = spread
+        ctx.note(f"spill: {call.verb} painted / place asked for", ratio)
+        ctx.note(f"spill: {call.verb} share of the paint outside the place", outside)
+        if said:
+            ctx.note("spill: measured where the engine said so", ratio)
+    return said[0] if said else None
 
 
 @call_check("ring-steps", "D1")
@@ -2525,10 +2529,15 @@ def report_noise(replays: list[Replay]) -> None:
     print(f"  {quiet} of {len(painted)} passes said nothing at all "
           f"({quiet / len(painted):.0%}); the median pass prints "
           f"{float(np.median(lines)):.0f} lines, the busiest {max(lines)}")
-    print("  read: the plan's target is fewer than three lines on a median pass.")
+    print("  read: the target is fewer than three findings and call-time notices on a "
+          "median pass; the standing measurement lines under a pass are not counted.")
 
 
 _RULES = (
+    ("the paint outside it", "spill: paint outside the place it was handed"),
+    ("come back as a staircase", "chisel-staircase: pass ends down a side"),
+    ("closes the gaps along each pass", "solid-comb: solid= does not close a comb"),
+    ("came back bare", "holes: a solid mass came back bare"),
     ("long marks run within", "bars: a stack of passes at one angle"),
     ("are {brush} at size", "one brush at one size for a whole pass"),
     ("marks at stepping colours", "a graded passage laid too narrow"),

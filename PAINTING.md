@@ -384,7 +384,7 @@ emit.
 s.stroke(path, "bristle", "shadow", size=0.14, opacity=0.5)
 s.stroke(path, "flat", "light", hardness=0.9, jitter=0.05, load=0.4)
 s.stroke(path, "bristle", "shadow", size=0.12, load_falloff=0.25)   # runs dry slower
-s.block_in(cell("D5"), "flat", "shadow", opacity=0.5, load=0.8)     # masses too
+s.block_in(span("C4", "F6"), "flat", "shadow", opacity=0.5, load=0.8)   # masses too
 ```
 
 **`opacity` does not thin a long stroke, it only slows it down.** Dabs overlap, so a
@@ -485,11 +485,9 @@ twice. A mass with a bite out of it costs more than its box for the same reason.
 **Before you block in anything long or concave, look at `shape.box` and ask
 `s.cost(...)`.**
 
-**The paint lands outside the shape, and it is the most expensive first mistake with
-shapes.** A pass stops when its *centre* reaches the boundary, so the brush hangs over
-by up to three-quarters of its width — and with a brush that is a large fraction of the
-mass, the silhouette you built simply disappears, taking its neighbours with it. Three
-answers:
+**The paint lands outside the shape** when the brush is a large part of it, because a
+pass stops where its *centre* meets the outline — and `block_in` says how much at the
+call (`spill`). Three answers:
 
 ```python
 mass = blob(span("D4", "F6"), wobble=0.3, seed=2)
