@@ -244,8 +244,8 @@ to cut the mass behind it carefully around it, which is painting *up to* a line.
 
 - **Let the near mass overlap.** A silhouette that stops exactly on a boundary was
   measured; one that overlaps was painted.
-- **A veil of light is a mass at a depth.** A glaze laid last because it is *light* is
-  still in front of something. `look(diff=True)` shows what a pass covered.
+- **A veil of light is a mass at a depth**: laid last because it is *light*, it is
+  still in front of something, and `report()` says so when it buries details.
 - **A mistake in the background is cheap until something stands on it.** Keep every mass
   in its own named function so the stack can be re-run in depth order for a repair later.
 
@@ -314,8 +314,7 @@ its own step. Below about five passes the steps read as steps again.
 
 **A passage that is light in the *middle* is the same verb turned inward** —
 `direction="inward"`, for a lit patch or a bloom, which is dark at every edge. The first
-ring lands on the boundary, so give it the value the patch meets its surroundings at. Not
-strokes radiating from the centre, which draws a daisy.
+ring lands on the boundary, so give it the value the patch meets its surroundings at.
 
 A field gradated top to bottom is a stack of horizontal bands until its joins are gone
 and something crosses it, and a stack of bands is a composition whether or not you meant

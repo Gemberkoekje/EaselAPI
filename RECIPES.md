@@ -278,9 +278,9 @@ boundary, so anything darker draws a rim round your glow and melts nothing. On a
 too shallow for any `n` to fit, the verb says so and names the recipe below.
 
 **Goes wrong as:** a solid disc with a thin ramp round it (brush too wide); a daisy
-(strokes radiating out from a shared centre, which is the obvious hand-rolled answer
-and draws petals); a rim with nothing in the middle (first ring darker than what it
-sits in); or visible concentric rings, which is too few rings for the patch
+(strokes radiating from a shared centre, which `report()` names); a rim with nothing in
+the middle (first ring darker than what it sits in); or visible concentric rings, which
+is too few rings for the patch
 (*`scumble`* in [`CALIBRATION.md`](CALIBRATION.md#scumble)).
 
 *The single most rehearsed thing in the repository.*

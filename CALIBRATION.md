@@ -57,6 +57,7 @@ their own sessions rather than measurements of the engine.
 | A bristle under `0.025` is four streaks; round tips repeat, `tip_wobble` redraws | *The bristle comb* |
 | A rehearsal is the next strokes; `pencil`, `dry` and `erase` are logged | *The log, undo, and the stream* |
 | What a mass costs, before the call | *Budget* |
+| A daisy leaves one point every way; a loop is one length at one spacing; a film or a mass takes what was showing | *What the check reads after a pass* |
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
 | What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
 
@@ -1717,6 +1718,107 @@ and finished at `0.07%` without noticing — which is the case the floor is for,
 not the same picture as one that buries its ground on purpose. `ground="buried"` is
 which of the two the painter meant, and the floor is unchanged for a painting that has
 not said.
+
+---
+
+## What the check reads after a pass
+
+Three of `report()`'s findings came out of the 0.5.0 cohort's round, and none of them is
+the rule its step-2 prototype was (*What each proposed check would cost*, below). Each
+prototype was looked at pass by pass, and each had fired on the wrong passes. All three
+are habits rather than facts — a subject can radiate, a row can be a row, a pass can bury
+on purpose — so each line says what it measured and leaves the call to the painter. Over
+the corpus's 325 painted passes they fire on **one, one and two**. None fires on the
+guide's 71 runnable blocks, and the third cannot: each block paints one pass on a fresh
+canvas, so no block has an earlier detail to bury.
+
+### A daisy
+
+Finding 6 of the cohort: *strokes radiating from one point — a wagon wheel*. The
+prototype gathered marks that start within `0.06` of one another and fan over `40`
+degrees. Re-run for this step it fired on **22** passes (23 in the step-2 table), and
+looked at one by one, one of them was a daisy. The rest were pine branches, pot rims, a
+greenhouse's perspective bars, fingers, and a fan of sun rays, which radiate for real.
+What a daisy is, is marks that leave **one point** in **every direction**:
+
+- **the point** is where two consecutive marks' lines meet, because a daisy or a sunburst
+  is one loop over angles. A mark near them counts if its line runs through the point
+  (within a sixth of its length), it points away from it, and it starts within its own
+  length of it — so a ray from a disc's rim counts as well as a petal from its centre;
+- **every direction** is no gap in the circle of their directions wider than **`90`
+  degrees**, with at least **five** marks at least `0.02` long;
+- **a mark is a line**: at least **twice as long as its brush is wide**. Films as wide as
+  they are long, crossing at a point, are a glow.
+
+A tree's fork leaves gaps of `120` degrees (branches up, trunk down), a tuft of grass and
+a fan of rays one of nearly `300`; a daisy of eight petals leaves `45` and a sun given
+twelve rays by a loop `30`. **It fires on one pass of the corpus**, the fogged glass's
+tree: nine branches leaving the fork with no gap over `88` degrees, which the painter's
+own verdict calls *a grey mass with spoke-like branches*. Before the third clause the
+closest miss was the heron's lamp at `94` — five films of its glow, each about as wide as
+it is long, its pole and the two strokes of its fixture. One film more would have been
+called a daisy, and that is what the clause is for. With it, the next nearest is six marks of the
+winter greenhouse at `118`, so `90` sits between `88` and `118`.
+
+### A loop's signature
+
+Finding 7: a reflection laid as a column of same-length marks — *floating rectangles,
+small bricks, a ziggurat, spoon-shaped islands* — four of the seven cohort painters'
+first take. The prototype grouped marks by brush and colour, which a loop that steps its
+colour gets past, and it fired on two passes: DeepSeek's reflection, and the pier's six
+sparkles. Those were placed by hand, and their lengths ramp only in the order they were
+typed. The rule:
+
+- **six or more consecutive** hand-laid marks of one brush — a loop lays its marks one
+  call after another;
+- **one length** (the spread of their lengths under `15%` of their mean) **or a strict
+  ramp** of lengths along their line, which is the ziggurat;
+- **one spacing**: the gaps between them along their own line spread under **`35%`** of
+  their mean. Of the corpus's runs at one length or a ramp, the one loop measures `0.24`
+  and the next run `0.45`; a row placed by hand measures well over half;
+- **far enough apart to read as marks**: the gap at least a mark's own width. Nine passes
+  of one film `0.018` apart with a brush `0.11` wide are a graded pool, not a row, and the
+  corpus holds exactly that.
+
+**It fires on one pass of the corpus**, and it is the painter's own fix. DeepSeek's first
+glitter path read as floating rectangles; the second is eight horizontal flashes its
+comment calls *shorter and fainter as they come toward the viewer*. They are fainter and
+thinner, and every one is `0.100` long, their gaps varying `24%` — in the finished
+picture, a ladder of bars under the sun. The other three painters' committed passages
+do not trip it, so *the committed scripts hold it twice*, under *What each proposed check
+would cost* below, is once.
+
+### A detail buried by a film or a mass
+
+Finding 9, and the depth-order paragraph `LESSONS.md` lists as failed three runs running:
+*a late pass buries what stands in front of it*. The prototype counted earlier small
+marks whose pixels the pass changed, and fired on **54** passes. Most of them were a
+nearer thing painted over a farther thing's details, which is back-to-front done right.
+The rule counts a **detail** — a mark under `0.02`, or noted `subject` — when:
+
+- it was **showing** as the pass opened: `0.05` or more off what is round it, in value;
+- the pass left it at **under half** that contrast;
+- and what went over it was **a film or the passes of a mass** (`block_in`, `sweep`,
+  `scumble`, `cover`), not another thing painted in front of it by hand;
+
+and the pass is told when **three or more** went. It needs the canvas as the pass
+opened, which the log cannot give back without a replay: `easel run` and the MCP `run`
+tool keep it as the pass begins, and a painter calling `report(since=)` after each pass
+in one script is given it by the report before.
+
+**It fires on two passes of the corpus, and both are burials**: the pier's second water
+pass, whose graded scumble took the broken reflections under three piles, and the
+pool's `p14_lift`, whose films lifting the water took the far lamp out of it and two
+ripples beside it.
+
+**The one burial a painter wrote down, it does not see.** The pool's own notes say three
+deck glazes *ran straight over the chair and erased it*, found by cropping in. Measured,
+the chair was never showing by this rule's measure: laid a step darker than the deck on
+purpose, its marks stood `0.017`-`0.046` off it in value. And the deck's passes took it
+down a little at a time — its right leg `0.035` as laid, then `0.021`, `0.015` and
+`0.009` — never by half in one pass. Seeing it would take a lower floor for *showing*
+and a memory of each detail's contrast that outlives an `easel run` call; both are
+open.
 
 ---
 

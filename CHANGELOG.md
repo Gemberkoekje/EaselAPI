@@ -317,7 +317,7 @@ is the guide's own.
 Step 6 of the round, workstream D2: the tool reads the paint a mark meets. The two smudge
 checks are said at the call, before the smudge lands, off the canvas along the path it
 will be stamped down; the film check reads a glaze once it has landed, as `holes` reads a
-mass. D3 is still to come.
+mass.
 
 **Fixed: a smudge started loaded with white.** Its carried colour began as its nominal
 `titanium_white` and took in 45% of the canvas per dab, so its first dabs laid 55%, 30%,
@@ -371,6 +371,43 @@ of the guide's blocks once `PAINTING.md`'s own example stopped glazing raw aliza
 - `CALIBRATION.md`'s first line about `smudge` said it pulls the lighter mass into the
   darker more than the reverse. On a dried hard step it is symmetric — `0.49` brushes
   each way, before the fix and after — and the bullet says so now.
+
+### Three findings after the pass: a daisy, a loop's signature, and details a layer buried
+
+Step 6 of the round, workstream D3: three new lines in `report()`, the check `easel run`
+prints after every pass. The step-2 prototypes of all three fired on the wrong passes —
+of the 22 the daisy prototype named, one was a daisy, and the burial prototype's 54 were
+mostly a nearer thing painted over a farther thing's details, which is back-to-front done
+right — and each was looked at pass by pass and rebuilt on what the pictures showed. All
+three are habits: a subject can radiate, a row can be a row, and a pass can bury on
+purpose. None fires on the guide's 71 runnable blocks.
+
+**A daisy.** Five or more hand-laid marks, each at least twice as long as its brush is
+wide, leaving one point in every direction: no gap in the circle of their directions
+over 90 degrees. The point is where consecutive marks' lines meet, so a ray from a
+disc's rim counts as well as a petal from its centre. A tree's fork, a tuft of grass, a
+fan of rays and a glow of wide films are not one. One pass of the corpus's 325: the
+fogged glass's tree, which its painter's verdict calls *spoke-like*.
+
+**A loop's signature.** Six or more consecutive hand-laid marks of one brush at one
+length, or a strict ramp of lengths, evenly spaced on a line and far enough apart to read
+as marks — finding 7's *floating rectangles* and ziggurat. One pass: DeepSeek's glitter
+path, which was the painter's fix for the rectangles — eight flashes meant to shorten
+toward the viewer, all `0.100` long.
+
+**Details a film or a mass buried.** Earlier small or `subject` marks that were showing
+as the pass opened and were left at under half their contrast by a glaze or by the passes
+of a mass. Two passes, both burials: a pier's pile reflections under a graded scumble,
+and a pool's far lamp under the films that lifted its water. It needs the canvas as the
+pass opened, which `easel run` and the MCP `run` tool now keep, and which a script
+calling `report(since=)` after each pass gets from the report before. **It does not see
+a detail taken down a little at a time**: the one burial a painter wrote down, a chair
+under three deck glazes, lost less than half its contrast in every pass and stood too
+close to the deck to count as showing. `CALIBRATION.md` has the numbers; it is open.
+
+- `PAINTER.md` step 5's daisy sentence is gone, and step 3's *veil of light* bullet is
+  one line naming the check. `RECIPES.md`'s daisy, `PAINTING.md`'s *any loop or
+  generator* row and `scumble`'s docstring say that `report()` names them.
 
 ### The canvas, measured, and the closing checklist answered
 

@@ -281,7 +281,7 @@ chose. What each one leaves when you are not watching:
 | `sweep` round a closed shape, or an inward `scumble` with too many rings | **concentric rings** |
 | several overlapping `blob`s | a dome — blobs of similar size average to a circle |
 | a shallow shape, passes along its long axis | **its bounding box** |
-| any loop or generator you write | its own statistical signature: one density, one mark length, no clumps and no holes |
+| any loop or generator you write | its own statistical signature: one mark length, one spacing, no clumps and no holes. `report()` says so when it sees one |
 | repair laid on repair, always additive | horizontal strata, one visible edge per repaint |
 
 Two of those need more than a row. The staircase used to be a third and is now a

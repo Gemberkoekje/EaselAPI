@@ -393,6 +393,10 @@ class Watcher:
         # what `look(diff=True)` cannot give: that one diffs against the last *look*.
         self.opened = (self.session.canvas.values(sketch=False).astype(np.float32) / 255.0
                        if self.session is not None and self.keep_canvas else None)
+        # ...and the engine's own copy, which is what `report()` reads to say a pass
+        # buried details: `easel run` takes it at the same moment.
+        if self.session is not None:
+            self.session._open_pass()
         self.current = made
         self.replay.passes.append(made)
         return made
@@ -1471,8 +1475,7 @@ FAN_RADIUS = 0.06
 FAN_DEGREES = 40.0
 
 
-@pass_check("radiating", "D3")
-def radiating(made: Pass, ctx: Done) -> str | None:
+def _radiating_prototype(made: Pass, ctx: Done) -> str | None:
     """Four or more hand-laid marks starting in one place and fanning out (finding 6).
 
     The daisy: ``PAINTER.md`` step 5 says it, ``RECIPES.md`` says it twice and
@@ -1515,8 +1518,7 @@ LOOP_LENGTH_CV = 0.15
 LOOP_SPACING_CV = 0.30
 
 
-@pass_check("one-loop", "D3")
-def one_loop(made: Pass, ctx: Done) -> str | None:
+def _one_loop_prototype(made: Pass, ctx: Done) -> str | None:
     """One loop's signature: one brush, one colour, one length, evenly spaced (finding 7).
 
     Four of the seven cohort painters failed the same passage the same way -- a column
@@ -1570,8 +1572,7 @@ BURIED_SHARE = 0.5
 BURIED_MARKS = 4
 
 
-@pass_check("buried", "D3")
-def buried(made: Pass, ctx: Done) -> str | None:
+def _buried_prototype(made: Pass, ctx: Done) -> str | None:
     """A pass that covers what was standing in front of it (finding 9).
 
     ``LESSONS.md`` lists the depth-order paragraph as failed in three runs and still
@@ -1602,6 +1603,57 @@ def buried(made: Pass, ctx: Done) -> str | None:
         return None
     return (f"this pass covered {share:.0%} of {len(watch)} earlier small or subject "
             f"marks ({gone} of them): a film is a mass at a depth. Lay it before they go on.")
+
+
+def _engine_said(made: Pass, words: str) -> str | None:
+    said = [line for line in made.findings if words in line]
+    return said[0] if said else None
+
+
+@pass_check("radiating", "D3")
+def radiating(made: Pass, ctx: Done) -> str | None:
+    """The daisy, as ``report()`` says it (``session._daisy``).
+
+    **Built in step 6 (D3), and not as the prototype above was.** Gathering marks that
+    start near one another fired on 22 passes of the corpus, and one of them was a
+    daisy -- the fogged glass's tree; the rest were pine branches, pot rims, perspective
+    bars, fingers and a fan of sun rays. The engine finds the hub where consecutive
+    marks' lines meet and asks for no gap in the circle of their directions over 90
+    degrees, and the tree is the one pass it names. The prototype still runs, for its
+    numbers.
+    """
+    _radiating_prototype(made, ctx)
+    return _engine_said(made, "a daisy")
+
+
+@pass_check("one-loop", "D3")
+def one_loop(made: Pass, ctx: Done) -> str | None:
+    """A loop's signature, as ``report()`` says it (``session._loop_runs``).
+
+    **Built in step 6 (D3) on runs of consecutive marks of one brush**, not on brush and
+    colour -- a loop steps its colour as readily as its place -- and with the gap
+    between neighbours at least a mark's own width, because overlapping passes of one
+    film are a passage and not a row. The prototype fired on two passes: DeepSeek's
+    reflection, which the engine names, and the pier's six sparkles, which it does not --
+    placed by hand, their lengths ramp only in the order they were typed. The prototype
+    still runs, for its numbers.
+    """
+    _one_loop_prototype(made, ctx)
+    return _engine_said(made, "a loop's signature")
+
+
+@pass_check("buried", "D3")
+def buried(made: Pass, ctx: Done) -> str | None:
+    """Details a pass took out of sight, as ``report()`` says it (``session._buried``).
+
+    **Built in step 6 (D3) on what a pass took out of sight and what did it.** Changed
+    pixels fired on 54 passes, most of them a nearer thing painted over a farther
+    thing's details, which is back-to-front done right. The engine counts a detail when
+    the pass cut its contrast with what is round it to under half and the paint over it
+    was a film or the passes of a mass. The prototype still runs, for its numbers.
+    """
+    _buried_prototype(made, ctx)
+    return _engine_said(made, "out of sight")
 
 
 # -- E: the canvas measurements -------------------------------------------------------
@@ -2569,6 +2621,9 @@ _RULES = (
     ("crosses a boundary", "smudge-across: a smudge dragged across a boundary"),
     ("reads as a third band", "smudge-long: a smudge run along a long boundary"),
     ("this film", "glaze-far: a film past what a film is for"),
+    ("a daisy", "radiating: marks leaving one point every way"),
+    ("a loop's signature", "one-loop: one length, one spacing"),
+    ("out of sight", "buried: details under a film or a mass"),
     ("is averaging", "sample() averaging over a mixed area"),
     ("direction= left off", "a shaped mass with direction= left off"),
     ("cross the shape", "a mass whose passes cross it"),

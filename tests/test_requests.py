@@ -4293,6 +4293,221 @@ def test_a_film_mixed_close_or_aimed_at_a_value_is_left_alone(tmp_path):
     assert not [w for w in caught if "this film" in str(w.message)]
 
 
+
+# -- D3: the checks after the pass, off the log and the canvas it opened on -------------
+def _dark_field(tmp_path):
+    """A dark solid field to lay light marks on, dried."""
+    s = Session(512, 384, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    p = s.palette
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.25)
+    p["light"] = p.at_value(p.mix("yellow_ochre", "titanium_white", 0.5), 0.80)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "dark", size=0.08, solid=True,
+                   pressure="even", direction="horizontal")
+    s.dry()
+    return s
+
+
+def _rays(s, centre, angles, length, brush="round_soft", size=0.012, rim=0.0):
+    """Marks leaving one point, as a loop over angles lays them."""
+    cx, cy = centre
+    aspect = s.canvas.width / s.canvas.height
+    for a in angles:
+        dx, dy = math.cos(math.radians(a)), math.sin(math.radians(a))
+        s.stroke([(cx + dx * rim, cy + dy * rim * aspect),
+                  (cx + dx * length, cy + dy * length * aspect)], brush, "light", size=size)
+
+
+def _pass_says(s, before, words) -> bool:
+    return any(words in line for line in s.report(since=before).splitlines())
+
+
+def test_marks_leaving_one_point_every_way_are_a_daisy(tmp_path):
+    """Finding 6: *strokes radiating from one point -- a wagon wheel*. `PAINTER.md`,
+    `RECIPES.md` and `scumble`'s own docstring all said it, and a painter drew one
+    anyway: the fogged glass's tree, whose own verdict calls it *a grey mass with
+    spoke-like branches*, is the one pass of the corpus this finds. A glow laid as
+    petals and a sun given rays by a loop both leave their point in every direction --
+    no gap in the circle wider than 90 degrees."""
+    for label, lay in (
+        ("a daisy of petals", lambda s: _rays(s, (0.5, 0.5), range(0, 360, 45), 0.10,
+                                              rim=0.01)),
+        ("a sun's rays, from its rim", lambda s: _rays(s, (0.5, 0.5), range(0, 360, 30),
+                                                       0.18, size=0.02, rim=0.04)),
+    ):
+        s = _dark_field(tmp_path)
+        before = len(s.history.records)
+        lay(s)
+        assert _pass_says(s, before, "a daisy"), label
+
+
+def test_a_tree_grass_a_fan_of_rays_and_a_glow_are_not_a_daisy(tmp_path):
+    """`LESSONS.md` rule 2, as four things that leave a point on purpose. The prototype
+    this replaced gathered marks that merely lay near one another and fired on 22
+    passes of the corpus, one of them a daisy: the rest were pine branches, pot rims, a
+    greenhouse's perspective bars, fingers, and a fan of sun rays. A tree's branches
+    and trunk leave the fork with gaps of 120 degrees, a tuft of grass and a fan of
+    rays one of nearly 300. A glow of films as wide as they are long leaves its point
+    every way, and is not petals: the heron's lamp was one film short of being told so."""
+    for label, lay in (
+        ("a tree", lambda s: (s.stroke([(0.5, 0.9), (0.5, 0.5)], "bristle", "light",
+                                       size=0.02),
+                              _rays(s, (0.5, 0.55), (-150, -120, -90, -60, -30), 0.12,
+                                    brush="liner", size=0.006))),
+        ("a tuft of grass", lambda s: _rays(s, (0.5, 0.8),
+                                            (-125, -110, -100, -90, -80, -70, -55), 0.10,
+                                            brush="liner", size=0.004)),
+        ("a fan of rays", lambda s: _rays(s, (0.8, 0.1), (100, 115, 130, 145, 160), 0.35,
+                                          size=0.03)),
+        ("a glow of wide films", lambda s: _glow_of_films(s, (0.5, 0.5), range(0, 360, 45),
+                                                          0.08)),
+    ):
+        s = _dark_field(tmp_path)
+        before = len(s.history.records)
+        lay(s)
+        assert not _pass_says(s, before, "a daisy"), label
+
+
+def _glow_of_films(s, centre, angles, length):
+    """Films as wide as they are long leaving one point: a glow, not petals."""
+    cx, cy = centre
+    aspect = s.canvas.width / s.canvas.height
+    p = s.palette
+    p["glow"] = p.at_value(p.mix("dark", "light", 0.2), 0.34)     # mixed from its field
+    for a in angles:
+        dx, dy = math.cos(math.radians(a)), math.sin(math.radians(a))
+        s.glaze([(cx, cy), (cx + dx * length, cy + dy * length * aspect)], "glow",
+                opacity=0.12, size=length)
+
+
+def test_one_length_and_one_spacing_is_a_loops_signature(tmp_path):
+    """Finding 7: a reflection laid as a column of same-length marks -- *floating
+    rectangles, small bricks, a ziggurat, spoon-shaped islands* -- four of the seven
+    cohort painters' first take, and not one recipe for it. A loop leaves one length
+    (or a strict ramp of them) at one spacing: no clumps and no holes."""
+    for label, rows in (
+        ("a column", [(0.55 + i * 0.04, 0.05) for i in range(8)]),
+        ("a ziggurat", [(0.50 + i * 0.05, 0.20 - i * 0.025) for i in range(7)]),
+    ):
+        s = _dark_field(tmp_path)
+        before = len(s.history.records)
+        for y, half in rows:
+            s.stroke([(0.5 - half, y), (0.5 + half, y)], "flat", "light", size=0.012,
+                     pressure="even")
+        assert _pass_says(s, before, "a loop's signature"), label
+
+
+def test_a_row_placed_by_hand_or_laid_as_one_passage_is_not_a_loop(tmp_path):
+    """The accepted versions: lengths and gaps varied by hand. And a graded pool laid as
+    nine overlapping passes -- one of the corpus's -- is a passage and not a row: its
+    marks sit closer than their own width, so no one of them reads."""
+    rows = [(0.55, 0.07, 0.0), (0.58, 0.04, 0.01), (0.64, 0.09, -0.02), (0.66, 0.03, 0.02),
+            (0.73, 0.06, 0.0), (0.81, 0.02, -0.01), (0.83, 0.05, 0.015)]
+    s = _dark_field(tmp_path)
+    before = len(s.history.records)
+    for y, half, dx in rows:
+        s.stroke([(0.5 - half + dx, y), (0.5 + half + dx, y + 0.004)], "flat", "light",
+                 size=0.012, pressure="even")
+    assert not _pass_says(s, before, "a loop's signature"), "by hand"
+
+    s = _dark_field(tmp_path)
+    before = len(s.history.records)
+    for i in range(9):
+        t = i / 8.0
+        half, y = 0.2 + 0.1 * t, 0.6 + 0.2 * t
+        s.stroke([(0.5 - half, y), (0.5 + half, y)], "flat", "light", size=0.11,
+                 opacity=0.5, pressure="even")
+    assert not _pass_says(s, before, "a loop's signature"), "one passage"
+
+
+def _details(s):
+    """Five small light marks on the dark field -- the near things a late layer buries."""
+    for i in range(5):
+        x = 0.25 + i * 0.12
+        s.stroke([(x, 0.45), (x + 0.04, 0.47)], "round_hard", "light", size=0.008)
+    s.dry()
+
+
+def test_a_film_or_a_mass_laid_over_details_says_it_buried_them(tmp_path):
+    """Finding 9, and the depth-order paragraph `LESSONS.md` lists as failed three runs
+    running: *a late pass buries what stands in front of it*. The pass is told when a
+    film or the passes of a mass take details that were showing as it opened out of
+    sight -- read off the canvas as the pass began, which `_open_pass` keeps."""
+    for label, layer in (
+        ("a film", lambda s: s.glaze([(0.05, 0.46), (0.95, 0.46)], "dark", opacity=0.9,
+                                     size=0.12)),
+        ("a mass", lambda s: s.block_in(Region(0.05, 0.40, 0.95, 0.52), "flat", "dark",
+                                        size=0.06, solid=True, pressure="even",
+                                        direction="horizontal")),
+    ):
+        s = _dark_field(tmp_path)
+        _details(s)
+        before = s._open_pass()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            layer(s)
+        said = [line for line in s.report(since=before).splitlines() if "out of sight" in line]
+        assert said and "took 5 earlier details" in said[0], label
+
+
+def test_what_is_painted_in_front_or_leaves_them_showing_is_not_a_burial(tmp_path):
+    """`LESSONS.md` rule 2. The prototype counted every earlier detail under changed
+    pixels and fired on 54 passes of the corpus, most of them a nearer thing painted over
+    a farther thing's details -- back-to-front done right. A hand-laid stroke over them is
+    that; a film that only tints them leaves them showing; and without the canvas as the
+    pass opened there is nothing to say."""
+    for label, layer in (
+        ("a nearer thing, laid by hand", lambda s: s.stroke([(0.05, 0.46), (0.95, 0.46)],
+                                                            "flat", "dark", size=0.1,
+                                                            pressure="even")),
+        ("a film that only tints them", lambda s: s.glaze([(0.05, 0.46), (0.95, 0.46)],
+                                                          "dark", opacity=0.08,
+                                                          size=0.12)),
+    ):
+        s = _dark_field(tmp_path)
+        _details(s)
+        before = s._open_pass()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            layer(s)
+        assert not _pass_says(s, before, "out of sight"), label
+
+    unopened = _dark_field(tmp_path)
+    _details(unopened)
+    before = len(unopened.history.records)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        unopened.glaze([(0.05, 0.46), (0.95, 0.46)], "dark", opacity=0.9, size=0.12)
+    assert not _pass_says(unopened, before, "out of sight"), "no canvas to compare"
+
+
+def test_the_canvas_a_pass_opened_on_comes_from_run_and_from_the_last_report(tmp_path,
+                                                                            capsys):
+    """`easel run` keeps the canvas as the pass begins, where it already takes the log
+    index; a painter who calls `report()` after each pass in one script is given it by
+    the report before."""
+    s = _dark_field(tmp_path)
+    _details(s)
+    s.report()                                    # the pass before, checked
+    before = len(s.history.records)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.glaze([(0.05, 0.46), (0.95, 0.46)], "dark", opacity=0.9, size=0.12)
+    assert _pass_says(s, before, "out of sight"), "from the report before"
+
+    path = tmp_path / "p.easel"
+    s = _dark_field(tmp_path)
+    _details(s)
+    s.save(path)
+    script = tmp_path / "pass.py"
+    script.write_text('s.glaze([(0.05, 0.46), (0.95, 0.46)], "dark", opacity=0.9, '
+                      'size=0.12)\n', encoding="utf-8")
+    assert main(["run", str(path), str(script)]) == 0
+    assert "out of sight" in capsys.readouterr().out
+
+
 # -- E: the standing measurement lines, and G4: the checklist --------------------------
 #
 # Every one of these answers a line of `PAINTER.md`'s closing checklist that a painter

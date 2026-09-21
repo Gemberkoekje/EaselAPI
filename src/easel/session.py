@@ -288,6 +288,11 @@ class Session:
         # Set on the trial copies :meth:`_glaze_opacity` lays its search films on, so
         # the dozen films a search tries are not each told what a film does.
         self._solving = False
+        # The canvas as the pass under way opened -- ``(log index, values view)`` --
+        # for the one rule in :meth:`report` that needs to see what a pass covered.
+        # Taken by :meth:`_open_pass`, and by :meth:`report` itself for the pass after
+        # it. Beside the log, never saved: a pass is one process's business.
+        self._opened: tuple[int, np.ndarray] | None = None
         if self.timelapse:
             self.capture_frame()
 
@@ -1680,9 +1685,8 @@ class Session:
         glow that shallow is *a volume of lit air*, three glazes along the axis of
         the light, and the warning says so.
 
-        Reach for it instead of strokes radiating out from a centre -- which is the
-        obvious answer and gives you a daisy, because strokes that all start in one
-        place draw the petals of one.
+        Reach for it instead of strokes radiating out from a centre, which draw the
+        petals of a daisy -- :meth:`report` says so when a pass lays one.
 
         The first ring lands **on** the boundary, so ``color_a`` is the value the
         patch meets what it sits in at: give it the surrounding value and the glow
@@ -2939,6 +2943,7 @@ class Session:
         trial._clip_memo = self._clip_memo
         trial._film_call = ""
         trial._solving = False
+        trial._opened = None
         return trial
 
     def _stroke_specs(self, strokes) -> list[dict]:
@@ -3667,8 +3672,9 @@ class Session:
         standing warnings take once they can be checked rather than repeated --
         three painters made the same mistakes *after* reading the warnings about
         them, and what did catch a mistake was never a sentence but a line printed
-        after a pass. Every rule's input is already in the log, which carries brush,
-        size, path, pressure and note per mark. Seven rules, each of which a real pass
+        after a pass. Every rule's input but one is already in the log, which carries
+        brush, size, path, pressure and note per mark; the one is the canvas as the
+        pass opened. Ten rules, each of which a real pass
         of a real painting would have tripped, and under them the standing lines --
         measurements rather than findings: the subject's share, and four read off the
         canvas -- plus, for a painting that has declared a plan (:meth:`plan`), a line
@@ -3711,6 +3717,21 @@ class Session:
           so *several small marks with ``round_hard`` or ``liner``* is the failure
           nobody has to ask for. The closing checklist's *is any small mark a disc, a
           capsule or a rectangle* is this rule's own question;
+        - **a daisy** -- five or more hand-laid marks, each at least twice as long as
+          its brush is wide, leaving one point in every direction: no gap in the circle
+          of their directions wider than ninety degrees. The point is where consecutive
+          marks' lines meet, so rays laid from a disc's rim count as well as petals
+          from its centre; a tree's fork, a tuft of grass and a fan of rays leave a
+          wider gap, and a glow of films as wide as they are long is not lines at all;
+        - **a loop's signature** -- six or more consecutive hand-laid marks of one
+          brush at one length, or a strict ramp of lengths, evenly spaced along a line
+          and further apart than their own width. A row placed by hand varies both,
+          and a passage laid as overlapping passes sits closer than its width;
+        - **details a layer buried** -- earlier small or ``subject`` marks that were
+          showing as the pass opened, left at under half their contrast by a glaze or
+          by the passes of a mass. It reads the canvas as the pass opened, which
+          ``easel run`` keeps and so does the report before, for a script that reports
+          after every pass; like the plan's lines, it is left off a counted copy;
         - **what the plan promised**, for a painting that declared one: how many of
           its places are painted within ``0.10`` of the value they were promised, and
           whether the place meant to be lightest is the lightest of them. Both read
@@ -3811,6 +3832,17 @@ class Session:
             banding=None if since is None else self._banding_wanted(paid),
             bands=self._plan.bands,
         )
+        # One reading of the canvas for everything below that looks at it. A counted
+        # copy has laid no paint on the canvas it borrowed, so it takes none.
+        without = self.canvas.values(sketch=False) if paid and not self._counting else None
+        view = None if without is None else without.astype(np.float32) / 255.0
+        opened = self._opened
+        if (view is not None and since is not None and opened is not None
+                and opened[0] == start and opened[1].shape == view.shape):
+            found = _buried(opened[1], view, list(self._prior) + list(records[:start]),
+                            records[start:], self.canvas)
+            if found is not None:
+                findings.append(_buried_line(*found))
         scope = "this pass" if since is not None else "the painting"
         head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
         if findings:
@@ -3832,12 +3864,29 @@ class Session:
         subject = self._subject_line(paid, subject_share)
         if subject:
             lines.append(f"  {subject}")
-        if paid and not self._counting:
+        if without is not None:
             # A count-only copy has laid no paint on the canvas it borrowed, so the
             # honest answer is the one it started with and the useful one does not
             # exist. Every other line here comes off the log and is exact.
-            lines += [f"  {one}" for one in self._canvas_lines()]
+            lines += [f"  {one}" for one in self._canvas_lines(without)]
+            # And the canvas as it stands is the one the next pass opens on, for a
+            # painter who runs passes in one script and calls this after each.
+            self._opened = (len(records), view)
         return "\n".join(lines)
+
+    def _open_pass(self) -> int:
+        """Keep the canvas as a pass opens, and return the log index the pass starts at.
+
+        What :meth:`report` needs to say that a pass buried details under a film or a
+        mass: the canvas before the pass, which the log cannot give back without
+        replaying it. ``easel run`` and the MCP ``run`` tool take it where they already
+        take the index; a painter calling :meth:`report` after each pass in one script
+        gets it from the report before. Nothing is taken on a counted copy.
+        """
+        here = len(self.history.records)
+        if not self._counting:
+            self._opened = (here, self.canvas.values(sketch=False).astype(np.float32) / 255.0)
+        return here
 
     def checklist(self, subject_share: float | None = None) -> str:
         """The closing checklist, answered: every measured line with its number.
@@ -4008,7 +4057,7 @@ class Session:
                 line += f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks for some"
         return line
 
-    def _canvas_lines(self) -> list[str]:
+    def _canvas_lines(self, without: np.ndarray | None = None) -> list[str]:
         """The standing measurements, off as few readings of the canvas as they need.
 
         `values:`, `edges:`, `ground:` and `pencil:` -- the four that can only be had
@@ -4028,8 +4077,11 @@ class Session:
 
         Never called on a counted copy: it has laid no paint on the canvas it
         borrowed, so every number here would be the canvas's and not the pass's.
+        ``without`` is the values view without graphite when the caller already has
+        it -- :meth:`report` does, for the rule that reads what a pass covered.
         """
-        without = self.canvas.values(sketch=False)
+        if without is None:
+            without = self.canvas.values(sketch=False)
         view = without.astype(np.float32) / 255.0
         reach = (self.palette.darkest_value, self.palette.lightest_value)
         lines = [checklist.values_line(view, reach=reach),
@@ -4472,6 +4524,7 @@ class Session:
                 # `easel run` paints from a file.
                 s._film_call = ""
                 s._solving = False
+                s._opened = None
 
                 canvas = Canvas.__new__(Canvas)
                 canvas.width = int(meta["width"])
@@ -6945,6 +6998,273 @@ def _crossing_marks(records, centre: float, canvas) -> int:
     return n
 
 
+#: A daisy: this many hand-laid marks at least :data:`_DAISY_MIN` long leaving one point
+#: outward -- the petals, or the spokes of a wagon wheel. Five, because the corpus's
+#: tree forks and grass tufts come in threes and fours, and a sun given rays by a loop
+#: comes in eights and twelves.
+_DAISY_MARKS = 5
+
+#: ...each at least this long, as a share of the long side, so a sparkle of four ticks
+#: round a highlight is not a daisy.
+_DAISY_MIN = 0.02
+
+#: ...and at least this many times as long as its brush is wide, because a petal or a
+#: spoke is a line. Films as wide as they are long, crossing at a point, are a glow:
+#: the heron's lamp -- five films `1.1`-`1.4` times as long as they are wide, its pole
+#: and the two strokes of its fixture -- leaves no gap over `94` degrees, and one film
+#: more would have been called a daisy.
+_DAISY_THIN = 2.0
+
+#: ...leaving the point in every direction: no gap in the circle of their directions
+#: wider than this. A tree's branches and its trunk leave a fork with three gaps of
+#: `120` degrees, grass and a fan of rays one of `290` or more; a daisy of eight petals
+#: leaves `45`, and a twelve-ray sun `30`.
+_DAISY_GAP = 90.0
+
+#: A radiating set is one loop over angles, so the marks of one are a few calls apart:
+#: this many either side of the pair whose lines meet at the hub are counted.
+_DAISY_WINDOW = 12
+
+
+def _daisy(marks: list[StrokeRecord], canvas) -> tuple[int, float, tuple[float, float]] | None:
+    """The widest set of hand-laid marks leaving one point in every direction, or ``None``.
+
+    Returns ``(count, widest gap in degrees, hub)``. The hub is where two consecutive
+    marks' lines meet -- a daisy or a sunburst is laid by one loop over angles -- and a
+    mark near them counts if its line runs through the hub (within a sixth of its own
+    length), it points away from it, and it starts within its own length of it, so a
+    ray may start at a disc's rim as well as at its centre. Only marks that read as
+    lines are counted -- :data:`_DAISY_THIN` -- so a glow of wide films is not one.
+    """
+    w1, h1 = max(canvas.width - 1, 1), max(canvas.height - 1, 1)
+    long = float(canvas.long_side)
+    starts, ends, lengths = [], [], []
+    for r in marks:
+        if r.params.get("via") or r.kind == "smudge" or len(r.points) < 2:
+            continue
+        p = np.asarray(r.points, dtype=np.float64) * np.array([w1, h1])
+        length = float(np.hypot(*np.diff(p, axis=0).T).sum())
+        width = float(r.params.get("size", 0.0)) * long
+        if length >= _DAISY_MIN * long and length >= _DAISY_THIN * width:
+            starts.append(p[0])
+            ends.append(p[-1])
+            lengths.append(length)
+    n = len(lengths)
+    if n < _DAISY_MARKS:
+        return None
+    a_all, b_all, l_all = np.array(starts), np.array(ends), np.array(lengths)
+    chord = b_all - a_all
+    d_all = chord / np.maximum(np.hypot(*chord.T), 1e-9)[:, None]
+    parallel = math.sin(math.radians(8.0))
+    best = None
+    for i in range(n - 1):
+        cross = d_all[i, 0] * d_all[i + 1, 1] - d_all[i, 1] * d_all[i + 1, 0]
+        if abs(cross) < parallel:
+            continue
+        gap_x = a_all[i + 1, 0] - a_all[i, 0]
+        gap_y = a_all[i + 1, 1] - a_all[i, 1]
+        hub = a_all[i] + ((gap_x * d_all[i + 1, 1] - gap_y * d_all[i + 1, 0]) / cross) * d_all[i]
+        lo, hi = max(0, i - _DAISY_WINDOW), min(n, i + _DAISY_WINDOW + 2)
+        a, b, ln, d = a_all[lo:hi], b_all[lo:hi], l_all[lo:hi], d_all[lo:hi]
+        to_a, to_b = np.hypot(*(a - hub).T), np.hypot(*(b - hub).T)
+        far = np.where((to_a <= to_b)[:, None], b, a)
+        rel = hub - a
+        off = np.abs(d[:, 0] * rel[:, 1] - d[:, 1] * rel[:, 0])
+        ok = (off <= ln / 6.0) & (np.minimum(to_a, to_b) <= ln)
+        count = int(ok.sum())
+        if count < _DAISY_MARKS:
+            continue
+        out = far[ok] - hub
+        angles = np.sort(np.mod(np.degrees(np.arctan2(out[:, 1], out[:, 0])), 360.0))
+        gap = float(np.diff(np.concatenate([angles, angles[:1] + 360.0])).max())
+        if best is None or (count, -gap) > (best[0], -best[1]):
+            best = (count, gap, (float(hub[0]) / w1, float(hub[1]) / h1))
+    return best
+
+
+#: A loop's signature: this many marks of one brush laid one after another...
+_LOOP_MARKS = 6
+
+#: ...evenly spaced along a line: the spread of the gaps between them, over their mean.
+#: Of the corpus's runs at one length or a ramp, the one loop measures `0.24` and the
+#: next run `0.45`; a hand-placed row measures well over half.
+_LOOP_SPACING = 0.35
+
+#: ...at one length (the spread of their lengths over the mean), or a strict ramp of
+#: lengths, which is a loop too: the ziggurat.
+_LOOP_LENGTH = 0.15
+
+#: ...on a line: no mark further off it than this many gaps.
+_LOOP_STRAIGHT = 3.0
+
+
+def _loop_runs(marks: list[StrokeRecord], canvas) -> list[dict]:
+    """Runs of consecutive hand-laid marks of one brush that carry a loop's signature.
+
+    One length (or a strict ramp of them), one spacing, on a line, and far enough apart
+    to read as marks -- the gap between neighbours at least a mark's own width, because
+    six overlapping passes of one film are a graded passage and not a row of anything.
+    Consecutive, because a loop lays its marks one call after another, and that is also
+    what keeps this from measuring every pair of marks a painting holds.
+    """
+    w1, h1 = max(canvas.width - 1, 1), max(canvas.height - 1, 1)
+    long = float(canvas.long_side)
+    runs: list[list[StrokeRecord]] = []
+    current: list[StrokeRecord] = []
+    for r in marks:
+        ok = not r.params.get("via") and r.kind != "smudge" and len(r.points) >= 2
+        if ok and current and r.brush == current[0].brush:
+            current.append(r)
+            continue
+        if len(current) >= _LOOP_MARKS:
+            runs.append(current)
+        current = [r] if ok else []
+    if len(current) >= _LOOP_MARKS:
+        runs.append(current)
+    found = []
+    for run in runs:
+        paths = [np.asarray(r.points, dtype=np.float64) * np.array([w1, h1]) for r in run]
+        lengths = np.array([float(np.hypot(*np.diff(p, axis=0).T).sum()) for p in paths]) / long
+        centres = np.array([p.mean(axis=0) for p in paths]) / long
+        rel = centres - centres.mean(axis=0)
+        axis = np.linalg.svd(rel, full_matrices=False)[2][0]
+        order = np.argsort(rel @ axis)
+        gaps = np.diff((rel @ axis)[order])
+        width = float(np.mean([float(r.params.get("size", 0.0)) for r in run]))
+        if gaps.mean() <= 0.0 or gaps.mean() < width:
+            continue
+        spacing = float(gaps.std() / gaps.mean())
+        straight = float(np.abs(rel @ np.array([-axis[1], axis[0]])).max() / gaps.mean())
+        ordered = lengths[order]
+        ramp = bool(np.all(np.diff(ordered) > 0) or np.all(np.diff(ordered) < 0))
+        spread = float(lengths.std() / max(lengths.mean(), 1e-9))
+        if spacing <= _LOOP_SPACING and straight <= _LOOP_STRAIGHT and (
+                spread <= _LOOP_LENGTH or ramp):
+            found.append(dict(count=len(run), brush=run[0].brush, length=float(lengths.mean()),
+                              spacing=spacing, ramp=ramp))
+    return found
+
+
+#: A mark counts as watched when it is this small -- a detail -- or noted ``subject``...
+_BURIED_SMALL = 0.02
+
+#: ...and as showing when its value stands this far off what is round it.
+_BURIED_SHOWING = 0.05
+
+#: It is buried when a pass leaves it under this share of the contrast it had...
+_BURIED_KEPT = 0.5
+
+#: ...and the pass is told when a film or a mass buried this many.
+_BURIED_MARKS = 3
+
+#: What counts as a layer laid over things, rather than another thing painted in front:
+#: the passes of a mass, and a film.
+_BURYING_VIAS = ("block_in", "sweep", "scumble", "cover")
+
+
+def _mark_samples(record: StrokeRecord, canvas) -> tuple[np.ndarray, np.ndarray]:
+    """Eight points along a mark in pixels, and the sideways step to what is round it."""
+    w1, h1 = max(canvas.width - 1, 1), max(canvas.height - 1, 1)
+    p = np.asarray(record.points, dtype=np.float64).reshape(-1, 2) * np.array([w1, h1])
+    if len(p) > 1:
+        seg = np.hypot(*np.diff(p, axis=0).T)
+        cum = np.concatenate([[0.0], np.cumsum(seg)])
+        if cum[-1] > 0.0:
+            want = np.linspace(0.0, cum[-1], 8)
+            p = np.stack([np.interp(want, cum, p[:, 0]), np.interp(want, cum, p[:, 1])], 1)
+    if len(p) > 1:
+        t = np.gradient(p, axis=0)
+        t /= np.maximum(np.hypot(t[:, 0], t[:, 1]), 1e-9)[:, None]
+        side = np.stack([-t[:, 1], t[:, 0]], axis=1)
+    else:
+        side = np.array([[1.0, 0.0]])
+    reach = 1.5 * max(float(record.params.get("size", 0.01)) * canvas.long_side, 2.0) + 2.0
+    return p, side * reach
+
+
+def _to_path(pts: np.ndarray, path: np.ndarray) -> np.ndarray:
+    """How far each point is from a polyline, in the points' own units."""
+    if len(path) == 1:
+        return np.hypot(*(pts - path[0]).T)
+    a, b = path[:-1], path[1:]
+    ab = b - a
+    t = ((pts[:, None, :] - a[None]) * ab[None]).sum(axis=2) / np.maximum(
+        (ab * ab).sum(axis=1)[None], 1e-12)
+    foot = a[None] + np.clip(t, 0.0, 1.0)[..., None] * ab[None]
+    return np.hypot(*(pts[:, None, :] - foot).transpose(2, 0, 1)).min(axis=1)
+
+
+def _buried(opened: np.ndarray, now: np.ndarray, earlier: list[StrokeRecord],
+            laid: list[StrokeRecord], canvas) -> tuple[int, int, str] | None:
+    """Earlier details a film or a mass took out of sight: ``(buried, showing, what)``,
+    ``what`` naming the layers that did it (``a film``, ``a scumble``...).
+
+    ``opened`` and ``now`` are the values view as the pass began and as it ended.
+    ``earlier`` is every mark before the pass, ``laid`` the records the pass made. A
+    watched mark -- a detail under :data:`_BURIED_SMALL`, or noted ``subject`` -- that
+    stood :data:`_BURIED_SHOWING` off what is round it when the pass began and is left
+    at under :data:`_BURIED_KEPT` of that contrast is lost; it counts when what covered
+    it was a film or the passes of a mass, because another thing painted over a far
+    thing's details is back-to-front done right.
+    """
+    h, w = now.shape
+    changed = np.abs(now - opened) > 0.02
+    if not changed.any():
+        return None
+    before, after = _box_mean(opened, 1), _box_mean(now, 1)
+
+    def at(view, q):
+        cols = np.clip(np.round(q[:, 0]).astype(int), 0, w - 1)
+        rows = np.clip(np.round(q[:, 1]).astype(int), 0, h - 1)
+        return view[rows, cols]
+
+    layers = []
+    for q in laid:
+        if q.kind in History.UNPAINTED_KINDS or not q.points:
+            continue
+        if q.kind == "glaze":
+            what = "a film"
+        elif q.params.get("via") in _BURYING_VIAS:
+            what = f"a {q.params['via']}"
+        else:
+            continue
+        path = np.asarray(q.points, dtype=np.float64).reshape(-1, 2) * np.array(
+            [max(canvas.width - 1, 1), max(canvas.height - 1, 1)])
+        reach = 0.5 * float(q.params.get("size", 0.02)) * canvas.long_side + 3.0
+        layers.append((path, reach, what))
+    if not layers:
+        return None
+    showing = buried = 0
+    kinds: set[str] = set()
+    for r in earlier:
+        if r.params.get("via") or r.kind in History.UNPAINTED_KINDS or not r.points:
+            continue
+        if not (float(r.params.get("size", 1.0)) < _BURIED_SMALL
+                or "subject" in str(r.note).lower()):
+            continue
+        pts, side = _mark_samples(r, canvas)
+        if float(changed[np.clip(np.round(pts[:, 1]).astype(int), 0, h - 1),
+                         np.clip(np.round(pts[:, 0]).astype(int), 0, w - 1)].mean()) < 0.5:
+            continue
+        was = float(np.mean(np.abs(at(before, pts)
+                                   - 0.5 * (at(before, pts + side) + at(before, pts - side)))))
+        if was < _BURIED_SHOWING:
+            continue
+        showing += 1
+        left = float(np.mean(np.abs(at(after, pts)
+                                    - 0.5 * (at(after, pts + side) + at(after, pts - side)))))
+        if left >= _BURIED_KEPT * was:
+            continue
+        for path, reach, what in layers:
+            if float((_to_path(pts, path) <= reach).mean()) >= 0.5:
+                buried += 1
+                kinds.add(what)
+                break
+    if buried < _BURIED_MARKS:
+        return None
+    return buried, showing, " and ".join(sorted(kinds))
+
+
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
                    banding=None, bands: str = "") -> list[str]:
     """The lines :meth:`Session.report` prints, one per rule that fired.
@@ -7106,7 +7426,45 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
             f"paint, not its width, so these are rectangles with a lighter end. A "
             f"mark that tapers wants round_hard or liner."
         )
+
+    # A daisy: hand-laid marks leaving one point in every direction.
+    daisy = _daisy(marks, canvas)
+    if daisy is not None and daisy[1] <= _DAISY_GAP:
+        count, gap, (hx, hy) = daisy
+        out.append(
+            f"{count} hand-laid marks leave one point, at ({hx:.2f}, {hy:.2f}), in every "
+            f"direction -- no gap between them wider than {gap:.0f} degrees: a daisy, or "
+            f"a wagon wheel, which is what strokes radiating from a centre draw unless "
+            f"the subject radiates. A patch light in the middle is "
+            f"scumble(direction=\"inward\"); light in the air is a few films along its "
+            f"axis."
+        )
+
+    # A loop's signature: one length, one spacing, no clumps and no holes.
+    runs = _loop_runs(marks, canvas)
+    if runs:
+        run = runs[0]
+        more = (f" (and {len(runs) - 1} more run{'s' if len(runs) > 2 else ''} like it)"
+                if len(runs) > 1 else "")
+        size = "stepping in length" if run["ramp"] else f"all {run['length']:.3f} long"
+        out.append(
+            f"{run['count']} {run['brush']} marks laid one after another, {size}, evenly "
+            f"spaced on a line -- the gaps vary {run['spacing']:.0%}{more}: a loop's "
+            f"signature, one length and one spacing with no clumps and no holes. Vary the "
+            f"lengths and the gaps by hand, or let one mark carry the passage."
+        )
     return out
+
+
+def _buried_line(buried: int, showing: int, what: str) -> str:
+    """The report line for :func:`_buried`, whose numbers it carries."""
+    return (
+        f"this pass took {buried} earlier details out of sight, of the {showing} that "
+        f"were showing under it -- each left at under half the contrast it had with what "
+        f"is round it, and {what} did it: a layer laid over near things is a mass at a "
+        f"depth. Lay it before them, or lay them again after it -- unless taking them "
+        f"out of sight was the point."
+    )
 
 
 def _pass_step(size: float, density: float) -> float:

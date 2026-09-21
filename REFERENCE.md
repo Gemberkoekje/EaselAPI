@@ -376,21 +376,29 @@ session. So two sessions sharing an `out_dir` do not write over each other, and 
 painting reopened between `easel run` calls carries on where the directory left off.
 Pass `path=` to name a file yourself.
 
-`report()` is the check `easel run` prints beside the budget line after every pass:
-seven rules read off the log — one brush at one size for a whole pass of two or more
-calls; twelve or more long marks within six degrees of one angle, from two or more
+`report()` is the check `easel run` prints beside the budget line after every pass: ten
+rules read off the log and the canvas — one brush at one size for a whole pass of two or
+more calls; twelve or more long marks within six degrees of one angle, from two or more
 calls, **said once and again only when the picture has picked up a long mark 30 degrees
 off the bars it was said about** (`--check`, which is asked for rather than printed at
-you, says it whenever it is true); **a graded passage laid too narrow**, five or more long parallel marks at three
-or more colours, in one run with no gap wider than four brushes, their colours turning
-at most once, stepped further apart than half the narrowest brush laying them (a brush
-that lays no colour of its own is not counted);
-a bristle under `size=0.025` **at a load over `0.6`**, because below that the
-comb's gaps are the mark; eight or more marks under `size=0.02` inside the
-painting's first sixty; a pressure list on a short chisel mark; and three or more small
-round-tip marks at `tip_wobble=0`, each short enough to be the tip's silhouette rather
-than a line. Under those, the standing lines, which are measurements rather than
-findings: the subject's share of the marks so far, wherever a mark is noted `subject`,
+you, says it whenever it is true); **a graded passage laid too narrow**, five or more
+long parallel marks at three or more colours, in one run with no gap wider than four
+brushes, their colours turning at most once, stepped further apart than half the
+narrowest brush laying them (a brush that lays no colour of its own is not counted); a
+bristle under `size=0.025` **at a load over `0.6`**, because below that the comb's gaps
+are the mark; eight or more marks under `size=0.02` inside the painting's first sixty; a
+pressure list on a short chisel mark; three or more small round-tip marks at
+`tip_wobble=0`, each short enough to be the tip's silhouette rather than a line;
+**a daisy**, five or more hand-laid marks at least twice as long as their brush is wide,
+leaving one point with no gap wider than 90 degrees in the circle of their directions;
+**a loop's signature**, six or more consecutive hand-laid marks of one brush at one
+length (or a strict ramp of lengths), evenly spaced on a line and further apart than
+their own width; and **details a layer buried**, earlier small or `subject` marks
+showing as the pass opened that a glaze or a mass's passes left at under half their
+contrast. That one needs the canvas as the pass opened, which `easel run` keeps, and so
+does the `report()` before it in a script that reports after every pass. Under those,
+the standing lines, which are measurements rather than findings: the subject's share of
+the marks so far, wherever a mark is noted `subject`,
 against `subject_share` if given; `values:`, the 5th to 95th percentile of the values
 view against what the palette reaches and the three clusters it splits into, which says
 so when the range stays on one side of the box's middle or two clusters sit under `0.10`
@@ -398,8 +406,8 @@ apart; `edges:`, the share of the picture's edges under `2.5` px wide; `ground:`
 share of the canvas is **still bare ground**, which says so under `0.5%`; and `pencil:`,
 graphite still showing, left off once there is none. Their thresholds are under *The
 measurement lines, on the finished canvases* in `CALIBRATION.md`. All of them count the
-painting behind a rehearsal copy, not the copy's own log, and the four read off the
-canvas are left off a counted copy, which has laid no paint of its own.
+painting behind a rehearsal copy, not the copy's own log, and everything read off the
+canvas is left off a counted copy, which has laid no paint of its own.
 `since=` is the log index the pass began at (`len(s.history.records)` before it);
 left off, the whole painting. Two more need the shape and fire at the call: a shaped
 `block_in` with `direction` left off costing over 2.5× its axis (or a sequence costing

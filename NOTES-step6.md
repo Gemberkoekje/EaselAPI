@@ -353,3 +353,152 @@ now warn in the test output, as their pinned `0.06` smudge already would unfilte
 | `CHANGELOG.md` | *Three checks that read the canvas under the mark, and a smudge that lays nothing of its own* |
 | `SUGGESTIONS.md` | findings 3 and 4 gain what landed |
 | `PLAN-0.6.0.md` | status; the three D2 rows; three migration-map rows and the stale `spill` one; the replay question in *Still open* |
+
+
+# Step 6 of `PLAN-0.6.0.md`, part four: after the pass (D3)
+
+**To understand this, start by reading `_daisy`, `_loop_runs` and `_buried` in
+[`src/easel/session.py`](src/easel/session.py) — each under the constants it is measured
+against — then `report()` where it reads `_opened`, and `_open_pass()` below it, then
+`before = target._open_pass()` in [`src/easel/cli.py`](src/easel/cli.py) and
+[`src/easel/mcp_server.py`](src/easel/mcp_server.py), then *What the check reads after a
+pass* in [`CALIBRATION.md`](CALIBRATION.md), then the D3 tests after the D2 ones in
+[`tests/test_requests.py`](tests/test_requests.py).**
+
+Branch: `d3-pass-checks`, off `d2-canvas-checks` at `e62d47c`.
+
+---
+
+## What this step was for
+
+Workstream D3: the findings after the pass that the plan kept. `radiating` for finding 6;
+`one-loop` for finding 7, tier 3 on the numbers and kept because four of seven painters
+reported it and G6 needs its demo; `buried` for finding 9, which step 2 put over the noise
+ceiling as prototyped. `boxes`, the D3 table's fourth row, landed in step 7 as the
+`boxes:` line. All three are rows of `_pass_findings` and `report()`, like every rule
+there, and carry no notice code: the notice channel is for what is said at the call.
+
+## What landed
+
+| | |
+|---|---|
+| a daisy | five or more hand-laid marks, each at least twice as long as its brush is wide, leaving one point — where consecutive marks' lines meet — with no gap in their directions over 90 degrees; **1 of 325 passes**, the fogged glass's tree; no guide block |
+| a loop's signature | six or more consecutive hand-laid marks of one brush, at one length (spread under 15%) or a strict ramp along their line, gaps spread under 35%, on a line, at least a mark's width apart; **1 pass**, DeepSeek's glitter path; no guide block |
+| details buried | three or more earlier details — under `0.02`, or noted `subject` — that stood `0.05` off what is round them as the pass opened and were left under half that by a film or the passes of a mass; **2 passes**, both burials; it cannot fire on a guide block |
+| the canvas as the pass opened | `Session._open_pass()`, called by `easel run` and the MCP `run` where they already took the log index; `report()` keeps the canvas it ends on for the pass after, used only when `since=` is that index; none on a counted copy; `_opened` in all three homes |
+| the guide | `PAINTER.md` step 5's daisy sentence is gone and step 3's veil bullet is one line; `RECIPES.md`'s daisy, `PAINTING.md`'s loop row and `scumble`'s docstring name the check |
+| the record | `report()`'s docstring and `REFERENCE.md` count ten rules; `CALIBRATION.md` has *What the check reads after a pass* and an index row |
+| the probe | the three D3 checks report what the engine said; the prototypes still run for their numbers as `_radiating_prototype`, `_one_loop_prototype` and `_buried_prototype`; `Watcher.open` opens the pass |
+
+## Decisions and gotchas
+
+**1. All three prototypes fired on the wrong passes, and only looking showed it.** The
+daisy prototype named 22 passes and one was a daisy; the loop prototype two, one real;
+the burial prototype 54, most of them a nearer thing painted over a farther thing's
+details. Every fire was cropped before and after and looked at, and each rule was
+rebuilt on what the crops showed. The numbers alone had said *narrow the gate*; the
+crops said the gates measured the wrong thing.
+
+**2. The daisy's point is where two consecutive marks' lines meet**, not where marks
+start. A loop over angles lays its marks one after another, and a sun's rays start at
+its rim rather than its centre. Twelve marks either side of each pair are tried against
+the point it gives.
+
+**3. The 90 degrees had six degrees of room, and a clause took the near miss away.** The
+fogged tree fires at `88` (its painter: *spoke-like branches*). The heron's lamp missed
+at `94`: five films of its glow crossing at the lamp, its pole and two strokes of its
+fixture. Films about as wide as they are long are a glow, not petals, so a mark counts
+only if it is twice as long as its brush is wide — the heron drops out, and the next
+nearest miss in the corpus is `118` (the winter greenhouse). The glow test lays eight
+wide films that are called a daisy without the clause; that was checked by switching
+it off.
+
+**4. A film laid through the point counts once**, toward whichever end is farther from
+it. For a film centred on the point that is float noise, which is how the heron's
+crossing films came to scatter round the circle.
+
+**5. The loop takes consecutive runs of one brush, not brush and colour.** A loop steps
+its colour as readily as its place — DeepSeek's flashes step width and opacity. The
+width clause is GLM's graded pool, nine overlapping passes of one film `0.018` apart at
+`0.11` wide: a passage, not a row. `0.35` for the spacing is the gap in the corpus: the
+one loop at `0.24`, the next run at one length or a ramp at `0.45`. The ramp is read
+along the line and not in the order laid: the pier's six sparkles, which the prototype
+fired on, were typed longest first and placed by hand.
+
+**6. The one loop in the corpus is the painter's fix, and G6 is to collect it.**
+DeepSeek's comment says its flashes grow *shorter and fainter as they come toward the
+viewer*; the code steps the width and the opacity and lays all eight at `0.100` long.
+In the finished picture it is a ladder of bars under the sun. The plan's G6 collects
+four *accepted* versions of that passage, DeepSeek's among them, and uses the loop demo
+as its failure block: **the recipe must vary the lengths**, or the probe's guide-block
+pass will show the check firing on the recipe. `check_guide_blocks.py` would not catch
+it, because it holds the blocks to the notices and not to `report()`.
+
+**7. `buried` needs the canvas as the pass opened, which the log cannot give back
+without a replay.** `_open_pass()` keeps it at the moment `run` takes `before`, and
+`report()` keeps the canvas it ends on, keyed by the log index, for a script that
+reports after each pass. It is used only when `since=` is that index, so an old
+snapshot never answers for a different pass. A counted copy takes none. The attribute
+has three homes — `__init__`, `_trial_session`, `load` — which is part three's gotcha
+applied before it bit.
+
+**8. What went over a detail is the rule.** A detail lost under hand-laid strokes is not
+counted, because in the corpus it was nearly always a nearer thing painted in front:
+GPT's window light took five details, the pier's gloom five, Gemini's conifers nineteen,
+all by hand and all silent now. A film (`glaze`) or the passes of a mass (`block_in`,
+`sweep`, `scumble`, `cover`) is counted.
+
+**9. The one burial a painter wrote down, it does not see.** The pool's notes say three
+deck glazes erased the chair. Measured pass by pass: the chair stood `0.017`-`0.046` off
+the deck as laid — a step darker on purpose, under the `0.05` floor for *showing* — and
+its right leg went `0.035`, `0.021`, `0.015`, `0.009`, never by half in one pass. Seeing it
+takes two things: a lower floor, which would watch many more marks and needs its own
+corpus count, and a memory of each detail's contrast that outlives an `easel run` call,
+which is a field in the saved file because each run is a new process. Both are open, and
+the plan's *closes the depth-order item in `LESSONS.md`* is for G11 to weigh against it.
+
+**10. No guide block can trip `buried`.** Each block paints one pass on a fresh canvas,
+so it has no earlier detail. Its *0 of 71* is true and says nothing, and the record says
+so rather than counting it as a pass.
+
+**11. Two things the plan said would leave were already gone.** The checklist's *a row
+of identical marks* and *did a correction bury something* left `PAINTER.md` when the
+closing checklist became `checklist()` in step 7.
+
+**12. The daisy in `_scumble_inward`'s docstring stays.** It is why the engine's rings go
+round rather than out — the engine's own reasoning, not an instruction to a painter.
+
+**13. The step-2 table says 23 for `radiating`; the re-run gave 22.** Not chased: the set
+that was looked at is the 22.
+
+## Open, and for the owner to rule on
+
+**A burial spread over passes** (gotcha 9): whether `buried` should see the pool's chair,
+at the price of a field in the saved file and a lower floor — and so whether G11 closes
+`LESSONS.md`'s depth-order item with the check as it stands.
+
+**The replay promise** from part three is still open.
+
+## What step 6 part four did *not* touch
+
+`LESSONS.md`, which is G11's. `DIAGNOSIS.md`: its rows name passages, the daisy's row
+still points at the recipe that names the check, and codes are not linked to rows this
+round. The step-2 tables in `CALIBRATION.md` stay as measured; the new section says where
+they were wrong.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/session.py` | `_DAISY_MARKS`, `_DAISY_MIN`, `_DAISY_THIN`, `_DAISY_GAP`, `_DAISY_WINDOW`, `_daisy`; `_LOOP_MARKS`, `_LOOP_SPACING`, `_LOOP_LENGTH`, `_LOOP_STRAIGHT`, `_loop_runs`; `_BURIED_SMALL`, `_BURIED_SHOWING`, `_BURIED_KEPT`, `_BURIED_MARKS`, `_BURYING_VIAS`, `_mark_samples`, `_to_path`, `_buried`, `_buried_line`; `_pass_findings` says the daisy and the loop; `report()` says the burial and keeps its canvas; `_open_pass()`; `_opened` on sessions, trial copies and loaded sessions; `_canvas_lines(without=)`; the `report()` and `scumble` docstrings |
+| `src/easel/cli.py`, `src/easel/mcp_server.py` | `run` opens the pass with `_open_pass()` |
+| `tests/test_requests.py` | seven tests after the D2 ones: two daisies and four things that are not one, two loops and two rows that are not, two burials and three things that are not, and where the opening canvas comes from |
+| `scripts/probe_cohort_session.py` | the D3 checks report the engine's lines; the prototypes still run; `Watcher.open` opens the pass |
+| `REFERENCE.md` | `report()`'s paragraph: ten rules |
+| `CALIBRATION.md` | *What the check reads after a pass*, and its index row |
+| `PAINTER.md` | step 3's veil bullet as one line; step 5's daisy sentence gone |
+| `PAINTING.md`, `RECIPES.md` | the loop row and the daisy name the check |
+| `CHANGELOG.md` | *Three findings after the pass*; D2's *D3 is still to come* gone |
+| `SUGGESTIONS.md` | findings 6, 7 and 9 gain what landed |
+| `PLAN-0.6.0.md` | status, step 6 done; three migration-map rows; the `radiating` and `buried` rows and the tier-3 paragraph; the chair in *Still open* |
+| `NOTES-step6.md` | this part |
