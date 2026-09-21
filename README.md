@@ -222,6 +222,7 @@ easel guide --recipes                                # the calls, in order, for 
 easel guide --reference                              # units, defaults, every argument
 easel diagnose concentric rings                      # it is wrong: the passage that says why
 easel explain chisel-blank                           # it warned you: the measurement behind it
+easel demo crosses a boundary                        # a recipe, painted beside its failure
 ```
 
 Every one of these also works as `python -m easel ...`, for when the `easel`

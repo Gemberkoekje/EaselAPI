@@ -46,17 +46,22 @@ two parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
 and 6, and two faults it did not know about were found by running every guide block past
 the checks: **every runnable block in the guide is now notice-clean**, and
-`scripts/check_guide_blocks.py` fails if that stops being true. G4 landed with step 7,
-so what is left of G is G2, G3, G6, G8, G10 and G11; `NOTES-step9.md` has the gotchas
-for both parts. The three rulings the step notes left for the owner -- the standing
+`scripts/check_guide_blocks.py` fails if that stops being true. Part three is **G3**:
+`easel demo <recipe>` and a `demo` MCP tool, twelve demo blocks under the *Goes wrong
+as* of twelve recipes, and the invariant's other half -- **12 of 12 demos fail exactly
+the way they say** -- with the block check running in CI for the first time; its first
+run found two recipes tripping `report()` rules, one of them painting the failure its
+own paragraph names. G4 landed with step 7, so what is left of G is G2, G6, G8, G10 and
+G11, and eight recipes' demos; `NOTES-step9.md` has the gotchas for all three parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
 could not give), the replay promise is amended, `buried` ships as it is and narrows the
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
 owned now has an owner**, under *Loose ends, and who owns them* in section 6: F1's build,
-a `clean` edge its bench found failing in silence, the finding-13 replay, and five smaller
-rows. Written 2026-09-18 against
+a `clean` edge its bench found failing in silence, the finding-13 replay, two recipes
+G3's first run found tripping `report()`, and three smaller rows; the manifest's verb
+count and the block check in CI left the table with G3. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -415,6 +420,17 @@ blocks; extend it with the invariant that makes the docs and the tool one system
 code it names.** Finding 1 -- a recipe that produces the defect the guide warns about --
 becomes impossible to ship.
 
+**Built, step 9 part three, for twelve of the twenty recipes.** A demo is one block cut
+by comment lines -- the passage, what goes wrong, the smallest fix -- and names what the
+tool says about the failure: a notice code, `report() says "<its words>"` (the check's
+rules carry no codes, by D3's decision), or *nothing says so*. `easel.demo.faults` is the
+invariant and `check_guide_blocks.py` runs it over every demo, in CI now. What `report()`
+says about a recipe beyond its failure prints as a note rather than a fault, and the
+first run's notes are two rows of *Loose ends* below. The eight recipes still in words:
+*a scene with straight edges*, *a picture with an empty half*, *a form that turns*, *a
+quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, and
+*a repair under things that are standing on it*, which waits for F1.
+
 **G4. `s.checklist()` / `easel check`**: the closing checklist as output. Measured lines
 answered with their number (values, edges, ground, discs, bars or their crossings, boxes,
 lightest, buried, pencil, subject share, unspent); the three judgement lines printed as
@@ -525,7 +541,7 @@ the map back, if a cut turns out to have gone too far.
 | `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) -- **`one-loop` arrived in step 6 (D3)**: the *any loop or generator* row says `report()` names it | the table as an index of codes |
 | `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` -- **`spill` arrived in step 6**, and the spill paragraph is one line naming it; the `inset` paragraph waits for `inset-lost`, which is tier 3 | the three remedies |
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
-| `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips | one line |
+| `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips -- **arrived for twelve recipes in step 9 (G3)**. The prose stays: most *Goes wrong as* name several failures and a block shows one, so each keeps its line and gains the block | one line, and the block |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
 | `RECIPES.md`, quiet gradient: a `flat` scallops; under five passes | | **neither carrier arrived** -- F4 was declined on the numbers (the halved pair moves the ripple `0.0053` to `0.0059`), and `scumble-few` is not built. **Settled in step 9: nothing leaves**, and the paragraph is unchanged | the whole paragraph |
 | `RECIPES.md`, lost edge: stretch not boundary | | `smudge-long` -- **arrived in step 6 (D2)**: the paragraph is a line naming it, and the block above it, which smudged half the canvas, smudges a stretch | the paint-across recipe |
@@ -576,8 +592,8 @@ table when what it names is done**, the way a migration row leaves with its para
 | **Finding 13's number** (was in section 8) | `CALIBRATION.md`'s `12%-44%, median 27%` came from the `edges:` prototype step 7 withdrew, and the probe still carries it as its own `edges_line(session)` (`scripts/probe_cohort_session.py:1695`) | G11, before `SUGGESTIONS.md`'s finding-13 row is filled | the probe calls `easel.checklist.edges_line`, the corpus is replayed, and the number is restated or withdrawn |
 | **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
 | **`wet-under`, declined** (ruled 2026-09-21) | step 2 left it a fact line, and nothing owned it | G11 | `CHANGELOG.md` names it beside the other declines, and `SUGGESTIONS.md`'s finding-5 row says what was and was not done |
-| **The manifest's verb count** | *the sixteen CLI verbs* in `mcpb/manifest.json` is held by nothing (`NOTES-step9.md`, part one, gotcha 9), and `easel demo` makes it wrong | G3, in the commit that adds `demo` | a test holds the sentence to the parser |
-| **`scripts/check_guide_blocks.py` in CI** | the notice-clean invariant holds only for whoever runs it; the run takes 85 s against five matrix jobs (`NOTES-step9.md`, part two) | G3, which extends the script | a CI job runs it, or this row says why not |
+| ***A mass built of planes* paints its own named failure** -- found by G3's first run | step 6 moved its faces from a ragged `flat` to a `bristle` at `0.014`-`0.02`: `report()` says *59 marks with a bristle under size=0.025* and *46 of 64 long marks ... a stack of bars*, and the render is the *woven surface* its own *Goes wrong as* names (`NOTES-step9.md`, part three, gotcha 4) | **the owner's ruling**, then a recipe fix rendered and looked at | the recipe's demo panel prints no note, or the rule is ruled wrong at these sizes |
+| ***A graded field* trips the stack-of-bars rule** -- found by G3's first run | 17 of 17 long marks within six degrees: the crossers run with the passes, and the fifteen passes alone are over the rule's 60%, so angling the crossers would not clear it. Finding 10 again, on the guide's own recipe | **the owner's ruling**: narrow the rule, or answer it in the recipe | the recipe's demo panel prints no note, or this row says why it may |
 | **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | one GitHub issue exists, and this row links it |
 
 ### What step 2 measured, and what it decides

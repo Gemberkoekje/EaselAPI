@@ -30,7 +30,7 @@ from a shell. It teaches the workflow, which matters more than the function list
 
 from __future__ import annotations
 
-from easel import diagnosis, docs, guide
+from easel import demo, diagnosis, docs, guide
 from easel.brush import BRUSHES, TIPS, Brush, brush
 from easel.canvas import GRAPHITE, GROUNDS, Canvas
 from easel.color import (
@@ -158,5 +158,7 @@ __all__ = [
     "guide",
     # the symptom index, reached by describing what is wrong rather than by name
     "diagnosis",
+    # each recipe's commonest failure, painted beside the recipe
+    "demo",
     "__version__",
 ]

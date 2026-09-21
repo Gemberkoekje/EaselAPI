@@ -588,6 +588,19 @@ def test_diagnose_hands_back_the_passage_rather_than_the_pointer(call):
     assert call("diagnose").text == diagnosis.listing()
 
 
+def test_demo_paints_a_recipe_beside_its_failure_and_hands_the_sheet_back(call, tmp_path):
+    """A client has no shell to open a PNG from, so the sheet comes back inline, beside
+    what each panel was told -- the notice itself, not only its code."""
+    from easel import demo
+
+    reply = call("demo", recipe="container", out_dir=str(tmp_path))
+    assert "the call says round-fringe" in reply.text
+    assert "round-fringe: " in reply.text
+    width, height = reply.picture.size
+    assert width > 2 * height                    # the recipe and its failure, side by side
+    assert call("demo").text == demo.listing()
+
+
 # -- what the painter declares ---------------------------------------------------------
 def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, painting):
     """The third way of declaring one, beside `s.plan()` and `easel plan`. It is the one

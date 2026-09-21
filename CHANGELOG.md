@@ -648,6 +648,55 @@ of the method ends by looking, so a painter without image input can drive the wh
 without ever learning whether a mark landed. The other four small facts G9 listed were
 already in place, closed by the steps that had reason to touch them.
 
+### Recipes that show how they go wrong, and a check that they still do
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G3). Finding 19 asked for *small
+runnable visual comparisons: the recommended call, what it looks like, the common
+failure, the smallest fix* — because *the documentation sometimes compensates for
+difficult tool behaviour with additional rules*, and a failure described in words is one
+more rule to carry.
+
+- **`easel demo <recipe>`** — `demo` through the MCP server, `easel.demo.answer()` from
+  Python — paints one recipe of `RECIPES.md` beside its commonest failure and, where it
+  is not the recipe itself, the smallest fix, and quotes what the tool said about each
+  panel. Name the recipe by the words of its heading (`easel demo crosses a boundary`);
+  with none, it lists which recipes have one. It needs no session. The sheet is cut to
+  where the panels differ and enlarged up to four times, because five discs of a 5 px
+  brush on a whole canvas are five dots nobody can compare.
+- **Twelve of the twenty recipes carry a demo block** under their *Goes wrong as*, each
+  cut by comment lines into the passage it is laid on, what goes wrong, and the fix. The
+  block names what the tool says about the failure: a notice code for eight
+  (`chisel-staircase`, `inward-flat`, `glaze-far`, `scumble-wedge`, `round-fringe`,
+  `jitter-beads`, `smudge-long`, `smudge-across`), a line of `report()` for three, and
+  *nothing says so* for one — flecks where a plane was laid without `solid=True`, which
+  only looking finds. `RECIPES.md` now opens by saying a block under *Goes wrong as* is
+  the failure on purpose, and not to copy it.
+- **The other half of the invariant step 9 began.** `scripts/check_guide_blocks.py`
+  holds every demo to what it names: the failure trips exactly those codes and
+  `report()` lines, and the recipe and the fix, laid on the same passage, trip none of
+  it and say nothing at the call. A recipe can no longer ship producing the fault its
+  own paragraph warns about, and a failure block can no longer quietly stop failing. The
+  script runs in CI now, as a job of its own, where until this release it ran only when
+  somebody remembered to; it takes about two and a quarter minutes here against one and
+  a quarter without the demos.
+- **What its first run found, and did not fail on.** What `report()` says about a recipe
+  that its failure does not name is printed as a note, because the answer is sometimes
+  the rule's to change rather than the recipe's. Three notes, on two recipes: *a mass
+  built of planes*, as step 6 left it, trips the small-comb rule on 59 marks and the
+  stack-of-bars rule on 46 of 64, and its faces paint the *woven surface* its own
+  paragraph names as a failure; *a graded field that is most of the picture* trips the
+  stack-of-bars rule on 17 of 17 long marks, because its two crossers run within six
+  degrees of its passes. Both are the owner's to rule on.
+- **One stale line fixed on the way**: the graded field's *Goes wrong as* still blamed
+  horizontal strata on *the `load_falloff` clause*, which a banded `scumble` has laid by
+  default since step 8. It now names what the recipe's own bullet says makes them — the
+  passes run exactly along the frame.
+- **Smaller things.** The names every guide block assumes (`s`, `mass`, the palette)
+  moved from the check script into `easel.demo.preamble()`, so the demo and the check
+  lay the same context under a block. `mcpb/manifest.json` counts seventeen CLI verbs,
+  and a test now holds that sentence to the parser, which nothing did while it said
+  twelve.
+
 
 ## [0.5.0] — 2026-09-16
 

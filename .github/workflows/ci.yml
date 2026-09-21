@@ -129,3 +129,30 @@ jobs:
 
       - name: Test the mixbox integration seam
         run: pytest -q tests/test_mixbox.py
+
+  # The guide's code blocks, run the way a reader runs them. Every recommended block
+  # has to come back notice-clean, and every demo block in RECIPES.md has to fail
+  # exactly the way its `goes wrong` line says -- the invariant that makes a recipe
+  # producing the fault its own paragraph warns about something CI refuses, rather
+  # than something a painter finds. Its own job and one runner, because it paints
+  # every block and every demo panel (a couple of minutes), and what it checks is the
+  # guide rather than the platform: the `test` job already covers the engine on both.
+  # Until 0.6.0 it ran only when somebody remembered to, which is how
+  # tests/test_guide.py's overlap check came to exist for the script beside it.
+  guide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.14"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run every block of the guide, and every demo
+        run: python scripts/check_guide_blocks.py
