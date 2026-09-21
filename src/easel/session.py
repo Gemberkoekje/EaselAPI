@@ -23,6 +23,7 @@ from dataclasses import asdict
 from dataclasses import fields as dataclass_fields
 from difflib import get_close_matches
 from pathlib import Path
+from typing import NamedTuple
 
 import numpy as np
 from PIL import Image
@@ -31,7 +32,13 @@ from easel import checklist
 from easel.brush import Brush
 from easel.brush import brush as get_brush
 from easel.canvas import Canvas, build_surface, tooth_ceiling
-from easel.color import linear_to_srgb, luminance, parse_color, srgb_to_linear
+from easel.color import (
+    linear_to_oklab,
+    linear_to_srgb,
+    luminance,
+    parse_color,
+    srgb_to_linear,
+)
 from easel.history import DEFAULT_FRAME_PX, History, StrokeRecord
 from easel.look import (
     DEFAULT_LOOK_SIZE,
@@ -273,6 +280,14 @@ class Session:
         # The last clip mask built, and the outline it came from.
         # See :meth:`_clip_cover`.
         self._clip_memo: tuple | None = None
+        # How the film in progress was asked for: ``""`` for a mark laid by hand,
+        # ``"glaze"`` when :meth:`glaze` is laying it, ``"aimed"`` when it was given
+        # ``to_value=``. Read by :func:`_check_glaze_far`, which does not tell a film
+        # aimed at a value that it moved the value -- the painter asked for that shift.
+        self._film_call = ""
+        # Set on the trial copies :meth:`_glaze_opacity` lays its search films on, so
+        # the dozen films a search tries are not each told what a film does.
+        self._solving = False
         if self.timelapse:
             self.capture_frame()
 
@@ -409,6 +424,12 @@ class Session:
         # several hundred. See :func:`_stroke_box`.
         box = None if self._counting else _stroke_box(self.canvas, points, b, smooth)
         self._snapshot(box)
+        # A film laid by hand -- not a pass of a mass, not a replay, not a search film
+        # -- is measured once it has landed, so its box is kept as it was before it.
+        # See :func:`_check_glaze_far`.
+        film = (None if not glaze or box is None or self._stream_mark is not None
+                or self._solving
+                else self.canvas.rgb[box[1]:box[3], box[0]:box[2]].copy())
         try:
             index = self._index_base + len(self.history.records)
             pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
@@ -467,6 +488,11 @@ class Session:
             self.history.discard_snapshot()
             raise
         self._auto_frame()
+        if film is not None:
+            # One frame deeper when it came through `glaze()`, so the warning points
+            # at the painter's line either way.
+            _check_glaze_far(self, box, film, col, aimed=self._film_call == "aimed",
+                             stacklevel=4 if self._film_call else 3)
         return record
 
     def dab(self, x: float, y: float, brush="round_hard", color="burnt_umber",
@@ -553,8 +579,10 @@ class Session:
             **kw: any other :meth:`stroke` argument.
         """
         _check_smudge_size(self, size)
-        return self.stroke(_smudge_path(edge, size), brush="smudge",
-                           color="titanium_white", pressure=pressure, size=size, **kw)
+        path = _smudge_path(edge, size)
+        _check_smudge_path(self, path, size, smooth=bool(kw.get("smooth", True)))
+        return self.stroke(path, brush="smudge", color="titanium_white",
+                           pressure=pressure, size=size, **kw)
 
     def glaze(self, points, color, brush="round_soft", opacity: float | None = None,
               to_value: float | None = None, **kw):
@@ -642,9 +670,13 @@ class Session:
             else:
                 opacity = self._glaze_opacity(points, color, float(to_value),
                                               brush, kw)
-        return self.stroke(points, brush=brush, color=color, glaze=True,
-                           opacity=GLAZE_OPACITY if opacity is None else float(opacity),
-                           **kw)
+        self._film_call = "aimed" if to_value is not None else "glaze"
+        try:
+            return self.stroke(points, brush=brush, color=color, glaze=True,
+                               opacity=GLAZE_OPACITY if opacity is None else float(opacity),
+                               **kw)
+        finally:
+            self._film_call = ""
 
     def _glaze_opacity(self, points, color, target: float, brush, kw: dict) -> float:
         """The opacity at which this film delivers ``target`` over its own footprint.
@@ -666,6 +698,7 @@ class Session:
 
         def film(opacity: float) -> np.ndarray:
             trial = self._trial_session()
+            trial._solving = True
             trial.glaze(points, color, brush=brush, opacity=opacity, **kw)
             return trial.canvas.rgb
 
@@ -2904,6 +2937,8 @@ class Session:
         # alone -- the same reason `_banding_told` is passed as a tuple.
         trial._plan = self._plan
         trial._clip_memo = self._clip_memo
+        trial._film_call = ""
+        trial._solving = False
         return trial
 
     def _stroke_specs(self, strokes) -> list[dict]:
@@ -4986,6 +5021,319 @@ def _check_smudge_size(session, size: float) -> None:
         f"size={SMUDGE_SIZE:.3g} and put the rest in with paint.",
         stacklevel=3,
     )
+
+
+#: A step at least this far apart in value is a boundary between two masses: the
+#: ``0.10`` every pair of masses in the guide is read by. A smudge whose path crosses
+#: one drags the first mass into the second. See :func:`_check_smudge_path`.
+_SMUDGE_STEP = 0.10
+
+#: How far a smudge may run along a boundary before the strip it leaves reads as a band
+#: of its own, as a share of the canvas long side. ``RECIPES.md``'s *past about a tenth
+#: of the canvas*, and what the strip does at every length measured: one pass along a
+#: hard step leaves a strip about one brush tall at the value halfway between the two
+#: masses, the same at ``0.05`` long as at ``0.80`` -- a softened corner at the short
+#: end, and from here on a drawn line of a third value.
+_SMUDGE_LONG = 0.10
+
+#: The smallest step across a smudge's path that it counts as following a boundary. The
+#: strip lands halfway, so each of its two edges is half the step; and a join between two
+#: colours at close values still leaves a strip of a third colour, so this is half the
+#: ``0.10`` and not the whole of it.
+_SMUDGE_FOLLOW = 0.05
+
+
+def _box_mean(view: np.ndarray, r: int) -> np.ndarray:
+    """A ``(2r+1)`` square mean of a 2-D array, off an integral image, edges held.
+
+    A value read off one pixel of a painted canvas is the tooth as much as the paint;
+    averaged over a few pixels it is the paint, which is what a smudge meets.
+    """
+    if r <= 0:
+        return view.astype(np.float32)
+    k = 2 * r + 1
+    pad = np.pad(view.astype(np.float64), r + 1, mode="edge")
+    ii = pad.cumsum(axis=0).cumsum(axis=1)
+    h, w = view.shape
+    total = ii[k:k + h, k:k + w] - ii[0:h, k:k + w] - ii[k:k + h, 0:w] + ii[0:h, 0:w]
+    return (total / (k * k)).astype(np.float32)
+
+
+class _SmudgeRead(NamedTuple):
+    """What :func:`_smudge_samples` read along a smudge's path, one entry per sample."""
+
+    arc: np.ndarray       # distance from the start, as a share of the canvas long side
+    behind: np.ndarray    # the value half a brush back along the path
+    ahead: np.ndarray     # ...and half a brush on
+    along: np.ndarray     # the step between those two: a boundary being crossed
+    across: np.ndarray    # the step across the path: a boundary being followed
+    on: np.ndarray        # the value under the sample itself
+    points: np.ndarray    # the sample, normalised
+
+
+def _smudge_samples(canvas, path, size: float, smooth: bool = True):
+    """What a smudge meets along the path it is about to be dragged down.
+
+    The path the stroke will actually be stamped along -- the spline, where there is
+    one -- walked a quarter-brush at a time, and at every sample the canvas value one
+    brush apart *along* the path and *across* it: the first is a boundary the smudge
+    is crossing, the second a boundary it is following. Read off the canvas before the
+    smudge lands and sampled, never rasterised, so it costs a few hundred reads of a
+    crop of the canvas and not a copy of it.
+
+    Returns a :class:`_SmudgeRead` -- per sample, the distance from the start of the
+    path as a share of the canvas long side, the values half a brush behind and ahead
+    along the path and the step between them, the step across it, the value under the
+    sample itself, and its normalised point -- or ``None`` for a path of one point.
+    """
+    pts = np.atleast_2d(np.asarray(path, dtype=np.float32))
+    if pts.ndim != 2 or pts.shape[1] != 2 or len(pts) < 2 or not np.isfinite(pts).all():
+        return None
+    line = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
+    w, h = canvas.width, canvas.height
+    px = np.stack([line[:, 0] * (w - 1), line[:, 1] * (h - 1)], axis=1).astype(np.float64)
+    seg = np.hypot(*np.diff(px, axis=0).T)
+    total = float(seg.sum())
+    diameter = max(float(size) * canvas.long_side, 1.5)
+    if total < 1.0:
+        return None
+    count = int(np.clip(total / max(diameter * 0.25, 1.0), 8, 512)) + 1
+    cum = np.concatenate([[0.0], np.cumsum(seg)])
+    want = np.linspace(0.0, total, count)
+    walk = np.stack([np.interp(want, cum, px[:, 0]), np.interp(want, cum, px[:, 1])], axis=1)
+    tangent = np.gradient(walk, axis=0)
+    tangent /= np.maximum(np.hypot(tangent[:, 0], tangent[:, 1]), 1e-9)[:, None]
+    normal = np.stack([-tangent[:, 1], tangent[:, 0]], axis=1)
+    half = 0.5 * diameter
+    reach = half + 4.0
+    x0 = int(np.clip(np.floor(walk[:, 0].min() - reach), 0, w - 1))
+    x1 = int(np.clip(np.ceil(walk[:, 0].max() + reach) + 1, x0 + 1, w))
+    y0 = int(np.clip(np.floor(walk[:, 1].min() - reach), 0, h - 1))
+    y1 = int(np.clip(np.ceil(walk[:, 1].max() + reach) + 1, y0 + 1, h))
+    # The values view, over the crop the samples can reach: sRGB-encoded luminance,
+    # the number `look(values=True)` shows and every threshold here is written in.
+    view = _box_mean(linear_to_srgb(luminance(canvas.rgb[y0:y1, x0:x1])), 2)
+
+    def at(q: np.ndarray) -> np.ndarray:
+        cols = np.clip(np.round(q[:, 0]).astype(int) - x0, 0, x1 - x0 - 1)
+        rows = np.clip(np.round(q[:, 1]).astype(int) - y0, 0, y1 - y0 - 1)
+        return view[rows, cols]
+
+    behind, ahead = at(walk - tangent * half), at(walk + tangent * half)
+    return _SmudgeRead(
+        arc=want / float(canvas.long_side),
+        behind=behind,
+        ahead=ahead,
+        along=np.abs(ahead - behind),
+        across=np.abs(at(walk + normal * half) - at(walk - normal * half)),
+        on=at(walk),
+        points=np.stack([walk[:, 0] / max(w - 1, 1), walk[:, 1] / max(h - 1, 1)], axis=1),
+    )
+
+
+def _smudge_crossing(read: _SmudgeRead, size: float) -> tuple[int, float] | None:
+    """Where a smudge's path crosses a boundary and goes on past it, or ``None``.
+
+    A step shows in every sample within half a brush of it, so the samples that see
+    one come in runs about a brush long, and which of them saw it first says nothing
+    about where the line is. The line is where the value *on the path itself* passes
+    halfway between the two masses -- read half a brush behind and ahead of the run's
+    strongest sample, where each is whole -- and that point is found between samples,
+    not at one: a step blurred symmetrically crosses its halfway value on the edge.
+
+    A crossing counts with half a brush of path before the line, so the brush has
+    taken up the first mass, and a quarter-brush after it, so its centre goes on over
+    and its half-width carries the first mass three-quarters of a brush in. A smudge
+    that only starts or stops on the line carries half a brush across at most, which
+    is what one run along the join does anyway.
+
+    Returns ``(sample, arc)`` -- the strongest sample of the strongest crossing that
+    counts, and the distance of its line from the start of the path -- or ``None``.
+    """
+    arc, along, on = read.arc, read.along, read.on
+    seen = (along >= _SMUDGE_STEP) & (along >= read.across)
+    length = float(arc[-1])
+    best = None
+    n = len(seen)
+    i = 0
+    while i < n:
+        if not seen[i]:
+            i += 1
+            continue
+        j = i
+        while j + 1 < n and seen[j + 1]:
+            j += 1
+        k = i + int(np.argmax(along[i:j + 1]))
+        half = 0.5 * (float(read.behind[k]) + float(read.ahead[k]))
+        lo, hi = max(i - 1, 0), min(j + 1, n - 1)
+        side = np.sign(on[lo:hi + 1] - half)
+        flips = np.nonzero(side[:-1] * side[1:] < 0)[0]
+        if len(flips):
+            m = lo + int(flips[0])
+            rise = float(on[m + 1] - on[m])
+            t = (half - float(on[m])) / rise if rise else 0.5
+            where = float(arc[m]) + float(np.clip(t, 0.0, 1.0)) * float(arc[m + 1] - arc[m])
+        else:
+            where = float(arc[k])
+        if where / size >= 0.5 and (length - where) / size >= 0.25:
+            if best is None or along[k] > along[best[0]]:
+                best = (k, where)
+        i = j + 1
+    return best
+
+
+def _check_smudge_path(session, path, size: float, smooth: bool = True) -> None:
+    """Say, before a smudge lands, what it will do to the boundaries it meets.
+
+    Two things, off one reading of the canvas along the path (:func:`_smudge_samples`):
+
+    - **``smudge-across``**, a fact: the path crosses a step of at least
+      :data:`_SMUDGE_STEP` -- more of it along the path than across it -- arriving
+      from one mass and going on into the other (:func:`_smudge_crossing` says how
+      far on each side counts). Dragged across a boundary it carries the first mass about a
+      brush into the second, which is the thumbprint finding 3 of the 0.5.0 cohort
+      reported. Measured with the start of the stroke fixed (a smudge carries only
+      what it has picked up since 0.6.0): ``1.2`` brushes at ``size=0.04`` across a
+      step from ``0.20`` to ``0.78``, either way round, and ``0.5`` at the same
+      settings along it.
+    - **``smudge-long``**, a habit: the path follows a boundary -- a step of at least
+      :data:`_SMUDGE_FOLLOW` across it -- for more than :data:`_SMUDGE_LONG` of the
+      canvas. Its strip is about a brush tall at any length and lands halfway between
+      the two values, so over a long boundary it reads as a third band. A habit and not
+      a fact, because a painter can want the band: two paintings smoothed the broken
+      lit edge of a neck this way and it read as intended.
+
+    Neither is said on a counted copy, which borrowed the canvas and has laid none of
+    the pass that the smudge would meet.
+    """
+    if session._counting:
+        return
+    read = _smudge_samples(session.canvas, path, size, smooth)
+    if read is None:
+        return
+    arc, along, across, points = read.arc, read.along, read.across, read.points
+    size = max(float(size), 1e-6)
+    length = float(arc[-1])
+    found = _smudge_crossing(read, size)
+    if found is not None:
+        i, line = found
+        x, y = (float(v) for v in points[i])
+        session._notify(
+            "smudge-across",
+            f"smudge crosses a boundary at ({x:.2f}, {y:.2f}), {line:.2f} from where "
+            f"it starts: the value steps {along[i]:.2f} along the path there and "
+            f"{across[i]:.2f} across it. Dragged across a boundary a smudge carries the "
+            f"first mass into the second -- about a brush of it, as a thumbprint. Run "
+            f"it along the boundary instead: hand it the boundary's own points, or a "
+            f"stretch of the shape's outline (shape.closed[i:j]).",
+            stacklevel=3,
+        )
+    follows = across >= _SMUDGE_FOLLOW
+    run = float(follows.mean()) * length
+    if run >= _SMUDGE_LONG:
+        step = float(np.median(across[follows]))
+        session._notify(
+            "smudge-long",
+            f"smudge runs {run:.2f} of the canvas along a boundary, a step of {step:.2f} "
+            f"across it: its strip is about a brush tall at any length and lands halfway "
+            f"between the two, so over this length it reads as a third band -- dark, "
+            f"mid, light, two edges where there was one. Smudge the stretch you mean to "
+            f"lose, under about {_SMUDGE_LONG:.2f}, and lay paint across the rest.",
+            stacklevel=3,
+        )
+
+
+#: How far a pixel's colour has to move, in Oklab, before it counts as under a film.
+#: Separates the paint a film laid from the arithmetic at its fringe, where a soft tip
+#: fades through thousandths that no eye reads and that would only dilute the mean.
+_FILM_FOOTPRINT = 0.005
+
+#: The value shift over a film's own footprint at which it stops shifting a mass and
+#: lays a new one. Where the guide's own glaze table puts it -- a warm film over a cool
+#: dark moves the value ``0.085`` at ``opacity=0.14``, *a stripe of a different
+#: colour* -- and the corpus's own p90: the 222 films of the 0.5.0 corpus move the
+#: passage under them ``0.033`` at the median and ``0.081`` at p90.
+_FILM_NEW_MASS = 0.08
+
+#: How far a film may be mixed from what it lands on, in the Oklab chroma plane --
+#: hue and saturation, the plane :meth:`~easel.palette.Palette.chroma_of` measures
+#: in -- before it lays a colour of its own rather than tinting the passage. The
+#: guide's own recipes mix their films ``0.031``-``0.051`` from the field they land
+#: on; every film the corpus shows as a bloom sits at ``0.080`` or more -- the harbour's
+#: searchlight at ``0.085``, the lighthouse's orange glow over a violet sky at ``0.190``.
+#: The corpus's p90 is ``0.068``. It is a distance in the mixing and not in the result,
+#: because no opacity rescues it: a lower opacity is the same colour, fainter.
+_FILM_FAR = 0.07
+
+
+def _film_shift(before: np.ndarray, after: np.ndarray,
+                color=None) -> tuple[float, float, int]:
+    """What a film did to the passage it landed on: ``(value, mixed, pixels)``.
+
+    ``before`` and ``after`` are the same box of linear RGB either side of the film.
+    Over the pixels whose colour moved more than :data:`_FILM_FOOTPRINT` -- the
+    film's own footprint, as :meth:`Session.glaze` measures ``to_value=`` over --
+    ``value`` is the mean change in value (the sRGB-encoded luminance
+    ``look(values=True)`` shows), and ``mixed`` is how far the film's own ``color``
+    sits from the mean colour it landed on, in the Oklab chroma plane (``0.0`` when
+    no colour is given).
+    """
+    ok_before = linear_to_oklab(before)
+    moved = np.sqrt(((linear_to_oklab(after) - ok_before) ** 2).sum(axis=-1)) > _FILM_FOOTPRINT
+    pixels = int(moved.sum())
+    if not pixels:
+        return 0.0, 0.0, 0
+    value = np.abs(linear_to_srgb(luminance(after[moved]))
+                   - linear_to_srgb(luminance(before[moved])))
+    mixed = 0.0
+    if color is not None:
+        film = linear_to_oklab(np.asarray(color, dtype=np.float32))
+        under = linear_to_oklab(before[moved].mean(axis=0))
+        mixed = float(np.hypot(float(film[1] - under[1]), float(film[2] - under[2])))
+    return float(value.mean()), mixed, pixels
+
+
+def _check_glaze_far(session, box, before: np.ndarray, color, aimed: bool = False,
+                     stacklevel: int = 3) -> None:
+    """Say what a film did once it has landed, when it did more than a film is for.
+
+    Finding 4 of the 0.5.0 cohort: *green blooms over blue water, a searchlight on a
+    flat sheet*. A glaze is strong in proportion to its distance from what it lands
+    on, in hue as well as in value, and the guide's answer -- mix it close, then
+    choose an opacity -- had a table and no instrument. This is the instrument, and it
+    measures the paint rather than predicting it, as ``holes`` does: the film is laid,
+    and the box it could reach is read either side of it.
+
+    Two ways past what a film is for, one code. The value moved by
+    :data:`_FILM_NEW_MASS` or more, which is a new mass -- not said about a film
+    given ``to_value=``, which asked for exactly that shift. Or the film was mixed
+    :data:`_FILM_FAR` or more from what it lands on, in hue and chroma, which no
+    opacity rescues and no ``to_value=`` either: that search finds a value, and the
+    colour it lands at is still the film's.
+    """
+    x0, y0, x1, y1 = box
+    value, mixed, pixels = _film_shift(before, session.canvas.rgb[y0:y1, x0:x1], color)
+    if pixels < 16:
+        return
+    if value >= _FILM_NEW_MASS and not aimed:
+        session._notify(
+            "glaze-far",
+            f"this film moved the passage under it by {value:.3f} in value, over its own "
+            f"footprint: past {_FILM_NEW_MASS:.2f} a film stops shifting a mass and lays "
+            f"a new one. Aim it at the value the passage should read afterwards "
+            f"(to_value=), or lay the change as paint.",
+            stacklevel=stacklevel,
+        )
+    elif mixed >= _FILM_FAR:
+        session._notify(
+            "glaze-far",
+            f"this film was mixed {mixed:.3f} from what it lands on in hue and chroma "
+            f"(Oklab), and moved the value {value:.3f}: that far off, a film does not "
+            f"tint the passage, it lays a colour of its own over it. Mix it close to "
+            f"what it lands on -- s.palette.mix(field, film, ...) -- because a lower "
+            f"opacity is the same colour, fainter.",
+            stacklevel=stacklevel,
+        )
 
 
 #: The density at which a comb's own gaps close on a solid mass. Below it the passes

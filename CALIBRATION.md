@@ -897,9 +897,13 @@ of radius `0.20`, bristle at `0.13`:
 
 ## `smudge`
 
-- **It is much stronger than "moves paint around" suggests, and it is not symmetric**:
-  it pulls the *lighter* mass into the darker one more than the reverse, so a smudge
-  run along a light/dark boundary walks the boundary into the dark side.
+- **It is much stronger than "moves paint around" suggests, and along a join it is
+  symmetric.** One pass at `size=0.04` along a dried hard step from `0.20` to `0.78`,
+  1024×768: the light carried `0.49` brushes into the dark and the dark `0.49` into the
+  light, `5,510` px against `5,674`. This bullet used to say it pulled the lighter mass
+  into the darker more than the reverse. That claim recorded no conditions, it does
+  not reproduce on this step with 0.5.0's engine or 0.6.0's, and the light cap every
+  smudge laid at its start until 0.6.0 (below) is the likeliest thing it saw.
 - **What `size` buys stops at about `0.02`; what it costs does not.** One pass along a
   step from `0.78` down to `0.17`, both masses solid, 640×480 linen, `flat` at
   `size=0.030`, the pass laid along the boundary the two masses actually met on. The
@@ -967,8 +971,9 @@ of radius `0.20`, bristle at `0.13`:
   the boundary, which is *dark, mid, light* — two edges where there was one. A painter
   who smudged each under-bench line in a finish pass kept four of them.
 - **It works along a boundary and fails across one.** Dragged across, it pulls a lobe
-  of the lighter mass into the darker and leaves a finger-shaped thumbprint; run along
-  the boundary in short passes it does what it is for.
+  of the first mass into the second, either way round, and leaves a finger-shaped
+  thumbprint about a brush long (below); run along the boundary in short passes it does
+  what it is for.
 - **"Along" means along the boundary's *shape*, and only a straight boundary is two
   points.** On a straight sloping edge, two points and four along it are the same pass
   to the pixel — the spline through collinear points is the line. On a boundary that
@@ -987,6 +992,51 @@ of radius `0.20`, bristle at `0.13`:
   `smudge` also takes a shape or a region and walks its own outline, which is the
   sampling-by-hand step a painter skips.
 - It counts against `s.stroke_count`, as `glaze` does.
+
+### Across a boundary, and along a long one
+
+**A smudge carries only what it has picked up (0.6.0: fixed).** Until 0.6.0 a smudge
+started loaded with its nominal colour — titanium white — and mixed `45%` of the
+canvas into it per dab, so its first dabs laid `55%`, `30%`, `17%` white: a light cap
+at the start of every smudge, on a passage of one colour as much as at a boundary.
+Over a mass of one colour at `0.45` the first brush of the path came back `0.13`
+lighter, and `0.11` over one at `0.15`; it now moves nothing there. The cap is part of
+what painters called *a thumbprint at the end of a smudge*, and it is what the round's
+own probe measured as crossing: the thumbprint row under *The claims, re-measured*
+carried the light `4.1` brushes into the dark on a pass that *started* in the dark —
+the cap, laid from the first dab on. With the start fixed the same pass carries it
+`0.5` brushes, no further than a pass along the join.
+
+**Across a boundary it drags the first mass about a brush into the second.** One pass
+at `size=0.04` straight across that step: from the light into the dark, `1,577` px
+lifted, reaching `1.2` brushes in; from the dark into the light, `1,623` px darkened,
+reaching `1.2` brushes in. That is the finger-shaped lobe, and `smudge-across` says it
+at the call, off the canvas the smudge is about to meet: along the path the stroke will
+be stamped down — the spline, a quarter-brush at a time — the value half a brush
+behind and ahead, and half a brush either side. A **step of `0.10`** or more, more of
+it along the path than across it, with half a brush of path before the line and a
+quarter after it, is a crossing; the line is where the value on the path passes
+halfway between the two masses. A pass that only starts or stops on the line carries
+half a brush across at most, which a pass along the join does as well, and is not told.
+
+**Along a long boundary it leaves a band** — the strip in the table above, about a brush
+tall at the value halfway between the two, the same over `0.05` as over `0.80`. Laid
+on a step, it is a pill at `0.05` and a drawn line of a third value from `0.10`, and the
+same at a step of `0.07` between two colours as at `0.59` between two greys: a join
+between colours at close values still leaves a strip of a third colour. `smudge-long`
+says it when the path follows a **step of `0.05`** or more across it — half the `0.10`,
+because the strip lands halfway — for more than **`0.10` of the canvas**. A habit and
+not a fact: two paintings smoothed the broken lit edge of a heron's neck this way and it
+read as intended.
+
+**Over the corpus**, of its 37 smudges, `smudge-across` speaks on 11, in 9 of the 325
+painted passes (3%), and `smudge-long` on 14, in 11 (3%) — neither on any of the
+guide's blocks. Every crossing it names is a real one, at steps of `0.11` to `0.36`: a
+dark hull dragged out into the water, a lamp housing dragged down the column under
+it, a post's edge run down over the rungs that cross it, finger stripes smeared into
+each other. Both herons' necks are among the long ones — passes run along a lit edge,
+where the band was the smoothing their painters wanted — which is why that one is a
+habit.
 
 ---
 
@@ -1049,6 +1099,36 @@ A target outside what the film can deliver **raises**, naming both ends of what 
 can reach, for `at_value`'s reason: a film silently landing at the wrong value is
 the failure the instrument exists to stop. In the row above that range is `0.319`
 (the paint under it) to `0.588` (the film at `opacity=1.0`).
+
+### A film far from what it lands on
+
+Finding 4 of the 0.5.0 cohort: *green blooms over blue water, a searchlight on a flat
+sheet*. `glaze-far` reads a film once it has landed, over its own footprint — every
+pixel whose colour moved more than `0.005` in Oklab — and says it two ways:
+
+| | the line | why there |
+|---|---|---|
+| **the value moved** | `0.08` | the table at the top of this section: a warm film at `0.14` moves it `0.085`, *a stripe of a different colour*. The corpus's own p90 is `0.081` |
+| **the film was mixed far**, in hue and chroma (Oklab *a/b*) from the colour it lands on | `0.07` | the recipes mix their films `0.031`-`0.051` from the field; every film the corpus shows as a bloom sits at `0.080` or more — the harbour's searchlight `0.085`, a lighthouse's orange glow over a violet sky `0.190`. The corpus's p90 is `0.068` |
+
+The value line is not said about a film given `to_value=`, which asked for its shift.
+The mix line is: the search lands a value, and the colour it lands at is still the
+film's. None of the thirteen aimed films in the corpus was mixed further than `0.033`.
+
+**The distance is in the mixing, not in the result**, and the first instrument tried
+was the result: how far the film moved the hue. It does not separate the two cases.
+The lit-air recipe's own film moves the hue `0.018` and the harbour's searchlight
+`0.026`, and this section's own table says why: the far film moves the hue `0.034` at
+`0.05` — *already neutral* — and `0.057` at `0.10`, where it reads *warm*. What is
+wrong at every opacity is where the film was mixed, which is what *mix the glaze close*
+has always said.
+
+**Over the corpus** it speaks on 38 of the 222 films, in 17 of the 325 painted passes
+(5%) — 22 by the value line, 16 by the mix line alone — and on none of the guide's
+blocks. Thirteen of the 38 are one pass of one painting's glitter path, which the
+notice block prints once with its count. The mix line is what reaches the films the
+value line could not see: the harbour's searchlight moved the value `0.020`, and the
+orange glow over a violet sky `0.061`.
 
 ---
 
@@ -1965,7 +2045,7 @@ moved.
 |---|---|
 | **The chisel staircase** (finding 1) | **Survived, and it is a comparison and not a constant.** On the lit band: `flat` at `0.020` leaves **22%** of its strong edges within ten degrees of horizontal and `0.010` leaves **15%**, against **1%** for a `bristle` and **1%** for `round_hard`. On Kimi's rock face, whose boundary slopes the other way, the same brushes give **7% / 19%** against **4%** and **2%**. Several times as many pass ends from a chisel, every time — but the share belongs to the band as much as to the brush. `edge="hard"` does not close it: these are pass ends *inside* the mask. |
 | **Holes inside a `solid=True` mass** (finding 2, B2) | **Survived, with the mechanism corrected twice.** A `flat` leaves `0.0000%` bare at every size and density tried. The comb leaves them: `bristle` at `size=0.04, density=0.8` leaves **0.1552%** in **47** blobs, the largest **198 px**; at `density=1.2` it is **0.0000%**. `solid=` cannot close them — it sets `load` and `load_falloff` and nothing else. **And a hole is a contrast, not a gap**: the same call leaves `0.1552%` on `toned_grey`, `0.1357%` on white, and **3.1550% in 373 blobs, the largest 2270 px**, on the dark `#2e332c`. *Bare* means within `10/255` of the ground, which is what `ground_showing()` means by it and what an eye means by it — so a dark mass on a dark ground is where the comb's holes are visible at all. |
-| **A smudge drags a thumbprint** (finding 3) | **Survived, and it is a depth.** A hard step from `0.20` to `0.78`, one smudge at `size=0.04`: run **along** the join it lifts 11,024 px and stops **0.5 brushes** into the dark; run **across** it lifts 1,561 px and carries them **4.1 brushes** in — the length of its own path. At 30 degrees, 1.9 brushes. |
+| **A smudge drags a thumbprint** (finding 3) | **Survived, and half of it was the engine's.** A hard step from `0.20` to `0.78`, one smudge at `size=0.04`: run **along** the join it lifts 11,024 px and stops **0.5 brushes** into the dark; run **across** it, starting in the dark, it lifted 1,561 px and carried them **4.1 brushes** in — which was the light cap every smudge laid from its first dab, fixed in 0.6.0, after which the same pass lifts 527 px and stops 0.5 brushes in. What is left of the thumbprint is the first mass dragged about a brush into the second, either way round (*Across a boundary, and along a long one*, under `smudge`). |
 | **A glaze far from its ground** (finding 4) | **Survived, with the window measured.** One film at `opacity=0.15` over a mass at `0.30` moves the value `0.014` when it is mixed `0.05` away, `0.052` at `0.25`, **`0.080` at `0.40`** and `0.110` at `0.55`. So the `0.08` that makes a *new* mass rather than shifting an old one is a film mixed about `0.40` off what it lands on, at that opacity. |
 | **A scumble lands outside its band** (finding 8, B17) | **Survived, to the second decimal.** A band `0.20` tall at `n=8` with the auto brush paints **1.42x** its own area at `"axis"`, **2.99x** at 30 degrees and **3.62x** at 60 — against the plan's 1.43x / 2.84x / 3.53x. At 60 degrees **72%** of the paint lands outside the band, and the auto brush has gone from `0.075` to `0.297`, because the step is measured across the *bounding box*. |
 ### The eighteen reported bugs, re-measured

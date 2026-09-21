@@ -4080,6 +4080,204 @@ def test_spill_is_silent_where_the_overrun_is_the_point_or_the_rule_of_thumb_is_
                        size=0.02, direction="axis")
     assert not _spilled(quiet)
 
+
+# -- D2: the checks that read the canvas under the mark --------------------------------
+def _joined(tmp_path, width=512, height=384):
+    """Two masses meeting on a line across the middle, a hard step from 0.20 to 0.78.
+
+    Both held to their own edge, so the boundary is a step and not a half-brush of
+    overlap, and dried, so what a test lays on it sits on it.
+    """
+    s = Session(width, height, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    p = s.palette
+    p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.20)
+    p["light"] = p.at_value(p.mix("yellow_ochre", "titanium_white", 0.5), 0.78)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for place, colour in ((Region(0.0, 0.0, 1.0, 0.5), "dark"),
+                              (Region(0.0, 0.5, 1.0, 1.0), "light")):
+            s.block_in(place, "flat", colour, size=0.06, solid=True, opacity=1.0,
+                       pressure="even", direction="horizontal", edge="hard")
+    s.dry()
+    return s
+
+
+def _told(session, code: str) -> list:
+    return [n for n in session.notices() if n.code == code]
+
+
+def test_a_smudge_carries_only_what_it_has_picked_up(tmp_path):
+    """Half of finding 3's thumbprint was the engine's. A smudge started loaded with
+    titanium white and mixed 45% of the canvas into it per dab, so its first dabs laid
+    55%, 30%, 17% white: a light cap at the start of every smudge, on a passage of one
+    colour as much as across a boundary. Over a mass at 0.45 it lifted the first brush
+    of the path by 0.13, and a painter who ran one down a dark pile got a light spot in
+    the middle of it. It now changes nothing there.
+
+    And the thumbprint `CALIBRATION.md` measured across a join -- the light carried 4.1
+    brushes into the dark, *the length of its own path* -- was that cap, laid from the
+    first dab onward by a pass that started in the dark. The same pass now carries the
+    light half a brush in, which is what one run along the join does."""
+    s = make(tmp_path)
+    s.palette["mid"] = s.palette.at_value("burnt_sienna", 0.45)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "mid", size=0.08, solid=True,
+                   pressure="even", direction="horizontal")
+    s.dry()
+    before = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+    s.smudge([(0.3, 0.5), (0.7, 0.5)])
+    after = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+    assert float(np.abs(after - before).max()) < 0.03
+
+    joined = _joined(tmp_path)
+    before = joined.canvas.values(sketch=False).astype(np.float32) / 255.0
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        joined.smudge([(0.5, 0.30), (0.5, 0.70)], size=0.04)
+    after = joined.canvas.values(sketch=False).astype(np.float32) / 255.0
+    join = joined.canvas.height // 2
+    lifted = np.nonzero(((after - before)[:join] > 0.05).any(axis=1))[0]
+    deepest = (join - int(lifted.min())) / (0.04 * joined.canvas.long_side)
+    assert deepest < 1.0, f"light carried {deepest:.1f} brushes into the dark"
+
+
+def test_a_smudge_dragged_across_a_boundary_says_so(tmp_path):
+    """The other half of finding 3, and the painter's: *run it along a boundary, never
+    across one* was `PAINTER.md`'s second rule about `smudge`, and the thumbprints kept
+    coming. Dragged across a boundary a smudge carries the first mass about a brush
+    into the second -- 1.2 brushes at `size=0.04` on this step, either way round.
+
+    Read off the canvas before the smudge lands, along the path it will be stamped
+    down: a step of 0.10 or more, more of it along the path than across it, with half
+    a brush of path either side. Silent along the join, inside one mass, and on a path
+    that only starts or stops on the line -- which carries nothing across it."""
+    for label, path in (("dark into light", [(0.5, 0.35), (0.5, 0.65)]),
+                        ("light into dark", [(0.5, 0.65), (0.5, 0.35)])):
+        s = _joined(tmp_path)
+        with pytest.warns(UserWarning, match="crosses a boundary"):
+            s.smudge(path)
+        said = _told(s, "smudge-across")
+        assert len(said) == 1 and "thumbprint" in said[0].text, label
+        step = float(re.search(r"the value steps ([0-9.]+) along", said[0].text).group(1))
+        assert step > 0.40, label
+        # The line is placed where the path passes it, whichever way the step falls.
+        line = float(re.search(r", ([0-9.]+) from where it starts", said[0].text).group(1))
+        assert abs(line - 0.15 * 384 / 512) < 0.01, (label, line)
+
+    for label, path in (("along the join", [(0.46, 0.50), (0.54, 0.50)]),
+                        ("inside one mass", [(0.30, 0.20), (0.70, 0.20)]),
+                        ("stopping on the line", [(0.50, 0.30), (0.50, 0.505)]),
+                        ("starting on the line", [(0.50, 0.495), (0.50, 0.70)]),
+                        ("stopping on it from the light", [(0.50, 0.70), (0.50, 0.495)]),
+                        ("starting on it into the dark", [(0.50, 0.505), (0.50, 0.30)])):
+        quiet = _joined(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            quiet.smudge(path)
+        assert not _told(quiet, "smudge-across"), label
+
+
+def test_a_long_smudge_along_a_boundary_says_it_leaves_a_band(tmp_path):
+    """One pass along a hard step leaves a strip about a brush tall at the value halfway
+    between the two masses, the same at 0.05 long as at 0.80: a softened corner over a
+    short stretch, and over a long one *dark, mid, light* -- two edges where there was
+    one. `RECIPES.md` said so in a paragraph, and its own block above the paragraph ran
+    a smudge half the canvas long. A habit rather than a fact, because a painter can
+    want the band; silent on the short stretch and on a long pass inside one mass."""
+    s = _joined(tmp_path)
+    with pytest.warns(UserWarning, match="reads as a third band"):
+        s.smudge([(0.20, 0.50), (0.60, 0.50)])
+    said = _told(s, "smudge-long")
+    assert len(said) == 1 and "two edges where there was one" in said[0].text
+    run = float(re.search(r"runs ([0-9.]+) of the canvas", said[0].text).group(1))
+    assert 0.35 <= run <= 0.42
+    assert not _told(s, "smudge-across"), "along a boundary is not across it"
+
+    for label, path in (("a short stretch", [(0.46, 0.50), (0.54, 0.50)]),
+                        ("long, inside one mass", [(0.10, 0.25), (0.90, 0.25)])):
+        quiet = _joined(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            quiet.smudge(path)
+        assert not _told(quiet, "smudge-long"), label
+
+
+def _under_a_film(tmp_path):
+    """The guide's own glaze table: a warm light film over a solid cool dark mass."""
+    s = make(tmp_path)
+    p = s.palette
+    p["under"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.30)
+    p["film"] = p.at_value(p.mix("cadmium_yellow", "titanium_white", 0.4), 0.62)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "under", size=0.10, solid=True,
+                   opacity=1.0, pressure="even", direction="horizontal")
+    s.dry()
+    return s
+
+
+FILM = dict(brush="flat", size=0.18, pressure="even")
+
+
+def test_a_film_far_from_what_it_lands_on_says_what_it_did(tmp_path):
+    """Finding 4: *green blooms over blue water, a searchlight on a flat sheet*. A glaze
+    is strong in proportion to its distance from what it lands on, in hue as well as
+    in value, and the guide had a table for it and no instrument. Measured once the
+    film has landed, over its own footprint.
+
+    Two ways past what a film is for. The guide's own table: a warm light film over a
+    cool dark at 0.14 moves the value 0.085 -- *a stripe of a different colour*, a new
+    mass. At 0.05 it moves the value 0.03 and is still the same film, mixed far from
+    what it lands on in hue -- *already neutral, the cool gone and nothing warm
+    arrived* -- which no opacity rescues, because a lower opacity is the same colour,
+    fainter. And `to_value=` does not rescue it either: the search finds a value, and
+    the colour it lands at is still the film's."""
+    s = _under_a_film(tmp_path)
+    with pytest.warns(UserWarning, match="stops shifting a mass"):
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "film", opacity=0.14, **FILM)
+    said = _told(s, "glaze-far")
+    assert len(said) == 1 and "to_value=" in said[0].text
+
+    s = _under_a_film(tmp_path)
+    with pytest.warns(UserWarning, match="from what it lands on in hue and chroma"):
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "film", opacity=0.05, **FILM)
+    text = _told(s, "glaze-far")[0].text
+    assert "the same colour, fainter" in text
+    assert float(re.search(r"was mixed ([0-9.]+) from", text).group(1)) >= 0.07
+
+    s = _under_a_film(tmp_path)
+    with pytest.warns(UserWarning, match="from what it lands on in hue and chroma"):
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "film", to_value=0.36, **FILM)
+
+    # Laid as a stroke with glaze=True, the same film is the same film.
+    s = _under_a_film(tmp_path)
+    with pytest.warns(UserWarning, match="stops shifting a mass"):
+        s.stroke([(0.2, 0.5), (0.8, 0.5)], color="film", glaze=True, opacity=0.14, **FILM)
+
+
+def test_a_film_mixed_close_or_aimed_at_a_value_is_left_alone(tmp_path):
+    """`LESSONS.md` rule 2, as the two cases the guide itself recommends. A film mixed
+    close to what it lands on -- the lit-air recipe's own mixture, a step above the
+    field and leaning to its colour -- is silent. And a film of the field's own hue
+    given `to_value=` a long way from it asked for its shift, so moving the value past
+    0.08 is what it was for: silent too, and so are the dozen search films the solver
+    lays on copies to find its opacity."""
+    s = _under_a_film(tmp_path)
+    p = s.palette
+    field = s.sample(Region(0.3, 0.3, 0.7, 0.7))
+    level = p.value_of(field)
+    p["close"] = p.at_value(p.mix(field, "titanium_white", 0.5), level + 0.06)
+    p["lift"] = p.at_value(p.mix(field, "titanium_white", 0.5), level + 0.35)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "close", opacity=0.09, **FILM)
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "lift", to_value=level + 0.12, **FILM)
+    assert not _told(s, "glaze-far")
+    assert not [w for w in caught if "this film" in str(w.message)]
+
+
 # -- E: the standing measurement lines, and G4: the checklist --------------------------
 #
 # Every one of these answers a line of `PAINTER.md`'s closing checklist that a painter

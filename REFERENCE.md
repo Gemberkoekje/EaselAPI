@@ -471,6 +471,7 @@ floor twenty-eight times and was right every time.
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
 | `foreign-out-dir` | fact | a loaded session file writes its looks somewhere that is neither the working directory nor beside the file | `REFERENCE.md`, *The session, and the shell* |
+| `glaze-far` | fact | a film that moved the passage under it past what a film is for: a new mass in value, or a colour of its own in hue | `CALIBRATION.md`, *A film far from what it lands on* |
 | `glaze-nothing` | fact | a film aimed at a value the paint under it already reads solves to no opacity, and still costs a stroke | `CALIBRATION.md`, *Aiming a film at a value* |
 | `inward-flat` | fact | an inward scumble's brush wider than about three ring steps: the last rings bury the first and the middle comes back flat | `CALIBRATION.md`, *`scumble`* |
 | `jitter-beads` | fact | `jitter=` a multiple of its default, which comes out as width: a chain of beads rather than a line | `PAINTING.md`, *Per-stroke overrides* |
@@ -480,8 +481,10 @@ floor twenty-eight times and was right every time.
 | `scumble-bars` | fact | a banded scumble whose passes do not overlap: bars with the ground showing between them | `CALIBRATION.md`, *The band, and the brush that closes its joins* |
 | `scumble-dabs` | fact | a scumble whose every pass is shorter than the brush laying it: dabs, and the paint blooms past the outline | `CALIBRATION.md`, *The band across a wedge* |
 | `scumble-wedge` | fact | a scumble across a shape whose width varies: no one brush is right for both ends, and the narrow end blooms | `CALIBRATION.md`, *The band across a wedge* |
+| `smudge-across` | fact | a smudge whose path crosses a boundary: it carries the first mass about a brush into the second, a thumbprint | `CALIBRATION.md`, *Across a boundary, and along a long one* |
 | `clean-comb` | habit | a clean edge drawn with a bristle, whose comb covers about three-quarters of its width | `CALIBRATION.md`, *The contour of a clean edge* |
 | `inward-comb` | habit | an inward scumble laid with a bristle under the comb floor: four streaks with gaps rather than a brush | `CALIBRATION.md`, *The bristle comb* |
+| `smudge-long` | habit | a smudge run along a boundary for more than a tenth of the canvas: its strip reads as a third band, two edges where there was one | `CALIBRATION.md`, *Across a boundary, and along a long one* |
 | `smudge-wide` | habit | a smudge past `0.02`, where one pass stops softening a join and starts dragging a lobe | `CALIBRATION.md`, *`smudge`* |
 
 A pass prints the code and the sentence; the measurement stays where it was

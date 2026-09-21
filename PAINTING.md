@@ -135,27 +135,21 @@ second down within a few strokes of the first (*Wetness* in
 [`CALIBRATION.md`](CALIBRATION.md#wetness)).
 
 A `glaze` is the opposite move — a thin transparent film over dry paint that shifts the
-colour underneath without hiding it:
+colour underneath without hiding it. Mix it from what it lands on:
 
 ```python
-s.glaze([(0.2, 0.6), (0.8, 0.6)], "alizarin", opacity=0.15)
+field = s.sample(span("B5", "G6"))                         # what the film lands on
+s.glaze([(0.2, 0.6), (0.8, 0.6)], s.palette.mix(field, "alizarin", 0.15),
+        opacity=0.15)
 ```
 
 **A glaze is strong in proportion to its *distance* from what it lands on, in hue as
-well as in value**, and `opacity` is the wrong knob to reach for first. A warm light
-film over a cool dark mass:
-
-| `opacity` | what it does to the value under it | and to the hue |
-|---|---|---|
-| `0.05` | `+0.028` | already neutral — the cool is gone and nothing warm has arrived |
-| `0.10` | `+0.061` | warm |
-| `0.14` | `+0.087` | a stripe of a different colour |
-| `0.20` | `+0.123` | a different mass |
-
-At `0.14` the film has moved the value by nearly the whole `0.10` that separates two
-masses. **So mix the glaze close to what it lands on, in value and in hue, and then
-choose an opacity** — or let `glaze(..., to_value=)` search for the opacity that lands
-the passage on a value, which costs the same one stroke (*`glaze`* in
+well as in value**, and `opacity` is the wrong knob to reach for first: a film mixed
+far has no usable opacity — too weak, it kills the hue under it; a little stronger, it
+is a stripe of a different colour. **So mix the glaze close, and then choose an
+opacity** — or let `glaze(..., to_value=)` search for the one that lands the passage on
+a value, for the same one stroke. The call says when a film moved the passage past what
+a film is for (`glaze-far`; the table is *`glaze`* in
 [`CALIBRATION.md`](CALIBRATION.md#glaze)). And a film is a mass at a depth: a glaze
 laid last because it is *light* still lands on top of whatever it crosses, so keep it
 off the near things, or lay them again after it — two painters in a row lost a near

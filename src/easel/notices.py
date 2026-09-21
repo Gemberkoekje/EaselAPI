@@ -281,10 +281,28 @@ NOTICES: dict[str, NoticeSpec] = {
         ),
         # -- the other verbs ---------------------------------------------------------
         _spec(
+            "smudge-across", "fact",
+            "a smudge whose path crosses a boundary: it carries the first mass about a "
+            "brush into the second, a thumbprint",
+            "calibration", "### Across a boundary, and along a long one",
+        ),
+        _spec(
+            "smudge-long", "habit",
+            "a smudge run along a boundary for more than a tenth of the canvas: its "
+            "strip reads as a third band, two edges where there was one",
+            "calibration", "### Across a boundary, and along a long one",
+        ),
+        _spec(
             "smudge-wide", "habit",
             "a smudge past `0.02`, where one pass stops softening a join and starts "
             "dragging a lobe",
             "calibration", "## `smudge`",
+        ),
+        _spec(
+            "glaze-far", "fact",
+            "a film that moved the passage under it past what a film is for: a new mass "
+            "in value, or a colour of its own in hue",
+            "calibration", "### A film far from what it lands on",
         ),
         _spec(
             "glaze-nothing", "fact",
