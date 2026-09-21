@@ -4257,6 +4257,21 @@ def test_a_film_far_from_what_it_lands_on_says_what_it_did(tmp_path):
         s.stroke([(0.2, 0.5), (0.8, 0.5)], color="film", glaze=True, opacity=0.14, **FILM)
 
 
+def test_a_session_loaded_from_its_file_lays_and_measures_a_film(tmp_path):
+    """`easel run` paints from a file, and `Session.load` builds the session by hand
+    rather than through `__init__`: a flag set in one and not the other is an
+    AttributeError on the first film of every pass painted from the shell. Both ways of
+    laying a film, on a session that came back from disk."""
+    path = tmp_path / "p.easel"
+    _under_a_film(tmp_path).save(path)
+    s = Session.load(path)
+    with pytest.warns(UserWarning, match="stops shifting a mass"):
+        s.glaze([(0.2, 0.5), (0.8, 0.5)], "film", opacity=0.14, **FILM)
+    s = Session.load(path)
+    with pytest.warns(UserWarning, match="stops shifting a mass"):
+        s.stroke([(0.2, 0.5), (0.8, 0.5)], color="film", glaze=True, opacity=0.14, **FILM)
+
+
 def test_a_film_mixed_close_or_aimed_at_a_value_is_left_alone(tmp_path):
     """`LESSONS.md` rule 2, as the two cases the guide itself recommends. A film mixed
     close to what it lands on -- the lit-air recipe's own mixture, a step above the

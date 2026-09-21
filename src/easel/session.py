@@ -4467,6 +4467,11 @@ class Session:
                 s._counting = False
                 s._uncounted = []
                 s._clip_memo = None
+                # Built by hand here, like everything above: a flag `__init__` sets and
+                # this does not is an AttributeError on the first film of every pass
+                # `easel run` paints from a file.
+                s._film_call = ""
+                s._solving = False
 
                 canvas = Canvas.__new__(Canvas)
                 canvas.width = int(meta["width"])

@@ -309,6 +309,15 @@ calibration's *does nothing below about `0.014`* was measured on 640x480; the
 laundromat's `0.011` on 1024 wide moved 1,337 px, and `smudge-long` is right to speak
 there.
 
+**12. `Session.load` builds a session by hand, and a flag added to `__init__` alone
+crashed it.** `_film_call` and `_solving` went into `__init__` and into
+`_trial_session`, the two places that were in view, and not into `load()`, which sets
+every attribute itself; so the first film of every pass `easel run` paints from a file
+raised `AttributeError`. The suite never glazed a loaded session. It was found by the
+first D3 test that ran a pass through the shell, fixed on this branch, and held by
+`test_a_session_loaded_from_its_file_lays_and_measures_a_film`. **Any new session
+attribute needs three homes: `__init__`, `_trial_session` and `load`.**
+
 ## Open, and for the owner to rule on
 
 **The replay promise.** The smudge fix moves the first brush-width of every smudge,
@@ -331,9 +340,9 @@ now warn in the test output, as their pinned `0.06` smudge already would unfilte
 | File | What changed |
 |---|---|
 | `src/easel/stroke.py` | a pure smudge carries nothing of its own until its first dab (`tasted`) |
-| `src/easel/session.py` | `_SMUDGE_STEP`, `_SMUDGE_LONG`, `_SMUDGE_FOLLOW`, `_box_mean`, `_SmudgeRead`, `_smudge_samples`, `_smudge_crossing`, `_check_smudge_path`; `_FILM_FOOTPRINT`, `_FILM_NEW_MASS`, `_FILM_FAR`, `_film_shift`, `_check_glaze_far`; `smudge()` reads its path first; `stroke()` keeps a film's box and measures it; `glaze()` says it is the caller and whether it was aimed; `_film_call` and `_solving` on sessions and trial copies |
+| `src/easel/session.py` | `_SMUDGE_STEP`, `_SMUDGE_LONG`, `_SMUDGE_FOLLOW`, `_box_mean`, `_SmudgeRead`, `_smudge_samples`, `_smudge_crossing`, `_check_smudge_path`; `_FILM_FOOTPRINT`, `_FILM_NEW_MASS`, `_FILM_FAR`, `_film_shift`, `_check_glaze_far`; `smudge()` reads its path first; `stroke()` keeps a film's box and measures it; `glaze()` says it is the caller and whether it was aimed; `_film_call` and `_solving` on sessions, trial copies and loaded sessions |
 | `src/easel/notices.py` | `smudge-across`, `smudge-long`, `glaze-far` |
-| `tests/test_requests.py` | five tests after the `spill` ones: the fix, both smudge checks, the film and the two films it leaves alone |
+| `tests/test_requests.py` | six tests after the `spill` ones: the fix, both smudge checks, the film, the two films it leaves alone, and a film on a session loaded from its file |
 | `tests/golden/*`, `samples/brushes.png` | the three `marks` cases and the sampler, regenerated after looking |
 | `REFERENCE.md` | three rows in *What the tool will tell you* |
 | `CALIBRATION.md` | *Across a boundary, and along a long one*; *A film far from what it lands on*; the asymmetry and across bullets; the finding-3 claim row |
