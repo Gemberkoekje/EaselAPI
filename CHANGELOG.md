@@ -256,6 +256,60 @@ log* into `REFERENCE.md`, where `PAINTING.md` already had it, while `SUGGESTIONS
 on claiming it reported zero. A script somebody has to remember to run is the preference
 that rule is about.
 
+### Two checks at the call, off the geometry of the passes
+
+Step 6 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream D1). Both are faults the
+documentation named and the tool did not catch, and both are said at the call — before
+a dab lands — from the passes the call is about to lay. D2 and D3 are still to come.
+
+**`chisel-staircase`.** A `flat` or `knife` filling a mass along a straight side it runs
+*nearly* along ends its passes down that side in ledges, and the side comes back as a
+staircase: finding 1, and Kimi's rock faces were `RECIPES.md`'s own *a mass built of
+planes*, character for character. The plan's window of angles measured how irregular a
+shape is rather than how it stairs and did not survive being built; the rule is the
+mechanism instead — a pass end lands every `step × cot(θ)` down a side, so it is
+*nearest parallel* that a chisel steps worst — and it fires on **2%** of the corpus's
+painted passes against the prototype's 6%. The three recipes that produced it were fixed
+in the same change, and `edge="hard"` stopped being offered as its remedy: these are pass
+ends *inside* the mask, and it measures 22% to 20%.
+
+**`spill`.** A ragged `block_in` whose passes will cover **1.6x** the place it was handed
+or more says so — the multiple, the share of the paint outside the place, and the brush's
+share of it — with the answers `PAINTING.md` gives: inset the place by half the brush, a
+brush under a fifth of it, or `edge="hard"`. A banded `scumble` says so at **2.0x**,
+because its own brush breaks past the band by design and the band its brush was tuned on
+covers 1.69x laid along its axis; a planned band says it when `cost()` walks it.
+
+- **Predicted off the passes, not read off a rule of thumb.** The plan's version was *a
+  brush over a fifth of the shorter extent*, and `PAINTER.md`'s own first `block_in` lays
+  a brush 60% of its shape and lands 1.48x of it. So the call walks its passes on a copy
+  of the stream and lays each as a strip as far past its line as that tip's paint
+  reaches, measured: fitted on 126 masses and bands painted for the purpose, it is within
+  2% of the paint on average for a chisel or a band and within 5% for a comb or a round
+  tip. Under twelve pixels a brush does not land where its outline says, and the rule
+  stays out.
+- **A band crossed at an angle (B17)** covered `2.95x` itself at 30 degrees with nothing
+  saying so. The notice says `3.0x` and names `edge="hard"` — the same passes, held to the
+  band. **The auto brush is not capped**, which was the plan's open question: a cap at
+  the band's depth still leaves `2.22x`, and one at half the depth brings the bars back.
+  At 60 degrees `scumble-dabs` already fires, and `spill` stands aside for it.
+- **Not said inside `cover()`**, whose ends run outside the area on purpose — its
+  canonical call paints about three times its cell, and a rule that fires on the
+  canonical call is a rule painters learn to ignore. F1, the default move that would put
+  a burial inside its area, is left for the owner to rule on.
+- **It fired on three of the guide's own blocks, and all three were painting their
+  neighbours**, so the blocks moved and the rule did not. The value scale in
+  `PAINTER.md`'s exercises covered twice each band; its passes now run along the bands,
+  which also takes it from **189 strokes to 27**. The swatch strip lays a brush a fifth
+  of each swatch's width. The per-stroke overrides example in `PAINTING.md` filled one
+  grid cell with a brush wider than the cell, and now fills a place its brush fits.
+- `PAINTING.md`'s paragraph on paint landing outside the shape is one line naming the
+  code; the three answers stay, and the measurement lives in `CALIBRATION.md`, *Paint
+  that lands outside the place*.
+
+Nothing paints differently: both are notices, and the only code that changed what it lays
+is the guide's own.
+
 ### The canvas, measured, and the closing checklist answered
 
 Step 7 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstreams E and G4). Everything

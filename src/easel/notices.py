@@ -207,6 +207,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "calibration", "### The chisel staircase",
         ),
         _spec(
+            "spill", "fact",
+            "a mass or a band whose passes will cover well over the place they were "
+            "handed: the brush hangs past every pass, over whatever is beside it",
+            "calibration", "### Paint that lands outside the place",
+        ),
+        _spec(
             "clean-small", "fact",
             "a clean edge whose brush is a large share of the shape: the inset takes the "
             "mass rather than a rim off it",

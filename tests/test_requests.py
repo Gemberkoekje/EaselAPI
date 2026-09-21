@@ -3968,6 +3968,118 @@ def test_the_staircase_is_silent_on_a_curve_and_on_a_square_end(tmp_path):
                        direction="horizontal", density=1.0, solid=True)
     assert not [n for n in quiet.notices() if n.code == "chisel-staircase"]
 
+
+def _spilled(session) -> list:
+    return [n for n in session.notices() if n.code == "spill"]
+
+
+def test_a_band_crossed_at_an_angle_says_how_far_it_lands_outside(tmp_path):
+    """Finding 8 and B17: a water scumble covered part of the sky. A banded scumble picks
+    its brush from the step between passes, and the step from the band's extent across
+    them -- which, crossed at an angle, is most of the band's length. So at 30 degrees
+    the band `0.10-0.90 x 0.40-0.60` covers about three times itself, and nothing said
+    so: the ends check fires at 60 degrees, where every pass is a dab, and not here.
+
+    The multiple is predicted off the passes the call is about to lay, and the remedy
+    it names first keeps both the angle and the gradient: the same passes, held."""
+    band = Region(0.10, 0.40, 0.90, 0.60)
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="the paint outside it"):
+        s.scumble(band, "burnt_umber", "titanium_white", 8, direction=30)
+    said = _spilled(s)
+    assert len(said) == 1
+    text = said[0].text
+    # 2.95x measured on 1024x768; the prediction is off by under 2% on a band.
+    assert re.search(r"lays about (2\.[89]|3\.[01])x the band", text), text
+    assert "picked from that step" in text
+    assert 'edge="hard"' in text and 'direction="axis"' in text
+
+    # Silent along the band's own axis, where the same band covers 1.49x itself; silent
+    # held to the band, which is the remedy; and silent at 60 degrees, where the ends
+    # check has already said the paint blooms past the band -- one notice per bloom.
+    for label, kw in (("along its axis", {"direction": "axis"}),
+                      ("held to the band", {"direction": 30, "edge": "hard"})):
+        quiet = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            quiet.scumble(band, "burnt_umber", "titanium_white", 8, **kw)
+        assert not _spilled(quiet), label
+    steep = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        steep.scumble(band, "burnt_umber", "titanium_white", 8, direction=60)
+    assert {n.code for n in steep.notices()} >= {"scumble-dabs"}
+    assert not _spilled(steep)
+
+
+def test_a_planned_band_is_told_about_its_spill_when_it_is_priced(tmp_path):
+    """`cost()` walks the same passes, so the quote says what the call will: a plan is
+    where a painter decides the angle, and the one place it is free to change it."""
+    band = Region(0.10, 0.40, 0.90, 0.60)
+    entry = {"band": band, "color_a": "burnt_umber", "color_b": "titanium_white",
+             "n": 8, "direction": 30}
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="lays about"):
+        s.cost([entry])
+    assert _spilled(s)
+    held = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        held.cost([{**entry, "edge": "hard"}])
+    assert not _spilled(held)
+
+
+def test_a_brush_too_big_for_its_mass_says_it_will_paint_the_neighbours(tmp_path):
+    """The most expensive first mistake with shapes on record -- a rehearsal lost 72
+    strokes and its only `undo` to it: a pass stops where its centre meets the outline
+    and the brush hangs half its width past it, so a brush that is a large part of the
+    mass lays the mass and a rim round it. The three answers `PAINTING.md` gives are
+    each silent, at the numbers it gives them."""
+    mass = blob(span("D4", "F6"), 0.22, wobble=0.3, seed=2)
+    s = make(tmp_path)
+    with pytest.warns(UserWarning, match="lays about"):
+        s.block_in(mass, "flat", "burnt_umber", size=0.18)
+    said = _spilled(s)
+    assert len(said) == 1
+    assert "of the place's shorter side" in said[0].text
+    assert "place.inset(0.09)" in said[0].text
+
+    for label, call in (
+        ("inset by half the brush", lambda q: q.block_in(mass.inset(0.045), "flat",
+                                                         "burnt_umber", size=0.09)),
+        ("a smaller brush", lambda q: q.block_in(mass, "flat", "burnt_umber", size=0.06)),
+        ("a clean edge", lambda q: q.block_in(mass, "flat", "burnt_umber", size=0.06,
+                                              edge="clean")),
+        ("held to the outline", lambda q: q.block_in(mass, "flat", "burnt_umber",
+                                                     size=0.18, edge="hard")),
+    ):
+        quiet = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            call(quiet)
+        assert not _spilled(quiet), label
+
+
+def test_spill_is_silent_where_the_overrun_is_the_point_or_the_rule_of_thumb_is_wrong(
+        tmp_path):
+    """`LESSONS.md` rule 2, as the cases that would have got it wrong. `cover()` runs its
+    ends outside the area on purpose, and its canonical call paints about three times
+    its cell. `PAINTER.md`'s first `block_in` lays a brush 60% of its shape -- the plan's
+    *a fifth of the shorter extent* would fire on it -- and lands 1.48x, because the
+    multiple is what paints the neighbours and not the fraction. And under twelve
+    pixels a brush does not land where its outline says: on the bench the reach was
+    fitted on, a 7 px flat on a thin strip predicted at 1.68x came back at 0.65x."""
+    quiet = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quiet.cover(cell("D5"), "burnt_umber")
+        far = blob(span("B2", "G4"), wobble=0.3, seed=1)
+        quiet.block_in(far, "bristle", "burnt_umber", density=0.8, size=0.18,
+                       direction="axis")
+        quiet.block_in(Region(0.05, 0.70, 0.95, 0.76), "flat", "burnt_umber",
+                       size=0.02, direction="axis")
+    assert not _spilled(quiet)
+
 # -- E: the standing measurement lines, and G4: the checklist --------------------------
 #
 # Every one of these answers a line of `PAINTER.md`'s closing checklist that a painter

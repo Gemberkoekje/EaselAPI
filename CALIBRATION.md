@@ -642,6 +642,97 @@ say so past a quarter, naming the share and what the inset keeps, and the fix is
 smaller brush or the ragged edge. Clean still spills half what ragged does at every
 size, which is what it is for.
 
+### Paint that lands outside the place
+
+A pass stops where its *centre* meets the outline, the brush hangs half its width past
+it, and the ends run on by the overhang — so the multiple of its place a call covers
+grows with the brush's share of that place, and past a point the call is painting its
+neighbours as well. `block_in` (ragged) and a banded `scumble` say so at the call
+(`spill`) once the passes they are about to lay will cover **1.6x** the place or more —
+**2.0x** for a band, whose own brush breaks past it by design (below).
+
+**Predicted off the passes, not read off a rule of thumb.** The plan's version was *a
+brush over a fifth of the shorter extent*, and `PAINTER.md`'s own first `block_in` lays
+a brush 60% of its shape and lands 1.48x of it: the fraction does not paint the
+neighbours, the multiple does. So the call walks the passes it will lay, on a copy of
+the stream, and lays each as a strip reaching this far past its line, in half-brush
+widths — fitted on 126 masses and bands laid for the purpose on 400×300, 1024×768 and
+900×200 canvases, painted, and measured the way the corpus replay measures a call (a
+pixel whose value moved by more than `0.004` is painted):
+
+| tip | across the pass | past its ends | mean error against the paint |
+|---|---|---|---|
+| `flat`, `knife` | 1.00 | 0.2, square | 1.8% |
+| `bristle`, running dry | 0.90 | 0.4, square | 4.7% |
+| `bristle` laid solid (a banded `scumble`, or `solid=True`) | 1.05 | 0.2, square | 1.7% |
+| `round_hard`, `round_soft` | 0.80 | 0.8, round | 4.2% |
+
+The solid comb's row was fitted on bands and borrowed for masses, so it was checked on
+90 more: `block_in(..., "bristle", solid=True)` on five places, two canvases, three
+sizes and three directions comes in at 1.7% on average and 6.5% at worst.
+
+**Under 12 pixels a brush does not land where its outline says**, and the rule stays out:
+a comb that narrow is a few streaks with gaps and a chisel lays next to nothing
+(`chisel-blank`). On the same bench a 7 px `flat` predicted at 1.68x came back at
+0.65x, and a 10 px comb at 1.65x came back at 0.47x.
+
+**The threshold is over the corpus's tail and over the guide.** Over the 299 masses of
+the 21 paintings, a `block_in` covers `1.126` times its place at the median and `1.474`
+at p90, a banded `scumble` `1.287` and `1.573` (*Where a threshold would sit*, below);
+no mass the guide recommends lands over `1.49`. On the bench, `1.6`
+with the pixel floor fired on 78 calls whose paint was over it, missed none, and fired
+twice on calls whose paint was not — both predicted at `1.63`–`1.65` and measured at
+`1.55`.
+
+**A band's line is `2.0`**, and the suite is what said so. A banded `scumble`'s brush is
+three of its own steps and breaks past the band on purpose — and on a canvas that is not
+square the step is taken in the canvas's *height* while the brush is sized against its
+long side, so in pixels it is more than three. The band the verb's brush was tuned on,
+`0.80 × 0.40` at `n=8`, covers **1.69x** itself laid along its own axis at 320×240, and a
+square scumbled in six passes 2.29x; at `1.6` the first would have been told it spills by
+the very test that asserts it is the case to copy. Mapped by prediction over seven
+canvases, seven places and six pass counts, bands laid along their own axis cover a
+median of `1.63x` (p90 `2.42x`) and the same bands crossed at 30 to 60 degrees `2.90x`–
+`3.03x`. At `2.0` three in four of the first stay silent — the rest are squares given
+four to six passes, whose own brush is two-thirds of the place or more, and which do lay
+a smear twice their size — and 85% of the second are told. A rule on the mechanism instead
+(*the brush is wider than the band is deep*) was tried and missed angled squares at
+`3.2x`–`3.5x`.
+
+**It fired on three of the guide's own blocks**, and all three were painting their
+neighbours, so the blocks moved and the rule did not:
+
+| block | as written | now |
+|---|---|---|
+| `PAINTER.md`, exercise 1, the value scale | `2.00x`, 189 strokes | `direction="axis"`, `1.36x`, **27** strokes |
+| `PAINTER.md`, exercise 9, the swatch strip | `1.96x` | `size=0.04`, a fifth of the swatch's width, `1.45x` |
+| `PAINTING.md`, *Per-stroke overrides* | `2.79x`, a `flat` wider than its cell | `span("C4", "F6")`, `1.38x` |
+
+**Not said inside `cover()`**, whose ends run outside the area on purpose — its
+docstring's canonical `cover(cell("D5"))` paints about three times the cell, and a rule
+that fires on the canonical call is a rule painters learn to ignore. What a burial
+costs a worked passage is under *The default moves*, below, and the keyword that keeps
+it inside is `edge="hard"`.
+
+**A band crossed at an angle (B17).** A banded `scumble` picks its brush from the step
+between its passes, and the step from the band's extent *across the passes* — which,
+crossed at an angle, is most of the band's length rather than its depth. A band `0.10–
+0.90 × 0.40–0.60` on 1024×768, `n=8`, painted from burnt umber to ultramarine on
+`toned_grey`; *bare* is the band's own area left unpainted between passes:
+
+| direction | auto brush | covers | capped at the band's depth | capped at half its depth |
+|---|---|---|---|---|
+| along its axis | `0.075` | `1.49x` | `1.49x` | `1.49x` |
+| 30 degrees | `0.215` | **`2.95x`**, 66% outside | `2.22x` | `1.36x`, `3.2%` bare |
+| 60 degrees | `0.297` | **`3.57x`**, 72% outside | `2.04x` | `1.16x`, `15.8%` bare |
+
+**So the auto brush is not capped.** A cap that stops the spill brings the bars back,
+and the angle is the painter's, with the gradient running along it. The remedy that
+keeps both is the hold: `edge="hard"` lays the same passes and masks every dab to the
+band, and the notice names it first. At 60 degrees every pass is shorter than the brush
+and `scumble-dabs` already says the paint blooms past the band, so `spill` stands
+aside: one notice per bloom.
+
 ### The bites just inside a hard edge (0.6.0: the default moved)
 
 `edge="hard"` masks every dab to the outline, so nothing can land outside it — and

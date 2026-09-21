@@ -462,6 +462,7 @@ floor twenty-eight times and was right every time.
 | `chisel-blank` | fact | an oriented tip under four pixels wide lays no paint, and is charged for it | `CALIBRATION.md`, *What a solid mass actually lands at* |
 | `chisel-pressure` | fact | a pressure list on a chisel tip changes the paint, not the width | `CALIBRATION.md`, *Pressure* |
 | `chisel-staircase` | fact | a chisel filling a mass along a straight side it runs nearly along: the pass ends step down that side instead of drawing it | `CALIBRATION.md`, *The chisel staircase* |
+| `spill` | fact | a mass or a band whose passes will cover well over the place they were handed: the brush hangs past every pass, over whatever is beside it | `CALIBRATION.md`, *Paint that lands outside the place* |
 | `clean-small` | fact | a clean edge whose brush is a large share of the shape: the inset takes the mass rather than a rim off it | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `count-only` | fact | a counted copy was asked something counting cannot answer | `PAINTING.md`, *Try the mark before you spend it* |
 | `solid-comb` | fact | a mass laid solid with a bristle: `solid=` closes the gaps along a pass and not the ones the comb leaves across it | `CALIBRATION.md`, *The holes a solid comb leaves* |

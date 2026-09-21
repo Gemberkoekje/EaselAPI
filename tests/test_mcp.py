@@ -286,9 +286,13 @@ def test_the_quoted_price_is_what_the_echoed_python_pays(tmp_path, call, plan):
     session = str(tmp_path / f"q{abs(hash(str(plan)))}.easel")
     call("new", session=session, size="480x360", seed=5, out_dir=str(tmp_path / "out"))
     quoted = call("cost", session=session, plan=plan)
-    total = int(re.match(r"(\d+) stroke", quoted.text).group(1))
+    # What the walk said comes first when it said anything -- a square scumbled in six
+    # passes is told it lays over twice its place -- and the price line after it.
+    price = re.search(r"^(\d+) stroke", quoted.text, re.M)
+    total = int(price.group(1))
 
-    call("run", session=session, script="\n".join(quoted.text.splitlines()[2:]))
+    script = quoted.text[price.start():].splitlines()[2:]
+    call("run", session=session, script="\n".join(script))
     assert call_count(call, session) == total
 
 

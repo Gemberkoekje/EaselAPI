@@ -9,7 +9,8 @@ today lives -- all of them through `Session._notify` and `src/easel/notices.py` 
 step 3._
 
 **Status: steps 1 to 5, 7 and 8 are done, steps 6 and 9 are part-done, and step 10 is
-still a plan; of workstreams A to G, A, B, C, E and F are built and G is started.**
+still a plan; of workstreams A to G, A, B, C, E and F are built, D1 is, and G is
+started.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -23,8 +24,11 @@ lands on that channel rather than beside it.** Step 4 is workstream B, every row
 except B8, which was held back to the default moves (F5) because it repaints 55
 committed calls. Step 5 is the plan object (C): `src/easel/plan.py`, `Session.plan()`,
 its five effects on the check, `easel plan` and an MCP `plan` tool, and the finding-11
-contradiction resolved in both the engine and the recipe. **Step 6 is part-done**:
-`chisel-staircase` (D1) is built, and `spill` (D1), D2 and D3 are not started. Step 7 is
+contradiction resolved in both the engine and the recipe. **Step 6 is part-done**: both
+D1 checks the probe left standing are built -- `chisel-staircase`, and `spill`, whose
+multiple is predicted off the passes a call is about to lay and which settled B17's
+open question (the auto brush is not capped) -- and D2 and D3 are not started;
+`NOTES-step6.md` has `spill`'s gotchas. Step 7 is
 workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 `edges:` / `holes:` / `pencil:` / `boxes:` / `unspent:` lines, `easel check` and the MCP
 `check` tool; `NOTES-step7.md` has its gotchas, including one published `edges:` number
@@ -498,7 +502,7 @@ the map back, if a cut turns out to have gone too far.
 | `PAINTER.md` checklist, 13 lines | faults to look for | `s.checklist()` | the three judgement lines |
 | `PAINTING.md`, *Wet paint*: dry first; glaze distance | | `wet-under`, `glaze-far` | the mechanism, short |
 | `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) | the table as an index of codes |
-| `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` | the three remedies |
+| `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` -- **`spill` arrived in step 6**, and the spill paragraph is one line naming it; the `inset` paragraph waits for `inset-lost`, which is tier 3 | the three remedies |
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
 | `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips | one line |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
@@ -554,7 +558,7 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 | `ring-steps`, `ring-rim` (D1, D2) | fire on **nothing** in the corpus and on one guide block each. Every committed inward `scumble` steps `0.014`-`0.021` a ring, well under any contour threshold. Their only evidence is GLM's lost take |
 | `round-soft-mass` (D1) | never fires |
 | F4, halved `jitter` on a `flat` scumble | the halved pair moves the ripple from `0.0053` to `0.0059`: nothing this measures |
-| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all |
+| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all. **`spill` is built (step 6) and says nothing inside `cover()`**, whose canonical call overruns about three times its cell by design -- so the move is the owner's to rule on, and nothing in the engine waits for it |
 | F2, a round tip to `pressure="even"` | **0 committed calls** would move |
 
 **Survive, with the threshold the corpus gives.**
@@ -621,8 +625,12 @@ Small, and none of it blocks step 1.
 - What exactly printed the *dark* band in GLM's rings -- a ring in a dark colour, or a
   ring that picked up the wet bezel. The probe's reconstruction answers it (B18), and
   the answer decides whether `wet-under` is built at all.
-- Whether a banded `scumble`'s auto brush should be capped by the band's own shorter
-  extent (B17), or only clipped and warned about.
+- ~~Whether a banded `scumble`'s auto brush should be capped by the band's own shorter
+  extent (B17), or only clipped and warned about.~~ **Settled in step 6: warned about,
+  and not capped.** A cap at the band's depth still leaves `2.22x` at 30 degrees and
+  `2.04x` at 60; a cap at half the depth brings the bars back (`3.2%` and `15.8%` of
+  the band bare). `spill` names `edge="hard"` first (`CALIBRATION.md`, *Paint that
+  lands outside the place*).
 - Whether `easel_paint` should one day become the canonical import, given the unrelated
   `easel` on PyPI (B10). Not this round: the shim keeps the option open.
 - **Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
