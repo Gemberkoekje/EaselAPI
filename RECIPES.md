@@ -25,7 +25,7 @@ recipe itself, the smallest fix. `easel demo <recipe>` paints them side by side.
 |---|---|
 | **Before the first stroke** | [a scene with straight edges](#a-scene-with-straight-edges) · [a subject that is one thing against a ground](#a-subject-that-is-one-thing-against-a-ground) · [a picture with an empty half](#a-picture-with-an-empty-half) |
 | **Surfaces** | [a plane that is a plane](#a-plane-that-is-a-plane) · [a form that turns](#a-form-that-turns) · [a mass built of planes](#a-mass-built-of-planes) |
-| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) — *on a surface* · [a volume of lit air](#a-volume-of-lit-air) — *in a medium* · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a graded field that is most of the picture](#a-graded-field-that-is-most-of-the-picture) · [a quiet gradient](#a-quiet-gradient) |
+| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) — *on a surface* · [a volume of lit air](#a-volume-of-lit-air) — *in a medium* · [a light broken down a surface toward the viewer](#a-light-broken-down-a-surface-toward-the-viewer) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a graded field that is most of the picture](#a-graded-field-that-is-most-of-the-picture) · [a quiet gradient](#a-quiet-gradient) |
 | **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a small container with something spilling from it](#a-small-container-with-something-spilling-from-it) · [a tapered arc](#a-tapered-arc) · [the one ruled line](#the-one-ruled-line) |
 | **Edges** | [an edge that is actually lost](#an-edge-that-is-actually-lost) · [a mark that crosses a boundary](#a-mark-that-crosses-a-boundary) |
 | **Order** | [a hollow thing](#a-hollow-thing) · [a repair under things that are standing on it](#a-repair-under-things-that-are-standing-on-it) |
@@ -161,6 +161,18 @@ which the checklist's last line is where you decide.
 
 **Goes wrong as:** a second subject (the thing put there was a thing); or the busy
 corner corrected again while the empty one stays empty.
+
+```python
+# the passage: a subject and its light on one side, haze on the other
+p["haze"] = p.at_value(p.mix("dark", "light", 0.5), 0.50)
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "haze", size=0.1, solid=True, edge="hard")
+s.scumble(ellipse(span("A1", "C3")), "haze", "light", 20, direction="inward")
+s.block_in(Region(0.22, 0.40, 0.28, 1.0), "flat", "dark", size=0.03, solid=True,
+           direction="vertical")                                 # the subject
+# goes wrong: nothing says so
+s.block_in(Region(0.75, 0.52, 0.81, 1.0), "flat", "dark", size=0.03, solid=True,
+           direction="vertical")                                 # a thing put there
+```
 
 ---
 
@@ -386,6 +398,65 @@ s.glaze([(0.64, 0.24), (0.30, 0.33), (-0.08, 0.41)], "light", opacity=0.15, size
 
 ---
 
+## A light broken down a surface toward the viewer
+
+A light that lands on a surface between it and you and comes toward you in pieces. Four
+of seven painters failed this passage first, and failed it alike — *floating
+rectangles*, *small bricks*, *a ziggurat*, *spoon-shaped islands*, each a run of marks
+of one shape. The versions they kept, taken together, come to four things.
+
+```python
+import random
+
+rng = random.Random(5)
+under = s.sample(Region(0.55, 0.55, 0.70, 0.95))          # what the light lands on
+p["film"] = p.at_value(p.mix(under, "light", 0.4), p.value_of(under) + 0.06)
+s.dry()
+s.glaze([(0.62, 0.52), (0.625, 0.72), (0.63, 0.96)], "film", opacity=0.15, size=0.08,
+        pressure=[1.0, 0.7, 0.3])                        # a film carries it down first
+y, gap, spread, op = 0.53, 0.022, 0.017, 0.88
+while y < 0.97:                                           # further apart, wider, fainter
+    x, n = 0.62 + rng.gauss(0, spread), rng.uniform(0.018, 0.05)
+    s.stroke([(x - n / 2, y + 0.002), (x, y - 0.002), (x + n / 2, y + 0.001)],
+             "round_hard", "light", size=0.01, opacity=op, tip_wobble=0.6,
+             pressure=[0.05, 1.0, 0.4])                  # no two the same length
+    y, gap, spread, op = y + gap, gap * 1.2, spread * 1.2, op * 0.85
+s.stroke([(0.58, 0.66), (0.65, 0.665)], "round_hard", "dark", size=0.006, opacity=0.8)
+s.stroke([(0.61, 0.84), (0.70, 0.83)], "round_hard", "dark", size=0.006, opacity=0.8)
+```
+
+- **A film first**, carrying the light down onto the surface, mixed from what it lands
+  on: the pieces then sit on a passage that is already lit rather than on the dark.
+- **Every piece a different length**, with a bend in it and its ends lifted, and its
+  tip's outline drawn afresh (`tip_wobble=`). A column of one length is the failure
+  below, whatever else changes down it.
+- **The rows, not the pieces, change as the light comes toward you**: further apart,
+  spread wider, fainter. The pieces keep their lengths; the passage opens out.
+- **Then the surface's own dark laid back across it**, thin and after the lights are
+  down: the dark between the pieces is as much of the light as the pieces are.
+
+**Goes wrong as:** a ladder — one mark at one length repeated down the path, which is a
+loop's signature and which `report()` names; a strict ramp of lengths is the same loop
+with one more number in it. Or a column of rectangles under the light, which is a chisel
+at one size.
+
+```python
+# the passage: a surface, and the light above it
+p["far"] = p.mix("dark", "light", 0.5)
+s.block_in(Region(0.0, 0.0, 1.0, 0.5), "flat", "far", size=0.025, solid=True, edge="hard")
+s.scumble(Region(0.0, 0.5, 1.0, 1.0), "far", "dark", 40)     # darkening toward you
+s.dab(0.62, 0.30, "round_hard", "light", size=0.04, press=3)
+# goes wrong: report() says "a loop's signature"
+for i in range(8):
+    y = 0.55 + 0.05 * i
+    s.stroke([(0.57, y), (0.67, y)], "flat", "light", size=0.02 - 0.001 * i,
+             opacity=0.8 - 0.08 * i, load=1.0, load_falloff=0.0, pressure="even")
+```
+
+*Collected from four paintings' accepted versions of the same passage.*
+
+---
+
 ## A passage brightening toward one side
 
 Not a glow and not a band between two masses — a whole area that simply gets lighter
@@ -526,6 +597,15 @@ exactly once, and doing it again undoes most of the first pass (*`smudge`* in
 [`CALIBRATION.md`](CALIBRATION.md#smudge)). When once is not enough the answer is
 paint.
 
+**Goes wrong as:** bars with the ground between them — a brush under the step between
+passes, so nothing overlaps, which the call names; steps, under about five passes; or a
+scalloped band, laid with a `flat`.
+
+```python
+# goes wrong: scumble-bars; report() says "comes back as bars"
+s.scumble(span("A4", "H6"), "shadow", "light", 8, size=0.03)   # a brush under one step
+```
+
 ---
 
 ## A small irregular bright mark
@@ -547,6 +627,14 @@ silhouette at `0` and 76% at `0.7`.
 **Goes wrong as:** a row of floating discs. Five small `round_hard` dabs are five copies
 of one disc to within 7% — the tip printing itself. The `bristle` is the only tip that
 does not repeat itself, because its comb is drawn per stroke.
+
+```python
+# the passage: a dark field
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "dark", size=0.1, solid=True, edge="hard")
+# goes wrong: report() says "one disc printed"
+for x, y in ((0.19, 0.26), (0.23, 0.29), (0.27, 0.31), (0.31, 0.30), (0.35, 0.31)):
+    s.dab(x, y, "round_hard", "pale", size=0.016, press=3)   # five of one tip: floating discs
+```
 
 **Landing one of these *inside* a mass: ask the mass.** The shape already knows:
 
@@ -664,6 +752,14 @@ keeps the arc circular on a canvas that is not square.
 background's colour bitten out of it — leaves the bitten edge visible as a seam,
 because the second disc is paint and not an eraser.
 
+```python
+# the passage: a dark field for the arc to lie on
+s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "dark", size=0.1, solid=True, edge="hard")
+# goes wrong: nothing says so
+s.dab(0.72, 0.22, "round_hard", "pale", size=0.10, press=3)      # a disc...
+s.dab(0.70, 0.20, "round_hard", "dark", size=0.095, press=3)     # ...bitten out with paint
+```
+
 ---
 
 ## The one ruled line
@@ -774,13 +870,34 @@ recipe: **the far edge, then what is inside, then the near edge.** It lives in
 depth order rather than a procedure. What belongs here is the mark that finishes it:
 
 ```python
-s.stroke([(0.16, 0.81), (0.25, 0.74), (0.38, 0.71)], "round_hard", "pale",
+s.stroke([(0.165, 0.74), (0.23, 0.78), (0.31, 0.79)], "round_hard", "pale",
          size=0.0085, opacity=0.95, pressure=[0.15, 1.0, 0.35])
 ```
 
 **One broken catch-light along the near edge is what makes a hollow thing read as
 hollow**, and it should be the only mark on it. Partial, off-centre, and let the rest of
 the near edge stay lost into whatever is behind it.
+
+**Goes wrong as:** a ring — the catch-light carried all the way round, which outlines
+the opening instead of lighting its edge; or the inside laid last, with nothing for it
+to stop against.
+
+```python
+# the passage: the far wall, the inside and the near side, in that order
+import math
+p["wall"] = p.mix("dark", "light", 0.7)
+p["body"] = p.mix("dark", "light", 0.45)
+rim = [(0.30 + 0.14 * math.cos(math.radians(a)), 0.72 + 0.07 * math.sin(math.radians(a)))
+       for a in range(0, 361, 15)]
+s.block_in(ellipse(Region(0.16, 0.65, 0.44, 0.79)), "flat", "wall", size=0.03,
+           edge="hard")                                        # the far wall
+s.block_in(ellipse(Region(0.175, 0.675, 0.425, 0.80)), "flat", "dark", size=0.03,
+           edge="hard")                                        # the inside, below it
+s.block_in(polygon(rim[:13] + [(0.19, 0.93), (0.41, 0.93)]), "flat", "body", size=0.04,
+           edge="hard")                                        # the near side
+# goes wrong: nothing says so
+s.stroke(rim, "round_hard", "pale", size=0.0085, opacity=0.95, pressure="even")  # an outline
+```
 
 ---
 
@@ -793,7 +910,9 @@ write your passes:
 ```python
 def far_mass():  s.block_in("upper-half", "flat", "shadow", size=0.16)
 def near_mass(): s.block_in(span("A4", "H6"), "flat", "mid", size=0.14)
-def details():   s.stroke(path, "round_hard", "light", size=0.02)
+def details():                                   # the things standing on it
+    for x in (0.28, 0.46, 0.64):
+        s.stroke([(x, 0.66), (x + 0.02, 0.50)], "round_hard", "light", size=0.012)
 
 for layer in (far_mass, near_mass, details):     # fix one, re-run all of them
     layer()
@@ -804,6 +923,23 @@ beside the session, and re-run the whole stack in depth order.** The repair goes
 its own depth and the near things go back on top of it, because they were never a
 one-off. That is what back-to-front costs at repair time, and it is cheaper than the
 alternative the second time you need it.
+
+**Goes wrong as:** a repair that buries what stands on it — the mass repainted and the
+near things never put back, which `report()` names after the pass.
+
+```python
+# the passage: the stack laid once, with things standing on the near mass
+p["mid"] = p.mix("dark", "light", 0.5)
+def far_mass():  s.block_in("upper-half", "flat", "shadow", size=0.16)
+def near_mass(): s.block_in(span("A4", "H6"), "flat", "mid", size=0.14)
+def details():
+    for x in (0.28, 0.46, 0.64):
+        s.stroke([(x, 0.66), (x + 0.02, 0.50)], "round_hard", "light", size=0.012)
+for layer in (far_mass, near_mass, details):
+    layer()
+# goes wrong: report() says "earlier details out of sight"
+near_mass()                                      # the repair, and nothing put back on it
+```
 
 For a repair with nothing standing on it, `s.cover(place, color)` is the whole burying
 recipe already mixed — *What you are bad at* in
