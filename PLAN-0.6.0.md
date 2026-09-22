@@ -8,9 +8,9 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1 to 8 are done, step 9 is part-done, and step 10 is still a plan; of
-workstreams A to G, A to F are built -- F1 too, which a ruling reopened after step 8 had
-declined it, built after it on its own branch -- and G is started.**
+**Status: steps 1 to 9 are done and step 10 -- the cut -- is what is left; workstreams
+A to G are built, F1 among them, which a ruling reopened after step 8 had declined it
+and which was built after it on its own branch.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -43,8 +43,7 @@ standing -- a banded
 F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
 they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
 afterwards: `cover()` holds a burial to its place, and `clean-small` asks a region as it
-asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is part-done**, in
-six parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
+asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is done**, in seven parts. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 `diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
 **G7 and G9** -- the fixes to what is there, and the one small fact of five that was
 genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
@@ -68,9 +67,12 @@ collected from the four accepted versions of the passage four cohort painters fa
 alike. Part six is **G2, G8 and G10**: `easel demo mistakes` and the entry path it
 sits in, the voice pass where a check now says the rule, and two word ceilings that
 bind -- `6_700` for the file against 6,654 words, `1_400` for the card against 1,369.
-G4 landed with step 7, so what is left of G is **the rest of G11**: `LESSONS.md`, and
-the counts in the README and `llms.txt`. `NOTES-step9.md` has the gotchas for all six
-parts. The three rulings the step notes left for the owner -- the standing
+Part seven is **the rest of G11**: `LESSONS.md` restates the boundary this round's own
+additions could be read as moving, puts a cohort that is not this model in the protocol,
+and narrows the depth-order item to what `buried` sees; the README gains a row for what
+the tool says at the call and has its count of the server held to the server; `llms.txt`
+says the same in a sentence. G4 landed with step 7, so **G is done**, and so is step 9.
+`NOTES-step9.md` has the gotchas for all seven parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
@@ -600,6 +602,16 @@ ruled 2026-09-21 -- what `buried` sees, which is a burial in one pass by a film 
 mass, and what it has not been run on), `README.md` / `llms.txt` (counts, the check's
 new shape), `CHANGELOG.md` (no *released* claim until the tag exists) -- and the rows of
 *Loose ends, and who owns them* (section 6) that name G11.
+
+**Done, over parts four and seven.** Part four closed the *Loose ends* rows: finding
+13's number, the noise table's counting, the replay promise, `wet-under`'s decline, and
+[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70) for the rebuild claims. Part
+seven is the rest: `LESSONS.md`'s three -- the boundary restated where the round's own
+additions could be read as moving it, a cohort that is not this model in the protocol,
+and the depth-order item narrowed to what `buried` sees -- plus what the tool says at
+the call as a row of the README's table and a sentence of `llms.txt`, and the README's
+count of the server held to the server by a test. `SUGGESTIONS.md` has no blank row
+left, and `CHANGELOG.md` claims nothing about a tag that does not exist.
 
 ### H. Validation -- the owner's, and not planned here
 

@@ -343,6 +343,22 @@ discovering for themselves that the target was unmeetable. Then the palette's fl
 taken from `0.235` to `0.13` and the list is normally empty, which is the right end state
 for a split like that.
 
+### The check reads marks and measures the canvas. It does not judge an arrangement
+
+0.6.0 moved more of the guide into the tool than every release before it together —
+new things said at the call, three more findings after a pass, four standing
+measurements of the canvas, and a closing checklist that answers its own measured
+lines. The line it stops at is the one it stopped at when there was no check at all:
+**every one of those is a number about a mark or a pixel.** A picture can pass all of
+them and have quietly become a different picture, competently painted.
+
+Two of the 0.5.0 cohort's findings are outside that line on purpose. *No linter catches
+a stripe instead of a catch-light* — a recipe followed exactly and expressively wrong —
+and the safe, frontal, centred composition five of seven painters stopped short inside.
+The instrument for both is the painter's own sentence, `s.plan(why=...)`, quoted back by
+`checklist()` at the end, and a human looking. Moving the line is not a measurement
+problem; it is a different project.
+
 ---
 
 ## The protocol, if a run is ever repeated
@@ -381,6 +397,18 @@ the unprompted paintings before the human has.
   before*, because a mark chosen in order to be explained is a different thing from a mark
   chosen. A flourish, not a measurement — but it is the only place in the protocol where
   the painter puts something in a picture that is not of the picture.
+- **A cohort of painters that are not this model is worth more than another run of it.**
+  Seven installed `easel-paint` 0.5.0 from the package and were told only to install and
+  paint — no reading list, no protocol, no subject. That produced more than any single
+  run before it: nine failures the guide described and the tool could not see, eighteen
+  bugs and API gaps, and a measured account of what a painter reads before the first
+  mark, which is the thing no session that was handed a reading list could report. Two
+  things to keep if it is run again. **Tell them nothing about what to read**, because
+  then what they read is the measurement. And **a painter that cannot see images cannot
+  do this**: the one in this cohort installed it, painted, and wrote *I can't see it ...
+  so I'm trusting the tool*, which is the whole method's one requirement failing quietly.
+  Its verdict was weighted accordingly, and the three front pages now say vision is
+  required.
 - **Stop running verbal naming probes.** Three attempts settled it: 0 of 8 sessions *name*
   water, 4 of 4 *paint* it. A verbal probe measures what a session says when interrupted.
   The finding they did produce is better than any tally — the estuary is not a subject
@@ -676,10 +704,26 @@ And three that were already here:
 `17.5%`, `16.3%`, `13.2%` against a best of `0.1%` — and stating the rule, giving it a
 runnable three-mass example *and* putting it in the closing checklist has been shown not to
 be sufficient. It needs a rewrite, and that is a design job with a measurement attached
-rather than an edit. Everything else the runs found has been applied.
+rather than an edit.
+
+**Narrowed in 0.6.0, and not closed.** `report()` now says when a pass took earlier
+details out of sight: three or more marks that stood `0.05` off what is round them and
+were left under half of that, with a film or the passes of a mass over them. That is the
+part of this item a check can see, and over the corpus it fires on 2 of 325 painted
+passes, both of them burials. What it cannot see is a burial spread over passes — the
+one a painter wrote down went `0.035` to `0.009` under three films and never by half in
+any one of them, and catching that needs a memory of each detail's contrast in the saved
+file, which this round declined. And the three copy runs whose containment numbers
+define the item are not in this repository, so the check has never been run on the
+evidence. So the paragraph still wants its rewrite; what changed is that the failure is
+visible at the moment it happens in one pass.
+
+Everything else the runs found has been applied.
 [`SUGGESTIONS.md`](SUGGESTIONS.md) holds the lists from thirteen painting sessions and
 the synthesis across them, and **every item is now done** — seventy-two for the engine,
-ninety for the documentation — each with a note saying what it became.
+ninety for the documentation — each with a note saying what it became. The 0.5.0
+cohort's round is filed there too, seven painters that are not this model, and no row of
+it is blank either.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints

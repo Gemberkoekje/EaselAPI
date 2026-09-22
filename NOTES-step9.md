@@ -852,3 +852,69 @@ README and `llms.txt` beyond the server's. Step 10, the cut, is untouched.
 | `CHANGELOG.md` | `### The way in: six failures painted, the reasons delivered, and two ceilings that bind` |
 | `SUGGESTIONS.md` | findings 16, 17, 18 and 20 |
 | `PLAN-0.6.0.md` | status; G2, G8 and G10 |
+
+---
+
+# Step 9, part seven: the rest of the record (G11)
+
+**To understand this, start by reading *The check reads marks and measures the canvas*
+and the depth-order paragraph under *What is still open* in
+[`LESSONS.md`](LESSONS.md), then the *At the call* row of
+[`README.md`](README.md)'s table.**
+
+Branch: `g11-the-record`, off `g2-entry-path` (#73).
+
+---
+
+## What this part was for
+
+G11 is what the project says about itself. Its *Loose ends* rows closed in part four;
+this is the rest, and it is the last row of workstream G.
+
+## What landed
+
+| | |
+|---|---|
+| **the boundary, restated** | `LESSONS.md` says the check reads marks and measures the canvas and does not judge an arrangement -- which needed saying in the release that moved the most into the tool. Findings 14 and 15 stay outside it, and the painter's own `why` is their instrument |
+| **a cohort in the protocol** | seven painters that are not this model, told only to install and paint: what that produced, and the two things worth keeping -- tell them nothing about what to read, and a painter that cannot see images cannot do this |
+| **the depth-order item, narrowed** | what `buried` sees (a burial in one pass, 2 of 325), what it cannot (one spread over passes), and that the three copy runs defining the item are not in the repository |
+| **the README** | a row for what the tool says at the call, beside the ones for the check and the closing checklist |
+| **`llms.txt`** | the same in a sentence, and `easel demo mistakes` in the commands bullet |
+| **`SUGGESTIONS.md`** | no blank row left in the cohort's register |
+
+## Decisions and gotchas
+
+**1. Restating the boundary was the point, not defending it.** The round added a great
+deal of measurement, and a reader could take that as the check creeping toward judging
+pictures. The paragraph says what every new line has in common -- it is a number about a
+mark or a pixel -- and names the two findings that are staying outside on purpose.
+
+**2. The depth-order item stays open, and says what it is open *about*.** It would have
+been easy to close it: a check now fires on the fault. It fires on the fault *done in
+one pass*, and the painter who wrote the item down did it over three. An item that
+closes on the easy half is worse than one that stays open.
+
+**3. `LESSONS.md` is not shipped in the wheel**, so its em dashes and arrows are not
+held to cp1252 the way the five guide documents are. Nothing here needed it; worth
+knowing before moving a passage from one into the other.
+
+## Open, and for the owner to rule on
+
+Nothing new. What is left of the round is step 10, the cut, which is: bump
+`pyproject.toml` and `__version__`, turn `[Unreleased]` into `[0.6.0]` **without** the
+released claim, push the tag, and add the claim afterwards. `tests/test_version.py`
+holds every such claim to a tag that exists.
+
+## What part seven did *not* touch
+
+The engine. Nothing in `src/` changed here.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `LESSONS.md` | the restated boundary; the cohort bullet in the protocol; the depth-order item narrowed; the register's own line |
+| `README.md` | the *At the call* row |
+| `llms.txt` | what the tool says, and `easel demo mistakes` |
+| `CHANGELOG.md` | `### The record` |
+| `PLAN-0.6.0.md` | status: steps 1 to 9 done, G done; the G11 row |

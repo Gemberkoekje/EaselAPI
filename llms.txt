@@ -35,7 +35,16 @@ What to know before reading further:
   diagnose <what you can see>` does the same from the other end — describe what is wrong
   on the canvas in your own words and it prints the measurement, with no code needed.
   A third shows rather than tells: `easel demo <recipe>` paints a recipe beside its
-  commonest failure and the smallest fix, and quotes what the tool said about each.
+  commonest failure and the smallest fix, and quotes what the tool said about each --
+  and `easel demo mistakes` paints the six failures a painter meets most, on one sheet,
+  which is where the guide sends a reader after the card and before the exercises.
+- **The tool says what it sees, and says it twice.** At the call, twenty-nine notices,
+  each with a code and a measurement behind it: paint about to land outside the place
+  it was handed, pass ends about to step down a slope, a film past what a film is for,
+  a smudge about to cross a boundary instead of following it. After every pass,
+  `report()` reads the log and measures the canvas -- where the values sit, how the
+  edges divide between hard and soft, what a pass took out of sight -- and
+  `checklist()` answers the closing checklist at the end.
 - Coordinates are always normalised `0.0`–`1.0`, origin top-left. Raw pixel coordinates
   are never exposed, because they are what a language model is worst at.
 - The engine is built around one habit: **look every five to fifteen strokes**. A stroke

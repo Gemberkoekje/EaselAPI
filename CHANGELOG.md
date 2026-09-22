@@ -882,6 +882,32 @@ exercises or *What you are bad at*, each of which a session has defended.
   copy of that sentence has been held to the parser since step 9's part three; this is
   the other place a client reads it.
 
+### The record
+
+Step 9 of the round, G11: what the project says about itself, brought level with what
+it now does.
+
+- **`LESSONS.md` restates the boundary rather than moving it.** This release put more
+  of the guide into the tool than every release before it together, and the check still
+  reads marks and measures the canvas — every line of it is a number about a mark or a
+  pixel. The two cohort findings outside that line stay outside it: a recipe followed
+  exactly and expressively wrong, and a safe centred composition. The instrument for
+  both is the painter's own `why` and a human looking.
+- **A cohort of painters that are not this model is in the protocol now**, with the two
+  things worth keeping from this one: tell them nothing about what to read, because
+  then what they read is the measurement, and weight a painter that cannot see images
+  accordingly — the one here painted a whole picture and wrote *I can't see it ... so
+  I'm trusting the tool*.
+- **The depth-order item is narrowed, not closed.** `report()` names a burial done in
+  one pass, which is the part a check can see — 2 of the corpus's 325 passes, both
+  burials — and cannot see one spread over several, which is what the one painter who
+  wrote the fault down actually did. The three copy runs whose numbers define the item
+  are not in this repository, so the check has never been run on them.
+- **What the tool says at the call has a row in the README**, where the check and the
+  closing checklist already had one, and `llms.txt` says the same in a sentence: the
+  notices carry codes and measurements, `report()` reads the log and measures the
+  canvas after every pass, and `checklist()` answers the closing lines at the end.
+
 
 ## [0.5.0] — 2026-09-16
 
