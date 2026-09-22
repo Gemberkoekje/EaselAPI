@@ -995,8 +995,10 @@ class Session:
         if direction is not None:
             _check_direction_sequence(self, fill, b, direction, density, overhang,
                                       stacklevel=3)
-        if edge == "clean" and shaped:
-            _check_clean_size(self, place, b, self.canvas, stacklevel=3)
+        if edge == "clean":
+            # Regions too: cover() is handed one far more often than a shape.
+            _check_clean_size(self, place, b, self.canvas, stacklevel=3,
+                              verb="cover" if self._call_verb == "cover" else "block_in")
         elif edge == "ragged" and shaped:
             _check_round_block(self, place, b, self.canvas, stacklevel=3)
         if edge == "ragged":
@@ -1493,7 +1495,7 @@ class Session:
         direction: str = "horizontal",
         density: float = 1.0,
         overhang: float | None = None,
-        edge: str = "ragged",
+        edge: str = "hard",
         dry_first: bool = True,
         clip=None,
         note: str = "",
@@ -1507,8 +1509,9 @@ class Session:
         because a comb leaves the old paint showing between its streaks however high
         the opacity goes, ``load=1.0`` and ``load_falloff=0.0`` because a brush that
         runs dry leaves a speckled film that everything after it has to sit on,
-        ``opacity=1.0``, ``pressure="even"``, and passes that **end outside the area**
-        so no chisel end stops inside the picture and draws an edge nobody wanted::
+        ``opacity=1.0``, ``pressure="even"``, and passes that **run past the area and
+        are held to it**, so no chisel end stops inside the mistake and no paint lands
+        outside the place it was handed::
 
             s.cover(cell("D5"), "corrected_sky")     # that is the whole repair
 
@@ -1519,24 +1522,23 @@ class Session:
         :meth:`block_in`'s ``solid=True``, which is the same pair of defaults for a
         mass that is not a repair.
 
-        **The ends outside the area are the recipe, and on a worked passage they are
-        the fault.** Burying a mis-made leaf inside a finished pane of glass,
-        ``cover(Region(0.905, 0.380, 0.985, 0.478))`` laid a flat pale panel across a
-        visibly larger patch than the one it was given, and the repair was louder
-        than the mistake. Measured on that patch, a ``flat`` at ``size=0.06`` on a
-        1024x768 canvas: the plain recipe paints **3.07x** the area it was handed. On
-        a flat passage that is right and there is nothing to see; on a textured one,
-        pass ``edge="clean"``, which insets the fill by half the brush and draws the
-        boundary with the brush's outer half. That lands **0.93x** the area -- the
-        burial stops at the boundary it was given, to within a fraction of a brush of
-        wander, instead of a brush and a half outside it. ``overhang`` then defaults
-        to ``0`` rather than to a full brush, for the same reason. ``edge="hard"`` is
-        the same idea with no wander at all -- it masks the paint to the area and
-        lands **1.01x** it -- and is what to reach for when what is being buried is a
-        hole in something worked. There is no warning on the plain form, because the overrun
-        is the recipe working: the docstring's own ``cover(cell("D5"))`` paints about
-        three times the cell, and a rule that fires on the canonical call is a rule
-        painters learn to ignore.
+        **Held to its place, by default** (0.6.0; the default was ``"ragged"``).
+        Until then the passes ran a full brush past the area, which is invisible on a
+        flat passage and the fault on any other: burying a mis-made leaf inside a
+        finished pane of glass, ``cover(Region(0.905, 0.380, 0.985, 0.478))`` laid a
+        flat pale panel across a visibly larger patch than the one it was given, and
+        the repair was louder than the mistake. Measured on a place 108x60 px on a
+        900x600 canvas, with the default brush, burying a light stroke in the
+        passage's own colour: on a flat passage neither edge leaves anything to see;
+        on a graded one ``"ragged"`` leaves **4.45x** the place visibly off the
+        passage, nearly all of it outside the place, against **0.47x** held to it; on
+        a worked one **4.14x**, the neighbouring marks buried with it, against
+        **0.51x**. Holding it costs an outline: the place's rectangle stands in a
+        worked passage as a value step of ``0.042`` against the passage's own
+        ``0.010`` -- a crisp patch the size of the place, which does read as cut out,
+        and is the smaller fault (``CALIBRATION.md``, *A burial and the place it was
+        handed*). ``"ragged"`` is still one keyword away and says nothing about its
+        overrun, which is what that form is for.
 
         Args:
             place: what to bury -- a region, a name, a 4-tuple or a shape.
@@ -1550,25 +1552,29 @@ class Session:
             density: as :meth:`block_in`. Leave it at 1.0 -- a correction that lets
                 the old paint through is not a correction.
             overhang: how far past the area each pass runs, in brush widths. The
-                default is one full width, which is what puts the ends outside;
-                ``0`` beside ``edge="clean"``, which is what keeps them in; and
-                **two** beside ``edge="hard"``, which is :meth:`block_in`'s own rule
-                -- nothing can cross the mask, so the only thing left for an
-                overhang to do is carry every pass end up to the outline, and one
-                brush left the boundary bitten between them.
-            edge: ``"ragged"``, the default -- the passes run past the area, which is
-                the recipe. ``"clean"`` is :meth:`block_in`'s clean edge: the fill
-                inset by half the brush and the boundary drawn. ``"hard"`` masks
-                every dab to the area, so nothing lands outside it at all. Reach for
-                either where what is underneath is worked rather than flat.
+                default follows ``edge``: **two** under ``"hard"``, which is
+                :meth:`block_in`'s own rule -- nothing can cross the mask, so the only
+                thing left for an overhang to do is carry every pass end up to the
+                outline, and one brush left the boundary bitten between them; one full
+                width under ``"ragged"``, which is what puts the ends outside; ``0``
+                under ``"clean"``, which is what keeps them in.
+            edge: ``"hard"``, the default -- every dab masked to the area, so nothing
+                lands outside it at all. ``"ragged"`` runs the passes a full brush past
+                the area, the recipe before 0.6.0: it melts into a flat passage and
+                buries whatever stands beside the place on any other. ``"clean"`` is
+                :meth:`block_in`'s clean edge, the fill inset by half the brush and the
+                boundary drawn, and it wants a place four brushes across: under that
+                the inset takes the place rather than a rim of it -- the place above,
+                at the default brush, keeps ``8%`` to ``15%`` of its mistake showing
+                -- and the call says so.
             dry_first: dry the area before covering it. Free, and part of the
                 recipe; only the area, so a wet neighbour it must blend into stays
                 wet.
             clip: a place, or a list of places, outside which none of the burial's
-                paint may land, as on :meth:`stroke` and :meth:`block_in`. The
-                recipe's ends run *outside* the area on purpose, so this is what to
-                reach for when the repair has to stop at something else -- the pane
-                it sits in, the form it is on.
+                paint may land, as on :meth:`stroke` and :meth:`block_in`. A burial is
+                held to its own place already, so this is what to reach for when the
+                repair has to stop at something else as well -- the pane it sits in,
+                the form it is on.
             note: recorded in the log.
 
         Returns:
@@ -3085,14 +3091,15 @@ class Session:
                         (place.x1, place.y1), (place.x0, place.y1), (place.x0, place.y0)])
         label = str(spec.get("label", spec.get("note") or place.name
                               or f"{kind} {index + 1}"))
-        if kind == "mass" and isinstance(place, Polygon):
+        if kind in ("mass", "cover"):
             # The same lines block_in gives, here too: the guide already says to
             # preview the inset shape, and these are those sentences with numbers on
-            # them.
-            edge = spec.get("edge", "ragged")
+            # them. A burial lays a block-in, so it is asked the same.
+            edge = spec.get("edge", "hard" if kind == "cover" else "ragged")
             if edge == "clean":
-                _check_clean_size(self, place, b, self.canvas, stacklevel=4)
-            elif edge == "ragged":
+                _check_clean_size(self, place, b, self.canvas, stacklevel=4,
+                                  verb="cover" if kind == "cover" else "block_in")
+            elif edge == "ragged" and kind == "mass" and isinstance(place, Polygon):
                 _check_round_block(self, place, b, self.canvas, stacklevel=4)
         return {"points": points, "width": b.size, "fill": True,
                 "label": self._priced(kind, spec, label)}
@@ -6269,8 +6276,9 @@ def _check_round_block(session, place, b: Brush, canvas, stacklevel: int = 3) ->
     )
 
 
-def _check_clean_size(session, place: Polygon, b: Brush, canvas, stacklevel: int = 2) -> None:
-    """Warn when a clean edge's brush is a large share of the mass's shorter extent.
+def _check_clean_size(session, place, b: Brush, canvas, stacklevel: int = 2,
+                      verb: str = "block_in") -> None:
+    """Warn when a clean edge's brush is a large share of the place's shorter extent.
 
     ``edge="clean"`` insets the fill by half the brush all the way round, which is a
     rim on a large mass and most of a small one; the contour pass then puts the outer
@@ -6279,6 +6287,15 @@ def _check_clean_size(session, place: Polygon, b: Brush, canvas, stacklevel: int
     shape that was drawn. A painter's lantern cap ``0.036`` deep at ``size=0.016``
     came back a rounded mushroom. The number that predicts it is the brush's share
     of the shape's shorter extent, in the brush's own unit (the canvas long side).
+
+    **A region is asked the same** (0.6.0). This was a shape's check only, and
+    :meth:`Session.cover` is usually handed a region: a place 108x60 px on a 900x600
+    canvas, buried ``edge="clean"`` with the default ``flat`` at ``size=0.1``, is
+    inset to a sliver, gets two stubs laid in its middle, and leaves ``15%`` of the
+    mistake it was burying showing on a worked passage -- and nothing was said
+    (``CALIBRATION.md``, *A burial and the place it was handed*). ``verb`` is the call
+    the painter made, so a burial is told about ``cover`` and not about the
+    ``block_in`` it lays.
     """
     long = float(canvas.long_side)
     short = min(place.width * canvas.width / long, place.height * canvas.height / long)
@@ -6287,17 +6304,28 @@ def _check_clean_size(session, place: Polygon, b: Brush, canvas, stacklevel: int
     share = b.size / short
     if share <= _CLEAN_SHARE:
         return
-    kept = place.inset(b.size * 0.5).area / max(place.area, 1e-12)
+    kept = _place_area(place.inset(b.size * 0.5)) / max(_place_area(place), 1e-12)
+    shaped = isinstance(place, Polygon)
+    other = ("leave edge= off: the default holds the burial to its place"
+             if verb == "cover" else "leave the edge ragged")
     session._notify(
         "clean-small",
-        f"block_in(edge='clean') at size={b.size:.3g} on {place.name or 'a shape'} "
+        f"{verb}(edge='clean') at size={b.size:.3g} on "
+        f"{place.name or ('a shape' if shaped else 'a region')} "
         f"{short:.3f} across at its narrowest: the brush is {share:.0%} of that, so "
-        f"the half-brush inset keeps {kept:.0%} of the shape to fill and the contour "
-        f"pass lays the rest as one chisel stroke, corners rounded off. Use a brush "
-        f"under a quarter of the shorter extent -- size={_CLEAN_SHARE * short:.3g} "
-        f"here -- or leave the edge ragged.",
+        f"the half-brush inset keeps {kept:.0%} of the {'shape' if shaped else 'region'} "
+        f"to fill and the contour pass lays the rest as one chisel stroke, corners "
+        f"rounded off. Use a brush under a quarter of the shorter extent -- "
+        f"size={_CLEAN_SHARE * short:.3g} here -- or {other}.",
         stacklevel=stacklevel,
     )
+
+
+def _place_area(place) -> float:
+    """Share of the canvas a shape or a region covers, 0..1."""
+    if isinstance(place, Polygon):
+        return place.area
+    return place.width * place.height
 
 
 def _check_brush_overrides(overrides: dict) -> None:
@@ -7689,16 +7717,22 @@ def _cover_overhang(edge: str, overhang):
         return 0.0          # the inset plus the contour already reach the line
     if edge == "hard":
         return None         # nothing can cross the outline: block_in's own rule
-    return 1.0              # the recipe: ends outside, where no edge is drawn
+    return 1.0              # ragged: ends a brush outside, where no edge is drawn
 
 
 def _cover_as_mass(spec: dict) -> dict:
-    """A burial as the block-in it lays, for the one pricing walk to charge."""
-    edge = spec.get("edge", "ragged")
+    """A burial as the block-in it lays, for the one pricing walk to charge.
+
+    The edge is written in even when the entry leaves it off, because a burial's
+    default is not a block-in's: :meth:`Session.cover` holds itself to its place
+    (``"hard"``) where a mass breaks past its boundary (``"ragged"``).
+    """
+    edge = spec.get("edge", "hard")
     mass = {k: v for k, v in spec.items()
-            if k in ("place", "brush", "size", "direction", "density", "edge", "note")}
+            if k in ("place", "brush", "size", "direction", "density", "note")}
     mass.setdefault("brush", "flat")
     mass.setdefault("direction", "horizontal")
+    mass["edge"] = edge
     mass["overhang"] = _cover_overhang(edge, spec.get("overhang"))
     return mass
 

@@ -9,8 +9,8 @@ today lives -- all of them through `Session._notify` and `src/easel/notices.py` 
 step 3._
 
 **Status: steps 1 to 8 are done, step 9 is part-done, and step 10 is still a plan; of
-workstreams A to G, A to F are built -- except F1, which a ruling reopened after step 8
-had declined it -- and G is started.**
+workstreams A to G, A to F are built -- F1 too, which a ruling reopened after step 8 had
+declined it, built after it on its own branch -- and G is started.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -39,7 +39,9 @@ workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 withdrawn. Step 8 is the two default moves the step-2 probe left standing -- a banded
 `scumble` laid solid (F3) and two brushes of overhang under `edge="hard"` (F5) -- with
 F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
-they are not re-argued; `NOTES-step8.md` has its gotchas. **Step 9 is part-done**, in
+they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
+afterwards: `cover()` holds a burial to its place, and `clean-small` asks a region as it
+asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is part-done**, in
 two parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 `diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
 **G7 and G9** -- the fixes to what is there, and the one small fact of five that was
@@ -59,12 +61,12 @@ in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
 could not give), the replay promise is amended, `buried` ships as it is and narrows the
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
-owned now has an owner**, under *Loose ends, and who owns them* in section 6: F1's build,
-a `clean` edge its bench found failing in silence, the finding-13 replay, the noise
-table's miscounted `!` rows, and three smaller rows -- and finding 12, which no row of
-this plan had named until after G3, and which waits on a ruling; the manifest's verb count, the
-block check in CI and the two recipes G3's first run found tripping `report()` left the
-table with G3. Written 2026-09-18 against
+owned now has an owner**, under *Loose ends, and who owns them* in section 6: the
+finding-13 replay, the noise table's miscounted `!` rows, and three smaller rows -- and
+finding 12, which no row of this plan had named until after G3, and which waits on a
+ruling. The manifest's verb count, the block check in CI and the two recipes G3's first
+run found tripping `report()` left the table with G3; F1's build and the `clean` edge
+its bench found failing in silence left it with F1. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
 file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
 round is cut.
@@ -110,7 +112,7 @@ the guide*), asked for at scale.
 | The four standing lines after every pass, against *fewer than three lines on a median pass* (`NOTES-step7.md`) | **Kept on every pass.** The target counts findings and call-time notices, which is what the probe has always counted: `ground:` printed after every pass of 0.5.0 while the probe reported a median of `0`. A standing measurement is not a finding. Whether the longer block gets skimmed is the next run's to show. |
 | The inward `scumble`'s `load` (`NOTES-step8.md`, gotcha 3) | **Kept, as intended**: the brush's own `0.9`, where a band has laid `1.0` since F3. `0.005%` of a patch bare against `0.012%` is inside any window, so under *measure, then move* it stays. `REFERENCE.md`'s `solid` and `load` rows now say *a banded `scumble`*, which is all they were ever true of. |
 | Linking notice codes to `DIAGNOSIS.md` rows (`NOTES-step9.md`) | **Not this round.** Sixteen of the twenty-five codes already resolve to the passage a row points at, so `explain` and `diagnose` print the same text and only the name is missing. Revisit once a run shows whether a painter calls either. |
-| `cover()`'s default edge -- F1, declined in step 8 to wait for `spill` (`NOTES-step6.md`, part two) | **Moves to `edge="hard"`.** The plan's own probe question, answered first on a bench at 900x600 with the default brush (session scratchpad, not committed): on a flat passage neither edge leaves anything to see; on a graded one `ragged` repaints `3.09x` the place and `hard` `0.52x`; on a worked one `ragged` repaints `4.55x`, taking the neighbouring marks with it, and `hard` `0.93x` -- a crisp patch the size of the place (an outline step of `0.0285` against the passage's own `0.0055`), which does read as cut out, and is the smaller fault. No committed pass script calls `cover()`. |
+| `cover()`'s default edge -- F1, declined in step 8 to wait for `spill` (`NOTES-step6.md`, part two) | **Moves to `edge="hard"`.** The plan's own probe question, answered first on a bench at 900x600 with the default brush (session scratchpad, not committed): on a flat passage neither edge leaves anything to see; on a graded one `ragged` repaints `3.09x` the place and `hard` `0.52x`; on a worked one `ragged` repaints `4.55x`, taking the neighbouring marks with it, and `hard` `0.93x` -- a crisp patch the size of the place (an outline step of `0.0285` against the passage's own `0.0055`), which does read as cut out, and is the smaller fault. No committed pass script calls `cover()`. **Built**, on the bench rebuilt in the probe (`probe_f1_burial`) with passages of its own: `ragged` `4.45x` / `4.14x` against `hard` `0.47x` / `0.51x` on the graded and worked passages, an outline of `0.042` against `0.010` -- the same order and the same verdict, and the numbers `CALIBRATION.md` now carries. |
 | The replay promise (`NOTES-step6.md`, part three) | **Amended.** A saved file never repaints on load -- it stores the canvas -- but a rebuild from its log lays every stroke with the engine installed: `replay(upto=)`, `timelapse_gif(from_log=True)`, and **every `undo` from the shell or MCP**, since the file carries no snapshots. So a stroke the engine laid wrongly comes back fixed, and each such fix is named under its version. No committed `.easel` file exists, and 0.5.0 had been out five days. |
 | A burial spread over passes (`NOTES-step6.md`, part four) | **`buried` ships as it is, and G11 narrows `LESSONS.md`'s depth-order item rather than closing it.** It fires on 2 of 325 passes, both burials; it cannot see the pool's chair, which never stood `0.05` off the deck and went `0.035 -> 0.009` over three passes; and the three copy runs whose containment defines the item are not in the repository, so it has never been run on them. `checklist()` gains no `buried:` line: it is `report(since=None)`, and a burial over a whole painting needs the per-detail memory this declines. |
 | `wet-under` as a fact line at the call (step 2; `NOTES-step6.md`, part three) | **Not this round.** Its evidence is B18 -- a reconstruction of GLM's lost take, in which the wet bezel moved pixels `0.13` -- which is what `ring-steps` and `ring-rim` were dropped on. *`dry()` first* stays in `PAINTING.md`. |
@@ -380,8 +382,9 @@ it still does not judge an arrangement. Findings 14 and 15 stay with the painter
 each its own commit with a before-and-after rendered and looked at. **F1, F2 and F4
 were declined** on the numbers under *What step 2 measured* below, and the declines are
 written into `CHANGELOG.md` so they are not re-argued -- though F1 was reopened on
-2026-09-21 and ruled to move (the decisions table), so it is the one row of F still to
-build. Two things the build found that
+2026-09-21 and ruled to move (the decisions table), and **is built**: `cover()` defaults
+to `edge="hard"`, on a bench rebuilt in the probe (`NOTES-step8.md`, part two). Two
+things the build found that
 the table did not: the inward `scumble`'s `load` is **not** already `1.0` -- the reason
 column says it is -- and was measured (`0.005%` of a patch against `0.012%`) and left
 alone; and `scumble` never called `_mass_overhang`, so F5 does not reach it, which it
@@ -435,7 +438,7 @@ run's three notes, on two recipes, were ruled on and fixed -- one recipe's, one 
 (the decisions table's last two rows). The eight recipes still in words:
 *a scene with straight edges*, *a picture with an empty half*, *a form that turns*, *a
 quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, and
-*a repair under things that are standing on it*, which waits for F1.
+*a repair under things that are standing on it*, which waited for F1 and no longer does.
 
 **G4. `s.checklist()` / `easel check`**: the closing checklist as output. Measured lines
 answered with their number (values, edges, ground, discs, bars or their crossings, boxes,
@@ -537,7 +540,7 @@ the map back, if a cut turns out to have gone too far.
 | Where it is today | What it says | Carried by | What stays |
 |---|---|---|---|
 | `PAINTER.md` card, *six things*, row 5 | the tool's own shape; staircase | `chisel-staircase`, and the existing round-disc rule | the row, shorter |
-| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | **neither carrier arrived** -- F1 was declined in step 8, and `spill`, built in step 6, is silent inside `cover()` by design. **Settled in step 9: nothing leaves.** The row and the paragraph keep the rule and now name `edge="hard"`, which the tool has had all along and the card never mentioned (finding 8). **Reopened 2026-09-21: F1 moves**, so in its commit the row and the paragraph stop asking for `edge="hard"` and say what the default does | the row, and the prose, with the keyword in them -- until F1 lands; then the row, shorter |
+| `PAINTER.md` card, row 4; *you will reach for `undo`* | `cover` overruns; bury by hand | **neither carrier arrived** -- F1 was declined in step 8, and `spill`, built in step 6, is silent inside `cover()` by design. **Settled in step 9: nothing leaves.** The row and the paragraph keep the rule and now name `edge="hard"`, which the tool has had all along and the card never mentioned (finding 8). **Reopened 2026-09-21: F1 moves** -- **and it has**: the row and the paragraph stopped asking for `edge="hard"` and say what the default does | the row, shorter; the paragraph, as long as it was, saying what a held burial costs |
 | `PAINTER.md` step 3, *a veil of light is a mass at a depth* | depth order of films | `buried` -- **arrived in step 6 (D3)**: the bullet is one line naming it. It sees a burial done in one pass, not one done a little at a time over several (the pool's chair) | the rule, one sentence |
 | `PAINTER.md` step 4, *put the plan through `compare()`* | pairs that touch | `s.plan(values=)` | one line |
 | `PAINTER.md` step 5, daisy sentence | radiating strokes | `radiating` -- **arrived in step 6 (D3)** as the daisy line, and the sentence is gone | -- |
@@ -580,7 +583,7 @@ One round, cut as 0.6.0, in PRs that each stand alone. The repository's rhythm i
    right-thing case.
 7. **Measurements** (E) and **`s.checklist()`** (G4).
 8. **Default moves** (F), each its own commit with the goldens looked at. F1, ruled after
-   the step closed, is still to build (*Loose ends* below).
+   the step closed, was built after it, on the bench the ruling asked for.
 9. **Docs**: `demo`, `diagnose`, `explain`, the new recipe, the fixes, the voice pass,
    the entry path, the budgets (G).
 10. **Cut 0.6.0**: `CHANGELOG.md` without the claim, tag, then the claim.
@@ -593,8 +596,6 @@ table when what it names is done**, the way a migration row leaves with its para
 
 | Loose end | Evidence | Owner | Done when |
 |---|---|---|---|
-| **F1: `cover()` to `edge="hard"`** (ruled 2026-09-21) | the bench in the decisions table; `CHANGELOG.md` still lists it under *three proposed moves were declined* | its own commit in step 8's pattern, **before G3**: `easel demo` and G2's card both show `cover()` | the default moves; `cover()`'s docstring, `REFERENCE.md`'s rows and the card's `undo` row and paragraph say what it does (section 5); the changelog moves it from the declines to *Defaults moved*; the bench joins the probe's F1 section and its numbers go into `CALIBRATION.md` |
-| **`edge="clean"` on a rectangle goes unchecked** -- found by F1's bench | `clean-small` runs only on a shape (`if edge == "clean" and shaped`, in `block_in`), and `cover()` is usually handed a region. `cover(Region(0.44, 0.42, 0.56, 0.52), colour, edge="clean")` at 900x600 with the default `flat` at `size=0.10` puts a 90 px brush on a place 108x60 px, so the half-brush inset leaves nothing to fill: it lays two stubs in the middle and **leaves `15.5%` of the mistake showing** on a graded or worked passage (`3.1%` on a flat one), and nothing is said | F1's commit, which rewrites the docstring that recommends `clean` | a region gets the check a shape gets, and a test holds the bench's case |
 | **Finding 13's number** (was in section 8) | `CALIBRATION.md`'s `12%-44%, median 27%` came from the `edges:` prototype step 7 withdrew, and the probe still carries it as its own `edges_line(session)` (`scripts/probe_cohort_session.py:1695`) | G11, before `SUGGESTIONS.md`'s finding-13 row is filled | the probe calls `easel.checklist.edges_line`, the corpus is replayed, and the number is restated or withdrawn |
 | **The noise table counts notices, not passes, on its `!` rows** -- found replaying the corpus for the bars ruling | `report_noise` in `scripts/probe_cohort_session.py` adds one per line said, and a call-time notice can be said several times in a pass: its *passes* column has `glaze-far` on 38, where step 6 counted 38 films in 17 passes. The `report()` rows are right -- a finding prints once a pass -- which is why the bars figure (38, 12%) stands | G11, before 0.6.0 quotes a noise figure | the column counts each rule once a pass, and `CALIBRATION.md`'s noise table is re-run on the engine as released |
 | **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
@@ -619,7 +620,7 @@ corpus and against the guide's own 70 runnable code blocks. The numbers are in
 | `ring-steps`, `ring-rim` (D1, D2) | fire on **nothing** in the corpus and on one guide block each. Every committed inward `scumble` steps `0.014`-`0.021` a ring, well under any contour threshold. Their only evidence is GLM's lost take |
 | `round-soft-mass` (D1) | never fires |
 | F4, halved `jitter` on a `flat` scumble | the halved pair moves the ripple from `0.0053` to `0.0059`: nothing this measures |
-| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all. **`spill` is built (step 6) and says nothing inside `cover()`**, whose canonical call overruns about three times its cell by design -- so the move is the owner's to rule on, and nothing in the engine waits for it. **Ruled 2026-09-21: it moves**, on a bench of a flat, a graded and a worked passage (the decisions table) |
+| F1, `cover()` to `edge="hard"` | **no committed pass script calls `cover()`**, so the move is free and unevidenced. Do it with the `spill` notice or not at all. **`spill` is built (step 6) and says nothing inside `cover()`**, whose canonical call overruns about three times its cell by design -- so the move is the owner's to rule on, and nothing in the engine waits for it. **Ruled 2026-09-21: it moves**, on a bench of a flat, a graded and a worked passage (the decisions table) -- **and moved**, with `clean-small` asking a region as it asks a shape |
 | F2, a round tip to `pressure="even"` | **0 committed calls** would move |
 
 **Survive, with the threshold the corpus gives.**
@@ -678,7 +679,7 @@ row above.
 | 0.5.0 cannot open a 0.6.0 file. | New keys only, read with `.get`; a round-trip test against a 0.5.0-format file. |
 | Default moves repaint committed paintings. | Saved logs replay unchanged (arguments are in the log); only scripts that leave the argument off move; each is listed, and byte-for-byte claims in `PAINTINGS.md` are re-verified. |
 | The doc cuts go too far. | Nothing is deleted without a check landing in the same commit; section 5 is the map back. *Too far* looks like boxes in backgrounds or skipped exercises rising in the next run. |
-| **The remedies push toward cut-outs.** GPT and Grok laid every form as a hard-edged polygon and both name *flat cut-out shapes* as their picture's main fault; `chisel-staircase` and `spill` both point at `edge="hard"` / `clip=`. | The notices name the remedies in `PAINTING.md`'s own order, cheapest first -- passes *along* the sloped boundary, then a comb with a solid core, then `clean`, then `hard` -- and the `edges:` line (E) is the counterweight: a picture whose edges are all under 2 px wide says so whatever produced them. Watch this one in the next run. F1 (ruled 2026-09-21) adds to it: `cover()` masks to its place by default, so a repair on a worked passage is a crisp patch the size of the place -- the smaller fault against `ragged`'s `4.55x`, and one the `edges:` line will count. |
+| **The remedies push toward cut-outs.** GPT and Grok laid every form as a hard-edged polygon and both name *flat cut-out shapes* as their picture's main fault; `chisel-staircase` and `spill` both point at `edge="hard"` / `clip=`. | The notices name the remedies in `PAINTING.md`'s own order, cheapest first -- passes *along* the sloped boundary, then a comb with a solid core, then `clean`, then `hard` -- and the `edges:` line (E) is the counterweight: a picture whose edges are all under 2 px wide says so whatever produced them. Watch this one in the next run. F1 (built) adds to it: `cover()` masks to its place by default, so a repair on a worked passage is a crisp patch the size of the place -- the smaller fault against `ragged`'s `4.14x` on the probe's bench, and one the `edges:` line will count. |
 | Some of section 2 is wrong. | **It already was.** Checking workstream B while planning overturned four reported mechanisms (the holes are the comb or the hard-edge bites, not wandering passes; cp1252 does not break the tool; `region("bottom")` is a ninth, not a third; GLM's rings are an inward scumble's contours, not crossing glazes -- and the first *check* of that one was wrong too, until the painter's own frames were opened) -- every one of them reported as *observed*, which is the shape `LESSONS.md` predicts. Step 2 comes before everything else for the same reason, and the candidates in D, E and F have had no such check yet. |
 
 ---
