@@ -37,6 +37,36 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.6.0] — 2026-09-22
+
+**One round, and the first painted by models other than Claude.** Seven painters — GPT,
+GLM, DeepSeek, Gemini, Grok, Kimi and BigPickle — each installed `easel-paint` 0.5.0
+from the package and painted one picture, and were told nothing about what to read. They
+came back with thirty-two engine items and six documentation items, filed in
+`SUGGESTIONS.md` under *The 0.5.0 cohort*; the round was worked from `PLAN-0.6.0.md`.
+
+**Its shape is one sentence taken at its word** — the one two earlier sessions' verdicts
+both lead with: *reading the warning did not stop me; the rehearsal image and the
+post-pass check did*. So wherever the tool can know a thing it now says it, and the
+paragraph that used to say it has left the guide. Twenty-nine notices carry a code and
+the measurement behind it, and reach `easel run` and the MCP server alike; the painter
+writes the plan down in `s.plan(...)` and the check answers to it; `report()` reads the
+canvas as well as the log, and `checklist()` answers the closing lines; `easel explain`,
+`easel diagnose` and `easel demo` deliver the reasons, the symptom index, and nineteen
+recipes painted beside how they go wrong. Every new check was measured on the corpus
+before it was built — all 21 paintings rebuilt pass by pass — and as this release
+stands, 197 of their 325 painted passes say nothing at all. The way in is new as well,
+and like every change to the guide it is a hypothesis until a fresh session paints
+against it.
+
+**Three defaults moved**, each under *Defaults moved* below: a banded `scumble` lays its
+passes solid, `edge="hard"` carries two brushes of overhang, and `cover()` holds a
+burial to its place. **One fix changes what a rebuild lays**: a smudge no longer starts
+loaded with white, so a smudge saved in an `.easel` file replays without its cap (*Three
+checks that read the canvas under the mark*).
+
 ### One channel for everything the engine says at a call
 
 Step 3 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream A). Nothing the engine
@@ -93,8 +123,9 @@ and `publish.yml` refuses a tag that disagrees with `pyproject.toml` before it u
 anything, because a PyPI version number cannot be reused once taken. The version is
 written by hand in `pyproject.toml` and copied into `src/easel/__init__.py` and both
 entries in `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold
-every copy to the one in `pyproject.toml`. This round has no number yet: it gets one
-when it is cut, which is the last step of `PLAN-0.6.0.md`.
+every copy to the one in `pyproject.toml`. This round is cut as 0.6.0 in all four of
+them, and what is left of `PLAN-0.6.0.md`'s last step is the tag and then the claim:
+nothing here says it shipped until `v0.6.0` exists.
 
 ### Eighteen reported bugs, and the API gaps behind them
 
@@ -268,7 +299,7 @@ that rule is about.
 
 Step 6 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream D1). Both are faults the
 documentation named and the tool did not catch, and both are said at the call — before
-a dab lands — from the passes the call is about to lay. D2 and D3 are still to come.
+a dab lands — from the passes the call is about to lay.
 
 **`chisel-staircase`.** A `flat` or `knife` filling a mass along a straight side it runs
 *nearly* along ends its passes down that side in ledges, and the side comes back as a
@@ -671,7 +702,7 @@ to somebody reading the file, because in both cases the prose was right.
 block's session said and names the block, the document and the code. That is the first
 half of the plan's G3 invariant, landed early because these fixes needed something to
 hold them; the other half — every *failure* block trips exactly the code it names —
-waits for the failure blocks to exist.
+landed with the demos, below.
 
 **Three more fixes to what was already there.**
 
@@ -1865,7 +1896,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.2.0...v0.3.0
