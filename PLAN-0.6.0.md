@@ -36,7 +36,9 @@ passes. `NOTES-step6.md` has the gotchas of `spill`, of D2 and of D3. Step 7 is
 workstream E and `s.checklist()` (G4): `src/easel/checklist.py`, the `values:` /
 `edges:` / `holes:` / `pencil:` / `boxes:` / `unspent:` lines, `easel check` and the MCP
 `check` tool; `NOTES-step7.md` has its gotchas, including one published `edges:` number
-withdrawn. Step 8 is the two default moves the step-2 probe left standing -- a banded
+withdrawn, and a part two: finding 12's build, which made the closing audit read a
+painting rather than a pass. Step 8 is the two default moves the step-2 probe left
+standing -- a banded
 `scumble` laid solid (F3) and two brushes of overhang under `edge="hard"` (F5) -- with
 F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.md` so
 they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
@@ -62,9 +64,11 @@ on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench th
 could not give), the replay promise is amended, `buried` ships as it is and narrows the
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
 owned now has an owner**, under *Loose ends, and who owns them* in section 6: the
-finding-13 replay, the noise table's miscounted `!` rows, and three smaller rows -- and
-finding 12, which no row of this plan had named until after G3, and which waits on a
-ruling. The manifest's verb count, the block check in CI and the two recipes G3's first
+finding-13 replay, the noise table's miscounted `!` rows, and three smaller rows.
+Finding 12, which no row of this plan had named until after G3, was ruled on
+2026-09-22 -- narrowed over a whole painting -- and built, and left the table with its
+build (`NOTES-step7.md`, part two). The manifest's verb count, the block check in CI
+and the two recipes G3's first
 run found tripping `report()` left the table with G3; F1's build and the `clean` edge
 its bench found failing in silence left it with F1. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
@@ -92,7 +96,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18; the last nine 2026-09-21)
+### Decisions already taken (owner, 2026-09-18; nine more 2026-09-21; the last 2026-09-22)
 
 | Question | Decision |
 |---|---|
@@ -118,6 +122,7 @@ the guide*), asked for at scale.
 | `wet-under` as a fact line at the call (step 2; `NOTES-step6.md`, part three) | **Not this round.** Its evidence is B18 -- a reconstruction of GLM's lost take, in which the wet bezel moved pixels `0.13` -- which is what `ring-steps` and `ring-rim` were dropped on. *`dry()` first* stays in `PAINTING.md`. |
 | *A mass built of planes*' faces (G3's first run; `NOTES-step9.md`, part three) | **A `flat`, laid `edge="clean"`, each face along a side of its own -- and `chisel-staircase` offers a comb only at `size=0.025` and over.** Rendered at 400x300 and 1024x768 against the four alternatives: step 6's comb paints the woven surface the recipe names; finding 1's ragged flat stairs; a clean edge with every face along one axis keeps the stack-of-bars line; each face along its own side is silent after a ground and reads as planes; a hard edge is silent everywhere and reads cut out. |
 | The stack-of-bars rule over a graded field (G3's first run) | **A `scumble` counts once**, in the rule and in the crossings that re-arm it. In its own colours the recipe paints a smooth field and the rule said *17 of 17* over it; crossers at 13 degrees would not count (30 is a crossing), and declaring the bands only changes the words. Over the corpus the condition holds on 47 passes rather than 62, 10 of the 46 lines painters were shown go, and the probe's noise table has the rule at 38 of 325 passes, 12% (was 47, 14%) -- knowingly including BigPickle's true positive, which reached its share only by counting sky passes its own painter called fine. |
+| Finding 12: the small-comb and round-disc rules over a whole painting -- `checklist()` is `report(since=None)`, so both count every mark of the painting (*Loose ends*, found after G3) | **The comb line leaves the closing audit, and the disc line counts only discs seen together.** Counted first, on all 21 paintings rebuilt through the probe's own replay (session scratchpad, not committed -- Gemini came back at its notes' own `265` and `176`): the disc line is on **14 of 21** finished paintings' checklists and the comb line on **9**, the two commonest lines the closing audit prints (bars `5`, the pressure-list rule `4`). **The comb** was said by the pass that laid most of it wherever its count is large (`opus` 38 of 40 marks, `laundromat` 39 of 48); where it is small no pass said it, and the marks are mostly strands the comb suits -- `car_wash`'s and each heron's are three marks over two passes: a car-wash brush's bristles, streaks of light and reflections on water, and one small plane on a heron's neck -- and Gemini's 265 are pine boughs whose streaks are the needles it wanted. No checklist question asks it, and the end of a painting has no next mark to choose a brush for, so over a whole painting it says nothing and the pass keeps it. **The disc line** is G4's own answer to *is any small mark a disc*, so it stays, but its large counts are passages of repeated marks (Gemini's rows of glitter lozenges, the one line Gemini never answered; `sonnet`'s and the greenhouse's pots) and its small ones add up accents from different passes: `dusk`'s *one disc printed 8 times* is a lamp, a moon, two notches, two edge highlights and a glint, from six passes. Over a whole painting it counts only marks in a group of three or more within `0.06` of one another, leaves out marks noted `signature` (counted on 6 checklists; the budget already waives them), and says where the groups are: **10 of 21**, dropping exactly the four scattered ones (`car_wash`, `dusk`, `laundromat`, `glm`) and keeping every repeated passage -- the same from a radius of `0.06` to `0.15`, while `0.04` starts losing groups. What a pass's own report says is unchanged for both rules, so the noise table does not move. **Built** (`NOTES-step7.md`, part two): `_pass_findings(whole=True)` under both `checklist()` and `report()` with no `since`; the count joins the probe as `--closing`, and its numbers are under *The closing audit, over a whole painting* in `CALIBRATION.md`. |
 
 ---
 
@@ -600,7 +605,6 @@ table when what it names is done**, the way a migration row leaves with its para
 | **The noise table counts notices, not passes, on its `!` rows** -- found replaying the corpus for the bars ruling | `report_noise` in `scripts/probe_cohort_session.py` adds one per line said, and a call-time notice can be said several times in a pass: its *passes* column has `glaze-far` on 38, where step 6 counted 38 films in 17 passes. The `report()` rows are right -- a finding prints once a pass -- which is why the bars figure (38, 12%) stands | G11, before 0.6.0 quotes a noise figure | the column counts each rule once a pass, and `CALIBRATION.md`'s noise table is re-run on the engine as released |
 | **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
 | **`wet-under`, declined** (ruled 2026-09-21) | step 2 left it a fact line, and nothing owned it | G11 | `CHANGELOG.md` names it beside the other declines, and `SUGGESTIONS.md`'s finding-5 row says what was and was not done |
-| **Finding 12: the small-bristle and round-disc rules over a whole painting** -- found with no owner after G3 landed | Gemini's *265 marks with a bristle under size=0.025* and *one disc printed 176 times* were argued with in its notes rather than acted on: the comb's gaps were the needle texture it wanted. Both rules count every mark `report()` is handed, so `checklist()` -- `report(since=None)` -- prints the whole painting's count. No workstream row named the finding, `CALIBRATION.md` has not measured it, and `SUGGESTIONS.md`'s row is blank | **the owner's ruling**, on a count the probe takes first: how many of the 21 finished paintings' `checklist()` carry either line, and on what marks. G11 fills the row either way | ruled -- narrowed for a whole painting, or declined for this round -- and `SUGGESTIONS.md`'s row says which |
 | **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | one GitHub issue exists, and this row links it |
 
 ### What step 2 measured, and what it decides

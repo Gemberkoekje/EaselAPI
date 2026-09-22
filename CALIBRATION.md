@@ -2208,6 +2208,53 @@ states a spread for finding 13. Nothing else in workstream E is affected — `va
 `holes:` reproduces B2's three grounds to the third decimal (`0.1543%` / `0.1350%` /
 `3.1601%` against `0.1552%` / `0.1357%` / `3.1550%`, off a different seed).
 
+### The closing audit, over a whole painting
+
+`checklist()` is `report(since=None)`: every rule of the post-pass check, read over the
+whole painting rather than a pass. Two of those rules were written for a pass, and over
+all 726 of Gemini's marks they added the painting up — *265 marks with a bristle under
+size=0.025*, *one disc printed 176 times* — which is finding 12.
+`scripts/probe_cohort_session.py --closing` reads both rules over every finished
+painting the way the audit used to, beside what `checklist()` says now, and counts how
+much of each old line had already been said by the pass that laid the marks:
+
+| | the small comb | the discs |
+|---|---|---|
+| read as a pass over every mark — the closing audit until 0.6.0 | on 9 of 21 checklists | on 14 of 21 |
+| the closing audit now | on none | on **10 of 21** |
+
+**The comb's large counts had been said already, and its small ones are mostly
+strands.** `opus`'s 40 and `laundromat`'s 48 came out of passes whose own report had
+said so for 38 and 39 of the marks. Where no pass had, the count was three marks over
+two passes — `car_wash`'s and each heron's — and cropped out of the finished canvases
+they are mostly what a comb is for: a car-wash brush's bristles, streaks of light and
+reflections on water, with one small plane on a heron's neck among them. Gemini's 265
+are pine boughs, and the streaks are the needles it wanted. The rule asks for a brush
+for the marks about to be laid, and a finished painting has none, so over a whole
+painting it says nothing.
+
+**The discs split the same way, and theirs is the checklist's own question** — *is any
+small mark a disc, a capsule or a rectangle*. Where the count is large it is a passage
+of repeated marks, which is the fault: Gemini's rows of identical glitter lozenges,
+176 of them, every one in a section whose own report would have said so; `sonnet`'s
+pots and trailing plants; the greenhouse's pots. Where it is small it added up accents
+from different passes: `dusk`'s *one disc printed 8 times* was a lamp, a moon, two
+notches, two edge highlights and a glint, from six passes, and six checklists were
+counting a signature. So over a whole painting a disc counts only in a group of three
+or more, each within a radius of another in the brush's unit, a signature left out,
+and the line says where each group is:
+
+| radius | `0.04` | **`0.06`** | `0.08` | `0.10` | `0.15` |
+|---|---|---|---|---|---|
+| checklists with a disc line | 8 | **10** | 10 | 11 | 11 |
+
+The four that `0.06` drops — `car_wash`, `dusk`, `laundromat`, `glm` — are discs
+standing apart, and from `0.06` to `0.15` only `car_wash`'s three join up, at `0.10`.
+Under `0.06` the groups that are passages start going: `opus`'s and `pier`'s at `0.04`.
+
+A pass's own report is unchanged for both rules, so *The noise budget, as 0.5.0 stands*
+above — the comb on 17 passes, the discs on 21 — does not move.
+
 ### The default moves
 
 Each move, with what it buys measured on a scratch canvas and what it would cost measured

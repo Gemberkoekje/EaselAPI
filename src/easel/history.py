@@ -112,7 +112,20 @@ class History:
     SIGNATURE_ALLOWANCE = 5
 
     @staticmethod
-    def _is_signature(record: StrokeRecord) -> bool:
+    def is_signature(record: StrokeRecord) -> bool:
+        """Whether a mark was noted as part of the painter's signature.
+
+        One definition for the two places that set a signature apart: the budget, which
+        waives the first :data:`SIGNATURE_ALLOWANCE` of them, and the closing audit's
+        disc count, which leaves every one of them out -- a signature is lettering, and
+        a dotted *i* is not one disc printed over and over.
+
+        Args:
+            record: any log record.
+
+        Returns:
+            True when its note says ``signature``, in any case.
+        """
         return "signature" in str(record.note).lower()
 
     @staticmethod
@@ -131,7 +144,7 @@ class History:
         free = History.SIGNATURE_ALLOWANCE
         charged: list[StrokeRecord] = []
         for record in paint:
-            if free and History._is_signature(record):
+            if free and History.is_signature(record):
                 free -= 1
                 continue
             charged.append(record)
