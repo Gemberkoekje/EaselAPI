@@ -552,7 +552,7 @@ def answer(words: str, out_dir: str | Path = "out",
 def _mistakes_said(drawn: list[tuple[str, Demo, Panel]], written: Path) -> str:
     """The sheet's path, and for each panel what it is and what the tool says about it."""
     lines = [f"The six mistakes, painted: {written}", ""]
-    for looks, demo, panel in drawn:
+    for looks, demo, _panel in drawn:
         named = "; ".join([*demo.codes, *(f'"{w}"' for w in demo.words)]) or NOTHING
         lines.append(f"  {looks}")
         lines.append(f"      {demo.heading} -- the tool says {named}")
