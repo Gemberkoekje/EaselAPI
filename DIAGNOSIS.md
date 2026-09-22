@@ -72,7 +72,7 @@ its passage, because a dead one is now a command that answers with an apology.
 
 | What you are looking at | Where |
 |---|---|
-| A row of floating discs: one silhouette, printed over and over | `RECIPES.md` -> *A small irregular bright mark*; `CALIBRATION.md` -> *At the scale of a feature* |
+| A row of floating discs, or a ladder of marks of one length where a light should break up: one mark, printed over and over | `RECIPES.md` -> *A small irregular bright mark*; `RECIPES.md` -> *A light broken down a surface toward the viewer*; `CALIBRATION.md` -> *At the scale of a feature* |
 | A capsule with rounded ends, or a rectangle with chisel ends | `PAINTING.md` -> *The shape each tool leaves behind* |
 | A small mark that did not register at all | `RECIPES.md` -> *A small round thing*; `CALIBRATION.md` -> *At the scale of a feature* |
 | A cast shadow reading as a hole punched through the surface, or as a filled slab with two hard ends | `PAINTER.md` -> *4. Check your values* |

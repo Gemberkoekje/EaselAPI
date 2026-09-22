@@ -44,7 +44,7 @@ F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.
 they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
 afterwards: `cover()` holds a burial to its place, and `clean-small` asks a region as it
 asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is part-done**, in
-four parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
+five parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 `diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
 **G7 and G9** -- the fixes to what is there, and the one small fact of five that was
 genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
@@ -61,9 +61,12 @@ with the `edges:` line that shipped (`21%-62%`, median `37%`, the two cut-out pa
 first and third), the noise table counted once a pass and re-run as 0.6.0 stands (61% of
 passes say nothing, the median pass still `0` lines), the replay promise amended,
 `wet-under`'s decline written down, and the rebuild claims filed as
-[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70). G4 landed with step 7, so
-what is left of G is G2, G6, G8, G10 and the rest of G11, and eight recipes' demos;
-`NOTES-step9.md` has the gotchas for all four parts. The three rulings the step notes left for the owner -- the standing
+[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70). Part five is **G3's last
+demos and G6**: seven more demo blocks, so nineteen of the twenty-one recipes carry one
+and two stay in words on purpose, and *a light broken down a surface toward the viewer*,
+collected from the four accepted versions of the passage four cohort painters failed
+alike. G4 landed with step 7, so what is left of G is G2, G8, G10 and the rest of G11;
+`NOTES-step9.md` has the gotchas for all five parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
@@ -456,6 +459,15 @@ run's three notes, on two recipes, were ruled on and fixed -- one recipe's, one 
 quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, and
 *a repair under things that are standing on it*, which waited for F1 and no longer does.
 
+**And for seven more in part five, so nineteen of twenty-one**, the new recipe (G6)
+among them. A demo's body is opened as a pass now, which is what let *a repair* show a
+burial at all. Two recipes changed their block so their panel shows them working:
+*a hollow thing*'s catch-light moved onto a near rim, and *a repair*'s details dropped
+under the size the burial rule watches. **Two stay in words, on purpose.** *A form that
+turns*, laid as a pass on its own, draws the stack-of-bars line on the recipe itself,
+and its failure, no join stroke, is too slight for a demo's scale. *A scene with
+straight edges* is a drawing, and a panel shows paint.
+
 **G4. `s.checklist()` / `easel check`**: the closing checklist as output. Measured lines
 answered with their number (values, edges, ground, discs, bars or their crossings, boxes,
 lightest, buried, pencil, subject share, unspent); the three judgement lines printed as
@@ -474,6 +486,19 @@ viewer (noun-free heading per `LESSONS.md`), from the four cohort paintings' *ac
 versions -- GPT's one connected mass with a broken lower edge, Kimi's five bent starved
 strokes at the sides, Gemini's scattered broken flashes, DeepSeek's flashes shorter and
 fainter toward the viewer. Its failure block is the `one-loop` demo.
+
+**Built, step 9 part five**, and the four versions did not say what this row says they
+say. Read in the scripts rather than the notes: GPT's lights are 27 unequal marks, with
+dark cuts laid through them afterwards. Kimi's five strokes barely survive in its
+picture, because the tower laid after them covers most of each. Gemini's flashes do not
+shorten toward the viewer -- the rows open out and fade. And DeepSeek's *shorter* went
+into the marks' width, all eight `0.100` long. So the recipe is what the four come to,
+taken together: a film first, mixed from what it lands on; every piece a different
+length, bent, its tip drawn afresh; the rows further apart, wider and fainter as the
+light comes toward you, while the pieces keep their lengths; and the surface's own dark
+laid back across the lights. Its failure block is DeepSeek's ladder, which `report()`
+names. Its own block lays eleven marks, under the twelve the stack-of-bars line counts,
+because pieces of a light on a surface all lie near one angle.
 
 **G7. Fixes to what is there. Built, step 9 part two**, and two of the five rows were
 already closed by the steps that carried them. *A mass built of planes* and *a form that
@@ -566,7 +591,7 @@ the map back, if a cut turns out to have gone too far.
 | `PAINTING.md`, *The shape each tool leaves behind* | ten rows + three paragraphs | `chisel-staircase`, `cross-small`, `mass-is-a-stroke`, `shallow-box`, `one-loop`, and the existing small-bristle and round-disc rules (which get codes in A2) -- **`one-loop` arrived in step 6 (D3)**: the *any loop or generator* row says `report()` names it | the table as an index of codes |
 | `PAINTING.md`, *Masses that are not rectangles*: spill, `inset` | | `spill`, `inset-lost` -- **`spill` arrived in step 6**, and the spill paragraph is one line naming it; the `inset` paragraph waits for `inset-lost`, which is tier 3 | the three remedies |
 | `PAINTING.md`, 0-255 list clamps to white | | B13 raises | -- |
-| `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips -- **arrived for twelve recipes in step 9 (G3)**. The prose stays: most *Goes wrong as* name several failures and a block shows one, so each keeps its line and gains the block | one line, and the block |
+| `RECIPES.md`, every *Goes wrong as* | failure described in words | the failure block under `easel demo`, and the code it trips -- **arrived for twelve recipes in step 9 (G3), and for seven more in its part five: nineteen of twenty-one, two left in words on purpose**. The prose stays: most *Goes wrong as* name several failures and a block shows one, so each keeps its line and gains the block | one line, and the block |
 | `RECIPES.md`, graded field: *the clause that gets left off* | | F (default) | -- |
 | `RECIPES.md`, quiet gradient: a `flat` scallops; under five passes | | **neither carrier arrived** -- F4 was declined on the numbers (the halved pair moves the ripple `0.0053` to `0.0059`), and `scumble-few` is not built. **Settled in step 9: nothing leaves**, and the paragraph is unchanged | the whole paragraph |
 | `RECIPES.md`, lost edge: stretch not boundary | | `smudge-long` -- **arrived in step 6 (D2)**: the paragraph is a line naming it, and the block above it, which smudged half the canvas, smudges a stretch | the paint-across recipe |

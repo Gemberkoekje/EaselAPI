@@ -635,3 +635,114 @@ eight recipes still without a demo.
 | `PAINTINGS.md`, `README.md` | the replay promise |
 | `SUGGESTIONS.md` | finding 5's and finding 13's rows |
 | `PLAN-0.6.0.md` | status; two decisions rows; *Loose ends* down to #70's pointer; section 6's pointer to #70; section 8's finding-13 bullet answered |
+
+---
+
+# Step 9, part five: the last demos, and a recipe collected from four paintings (G3, G6)
+
+**To understand this, start by reading `lay` in [`src/easel/demo.py`](src/easel/demo.py)
+-- its last paragraph, and the `_open_pass()` it now calls -- then the new recipe, *A
+light broken down a surface toward the viewer*, in [`RECIPES.md`](RECIPES.md), then
+the demo block under *A repair under things that are standing on it*.**
+
+Branch: `g3-last-demos`, off `g11-loose-ends` (#71), stacked because both touch the
+plan, `CHANGELOG.md` and these notes.
+
+---
+
+## What this part was for
+
+G3 left eight recipes in words, and G6 -- the one passage four cohort painters failed
+alike -- had no recipe at all. This part gives seven more recipes a demo, writes the
+new recipe with its demo, and says why the last two stay in words.
+
+## What landed
+
+| | |
+|---|---|
+| **seven demo blocks** | *a picture with an empty half*, *a quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, *a repair under things that are standing on it*, and the new recipe's: nineteen of twenty-one recipes, **19 of 19 fail exactly the way they say** |
+| **three *Goes wrong as*** | *a quiet gradient*, *a hollow thing* and *a repair* had none |
+| **two recipe blocks changed** | *a hollow thing*'s catch-light moved onto a near rim; *a repair*'s `details()` lays three things at `0.012` where it laid one at `0.02` |
+| **`demo.lay`** | opens the body as a pass (`_open_pass()`), so the burial rule can speak in a demo |
+| **the new recipe** | *a light broken down a surface toward the viewer*, with its demo: DeepSeek's ladder, *a loop's signature* |
+| **`DIAGNOSIS.md`** | the floating-discs row also names a ladder of one length, and points at the new recipe -- the file is at its 130-line cap, so no row was added |
+| **tests** | a burial a demo can show; the floor on the demo count; the *no demo yet* example is *a form that turns* now |
+
+## Decisions and gotchas
+
+**1. A demo could not show a burial, and nobody knew.** `report()` says what a pass
+took out of sight only when `_open_pass()` has kept the canvas the pass began on, and
+`lay` never called it. It does now, the way `easel run` does, and none of the twelve
+earlier demos moved.
+
+**2. `_BURIED_SMALL` is `0.02`, strictly under.** The repair recipe's details were
+exactly `0.02`, so the burial rule never watched them. They are `0.012` now, three of
+them, standing on the near mass rather than on the far one, which is what the recipe's
+own paragraph says its repair buries.
+
+**3. The bars rule is a context rule, and a demo has no context but its passage.**
+Twelve long marks within six degrees, from two or more calls, is a stack of bars *in
+this pass*, and a demo's body is the whole pass. That is what keeps *a form that turns*
+in words: its two masses both run along the form's side (21 long marks at one angle), so
+the recipe panel itself draws the line. The new recipe lays **eleven** marks for the
+same reason, since the pieces of a light on a surface lie near one angle. **Declaring
+`s.plan(bands="subject")` does not help**: the line rewords itself as a count of what
+crosses the bands, and it is still a finding.
+
+**4. So is *detail before the masses*.** Eight small marks inside a painting's first
+60 is the fault, and a passage of two block-ins is ten marks. The new recipe's passage
+lays its surface as a 40-pass scumble so the painting is past its first 60 by the time
+the pieces go down, which is where they would be in a real picture. The first try, a
+`flat` at `0.025`, left tooth specks that looked like the pieces.
+
+**5. The four accepted versions did not say what the plan said they said.** Read in the
+scripts, not the notes: GPT's lights are 27 unequal marks with dark cuts laid through
+them afterwards, and its *spoon-shaped islands* were in the dark half, a rehearsal that
+never reached the painting. Kimi's five strokes are mostly under the tower painted after
+them. Gemini's flashes do not shorten toward the viewer -- the rows open out and fade --
+and its glow bar under each row is the ziggurat's outline kept as a film. DeepSeek's
+*shorter* went into the marks' width, all eight `0.100` long. The recipe takes what they
+come to together and says so. It copies none of their lengths.
+
+**6. A glaze in a guide block has to be mixed from what it lands on**, or `glaze-far`
+fires on the recipe itself: the check runs every block on the preamble's toned grey. So
+the recipe's film samples the place first, as *a volume of lit air* does.
+
+**7. The hollow thing's catch-light was on an arc no hollow in front of it could make
+its near edge.** Upper-left, with a bow up: the far rim of anything seen from above. Its
+new coordinates lie on the lower-left of an opening centred at `(0.30, 0.72)`, which the
+demo builds. The first demo at the old size was over half the canvas, so `focus` would
+not enlarge it, and a 3 px catch-light on a 400 px canvas is invisible unenlarged.
+
+**8. A passage can paint another recipe's failure.** The empty half's glow first showed
+contour rings, *a passage light in the middle*'s own failure, at eight rings. It lays
+twenty.
+
+**9. Time.** The block check ran in 269 s with the full suite beside it.
+
+## Open, and for the owner to rule on
+
+**The two recipes left in words.** *A form that turns* could have a demo if the bars
+rule counted a mass's passes once, the way it counts a scumble's -- and that is a rule
+change with a corpus replay behind it, not a demo's to make. *A scene with straight
+edges* could have one if a panel showed graphite, which would put the preamble's pencil
+line in every other panel. Both are written down in the plan's G3 row and the
+`CHANGELOG.md` entry, so they are not re-argued by accident.
+
+## What part five did *not* touch
+
+**G2** (the entry path and `easel demo mistakes`), **G8** (the voice pass), **G10** (the
+budgets) and the rest of **G11**. The README still says *the twelve CLI verbs* and
+*fifteen tools* in its MCP section, which is G11's count to fix.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/demo.py` | `lay` opens the body as a pass; its docstring |
+| `RECIPES.md` | the index row; seven demo blocks; three *Goes wrong as*; the hollow thing's catch-light; the repair's details; the new recipe |
+| `DIAGNOSIS.md` | the floating-discs row names a ladder and the new recipe |
+| `tests/test_demo.py` | a burial a demo can show; the demo floor; *a form that turns* as the recipe with no demo |
+| `CHANGELOG.md` | `### Seven more recipes that show how they go wrong, and a light that comes toward you in pieces` |
+| `SUGGESTIONS.md` | finding 7's and finding 19's rows |
+| `PLAN-0.6.0.md` | status; G3 and G6; the migration row for *Goes wrong as* |

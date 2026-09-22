@@ -46,7 +46,7 @@ def test_every_demo_in_the_recipes_parses_and_names_what_exists():
     """A misspelt code is refused at parse time, so this is also the check that every
     code a *goes wrong* line names is one the engine can say."""
     every = demo.demos()
-    assert len(every) >= 12
+    assert len(every) >= 19
     for d in every:
         assert d.recipe, f"{d.heading} has a demo and no recipe block to lay beside it"
         assert d.failure.strip(), f"{d.heading}'s demo has nothing that goes wrong"
@@ -121,6 +121,21 @@ def test_a_fix_that_still_says_what_went_wrong_is_a_fault(tmp_path):
     assert faults == ["the smallest fix says jitter-beads at the call"]
 
 
+def test_a_burial_is_a_failure_a_demo_can_show(tmp_path):
+    """A demo's body is opened as a pass, the way `easel run` opens one. The rule that
+    names a burial needs the canvas as the pass began, and without it a repair that
+    buries what stands on it was a failure no demo could name."""
+    d, = demo.demos(draft(
+        "# the passage: a mass, and three things standing on it\n"
+        's.block_in(Region(0.1, 0.6, 0.9, 0.9), "flat", "dark", size=0.1, solid=True)\n'
+        "for x in (0.3, 0.5, 0.7):\n"
+        '    s.stroke([(x, 0.8), (x + 0.02, 0.65)], "round_hard", "light", size=0.012)\n'
+        '# goes wrong: report() says "earlier details out of sight"\n'
+        's.block_in(Region(0.1, 0.6, 0.9, 0.9), "flat", "dark", size=0.1, solid=True)'))
+    drawn = demo.panels(d, tmp_path)
+    assert demo.faults(d, drawn) == []
+
+
 def test_a_block_that_raises_is_a_fault_and_not_a_crash(tmp_path):
     d, = demo.demos(draft("# goes wrong: nothing says so\ns.no_such_verb()"))
     drawn = demo.panels(d, tmp_path)
@@ -166,7 +181,7 @@ def test_the_command_paints_a_demo_and_says_what_each_panel_was_told(tmp_path, c
 @pytest.mark.parametrize("words, said", [
     ("teapot", "No recipe's heading has all of"),
     ("passage", "names 2 recipes"),
-    ("tapered arc", "has no demo yet"),
+    ("form that turns", "has no demo yet"),
 ])
 def test_the_command_says_why_it_drew_nothing(words, said, capsys, tmp_path):
     main(["demo", "--out-dir", str(tmp_path), *words.split()])

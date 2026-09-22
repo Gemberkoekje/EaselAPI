@@ -290,6 +290,11 @@ def lay(passage: str, body: str, out_dir: str | Path, label: str) -> Panel:
     panel says what they said. The check is ``report()`` over ``body`` alone, and the
     panel keeps the box ``body`` changed, which is what :func:`sheet` enlarges.
 
+    ``body`` is opened as a pass, the way ``easel run`` opens one, so the check can
+    say what it took out of sight: without the canvas as the pass began, the rule
+    that names a burial cannot see one, and a repair that buries the details standing
+    on it would be a failure no demo could show.
+
     No time-lapse: nothing here keeps a frame, and building one after every mark is
     work a panel would throw away.
     """
@@ -304,7 +309,7 @@ def lay(passage: str, body: str, out_dir: str | Path, label: str) -> Panel:
                  scope)
             opened = len(scope["s"].notices())
             exec(compile(passage, f"<{label}: the passage>", "exec"), scope)  # noqa: S102
-            said, laid = len(scope["s"].notices()), len(scope["s"].history.records)
+            said, laid = len(scope["s"].notices()), scope["s"]._open_pass()
             before = scope["s"].canvas.rgb.copy()
             exec(compile(body, f"<{label}>", "exec"), scope)  # noqa: S102
         except Exception as exc:  # the panel reports it; faults() turns it into a fault
