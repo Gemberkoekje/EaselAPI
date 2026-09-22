@@ -61,7 +61,8 @@ could not give), the replay promise is amended, `buried` ships as it is and narr
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
 owned now has an owner**, under *Loose ends, and who owns them* in section 6: F1's build,
 a `clean` edge its bench found failing in silence, the finding-13 replay, the noise
-table's miscounted `!` rows, and three smaller rows; the manifest's verb count, the
+table's miscounted `!` rows, and three smaller rows -- and finding 12, which no row of
+this plan had named until after G3, and which waits on a ruling; the manifest's verb count, the
 block check in CI and the two recipes G3's first run found tripping `report()` left the
 table with G3. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
@@ -598,6 +599,7 @@ table when what it names is done**, the way a migration row leaves with its para
 | **The noise table counts notices, not passes, on its `!` rows** -- found replaying the corpus for the bars ruling | `report_noise` in `scripts/probe_cohort_session.py` adds one per line said, and a call-time notice can be said several times in a pass: its *passes* column has `glaze-far` on 38, where step 6 counted 38 films in 17 passes. The `report()` rows are right -- a finding prints once a pass -- which is why the bars figure (38, 12%) stands | G11, before 0.6.0 quotes a noise figure | the column counts each rule once a pass, and `CALIBRATION.md`'s noise table is re-run on the engine as released |
 | **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
 | **`wet-under`, declined** (ruled 2026-09-21) | step 2 left it a fact line, and nothing owned it | G11 | `CHANGELOG.md` names it beside the other declines, and `SUGGESTIONS.md`'s finding-5 row says what was and was not done |
+| **Finding 12: the small-bristle and round-disc rules over a whole painting** -- found with no owner after G3 landed | Gemini's *265 marks with a bristle under size=0.025* and *one disc printed 176 times* were argued with in its notes rather than acted on: the comb's gaps were the needle texture it wanted. Both rules count every mark `report()` is handed, so `checklist()` -- `report(since=None)` -- prints the whole painting's count. No workstream row named the finding, `CALIBRATION.md` has not measured it, and `SUGGESTIONS.md`'s row is blank | **the owner's ruling**, on a count the probe takes first: how many of the 21 finished paintings' `checklist()` carry either line, and on what marks. G11 fills the row either way | ruled -- narrowed for a whole painting, or declined for this round -- and `SUGGESTIONS.md`'s row says which |
 | **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | one GitHub issue exists, and this row links it |
 
 ### What step 2 measured, and what it decides
