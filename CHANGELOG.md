@@ -840,6 +840,48 @@ failed alike has a recipe.
   Its demo is the ladder one painter committed as its fix: eight marks of one length,
   which `report()` names a loop's signature.
 
+### The way in: six failures painted, the reasons delivered, and two ceilings that bind
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G2, G8 and G10). Four painters
+counted what they read before their first mark — ~2,600 lines, ~2,500 lines, *2000+
+lines of docstrings* — and every one of them asked for a quick start. This is the
+answer, and it is a hypothesis until a fresh session paints against it.
+
+**`easel demo mistakes`** paints six failures on one sheet: a staircase down a sloped
+side, a stack of bands, a film that owns the picture, a thumbprint dragged out of a
+mass, a ladder of one length, one disc printed over and over. Each is a recipe's own
+*Goes wrong as*, so the sheet stays true by the same invariant the demos do, and each
+is something the tool says at the call or after the pass. `demo` over MCP takes the
+word too.
+
+**The path is the card, that sheet, the nine exercises, and paint.** What left it is
+*read `PAINTING.md` once*, which was about 2,500 words before the first mark.
+`PAINTING.md` is **the reasons, delivered rather than read**: every notice carries the
+passage its reason lives in, and `easel explain <code>` prints that passage at the
+call. Its own first page, the file table, the README and `llms.txt` say so.
+
+**The numbers that were the guide's are the painter's.** The three values, the place
+meant to be lightest, the subject's share of the budget and whether this picture's
+ground is meant to be buried go in `s.plan(...)`, and the card asks for them there
+rather than stating them as universal. What is left as a number says which kind it is:
+**measured**, with the `CALIBRATION.md` heading behind it, or a **habit**, as *most
+painters so far*. Where a check now says a thing, the rule names it — boxes are the
+`boxes:` line, the edges step is the `edges:` line, under-varied objects are *one disc
+printed* and *a loop's signature*.
+
+**Two word ceilings, and both bind.** `PAINTER.md`'s was 10,000 against a file of
+6,654, which is not a ceiling; it is 6,700 now. The card — *The first hour*, the page
+every painter reads and the one the cohort measured as too long — had none at all, and
+has 1,400 against 1,369. `tests/test_guide.py` holds both, and
+`scripts/check_guide_blocks.py` prints them. The round's plan wanted about 5,000 words
+for the file: that is not this, and getting there means cutting the workflow, the
+exercises or *What you are bad at*, each of which a session has defended.
+
+- **The README's own count of the server is held to the server now.** It said *fifteen
+  tools: the twelve CLI verbs* while there were twenty and seventeen. The manifest's
+  copy of that sentence has been held to the parser since step 9's part three; this is
+  the other place a client reads it.
+
 
 ## [0.5.0] — 2026-09-16
 

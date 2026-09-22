@@ -9,6 +9,7 @@ so; this forwards the whole of it, and is not going away.
 from __future__ import annotations
 
 from easel.docs import (
+    CARD_WORDS,
     DOCUMENTS,
     FRONT_PAGE,
     FRONT_PAGE_WORDS,
@@ -20,6 +21,7 @@ from easel.docs import (
 )
 
 __all__ = [
+    "CARD_WORDS",
     "DOCUMENTS",
     "FRONT_PAGE",
     "FRONT_PAGE_WORDS",

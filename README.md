@@ -155,7 +155,7 @@ sessions is kept there too rather than beside the rules.
 |---|---|
 | [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) | the method: the loop, the order of work, the mistakes, the exercises, the checklist. Held in your head |
 | [`RECIPES.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/RECIPES.md) | one situation at a time: the calls in order, what it looks like when it goes wrong, and the number behind it |
-| [`PAINTING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTING.md) | how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter. Read once |
+| [`PAINTING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTING.md) | how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter. The reasons, and `easel explain <code>` prints the one a notice points at |
 | [`REFERENCE.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/REFERENCE.md) | the facts: units, defaults, what each argument does |
 | [`CALIBRATION.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CALIBRATION.md) | the measurement behind every number the other four quote, each with what it was measured on |
 
@@ -259,7 +259,7 @@ is listed in the official MCP registry as `io.github.Gemberkoekje/easel`;
 [`server.json`](https://github.com/Gemberkoekje/EaselAPI/blob/main/server.json) at
 the repository root is what is published there.
 
-Fifteen tools: the twelve CLI verbs, plus `preview`, `rehearse` and `cost` — the
+Twenty tools: the seventeen CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
 which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
 copy and commits nothing. A place is a name, a cell, a span, a rectangle, an outline,

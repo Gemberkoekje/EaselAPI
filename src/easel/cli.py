@@ -317,11 +317,13 @@ def build_parser() -> argparse.ArgumentParser:
                     "by side -- the recipe, the call that goes wrong with what the tool "
                     "says about it, and the smallest fix where it is not the recipe "
                     "itself -- and prints what each panel was told. Name the recipe by "
-                    "the words of its heading: `easel demo crosses a boundary`. With no "
-                    "words: every recipe, and which of them have a demo.",
+                    "the words of its heading: `easel demo crosses a boundary`. "
+                    "`easel demo mistakes` paints the six a painter meets most, one "
+                    "sheet, before the exercises. With no words: every recipe, and "
+                    "which of them have a demo.",
     )
     p_demo.add_argument("words", nargs="*",
-                        help="the recipe, by the words of its heading")
+                        help="the recipe, by the words of its heading, or `mistakes`")
     p_demo.add_argument("--out-dir", type=Path, default=Path("out"),
                         help="where the sheet is written, as demo-<recipe>.png")
     p_demo.add_argument("-o", "--output", type=Path, default=None,

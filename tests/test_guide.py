@@ -108,6 +108,19 @@ def test_the_front_page_stays_inside_its_word_budget() -> None:
     )
 
 
+def test_the_card_is_held_to_a_budget_of_its_own() -> None:
+    """The card is the page every painter reads, and until 0.6.0 it was the one with
+    no ceiling of its own. It is also where the 0.5.0 cohort's *too long before the
+    first stroke* was measured, so it is the page a ceiling is worth most on. Over
+    budget, take a paragraph out -- anything added here is added to the file as well.
+    """
+    words = len(guide.section("guide", guide.FRONT_PAGE).split())
+    assert words <= guide.CARD_WORDS, (
+        f"`The first hour` is {words} words, over its {guide.CARD_WORDS}-word budget "
+        f"by {words - guide.CARD_WORDS}. Take a paragraph out rather than raising this."
+    )
+
+
 def test_the_essay_is_where_the_length_went() -> None:
     """The split was a move, not a cut. If `PAINTING.md` ever becomes a stub, the
     front page's budget has stopped being paid for and started being a deletion."""

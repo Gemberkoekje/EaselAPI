@@ -121,6 +121,31 @@ def test_a_fix_that_still_says_what_went_wrong_is_a_fault(tmp_path):
     assert faults == ["the smallest fix says jitter-beads at the call"]
 
 
+def test_the_six_mistakes_are_recipes_with_demos():
+    """`easel demo mistakes` is the entry path's own sheet, and it is six recipes'
+    failures rather than six blocks of its own: a heading renamed or a demo taken out
+    has to break here, where the message says which."""
+    every = {r.slug: r for r in demo.recipes()}
+    assert len(demo.MISTAKES) == 6
+    for slug, looks in demo.MISTAKES:
+        recipe = every.get(slug)
+        assert recipe is not None, f"{slug} is not a recipe in RECIPES.md"
+        assert recipe.demo is not None, f"{slug} has no demo for the mistakes sheet"
+        assert looks and looks == looks.lower()
+
+
+def test_the_mistakes_sheet_is_one_panel_each(tmp_path, monkeypatch):
+    """Painted on one of them, because the sheet paints a passage per panel and the
+    suite is not where six of those belong -- `easel demo mistakes` is."""
+    monkeypatch.setattr(demo, "MISTAKES", ((QUICK, "a rim that reads as damage"),))
+    written, drawn = demo.mistakes(tmp_path)
+    assert written.name == "demo-mistakes.png"
+    assert [looks for looks, _, _ in drawn] == ["a rim that reads as damage"]
+    assert drawn[0][2].codes == ["round-fringe"]
+    width, height = Image.open(written).size
+    assert width < 2 * height                       # one panel, not a recipe's row of them
+
+
 def test_a_burial_is_a_failure_a_demo_can_show(tmp_path):
     """A demo's body is opened as a pass, the way `easel run` opens one. The rule that
     names a burial needs the canvas as the pass began, and without it a repair that

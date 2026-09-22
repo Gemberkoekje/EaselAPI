@@ -82,7 +82,23 @@ FRONT_PAGE = "## The first hour"
 #: bad at*, the checklist and the exercises come to about 8,500 words on their own,
 #: and reaching 6,000 would mean cutting them, which every other item on the same
 #: list forbids. A budget nobody can meet on the day it is written holds nothing.
-FRONT_PAGE_WORDS = 10_000
+#:
+#: **Lowered to the file's own size in 0.6.0**, which is what a ceiling three
+#: thousand words above the text was not: the round moved rule after rule out of
+#: here and into something the tool says, and 10,000 stopped binding anything. It is
+#: set a little over what the file is, so the next paragraph has to buy its place by
+#: taking one out. The round's plan wanted about 5,000, and that is not this: getting
+#: there means cutting the workflow, the exercises or *What you are bad at*, each of
+#: which a session has defended, and that is a design job with a measurement behind
+#: it rather than an edit.
+FRONT_PAGE_WORDS = 6_700
+
+#: The same, for the card -- `The first hour`, the section meant to be read alone and
+#: the one every painter reads. It had no ceiling until 0.6.0, and it is the page that
+#: most wants one: what a painter meets before the first mark is the thing the round
+#: measured as too long. `LESSONS.md`'s growth rule applies here twice over, since
+#: anything added to the card is added to the file as well.
+CARD_WORDS = 1_400
 
 _PACKAGED = Path(__file__).resolve().parent / "docs"
 _CHECKOUT = Path(__file__).resolve().parents[2]
@@ -184,7 +200,7 @@ def heading_line(name: str, prefix: str) -> str:
     )
 
 
-def section(name: str, heading: str) -> str:
+def section(name: str, heading: str, text: str | None = None) -> str:
     """One section of a document: from `heading` to the next one of its level or above.
 
     `easel explain <code>` is built on this. A notice's registry row points at the
@@ -201,10 +217,14 @@ def section(name: str, heading: str) -> str:
 
     Raises `KeyError` for a heading the document does not have, which is what makes
     a renamed heading a broken test rather than an empty answer.
+
+    `text` reads a draft instead of the shipped file, as `headings` does: a word
+    budget is checked against the file on disk, which is not always the one the
+    package would hand back.
     """
-    lines = read(name).splitlines(keepends=True)
+    lines = (read(name) if text is None else text).splitlines(keepends=True)
     level = len(heading) - len(heading.lstrip("#"))
-    found = headings(name)
+    found = headings(name, text)
     start = next((i for i, _, line in found if line == heading), None)
     if start is None:
         raise KeyError(f"{DOCUMENTS[name]} has no heading {heading!r}")

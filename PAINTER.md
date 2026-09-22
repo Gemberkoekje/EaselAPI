@@ -2,15 +2,16 @@
 
 You are about to paint. Not draw, not render — paint. This file is the method: the
 loop, the order of work, the mistakes you will make, nine exercises, and a checklist.
-Read *The first hour*, paint the exercises at the end, then read
-[`PAINTING.md`](PAINTING.md) once and start. Come back here while you paint; open the
-other files when a situation calls for one.
+Read *The first hour*, run `easel demo mistakes` and look at the sheet, paint the
+exercises at the end, and start. Come back here while you paint; open the other files
+when a situation calls for one, and when the tool says something you do not know the
+reason for, `easel explain <code>` prints it.
 
 | File | What it holds | When |
 |---|---|---|
 | **`PAINTER.md`** — this one | the method: the loop, the order, the mistakes, the exercises, the checklist | now, and open beside you while you paint |
 | [`RECIPES.md`](RECIPES.md) | one situation at a time: the calls in order, what it looks like when it goes wrong, and the number behind it | when you are about to lay one |
-| [`PAINTING.md`](PAINTING.md) | how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter | once, after the exercises; the last chapter only if you have a photograph |
+| [`PAINTING.md`](PAINTING.md) | the reasons: how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter | when a notice points at it — `easel explain <code>` prints the passage — or when a rule's reason is the question; the last chapter only if you have a photograph |
 | [`REFERENCE.md`](REFERENCE.md) | every fact on one page: units, defaults, what each argument does | when you want to look something up |
 | [`CALIBRATION.md`](CALIBRATION.md) | the measurement behind every number quoted in the other four | when a number is the question |
 
@@ -96,10 +97,14 @@ fingers, five pickets, a row of windows. A comb the size of a hand is the same f
 one scale down, and the band count is the instrument for both. **What is this thing's
 foreshortening?** Draw the view, not the object: a cupped hand seen from the front is
 a cluster coming toward you, not four fingers laid out sideways, and no brush repairs
-the difference. Write the three values down as numbers, and the split of the budget as
-numbers. **Write down why this subject and not another**, in a sentence — put it in
-`s.plan(why=...)`, because `s.checklist()` quotes it back at the end and nothing else
-can ask for it.
+the difference. **Write down what you decided, where the engine can see it** —
+`s.plan(values=..., lightest=..., subject_share=..., ground=..., why=...)`. The three
+values, the place meant to be lightest, the share of the budget the subject gets and
+whether this picture's ground is meant to be buried are yours to choose, and declaring
+them is what makes the check answer to your picture rather than to a default: the
+`subject:` line then counts against your share, the ground line prints its number
+without asking for more, and `s.checklist()` quotes your sentence back at the end.
+Nothing else can ask for that sentence.
 
 **The six things you will get wrong.** Each has been made by every painter so far, so
 the fix is on the same row as the mistake.
@@ -113,14 +118,22 @@ the fix is on the same row as the mistake.
 | **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped side | give a mark a length, or `tip_wobble=0.7`. The tool says the rest: `chisel-staircase` at the call, and `report()` counts the discs | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
 | **Repainting a passage that has failed twice** | four treatments of one passage — vary the brushes, break the lights, lay core darks, give up on part of it — each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | *What you are bad at*, below |
 
+**And six failures, painted**, because a failure you have seen is worth more than one
+you have read: `easel demo mistakes` puts them on one sheet — a staircase down a sloped
+side, a stack of bands, a film that owns the picture, a thumbprint dragged out of a
+mass, a ladder of one length, one disc printed over and over. Each is a recipe's own
+*Goes wrong as* in [`RECIPES.md`](RECIPES.md), each is something the tool says at the
+call or after the pass, and `easel demo <words of its heading>` paints any of them
+beside the call that does not make it.
+
 **When you think it is finished**, run `s.checklist()`. It answers every line that
 has a number behind it, and leaves you three that nothing can measure — they are at
 the end of this file, and they are about finishing rather than about faults: the last
 third of the budget goes on what surrounds the subject, the last marks are about the
 picture rather than a score, and the reason you chose the subject is still in it.
 
-**Now go and paint the nine exercises**, at the end of this file. Then read
-[`PAINTING.md`](PAINTING.md) once, and start.
+**Now look at the six failures, painted** — `easel demo mistakes`, one sheet — **and
+paint the nine exercises** at the end of this file. Then start.
 
 **And before you lay a passage you have not laid before — a form that turns, a graded
 field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** This
@@ -323,9 +336,12 @@ one (*A graded field that is most of the picture* in
 
 ### 6. Edges: lost and found
 
-The step you will be most tempted to skip. Decide where you want attention and lose
+The step most painters so far have skipped. Decide where you want attention and lose
 every other edge — two masses merging with no boundary at all in places. Lose one edge
-completely rather than four partly.
+completely rather than four partly. The check counts what you did: `edges:` is the share
+of the picture's boundaries under `2.5` px wide, and a picture whose every edge is crisp
+says so as a number (*The `edges:` row, measured twice* in
+[`CALIBRATION.md`](CALIBRATION.md#the-edges-row-measured-twice)).
 
 `smudge` softens a *stretch* of a boundary, once. Hand it the stretch you mean to lose —
 under a tenth of the canvas, along the boundary's own shape — and leave `size` off:
@@ -344,9 +360,11 @@ in [`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
 ### 7. Highlights last, smallest brush, fewest strokes
 
 Every highlight you add makes the others count for less. **Anything the size of a cell
-or smaller is three marks at most — the dark, the light, and the edge between them** —
-laid dark first, and looked at through a `region=` crop before the light goes on. `size`
-is the *feature's* fraction of the canvas, not the mass's.
+or smaller has taken three marks so far — the dark, the light, and the edge between
+them** — laid dark first, and looked at through a `region=` crop before the light goes
+on. That is a habit and not a measurement: the number that is yours is the budget's
+split, which `s.plan(subject_share=)` holds the check to. `size` is the *feature's*
+fraction of the canvas, not the mass's.
 
 ---
 
@@ -386,9 +404,10 @@ s.stroke([(0.42, 0.36), (0.47, 0.41)], "round_hard", "pale",
          size=0.012, load=0.3, opacity=0.7)      # in from the edge, not a dot
 ```
 
-**You will paint boxes.** A rectangle is the easiest place to name, and if you block in
-a shaped mass as a box you get a box, and no later work removes it. Build the shape,
-preview it, and **check the background hardest**: you will reach for a shape on your
+**Every painter so far has painted boxes, and the checklist counts them** — `boxes: 3
+of 11 masses were laid in a rectangle`. A rectangle is the easiest place to name, and if
+you block in a shaped mass as a box you get a box, and no later work removes it. Build
+the shape, preview it, and **check the background hardest**: you will reach for a shape on your
 subject, because its silhouette was a problem, and then lay everything behind it in
 boxes because nothing back there asked anything of you. A background of square patches
 reads instantly as made by a machine. Give the masses that needed no drawing the same
@@ -428,7 +447,9 @@ brush-level answer to a drawing-level fault, and each one making the next repain
 because more was standing on it. The drawing underneath was a cupped hand drawn as four
 fingers laid out sideways, and no brush was ever going to fix that.
 
-**You will under-vary your objects.** Having worked out how to paint one of a thing,
+**You will under-vary your objects, and `report()` says so when the marks are alike
+enough** — *one disc printed 5 times*, *a loop's signature: one length, one spacing*.
+Having worked out how to paint one of a thing,
 you will paint the next with the same recipe, and a viewer reads three copies of one
 object rather than three of a kind. Vary one thing per object on purpose: which way its
 light falls, how sharp its edge is, how much of it the mass in front takes away. One

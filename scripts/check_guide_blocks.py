@@ -53,7 +53,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from easel import demo  # noqa: E402  (after the sys.path insert)
-from easel.docs import FRONT_PAGE_WORDS  # noqa: E402
+from easel.docs import CARD_WORDS, FRONT_PAGE, FRONT_PAGE_WORDS, section  # noqa: E402
 
 OUT = ROOT / "out" / "_check"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -197,11 +197,15 @@ def main() -> int:
           + ("" if not wrong else " -- fix the block, or the line naming what it trips"))
 
     # The front page's word budget, the other thing that keeps the guide usable.
-    words = len((ROOT / "PAINTER.md").read_text(encoding="utf-8").split())
-    budget = FRONT_PAGE_WORDS
-    verdict = "over budget" if words > budget else f"{budget - words} to spare"
-    print(f"PAINTER.md {words} words against a budget of {budget} -- {verdict}")
-    return 1 if bad or noisy or wrong or words > budget else 0
+    text = (ROOT / "PAINTER.md").read_text(encoding="utf-8")
+    words = len(text.split())
+    card = len(section("guide", FRONT_PAGE, text).split())
+    over = words > FRONT_PAGE_WORDS or card > CARD_WORDS
+    for what, count, budget in (("PAINTER.md", words, FRONT_PAGE_WORDS),
+                                ("its card", card, CARD_WORDS)):
+        verdict = "over budget" if count > budget else f"{budget - count} to spare"
+        print(f"{what} {count} words against a budget of {budget} -- {verdict}")
+    return 1 if bad or noisy or wrong or over else 0
 
 
 if __name__ == "__main__":

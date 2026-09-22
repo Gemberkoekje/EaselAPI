@@ -44,7 +44,7 @@ F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.
 they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
 afterwards: `cover()` holds a burial to its place, and `clean-small` asks a region as it
 asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is part-done**, in
-five parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
+six parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 `diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
 **G7 and G9** -- the fixes to what is there, and the one small fact of five that was
 genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
@@ -65,8 +65,12 @@ passes say nothing, the median pass still `0` lines), the replay promise amended
 demos and G6**: seven more demo blocks, so nineteen of the twenty-one recipes carry one
 and two stay in words on purpose, and *a light broken down a surface toward the viewer*,
 collected from the four accepted versions of the passage four cohort painters failed
-alike. G4 landed with step 7, so what is left of G is G2, G8, G10 and the rest of G11;
-`NOTES-step9.md` has the gotchas for all five parts. The three rulings the step notes left for the owner -- the standing
+alike. Part six is **G2, G8 and G10**: `easel demo mistakes` and the entry path it
+sits in, the voice pass where a check now says the rule, and two word ceilings that
+bind -- `6_700` for the file against 6,654 words, `1_400` for the card against 1,369.
+G4 landed with step 7, so what is left of G is **the rest of G11**: `LESSONS.md`, and
+the counts in the README and `llms.txt`. `NOTES-step9.md` has the gotchas for all six
+parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
@@ -439,6 +443,18 @@ The known risk is the pier's finding -- a card so sufficient the recipes went un
 which notices that name the recipe at the moment of need are meant to cover. **That is
 the first thing to look for in whatever run follows the release.**
 
+**Built, step 9 part six**, as written. `easel demo mistakes` draws six failures on one
+sheet -- a staircase, a stack of bands, a film that owns the picture, a thumbprint, a
+ladder of one length, one disc printed over and over -- one panel each, cut to what its
+own body changed. **They are six recipes' own demos and not six blocks of their own**,
+so the sheet is held true by the invariant the demos are held to, and a heading renamed
+breaks a test that says which. The six are the cohort's, in the order a painting meets
+them; the card's own *six things you will get wrong* stays what it is, a list of
+habits, and points at the sheet. `PAINTING.md`'s first page, the file table, the README
+and `llms.txt` say it is the reasons and that `easel explain` delivers them. What is
+**not** built: nothing else was cut from the reading path, so the exercises and the
+card are as long as they were, minus what G8 and G10 did.
+
 **G3. `easel demo <recipe>`** renders *recommended call / common failure / smallest fix*
 side by side from code blocks in `RECIPES.md` (finding 19). Each *Goes wrong as* gains
 the failing block beside the prose. `scripts/check_guide_blocks.py` already runs all 80
@@ -537,6 +553,16 @@ belong to a plan -- the stroke split, the ground share, three marks per small th
 reworded as defaults `s.plan()` overrides. The call first, the sentence after. The
 thirteen *you will...* in `PAINTER.md` go wherever a check now says it.
 
+**Built, step 9 part six**, and targeted rather than whole. What moved: the card asks
+for the three values, the lightest place, the subject's share and the ground in
+`s.plan(...)` instead of stating them as numbers of its own; *three marks for a small
+thing* says it is a habit and the budget's split says it is the painter's; the edges
+step, the boxes paragraph and the under-varying paragraph name the lines that now count
+them (`edges:`, `boxes:`, *one disc printed*, *a loop's signature*); and *the step you
+will be most tempted to skip* is *the step most painters so far have skipped*. What did
+not move: every paragraph of the file recast call-first, which is the rest of this row
+and a larger hypothesis than the round wants to carry in one release.
+
 **G9. Small facts. Built, step 9 part two -- and four of the five were already there**,
 closed by the steps that had reason to touch them: the install line carries both import
 names and the *never `pip install easel`* warning; `REFERENCE.md` has the named-region
@@ -557,6 +583,15 @@ ever learning whether a mark landed.
 longer binds. After the migration lower `FRONT_PAGE_WORDS` to what the file then is
 (target about 5,000), and add a cap on the card (1,183 words today) -- *a rule nothing
 enforces is a preference*.
+
+**Built, step 9 part six.** `FRONT_PAGE_WORDS` is `6_700` against a file of `6,654`,
+and the card has `CARD_WORDS = 1_400` against `1,369` -- both held by
+`tests/test_guide.py` and printed by `scripts/check_guide_blocks.py`. **The target of
+about 5,000 is not met**, and it is not an edit: the workflow is 1,757 words, the
+exercises 1,147 and *What you are bad at* 877, and a session has defended each of them.
+Cutting one is a design job with a measurement behind it, which is what `LESSONS.md`
+says about the depth-order paragraph as well. The ceilings hold the file where the
+round left it, which is what stops the next paragraph arriving free.
 
 **G11. The record.** `SUGGESTIONS.md` (step 1), `PAINTINGS.md` (link the two Claude
 verdicts -- **already done**, found on 2026-09-21), `LESSONS.md` (the restated boundary;

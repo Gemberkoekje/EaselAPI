@@ -746,3 +746,109 @@ budgets) and the rest of **G11**. The README still says *the twelve CLI verbs* a
 | `CHANGELOG.md` | `### Seven more recipes that show how they go wrong, and a light that comes toward you in pieces` |
 | `SUGGESTIONS.md` | finding 7's and finding 19's rows |
 | `PLAN-0.6.0.md` | status; G3 and G6; the migration row for *Goes wrong as* |
+
+---
+
+# Step 9, part six: the way in (G2), the voice (G8) and two ceilings (G10)
+
+**To understand this, start by reading `MISTAKES` and `mistakes` in
+[`src/easel/demo.py`](src/easel/demo.py), then the first page of
+[`PAINTER.md`](PAINTER.md) down to *The six things you will get wrong*, then
+`FRONT_PAGE_WORDS` and `CARD_WORDS` in [`src/easel/docs.py`](src/easel/docs.py).**
+
+Branch: `g2-entry-path`, off `g3-last-demos` (#72), stacked for the same reason.
+
+---
+
+## What this part was for
+
+Four painters counted what they read before their first mark and every one of them
+asked for a quick start (finding 16). Two more said the guide reads as universal law
+(17) and that the runtime warnings are clearer than the prose (18). G2 is the path in,
+G8 is the voice, and G10 is what stops the file growing back.
+
+## What landed
+
+| | |
+|---|---|
+| **`easel demo mistakes`** | six failures on one sheet, one panel each, cut to what its own body changed: a staircase, a stack of bands, a film that owns the picture, a thumbprint, a ladder of one length, one disc printed over and over. `demo` over MCP takes the word too |
+| **the path** | the card, that sheet, the nine exercises, paint. *Read `PAINTING.md` once* is gone from it |
+| **`PAINTING.md`** | says on its own first page that it is the reasons, delivered: a notice carries the passage, `easel explain <code>` prints it. The file table, the README, `llms.txt` and the MCP `guide` tool say the same |
+| **the card's numbers** | the three values, the lightest place, the subject's share and the ground are `s.plan(...)`, not the guide's numbers |
+| **the rules a check now carries** | the edges step, boxes and under-varying name `edges:`, `boxes:`, *one disc printed* and *a loop's signature*; *three marks for a small thing* says it is a habit |
+| **two ceilings** | `FRONT_PAGE_WORDS = 6_700` against 6,654 words, `CARD_WORDS = 1_400` against 1,369, held by `tests/test_guide.py` and printed by the block check |
+| **the README's count** | *twenty tools: the seventeen CLI verbs*, held to the server and the parser by a test |
+| **`SUGGESTIONS.md`** | findings 16, 17, 18 and 20 answered -- **no row of the cohort's register is blank now** |
+
+## Decisions and gotchas
+
+**1. Which six, and why not the card's six.** The card's *six things you will get
+wrong* are habits -- outlines, boxes, parallel marks, reaching for `undo`, the tool's
+own shape, repainting a passage that failed twice -- and three of them have no demo and
+one (repainting) has no picture at all. Six *failures* do: they are what the cohort
+actually painted, each is a recipe's own *Goes wrong as*, and each is a line the tool
+says. So the sheet is the failures, the card's table stays a list of habits, and the
+card points at the sheet. A painter meets both on the same page.
+
+**2. The sheet borrows demos rather than owning blocks.** `MISTAKES` is six slugs; the
+panels come from those recipes' own demo blocks. That means the invariant that holds
+every demo true holds the sheet true as well, and a renamed heading breaks a test that
+names it instead of drawing something wrong.
+
+**3. `easel demo mistakes` takes about a minute**, because each panel lays its own
+passage first. That is the price of a sheet that cannot go stale; a painter runs it
+once, before the exercises.
+
+**4. `section()` takes a draft now**, as `headings()` already did, because the card's
+ceiling is checked against `PAINTER.md` on disk rather than against whatever the
+installed package would hand back.
+
+**5. The overlap checker caught the voice pass twice over.** *One home per rule* is a
+test, and a phrase written into both `PAINTER.md` and `PAINTING.md` -- *something the
+tool says at the call or after the pass* -- failed it within minutes of being written.
+That is the check doing exactly what it was added for.
+
+**6. The ~5,000-word target is not met, and should not be met by an edit.** The file is
+6,654 words: the workflow is 1,757, the exercises 1,147, *What you are bad at* 877, and
+a session has defended each. What the ceilings do is hold the file where the round left
+it, so the next paragraph has to buy its place. Cutting to 5,000 is a design job with a
+measurement behind it.
+
+**7. The voice pass is targeted, not whole.** *The call first, the sentence after* is
+done where a rule names a check, and not as a recast of every paragraph in the file.
+The larger version is a bigger hypothesis than one release should carry, and it is
+written into the plan's G8 row as not done.
+
+## Open, and for the owner to rule on
+
+**The entry path is a hypothesis**, and the plan says what to watch: the pier's finding,
+a card so sufficient that the recipes go unread. The sheet points at six recipes by
+name, which is the cover for it, and the next run is what says whether a painter opened
+any of them.
+
+**Whether the card's six habits and the sheet's six failures should become one list**
+is the question this part left open. Doing it means rewriting the card's table, which
+is the page the ceiling is tightest on.
+
+## What part six did *not* touch
+
+**The rest of G11**: `LESSONS.md` -- the restated boundary, a multi-model cohort in the
+protocol, the depth-order item narrowed rather than closed -- and the counts in the
+README and `llms.txt` beyond the server's. Step 10, the cut, is untouched.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/demo.py` | `MISTAKES`, `mistakes()`, `_mistakes_said()`, `answer()` routing, `__all__` |
+| `src/easel/docs.py` | `FRONT_PAGE_WORDS` lowered, `CARD_WORDS` added, `section(text=)` |
+| `src/easel/guide.py` | re-exports `CARD_WORDS` |
+| `src/easel/cli.py`, `src/easel/mcp_server.py` | `demo mistakes` in the help and the tool; the `guide` tool's line for `PAINTING.md` |
+| `scripts/check_guide_blocks.py` | prints both ceilings and fails on either |
+| `PAINTER.md` | the path, the file table, the plan sentence, the six-failures paragraph, the edges step, boxes, under-varying, three marks |
+| `PAINTING.md` | its first page: the reasons, delivered |
+| `README.md`, `llms.txt` | the path, the tool count |
+| `tests/test_guide.py`, `tests/test_demo.py`, `tests/test_server_json.py` | the card's ceiling; the six and the sheet; the README's count |
+| `CHANGELOG.md` | `### The way in: six failures painted, the reasons delivered, and two ceilings that bind` |
+| `SUGGESTIONS.md` | findings 16, 17, 18 and 20 |
+| `PLAN-0.6.0.md` | status; G2, G8 and G10 |
