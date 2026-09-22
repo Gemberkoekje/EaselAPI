@@ -69,25 +69,6 @@ def test_the_bundle_manifest_counts_the_verbs_the_command_line_has() -> None:
     assert f"the {words[len(sub.choices)]} CLI verbs" in manifest["long_description"]
 
 
-def test_the_readme_counts_the_tools_the_server_has() -> None:
-    """The same sentence in the other place a client reads it. The README said
-    *fifteen tools: the twelve CLI verbs* while the server had twenty and the parser
-    seventeen, because the manifest's count was held to the parser and this one was
-    held to nothing."""
-    import asyncio
-
-    from easel.cli import build_parser
-    from easel.mcp_server import build_server
-
-    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
-    tools = asyncio.run(build_server().list_tools())
-    words = dict(enumerate(
-        "zero one two three four five six seven eight nine ten eleven twelve thirteen "
-        "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()))
-    said = f"{words[len(tools)].capitalize()} tools: the {words[len(sub.choices)]} CLI verbs"
-    assert said in README, f"the README does not say {said!r}"
-
-
 def test_the_launch_command_is_written_where_the_website_url_points() -> None:
     """`websiteUrl` sends a client that cannot assemble the arguments to the
     README, so the README has to actually carry the command."""

@@ -139,6 +139,26 @@ def test_the_guide_tool_is_reachable_without_a_session(server):
     assert "session" not in (tool.input_schema.get("properties") or {})
 
 
+def test_the_readme_counts_the_tools_this_server_has(server):
+    """The same sentence in the other place a client reads it. The README said
+    *fifteen tools: the twelve CLI verbs* while this server had twenty and the parser
+    seventeen, because the manifest's copy of that count was held to the parser
+    (`tests/test_server_json.py`) and the README's was held to nothing. It lives here
+    rather than beside that one because counting the tools means building the server,
+    which needs the extra this job installs.
+    """
+    from pathlib import Path
+
+    readme = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    tools = asyncio.run(server.list_tools())
+    words = dict(enumerate(
+        "zero one two three four five six seven eight nine ten eleven twelve thirteen "
+        "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()))
+    said = f"{words[len(tools)].capitalize()} tools: the {words[len(sub.choices)]} CLI verbs"
+    assert said in readme, f"the README does not say {said!r}"
+
+
 def test_undo_says_what_it_counts_and_claims_no_snapshots(server):
     """It said *the last N marks* and *at most 24 are kept*. It counts log records,
     as the library's `undo` does, and a session file carries no snapshots, so every
