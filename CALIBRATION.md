@@ -715,7 +715,19 @@ passes — **4%**, the prototype's share — and where it spoke the paint measur
 of `1.71x` (p90 `2.42x`). On 4 of the 18 it measured under `1.6x` (`1.23x`–`1.58x`). The
 replay's only test for *painted* is a value moved by more than `0.004`, so paint laid on
 paint of its own value is invisible to it and the measured multiple is a floor; that
-those four are such cases is a reading, not checked call by call.
+those four are such cases is a reading, not checked call by call. Whether a spill onto
+paint of its own value is worth saying at all would take the canvas under the
+footprint, a D2 question asked of a D1 rule, and was **ruled not this round**
+(2026-09-22): the line says where the passes land, which is true either way.
+
+**Its first remedy can set it off again, at sizes the guide never uses.**
+`Polygon.inset()` keeps no record of the shape it came from, so a mass inset by half its
+brush is measured against the inset shape rather than the outline it was inset to stay
+inside. At the guide's own numbers that is silent (`1.44x`), and a test holds it; a
+brush that is itself most of its mass, inset the same way, would be told it spills when
+the paint it counts as outside is the margin the inset left for the brush. Seeing
+through it needs a field on `Polygon`, which rides in the log, and was **ruled not this
+round** (2026-09-22).
 
 **It fired on three of the guide's own blocks**, and all three were painting their
 neighbours, so the blocks moved and the rule did not:
@@ -2028,7 +2040,13 @@ else would have:
 ### The noise budget, as 0.5.0 stands
 
 What the tool says today, per pass, over that corpus. Lines marked `!` are call-time
-warnings; the rest are `report()` findings.
+warnings; the rest are `report()` findings. **The `!` rows count sayings, not passes**:
+a call-time warning is said at every call that trips it, and this column added one for
+each, so those rows are ceilings on the passes they name. The `report()` rows are
+right, because a finding prints once a pass. *As 0.6.0 stands*, below, counts each rule
+once a pass. Two `!` labels are corrected from the table as first printed, which matched
+the warnings by a phrase: the scumble row counted two warnings that both opened *scumble
+on this shape*, and the band row was the brush too *narrow* for its steps.
 
 | The rule | passes | share |
 |---|---|---|
@@ -2039,9 +2057,9 @@ warnings; the rest are `report()` findings.
 | ! a clean edge on a narrow mass | 16 | 5% |
 | a graded passage laid too narrow | 8 | 2% |
 | a pressure list on a chisel | 8 | 2% |
-| ! scumble: passes shorter than the brush | 5 | 2% |
+| ! scumble: a band whose width varies, or passes shorter than the brush | 5 | 2% |
 | ! a smudge past the size that buys anything | 4 | 1% |
-| ! scumble: a brush wider than the band | 3 | 1% |
+| ! scumble: a brush under two of the band's steps | 3 | 1% |
 | ! a tip too small to deposit paint | 3 | 1% |
 | ! a round tip blocking in a feature | 2 | 1% |
 | detail before the masses are down | 2 | 1% |
@@ -2059,6 +2077,47 @@ table measured prints `ground:` after every painted pass, and the median is stil
 so the four canvas lines printed after every pass since 0.6.0 cost this budget nothing,
 by design. Whether a longer block gets skimmed is for a painter's run to show, not for
 this table.
+
+### The noise budget, as 0.6.0 stands
+
+The same corpus replayed on the engine this round releases, each rule counted once a
+pass: a finding prints once, and `easel run` prints a notice said at several calls of
+one pass once, with a count. Lines marked `!` are said at the call, under the code shown.
+
+| The rule | passes | share |
+|---|---|---|
+| bars: a stack of passes at one angle | 38 | **12%** |
+| round tips printing one disc | 21 | 6% |
+| ! `glaze-far`: a film past what a film is for | 17 | 5% |
+| a loaded comb under the bristle floor | 17 | 5% |
+| ! `solid-comb`: `solid=` does not close a comb | 16 | 5% |
+| ! `spill`: paint outside the place it was handed | 13 | 4% |
+| ! `clean-small`: a clean edge on a narrow mass | 11 | 3% |
+| ! `smudge-long`: a smudge run along a long boundary | 11 | 3% |
+| ! `smudge-across`: a smudge dragged across a boundary | 9 | 3% |
+| a graded passage laid too narrow | 9 | 3% |
+| a pressure list on a chisel | 8 | 2% |
+| ! `chisel-pressure`: pressure changes the paint, not the width | 8 | 2% |
+| ! `chisel-staircase`: pass ends down a side | 5 | 2% |
+| ! `scumble-wedge`: a band whose width varies | 4 | 1% |
+| ! `chisel-blank`: a tip too small to deposit paint | 3 | 1% |
+| ! `smudge-wide`: a smudge past the size that buys anything | 2 | 1% |
+| ! `scumble-bars`: a brush under two of the band's steps | 2 | 1% |
+| details a film or a mass took out of sight | 2 | 1% |
+| ! `holes`: a solid mass came back bare | 2 | 1% |
+| ! `round-fringe`: a round tip blocking in a feature | 2 | 1% |
+| detail before the masses are down | 2 | 1% |
+| ! `sample-split`: `sample()` averaging over a mixed area | 1 | 0% |
+| a daisy: marks leaving one point every way | 1 | 0% |
+| a loop's signature: one length, one spacing | 1 | 0% |
+
+**197 of 325 painted passes (61%) say nothing at all; the median pass prints 0 lines and
+the busiest 8.** Against 0.5.0's 70% and 11, the round added seven notices and three
+findings, and the quiet share fell by nine points while the median held at `0` — inside
+the target of fewer than three findings and call-time notices on a median pass. The bars
+line is still the loudest, at one pass in eight rather than one in seven, and every new
+rule is at about one pass in twenty or under, `glaze-far` the most at 17. Where the two
+tables share a `!` row, read them with care: the old column counted sayings.
 
 ### What each proposed check would cost
 
@@ -2160,7 +2219,15 @@ the cohort from the paintings that came before it:
 | median bare ground at the end | `0.38%` | `0.06%` | `0.49%` |
 | budgeted paintings that stopped under 45% of budget | 5 of 19 | **5 of 6** | **0 of 13** |
 | median share of the budget spent | 81% | 42% | 86% |
-| share of edges under 2 px wide | 12%-44%, median 27% | 12%-37%, median 19% | 14%-44%, median 27% |
+| share of edges under 2.5 px wide, replayed on 0.6.0 | 21%-62%, median 37% | 21%-62%, median 37% | 23%-59%, median 38% |
+
+The first four rows are the replay on 0.5.0, in step 2, and the last is the `edges:`
+line that shipped, replayed on 0.6.0 (*The `edges:` row, measured twice*, below). On
+0.6.0 the bare-ground rows move too — 14 of 21 under the floor, median `0.17%`; the
+seven `0.07%`, the fourteen `0.29%` — because the round's default moves lay solid the
+banded scumbles and fill the hard edges that the older scripts left those arguments off.
+That is the replay's and not the paintings': the pictures their painters looked at are
+the 0.5.0 rows.
 
 **Finding 15 is the cohort's, and it is sharp.** Five of the six budgeted cohort
 paintings stopped under 45% of their budget, at a median of 42% spent; **none of the
@@ -2172,9 +2239,10 @@ the checklist asks for, and half of the fourteen paintings made before the cohor
 too — the seven are further down the same slope, not off it. The contradiction between
 the graded-field recipe and the ground line is older than this round.
 
-#### The `edges:` row above is measured with an instrument that did not work
+#### The `edges:` row, measured twice
 
-Building workstream E turned this one over, which is the fourth mechanism this round
+The table first printed this row as *share of edges under 2 px wide*, `12%-44%, median
+27%`, from a prototype that did not work. Building workstream E turned this one over, which is the fourth mechanism this round
 has had to correct after reporting it as *observed*, and the shape `LESSONS.md`
 predicts.
 
@@ -2188,9 +2256,9 @@ gradient of *s/2* and a rise of `s / (s/2)`. A threshold sitting **on** the
 discretisation limit is a coin flip, and it flipped the wrong way: the prototype
 called the hard-edged mass **41%** hard and the ragged comb **84%**.
 
-So **the 12%–44%, median 27% in the table above is float dust either side of `2.0`,
-not a measurement**, and finding 13 has no number behind it until the corpus is
-replayed with the instrument that shipped.
+So **the 12%–44%, median 27% was float dust either side of `2.0`, not a measurement**,
+and finding 13 had no number behind it until the corpus was replayed with the
+instrument that shipped.
 
 What shipped selects edges two ways instead, neither of them a percentile: a
 **ridge** — the gradient at least as large as the gradient a pixel either side along
@@ -2202,8 +2270,19 @@ clear of the limit. The same four canvases then sit at 49%, 49%, 53% and **0%**,
 one at zero being the round soft brush, which is the only one of the four a painter
 would call soft; and a canvas blurred numerically moves from 2.0 px median to 6.8.
 
-**Still open:** the corpus replay wants re-running with this instrument before 0.6.0
-states a spread for finding 13. Nothing else in workstream E is affected — `values:`,
+**Replayed with it**, all 21 paintings on the 0.6.0 engine, the share of edges under
+`2.5` px runs **21%–62%, median 37%**: the seven `21%`–`62%`, median `37%`, and the
+fourteen before them `23%`–`59%`, median `38%`. Unlike findings 11 and 15 this one does
+not split the cohort from the rest — the line separates pictures, not painters. **And it
+separates the two finding 13 is about.** The two painters who named *flat cut-out
+shapes* as their picture's main fault laid the hardest edges in the corpus but one:
+Grok's harbour at `62%` (median `2.1` px) and GPT's village at `54%` (`2.4` px), with
+only the winter greenhouse between them, at `59%`. The softest are Gemini's mist at
+`21%` (`4.9` px) and the pool at `23%`. So a picture whose every boundary is crisp does
+say so, as a number and not a verdict. `scripts/probe_cohort_session.py` reads it with
+the engine's own `easel.checklist.edges_line`.
+
+Nothing else in workstream E is affected — `values:`,
 `pencil:`, `holes:`, `boxes:` and `unspent:` all reproduce their prototypes, and
 `holes:` reproduces B2's three grounds to the third decimal (`0.1543%` / `0.1350%` /
 `3.1601%` against `0.1552%` / `0.1357%` / `3.1550%`, off a different seed).

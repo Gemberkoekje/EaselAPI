@@ -69,7 +69,7 @@ import numpy as np
 
 import easel
 import easel.session as session_module
-from easel import Region, Session, polygon
+from easel import Region, Session, checklist, polygon
 from easel.color import linear_to_srgb
 from easel.history import MAX_SNAPSHOTS, History
 from easel.regions import Polygon
@@ -1694,32 +1694,18 @@ def _clusters(flat: np.ndarray, k: int, rounds: int = 25) -> np.ndarray:
 
 
 def edges_line(session: Session) -> str:
-    """How the picture's edge length divides between hard and soft.
+    """How the picture's edge length divides between hard and soft: the engine's line.
 
     Finding 13: ``report()`` said *nothing to report* over uniform edge handling, and
-    GPT's own verdict names *equally crisp boundaries*. The rise width is measured
-    across the gradient: the step the edge crosses, over how fast it crosses it.
+    GPT's own verdict names *equally crisp boundaries*. This was a prototype until the
+    corpus was replayed for 0.6.0, and the prototype did not work: it measured the top
+    percentile of the gradient, which is the sharpest pixels of any picture, against
+    a `2.0` px threshold sitting on the pixel grid's own limit (``CALIBRATION.md``,
+    *The `edges:` row, measured twice*). So it reads the canvas as ``report()`` does,
+    through :func:`easel.checklist.edges_line`.
     """
     view = session.canvas.values(sketch=False).astype(np.float32) / 255.0
-    dy, dx = np.gradient(view)
-    grad = np.hypot(dx, dy)
-    edge = grad > max(float(np.percentile(grad, 99.0)), 0.01)
-    rows, cols = np.nonzero(edge)
-    if not len(rows):
-        return "edges: nothing with an edge yet"
-    keep = np.linspace(0, len(rows) - 1, min(len(rows), 20000)).astype(int)
-    rows, cols = rows[keep], cols[keep]
-    ux = dx[rows, cols] / np.maximum(grad[rows, cols], 1e-6)
-    uy = dy[rows, cols] / np.maximum(grad[rows, cols], 1e-6)
-    walk = np.arange(-4, 5)
-    height, width = view.shape
-    samples = np.stack([
-        view[np.clip((rows + uy * t).astype(int), 0, height - 1),
-             np.clip((cols + ux * t).astype(int), 0, width - 1)] for t in walk])
-    step = samples.max(axis=0) - samples.min(axis=0)
-    rise = np.clip(step / np.maximum(grad[rows, cols], 1e-6), 0.5, 12.0)
-    return (f"edges: {float((rise < 2.0).mean()):.0%} of edges are under 2 px wide, "
-            f"median {float(np.median(rise)):.1f} px")
+    return checklist.edges_line(view)
 
 
 def pencil_line(session: Session) -> str:
@@ -2704,17 +2690,16 @@ def report_noise(replays: list[Replay]) -> None:
     passes = [p for rep in replays for p in rep.passes]
     painted = [p for p in passes if p.marks]
     counted: dict[str, int] = {}
-    for made in painted:
-        for line in made.findings:
-            counted[_rule_of(line)] = counted.get(_rule_of(line), 0) + 1
-        for line in made.notices:
-            counted["! " + _rule_of(line)] = counted.get("! " + _rule_of(line), 0) + 1
+    said = [_rules_said(made) for made in painted]
+    for rules in said:
+        for rule in rules:
+            counted[rule] = counted.get(rule, 0) + 1
     print(f"  {len(painted)} passes that laid paint, of {len(passes)}")
     print(f"  {'rule':<44}{'passes':>8}{'share':>8}")
     for rule, count in sorted(counted.items(), key=lambda kv: -kv[1]):
         print(f"  {rule[:43]:<44}{count:>8}{count / len(painted):>8.0%}")
-    quiet = sum(1 for p in painted if not p.findings and not p.notices)
-    lines = [len(p.findings) + len(p.notices) for p in painted]
+    quiet = sum(1 for rules in said if not rules)
+    lines = [len(rules) for rules in said]
     print(f"  {quiet} of {len(painted)} passes said nothing at all "
           f"({quiet / len(painted):.0%}); the median pass prints "
           f"{float(np.median(lines)):.0f} lines, the busiest {max(lines)}")
@@ -2734,23 +2719,28 @@ _RULES = (
     ("inside the painting's first", "detail before the masses are down"),
     ("small marks with a round tip", "round tips printing one disc"),
     ("pressure list on a", "a pressure list on a chisel"),
-    ("tip changes the paint, not the width", "pressure changes the paint, not the width"),
-    ("scumble on this shape", "scumble: passes shorter than the brush"),
-    ("wide on a band", "scumble: a brush wider than the band"),
-    ("wide on a patch", "scumble: a brush wider than the patch's rings"),
-    ("edge='clean') at size", "a clean edge on a narrow mass"),
+    ("tip changes the paint, not the width",
+     "chisel-pressure: pressure changes the paint, not the width"),
+    # Two labels were wrong until 0.6.0, and in 0.5.0's table: the first phrase is the
+    # wedge's (a band whose width varies) -- and in 0.5.0 the dabs' as well, which
+    # opened with it too -- and the second the bars' (a brush under two of its own
+    # steps), not a brush too wide.
+    ("scumble on this shape", "scumble-wedge: a band whose width varies"),
+    ("wide on a band", "scumble-bars: a brush under two of the band's steps"),
+    ("wide on a patch", "inward-flat: a brush wider than the patch's rings"),
+    ("edge='clean') at size", "clean-small: a clean edge on a narrow mass"),
     ("is not a brush field", "an override that is not a brush field"),
-    ("pixels wide on this canvas", "a tip too small to deposit paint"),
-    ("with a round tip", "a round tip blocking in a feature"),
-    ("is past the 0.03 where", "a smudge past the size that buys anything"),
+    ("pixels wide on this canvas", "chisel-blank: a tip too small to deposit paint"),
+    ("with a round tip", "round-fringe: a round tip blocking in a feature"),
+    ("is past the 0.03 where", "smudge-wide: a smudge past the size that buys anything"),
     ("crosses a boundary", "smudge-across: a smudge dragged across a boundary"),
     ("reads as a third band", "smudge-long: a smudge run along a long boundary"),
     ("this film", "glaze-far: a film past what a film is for"),
     ("a daisy", "radiating: marks leaving one point every way"),
     ("a loop's signature", "one-loop: one length, one spacing"),
     ("out of sight", "buried: details under a film or a mass"),
-    ("is averaging", "sample() averaging over a mixed area"),
-    ("direction= left off", "a shaped mass with direction= left off"),
+    ("is averaging", "sample-split: sample() averaging over a mixed area"),
+    ("direction= left off", "direction-default: a shaped mass with direction= left off"),
     ("cross the shape", "a mass whose passes cross it"),
 )
 
@@ -2761,6 +2751,19 @@ def _rule_of(line: str) -> str:
         if needle.replace("{brush}", "") in line or needle in line:
             return name
     return line.split(":")[0][:40]
+
+
+def _rules_said(made: Pass) -> set[str]:
+    """Each rule a pass said, once: the lines ``easel run`` prints under it.
+
+    A finding prints once a pass. A call-time notice is said at every call that trips
+    it -- `glaze-far` 38 times over 17 passes -- and :func:`easel.notices.collapse`
+    prints it once with a count, so it is counted once here too. Until 0.6.0 this
+    counted every saying, and the `!` rows of the noise table were notices rather than
+    the passes their column names.
+    """
+    return ({_rule_of(line) for line in made.findings}
+            | {"! " + _rule_of(line) for line in made.notices})
 
 
 def report_candidates(replays: list[Replay], guide: dict[str, list[str]]) -> None:
@@ -2825,8 +2828,8 @@ def report_measurements(replays: list[Replay]) -> None:
             continue
         bare = [r.session.canvas.ground_showing() for r in group]
         budgeted = [(r.spent / r.session.budget) for r in group if r.session.budget]
-        crisp = [float(re.search(r"(\d+)%", edges_line(r.session)).group(1))
-                 for r in group]
+        crisp = [float(m.group(1)) for m in
+                 (re.search(r"(\d+)%", edges_line(r.session)) for r in group) if m]
         print(f"\n  {label} ({len(group)} paintings)")
         print(f"    finding 11 -- the ground line: "
               f"{sum(1 for b in bare if b < floor)} of {len(group)} finish under the "
@@ -2836,9 +2839,11 @@ def report_measurements(replays: list[Replay]) -> None:
                   f"{sum(1 for r in budgeted if r < 0.45)} of {len(budgeted)} budgeted "
                   f"paintings stopped under 45% of budget, median "
                   f"{float(np.median(budgeted)):.0%} spent")
-        print(f"    finding 13 -- uniform edges: the share under 2 px runs "
-              f"{min(crisp):.0f}%-{max(crisp):.0f}%, median "
-              f"{float(np.median(crisp)):.0f}%")
+        if crisp:
+            print(f"    finding 13 -- uniform edges: the share under "
+                  f"{checklist.HARD_EDGE_PX:.1f} px runs "
+                  f"{min(crisp):.0f}%-{max(crisp):.0f}%, median "
+                  f"{float(np.median(crisp)):.0f}%")
 
 
 #: The radii the disc groups are read at, around the engine's own.

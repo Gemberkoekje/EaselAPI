@@ -400,3 +400,12 @@ def test_the_calls_that_count_records_say_records(name):
 
     doc = getattr(Session, name).__doc__ or ""
     assert "record" in doc.lower(), f"Session.{name} does not say what it counts"
+
+
+def test_the_shell_says_records_for_undo_too():
+    """The docstrings came to agree and the shell did not: `easel undo`'s help still
+    said *scrape back N strokes*, a fourth answer to the question the three
+    docstrings were fixed to answer once."""
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    said = {c.dest: c.help for c in sub._choices_actions}
+    assert "record" in said["undo"]

@@ -7,10 +7,16 @@ package page.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project uses [semantic versioning](https://semver.org/spec/v2.0.0.html). Before 1.0.0 a
-minor bump is where behaviour is allowed to move: **a version already saved to an
-`.easel` file always replays as it was painted**, because every stroke's own brush
-arguments are in the log, but a *script* that leaves a default off can paint something
-different after a minor release. Each entry below says which defaults moved.
+minor bump is where behaviour is allowed to move, and this is what it may move. **A
+painting saved to an `.easel` file opens as it was painted**: the file holds the canvas,
+and loading never repaints it. **A rebuild from its log lays the same strokes with the
+engine installed** — `replay(upto=)`, `timelapse_gif(from_log=True)`, and every `undo`
+from the shell or the MCP server, since the file carries no snapshots. Every stroke's own
+brush arguments are in the log, so a moved default does not reach a rebuild; a fix to
+how the engine lays a stroke does, and a stroke an earlier version laid wrongly comes
+back fixed. A *script* that leaves a default off can paint something different after a
+minor release. Each entry below says which defaults moved, and names every fix that
+changes what a rebuild lays.
 
 **Nothing here may say it shipped until the tag exists.** *Released*, *shipped*, and
 *Shipped as `vX.Y.Z`* are claims about the world, and the only thing that makes them
@@ -181,7 +187,9 @@ lands as it was shown.
 
 **And four answers to *where would a painter find that out*.** `undo(n)` and
 `log(last=)` say they count **log records**, which is what `replay(upto=)` already
-said; `region("bottom")` is a **ninth** of the canvas and `REFERENCE.md` now prints
+said — and so do `easel undo`'s help and the MCP `undo` tool, which said *strokes* and
+*marks, at most 24 kept*, where a session file carries no snapshots and every `undo`
+through either is a rebuild from the log, as far back as it is asked; `region("bottom")` is a **ninth** of the canvas and `REFERENCE.md` now prints
 every named region's extents, held against the engine by a test; the five shipped
 documents are held to **cp1252**, so `print(easel.docs.read("calibration"))` prints on
 a Windows console, where 35 characters used to break it; and **`import easel_paint`
@@ -372,6 +380,18 @@ of the guide's blocks once `PAINTING.md`'s own example stopped glazing raw aliza
   darker more than the reverse. On a dried hard step it is symmetric — `0.49` brushes
   each way, before the fix and after — and the bullet says so now.
 
+**A fourth was proposed and declined: `wet-under`**, an opaque mark laid on paint still
+wet and far from it in colour. Its evidence was finding 5's rings, and the painter's own
+frames put their cause elsewhere: an inward `scumble`'s own contour rings, laid over a
+bezel still wet, which moved them by up to `0.13` (`CALIBRATION.md`, *GLM's rings*). As
+a habit rule it fired on **22%** of the corpus's painted passes and on **8** of the
+guide's blocks, because laying opaque paint into wet paint is most of what the guide
+teaches, and wetness is no gate: the corpus lays its opaque marks on paint at a median
+wetness of `0.09`, and a tenth of them over `0.41`. What was left of it, a fact line at
+the call, rests on a reconstruction of
+a take its painter overwrote, and is not in this release either. *`dry()` first* stays
+in `PAINTING.md`.
+
 ### Three findings after the pass: a daisy, a loop's signature, and details a layer buried
 
 Step 6 of the round, workstream D3: three new lines in `report()`, the check `easel run`
@@ -466,9 +486,12 @@ can hold measures. It called a hard-edged mass 41% hard and a ragged comb 84%, t
 wrong way round. What shipped selects edge **ridges** with a step of at least `0.10`
 across them and cuts at `2.5` px, which separates a round soft brush (0%) from a
 chisel, a comb and a scumble (49%, 49%, 53%) and moves a numerically blurred canvas
-from 2.0 px to 6.8. The corpus replay wants re-running before finding 13 states a
-spread again; nothing else in workstream E is affected, and `holes:` reproduces B2's
-three grounds to the third decimal.
+from 2.0 px to 6.8. Replayed with it, the corpus runs **21%–62% of edges under
+`2.5` px, median 37%**, the cohort no different from the paintings before it, and the
+two painters who named *flat cut-out shapes* as their picture's main fault laid the
+hardest edges of the 21 but one: Grok's at `62%`, GPT's at `54%`. Nothing else in
+workstream E is affected, and `holes:` reproduces B2's three grounds to the third
+decimal.
 
 That is the fourth mechanism this round has had to correct after reporting it as
 *observed*, which is the shape `LESSONS.md` predicts and the reason the plan puts a

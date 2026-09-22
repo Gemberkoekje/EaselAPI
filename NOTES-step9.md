@@ -529,3 +529,109 @@ already trips it. `PAINTER.md` is untouched.
 | `src/easel/session.py` | the rulings: `_one_per_scumble` in the stack-of-bars rule and `_crossing_marks`; `chisel-staircase` offers a comb only at `0.025` and over; both docstrings, and `report()`'s |
 | `tests/test_requests.py` | a scumble counts once, as a bar and as a crossing; the staircase's comb above the floor only, and silent on a clean edge |
 | `CALIBRATION.md` | the comb in the staircase's repair table is under the small-comb floor; the stack-of-bars count re-measured |
+
+---
+
+# Step 9, part four: the loose ends G11 owned
+
+**To understand this, start by reading `report_noise` and `_rules_said` in
+[`scripts/probe_cohort_session.py`](scripts/probe_cohort_session.py), then *The noise
+budget, as 0.6.0 stands* and *The `edges:` row, measured twice* in
+[`CALIBRATION.md`](CALIBRATION.md), then the preamble of [`CHANGELOG.md`](CHANGELOG.md).**
+
+Branch: `g11-loose-ends`, off `main` at `92297fd`, after finding 12's build (#69) landed.
+
+---
+
+## What this part was for
+
+`PLAN-0.6.0.md`'s *Loose ends, and who owns them* held five rows no step carried, and
+four were G11's to close before 0.6.0 could quote a number or make a promise. They were
+finding 13's spread, measured with a prototype that did not work; the noise table's `!`
+rows, which counted notices rather than passes; the replay promise, ruled amended on
+2026-09-21; and `wet-under`'s decline, ruled the same day and written down nowhere. The
+fifth, `PAINTINGS.md`'s rebuild claims, is not this round and wanted an issue. Two more,
+left for a ruling in step 6's notes with no row to carry them, were ruled on 2026-09-22.
+
+## What landed
+
+| | |
+|---|---|
+| **the probe** | `edges_line` is the engine's `easel.checklist.edges_line`; `report_noise` counts each rule once a pass through `_rules_said`; the notice rows carry their codes, and two labels are corrected |
+| **finding 13** | `21%-62%` of edges under `2.5` px, median `37%`, the cohort no different from the fourteen before it; Grok's `62%` and GPT's `54%` first and third. In `CALIBRATION.md`'s table and its own section, `CHANGELOG.md`'s step-7 entry, `HARD_EDGE_PX`'s comment, and `SUGGESTIONS.md`'s finding-13 row |
+| **the noise budget** | *as 0.6.0 stands*: 197 of 325 passes quiet (61%), the median pass `0` lines, the busiest 8; bars 38 (12%), `glaze-far` the loudest new rule at 17. The 0.5.0 table keeps its numbers and says its `!` rows count sayings |
+| **the replay promise** | `CHANGELOG.md`'s preamble, `PAINTINGS.md`, and the README twice: a saved painting opens as painted, and a rebuild from its log -- `replay(upto=)`, `timelapse_gif(from_log=True)`, every shell and MCP `undo` -- lays the same strokes with the engine installed, so a fix comes back fixed and is named under its version |
+| **`undo`'s other two answers** | the shell's help said *strokes*, and the MCP tool *marks, at most 24 kept*; both say log records, the tool that it rebuilds from the log; a test each |
+| **`wet-under`** | the decline in `CHANGELOG.md`'s D2 entry; `SUGGESTIONS.md`'s finding-5 row says the rings' cause and the decline |
+| **two rulings** | `spill` told off by its own first remedy, and four of its fires under the line: both not this round, in `CALIBRATION.md`'s *Paint that lands outside the place* and the decisions table |
+| **[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70)** | `PAINTINGS.md`'s rebuild claims, filed with the replay's stroke counts on 0.6.0 |
+
+## Decisions and gotchas
+
+**1. The noise table was one replay away from a wrong figure in print.** A call-time
+notice is said at every call that trips it, and the `!` column added one per saying:
+`glaze-far` read 38 where it spoke on 17 passes. `_rules_said` takes each rule once a
+pass, which is also what `easel run` prints, since `notices.collapse` folds a code said
+at several calls into one line with a count. **The 0.5.0 table keeps its numbers**,
+labelled as ceilings on their passes: the probe reads engine internals 0.5.0 does not
+have, so it cannot be re-run there, and a table rewritten from a guess would be worse
+than one that says what it counted.
+
+**2. Two of the probe's labels had been wrong since step 2.** It files a line under a
+rule by a phrase only that rule prints, and two phrases were read as the wrong rule.
+*Scumble on this shape* opened both the wedge's and the dabs' warnings in 0.5.0, and
+opens only the wedge's now. *Wide on a band* is the brush too **narrow** for its steps
+(`scumble-bars`), not too wide. The counts were right; only the names moved. Every
+notice row the table prints now carries its code. **Reading `EaselWarning.code` instead
+of matching a phrase would end this for good**, and was not done: the probe's
+candidates match phrases too, and that is a rewrite of the harness rather than of a
+table.
+
+**3. Finding 13 does not split the cohort, unlike 11 and 15.** The seven and the
+fourteen before them spread the same way (`21%`-`62%` and `23%`-`59%`, medians `37%`
+and `38%`). So the line tells pictures apart, not painters, and the two pictures whose
+painters named flat cut-out shapes are first and third of 21, with the winter
+greenhouse between them.
+
+**4. On 0.6.0 the bare-ground rows move, and the table keeps 0.5.0's.** Replayed now, 14
+of 21 finish under the floor (was 12), median `0.17%` (was `0.38%`), because F3 and F5
+lay more paint where the older scripts left those arguments off. Findings 11 and 15 are
+about what the painters saw, which is the 0.5.0 replay, so those rows stand and a
+paragraph under the table says what 0.6.0 does to them.
+
+**5. The MCP `undo` claimed a limit it does not have.** *At most 24 are kept* is
+`MAX_SNAPSHOTS`, and it is true only inside one session. Every MCP call loads the file,
+which carries no snapshots, so every `undo` there is a rebuild from the log, as far back
+as asked. The loose end named two files for the replay promise. The README said it
+twice more, and a claim fixed in two places of four is still wrong in two.
+
+**6. The replay took 49 minutes** (`--corpus --quiet`), against about twenty for
+`--closing` alone. Save its output before reading it: `CALIBRATION.md` quotes it, and a
+second run to check one number costs the same again.
+
+## Open, and for the owner to rule on
+
+Nothing new. #70 is the owner's to schedule, outside the round.
+
+## What part four did *not* touch
+
+The rest of G11 waits for the steps it records. That is `LESSONS.md` (the restated
+boundary, a multi-model cohort in the protocol, the depth-order item narrowed rather
+than closed), `SUGGESTIONS.md`'s four documentation rows, which G2 and G8 answer, and the
+README's and `llms.txt`'s counts. Also untouched: **G2** (the entry path and `easel demo
+mistakes`), **G6** (the new recipe), **G8** (the voice pass), **G10** (the budgets) and the
+eight recipes still without a demo.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `scripts/probe_cohort_session.py` | `edges_line` delegates to `easel.checklist.edges_line`; `_rules_said`; `report_noise` counts once a pass; finding 13's line reads `HARD_EDGE_PX` and survives a painting with no edges; `_RULES` labels with codes, two corrected |
+| `src/easel/checklist.py` | `HARD_EDGE_PX`'s comment states the corpus spread |
+| `src/easel/cli.py`, `src/easel/mcp_server.py` | `undo`'s help and the tool's description |
+| `tests/test_reference.py`, `tests/test_mcp.py` | the shell's `undo` says records; the tool says records and claims no snapshots |
+| `CALIBRATION.md` | the 0.5.0 noise table's caveat and labels; *The noise budget, as 0.6.0 stands*; the edges row and the 0.6.0 paragraph under the table; *The `edges:` row, measured twice*; `spill`'s two limits, ruled |
+| `CHANGELOG.md` | the preamble; `wet-under` declined under D2; the step-7 entry's spread; `undo`'s other two answers |
+| `PAINTINGS.md`, `README.md` | the replay promise |
+| `SUGGESTIONS.md` | finding 5's and finding 13's rows |
+| `PLAN-0.6.0.md` | status; two decisions rows; *Loose ends* down to #70's pointer; section 6's pointer to #70; section 8's finding-13 bullet answered |

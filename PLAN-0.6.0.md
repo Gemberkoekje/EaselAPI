@@ -44,7 +44,7 @@ F1, F2 and F4 declined on the corpus's own evidence and written into `CHANGELOG.
 they are not re-argued -- and F1, reopened on a bench the corpus could not give, built
 afterwards: `cover()` holds a burial to its place, and `clean-small` asks a region as it
 asks a shape. `NOTES-step8.md` has the gotchas of both parts. **Step 9 is part-done**, in
-two parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
+four parts so far. Part one is G5: `src/easel/diagnosis.py`, `easel diagnose`, a
 `diagnose` MCP tool, and `DIAGNOSIS.md` as the sixth shipped document. Part two is
 **G7 and G9** -- the fixes to what is there, and the one small fact of five that was
 genuinely open (vision is required). Two of G7's rows had already been closed by steps 5
@@ -56,15 +56,24 @@ as* of twelve recipes, and the invariant's other half -- **12 of 12 demos fail e
 the way they say** -- with the block check running in CI for the first time; its first
 run found two recipes tripping `report()` rules, one of them painting the failure its
 own paragraph names, and both were ruled on and fixed the same day (the last two rows
-of the decisions table). G4 landed with step 7, so what is left of G is G2, G6, G8, G10
-and G11, and eight recipes' demos; `NOTES-step9.md` has the gotchas for all three parts. The three rulings the step notes left for the owner -- the standing
+of the decisions table). Part four is **the loose ends G11 owned**: finding 13 restated
+with the `edges:` line that shipped (`21%-62%`, median `37%`, the two cut-out paintings
+first and third), the noise table counted once a pass and re-run as 0.6.0 stands (61% of
+passes say nothing, the median pass still `0` lines), the replay promise amended,
+`wet-under`'s decline written down, and the rebuild claims filed as
+[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70). G4 landed with step 7, so
+what is left of G is G2, G6, G8, G10 and the rest of G11, and eight recipes' demos;
+`NOTES-step9.md` has the gotchas for all four parts. The three rulings the step notes left for the owner -- the standing
 lines, the inward `load`, the code-to-symptom link -- were settled on 2026-09-21 and are
 in the decisions table below. Four more were settled later the same day, each
 on evidence gathered for it: F1 moves (`cover()` to `edge="hard"`, on a bench the corpus
 could not give), the replay promise is amended, `buried` ships as it is and narrows the
 depth-order item rather than closing it, and `wet-under` is not this round. **What no step
-owned now has an owner**, under *Loose ends, and who owns them* in section 6: the
-finding-13 replay, the noise table's miscounted `!` rows, and three smaller rows.
+owned was given an owner** under *Loose ends, and who owns them* in section 6, and all
+of it is done but the one row that is not this round, which is the issue it asked for.
+Two more that step 6's notes had left for a ruling, and no row had named -- `spill` told
+off by its own first remedy, and four of its fires measuring under the line -- were ruled
+not this round on 2026-09-22 (the decisions table).
 Finding 12, which no row of this plan had named until after G3, was ruled on
 2026-09-22 -- narrowed over a whole painting -- and built, and left the table with its
 build (`NOTES-step7.md`, part two). The manifest's verb count, the block check in CI
@@ -96,7 +105,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18; nine more 2026-09-21; the last 2026-09-22)
+### Decisions already taken (owner, 2026-09-18; nine more 2026-09-21; three on 2026-09-22)
 
 | Question | Decision |
 |---|---|
@@ -123,6 +132,8 @@ the guide*), asked for at scale.
 | *A mass built of planes*' faces (G3's first run; `NOTES-step9.md`, part three) | **A `flat`, laid `edge="clean"`, each face along a side of its own -- and `chisel-staircase` offers a comb only at `size=0.025` and over.** Rendered at 400x300 and 1024x768 against the four alternatives: step 6's comb paints the woven surface the recipe names; finding 1's ragged flat stairs; a clean edge with every face along one axis keeps the stack-of-bars line; each face along its own side is silent after a ground and reads as planes; a hard edge is silent everywhere and reads cut out. |
 | The stack-of-bars rule over a graded field (G3's first run) | **A `scumble` counts once**, in the rule and in the crossings that re-arm it. In its own colours the recipe paints a smooth field and the rule said *17 of 17* over it; crossers at 13 degrees would not count (30 is a crossing), and declaring the bands only changes the words. Over the corpus the condition holds on 47 passes rather than 62, 10 of the 46 lines painters were shown go, and the probe's noise table has the rule at 38 of 325 passes, 12% (was 47, 14%) -- knowingly including BigPickle's true positive, which reached its share only by counting sky passes its own painter called fine. |
 | Finding 12: the small-comb and round-disc rules over a whole painting -- `checklist()` is `report(since=None)`, so both count every mark of the painting (*Loose ends*, found after G3) | **The comb line leaves the closing audit, and the disc line counts only discs seen together.** Counted first, on all 21 paintings rebuilt through the probe's own replay (session scratchpad, not committed -- Gemini came back at its notes' own `265` and `176`): the disc line is on **14 of 21** finished paintings' checklists and the comb line on **9**, the two commonest lines the closing audit prints (bars `5`, the pressure-list rule `4`). **The comb** was said by the pass that laid most of it wherever its count is large (`opus` 38 of 40 marks, `laundromat` 39 of 48); where it is small no pass said it, and the marks are mostly strands the comb suits -- `car_wash`'s and each heron's are three marks over two passes: a car-wash brush's bristles, streaks of light and reflections on water, and one small plane on a heron's neck -- and Gemini's 265 are pine boughs whose streaks are the needles it wanted. No checklist question asks it, and the end of a painting has no next mark to choose a brush for, so over a whole painting it says nothing and the pass keeps it. **The disc line** is G4's own answer to *is any small mark a disc*, so it stays, but its large counts are passages of repeated marks (Gemini's rows of glitter lozenges, the one line Gemini never answered; `sonnet`'s and the greenhouse's pots) and its small ones add up accents from different passes: `dusk`'s *one disc printed 8 times* is a lamp, a moon, two notches, two edge highlights and a glint, from six passes. Over a whole painting it counts only marks in a group of three or more within `0.06` of one another, leaves out marks noted `signature` (counted on 6 checklists; the budget already waives them), and says where the groups are: **10 of 21**, dropping exactly the four scattered ones (`car_wash`, `dusk`, `laundromat`, `glm`) and keeping every repeated passage -- the same from a radius of `0.06` to `0.15`, while `0.04` starts losing groups. What a pass's own report says is unchanged for both rules, so the noise table does not move. **Built** (`NOTES-step7.md`, part two): `_pass_findings(whole=True)` under both `checklist()` and `report()` with no `since`; the count joins the probe as `--closing`, and its numbers are under *The closing audit, over a whole painting* in `CALIBRATION.md`. |
+| `spill` told off by its own first remedy (`NOTES-step6.md`, part two; no row owned it) | **Not this round.** `Polygon.inset()` keeps no record of the shape it came from, so a mass inset by half its brush is measured against the inset shape: silent at the guide's own numbers (`1.44x`, held by a test), and wrong only for a brush that is most of its mass. Seeing through it needs a field on `Polygon`, which rides in the log. Written into `CALIBRATION.md`, *Paint that lands outside the place*. |
+| Four `spill` fires that measured under the line (`NOTES-step6.md`, part two; no row owned it) | **Not this round.** `1.23x`-`1.58x` where the call predicted `1.6x` or more -- most likely paint laid on paint of its own value, which the replay cannot see, and not checked call by call. Whether such a spill is worth saying takes the canvas under the footprint, a D2 question of a D1 rule, and the line says where the passes land, which is true either way. Written into the same section. |
 
 ---
 
@@ -601,11 +612,14 @@ table when what it names is done**, the way a migration row leaves with its para
 
 | Loose end | Evidence | Owner | Done when |
 |---|---|---|---|
-| **Finding 13's number** (was in section 8) | `CALIBRATION.md`'s `12%-44%, median 27%` came from the `edges:` prototype step 7 withdrew, and the probe still carries it as its own `edges_line(session)` (`scripts/probe_cohort_session.py:1695`) | G11, before `SUGGESTIONS.md`'s finding-13 row is filled | the probe calls `easel.checklist.edges_line`, the corpus is replayed, and the number is restated or withdrawn |
-| **The noise table counts notices, not passes, on its `!` rows** -- found replaying the corpus for the bars ruling | `report_noise` in `scripts/probe_cohort_session.py` adds one per line said, and a call-time notice can be said several times in a pass: its *passes* column has `glaze-far` on 38, where step 6 counted 38 films in 17 passes. The `report()` rows are right -- a finding prints once a pass -- which is why the bars figure (38, 12%) stands | G11, before 0.6.0 quotes a noise figure | the column counts each rule once a pass, and `CALIBRATION.md`'s noise table is re-run on the engine as released |
-| **The replay promise, amended** (ruled 2026-09-21) | `CHANGELOG.md`'s preamble (line 11); `PAINTINGS.md` (line 83) | G11 | both say a rebuild from the log lays each stroke with the engine installed, and that a fix to a stroke laid wrongly is named under its version |
-| **`wet-under`, declined** (ruled 2026-09-21) | step 2 left it a fact line, and nothing owned it | G11 | `CHANGELOG.md` names it beside the other declines, and `SUGGESTIONS.md`'s finding-5 row says what was and was not done |
-| **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | one GitHub issue exists, and this row links it |
+| **`PAINTINGS.md`'s rebuild claims** | `car_wash` and `pears` rebuild five marks over; `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` do not run from a clean session; F3 and F5 moved what committed scripts paint (`NOTES-step8.md`) | **not this round**: G11 files the issue | **Done: filed as [#70](https://github.com/Gemberkoekje/EaselAPI/issues/70)**, with the replay's stroke counts on 0.6.0. The row stays as its pointer until this file is folded away |
+
+Four rows left this table on 2026-09-22 with step 9's part four: **finding 13's number**
+(restated, `21%-62%` of edges under `2.5` px, median `37%`, on the probe pointed at
+`easel.checklist.edges_line`), **the noise table's `!` rows** (counted once a pass, and
+re-run as *The noise budget, as 0.6.0 stands*), **the replay promise** (amended in
+`CHANGELOG.md`'s preamble, `PAINTINGS.md` and the README) and **`wet-under`'s decline**
+(in `CHANGELOG.md`'s D2 entry and `SUGGESTIONS.md`'s finding-5 row).
 
 ### What step 2 measured, and what it decides
 
@@ -668,7 +682,7 @@ re-checked with only the nineteen passes its notes name, so it is not the pass l
 two committed passes -- `pears/p9_rehearse_pear.py` and `heron1/pass1_draw.py` -- do not
 run at all from a clean session, because each uses a name the passes before it never
 define. Both want an issue against `PAINTINGS.md`'s reproducibility claims rather than a
-row above.
+row above -- filed as [#70](https://github.com/Gemberkoekje/EaselAPI/issues/70).
 
 ---
 
@@ -725,13 +739,14 @@ Small, and none of it blocks step 1.
   G11 closes `LESSONS.md`'s depth-order item with the check as it stands, is the owner's.~~
   **Settled 2026-09-21: not built, and the item narrows rather than closes** (the
   decisions table).
-- **Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
+- ~~**Finding 13's spread, re-measured.** The `12%-44%, median 27%` in `CALIBRATION.md` came
   from the `edges:` prototype that step 7 withdrew, and *The measurement lines, on the
   finished canvases* says the corpus wants replaying with the shipped line before 0.6.0
-  states a number. ~~No step owns it.~~ **G11 owns it since 2026-09-21** (*Loose ends* in
-  section 6). `scripts/probe_cohort_session.py` still carries the
-  prototype as its own `edges_line(session)`, so the replay starts by pointing that at
-  `easel.checklist.edges_line`.
+  states a number.~~ **Answered 2026-09-22** (step 9, part four), on the probe pointed at
+  `easel.checklist.edges_line`: `21%-62%` of edges under `2.5` px, median `37%`, the
+  cohort no different from the paintings before it, and Grok's and GPT's -- the two
+  whose painters named flat cut-out shapes -- first and third (`CALIBRATION.md`, *The
+  `edges:` row, measured twice*).
 
 ---
 

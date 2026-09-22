@@ -284,7 +284,7 @@ s.replay(upto=40)   # the state after the first 40 records
 ```
 
 It is also how `easel undo` works across separate shell invocations: session files
-carry the log, not undo snapshots.
+carry the log, not undo snapshots, and the rebuild is laid by the engine installed.
 
 Golden-image tests hold this honest. `tests/golden/` stores a hash and a PNG for a
 fixed script of marks on each texture, plus the whole brush sampler; a change to
@@ -352,7 +352,9 @@ abstractly and the thing a first-time painter is least sure of.
 **Two different claims live here, and this page used to make the stronger one about
 every painting.** The one that holds everywhere is that **the log replays byte for
 byte**: a stroke's randomness is drawn from `(seed, stroke index)`, so a saved painting
-comes back exactly as it was painted, and golden-image tests hold that. Whether the
+comes back as it was painted, and golden-image tests hold that — laid by the engine
+installed, so a stroke an earlier version laid wrongly comes back fixed, and
+[`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
 painting — seven of the twenty-one say **Reproducible: not claimed** in their own table in
 [`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
