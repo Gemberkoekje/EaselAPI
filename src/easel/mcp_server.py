@@ -787,14 +787,19 @@ def build_server() -> MCPServer:
     @server.tool()
     @_tool
     def undo(session: str, n: int = 1) -> str:
-        """Scrape back the last N marks.
+        """Scrape back the last N log records.
+
+        Records, not marks paid for: a `dry` or a pencil line is one record and is
+        free, as `log` and `replay` count. The file keeps no snapshots, so this
+        rebuilds the painting from its log, with the engine installed, up to the
+        record before the first one undone -- any N, at the price of a repaint.
 
         Not a free action -- it is a palette knife, and the guide would rather you
         painted over the mistake. `rehearse` is the cheaper way to not make it.
 
         Args:
             session: the .easel file.
-            n: how many marks to scrape back. At most 24 are kept.
+            n: how many log records to scrape back.
         """
         s = Session.load(session)
         undone = s.undo(n)

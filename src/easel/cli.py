@@ -177,7 +177,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_mark.add_argument("y", type=float, nargs="?", default=None)
     p_mark.add_argument("--forget", action="store_true", help="remove the named landmark")
 
-    p_undo = sub.add_parser("undo", help="scrape back N strokes")
+    p_undo = sub.add_parser("undo", help="scrape back N log records")
     p_undo.add_argument("session", type=Path)
     p_undo.add_argument("n", type=int, nargs="?", default=1)
 

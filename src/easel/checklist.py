@@ -55,9 +55,11 @@ __all__ = ["values_line", "edges_line", "pencil_line", "boxes_line", "unspent_li
 #:
 #: Finding 13 is the share under it: GPT's own verdict on its picture names *equally
 #: crisp boundaries*, and `DIAGNOSIS.md`'s clip-art row is the same fault reached
-#: from the other side. **The corpus spread in `CALIBRATION.md` -- 12%-44%, median
-#: 27% -- was measured with the prototype and does not describe this**; it wants
-#: re-running before 0.6.0 states a number for it.
+#: from the other side. Replayed over the 21 paintings of the corpus, the share runs
+#: **21%-62%, median 37%**, and the two painters who named flat cut-out shapes as
+#: their picture's main fault laid the hardest edges of them but one -- Grok's at 62%,
+#: GPT's at 54% (`CALIBRATION.md`, *The `edges:` row, measured twice*). The 12%-44%
+#: first published there was the prototype's, and described nothing.
 HARD_EDGE_PX = 2.5
 
 #: How far a pixel has to move when the graphite is composited in before it counts as

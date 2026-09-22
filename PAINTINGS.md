@@ -80,11 +80,14 @@ arrived at their convention on its own.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
   itself**, in its own `Reproducible` row below, and seven of the twenty-one do not make
-  it. What holds everywhere is that a *saved* painting replays as it was painted: a
-  stroke's randomness comes from `(seed, stroke index)`, and golden-image tests hold
-  that. A rebuild from the committed scripts is a different thing, and a drawing pass
-  re-run, a `look` script laid between two painting ones, or a pass edited after its
-  rehearsal is enough to move it.
+  it. What holds everywhere is that a *saved* painting opens as it was painted, because
+  the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
+  randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
+  rebuild lays those strokes with the engine installed, so a stroke an earlier version
+  laid wrongly comes back fixed, and `CHANGELOG.md` names each such fix under its
+  version. A rebuild from the committed *scripts* is a different thing again, and a
+  drawing pass re-run, a `look` script laid between two painting ones, or a pass edited
+  after its rehearsal is enough to move it.
 
 **One thing the convention gets wrong, and it is worth knowing before you copy it.**
 Numbered pass scripts make the drawing `p1_draw.py`, and once it is pass 1 it is

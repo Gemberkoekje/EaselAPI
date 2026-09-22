@@ -139,6 +139,15 @@ def test_the_guide_tool_is_reachable_without_a_session(server):
     assert "session" not in (tool.input_schema.get("properties") or {})
 
 
+def test_undo_says_what_it_counts_and_claims_no_snapshots(server):
+    """It said *the last N marks* and *at most 24 are kept*. It counts log records,
+    as the library's `undo` does, and a session file carries no snapshots, so every
+    `undo` through the server is a rebuild from the log and has no such limit."""
+    tool = next(t for t in asyncio.run(server.list_tools()) if t.name == "undo")
+    assert "record" in tool.description
+    assert "24" not in tool.description
+
+
 def test_the_server_instructions_send_a_client_to_the_guide_tool(server):
     """They used to say to read PAINTER.md, which a client over MCP cannot open."""
     assert "`guide`" in server.instructions
