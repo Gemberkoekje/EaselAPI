@@ -635,3 +635,286 @@ eight recipes still without a demo.
 | `PAINTINGS.md`, `README.md` | the replay promise |
 | `SUGGESTIONS.md` | finding 5's and finding 13's rows |
 | `PLAN-0.6.0.md` | status; two decisions rows; *Loose ends* down to #70's pointer; section 6's pointer to #70; section 8's finding-13 bullet answered |
+
+---
+
+# Step 9, part five: the last demos, and a recipe collected from four paintings (G3, G6)
+
+**To understand this, start by reading `lay` in [`src/easel/demo.py`](src/easel/demo.py)
+-- its last paragraph, and the `_open_pass()` it now calls -- then the new recipe, *A
+light broken down a surface toward the viewer*, in [`RECIPES.md`](RECIPES.md), then
+the demo block under *A repair under things that are standing on it*.**
+
+Branch: `g3-last-demos`, off `g11-loose-ends` (#71), stacked because both touch the
+plan, `CHANGELOG.md` and these notes.
+
+---
+
+## What this part was for
+
+G3 left eight recipes in words, and G6 -- the one passage four cohort painters failed
+alike -- had no recipe at all. This part gives seven more recipes a demo, writes the
+new recipe with its demo, and says why the last two stay in words.
+
+## What landed
+
+| | |
+|---|---|
+| **seven demo blocks** | *a picture with an empty half*, *a quiet gradient*, *a small irregular bright mark*, *a tapered arc*, *a hollow thing*, *a repair under things that are standing on it*, and the new recipe's: nineteen of twenty-one recipes, **19 of 19 fail exactly the way they say** |
+| **three *Goes wrong as*** | *a quiet gradient*, *a hollow thing* and *a repair* had none |
+| **two recipe blocks changed** | *a hollow thing*'s catch-light moved onto a near rim; *a repair*'s `details()` lays three things at `0.012` where it laid one at `0.02` |
+| **`demo.lay`** | opens the body as a pass (`_open_pass()`), so the burial rule can speak in a demo |
+| **the new recipe** | *a light broken down a surface toward the viewer*, with its demo: DeepSeek's ladder, *a loop's signature* |
+| **`DIAGNOSIS.md`** | the floating-discs row also names a ladder of one length, and points at the new recipe -- the file is at its 130-line cap, so no row was added |
+| **tests** | a burial a demo can show; the floor on the demo count; the *no demo yet* example is *a form that turns* now |
+
+## Decisions and gotchas
+
+**1. A demo could not show a burial, and nobody knew.** `report()` says what a pass
+took out of sight only when `_open_pass()` has kept the canvas the pass began on, and
+`lay` never called it. It does now, the way `easel run` does, and none of the twelve
+earlier demos moved.
+
+**2. `_BURIED_SMALL` is `0.02`, strictly under.** The repair recipe's details were
+exactly `0.02`, so the burial rule never watched them. They are `0.012` now, three of
+them, standing on the near mass rather than on the far one, which is what the recipe's
+own paragraph says its repair buries.
+
+**3. The bars rule is a context rule, and a demo has no context but its passage.**
+Twelve long marks within six degrees, from two or more calls, is a stack of bars *in
+this pass*, and a demo's body is the whole pass. That is what keeps *a form that turns*
+in words: its two masses both run along the form's side (21 long marks at one angle), so
+the recipe panel itself draws the line. The new recipe lays **eleven** marks for the
+same reason, since the pieces of a light on a surface lie near one angle. **Declaring
+`s.plan(bands="subject")` does not help**: the line rewords itself as a count of what
+crosses the bands, and it is still a finding.
+
+**4. So is *detail before the masses*.** Eight small marks inside a painting's first
+60 is the fault, and a passage of two block-ins is ten marks. The new recipe's passage
+lays its surface as a 40-pass scumble so the painting is past its first 60 by the time
+the pieces go down, which is where they would be in a real picture. The first try, a
+`flat` at `0.025`, left tooth specks that looked like the pieces.
+
+**5. The four accepted versions did not say what the plan said they said.** Read in the
+scripts, not the notes: GPT's lights are 27 unequal marks with dark cuts laid through
+them afterwards, and its *spoon-shaped islands* were in the dark half, a rehearsal that
+never reached the painting. Kimi's five strokes are mostly under the tower painted after
+them. Gemini's flashes do not shorten toward the viewer -- the rows open out and fade --
+and its glow bar under each row is the ziggurat's outline kept as a film. DeepSeek's
+*shorter* went into the marks' width, all eight `0.100` long. The recipe takes what they
+come to together and says so. It copies none of their lengths.
+
+**6. A glaze in a guide block has to be mixed from what it lands on**, or `glaze-far`
+fires on the recipe itself: the check runs every block on the preamble's toned grey. So
+the recipe's film samples the place first, as *a volume of lit air* does.
+
+**7. The hollow thing's catch-light was on an arc no hollow in front of it could make
+its near edge.** Upper-left, with a bow up: the far rim of anything seen from above. Its
+new coordinates lie on the lower-left of an opening centred at `(0.30, 0.72)`, which the
+demo builds. The first demo at the old size was over half the canvas, so `focus` would
+not enlarge it, and a 3 px catch-light on a 400 px canvas is invisible unenlarged.
+
+**8. A passage can paint another recipe's failure.** The empty half's glow first showed
+contour rings, *a passage light in the middle*'s own failure, at eight rings. It lays
+twenty.
+
+**9. Time.** The block check ran in 269 s with the full suite beside it.
+
+## Open, and for the owner to rule on
+
+**The two recipes left in words.** *A form that turns* could have a demo if the bars
+rule counted a mass's passes once, the way it counts a scumble's -- and that is a rule
+change with a corpus replay behind it, not a demo's to make. *A scene with straight
+edges* could have one if a panel showed graphite, which would put the preamble's pencil
+line in every other panel. Both are written down in the plan's G3 row and the
+`CHANGELOG.md` entry, so they are not re-argued by accident.
+
+## What part five did *not* touch
+
+**G2** (the entry path and `easel demo mistakes`), **G8** (the voice pass), **G10** (the
+budgets) and the rest of **G11**. The README still says *the twelve CLI verbs* and
+*fifteen tools* in its MCP section, which is G11's count to fix.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/demo.py` | `lay` opens the body as a pass; its docstring |
+| `RECIPES.md` | the index row; seven demo blocks; three *Goes wrong as*; the hollow thing's catch-light; the repair's details; the new recipe |
+| `DIAGNOSIS.md` | the floating-discs row names a ladder and the new recipe |
+| `tests/test_demo.py` | a burial a demo can show; the demo floor; *a form that turns* as the recipe with no demo |
+| `CHANGELOG.md` | `### Seven more recipes that show how they go wrong, and a light that comes toward you in pieces` |
+| `SUGGESTIONS.md` | finding 7's and finding 19's rows |
+| `PLAN-0.6.0.md` | status; G3 and G6; the migration row for *Goes wrong as* |
+
+---
+
+# Step 9, part six: the way in (G2), the voice (G8) and two ceilings (G10)
+
+**To understand this, start by reading `MISTAKES` and `mistakes` in
+[`src/easel/demo.py`](src/easel/demo.py), then the first page of
+[`PAINTER.md`](PAINTER.md) down to *The six things you will get wrong*, then
+`FRONT_PAGE_WORDS` and `CARD_WORDS` in [`src/easel/docs.py`](src/easel/docs.py).**
+
+Branch: `g2-entry-path`, off `g3-last-demos` (#72), stacked for the same reason.
+
+---
+
+## What this part was for
+
+Four painters counted what they read before their first mark and every one of them
+asked for a quick start (finding 16). Two more said the guide reads as universal law
+(17) and that the runtime warnings are clearer than the prose (18). G2 is the path in,
+G8 is the voice, and G10 is what stops the file growing back.
+
+## What landed
+
+| | |
+|---|---|
+| **`easel demo mistakes`** | six failures on one sheet, one panel each, cut to what its own body changed: a staircase, a stack of bands, a film that owns the picture, a thumbprint, a ladder of one length, one disc printed over and over. `demo` over MCP takes the word too |
+| **the path** | the card, that sheet, the nine exercises, paint. *Read `PAINTING.md` once* is gone from it |
+| **`PAINTING.md`** | says on its own first page that it is the reasons, delivered: a notice carries the passage, `easel explain <code>` prints it. The file table, the README, `llms.txt` and the MCP `guide` tool say the same |
+| **the card's numbers** | the three values, the lightest place, the subject's share and the ground are `s.plan(...)`, not the guide's numbers |
+| **the rules a check now carries** | the edges step, boxes and under-varying name `edges:`, `boxes:`, *one disc printed* and *a loop's signature*; *three marks for a small thing* says it is a habit |
+| **two ceilings** | `FRONT_PAGE_WORDS = 6_700` against 6,654 words, `CARD_WORDS = 1_400` against 1,369, held by `tests/test_guide.py` and printed by the block check |
+| **the README's count** | *twenty tools: the seventeen CLI verbs*, held to the server and the parser by a test |
+| **`SUGGESTIONS.md`** | findings 16, 17, 18 and 20 answered -- **no row of the cohort's register is blank now** |
+
+## Decisions and gotchas
+
+**1. Which six, and why not the card's six.** The card's *six things you will get
+wrong* are habits -- outlines, boxes, parallel marks, reaching for `undo`, the tool's
+own shape, repainting a passage that failed twice -- and three of them have no demo and
+one (repainting) has no picture at all. Six *failures* do: they are what the cohort
+actually painted, each is a recipe's own *Goes wrong as*, and each is a line the tool
+says. So the sheet is the failures, the card's table stays a list of habits, and the
+card points at the sheet. A painter meets both on the same page.
+
+**2. The sheet borrows demos rather than owning blocks.** `MISTAKES` is six slugs; the
+panels come from those recipes' own demo blocks. That means the invariant that holds
+every demo true holds the sheet true as well, and a renamed heading breaks a test that
+names it instead of drawing something wrong.
+
+**3. `easel demo mistakes` takes about a minute**, because each panel lays its own
+passage first. That is the price of a sheet that cannot go stale; a painter runs it
+once, before the exercises.
+
+**4. `section()` takes a draft now**, as `headings()` already did, because the card's
+ceiling is checked against `PAINTER.md` on disk rather than against whatever the
+installed package would hand back.
+
+**5. The overlap checker caught the voice pass twice over.** *One home per rule* is a
+test, and a phrase written into both `PAINTER.md` and `PAINTING.md` -- *something the
+tool says at the call or after the pass* -- failed it within minutes of being written.
+That is the check doing exactly what it was added for.
+
+**6. The ~5,000-word target is not met, and should not be met by an edit.** The file is
+6,654 words: the workflow is 1,757, the exercises 1,147, *What you are bad at* 877, and
+a session has defended each. What the ceilings do is hold the file where the round left
+it, so the next paragraph has to buy its place. Cutting to 5,000 is a design job with a
+measurement behind it.
+
+**7. The voice pass is targeted, not whole.** *The call first, the sentence after* is
+done where a rule names a check, and not as a recast of every paragraph in the file.
+The larger version is a bigger hypothesis than one release should carry, and it is
+written into the plan's G8 row as not done.
+
+## Open, and for the owner to rule on
+
+**The entry path is a hypothesis**, and the plan says what to watch: the pier's finding,
+a card so sufficient that the recipes go unread. The sheet points at six recipes by
+name, which is the cover for it, and the next run is what says whether a painter opened
+any of them.
+
+**Whether the card's six habits and the sheet's six failures should become one list**
+is the question this part left open. Doing it means rewriting the card's table, which
+is the page the ceiling is tightest on.
+
+## What part six did *not* touch
+
+**The rest of G11**: `LESSONS.md` -- the restated boundary, a multi-model cohort in the
+protocol, the depth-order item narrowed rather than closed -- and the counts in the
+README and `llms.txt` beyond the server's. Step 10, the cut, is untouched.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/demo.py` | `MISTAKES`, `mistakes()`, `_mistakes_said()`, `answer()` routing, `__all__` |
+| `src/easel/docs.py` | `FRONT_PAGE_WORDS` lowered, `CARD_WORDS` added, `section(text=)` |
+| `src/easel/guide.py` | re-exports `CARD_WORDS` |
+| `src/easel/cli.py`, `src/easel/mcp_server.py` | `demo mistakes` in the help and the tool; the `guide` tool's line for `PAINTING.md` |
+| `scripts/check_guide_blocks.py` | prints both ceilings and fails on either |
+| `PAINTER.md` | the path, the file table, the plan sentence, the six-failures paragraph, the edges step, boxes, under-varying, three marks |
+| `PAINTING.md` | its first page: the reasons, delivered |
+| `README.md`, `llms.txt` | the path, the tool count |
+| `tests/test_guide.py`, `tests/test_demo.py`, `tests/test_server_json.py` | the card's ceiling; the six and the sheet; the README's count |
+| `CHANGELOG.md` | `### The way in: six failures painted, the reasons delivered, and two ceilings that bind` |
+| `SUGGESTIONS.md` | findings 16, 17, 18 and 20 |
+| `PLAN-0.6.0.md` | status; G2, G8 and G10 |
+
+---
+
+# Step 9, part seven: the rest of the record (G11)
+
+**To understand this, start by reading *The check reads marks and measures the canvas*
+and the depth-order paragraph under *What is still open* in
+[`LESSONS.md`](LESSONS.md), then the *At the call* row of
+[`README.md`](README.md)'s table.**
+
+Branch: `g11-the-record`, off `g2-entry-path` (#73).
+
+---
+
+## What this part was for
+
+G11 is what the project says about itself. Its *Loose ends* rows closed in part four;
+this is the rest, and it is the last row of workstream G.
+
+## What landed
+
+| | |
+|---|---|
+| **the boundary, restated** | `LESSONS.md` says the check reads marks and measures the canvas and does not judge an arrangement -- which needed saying in the release that moved the most into the tool. Findings 14 and 15 stay outside it, and the painter's own `why` is their instrument |
+| **a cohort in the protocol** | seven painters that are not this model, told only to install and paint: what that produced, and the two things worth keeping -- tell them nothing about what to read, and a painter that cannot see images cannot do this |
+| **the depth-order item, narrowed** | what `buried` sees (a burial in one pass, 2 of 325), what it cannot (one spread over passes), and that the three copy runs defining the item are not in the repository |
+| **the README** | a row for what the tool says at the call, beside the ones for the check and the closing checklist |
+| **`llms.txt`** | the same in a sentence, and `easel demo mistakes` in the commands bullet |
+| **`SUGGESTIONS.md`** | no blank row left in the cohort's register |
+
+## Decisions and gotchas
+
+**1. Restating the boundary was the point, not defending it.** The round added a great
+deal of measurement, and a reader could take that as the check creeping toward judging
+pictures. The paragraph says what every new line has in common -- it is a number about a
+mark or a pixel -- and names the two findings that are staying outside on purpose.
+
+**2. The depth-order item stays open, and says what it is open *about*.** It would have
+been easy to close it: a check now fires on the fault. It fires on the fault *done in
+one pass*, and the painter who wrote the item down did it over three. An item that
+closes on the easy half is worse than one that stays open.
+
+**3. `LESSONS.md` is not shipped in the wheel**, so its em dashes and arrows are not
+held to cp1252 the way the five guide documents are. Nothing here needed it; worth
+knowing before moving a passage from one into the other.
+
+## Open, and for the owner to rule on
+
+Nothing new. What is left of the round is step 10, the cut, which is: bump
+`pyproject.toml` and `__version__`, turn `[Unreleased]` into `[0.6.0]` **without** the
+released claim, push the tag, and add the claim afterwards. `tests/test_version.py`
+holds every such claim to a tag that exists.
+
+## What part seven did *not* touch
+
+The engine. Nothing in `src/` changed here.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `LESSONS.md` | the restated boundary; the cohort bullet in the protocol; the depth-order item narrowed; the register's own line |
+| `README.md` | the *At the call* row |
+| `llms.txt` | what the tool says, and `easel demo mistakes` |
+| `CHANGELOG.md` | `### The record` |
+| `PLAN-0.6.0.md` | status: steps 1 to 9 done, G done; the G11 row |

@@ -795,6 +795,119 @@ a whole painting*):
   `easel check` and the MCP `check` tool all read the painting the way `checklist()`
   does.
 
+### Seven more recipes that show how they go wrong, and a light that comes toward you in pieces
+
+Step 9 of the 0.5.0 cohort's round again (`PLAN-0.6.0.md`, G3 and G6): nineteen of the
+twenty-one recipes now carry a demo block, and the one passage four cohort painters
+failed alike has a recipe.
+
+- **Seven more demo blocks**, each held by the block check to exactly what it names:
+  - *a quiet gradient* — `scumble-bars` and *comes back as bars*, a brush under one
+    step. The recipe had no *Goes wrong as* at all, and has one.
+  - *a small irregular bright mark* — *one disc printed*, five dabs of one tip.
+  - *a tapered arc*, *a picture with an empty half* and *a hollow thing*, all three
+    *nothing says so*. They are a disc bitten out with paint, a second thing put in the
+    empty half, and a catch-light carried all the way round an opening.
+  - *a repair under things that are standing on it* — *earlier details out of sight*,
+    the mass repainted and nothing put back on it.
+  - the new recipe's, below.
+- **A demo's body is opened as a pass**, the way `easel run` opens one. The rule that
+  names a burial needs the canvas as the pass began, and until now it could not speak
+  in a demo at all.
+- **Two recipes changed their own block, so that their demo shows them working.**
+  - *A hollow thing*'s catch-light lay on an arc that no hollow in front of it had for
+    its near edge. It now lies on the near rim of an opening seen from above, which is
+    where the paragraph beside it puts it.
+  - *A repair under things that are standing on it* painted its details at
+    `size=0.02`, one width over what the burial rule watches. It now paints three
+    things standing on the near mass, at `0.012`.
+- **Two recipes stay in words, on purpose.**
+  - *A form that turns*, laid as a pass on its own, runs both its masses along the
+    form's side: 21 long marks at one angle, so the recipe itself gets the stack-of-bars
+    line. And the failure it names, no join stroke, is a half-strength stroke a demo's
+    scale does not show.
+  - *A scene with straight edges*: its block is a drawing, and a panel shows paint.
+- **A new recipe, collected rather than composed: *a light broken down a surface toward
+  the viewer*.** Four of the cohort's seven painters failed this passage first, and
+  alike: floating rectangles, small bricks, a ziggurat, spoon-shaped islands. It had no
+  recipe. The versions they kept, taken together, come to four things:
+  - a film first, mixed from what it lands on;
+  - every piece a different length, bent, its tip drawn afresh;
+  - the rows further apart, wider and fainter as the light comes toward you, while the
+    pieces keep their lengths;
+  - the surface's own dark laid back across the lights.
+
+  Its demo is the ladder one painter committed as its fix: eight marks of one length,
+  which `report()` names a loop's signature.
+
+### The way in: six failures painted, the reasons delivered, and two ceilings that bind
+
+Step 9 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, G2, G8 and G10). Four painters
+counted what they read before their first mark — ~2,600 lines, ~2,500 lines, *2000+
+lines of docstrings* — and every one of them asked for a quick start. This is the
+answer, and it is a hypothesis until a fresh session paints against it.
+
+**`easel demo mistakes`** paints six failures on one sheet: a staircase down a sloped
+side, a stack of bands, a film that owns the picture, a thumbprint dragged out of a
+mass, a ladder of one length, one disc printed over and over. Each is a recipe's own
+*Goes wrong as*, so the sheet stays true by the same invariant the demos do, and each
+is something the tool says at the call or after the pass. `demo` over MCP takes the
+word too.
+
+**The path is the card, that sheet, the nine exercises, and paint.** What left it is
+*read `PAINTING.md` once*, which was about 2,500 words before the first mark.
+`PAINTING.md` is **the reasons, delivered rather than read**: every notice carries the
+passage its reason lives in, and `easel explain <code>` prints that passage at the
+call. Its own first page, the file table, the README and `llms.txt` say so.
+
+**The numbers that were the guide's are the painter's.** The three values, the place
+meant to be lightest, the subject's share of the budget and whether this picture's
+ground is meant to be buried go in `s.plan(...)`, and the card asks for them there
+rather than stating them as universal. What is left as a number says which kind it is:
+**measured**, with the `CALIBRATION.md` heading behind it, or a **habit**, as *most
+painters so far*. Where a check now says a thing, the rule names it — boxes are the
+`boxes:` line, the edges step is the `edges:` line, under-varied objects are *one disc
+printed* and *a loop's signature*.
+
+**Two word ceilings, and both bind.** `PAINTER.md`'s was 10,000 against a file of
+6,654, which is not a ceiling; it is 6,700 now. The card — *The first hour*, the page
+every painter reads and the one the cohort measured as too long — had none at all, and
+has 1,400 against 1,369. `tests/test_guide.py` holds both, and
+`scripts/check_guide_blocks.py` prints them. The round's plan wanted about 5,000 words
+for the file: that is not this, and getting there means cutting the workflow, the
+exercises or *What you are bad at*, each of which a session has defended.
+
+- **The README's own count of the server is held to the server now.** It said *fifteen
+  tools: the twelve CLI verbs* while there were twenty and seventeen. The manifest's
+  copy of that sentence has been held to the parser since step 9's part three; this is
+  the other place a client reads it.
+
+### The record
+
+Step 9 of the round, G11: what the project says about itself, brought level with what
+it now does.
+
+- **`LESSONS.md` restates the boundary rather than moving it.** This release put more
+  of the guide into the tool than every release before it together, and the check still
+  reads marks and measures the canvas — every line of it is a number about a mark or a
+  pixel. The two cohort findings outside that line stay outside it: a recipe followed
+  exactly and expressively wrong, and a safe centred composition. The instrument for
+  both is the painter's own `why` and a human looking.
+- **A cohort of painters that are not this model is in the protocol now**, with the two
+  things worth keeping from this one: tell them nothing about what to read, because
+  then what they read is the measurement, and weight a painter that cannot see images
+  accordingly — the one here painted a whole picture and wrote *I can't see it ... so
+  I'm trusting the tool*.
+- **The depth-order item is narrowed, not closed.** `report()` names a burial done in
+  one pass, which is the part a check can see — 2 of the corpus's 325 passes, both
+  burials — and cannot see one spread over several, which is what the one painter who
+  wrote the fault down actually did. The three copy runs whose numbers define the item
+  are not in this repository, so the check has never been run on them.
+- **What the tool says at the call has a row in the README**, where the check and the
+  closing checklist already had one, and `llms.txt` says the same in a sentence: the
+  notices carry codes and measurements, `report()` reads the log and measures the
+  canvas after every pass, and `checklist()` answers the closing lines at the end.
+
 
 ## [0.5.0] — 2026-09-16
 

@@ -7,10 +7,14 @@ costs, what the planning verbs answer — each rule stated once, with its number
 the measurement behind the number in [`CALIBRATION.md`](CALIBRATION.md). The
 procedures for particular passages are in [`RECIPES.md`](RECIPES.md).
 
-**Read it once, after the nine exercises and before the painting.** You are not meant
-to hold it in your head; you are meant to have read it, so that when the guide says a
-mass wants a shape rather than a box you already know what a box costs. **The last
-chapter is for a painter with a photograph to copy.** Skip it if you have none.
+**This file is the reasons, and it is delivered rather than read.** Rule after rule
+that was here is now a line the engine prints while you paint, and every notice carries
+the passage its reason lives in: `easel explain <code>` prints that passage,
+at the moment it applies. So read a section when a notice points at it, or when a
+rule's reason is the question — and read the whole thing if you would rather have it
+before the first mark than at the call, which is how it was meant to be read until
+0.6.0. **The last chapter is for a painter with a photograph to copy.** Skip it if you
+have none.
 
 ---
 

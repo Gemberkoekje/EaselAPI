@@ -910,7 +910,8 @@ def build_server() -> MCPServer:
                     Required reading, and the only one that is.
                 "painting" (PAINTING.md) -- how the paint, the brushes and the
                     planning tools behave, and copying a photograph in its last
-                    chapter. Read once, after the exercises.
+                    chapter. The reasons: `explain` prints the passage a
+                    notice points at, which is how most of it arrives.
                 "recipes" (RECIPES.md) -- one situation at a time: the calls in
                     order, what it looks like when it goes wrong, and the number
                     behind it. Read one when you are about to lay that thing.
@@ -993,9 +994,15 @@ def build_server() -> MCPServer:
         Needs no session: every panel is a fresh canvas with the guide's own context
         laid under it.
 
+        `mistakes` paints the six failures a painter meets most on one sheet, each
+        under what it looks like and what the tool says about it. That is where the
+        guide's own entry path sends a painter, after the card and before the
+        exercises.
+
         Args:
-            recipe: the recipe, by the words of its heading ("crosses a boundary").
-                Left off, every recipe and which of them have a demo.
+            recipe: the recipe, by the words of its heading ("crosses a boundary"),
+                or "mistakes" for the six on one sheet. Left off, every recipe and
+                which of them have a demo.
             out_dir: where the sheet is written, as demo-<recipe>.png.
         """
         text, path = _demo.answer(recipe, out_dir=out_dir)

@@ -54,8 +54,9 @@ from easel.look import label_sheet, render_look, save_look
 from easel.notices import NOTICES, Notice
 
 __all__ = [
-    "Demo", "Panel", "Recipe", "answer", "demos", "draw", "faults", "find", "focus",
-    "is_demo", "lay", "listing", "notes", "panels", "preamble", "recipes", "sheet", "slug",
+    "MISTAKES", "Demo", "Panel", "Recipe", "answer", "demos", "draw", "faults", "find",
+    "focus", "is_demo", "lay", "listing", "mistakes", "notes", "panels", "preamble",
+    "recipes", "sheet", "slug",
 ]
 
 #: The three comment lines a demo block is cut by, and the one way of naming nothing.
@@ -290,6 +291,11 @@ def lay(passage: str, body: str, out_dir: str | Path, label: str) -> Panel:
     panel says what they said. The check is ``report()`` over ``body`` alone, and the
     panel keeps the box ``body`` changed, which is what :func:`sheet` enlarges.
 
+    ``body`` is opened as a pass, the way ``easel run`` opens one, so the check can
+    say what it took out of sight: without the canvas as the pass began, the rule
+    that names a burial cannot see one, and a repair that buries the details standing
+    on it would be a failure no demo could show.
+
     No time-lapse: nothing here keeps a frame, and building one after every mark is
     work a panel would throw away.
     """
@@ -304,7 +310,7 @@ def lay(passage: str, body: str, out_dir: str | Path, label: str) -> Panel:
                  scope)
             opened = len(scope["s"].notices())
             exec(compile(passage, f"<{label}: the passage>", "exec"), scope)  # noqa: S102
-            said, laid = len(scope["s"].notices()), len(scope["s"].history.records)
+            said, laid = len(scope["s"].notices()), scope["s"]._open_pass()
             before = scope["s"].canvas.rgb.copy()
             exec(compile(body, f"<{label}>", "exec"), scope)  # noqa: S102
         except Exception as exc:  # the panel reports it; faults() turns it into a fault
@@ -452,6 +458,51 @@ def draw(demo: Demo, out_dir: str | Path = "out",
     return save_look(sheet(demo, drawn), target), drawn
 
 
+#: The six failures :func:`mistakes` paints, in the order a painting meets them: the
+#: masses, then what is laid over them, then the marks. Each was made by the 0.5.0
+#: cohort, each is a recipe's own *Goes wrong as*, and each is something the tool says
+#: at the call or after the pass -- so the sheet is six pictures of six lines a painter
+#: will meet, rather than six more rules to carry. The entry path sends a painter here
+#: from the card and before the exercises (``PAINTER.md``, *The first hour*).
+MISTAKES: tuple[tuple[str, str], ...] = (
+    ("a-mass-built-of-planes", "a staircase down a sloped side"),
+    ("a-subject-that-is-one-thing-against-a-ground", "a stack of bands"),
+    ("a-volume-of-lit-air", "a film that owns the picture"),
+    ("a-mark-that-crosses-a-boundary", "a thumbprint dragged out of a mass"),
+    ("a-light-broken-down-a-surface-toward-the-viewer", "a ladder of one length"),
+    ("a-small-round-thing", "one disc, printed over and over"),
+)
+
+
+def mistakes(out_dir: str | Path = "out", path: str | Path | None = None,
+             text: str | None = None) -> tuple[Path, list[tuple[str, Demo, Panel]]]:
+    """The six on one sheet: each failure painted, under what it looks like.
+
+    One panel each, and the failure only -- what the call that does not make it looks
+    like is its own recipe's sheet, a command away. Each panel is cut to what its own
+    body changed, so a five-pixel disc is not five dots in a corner.
+    """
+    every = {r.slug: r for r in recipes(text)}
+    drawn: list[tuple[str, Demo, Panel]] = []
+    for name, looks in MISTAKES:
+        recipe = every.get(name)
+        demo = recipe.demo if recipe is not None else None
+        if demo is None:                      # a heading renamed, or a demo taken out
+            raise ValueError(f"`easel demo mistakes` wants a demo under {name!r}, and "
+                             f"RECIPES.md has none. Fix MISTAKES or the recipe.")
+        drawn.append((looks, demo, lay(demo.passage, demo.failure, out_dir, "goes wrong")))
+    size = next((p.image.size for _, _, p in drawn if p.image is not None), (400, 300))
+    sheets = []
+    for looks, demo, panel in drawn:
+        image = panel.image or Image.new("RGB", size, (24, 24, 24))
+        box = focus([panel], *size)
+        if box is not None:
+            image = image.crop(box).resize(size, Image.LANCZOS)
+        sheets.append((f"{looks} -- {demo.heading.lower()}", image))
+    target = Path(path) if path is not None else Path(out_dir) / "demo-mistakes.png"
+    return save_look(label_sheet(sheets, columns=min(3, len(sheets))), target), drawn
+
+
 # -- the command ----------------------------------------------------------------------
 def find(words: str, text: str | None = None) -> list[Recipe]:
     """The recipes ``words`` names: by anchor, or by every content word of the heading."""
@@ -479,6 +530,10 @@ def answer(words: str, out_dir: str | Path = "out",
     """What ``easel demo <words>`` prints, and the sheet it wrote if it wrote one."""
     if not words.strip():
         return listing(), None
+    if words.strip().casefold().removeprefix("the ").removeprefix("six ") in {
+            "mistakes", "mistake"}:
+        written, drawn = mistakes(out_dir, path)
+        return _mistakes_said(drawn, written), written
     found = find(words)
     if not found:
         return f"No recipe's heading has all of {words!r} in it.\n\n{listing()}", None
@@ -492,6 +547,18 @@ def answer(words: str, out_dir: str | Path = "out",
                 f"only. `easel guide --recipes` has the recipe.\n"), None
     written, drawn = draw(demo, out_dir, path)
     return _summary(demo, drawn, written), written
+
+
+def _mistakes_said(drawn: list[tuple[str, Demo, Panel]], written: Path) -> str:
+    """The sheet's path, and for each panel what it is and what the tool says about it."""
+    lines = [f"The six mistakes, painted: {written}", ""]
+    for looks, demo, _panel in drawn:
+        named = "; ".join([*demo.codes, *(f'"{w}"' for w in demo.words)]) or NOTHING
+        lines.append(f"  {looks}")
+        lines.append(f"      {demo.heading} -- the tool says {named}")
+    lines += ["", "Each one is a recipe, and `easel demo <words of its heading>` paints "
+              "the call that does", "not make it beside the one that does."]
+    return "\n".join(lines) + "\n"
 
 
 def _summary(demo: Demo, drawn: list[Panel], written: Path) -> str:
