@@ -8,10 +8,10 @@ greenhouse was painted before the fogged glass and filed after it, in its own se
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: the 0.5.0 cohort, at the top** — seven painters that are not Claude,
-one picture each, **32 engine items and 6 documentation items**, none of them acted on. It
-is written where every open round before it has been written, and will be folded in where
-it stands rather than moved once it is acted on. Everything below it is done: 72 engine
+**No round is open.** The newest, at the top, is the 0.5.0 cohort — seven painters that
+are not Claude, one picture each, **32 engine items and 6 documentation items** — and
+every item in it is done, in 0.6.0, folded in where it was filed rather than moved, as
+every open round before it was. Everything below it is done too: 72 engine
 items and 90 documentation items, all of them — the eighth session's eight and the
 ninth's fourteen in 0.3.0, the tenth and the greenhouse's fifteen engine items and three
 left-over documentation items in 0.4.0 with the install session's three, the pier
@@ -48,7 +48,7 @@ changed rather than that it worked.
 | An install session — no painting; `pip install easel-paint`, and the reach for the guide | 1 | 2 |
 | …and that session painting, 257 of 300, `paintings/Claude/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
 | Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
-| The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | **32 open** | **6 open** |
+| The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -83,14 +83,13 @@ disagree, it may be the context talking.
 
 ## The 0.5.0 cohort: seven painters that are not Claude
 
-**OPEN.** Thirty-two engine items and six documentation items, from seven painters —
-GPT, GLM, DeepSeek, Gemini, Grok, Kimi and BigPickle — each of whom installed
-`easel-paint` 0.5.0 from the package and painted one picture. **A row's right-hand column
-is filled in when its PR lands, and not before**, so what is still blank is what is still
-open: the notice channel, the eighteen bugs and the plan object have landed, and the new
-checks, the measurement lines, the moved defaults and the documentation have not. The
-candidate answers, and the measurements that decided which of these survive, are in
-[`PLAN-0.6.0.md`](PLAN-0.6.0.md).
+**Every item in this section is done, in 0.6.0** — thirty-two engine items and six
+documentation items from seven painters, GPT, GLM, DeepSeek, Gemini, Grok, Kimi and
+BigPickle, each of whom installed `easel-paint` 0.5.0 from the package and painted one
+picture. A row's right-hand column was filled in when its PR landed, and not before. The
+candidate answers, and the measurements that decided which of them survived, are in
+[`PLAN-0.6.0.md`](PLAN-0.6.0.md); what the round left open is at the end of this
+section.
 
 **Kind** is this project's own distinction and every finding below carries it: **M**
 measured by the painter, **O** observed, **R** reasoned. It is the first thing to check
@@ -206,8 +205,8 @@ is the finding as it stands after that check, not as it was reported.
 | **`solid=True` is refused on `stroke` and `scumble`**, with a good teaching error that names the pair to type by hand. It is `load=1.0, load_falloff=0.0` everywhere, and it is the clause painters type most often. | Gemini; laundromat (earlier) | O | `solid=` on `stroke`, `sweep` and `scumble` as well as `block_in`, and an explicit `load=` beside it still wins, as it always did. `cover()` lays that pair already, so it is the one call whose error still explains it rather than taking it. |
 | **30–45 s for 500–800 marks.** Confirmed as a fixed cost per stroke, and nothing is quadratic. Every stroke snapshots rgb, wetness, thickness and sketch for `undo` — about 33 MB and 6.4 ms at 1440×960, roughly 800 MB resident at 24 snapshots — and with `timelapse=True`, the default, every stroke also builds its 360 px frame from a full-canvas composite at 25.6 ms. About 32 ms of bookkeeping per mark before a dab lands, ~26 s over 800 marks. | Gemini | M | Two cuts, both measured. A frame is **built only if the thinning would keep it** (`History.wants_frame`), which is where the 42–60 ms a mark went: past `MAX_FRAMES` the sequence is halved anyway, so most of that work was done and thrown away. And a stroke snapshots **the box it can reach** rather than the whole canvas: at 1024×768, `15.7 MB` and `5.2 ms` become `3.5 MB` and `1.85 ms`, and 377 MB resident becomes 107. Wetness stays whole, because `tick_wetness` dries the entire canvas per stroke and no box holds that; the stack unwinds newest first; and a mark that ever landed outside its box drops the stack rather than restoring it wrongly, leaving `undo` to rebuild from the log, which is exact. |
 | **No easy calibration of size, load and pressure before committing** to a passage. A feature, not a bug: one labelled sheet of the same mark at several settings, in place, on a copy — a request for more of the one thing every painter in this round defended. | GPT | R | `s.rehearse(plan, vary={"size": [...]})`: one labelled panel per setting, in place, in one image, free like any rehearsal — and each panel is its own copy seeded as the next marks of the painting, so the setting chosen lands as it was shown. At most twelve panels, because two arguments vary as their combinations. Every panel's notices come back, which is half of what the sheet is being asked. The MCP `rehearse` takes it too. |
-| **A wide angled `scumble` lands far outside its band.** Confirmed, **and larger than claimed.** The auto brush is `3 × step`, and `step` is the band's *bounding box* projected on the pass normal, so an oblique angle on a wide, low band inflates it: a band 0.20 tall at `n=8` paints **1.43×** its own area along its axis, 2.84× at 30 degrees and **3.53× at 60** — a brush 1.65× the band's own height. **Nothing fires**: the narrow-brush check looks the other way, and the ends check returns immediately for a `Region`, so the guide's own `span(...)` bands can never trip it. | GPT, Kimi, Grok | O | Two of the three. `_check_scumble_ends` runs on rectangles now — a band is not a wedge, its passes vary only at the corners, so what a rectangle is asked is whether the **whole band** is narrower than the brush laying it, measured on its longest pass. And `edge="hard"` / `clip=` on `scumble` is the remedy (B1). The `spill` notice with the predicted ratio is workstream D, where the number it prints was measured. |
-| **Glazes crossed wet, then a block-in, printed concentric rings.** **The rings are real; both accounts of their cause are wrong, and the painter's own folder shows it.** The seven frames are committed at [`paintings/GLM/terminal_window/rings/`](paintings/GLM/terminal_window/rings/README.md): the wall is clean after the six glazes and before the block-in; a film at `opacity=0.15` leaves about 0.13 wetness rather than 0.90, and had twenty-odd strokes at ~6% each to fade; and the rings first appear in a **rehearsal**, landing identically when the pass was paid for — so *what you rehearse is what lands* held and the painter did not see them. What they are: wobbly closed loops concentric with a blob-shaped patch that overshoots the glass — an inward scumble's own contour rings, the failure `RECIPES.md` already names. The calls are gone; the first takes were overwritten and their marks undone. | GLM | O | `dry_first=` on `block_in`, off by default: wet-into-wet is most of what makes a passage soft, and a mass laid over a dried one is a decision. The rest of this row is the probe's reconstruction (`CALIBRATION.md`, *GLM's rings*) and the notices it decides, in workstream D. |
+| **A wide angled `scumble` lands far outside its band.** Confirmed, **and larger than claimed.** The auto brush is `3 × step`, and `step` is the band's *bounding box* projected on the pass normal, so an oblique angle on a wide, low band inflates it: a band 0.20 tall at `n=8` paints **1.43×** its own area along its axis, 2.84× at 30 degrees and **3.53× at 60** — a brush 1.65× the band's own height. **Nothing fires**: the narrow-brush check looks the other way, and the ends check returns immediately for a `Region`, so the guide's own `span(...)` bands can never trip it. | GPT, Kimi, Grok | O | All three. `_check_scumble_ends` runs on rectangles now — a band is not a wedge, its passes vary only at the corners, so what a rectangle is asked is whether the **whole band** is narrower than the brush laying it, measured on its longest pass. `edge="hard"` / `clip=` on `scumble` is the remedy (B1). And the `spill` notice (step 6) says the predicted multiple at the call — `3.0x` for the band at 30 degrees that nothing warned about, against `2.95x` painted — and names `edge="hard"` first; the auto brush is not capped, for the reason in the finding-8 row above. |
+| **Glazes crossed wet, then a block-in, printed concentric rings.** **The rings are real; both accounts of their cause are wrong, and the painter's own folder shows it.** The seven frames are committed at [`paintings/GLM/terminal_window/rings/`](paintings/GLM/terminal_window/rings/README.md): the wall is clean after the six glazes and before the block-in; a film at `opacity=0.15` leaves about 0.13 wetness rather than 0.90, and had twenty-odd strokes at ~6% each to fade; and the rings first appear in a **rehearsal**, landing identically when the pass was paid for — so *what you rehearse is what lands* held and the painter did not see them. What they are: wobbly closed loops concentric with a blob-shaped patch that overshoots the glass — an inward scumble's own contour rings, the failure `RECIPES.md` already names. The calls are gone; the first takes were overwritten and their marks undone. | GLM | O | `dry_first=` on `block_in`, off by default: wet-into-wet is most of what makes a passage soft, and a mass laid over a dried one is a decision. The probe's reconstruction (`CALIBRATION.md`, *GLM's rings*) decided the notices, and none was built: `ring-steps` and `ring-rim` fire on nothing in the corpus, whose inward `scumble`s step `0.014`–`0.021` a ring, and `wet-under` is not in 0.6.0, for the reason in the finding-5 row above. |
 
 ### The documentation
 
@@ -253,8 +252,12 @@ Corrected in both places.
 were checked by sha256*. All seven of the cohort's paintings claim a script rebuild, and
 none has been re-run here — only GPT's carries a sha256, and it is the painter's own.
 Both pages now say so. **Re-running every painting from its committed pass scripts is the
-first thing the round's measuring step does**, so this answers itself rather than needing
-an item.
+first thing the round's measuring step does**, so this answered itself rather than
+needing an item — and the answer is
+[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70), outside this round: `car_wash`
+and `pears` claim a rebuild and come back five marks over, two committed passes do not
+run from a clean session, and 0.6.0 changes what some committed scripts paint — two
+moved defaults and the smudge fix.
 
 ### The two Claude verdicts, filed as corroboration
 
@@ -309,6 +312,31 @@ them**:
 - **Flat cut-out shapes**, named by both painters who laid every form as a clipped
   polygon. It is also where two of this round's candidate remedies point, which is the
   risk this round carries into whatever run follows it.
+
+### What the round left open
+
+Recorded here because the working notes they were written in leave the repository once
+0.6.0 is tagged. Everything else the round declined or put off is written where it was
+decided: the checks it did not build in `CALIBRATION.md`, the default moves it declined
+under 0.6.0's *Defaults moved* in `CHANGELOG.md`, `wet-under` in the finding-5 row above,
+and `PAINTINGS.md`'s rebuild claims in
+[#70](https://github.com/Gemberkoekje/EaselAPI/issues/70).
+
+- **A notice's code, linked to the `DIAGNOSIS.md` row for the same symptom.** Not this
+  round (ruled 2026-09-21): when it was ruled, sixteen of the engine's twenty-five codes
+  already resolved to the passage a row points at, so `easel explain` and
+  `easel diagnose` printed the same text and only the name was missing. Revisit once a
+  run shows whether a painter calls either.
+- **Whether the card's six habits and `easel demo mistakes`' six failures should be one
+  list.** They are two for now: the card's *six things you will get wrong* are habits,
+  the sheet's are failures a painter meets, and the card points at the sheet. Making
+  them one rewrites the card's table, the page whose word ceiling is tightest — 1,369
+  words of 1,400.
+- **What the next run should look for first.** The way in — the card, the sheet, the
+  exercises — is a hypothesis, and its known risk is the pier's finding: a card so
+  sufficient that the recipes go unread. The sheet names six recipes, which is the cover
+  for it, and only a run says whether a painter opened any of them. The second is the
+  cut-out risk just above, which the `edges:` line now measures.
 
 ---
 

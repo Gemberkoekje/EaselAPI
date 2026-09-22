@@ -8,9 +8,10 @@ with the `NOTES.md` beside each; then `src/easel/session.py` at `report()` (line
 today lives -- all of them through `Session._notify` and `src/easel/notices.py` since
 step 3._
 
-**Status: steps 1 to 9 are done and step 10 -- the cut -- is what is left; workstreams
-A to G are built, F1 among them, which a ruling reopened after step 8 had declined it
-and which was built after it on its own branch.**
+**Status: steps 1 to 9 are done, and step 10 -- the cut -- is under way: the version is
+0.6.0 and `CHANGELOG.md` has its entry without the claim, so the tag and then the claim
+are what is left. Workstreams A to G are built, F1 among them, which a ruling reopened
+after step 8 had declined it and which was built after it on its own branch.**
 Step 1 filed the round
 in `SUGGESTIONS.md` with its evidence. Step 2 is `scripts/probe_cohort_session.py`: it
 rebuilds the corpus, re-measures every claim in 2a and 2d, and counts what every
@@ -90,8 +91,10 @@ and the two recipes G3's first
 run found tripping `report()` left the table with G3; F1's build and the `clean` edge
 its bench found failing in silence left it with F1. Written 2026-09-18 against
 `main` at `8192736`, engine 0.5.0 (released: `v0.5.0` is tagged at `54c2a0b`). Working
-file: delete it, or fold what survives into `SUGGESTIONS.md` / `CHANGELOG.md`, when the
-round is cut.
+file: it stays through the tag, so `v0.6.0` carries it, and leaves with `NOTES-step6.md`
+to `NOTES-step9.md` in the PR that adds the claim, which points what cites them at the
+tagged copies (ruled 2026-09-22, the decisions table). What survives of it and is
+written nowhere else is in `SUGGESTIONS.md`, under *What the round left open*.
 
 ---
 
@@ -114,7 +117,7 @@ comes out of the tool and leaves the documentation; and the bugs the verdicts re
 fixed. That is `LESSONS.md`'s own growth rule (*each rule that becomes a check can leave
 the guide*), asked for at scale.
 
-### Decisions already taken (owner, 2026-09-18; nine more 2026-09-21; three on 2026-09-22)
+### Decisions already taken (owner, 2026-09-18; nine more 2026-09-21; four on 2026-09-22)
 
 | Question | Decision |
 |---|---|
@@ -143,6 +146,7 @@ the guide*), asked for at scale.
 | Finding 12: the small-comb and round-disc rules over a whole painting -- `checklist()` is `report(since=None)`, so both count every mark of the painting (*Loose ends*, found after G3) | **The comb line leaves the closing audit, and the disc line counts only discs seen together.** Counted first, on all 21 paintings rebuilt through the probe's own replay (session scratchpad, not committed -- Gemini came back at its notes' own `265` and `176`): the disc line is on **14 of 21** finished paintings' checklists and the comb line on **9**, the two commonest lines the closing audit prints (bars `5`, the pressure-list rule `4`). **The comb** was said by the pass that laid most of it wherever its count is large (`opus` 38 of 40 marks, `laundromat` 39 of 48); where it is small no pass said it, and the marks are mostly strands the comb suits -- `car_wash`'s and each heron's are three marks over two passes: a car-wash brush's bristles, streaks of light and reflections on water, and one small plane on a heron's neck -- and Gemini's 265 are pine boughs whose streaks are the needles it wanted. No checklist question asks it, and the end of a painting has no next mark to choose a brush for, so over a whole painting it says nothing and the pass keeps it. **The disc line** is G4's own answer to *is any small mark a disc*, so it stays, but its large counts are passages of repeated marks (Gemini's rows of glitter lozenges, the one line Gemini never answered; `sonnet`'s and the greenhouse's pots) and its small ones add up accents from different passes: `dusk`'s *one disc printed 8 times* is a lamp, a moon, two notches, two edge highlights and a glint, from six passes. Over a whole painting it counts only marks in a group of three or more within `0.06` of one another, leaves out marks noted `signature` (counted on 6 checklists; the budget already waives them), and says where the groups are: **10 of 21**, dropping exactly the four scattered ones (`car_wash`, `dusk`, `laundromat`, `glm`) and keeping every repeated passage -- the same from a radius of `0.06` to `0.15`, while `0.04` starts losing groups. What a pass's own report says is unchanged for both rules, so the noise table does not move. **Built** (`NOTES-step7.md`, part two): `_pass_findings(whole=True)` under both `checklist()` and `report()` with no `since`; the count joins the probe as `--closing`, and its numbers are under *The closing audit, over a whole painting* in `CALIBRATION.md`. |
 | `spill` told off by its own first remedy (`NOTES-step6.md`, part two; no row owned it) | **Not this round.** `Polygon.inset()` keeps no record of the shape it came from, so a mass inset by half its brush is measured against the inset shape: silent at the guide's own numbers (`1.44x`, held by a test), and wrong only for a brush that is most of its mass. Seeing through it needs a field on `Polygon`, which rides in the log. Written into `CALIBRATION.md`, *Paint that lands outside the place*. |
 | Four `spill` fires that measured under the line (`NOTES-step6.md`, part two; no row owned it) | **Not this round.** `1.23x`-`1.58x` where the call predicted `1.6x` or more -- most likely paint laid on paint of its own value, which the replay cannot see, and not checked call by call. Whether such a spill is worth saying takes the canvas under the footprint, a D2 question of a D1 rule, and the line says where the passes land, which is true either way. Written into the same section. |
+| This file and the step notes, at the cut (the preamble: *delete it, or fold what survives*) | **Kept through the tag, and deleted in the PR that adds the claim**, as 0.3.0's working notes were. `v0.6.0` carries all five, so `CHANGELOG.md`'s mentions of this file and the rest of what cites them can point at the tagged copies rather than at nothing. What survives that is written nowhere else -- the code-to-symptom link, the card's six habits against the sheet's six failures, and what the next run should look for first -- is folded into `SUGGESTIONS.md` at the cut, under *What the round left open*. |
 
 ---
 
@@ -674,7 +678,11 @@ One round, cut as 0.6.0, in PRs that each stand alone. The repository's rhythm i
    the step closed, was built after it, on the bench the ruling asked for.
 9. **Docs**: `demo`, `diagnose`, `explain`, the new recipe, the fixes, the voice pass,
    the entry path, the budgets (G).
-10. **Cut 0.6.0**: `CHANGELOG.md` without the claim, tag, then the claim.
+10. **Cut 0.6.0**: `CHANGELOG.md` without the claim, tag, then the claim. **The first
+    is done**: the version is 0.6.0 in all four copies, `[0.6.0]` is written and dated
+    with no claim in it, and `SUGGESTIONS.md` closes the round. The tag goes on the
+    commit that merges it; the claim comes after the tag, in the PR that deletes this
+    file and the step notes.
 
 ### Loose ends, and who owns them
 
