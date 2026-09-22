@@ -1667,6 +1667,7 @@ def test_the_check_reads_small_combs_and_asked_for_tapers_off_the_log(tmp_path):
     chisel mark is a taper that was never going to happen -- both real passes of real
     paintings, and both counted rather than repeated as prose."""
     s = make(tmp_path)
+    before = len(s.history.records)
     for i in range(3):
         s.stroke([(0.2 + i * 0.1, 0.45), (0.22 + i * 0.1, 0.47)], "bristle", "burnt_umber",
                  size=0.012)
@@ -1674,7 +1675,7 @@ def test_the_check_reads_small_combs_and_asked_for_tapers_off_the_log(tmp_path):
         warnings.simplefilter("ignore")
         s.stroke([(0.5, 0.5), (0.52, 0.56)], "flat", "burnt_umber", size=0.03,
                  pressure=[1.0, 0.35])
-    report = s.report()
+    report = s.report(since=before)
     assert "3 marks with a bristle under size=0.025" in report
     assert "1 short mark with a pressure list on a flat tip" in report
 
@@ -1954,13 +1955,14 @@ def _runs_at(angles: list[float]) -> int:
 
 
 # -- the check's bristle floor, narrowed to a loaded comb ------------------------------
-def _combs(tmp_path, load: float) -> str:
+def _combs(tmp_path, load: float, whole: bool = False) -> str:
     s = make(tmp_path)
     s.palette["c"] = s.palette.mix("ultramarine", "burnt_umber", 0.4)
+    before = len(s.history.records)
     for i in range(4):
         s.stroke([(0.2, 0.3 + i * 0.1), (0.8, 0.32 + i * 0.1)], "bristle", "c",
                  size=0.012, load=load)
-    return s.report()
+    return s.report() + s.checklist() if whole else s.report(since=before)
 
 
 def test_a_starved_comb_under_the_floor_is_not_a_fault(tmp_path):
@@ -1976,6 +1978,17 @@ def test_a_loaded_comb_under_the_floor_still_is(tmp_path):
     """What the rule was written for: a small solid plane laid with the wrong tip."""
     said = _combs(tmp_path, 0.9)
     assert "bristle under size=0.025" in said and "load over 0.6" in said
+
+
+def test_the_closing_audit_leaves_a_small_comb_to_the_pass(tmp_path):
+    """Finding 12 of the 0.5.0 cohort: over a whole painting this rule added up *265
+    marks with a bristle under size=0.025*, and the painter argued with the line -- the
+    comb's gaps were the needles it wanted. The rule asks for a brush for the marks
+    about to be laid, which a finished painting has none of, and a pass that laid a
+    habit's worth said so when it was laid. So `report()` with no `since`, and
+    `checklist()`, leave it to the pass -- which still says it."""
+    assert "bristle under size=0.025" in _combs(tmp_path, 0.9)
+    assert "bristle under size=0.025" not in _combs(tmp_path, 0.9, whole=True)
 
 
 # -- a graded passage laid by hand, and what it is not ---------------------------------
@@ -2452,19 +2465,20 @@ def test_several_small_round_marks_at_no_wobble_are_one_disc(tmp_path):
     about, so *several small marks with round_hard or liner* is the failure by
     default and the fix is opt-in. The closing checklist asks *is any small mark a
     disc, a capsule or a rectangle -- the tool's own shape rather than the thing's?*
-    and this is that question, counted."""
+    and this is that question, counted. Over a pass, which is one passage; the whole
+    painting is the tests after this one."""
     s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
                 out_dir=tmp_path, timelapse=False)
     for i in range(4):
         s.dab(0.30 + 0.05 * i, 0.5, "round_hard", "titanium_white", size=0.012, press=3)
-    assert "one disc printed 4 times" in s.report()
+    assert "one disc printed 4 times" in s.report(since=0)
 
     wobbled = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
                       out_dir=tmp_path, timelapse=False)
     for i in range(4):
         wobbled.dab(0.30 + 0.05 * i, 0.5, "round_hard", "titanium_white", size=0.012,
                     press=3, tip_wobble=0.7)
-    assert "one disc printed" not in wobbled.report()
+    assert "one disc printed" not in wobbled.report(since=0)
 
     # A liner drawing fine lines is the guide's own advice and is not this fault: a
     # round tip stops reading as a capsule at about seven times its own width.
@@ -2473,7 +2487,65 @@ def test_several_small_round_marks_at_no_wobble_are_one_disc(tmp_path):
     for i in range(4):
         lines.stroke([(0.30 + 0.05 * i, 0.3), (0.31 + 0.05 * i, 0.7)], "liner",
                      "titanium_white", size=0.004)
-    assert "one disc printed" not in lines.report()
+    assert "one disc printed" not in lines.report(since=0)
+
+
+def _dots(s, where, **kw):
+    """Small round dabs at tip_wobble=0 -- one disc each -- at the places given."""
+    for x, y in where:
+        s.dab(x, y, "round_hard", "titanium_white", size=0.012, press=3, **kw)
+
+
+#: A lamp, a moon and a glint: three accents on three sides of the picture.
+_APART = [(0.08, 0.10), (0.92, 0.12), (0.10, 0.92)]
+
+
+def test_over_a_whole_painting_discs_standing_apart_are_not_one_disc(tmp_path):
+    """Finding 12 of the 0.5.0 cohort, the disc half. A pass is one passage, so the
+    discs it lays are seen together; a painting is many, and the closing audit was
+    adding them up: one finished painting's *one disc printed 8 times* was a lamp, a
+    moon, two notches, two edge highlights and a glint, laid in six passes. Over a
+    whole painting only discs seen together count. What a pass says is unchanged."""
+    s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    _dots(s, _APART)
+    assert "one disc printed 3 times" in s.report(since=0)
+    assert "small marks with a round tip" not in s.report()
+    assert "small marks with a round tip" not in s.checklist()
+
+
+def test_the_closing_audit_says_where_the_discs_sit_together(tmp_path):
+    """The discs a painting does show together -- a row of pots, a glitter path -- are
+    the rule's own fault, and at the end of a painting a count with no place is no help
+    in finding them. So the line names each group, the largest first, as the ``(x, y)``
+    every place in the engine is given in, and leaves the three standing apart out."""
+    s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    _dots(s, [(0.30, 0.50), (0.34, 0.50), (0.38, 0.50), (0.42, 0.50)])
+    _dots(s, [(0.76, 0.80), (0.80, 0.80), (0.84, 0.80)])
+    _dots(s, _APART)
+    assert "one disc printed 10 times" in s.report(since=0)
+    said = s.checklist()
+    assert ("7 small marks with a round tip at tip_wobble=0 sit together in 2 places -- "
+            "4 around (0.36, 0.50), 3 around (0.80, 0.80): each is one disc printed over "
+            "and over") in said
+    assert "sit together in 2 places" in s.report()
+
+    one = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                  out_dir=tmp_path, timelapse=False)
+    _dots(one, [(0.30, 0.50), (0.34, 0.50), (0.38, 0.50), (0.42, 0.50)])
+    assert ("4 small marks with a round tip at tip_wobble=0 sit together around "
+            "(0.36, 0.50): that is one disc printed 4 times") in one.checklist()
+
+
+def test_a_signature_is_not_one_disc_printed_over_and_over(tmp_path):
+    """A signature is lettering, and the budget already waives it; a dotted *i* and
+    two full stops beside it are not a passage of discs. Left out over a whole
+    painting, by the same test the budget uses."""
+    s = Session(1200, 800, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    _dots(s, [(0.86, 0.92), (0.89, 0.92), (0.92, 0.92), (0.95, 0.92)], note="signature")
+    assert "small marks with a round tip" not in s.checklist()
 
 
 def test_a_round_tip_blocking_in_a_small_shape_says_so(tmp_path):

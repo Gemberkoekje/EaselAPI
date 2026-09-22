@@ -409,12 +409,16 @@ measurement lines, on the finished canvases* in `CALIBRATION.md`. All of them co
 painting behind a rehearsal copy, not the copy's own log, and everything read off the
 canvas is left off a counted copy, which has laid no paint of its own.
 `since=` is the log index the pass began at (`len(s.history.records)` before it);
-left off, the whole painting. Two more need the shape and fire at the call: a shaped
-`block_in` with `direction` left off costing over 2.5× its axis (or a sequence costing
-over 2.5× its own dearest angle), and a round tip blocking in a **feature** — a shape under a
-tenth of the canvas across — that is less than four of its brushes wide. Over that
-width the same brush is a mass with a soft silhouette, which is what a round tip is
-for.
+left off, the whole painting — which is also what `s.checklist()` and `easel check`
+read — and there two rules written for a pass are asked the painting's question
+instead: the small comb says nothing, since what it asks for is a brush for the next
+marks, and the discs count only where three or more sit within `0.06` of one another,
+a signature left out, with where each group is. Two more need the shape and fire at
+the call: a shaped `block_in` with `direction` left off costing over 2.5× its axis (or
+a sequence costing over 2.5× its own dearest angle), and a round tip blocking in a
+**feature** — a shape under a tenth of the canvas across — that is less than four of
+its brushes wide. Over that width the same brush is a mass with a soft silhouette,
+which is what a round tip is for.
 
 ### What the plan changes
 

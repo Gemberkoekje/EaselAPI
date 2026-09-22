@@ -742,6 +742,36 @@ more rule to carry.
   and a test now holds that sentence to the parser, which nothing did while it said
   twelve.
 
+### The closing audit, read as a painting rather than a pass
+
+Finding 12 of the 0.5.0 cohort's round, ruled on 2026-09-22 (`PLAN-0.6.0.md`, the
+decisions table). `checklist()` is `report(since=None)`: every rule of the post-pass
+check, read over the whole painting. Two of those rules were written for a pass, and
+over a whole painting they added it up — *265 marks with a bristle under size=0.025*,
+*one disc printed 176 times* — and the painter argued with the first and never answered
+the second. Counted over the 21 finished paintings before anything moved
+(`scripts/probe_cohort_session.py --closing`; `CALIBRATION.md`, *The closing audit, over
+a whole painting*):
+
+- **The small-comb rule says nothing over a whole painting.** What it asks for is a brush
+  for the marks about to be laid, and a finished painting has none. Where its count was
+  large the pass that laid the marks had said so — 38 of `opus`'s 40, 39 of
+  `laundromat`'s 48 — and where no pass had, the marks are mostly strands a comb suits.
+  It was on 9 of the 21 checklists and is on none; a pass's own report still says it.
+- **The disc rule counts only the discs a painting shows together** — three or more,
+  each within `0.06` of another — and says where each group is: *164 small marks with a
+  round tip at tip_wobble=0 sit together in 3 places -- 80 around (0.67, 0.61), ...* A
+  signature is left out, by the test the budget already waives it with
+  (`History.is_signature`, public now). The line was on 14 of the 21 checklists and is
+  on 10. The four it left were accents added up across passes — one painting's *one
+  disc printed 8 times* was a lamp, a moon, two notches, two edge highlights and a
+  glint, from six passes — and every repeated passage stayed, Gemini's rows of glitter
+  lozenges among them.
+- **A pass's own report is unchanged**, both rules and every word, so the noise budget
+  does not move. `report()` with no `since`, `easel run --check`, `easel log --check`,
+  `easel check` and the MCP `check` tool all read the painting the way `checklist()`
+  does.
+
 
 ## [0.5.0] — 2026-09-16
 

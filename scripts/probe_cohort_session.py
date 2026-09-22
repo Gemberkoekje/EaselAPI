@@ -37,6 +37,7 @@ from memory.
     python scripts/probe_cohort_session.py --claims       # 2a and 2d, no corpus replay
     python scripts/probe_cohort_session.py --corpus       # the replay and its tables
     python scripts/probe_cohort_session.py --corpus --only kimi glm
+    python scripts/probe_cohort_session.py --closing      # finding 12 alone, about 20 min
 
 **The rebuild is itself a measurement.** ``PAINTINGS.md`` claims a byte-for-byte
 rebuild for some of these paintings and explicitly declines to for others; where a
@@ -70,7 +71,7 @@ import easel
 import easel.session as session_module
 from easel import Region, Session, polygon
 from easel.color import linear_to_srgb
-from easel.history import MAX_SNAPSHOTS
+from easel.history import MAX_SNAPSHOTS, History
 from easel.regions import Polygon
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -2840,6 +2841,89 @@ def report_measurements(replays: list[Replay]) -> None:
               f"{float(np.median(crisp)):.0f}%")
 
 
+#: The radii the disc groups are read at, around the engine's own.
+CLOSING_RADII = (0.04, 0.06, 0.08, 0.10, 0.15)
+
+
+def _counted(lines: list[str], words: str) -> int:
+    """The number a finding leads with, or 0 when no finding carries ``words``."""
+    for line in lines:
+        if words in line:
+            return int(line.strip().removeprefix("- ").split()[0])
+    return 0
+
+
+def _said_by_their_pass(rep: Replay, marks: list, words: str) -> int:
+    """How many of ``marks`` were laid in a pass whose own report printed the line."""
+    at = {id(r): i for i, r in enumerate(rep.session.history.records)}
+    said = [p for p in rep.passes if any(words in line for line in p.findings)]
+    return sum(1 for r in marks if any(p.start <= at[id(r)] < p.end for p in said))
+
+
+def report_closing_audit(replays: list[Replay]) -> None:
+    """Finding 12: what the closing audit says about small combs and discs.
+
+    ``checklist()`` is ``report(since=None)``, every rule of the post-pass check read
+    over the whole painting. Two of those rules were written for a pass, and over
+    Gemini's 726 marks they added the painting up -- *265 marks with a bristle*, *one
+    disc printed 176 times* -- and the painter argued with one and never answered the
+    other. Ruled 2026-09-22: the small comb says nothing over a whole painting, and
+    the discs count only where they sit together, signature marks left out.
+
+    Printed per finished painting, for each rule: what it says read as a pass over
+    every mark, which is what the closing audit said until the ruling; how many of those
+    marks were laid in a pass whose own report had already said so; and what
+    ``checklist()`` says now. Then the share of checklists carrying each line, the disc
+    line at other radii -- which is what ``_REPORT_DISC_RADIUS`` was chosen from -- and
+    how many checklists were counting a signature among their discs.
+    """
+    print("\n== finding 12: the closing audit, over a whole painting ==")
+    comb_words, disc_words = "bristle under size", "small marks with a round tip"
+    print(f"  {'':<19}{'the small comb':^20}  {'the discs':^20}")
+    print(f"  {'painting':<12}{'marks':>7}{'as pass':>9}{'said':>6}{'now':>5}  "
+          f"{'as pass':>9}{'said':>6}{'now':>5}  where the discs sit together")
+    before = {"comb": 0, "disc": 0}
+    now = {"comb": 0, "disc": 0}
+    at_radius = dict.fromkeys(CLOSING_RADII, 0)
+    signed = 0
+    done = [rep for rep in replays if rep.session is not None]
+    for rep in done:
+        session = rep.session
+        marks = [r for r in session.history.records
+                 if r.kind not in History.UNPAINTED_KINDS]
+        as_pass = session_module._pass_findings(marks, 0, session.canvas)
+        said = session.checklist().splitlines()
+        combs = session_module._small_combs(marks)
+        discs = session_module._discs(marks, session.canvas)
+        row = []
+        for key, words, counted in (("comb", comb_words, combs),
+                                    ("disc", disc_words, discs)):
+            was, is_ = _counted(as_pass, words), _counted(said, words)
+            before[key] += bool(was)
+            now[key] += bool(is_)
+            row.append(f"{was or '-':>9}"
+                       f"{_said_by_their_pass(rep, counted, words) if was else '':>6}"
+                       f"{is_ or '-':>5}")
+        plain = [r for r in discs if not History.is_signature(r)]
+        if len(discs) >= session_module._REPORT_ROUND_MARKS and len(plain) < len(discs):
+            signed += 1
+        for radius in CLOSING_RADII:
+            at_radius[radius] += bool(session_module._disc_groups(plain, session.canvas,
+                                                                  radius))
+        groups = session_module._disc_groups(plain, session.canvas)
+        where = ", ".join(f"{n} @ {x:.2f},{y:.2f}" for n, (x, y) in groups[:3])
+        print(f"  {rep.painting.name:<12}{len(marks):>7}{row[0]}  {row[1]}  {where}")
+    total = len(done)
+    print(f"  as a pass over every mark -- the closing audit until finding 12: comb on "
+          f"{before['comb']}, disc on {before['disc']} of {total} checklists")
+    print(f"  the checklist now: comb on {now['comb']}, disc on {now['disc']} of {total}")
+    print("  the disc line at other radii: "
+          + ", ".join(f"{radius:.2f} -> {count}" for radius, count in at_radius.items()))
+    print(f"  checklists that counted a signature among their discs: {signed}")
+    print("  read: a disc line that goes at a radius is discs standing apart -- a lamp, a "
+          "moon, a glint; one that stays is a passage of them.")
+
+
 def probe_gpt_joins(replays: list[Replay]) -> None:
     """B2's last question: GPT's three holes, re-measured from its own script.
 
@@ -2906,6 +2990,9 @@ def main(argv: list[str] | None = None) -> int:
                         help="the corpus replay and its tables, without 2a and 2d")
     parser.add_argument("--quiet", action="store_true",
                         help="no per-pass echo while the corpus rebuilds")
+    parser.add_argument("--closing", action="store_true",
+                        help="finding 12 alone: the closing audit over the finished "
+                             "paintings, rebuilt without the candidates' canvas reads")
     args = parser.parse_args(argv)
 
     if args.list:
@@ -2916,8 +3003,23 @@ def main(argv: list[str] | None = None) -> int:
                   f"  {'yes' if entry.rebuilds else 'no'}")
         return 0
 
+    wanted = [e for e in CORPUS if not args.only or e.name in set(args.only)]
+    missing = set(args.only or ()) - {e.name for e in CORPUS}
+    if missing:
+        parser.error(f"no painting called {', '.join(sorted(missing))}")
+
     print("The 0.5.0 cohort's round, measured. Engine "
           f"{easel.__version__} from {Path(easel.__file__).parent}")
+    if args.closing:
+        # Every painting to its last mark and no candidate run beside it: the closing
+        # audit reads the finished session, so the canvas the D2 and D3 prototypes keep
+        # after every call and pass costs time and answers nothing here.
+        replays = []
+        for entry in wanted:
+            print(f"  {entry.name} ...", flush=True)
+            replays.append(replay(entry, keep_canvas=False, echo=not args.quiet))
+        report_closing_audit(replays)
+        return 0
     if not args.corpus:
         for label, probe in CLAIMS:
             print(f"\n{'-' * 78}\n{label}")
@@ -2925,10 +3027,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.claims:
         return 0
 
-    wanted = [e for e in CORPUS if not args.only or e.name in set(args.only)]
-    missing = set(args.only or ()) - {e.name for e in CORPUS}
-    if missing:
-        parser.error(f"no painting called {', '.join(sorted(missing))}")
     print(f"\n{'-' * 78}\nthe corpus: {len(wanted)} paintings, rebuilt pass by pass")
     replays = []
     for entry in wanted:
@@ -2940,6 +3038,7 @@ def main(argv: list[str] | None = None) -> int:
     report_candidates(replays, guide)
     report_samples(replays)
     report_measurements(replays)
+    report_closing_audit(replays)
     probe_gpt_joins(replays)
     probe_defaults(replays)
     print("\nThe numbers above are the ones CALIBRATION.md quotes. What they decide is "

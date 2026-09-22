@@ -3711,7 +3711,9 @@ class Session:
         - **a loaded bristle under ``size=0.025``**, which is a comb of four streaks
           with gaps rather than a brush. Not a *starved* one: below ``load=0.6`` the
           gaps are the mark, and a painting made of broken glints tripped this
-          twenty-eight times and was right to ignore it every time;
+          twenty-eight times and was right to ignore it every time. **A pass's rule
+          only**: it asks for a brush for the marks about to be laid, and over a whole
+          painting it says nothing;
         - **small marks before the masses are down** -- eight or more under
           ``size=0.02`` inside the first sixty marks of the painting. *The
           painting's* first sixty, rehearsal copies included: this and the subject's
@@ -3725,7 +3727,11 @@ class Session:
           defaults are the bad one -- the disc is the default and the fix is opt-in --
           so *several small marks with ``round_hard`` or ``liner``* is the failure
           nobody has to ask for. The closing checklist's *is any small mark a disc, a
-          capsule or a rectangle* is this rule's own question;
+          capsule or a rectangle* is this rule's own question, and **over a whole
+          painting it counts only the discs seen together** -- three or more, each
+          within ``0.06`` of another -- leaves a signature out, and says where they
+          are: a lamp, a moon and a glint laid in three passes are three marks, and
+          were being counted as one disc printed three times;
         - **a daisy** -- five or more hand-laid marks, each at least twice as long as
           its brush is wide, leaving one point in every direction: no gap in the circle
           of their directions wider than ninety degrees. The point is where consecutive
@@ -3795,7 +3801,9 @@ class Session:
             since: the log index the pass began at -- ``len(s.history.records)``
                 before the pass -- so the check covers the pass alone. Omitted, the
                 whole log, and the one rule that decays does not: an audit asked for
-                says everything it has.
+                says everything it has about the painting. The two rules about a pass
+                are asked the painting's question instead -- the small comb says
+                nothing, and the discs are counted where they sit together.
             subject_share: the share of the marks the plan gave the subject, ``0..1``.
 
         Returns:
@@ -3835,11 +3843,13 @@ class Session:
         paid = History.paid_marks(list(self._prior) + list(records))
         # The stack-of-bars line decays over a pass and not over the painting: what
         # makes a warning skimmable is being printed after every pass unasked, and
-        # `--check` is asked for. An audit says everything it has.
+        # `--check` is asked for. An audit says everything it has about the painting --
+        # which is why the two rules that were about a pass, the small comb and the
+        # discs, are asked the painting's question instead (see `_pass_findings`).
         findings = _pass_findings(
             marks, earlier, self.canvas,
             banding=None if since is None else self._banding_wanted(paid),
-            bands=self._plan.bands,
+            bands=self._plan.bands, whole=since is None,
         )
         # One reading of the canvas for everything below that looks at it. A counted
         # copy has laid no paint on the canvas it borrowed, so it takes none.
@@ -3966,11 +3976,12 @@ class Session:
                 else f"checklist for this painting -- {self.spent} marks spent")
         lines = [head]
         # The audit's own findings, over the whole painting rather than a pass: the
-        # discs, the bars, the small marks before the masses. `since=None` is what
-        # turns the one rule that decays back on -- a closing check asked for says
-        # everything it has.
+        # discs seen together, the bars, the small marks before the masses. `since=None`
+        # is what turns the one rule that decays back on -- a closing check asked for
+        # says everything it has about the painting -- and `whole` is what keeps two
+        # rules about a pass from adding the painting up (finding 12).
         findings = _pass_findings(marks, 0, self.canvas, banding=None,
-                                  bands=self._plan.bands)
+                                  bands=self._plan.bands, whole=True)
         lines += [f"  - {line}" for line in findings]
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
@@ -6747,12 +6758,24 @@ _REPORT_SMALL_MARK = 0.02       # ...where small is under this
 _REPORT_EARLY_COUNT = 8         # ...and this many of them is the fault
 _REPORT_ROUND_MARKS = 3         # small round-tip marks at tip_wobble=0 that are one disc
 _ROUND_CAPSULE_WIDTHS = 7.0     # ...where "small" is also shorter than this many widths
+_REPORT_DISC_RADIUS = 0.06      # ...and over a whole painting, discs this close are one passage
 
 # `_ROUND_CAPSULE_WIDTHS` is `PAINTING.md`'s own number for the other half of the same
 # fault: a `round_hard` mark "needs to be about 7x longer than it is wide before it
 # stops reading as one" capsule. Under it, the mark is the tip's silhouette; over it,
 # it is a line, and a `liner` drawing fine lines at `tip_wobble=0` is the guide's own
 # advice and must not trip this.
+
+# `_REPORT_DISC_RADIUS` is what a whole painting asks of the disc rule in place of a
+# pass (finding 12 of the 0.5.0 cohort). A pass is one passage, so the discs it lays are
+# seen together; a painting is many, and over all of it the rule was adding up a lamp,
+# a moon, two notches, two edge highlights and a glint laid in six passes and calling
+# them *one disc printed 8 times*. Discs within this distance of one another, in the
+# brush's unit and joined link by link, are one passage. On the 21 finished paintings
+# the line went from 14 checklists to 10 -- the four it left were discs standing alone,
+# and every repeated passage stayed -- and read the same at any radius from 0.06 to
+# 0.15, where 0.04 starts losing groups. `CALIBRATION.md`, *The closing audit, over a
+# whole painting*.
 
 # `_REPORT_STARVED_LOAD` is the one threshold here that narrows a rule rather than
 # setting one, and it exists because the rule above it was being ignored. A painting
@@ -7341,8 +7364,107 @@ def _buried(opened: np.ndarray, now: np.ndarray, earlier: list[StrokeRecord],
     return buried, showing, " and ".join(sorted(kinds))
 
 
+def _small_combs(marks: list[StrokeRecord]) -> list[StrokeRecord]:
+    """The marks the small-comb rule counts: a loaded bristle under the comb's floor.
+
+    Under ``_REPORT_SMALL_BRISTLE`` a bristle is four streaks with gaps rather than a
+    brush -- unless it was starved on purpose, at or under ``_REPORT_STARVED_LOAD``,
+    where the comb's gaps are the mark and not the fault.
+
+    Args:
+        marks: the marks to look through.
+
+    Returns:
+        The loaded small combs, in log order.
+    """
+    return [r for r in marks
+            if r.params.get("tip") == "bristle"
+            and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE
+            and float(r.params.get("load", 1.0)) > _REPORT_STARVED_LOAD]
+
+
+def _discs(marks: list[StrokeRecord], canvas) -> list[StrokeRecord]:
+    """The marks the disc rule counts: each one a round tip's own silhouette.
+
+    Hand-laid, at ``tip_wobble=0``, under ``_REPORT_SMALL_MARK`` and no longer than
+    ``_ROUND_CAPSULE_WIDTHS`` of its own width -- past that a round tip is drawing a
+    line, which is what a ``liner`` is for.
+
+    Args:
+        marks: the marks to look through.
+        canvas: the canvas they were laid on, for its proportions.
+
+    Returns:
+        The marks that print the tip's disc, in log order.
+    """
+    found = []
+    for r in marks:
+        if r.params.get("tip") not in _ROUND_TIPS or r.params.get("via"):
+            continue
+        if float(r.params.get("tip_wobble", 0.0) or 0.0) > 0.0:
+            continue
+        size = float(r.params.get("size", 1.0))
+        if size >= _REPORT_SMALL_MARK:
+            continue
+        length, _ = _mark_length_and_angle(r, canvas)
+        if length <= _ROUND_CAPSULE_WIDTHS * size:
+            found.append(r)
+    return found
+
+
+def _disc_groups(discs: list[StrokeRecord], canvas,
+                 radius: float = _REPORT_DISC_RADIUS) -> list[tuple[int, tuple[float, float]]]:
+    """The discs a whole painting shows together: how many in each group, and where.
+
+    Joined link by link in the brush's unit (the long side): a disc within ``radius``
+    of any disc of a group is in that group, so a row of pots joins up along the stairs
+    while a lamp and a moon on opposite sides of the picture stay two marks. A mark is
+    placed at the middle of its own path.
+
+    Args:
+        discs: the marks the disc rule counted.
+        canvas: the canvas they were laid on, for its proportions.
+        radius: how close two discs sit to be seen together, in the brush's unit.
+
+    Returns:
+        ``(count, (x, y))`` for every group of ``_REPORT_ROUND_MARKS`` or more, the
+        largest first, placed at the mean of its marks as canvas fractions -- the
+        ``(x, y)`` every place in the engine is given in.
+    """
+    long = float(canvas.long_side)
+    middles = []
+    for r in discs:
+        pts = np.asarray(r.points, dtype=np.float64).reshape(-1, 2)
+        if len(pts):
+            middles.append((0.5 * (pts[:, 0].min() + pts[:, 0].max()),
+                            0.5 * (pts[:, 1].min() + pts[:, 1].max())))
+    if not middles:
+        return []
+    at = np.asarray(middles, dtype=np.float64)
+    units = at * np.array([canvas.width / long, canvas.height / long])
+    root = list(range(len(at)))
+
+    def find(i: int) -> int:
+        while root[i] != i:
+            root[i] = root[root[i]]
+            i = root[i]
+        return i
+
+    # A row at a time rather than the whole distance table, which a painting of a few
+    # thousand dots would make a few hundred megabytes of.
+    for i in range(len(units) - 1):
+        for j in np.nonzero(np.hypot(*(units[i + 1:] - units[i]).T) <= radius)[0]:
+            root[find(i)] = find(i + 1 + int(j))
+    members: dict[int, list[int]] = {}
+    for i in range(len(at)):
+        members.setdefault(find(i), []).append(i)
+    found = [(len(group), (float(at[group, 0].mean()), float(at[group, 1].mean())))
+             for group in members.values() if len(group) >= _REPORT_ROUND_MARKS]
+    return sorted(found, key=lambda one: -one[0])
+
+
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
-                   banding=None, bands: str = "") -> list[str]:
+                   banding=None, bands: str = "", whole: bool = False) -> list[str]:
     """The lines :meth:`Session.report` prints, one per rule that fired.
 
     ``banding`` decides whether the stack-of-bars line is worth printing this time,
@@ -7358,6 +7480,17 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
     and a painter who has declared that it does has answered the only part of it the
     engine could not. It is the rule the corpus shows firing on one pass in seven even
     with its decay, and the one two painters learnt to skim.
+
+    ``whole`` is the closing audit -- :meth:`Session.checklist`, and :meth:`Session.report`
+    with ``since`` left off -- where ``marks`` is a painting and not a pass, and two rules
+    written for a pass would add the painting up (finding 12 of the 0.5.0 cohort: *265
+    marks with a bristle*, *one disc printed 176 times*). The small-comb rule says
+    nothing there: it is a choice of brush for the marks about to be laid, which a
+    finished painting has none of, and a pass that laid a habit's worth said so when it
+    was laid. The disc rule counts only the discs a painting shows together, leaves a
+    signature out, and says where they are: a lamp, a moon and a glint laid in three
+    passes are three marks, not one disc printed three times. Every other rule reads the
+    whole painting as it always has.
     """
     out: list[str] = []
     if not marks:
@@ -7436,12 +7569,9 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
             f"which sizes its own brush from its own step."
         )
 
-    # A bristle too small to be a brush -- unless it was starved on purpose, where
-    # the comb's gaps are the mark and not the fault. See _REPORT_STARVED_LOAD.
-    small_comb = [r for r in marks
-                  if r.params.get("tip") == "bristle"
-                  and float(r.params.get("size", 1.0)) < _REPORT_SMALL_BRISTLE
-                  and float(r.params.get("load", 1.0)) > _REPORT_STARVED_LOAD]
+    # A bristle too small to be a brush. A pass's rule and not a painting's: what it
+    # asks for is a brush for the next marks.
+    small_comb = [] if whole else _small_combs(marks)
     if len(small_comb) >= 3:
         out.append(
             f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE} "
@@ -7460,26 +7590,35 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
         )
 
     # A round tip printing its own outline, over and over.
-    discs = []
-    for r in marks:
-        if r.params.get("tip") not in _ROUND_TIPS or r.params.get("via"):
-            continue
-        if float(r.params.get("tip_wobble", 0.0) or 0.0) > 0.0:
-            continue
-        size = float(r.params.get("size", 1.0))
-        if size >= _REPORT_SMALL_MARK:
-            continue
-        length, _ = _mark_length_and_angle(r, canvas)
-        if length <= _ROUND_CAPSULE_WIDTHS * size:
-            discs.append(r)
-    if len(discs) >= _REPORT_ROUND_MARKS:
+    discs = _discs(marks, canvas)
+    remedy = (f"Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a "
+              f"brush set down once and 0.7 a clot, redrawn per mark the way a bristle's "
+              f"comb is. Or give the mark a length -- a round tip reads as a capsule "
+              f"under {_ROUND_CAPSULE_WIDTHS:.0f} times its own width.")
+    if whole:
+        # Over a painting only the discs seen together are one disc printed over and
+        # over, and a signature is lettering, which the budget waives as well.
+        groups = _disc_groups([r for r in discs if not History.is_signature(r)], canvas)
+        if len(groups) == 1:
+            (count, (x, y)), = groups
+            out.append(
+                f"{count} small marks with a round tip at tip_wobble=0 sit together "
+                f"around ({x:.2f}, {y:.2f}): that is one disc printed {count} times. "
+                f"{remedy}"
+            )
+        elif groups:
+            places = ", ".join(f"{count} around ({x:.2f}, {y:.2f})"
+                               for count, (x, y) in groups[:3])
+            more = f", and {len(groups) - 3} more" if len(groups) > 3 else ""
+            out.append(
+                f"{sum(count for count, _ in groups)} small marks with a round tip at "
+                f"tip_wobble=0 sit together in {len(groups)} places -- {places}{more}: "
+                f"each is one disc printed over and over. {remedy}"
+            )
+    elif len(discs) >= _REPORT_ROUND_MARKS:
         out.append(
             f"{len(discs)} small marks with a round tip at tip_wobble=0: that is one "
-            f"disc printed {len(discs)} times. Two plain round dabs share 97% of "
-            f"their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a "
-            f"clot, redrawn per mark the way a bristle's comb is. Or give the mark a "
-            f"length -- a round tip reads as a capsule under "
-            f"{_ROUND_CAPSULE_WIDTHS:.0f} times its own width."
+            f"disc printed {len(discs)} times. {remedy}"
         )
 
     # A pressure list asking a chisel for a width.
