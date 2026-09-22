@@ -164,8 +164,10 @@ def test_cover_lays_the_burying_recipe(tmp_path):
     assert all(r.params["load_falloff"] == 0.0 for r in records)
     assert all(r.params["opacity"] == 1.0 for r in records)
     assert all(r.pressure == "even" for r in records)
-    # It buried: the middle of the cell is lighter than the blue it covered.
-    mid = (slice(100, 140), slice(140, 180))
+    # It buried: the middle of the cell is lighter than the blue it covered. D5 is
+    # x 120-160, y 120-150 here; the window used to sit on its corner, which only a
+    # burial that ran past the cell could lighten.
+    mid = (slice(125, 145), slice(125, 155))
     assert s.canvas.rgb[mid].mean() > dark[mid].mean() + 0.2
 
 
@@ -2256,22 +2258,70 @@ def _cover_footprint(session, patch, **kw):
     return float(changed.sum() / asked)
 
 
-def test_cover_has_a_form_that_does_not_overrun_the_area(tmp_path):
-    """``cover`` is offered as the answer to *you will reach for undo*, and its recipe
-    runs the ends of each pass outside the area by design. On a flat passage that is
-    right. Used to bury a mis-made leaf inside a worked pane of glass it put a flat
-    pale panel across a visibly larger patch, and the painter buried ``cover``'s own
-    output by hand with marks shaped like the pane."""
+def test_cover_holds_a_burial_to_its_place_by_default(tmp_path):
+    """``cover`` is offered as the answer to *you will reach for undo*, and until 0.6.0
+    its recipe ran the ends of each pass a full brush outside the area. On a flat
+    passage that is invisible. Used to bury a mis-made leaf inside a worked pane of
+    glass it put a flat pale panel across a visibly larger patch, and the painter
+    buried ``cover``'s own output by hand with marks shaped like the pane -- so the
+    default moved to ``edge="hard"`` (F1), and the old recipe is one keyword away."""
     patch = Region(0.905, 0.380, 0.985, 0.478)
 
     def on_a_fresh_canvas(**kw):
-        # 1024x768, the canvas the docstring's 3.07x and 0.93x were measured on.
+        # 1024x768, the canvas the leaf's 3.07x was measured on.
         return _cover_footprint(
             Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
                     out_dir=tmp_path, timelapse=False), patch, size=0.06, **kw)
 
-    assert on_a_fresh_canvas() > 2.5, "the recipe runs its ends outside, as documented"
-    assert on_a_fresh_canvas(edge="clean") < 1.05, "and the clean form stops at the line"
+    assert on_a_fresh_canvas() < 1.05, "the default stops at the place it was handed"
+    assert on_a_fresh_canvas(edge="ragged") > 2.5, "and the old recipe runs its ends outside"
+
+
+def _marred(tmp_path):
+    """F1's bench on a bare canvas: a light stroke across the middle of a repair-sized
+    place, 108x60 px on 900x600, dried -- with the values before it and after it."""
+    s = Session(900, 600, texture="linen", ground="toned_grey", seed=7,
+                out_dir=tmp_path, timelapse=False)
+    before = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+    s.stroke([(0.465, 0.458), (0.535, 0.482)], "round_hard", "titanium_white",
+             size=0.018, opacity=1.0, pressure="even")
+    s.dry()
+    return s, before, s.canvas.values(sketch=False).astype(np.float32) / 255.0
+
+
+def _still_showing(s, before, marred) -> float:
+    """The share of the mistake's own pixels still nearer the mistake than the ground."""
+    view = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+    mistake = np.abs(marred - before) >= 0.10
+    nearer = np.abs(view - marred) < np.abs(view - before)
+    return float((nearer & mistake).sum() / mistake.sum())
+
+
+def test_a_clean_burial_on_a_small_region_says_what_the_inset_leaves(tmp_path):
+    """F1's bench found it: ``clean-small`` asked a shape and nothing else, and
+    ``cover()`` is handed a region far more often than a shape. At the default
+    ``flat``, ``size=0.1``, a place 108x60 px on 900x600 is inset to a sliver with two
+    stubs laid in its middle, and a fifth of the mistake it was burying stays showing
+    -- in silence. A region is asked what a shape is asked now, at the call and in
+    ``preview``, and the line names the call the painter made."""
+    place = Region(0.44, 0.42, 0.56, 0.52)
+    s, before, marred = _marred(tmp_path)
+    with pytest.warns(UserWarning, match=r"cover\(edge='clean'\) at size=0\.1 on a region"):
+        s.cover(place, s.ground, edge="clean")
+    assert _still_showing(s, before, marred) > 0.10, "the ends of the mistake stay showing"
+    with pytest.warns(UserWarning, match="leave edge= off"):
+        s.preview({"cover": place, "color": "burnt_umber", "edge": "clean"})
+    with pytest.warns(UserWarning, match=r"block_in\(edge='clean'\) at size=0\.1 on a region"):
+        make(tmp_path).block_in(place, "flat", "burnt_umber", edge="clean")
+    # The neighbouring right things say nothing, and bury the whole mistake: the
+    # default, and a clean edge at a brush under a quarter of the place.
+    for kw in ({}, {"edge": "clean", "size": 0.015}):
+        quiet, before, marred = _marred(tmp_path)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            quiet.cover(place, quiet.ground, **kw)
+        assert not [c for c in caught if "of the shorter extent" in str(c.message)], kw
+        assert _still_showing(quiet, before, marred) == 0.0, kw
 
 
 # -- how much ground is still showing --------------------------------------------------
@@ -4127,9 +4177,10 @@ def test_a_brush_too_big_for_its_mass_says_it_will_paint_the_neighbours(tmp_path
 
 def test_spill_is_silent_where_the_overrun_is_the_point_or_the_rule_of_thumb_is_wrong(
         tmp_path):
-    """`LESSONS.md` rule 2, as the cases that would have got it wrong. `cover()` runs its
-    ends outside the area on purpose, and its canonical call paints about three times
-    its cell. `PAINTER.md`'s first `block_in` lays a brush 60% of its shape -- the plan's
+    """`LESSONS.md` rule 2, as the cases that would have got it wrong. `cover()` laid
+    ragged runs its ends outside the area on purpose -- the recipe before 0.6.0 moved its
+    default to `"hard"` -- and paints about three times its cell. `PAINTER.md`'s first
+    `block_in` lays a brush 60% of its shape -- the plan's
     *a fifth of the shorter extent* would fire on it -- and lands 1.48x, because the
     multiple is what paints the neighbours and not the fraction. And under twelve
     pixels a brush does not land where its outline says: on the bench the reach was
@@ -4137,7 +4188,7 @@ def test_spill_is_silent_where_the_overrun_is_the_point_or_the_rule_of_thumb_is_
     quiet = make(tmp_path)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        quiet.cover(cell("D5"), "burnt_umber")
+        quiet.cover(cell("D5"), "burnt_umber", edge="ragged")
         far = blob(span("B2", "G4"), wobble=0.3, seed=1)
         quiet.block_in(far, "bristle", "burnt_umber", density=0.8, size=0.18,
                        direction="axis")

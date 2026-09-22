@@ -2456,6 +2456,127 @@ def _contours(view: np.ndarray, mask: np.ndarray) -> tuple[int, float]:
 
 # -- F: the default moves, each behind its probe --------------------------------------
 
+#: The place F1 was ruled on (2026-09-21): repair-sized, 108x60 px on a 900x600 canvas,
+#: which the default ``flat`` -- ``size=0.1``, 90 px -- is most of.
+F1_PLACE = Region(0.44, 0.42, 0.56, 0.52)
+
+#: A value step a viewer sees: the ``0.02`` a contour has to clear in ``_contours``.
+SEEN = 0.02
+
+
+def _f1_passage(kind: str) -> Session:
+    """What a repair sits in: a 900x600 canvas carrying one passage, dried.
+
+    *flat* is one mass of one colour. *graded* is a scumble from dark at the top of the
+    canvas to light at its foot, so the value moves about ``0.05`` across the place.
+    *worked* is the same field with four hundred short bristle marks laid over it at
+    values scattered round the field's own -- a passage somebody has painted into.
+    """
+    s = new(900, 600, ground="toned_grey", seed=7)
+    p = s.palette
+    p["low"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.25)
+    p["high"] = p.at_value(p.mix("yellow_ochre", "titanium_white", 0.4), 0.75)
+    whole = Region(0.0, 0.0, 1.0, 1.0)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if kind == "flat":
+            p["field"] = p.mix("low", "high", 0.5)
+            s.block_in(whole, "flat", "field", size=0.12, solid=True)
+        else:
+            s.scumble(whole, "low", "high", 10)
+        if kind == "worked":
+            rng = np.random.default_rng(11)
+            for i in range(400):
+                x, y = (float(v) for v in rng.uniform(0.0, 1.0, 2))
+                turn = float(rng.uniform(0.0, math.pi))
+                half = float(rng.uniform(0.015, 0.05))
+                value = float(np.clip(0.25 + 0.5 * y + rng.uniform(-0.12, 0.12), 0.1, 0.9))
+                p[f"w{i}"] = p.at_value(p.mix("low", "high", y), value)
+                s.stroke([(x - half * math.cos(turn), y - half * math.sin(turn)),
+                          (x + half * math.cos(turn), y + half * math.sin(turn))],
+                         "bristle", f"w{i}", size=float(rng.uniform(0.012, 0.03)),
+                         opacity=0.85)
+        s.dry()
+    return s
+
+
+def _outline_step(view: np.ndarray, place: Region, width: int, height: int,
+                  reach: int = 2) -> float:
+    """The mean value step across a place's outline, ``reach`` px either side of it.
+
+    What makes a repair read as a patch: a burial held to its place draws the place's
+    rectangle in the passage, and this is that rectangle as a number -- to be read
+    against the same number on the passage before anything was buried in it.
+    """
+    x0, x1 = int(place.x0 * width), int(place.x1 * width)
+    y0, y1 = int(place.y0 * height), int(place.y1 * height)
+    xs, ys = slice(x0 + reach, x1 - reach), slice(y0 + reach, y1 - reach)
+    steps = [np.abs(view[y0 + reach, xs] - view[y0 - reach - 1, xs]),
+             np.abs(view[y1 - reach - 1, xs] - view[y1 + reach, xs]),
+             np.abs(view[ys, x0 + reach] - view[ys, x0 - reach - 1]),
+             np.abs(view[ys, x1 - reach - 1] - view[ys, x1 + reach])]
+    return float(np.concatenate(steps).mean())
+
+
+def probe_f1_burial(looks: Path | None = None) -> None:
+    """F1's bench: a mistake buried in three passages with each of ``cover()``'s edges.
+
+    The plan's probe question -- *does a hard-edged repair read as a cut-out patch on a
+    worked passage?* -- which the corpus could not answer, because no committed pass
+    script calls ``cover()``. Each case lays a light stroke across the middle of the
+    place, dries it, and buries it in the passage's own colour, sampled from the place
+    before the mistake went down, which is what a painter mixing to match would do.
+
+    *seen* is what a viewer can find: the pixels left ``SEEN`` or more off the passage
+    as it stood before the mistake, as a multiple of the place -- inside it, and outside
+    it, which is the burial painting the neighbours. *painted* is every pixel the call
+    moved at all, the multiple ``CALIBRATION.md`` quoted before this bench. *showing*
+    is the share of the mistake's own pixels still nearer the mistake than the passage.
+    *outline* is the step across the place's rectangle, beside the passage's own step
+    there: the cut-out, as a number.
+    """
+    print("\n  F1's bench: a repair-sized place, 108x60 px on 900x600, buried with the")
+    print("  default flat (size 0.1, 90 px) in the passage's own colour")
+    print(f"     {'passage':<8}{'edge':<8}{'strokes':>8}{'painted':>9}{'seen':>7}"
+          f"{'inside':>8}{'outside':>9}{'showing':>9}{'outline':>9}{'own':>8}")
+    width, height = 900, 600
+    asked = _mask(F1_PLACE, width, height)
+    for kind in ("flat", "graded", "worked"):
+        base = _f1_passage(kind)
+        clean = base.canvas.values(sketch=False).astype(np.float32) / 255.0
+        own = _outline_step(clean, F1_PLACE, width, height)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            base.palette["passage"] = base.sample(F1_PLACE)
+            base.palette["mistake"] = base.palette.at_value("titanium_white", 0.92)
+            base.stroke([(0.465, 0.458), (0.535, 0.482)], "round_hard", "mistake",
+                        size=0.018, opacity=1.0, pressure="even")
+            base.dry()
+        marred = base.canvas.values(sketch=False).astype(np.float32) / 255.0
+        mistake = np.abs(marred - clean) >= 0.10
+        for edge in ("ragged", "clean", "hard"):
+            s = base.scratch()
+            before = s.canvas.rgb.copy()
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                laid = s.cover(F1_PLACE, "passage", edge=edge)
+            view = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+            seen = np.abs(view - clean) >= SEEN
+            showing = (np.abs(view - marred) < np.abs(view - clean)) & mistake
+            print(f"     {kind:<8}{edge:<8}{len(laid):>8}"
+                  f"{_painted(s, before).sum() / asked.sum():>8.2f}x"
+                  f"{seen.sum() / asked.sum():>6.2f}x"
+                  f"{(seen & asked).sum() / asked.sum():>7.2f}x"
+                  f"{(seen & ~asked).sum() / asked.sum():>8.2f}x"
+                  f"{showing.sum() / max(mistake.sum(), 1):>9.1%}"
+                  f"{_outline_step(view, F1_PLACE, width, height):>9.4f}{own:>8.4f}")
+            if looks is not None:
+                looks.mkdir(parents=True, exist_ok=True)
+                s.export(looks / f"f1_{kind}_{edge}.png", impasto=False, sketch=False)
+    print("     read: *seen* is the fault a viewer finds; *outline* against *own* is how")
+    print("     much of it is the place's own rectangle, which is what 'hard' costs.")
+
+
 def probe_defaults(replays: list[Replay]) -> None:
     """Workstream F: five candidate moves, and what each would cost the corpus.
 
@@ -2482,10 +2603,13 @@ def probe_defaults(replays: list[Replay]) -> None:
         asked = _mask(patch, 1024, 768)
         print(f"     edge={edge:<7} {painted.sum() / asked.sum():5.2f}x the area it was "
               f"handed")
-    moving = [c for c in calls if c.verb == "cover"
-              and str(c.bound.get("edge", "ragged")) == "ragged"]
-    print(f"     committed cover() calls that would move: {len(moving)} of "
-          f"{sum(1 for c in calls if c.verb == 'cover')}")
+    # `bound` has the defaults applied, so a call that named no edge reads as the
+    # default of the engine replaying it; the corpus has no cover() to tell apart.
+    print(f"     committed cover() calls: {sum(1 for c in calls if c.verb == 'cover')} "
+          f"-- a call naming no edge is the one the move changes")
+    print("     what that multiple costs a passage that is not flat, which the corpus")
+    print("     cannot say, is the bench below -- the one F1 was ruled and moved on.")
+    probe_f1_burial()
 
     print("\n  F2. a round tip on block_in/sweep -> pressure=\"even\"")
     moving = [c for c in calls if c.verb in ("block_in", "sweep")

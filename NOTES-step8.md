@@ -132,3 +132,111 @@ migration map's row for it is now wrong. Step 9 (docs) is where that gets settle
 | `REFERENCE.md` | the `solid`, `load`, `load_falloff` and `edge` rows; a new `overhang` row for `edge="hard"`; the hold-matrix prose |
 | `RECIPES.md` | the graded field loses the `load=1.0, load_falloff=0.0` bullet and the clause in its code block; four things becomes three |
 | `SUGGESTIONS.md` | B8's *Not this step* becomes what was done |
+
+---
+
+# Step 8, part two: F1, a burial held to its place
+
+**To understand this, start by reading `cover()` and `_cover_as_mass` in
+[`src/easel/session.py`](src/easel/session.py), then `_check_clean_size` and
+`_place_area` beside it, then *A burial and the place it was handed* in
+[`CALIBRATION.md`](CALIBRATION.md), then `probe_f1_burial` in
+[`scripts/probe_cohort_session.py`](scripts/probe_cohort_session.py), then the two tests
+after `_cover_footprint` in [`tests/test_requests.py`](tests/test_requests.py).**
+
+Branch: `f1-cover-hard`, off `main` at `1cd08d6`, after G3 (#67) landed.
+
+---
+
+## What this part was for
+
+F1 was declined in part one because **no committed pass script calls `cover()`**, so
+the corpus could say nothing either way. The owner reopened it on 2026-09-21 on a bench
+of three passages built in a session scratchpad and ruled that it moves. The plan's
+*Loose ends* gave it a *done when* -- the default moves; the docstring, `REFERENCE.md`
+and the card say what it does; the changelog moves it out of the declines; the bench
+joins the probe and its numbers go into `CALIBRATION.md` -- and a second row the same
+bench found: `edge="clean"` on a region was never checked at all.
+
+## What landed
+
+| | |
+|---|---|
+| **`cover(edge="hard")` by default** | the same passes, every dab masked to the place, two brushes of overhang (part one's F5 rule); `cost()` prices a burial as a held block-in, because `_cover_as_mass` now writes the edge in rather than letting the mass default (`ragged`) stand |
+| **`clean-small` on a region** | `block_in` and `preview` ask a region what they ask a shape; the line names the call made (`cover` or `block_in`), and a burial's remedy is its own default rather than the ragged edge |
+| **the bench** | `probe_f1_burial`, called from F1's block of `probe_defaults`; the old paints-at-all loop stays beside it, because *The default moves* table quotes it |
+| **the documents** | `cover()`'s docstring; `REFERENCE.md`'s `overhang`, `edge` and `clean-small` rows; the card's `undo` row and *What you are bad at*; `CALIBRATION.md`'s new section, a region paragraph under *A clean edge on a narrow mass*, the default-moves row and the spill paragraph; `CHANGELOG.md`; `SUGGESTIONS.md`'s finding-8 row; the MCP plan help |
+
+## Decisions and gotchas
+
+**1. The bench was rebuilt, not copied, and its numbers differ from the ruling's.** The
+ruling's bench was never committed. The one in the probe has passages of its own, and
+reads `ragged` `4.45x` / `4.14x` against `hard` `0.47x` / `0.51x` on the graded and
+worked passages, with an outline step of `0.042` against the passage's `0.010` -- where
+the ruling quoted `3.09x` / `0.52x`, `4.55x` / `0.93x` and `0.0285` against `0.0055`.
+The same order, the same verdict. `CALIBRATION.md` carries the committed numbers; the
+plan's decisions row keeps the ruling's and says so.
+
+**2. *Seen*, not *painted*.** The probe's old measure -- any pixel the call moved --
+says `ragged` paints `5.3x`-`6.4x` the place on a flat passage too, where nothing can be
+seen. The bench counts the pixels left `0.02` or more off the passage as it stood before
+the mistake, the step `_contours` calls visible. That is the number that tells a flat
+passage from a worked one, and it is what the docs quote.
+
+**3. The first *worked* passage was not worked.** Ninety marks over 900x600 left its own
+outline step at `0.0080` against the graded field's `0.0076`. Four hundred took it to
+`0.0097`. A passage worked harder than that would push `hard`'s *seen* up, because more
+texture goes under a flat patch; the verdict does not depend on it.
+
+**4. A test that only the old default could pass.** `test_cover_lays_the_burying_recipe`
+measured rows 100-140 and columns 140-180 on 320x240 -- D5's top-right corner, not its
+middle -- and passed only because a ragged burial ran past the cell. The window is
+inside the cell now.
+
+**5. The docstring's old advice trips the new line.** It recommended `edge="clean"` on a
+textured passage and quoted the leaf patch at `0.93x`; a `0.06` brush on that patch is
+`82%` of its shorter extent, so the call now says so. The `0.93x` measured how much was
+painted, never whether the mistake was gone.
+
+**6. `Region.inset` works per axis in canvas fractions**, so on a canvas that is not
+square a region's clean inset is not the same in pixels both ways (`0.05` is 45 px
+across and 30 px down on 900x600). `_clean_fill` and the check both call it, so the line
+describes what the call does; the anisotropy is older than this and is left alone.
+
+**7. The goldens cannot see this move.** `tests/golden_cases.py` calls no `cover()`, as
+it called no `scumble` for F3. The bench's nine renders were looked at instead: `ragged`
+is a flat panel about three times the place with the neighbouring marks under it;
+`clean` leaves both ends of the mistake; `hard` is a crisp rectangle exactly the place.
+
+**8. The probe's `bound` applies defaults**, so a call that names no edge cannot be told
+from one that names the new default. The corpus has no `cover()` to tell apart, and the
+count line now just prints how many there are.
+
+## Open, and for the owner to rule on
+
+Nothing new. *A repair under things that are standing on it* was the one demo waiting on
+F1 (G3), and can be written now.
+
+## What this part did *not* touch
+
+**The corpus replay was not re-run.** No committed pass script calls `cover()`, and
+every `edge="clean"` in the corpus and the guide is handed a shape -- read off the
+scripts, not replayed. The block check was run, and holds the guide's blocks and the
+twelve demos to that.
+
+## File map
+
+| File | What changed |
+|---|---|
+| `src/easel/session.py` | `cover(edge="hard")` and its docstring; `_cover_as_mass` writes the edge in; `_cover_overhang`'s comment; `block_in` and `_preview_mass` ask a region for `clean-small`; `_check_clean_size` takes a region and the verb; `_place_area` |
+| `src/easel/notices.py` | `clean-small`'s summary says *a shape or a region* |
+| `src/easel/mcp_server.py` | the plan help says a burial is held to its place unless `edge` says `"ragged"` |
+| `scripts/probe_cohort_session.py` | `F1_PLACE`, `SEEN`, `_f1_passage`, `_outline_step`, `probe_f1_burial`; F1's block of `probe_defaults` calls it |
+| `tests/test_requests.py` | the overrun test turned round (the default holds, `ragged` runs outside); the bench's `clean` case as a test; the spill-silence test names `edge="ragged"`; the burying-recipe test's window moved into its cell |
+| `CALIBRATION.md` | *A burial and the place it was handed*; a region paragraph under *A clean edge on a narrow mass*; *Paint that lands outside the place*'s `cover()` paragraph; the default-moves row |
+| `CHANGELOG.md` | F1 under *Defaults moved*; three declines become two; the spill entry's and G7's `cover()` lines |
+| `PAINTER.md` | the card's `undo` row, shorter; *What you are bad at* says what the default does |
+| `REFERENCE.md` | the `overhang` (`cover`) and `edge` rows; `clean-small`'s row |
+| `SUGGESTIONS.md` | finding 8's row |
+| `PLAN-0.6.0.md` | status; F; G3's note; the migration row; step 8; *Loose ends* loses F1's two rows and gains finding 12's; the decisions row; a risk row |
+| `NOTES-step6.md` | the F1 ruling points here |

@@ -129,7 +129,8 @@ _PLAN_HELP = (
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
     "'passes', 'closed'. A passage is an object with 'band' (a place), 'color_a', "
     "'color_b' and any scumble argument -- 'n', 'direction': \"inward\" for a "
-    "centred fall-off. A burial is an object with 'cover' (a place) and 'color'. "
+    "centred fall-off. A burial is an object with 'cover' (a place) and 'color', "
+    "held to that place unless 'edge' says \"ragged\". "
     "A bare place on its own is a mass."
 )
 

@@ -214,8 +214,8 @@ NOTICES: dict[str, NoticeSpec] = {
         ),
         _spec(
             "clean-small", "fact",
-            "a clean edge whose brush is a large share of the shape: the inset takes the "
-            "mass rather than a rim off it",
+            "a clean edge whose brush is a large share of the place it fills, a shape "
+            "or a region: the inset takes the mass rather than a rim off it",
             "calibration", "### A clean edge on a narrow mass",
         ),
         _spec(

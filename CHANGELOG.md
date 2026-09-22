@@ -295,10 +295,10 @@ share — and on none of the guide's blocks.
   band. **The auto brush is not capped**, which was the plan's open question: a cap at
   the band's depth still leaves `2.22x`, and one at half the depth brings the bars back.
   At 60 degrees `scumble-dabs` already fires, and `spill` stands aside for it.
-- **Not said inside `cover()`**, whose ends run outside the area on purpose — its
-  canonical call paints about three times its cell, and a rule that fires on the
-  canonical call is a rule painters learn to ignore. F1, the default move that would put
-  a burial inside its area, is left for the owner to rule on.
+- **Not said inside `cover()`**, whose default holds a burial to its place since F1
+  (*Defaults moved*, below). Asked for `edge="ragged"` by name, its ends run outside on
+  purpose and paint about three times a cell, and a rule that fires on the form a
+  painter asked for is a rule painters learn to ignore.
 - **It fired on three of the guide's own blocks, and all three were painting their
   neighbours**, so the blocks moved and the rule did not. The value scale in
   `PAINTER.md`'s exercises covered twice each band; its passes now run along the bands,
@@ -478,8 +478,9 @@ probe in front of every candidate.
 
 Step 8 of the 0.5.0 cohort's round (`PLAN-0.6.0.md`, workstream F). Five defaults were
 proposed; `scripts/probe_cohort_session.py` measured all five against the corpus and
-**two survived**. The other three are recorded as declined below, because a default
-argued for twice is a default argued for forever.
+**two survived**. A third, `cover()`'s edge, was declined for want of evidence and moved
+once a bench gave it some. The other two are recorded as declined below, because a
+default argued for twice is a default argued for forever.
 
 **A banded `scumble` lays its passes solid** — `load=1.0, load_falloff=0.0`, which is
 the pair the `inward` direction has defaulted half of since it was written. A band's
@@ -529,9 +530,37 @@ bare at one brush and **`0.055%`–`0.33%`** at two; a `flat`, `0.00%`–`0.66%`
   same number of them, to the same outline, with the scallops between their ends filled
   in. Looked at as well as measured, on a sloped mass laid with a round tip.
 
-**Three proposed moves were declined, and the probe is why.** `cover()` to
-`edge="hard"`: **no committed pass script calls `cover()` at all**, so the move is free
-and so is the evidence for it — it waits for the `spill` notice. A round tip on
+**`cover()` holds a burial to its place** — `edge="hard"` by default, where it was
+`"ragged"`. The burying recipe ran its passes a full brush past the place it was handed,
+so that no chisel end stopped inside the picture; on a flat passage that cannot be seen,
+and on any other it was the fault finding 8 reported — a repair louder than the mistake,
+and a painter burying `cover`'s own output by hand. The probe could not weigh it, because
+**no committed pass script calls `cover()`**, so it was declined here first and moved
+once the owner ruled on a bench of three passages, rebuilt in the probe (`CALIBRATION.md`,
+*A burial and the place it was handed*). A repair-sized place, 108×60 px on 900×600,
+buried with the default brush in the passage's own colour: on a flat passage neither
+edge leaves anything to see; on a graded one `ragged` leaves **`4.45x`** the place
+visibly off the passage, nearly all of it outside the place, against **`0.47x`** held;
+on a worked one **`4.14x`**, the neighbouring marks under it, against **`0.51x`**.
+
+- **What holding it costs is an outline.** On a worked passage the place's rectangle
+  comes back as a value step of `0.042` against the passage's own `0.010` — a crisp
+  patch the size of the place, which does read as cut out, and is the smaller fault.
+  `edge="ragged"` is the old recipe, one keyword away, and says nothing about its
+  overrun.
+- **The same passes, priced the same.** Two brushes of overhang under `"hard"`, as for
+  any held mass, which costs dabs and not strokes; `cost()` prices a burial as the
+  block-in it lays, and now as a held one.
+- **`clean-small` asks a region as well as a shape**, and names the call the painter
+  made. `cover()` is handed a region far more often than a shape, and at the default
+  brush `edge="clean"` on the bench's place left `8%`–`15%` of the mistake showing on a
+  painted passage (`22%` on bare ground) with nothing said — the form `cover()`'s
+  docstring had recommended for a textured passage. No committed pass script and no
+  guide block hands a region to `edge="clean"`.
+- **What this changes in an existing script.** A `cover()` that named no `edge` now
+  lands inside its place. No committed painting calls it, so none moves.
+
+**Two proposed moves were declined, and the probe is why.** A round tip on
 `block_in`/`sweep` to `pressure="even"`: **0 committed calls** would move. A `scumble`
 with a `flat` to halved `jitter`/`size_jitter`: the halved pair moves the ripple down a
 band from `0.0053` to `0.0059` and the scallop across it not at all, which is nothing
@@ -628,12 +657,11 @@ waits for the failure blocks to exist.
   had already shown the films are not wet at full strength, but they do leave `0.14` at
   the core, and an opaque mark laid across the beam afterwards drags what it lands on by
   up to `0.30` in value where a mass crosses it and `0.40` where a stroke does.
-- **`cover(..., edge="hard")` is named where a painter will meet it** — the card's
-  `undo` row and `PAINTER.md`'s *What you are bad at*. Finding 8 reported that the tool
-  had the keyword and the card did not mention it; the default move that would have made
-  it unnecessary (F1) was declined in step 8 and waits for `spill`, so the documentation
-  carries it: on a repair-sized patch the plain recipe paints **2.32x** the area it is
-  handed against **1.01x** at `"hard"`, and the smaller the patch the worse that gets.
+- **What `cover()` does to the place it is handed is said where a painter will meet
+  it** — the card's `undo` row and `PAINTER.md`'s *What you are bad at*. Finding 8
+  reported that the tool had `edge="hard"` and the card did not mention it. For one step
+  the documentation carried the keyword; since F1 moved the default (*Defaults moved*,
+  above) the row says a burial lands inside the place, and is shorter.
 - **Two rules that contradicted each other, reconciled.** `PAINTING.md` said *do not lay
   one broken pass across the whole canvas*; the graded field lays two, edge to edge, at
   `load=0.40` and `0.35`, and calls them required. The rule gives, because it is scoped

@@ -151,6 +151,9 @@ place -- where `ragged` repaints `4.55x` the place and takes the neighbouring ma
 it. The numbers are in `PLAN-0.6.0.md`'s decisions table and the build is in its *Loose
 ends*, beside a `clean` edge the same bench found failing in silence.
 
+**Built, both** (`NOTES-step8.md`, part two), on the bench rebuilt in the probe with
+passages of its own: `ragged` `4.14x` against `hard` `0.51x` on the worked passage.
+
 **The inset remedy can be told off.** The check sees the place it was handed, and
 `Polygon.inset()` keeps no record of the shape it came from, so a mass inset by half a
 brush that is itself a large share of the mass is measured against the inset shape. At

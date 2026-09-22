@@ -643,6 +643,16 @@ say so past a quarter, naming the share and what the inset keeps, and the fix is
 smaller brush or the ragged edge. Clean still spills half what ragged does at every
 size, which is what it is for.
 
+**A region is asked the same, since 0.6.0.** The rule was a shape's only, and `cover()`
+is handed a region far more often than a shape. F1's bench found the gap: with the
+default `flat` at `size=0.1`, the brush is `150%` of a repair-sized place's shorter
+extent, 108×60 px on 900×600; the inset keeps a sliver, the fill is two stubs in its
+middle, and `8%` to `15%` of the mistake being buried stays showing on a painted passage
+(*A burial and the place it was handed*, below). The line names the call the painter
+made, and a burial's remedy is its own default rather than the ragged edge. Read off
+the committed pass scripts, every `edge="clean"` in the corpus and in the guide is
+handed a shape, so the rule's count does not move.
+
 ### Paint that lands outside the place
 
 A pass stops where its *centre* meets the outline, the brush hangs half its width past
@@ -716,11 +726,11 @@ neighbours, so the blocks moved and the rule did not:
 | `PAINTER.md`, exercise 9, the swatch strip | `1.96x` | `size=0.04`, a fifth of the swatch's width, `1.45x` |
 | `PAINTING.md`, *Per-stroke overrides* | `2.79x`, a `flat` wider than its cell | `span("C4", "F6")`, `1.38x` |
 
-**Not said inside `cover()`**, whose ends run outside the area on purpose — its
-docstring's canonical `cover(cell("D5"))` paints about three times the cell, and a rule
-that fires on the canonical call is a rule painters learn to ignore. What a burial
-costs a worked passage is under *The default moves*, below, and the keyword that keeps
-it inside is `edge="hard"`.
+**Not said inside `cover()`.** Since 0.6.0 its default holds a burial to its place (*A
+burial and the place it was handed*, below), so there is nothing to say; asked for
+`edge="ragged"` by name, it runs its ends outside on purpose and paints about three
+times a cell, and a rule that fires on the form a painter asked for is a rule painters
+learn to ignore.
 
 **A band crossed at an angle (B17).** A banded `scumble` picks its brush from the step
 between its passes, and the step from the band's extent *across the passes* — which,
@@ -776,6 +786,60 @@ by default, which is the whole mechanism, and it leaves `0.000%` of the same str
 at `0.35`, `1.0` and `2.0` alike with either brush. `cover` does move, because it is
 priced and laid as the block-in it becomes; its published area ratios are unchanged
 (`1.00x` the area it was handed at `hard`, at every overhang).
+
+### A burial and the place it was handed (0.6.0: the default moved)
+
+Until 0.6.0 `cover()` ran its passes a full brush past the place it was handed — the
+burying recipe's ends outside, so no chisel end stops inside the picture. On a flat
+passage that cannot be seen. Burying a mis-made leaf in a finished pane of glass, it
+laid a flat pale panel across a patch visibly larger than the leaf's, and the painter
+buried `cover`'s own output by hand. The default is `edge="hard"` now: the same passes,
+every dab masked to the place, and two brushes of overhang carrying every pass end up to
+the outline (*The bites just inside a hard edge*, above).
+
+The bench it was ruled on, rebuilt as `probe_f1_burial` in
+`scripts/probe_cohort_session.py`: a place `0.44–0.56 × 0.42–0.52`, 108×60 px on a
+900×600 `toned_grey` canvas, with a light stroke laid across its middle and dried, then
+buried in the passage's own colour — sampled from the place before the mistake went
+down, which is what a painter mixing to match would do — with the default `flat` at
+`size=0.1`, 90 px, most of the place. Three passages under it: *flat*, one solid mass;
+*graded*, a scumble from `0.25` at the top of the canvas to `0.75` at its foot, so the
+value moves about `0.05` across the place; *worked*, the same field with four hundred
+short bristle marks at values scattered round its own. *Seen* is what a viewer can find
+— the pixels left `0.02` or more off the passage as it stood before the mistake — as a
+multiple of the place, and how much of that lies outside it; *showing* is the share of
+the mistake's own pixels still nearer the mistake than the passage; *outline* is the
+mean value step across the place's rectangle, 2 px either side of it, beside the
+passage's own step there:
+
+| passage | edge | seen | of it outside | showing | outline (the passage's own) |
+|---|---|---|---|---|---|
+| flat | `ragged` | `0.00x` | `0.00x` | `0.0%` | `0.0000` (`0.0000`) |
+| flat | `hard` | `0.00x` | `0.00x` | `0.0%` | `0.0010` (`0.0000`) |
+| flat | `clean` | `0.05x` | `0.00x` | `8.0%` | `0.0001` (`0.0000`) |
+| graded | `ragged` | **`4.45x`** | `3.98x` | `0.0%` | `0.0003` (`0.0076`) |
+| graded | `hard` | **`0.47x`** | `0.00x` | `0.0%` | `0.0450` (`0.0076`) |
+| graded | `clean` | `0.53x` | `0.21x` | **`12.7%`** | `0.0077` (`0.0076`) |
+| worked | `ragged` | **`4.14x`** | `3.63x` | `0.0%` | `0.0001` (`0.0097`) |
+| worked | `hard` | **`0.51x`** | `0.00x` | `0.0%` | `0.0417` (`0.0097`) |
+| worked | `clean` | `0.51x` | `0.18x` | **`14.9%`** | `0.0104` (`0.0097`) |
+
+Every pixel the call moved at all is `5.3x`–`6.4x` the place laid ragged and `1.00x`
+held; on a flat passage that multiple is all there is, and none of it can be seen.
+
+**Held, the fault is the rectangle.** On a worked passage the place's own outline comes
+back as a step of `0.042` where the passage has `0.010`: a crisp patch exactly the size
+of the place, which does read as cut out. Ragged leaves no step at the place, because
+its patch ends a brush and more further out — in a burial eight times the size of the
+held one on the same passage, with the neighbouring marks under it. The smaller fault is
+the default.
+
+**`clean` is the worst of the three at this size.** The inset takes the place rather
+than a rim of it, the fill is two stubs in the middle, and the contour pass does not
+reach the place's ends, so the mistake shows at both — `22.4%` of it on bare ground.
+Nothing said so, because `clean-small` asked shapes only; it asks regions too now (*A
+clean edge on a narrow mass*, above). **No committed pass script calls `cover()`**, so
+no committed painting moves.
 
 ### A shaped mass with `direction` left off
 
@@ -2151,7 +2215,7 @@ over the corpus.
 
 | Move | What it buys | What the corpus leans on |
 |---|---|---|
-| `cover()` to `edge="hard"` | `ragged` paints **2.32x** the area it is handed, `clean` 1.06x, `hard` 1.01x | **No committed pass script calls `cover()` at all** — the move is free, and so is the evidence for it |
+| `cover()` to `edge="hard"` | `ragged` paints **2.32x** the area it is handed, `clean` 1.06x, `hard` 1.01x | **No committed pass script calls `cover()` at all** — the move is free, and so is the evidence for it. **Moved in 0.6.0**, once a bench of three passages gave it some: *A burial and the place it was handed* |
 | a round tip on `block_in`/`sweep` to `pressure="even"` | not re-measured; the docs' own claim | **0 committed calls** would move |
 | a banded `scumble` to `load=1.0, load_falloff=0.0` | bare **5.17% to 0.01%**, ripple **0.0111 to 0.0031** | **40 of 60** committed banded scumbles type the clause by hand — **moved in 0.6.0**, and re-measured where it landed under *The load a band is laid at* |
 | a `scumble` with a `flat` to halved `jitter`/`size_jitter` | ripple down the band **0.0053 to 0.0059**, scallop across it 0.0052 either way | 15 committed scumbles use a `flat`; the halved pair changes nothing this measures |

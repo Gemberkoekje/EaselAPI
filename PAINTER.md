@@ -109,7 +109,7 @@ the fix is on the same row as the mistake.
 | **Outlines, filled in** | a coloured shape with a drawn edge; a thin dark line run along a silhouette to sharpen it | paint the mass with a brush wide enough to cover it in a few strokes; sharpen an edge by painting the mass on the *other* side of it | *What you are bad at*, below |
 | **Boxes** | rectangles, especially in the background, which nobody made you draw | `blob`, `ellipse`, `hull`, `ribbon`, `polygon`; check the background hardest | *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md#masses-that-are-not-rectangles) |
 | **Parallel marks** | hatching; a grain repeated thirty times; a soft passage laid as three hard bands | vary the direction; two directions break a comb; a soft passage is `s.scumble(...)` | *The angle of the mark* in [`PAINTING.md`](PAINTING.md#the-angle-of-the-mark); *A quiet gradient* in [`RECIPES.md`](RECIPES.md#a-quiet-gradient) |
-| **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake, and `edge="hard"` keeps the repair inside the place you gave it; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
+| **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake inside the place you gave it; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
 | **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped side | give a mark a length, or `tip_wobble=0.7`. The tool says the rest: `chisel-staircase` at the call, and `report()` counts the discs | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
 | **Repainting a passage that has failed twice** | four treatments of one passage — vary the brushes, break the lights, lay core darks, give up on part of it — each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | *What you are bad at*, below |
 
@@ -398,7 +398,7 @@ passage. Three marks that describe it beat thirty that repeat it.
 
 **You will reach for `undo`.** Real repairs happen with paint. `s.cover(place, colour)`
 dries the area and buries it with every clause of the recipe in place — a long solid
-stroke at full load with no run-out, its ends outside the area:
+stroke at full load with no run-out, held to the area:
 
 ```python
 s.cover(cell("D5"), "corrected_colour")      # the whole recipe, already set
@@ -409,14 +409,14 @@ s.stroke([(-0.05, 0.55), (1.05, 0.58)], "flat", "corrected_colour",
 ```
 
 A `bristle` does not bury — its comb leaves the old paint showing between the streaks.
-**`cover` runs its ends a full brush outside the area**, which is right on a flat
-passage and louder than the mistake on a worked one: on a repair-sized patch the plain
-recipe paints **2.32x** the area you hand it, and the smaller the patch the worse that
-gets, because the overhang is a brush either way. **On a worked passage give it
-`edge="hard"`** — `1.01x`, nothing landing outside the place at all (*The default moves*
-in [`CALIBRATION.md`](CALIBRATION.md#the-default-moves)) — or bury it by hand with marks
-shaped like the passage. `undo(n)` exists; treat it as scraping the canvas, and remember
-that `n` counts log entries rather than marks you paid for.
+**`cover` lands the size of the place you hand it** and not a brush past it. On a worked
+passage that is a crisp patch, which can read as cut out, and it is the smaller fault:
+run a brush past the place, as it was before 0.6.0, a repair left four times the place
+visibly repainted, the neighbouring marks with it (*A burial and the place it was
+handed* in [`CALIBRATION.md`](CALIBRATION.md#a-burial-and-the-place-it-was-handed-060-the-default-moved)). Or
+bury it by hand with marks shaped like the passage. `undo(n)` exists; treat it as
+scraping the canvas, and remember that `n` counts log entries rather than marks you
+paid for.
 
 **You will repaint a passage that has failed twice.** This is the rule for when to stop
 doing that, and it is a number because a preference will not survive the moment it is
