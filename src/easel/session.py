@@ -55,7 +55,7 @@ from easel.measure import (
     heat_sheet,
     plan_sheet,
 )
-from easel.notices import NOTICES, EaselWarning, Notice, PassReport
+from easel.notices import NOTICES, EaselWarning, Notice, PassReport, rebuild_moves, version_key
 from easel.notices import explain as notice_text
 from easel.palette import Palette
 from easel.plan import Plan
@@ -172,12 +172,14 @@ class Session:
         timelapse: record a frame after every mark. The human watching gets to see
             the painting happen. **A number is the frame's long side in pixels**
             (the default is 360), which used to be unreachable: a 1440x960 painting
-            had a 360x240 time-lapse, the frames are stored in the ``.easel`` file
-            at that size, and no argument anywhere could say otherwise. A frame is
-            the dearest thing a mark does that is not paint -- 60 ms at 1440x960
-            against 6 for the undo snapshot -- so the size is worth choosing, and
-            ``timelapse_gif(from_log=True)`` rebuilds one at any size afterwards,
-            from a painting that has no frames at all.
+            had a 360x240 time-lapse and no argument anywhere could say otherwise. A
+            frame is the dearest thing a mark does that is not paint -- 60 ms at
+            1440x960 against 6 for the undo snapshot -- so the size is worth
+            choosing, and ``timelapse_gif(from_log=True)`` rebuilds one at any size
+            afterwards, from a painting that has no frames at all. **The frames are
+            kept in memory, not in the** ``.easel`` **file**: a session loaded from
+            one records none and rebuilds its film from the log at this size when
+            it is asked for (:meth:`timelapse_gif`).
         out_dir: where ``look()`` writes its PNGs.
         budget: how many strokes this painting is allowed, if you want the engine to
             hold the number. A painter is told to write the split down before
@@ -297,6 +299,15 @@ class Session:
         # Taken by :meth:`_open_pass`, and by :meth:`report` itself for the pass after
         # it. Beside the log, never saved: a pass is one process's business.
         self._opened: tuple[int, np.ndarray] | None = None
+        # Whether this painting's time-lapse is rebuilt from the log rather than
+        # recorded. Set on a session loaded from a file that kept no frames, which since
+        # 0.7.0 is every file: a frame recorded after that load would begin a film in
+        # the middle of the painting. See :meth:`timelapse_gif`.
+        self._film_from_log = False
+        # What opening the session file said -- an `out_dir` somewhere foreign, an
+        # engine older than this one -- for the shell and the server to say before
+        # anything else. Nothing for a session made here. See :meth:`load`.
+        self._load_notices: list[Notice] = []
         if self.timelapse:
             self.capture_frame()
 
@@ -2277,7 +2288,7 @@ class Session:
                 # a mass draws its wander from the stream: left where it was, the next
                 # mass drew from a stream a clean rebuild never produces.
                 self._restore_stream(undone[0])
-                if self.timelapse:
+                if self.timelapse and not self._film_from_log:
                     # Every record kind that pushes a snapshot except "dry" also
                     # adds a time-lapse frame (dry() only touches wetness, which
                     # a plain render never shows); drop exactly as many frames as
@@ -2295,7 +2306,10 @@ class Session:
         # have cached.
         keep = max(0, len(self.history.records) - n)
         undone = len(self.history.records) - keep
-        self._adopt(self.replay(upto=keep))
+        # Without frames when this painting's film comes from the log anyway: a
+        # frame is the dearest thing a mark does that is not paint, and every one the
+        # rebuild made would be thrown away with the file's next save.
+        self._adopt(self.replay(upto=keep, frames=False if self._film_from_log else None))
         return undone
 
     # -- looking ----------------------------------------------------------------
@@ -2974,6 +2988,9 @@ class Session:
         trial._film_call = ""
         trial._solving = False
         trial._opened = None
+        # A rehearsal records no frames at all, and says so (`_no_frames_here`).
+        trial._film_from_log = False
+        trial._load_notices = []
         return trial
 
     def _stroke_specs(self, strokes) -> list[dict]:
@@ -3615,6 +3632,14 @@ class Session:
                       scale: int | None = None, from_log: bool = False) -> Path:
         """Write the time-lapse as an animated GIF.
 
+        **A session file keeps no frames**, since 0.7.0: they were more than half of a
+        painting's file -- 8.8 of 16.1 MB after 171 marks -- for a film a painter makes
+        once, at the end. So a session loaded from a file makes its film by
+        replaying the log, at the frame size it was created with, which is the film it
+        would have recorded: it costs a full repaint rather than a read, and the frames
+        are built, written and dropped. A session painted in this process keeps its
+        frames in memory and uses them, as it always has.
+
         Args:
             path: where to write.
             fps: frames per second.
@@ -3623,18 +3648,17 @@ class Session:
                 differ by one stroke; ``every=3`` is a third of the size and reads
                 the same. The finished painting is always the last frame, whatever
                 ``every`` would have landed on.
-            scale: long side in pixels. On the recorded frames this only shrinks
-                them, because they were stored at
-                :data:`~easel.history.DEFAULT_FRAME_PX` unless the session asked for
-                another size. With ``from_log`` it is the size they are **built** at,
-                and it defaults to the canvas's own.
-            from_log: rebuild the frames by replaying the painting rather than using
-                the ones it recorded. The whole painting is in the log, so the film
-                can be made at any resolution **afterwards** -- which is the answer
-                to a 1440x960 painting whose recorded frames are 360 px wide, and to
-                one that was painted with the time-lapse off altogether. It costs a
-                full repaint, and it stores nothing: the frames are built, written
-                and dropped.
+            scale: long side in pixels. On the painting's own frames -- recorded, or
+                rebuilt for a session loaded from a file -- this only shrinks them,
+                because they are made at :data:`~easel.history.DEFAULT_FRAME_PX`
+                unless the session asked for another size. With ``from_log`` it is
+                the size they are **built** at, and it defaults to the canvas's own.
+            from_log: rebuild the frames by replaying the painting, at any size. The
+                whole painting is in the log, so the film can be made at any
+                resolution **afterwards** -- which is the answer to a 1440x960
+                painting whose frames are 360 px wide, and to one that was painted
+                with the time-lapse off altogether. It costs a full repaint, and it
+                stores nothing.
 
         Example::
 
@@ -3645,13 +3669,29 @@ class Session:
             px = max(self.canvas.width, self.canvas.height) if scale is None else int(scale)
             rebuilt = self.replay(frames=px)
             return rebuilt.history.save_gif(path, fps=fps, every=every)
-        self._no_frames_here()
-        return self.history.save_gif(path, fps=fps, every=every, scale=scale)
+        return self._film().save_gif(path, fps=fps, every=every, scale=scale)
 
     def contact_sheet(self, path: str | Path, columns: int = 6) -> Path:
-        """Write the time-lapse as a grid of thumbnails."""
+        """Write the time-lapse as a grid of thumbnails.
+
+        From the frames :meth:`timelapse_gif` would use: a session loaded from a file
+        rebuilds them from the log first, which costs a full repaint.
+        """
+        return self._film().save_contact_sheet(path, columns=columns)
+
+    def _film(self) -> History:
+        """The history whose frames are this painting's time-lapse.
+
+        This session's own, when it recorded them. A session loaded from a file that
+        kept none has its film rebuilt: the log replayed onto a fresh canvas with a frame
+        kept after each mark, at :attr:`frame_px`, exactly as the painting recorded them
+        while it was being painted. Only when the time-lapse is on -- a painting made with
+        it off asked for no film, and is told how to have one anyway.
+        """
         self._no_frames_here()
-        return self.history.save_contact_sheet(path, columns=columns)
+        if self._film_from_log and self.timelapse:
+            return self.replay(frames=self.frame_px).history
+        return self.history
 
     def _no_frames_here(self) -> None:
         """Say what happened when a *rehearsal* is asked for a time-lapse.
@@ -3670,7 +3710,11 @@ class Session:
             )
 
     def capture_frame(self) -> None:
-        """Record a time-lapse frame by hand, when ``timelapse`` is off."""
+        """Record a time-lapse frame by hand, when ``timelapse`` is off.
+
+        Kept in this process only: a session file keeps no frames, so a film captured
+        by hand has to be written before the session is.
+        """
         px = self.frame_px
         self.history.add_frame(self.canvas.thumbnail_srgb8(px), max_side=px)
 
@@ -3683,13 +3727,20 @@ class Session:
         rest are not built: the same film, for a fraction of the 42-60 ms a frame
         costs. Nothing here touches the log or the stream -- frames live beside
         both -- so no painting moves.
+
+        **None at all on a session loaded from a file that kept none**, which is every
+        file since 0.7.0 -- so every pass run from the shell or the server. The film of
+        such a session is rebuilt from the log when it is asked for (:meth:`_film`), a
+        frame recorded here would begin that film in the middle of the painting, and
+        the file's next save would drop it anyway.
         """
-        if self.timelapse and self.history.wants_frame():
+        if self.timelapse and not self._film_from_log and self.history.wants_frame():
             self.capture_frame()
 
     @property
     def frame_px(self) -> int:
-        """The long side this painting's time-lapse frames are recorded at."""
+        """The long side this painting's time-lapse frames are made at: recorded, or
+        rebuilt from the log for a session loaded from a file."""
         size = self.timelapse
         if size is True or size is False:
             return DEFAULT_FRAME_PX
@@ -4453,12 +4504,18 @@ class Session:
         """Save the whole session to a single ``.easel`` file (compressed npz).
 
         The CLI uses this so a painter can work in small increments from a shell
-        without holding a Python process open.
+        without holding a Python process open. Everything but the time-lapse frames,
+        which the log rebuilds (:meth:`timelapse_gif`), and stamped with the release
+        that wrote it.
         """
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
         meta = {
             "format": _EASEL_FORMAT,
+            # The release that wrote the file, so a later one can say what a rebuild of
+            # its log would lay differently (`older-engine`). New in 0.7.0 and read with
+            # `.get`: every file saved before it has none, and is dated at load.
+            "engine": _engine(),
             "width": self.canvas.width,
             "height": self.canvas.height,
             "texture": self.canvas.texture_name,
@@ -4504,7 +4561,6 @@ class Session:
             # exactly how the budget behaved before it was saved.
             "plan": self._plan.to_json(),
         }
-        frames = self.history._frames
         # Written through an open handle: np.savez_compressed appends ".npz" to a
         # path that lacks it, which would make `easel new p.easel` write p.easel.npz
         # and every later command fail to find its own session.
@@ -4532,8 +4588,12 @@ class Session:
                     # carry it.
                     sketch=(self.canvas.sketch if self.canvas.has_sketch
                             else np.zeros((0, 0), dtype=np.float32)),
-                    frames=(np.stack(frames) if frames
-                            else np.zeros((0, 1, 1, 3), dtype=np.uint8)),
+                    # Always empty, since 0.7.0. The time-lapse was more than half of
+                    # a painting's file -- 8.83 of 16.11 MB after 171 marks -- for a
+                    # film a painter makes once, at the end, and the log rebuilds it
+                    # exactly (`timelapse_gif`). Written empty rather than left out, so
+                    # a 0.6.0 Easel, which reads the array, still opens the file.
+                    frames=np.zeros((0, 1, 1, 3), dtype=np.uint8),
                     last_look=(self._last_look if self._last_look is not None
                                else np.zeros((0, 0, 3), dtype=np.uint8)),
                 )
@@ -4545,7 +4605,15 @@ class Session:
 
     @classmethod
     def load(cls, path: str | Path) -> Session:
-        """Reload a session saved by :meth:`save`."""
+        """Reload a session saved by :meth:`save`.
+
+        The canvas comes back as it was painted, under any later release: the file
+        holds it, and loading never repaints. The time-lapse does not come back -- a
+        file keeps no frames since 0.7.0 -- and is rebuilt from the log when one is
+        asked for (:meth:`timelapse_gif`). A file saved by an earlier release whose log
+        has marks a fix since then lays differently says so as it opens
+        (``older-engine``), because an undo or a replay would lay them the new way.
+        """
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(
@@ -4573,6 +4641,10 @@ class Session:
                     for code, text in meta.get("notices", [])
                     if str(code) in NOTICES
                 ]
+                # Where what this load says begins: the shell and the server say it
+                # before anything else, and the file's own notices are history.
+                restored = len(s._notices)
+                saved_by = _saved_by(meta)
                 # New in 0.7.0: a file saved before it has none, and an entry this
                 # build cannot read costs its own report and not the file.
                 saved_reports = meta.get("reports")
@@ -4621,6 +4693,7 @@ class Session:
                 s._film_call = ""
                 s._solving = False
                 s._opened = None
+                s._load_notices = []
 
                 canvas = Canvas.__new__(Canvas)
                 canvas.width = int(meta["width"])
@@ -4669,8 +4742,13 @@ class Session:
 
                 s.history = History()
                 s.history.records = History.records_from_json(str(data["log"]))
+                # A file saved before 0.7.0 may carry its time-lapse, and keeps it: that
+                # film is the painting as it was painted, and it goes on being recorded
+                # here. A file with none -- every file since -- has its film rebuilt from
+                # the log when one is asked for, and records nothing meanwhile.
                 frames = data["frames"]
                 s.history._frames = [f for f in frames] if frames.size else []
+                s._film_from_log = not frames.size
                 last = data["last_look"]
                 s._last_look = last if last.size else None
         except (zipfile.BadZipFile, KeyError, TypeError, EOFError, ValueError) as exc:
@@ -4684,6 +4762,8 @@ class Session:
             # same information with one added sentence, not a different one.
             raise ValueError(f"{p} is not a valid Easel session file, or is corrupted: "
                              f"{exc}") from exc
+        _warn_older_engine(s, p, saved_by)
+        s._load_notices = s._notices[restored:]
         return s
 
     # -- replay -----------------------------------------------------------------
@@ -8588,5 +8668,83 @@ def _warn_foreign_out_dir(session, session_path: Path, out_dir: Path) -> None:
         f"working directory nor beside the session file. That path came from the "
         f"session file, not from you. Set session.out_dir, or pass --out-dir, to "
         f"send them somewhere else.",
+        stacklevel=3,
+    )
+
+
+def _engine() -> str:
+    """This build's release number, as a session file is stamped with it.
+
+    Read at the call rather than imported at the top, because ``easel/__init__``
+    defines it after it has imported this module.
+    """
+    import easel
+
+    return str(easel.__version__)
+
+
+#: The release that first wrote a ``notices`` key into a session file, on every save.
+#: Nothing before it wrote one, so a file without an ``engine`` stamp is dated by it.
+_NOTICES_SINCE = "0.6.0"
+
+
+def _saved_by(meta: dict) -> str:
+    """The release that wrote a session file, as far as the file can say.
+
+    Its ``engine`` stamp, since 0.7.0. Before the stamp, the ``notices`` key dates a
+    file to 0.6.0 -- which writes it on every save, and nothing earlier writes it at
+    all -- and a file with neither was saved by 0.5.0 or earlier, which is ``""``:
+    older than every fix :data:`~easel.notices.REBUILDS` lists. A stamp with no
+    number in it is read as no stamp.
+    """
+    engine = meta.get("engine")
+    if isinstance(engine, str) and version_key(engine):
+        return engine.strip()
+    return _NOTICES_SINCE if "notices" in meta else ""
+
+
+def _warn_older_engine(session, session_path: Path, saved_by: str) -> None:
+    """Say so when a rebuild of a loaded file's log would not lay what was painted.
+
+    The file holds the canvas, so a painting opens as it was painted under any later
+    release; what does not is anything **rebuilt** from its log -- an undo from the
+    shell or the server, :meth:`Session.replay`, a film made from the log -- because a
+    rebuild lays every mark again with the engine installed, and a fix to how a mark
+    is laid reaches it. A painter whose own notes promise a pixel-identical rebuild
+    under the release that painted it asked to be told when that stops being true.
+
+    Said once: the file's next save stamps it with this release, and a painting
+    continued here is this release's painting from then on. Said only where it
+    moves something -- a count of the marks each fix lays differently, and nothing
+    for a log with none of them in it -- and only by a later release: a file from a
+    later one is not dated against fixes this build has never heard of.
+    """
+    engine = _engine()
+    if version_key(saved_by) >= version_key(engine):
+        return
+    records = session.history.records
+    moved = rebuild_moves(saved_by, records)
+    if not moved:
+        return
+    touched = sum(1 for record in records
+                  if any(change.moves(record) for change, _ in moved))
+    fixes = "; ".join(
+        f"{change.what} ({change.version}, {count} mark{'s' if count != 1 else ''})"
+        for change, count in moved
+    )
+    who = f"Easel {saved_by}" if saved_by else "Easel 0.5.0 or earlier"
+    one = touched == 1
+    back = (f"Rebuilt under {saved_by} (pip install easel-paint=={saved_by}), it comes "
+            f"back as it was painted." if saved_by
+            else f"A fix before {_NOTICES_SINCE} is not counted here; CHANGELOG.md names "
+                 f"those under each release.")
+    session._notify(
+        "older-engine",
+        f"{session_path} was saved by {who}, and {touched} of the marks in its log "
+        f"{'lays' if one else 'lay'} differently under {engine}: {fixes}. The canvas is "
+        f"as it was painted, since loading never repaints; anything rebuilt from the log "
+        f"-- an undo, a replay, a film made from it -- lays "
+        f"{'that mark' if one else 'those marks'} the new way and will not match the "
+        f"canvas where {'it is' if one else 'they are'}. {back}",
         stacklevel=3,
     )

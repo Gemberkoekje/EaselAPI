@@ -285,7 +285,10 @@ s.replay(upto=40)   # the state after the first 40 records
 ```
 
 It is also how `easel undo` works across separate shell invocations: session files
-carry the log, not undo snapshots, and the rebuild is laid by the engine installed.
+carry the log, not undo snapshots, and the rebuild is laid by the engine installed. So is
+`easel timelapse`, since the file keeps no frames: the film is the log replayed, frame for
+frame the one the painting recorded. A file saved by an earlier release says so when it
+opens, if a fix since then lays some of its marks differently.
 
 Golden-image tests hold this honest. `tests/golden/` stores a hash and a PNG for a
 fixed script of marks on each texture, plus the whole brush sampler; a change to

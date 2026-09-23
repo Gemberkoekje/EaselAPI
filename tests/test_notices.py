@@ -383,6 +383,65 @@ def test_a_code_this_build_does_not_know_is_dropped_on_load(tmp_path) -> None:
     assert [n.code for n in Session.load(path).notices()] == ["chisel-blank"]
 
 
+# -- the fixes that change what a rebuild lays, against the changelog ------------------
+CHANGELOG = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+
+#: How a release's summary names its rebuild-changing fixes, since 0.6.0: in bold, with
+#: the count spelled out -- *One fix changes what a rebuild lays*.
+_NAMED = re.compile(r"\*\*(\w+) fix(?:es)? changes? what a rebuild lays\*\*", re.I)
+_COUNTS = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6}
+
+
+def _releases() -> dict[str, str]:
+    """`CHANGELOG.md` cut at its `## [...]` headings, `{"Unreleased": ..., "0.6.0": ...}`."""
+    parts = re.split(r"^## \[([^\]]+)\][^\n]*$", CHANGELOG, flags=re.M)
+    return {parts[i]: parts[i + 1] for i in range(1, len(parts) - 1, 2)}
+
+
+def _named_under(version: str) -> str:
+    """The section a release's fixes are named in: its own, or `[Unreleased]` until the
+    release is cut -- which is where a fix built in the middle of a round is written."""
+    releases = _releases()
+    if version in releases:
+        return releases[version]
+    cut = [notices.version_key(v) for v in releases if v != "Unreleased"]
+    assert notices.version_key(version) > max(cut), f"{version} has no section"
+    return releases["Unreleased"]
+
+
+def test_the_changelog_is_read_at_all() -> None:
+    """A guard on the scan below: a split that found no release would pass everything."""
+    releases = _releases()
+    assert "Unreleased" in releases and "0.6.0" in releases and "0.1.0" in releases
+
+
+@pytest.mark.parametrize("change", notices.REBUILDS, ids=lambda c: f"{c.version}")
+def test_every_fix_that_moves_a_rebuild_is_named_under_its_release(change) -> None:
+    """The list an older file is read against is the list `CHANGELOG.md` promises --
+    *each entry names every fix that changes what a rebuild lays* -- so a fix in one and
+    not the other is a painter told less, or more, than happened."""
+    section = _named_under(change.version)
+    assert _NAMED.search(section), f"{change.version} does not say it moves a rebuild"
+    assert any(line.strip() == change.heading for line in section.splitlines()), (
+        f"no heading {change.heading!r} under {change.version}")
+
+
+def test_every_release_that_moves_a_rebuild_has_its_fixes_listed() -> None:
+    """The other direction, by count: a release whose summary says *two fixes* has two
+    rows in `notices.REBUILDS`."""
+    releases = _releases()
+    pending = {c.version for c in notices.REBUILDS if c.version not in releases}
+    for name, text in releases.items():
+        said = _NAMED.search(text)
+        versions = pending if name == "Unreleased" else {name}
+        listed = sum(1 for c in notices.REBUILDS if c.version in versions)
+        if said is None:
+            assert listed == 0, f"{name} lists {listed} fixes its changelog does not name"
+            continue
+        word = said.group(1).lower()
+        assert _COUNTS.get(word, int(word) if word.isdigit() else -1) == listed, name
+
+
 # -- rule 8: nothing new may touch the log or the stream -------------------------------
 def test_a_notice_leaves_the_log_and_the_stream_exactly_where_they_were(tmp_path) -> None:
     """The whole reason notices live beside `history.records` rather than in it: a

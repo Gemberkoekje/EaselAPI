@@ -37,12 +37,14 @@ before there was a class at all.
 
 from __future__ import annotations
 
+import re
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from easel import docs
 
 __all__ = ["EaselWarning", "Notice", "NoticeSpec", "NOTICES", "KINDS", "MODES",
-           "PassReport", "explain"]
+           "PassReport", "RebuildChange", "REBUILDS", "explain"]
 
 #: The two kinds, in the order they are printed. A fact is a number about what this
 #: call will do; a habit is a judgement about the picture that a painter may be right
@@ -203,6 +205,75 @@ def saved(reports, last: int | None = None) -> str:
     head = (f"{len(kept)} pass report{'s' if len(kept) != 1 else ''} saved, oldest first"
             + (f"; the last {len(shown)}:" if len(shown) < len(kept) else ":"))
     return "\n\n".join([head] + [str(r) for r in shown])
+
+
+@dataclass(frozen=True)
+class RebuildChange:
+    """One fix that changes what a rebuild from the log lays, under the release it shipped in.
+
+    A saved painting opens as it was painted, because the file holds the canvas; what
+    moves is anything **rebuilt** from the log -- an undo from the shell or the server,
+    ``replay()``, a time-lapse built from the log -- because a rebuild lays every mark
+    again with the engine installed. So a fix to how a mark is laid reaches every
+    painting ever saved, the next time it is rebuilt, and :data:`REBUILDS` is the list
+    a file's ``engine`` stamp is read against when it is loaded (``older-engine``).
+
+    ``version`` is the release the fix shipped in; ``what`` is the fix in one clause,
+    as the notice prints it; ``heading`` is the heading under that release in
+    `CHANGELOG.md` that says it at length, held there by `tests/test_notices.py` the way
+    a notice's ``where`` is held to the guide; ``moves`` says which records of a log the
+    fix lays differently, so the notice can count them -- and say nothing to a painting
+    that has none.
+    """
+
+    version: str
+    what: str
+    heading: str
+    moves: Callable[[object], bool]
+
+
+#: Every fix that changes what a rebuild lays, oldest first. `CHANGELOG.md` names each
+#: one in its release's summary -- *One fix changes what a rebuild lays* -- and has done
+#: since 0.6.0, when the promise about a rebuild was amended to say that a fix reaches
+#: one; a fix before that is in its entry's prose and not here, which is why a file
+#: saved before 0.6.0 is told so rather than told it is complete.
+REBUILDS: tuple[RebuildChange, ...] = (
+    RebuildChange(
+        "0.6.0",
+        "a smudge no longer starts loaded with white, so it replays without the light "
+        "cap it laid at its start",
+        "### Three checks that read the canvas under the mark, and a smudge that lays "
+        "nothing of its own",
+        lambda record: getattr(record, "kind", "") == "smudge",
+    ),
+)
+
+
+def version_key(text: str) -> tuple[int, ...]:
+    """A release number as something that sorts: ``"0.6.0"`` is ``(0, 6, 0)``.
+
+    Forgiving, as everything read out of a file is: a suffix is ignored and a string
+    with no number in it sorts before every release.
+    """
+    return tuple(int(n) for n in re.findall(r"\d+", str(text))[:3])
+
+
+def rebuild_moves(saved_by: str, records) -> list[tuple[RebuildChange, int]]:
+    """The fixes since ``saved_by`` that lay some of ``records`` differently, with how many.
+
+    ``saved_by`` is the release that saved the log, or ``""`` for one older than every
+    fix listed. Only fixes that move at least one record are returned: a painting with
+    no smudge in it is not told about the smudge.
+    """
+    after = version_key(saved_by)
+    moved = []
+    for change in REBUILDS:
+        if version_key(change.version) <= after:
+            continue
+        count = sum(1 for record in records if change.moves(record))
+        if count:
+            moved.append((change, count))
+    return moved
 
 
 def _spec(code: str, kind: str, about: str, document: str, heading: str) -> NoticeSpec:
@@ -394,6 +465,13 @@ NOTICES: dict[str, NoticeSpec] = {
             "directory nor beside the file",
             "reference", "## The session, and the shell",
         ),
+        _spec(
+            "older-engine", "fact",
+            "a session file saved by an earlier Easel, with marks in its log that a fix "
+            "since then lays differently: an undo, a replay or a film rebuilt from it will "
+            "not match the canvas there",
+            "calibration", "## The log, undo, and the stream",
+        ),
     )
 }
 
@@ -429,7 +507,7 @@ def lines(said) -> list[str]:
     return out
 
 
-def block(said, check: str = "") -> str:
+def block(said, check: str = "", when: str = "at the call") -> str:
     """The pass's notices and its post-pass check, in one block.
 
     What is said **at the call** comes first and what is found **over the pass**
@@ -438,12 +516,16 @@ def block(said, check: str = "") -> str:
     ``easel run`` and returned by the MCP server's `run`, so a painter gets the same
     words for the same pass whichever way the pass was run -- which was not true
     before 0.6.0, when the MCP path printed the check and dropped every warning.
+
+    ``when`` heads the list. What a session file says as it is opened -- an ``out_dir``
+    somewhere foreign, an engine older than this one -- is said **at load**, before any
+    call, and every command and every tool that opens the file says it the same way.
     """
     said = list(said)
     parts = []
     if said:
         shown = lines(said)
-        head = f"at the call, {len(shown)} thing{'s' if len(shown) != 1 else ''} said"
+        head = f"{when}, {len(shown)} thing{'s' if len(shown) != 1 else ''} said"
         parts.append("\n".join([head + ":"] + shown
                                + ["  (easel explain <code> for the measurement "
                                   "behind any of these)"]))

@@ -103,11 +103,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_new.add_argument("--budget", type=int, default=None,
                        help="how many strokes this painting is allowed; "
                             "`run` then prints spent and remaining")
-    p_new.add_argument("--no-timelapse", action="store_true")
+    p_new.add_argument("--no-timelapse", action="store_true",
+                       help="no time-lapse: `easel timelapse` then needs --from-log")
     p_new.add_argument("--frame-px", type=int, default=None,
                        help="the long side of each time-lapse frame, in pixels "
-                            "(default 360). A frame is the dearest thing a mark "
-                            "does that is not paint")
+                            "(default 360): the size `easel timelapse` rebuilds the "
+                            "film at, since the session file keeps no frames")
     p_new.add_argument("--force", action="store_true",
                        help="overwrite an existing session file")
     p_new.add_argument("--no-prelude", action="store_true",
@@ -193,19 +194,25 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("--no-sketch", action="store_true",
                           help="the paint alone, without whatever pencil it has not covered")
 
-    p_tl = sub.add_parser("timelapse", help="write the time-lapse")
+    p_tl = sub.add_parser(
+        "timelapse", help="write the time-lapse",
+        description="The session file keeps no frames, so the film is rebuilt from "
+                    "the log at the session's frame size: a full repaint, about half "
+                    "a minute for a painting of a couple of hundred marks. A file "
+                    "saved before 0.7.0 that kept its frames uses them.")
     p_tl.add_argument("session", type=Path)
     p_tl.add_argument("output", type=Path, help=".gif for animation, .png for a contact sheet")
     p_tl.add_argument("--fps", type=float, default=8.0)
     p_tl.add_argument("--every", type=int, default=1,
                       help="keep every nth frame (GIF only); the last frame is always kept")
     p_tl.add_argument("--scale", type=int, default=None,
-                      help="long side in pixels (GIF only)")
+                      help="long side in pixels (GIF only); shrinks the frames, which "
+                           "are made at the session's frame size")
     p_tl.add_argument("--from-log", action="store_true",
-                      help="rebuild the frames by replaying the painting instead of "
-                           "using the ones it recorded, so --scale is the size they "
-                           "are built at rather than a shrink. Costs a full repaint, "
-                           "and works on a painting that recorded none")
+                      help="build the frames at --scale rather than at the session's "
+                           "frame size, the canvas's own when --scale is left off. "
+                           "Also a full repaint, and works on a painting made with "
+                           "--no-timelapse")
 
     p_plan = sub.add_parser(
         "plan",
@@ -438,6 +445,23 @@ def _cmd_demo(args) -> int:
     return 0
 
 
+def _load(path: Path) -> Session:
+    """Open a session file, and say what opening it said -- once, before anything else.
+
+    What a file says as it opens -- an ``out_dir`` somewhere foreign, an engine older
+    than this one -- used to reach the shell as a raw Python warning, file name and
+    line number first, and the server not at all. It goes to stderr under its own
+    heading now, because stdout is where ``easel look`` prints the path a painter's
+    script reads back.
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=EaselWarning)
+        session = Session.load(path)
+    if session._load_notices:
+        print(notices.block(session._load_notices, when="at load") + "\n", file=sys.stderr)
+    return session
+
+
 def _dispatch(args) -> int:
     if args.command == "brushes":
         return _cmd_reference()
@@ -480,7 +504,7 @@ def _dispatch(args) -> int:
                 print(f"Wrote {written} -- fill in s.plan(...) before the first pass")
         return 0
 
-    session = Session.load(args.session)
+    session = _load(args.session)
 
     if args.command == "run":
         return _cmd_run(session, args)
@@ -532,7 +556,13 @@ def _dispatch(args) -> int:
 
     if args.command == "timelapse":
         out = Path(args.output)
-        path = (session.contact_sheet(out) if out.suffix.lower() == ".png"
+        sheet = out.suffix.lower() == ".png"
+        if (session._film_from_log and session.timelapse) or (args.from_log and not sheet):
+            # Said before the wait rather than after it: this used to be a read, and
+            # a command that has gone quiet for half a minute looks like one that hung.
+            print(f"Rebuilding the film from the log, {len(session.history.records)} "
+                  f"records: a full repaint.", file=sys.stderr)
+        path = (session.contact_sheet(out) if sheet
                 else session.timelapse_gif(out, fps=args.fps, every=args.every,
                                            scale=args.scale,
                                            from_log=args.from_log))

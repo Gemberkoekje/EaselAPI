@@ -21,7 +21,10 @@ lay today's paint; the graded rule narrowed by the overlap break alone; D1 decli
 Step 3 is built -- E and C0, `NOTES-step3.md` -- and corrected two statements of this
 plan on the way, each marked where it stands: `sketch=False` has always hidden the
 guides, so `guides=` was not built, and `REFERENCE.md`'s grammar named three kinds, not
-five. Steps 4 to 10 are next, F first.**
+five. Step 4 is built -- F, `NOTES-step4.md` -- with two things the plan did not say,
+each marked in 4F: a session loaded from a file records no frames and its film is
+rebuilt at its own frame size, and the notice is said at load, in the shell and through
+the server alike. Steps 5 to 10 are next, A first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -443,7 +446,14 @@ with each change alone):
   end) is the case for paying it once. The file format does not change: `frames` is
   already written as an empty array when there are none, so a 0.6.0 build opens a
   0.7.0 file, and a 0.7.0 build reading an older file with frames in it keeps them.
-  `Session(timelapse=)` is untouched.
+  `Session(timelapse=)` is untouched. *(Built in step 4 with two changes the plan did
+  not see. A session loaded from a frameless file **records no frames** -- a frame
+  recorded after a load begins the film in the middle of the painting, so a script that
+  loaded, painted and asked for a GIF would have had a film of its own pass -- and
+  every pass from the shell or the server is such a session, so none of them pays for a
+  frame; `undo`'s rebuild builds none either. And the film is rebuilt at the session's
+  **frame size**, not the canvas's own, so it is the film the painting recorded, frame
+  for frame; `from_log=True` keeps its meaning, any size.)*
 - **F2. The engine that saved a file, and what has moved since.** The painter's rider
   on the version: its README promises a pixel-identical rebuild that relies on the
   0.6.0 pin, and B changes what its sixteen starved strokes lay. So the meta gains
@@ -452,7 +462,18 @@ with each change alone):
   engine says once, as a notice, which fixes since the version that saved it change
   what a rebuild lays: the same short list `CHANGELOG.md` names under each version,
   kept in `notices.py` beside the codes so `tests/test_notices.py` can hold the two
-  together. A file with no key was saved by 0.6.0 or earlier and is told so.
+  together. A file with no key was saved by 0.6.0 or earlier and is told so. *(Built in
+  step 4 as `older-engine`, a fact, **said at load** -- every undo and replay of a file
+  begins with one -- and only where a fix moves something: each fix in
+  `notices.REBUILDS` carries which marks it lays differently, so the notice counts them
+  and a log with none is told nothing. A file without the key is dated finer than the
+  plan said, by its `notices` key -- 0.6.0 wrote one on every save, nothing before it
+  did -- so a 0.6.0 file is not told about 0.6.0's own smudge fix. The list starts at
+  0.6.0, the first release whose entry names its rebuild fixes in a fixed form, and the
+  test holds it to that form by count. And what a file says as it opens now reaches
+  both surfaces: the shell prints it on stderr, headed `at load`, and the MCP server
+  puts it at the top of the tool's answer, where it had gone to the server's stderr --
+  `foreign-out-dir` with it.)*
 
 ### G. The documentation: three sentences and a ruling
 
@@ -583,7 +604,8 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
 3. **E and C0**: the looking flags, the plan grammar documented, the check's lines
    saved with rehearsals in. Small, certain, one PR, with tests in
    `tests/test_requests.py`'s pattern. *Done: `NOTES-step3.md`.*
-4. **F**: the frames out of the file, and the engine stamp with its notice.
+4. **F**: the frames out of the file, and the engine stamp with its notice. *Done:
+   `NOTES-step4.md`.*
 5. **A**: `feather=`, inward, `roughen()`, the default on `edge="hard"`, the goldens.
 6. **B**: the gate, the goldens, the sampler and the exercise re-rendered, the fix named
    in `CHANGELOG.md` and in F2's list.
