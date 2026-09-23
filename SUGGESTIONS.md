@@ -124,7 +124,9 @@ whose ruling is that the tool is for painters and any answer of his would be by 
 who would never use it directly — so they were forwarded to the painter, and its answers,
 filed verbatim as [`answers.md`](paintings/Claude/lighthouse_handover/answers.md), are the
 decisions this round runs under. Where it said it had no evidence — which edge reads as
-paint, whether a parallel sheet pays — the bench decides.
+paint, whether a parallel sheet pays — the bench measured, and the five questions the
+bench left went back to it with the candidates under letters, to be read blind; its
+answers are [`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md).
 
 ### The engine
 

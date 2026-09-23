@@ -25,22 +25,22 @@ choose; I have not seen them*.
 | **`scripts/probe_handover_session.py`** | new. Rebuilds the painting through the CLI's own `run_script`, keeping a rehearsal copy after each pass; re-measures section 3; benches A1 and A2 inward, B1, B2 and B3, the graded rule on the four cases in hand, a variant's cost and a sheet in four processes, the session file saved each way, the pressure-list fade and the wet bands; writes the sheets |
 | **`scripts/probe_cohort_session.py --graded`** | every pass of the 22 paintings the graded rule fires on, cropped as that pass left the canvas, with six gates' verdicts; `PASS_HOOKS` on the watcher is how the crop is taken at the pass's close |
 | **`CALIBRATION.md`** | *The lighthouse handover's round*: every number below, with what it was measured on |
-| **`PLAN-0.7.0.md`** | the status line; section 5 gains the questions step 2 put to the owner |
+| **`PLAN-0.7.0.md`** | the status line; section 5 gains the five questions step 2 left, and the painter's answers to them |
 
 ## What the probe decided, row by row
 
 | Row | Built as written? | What the probe says |
 |---|---|---|
 | **A1** the feather | **not as a default** | Inward, the knee is not where the plan's centred bench put it: at `0.002` the tower's one-pixel step goes `0.298` to `0.247` and the `edges:` line `77%` to `69%`, which is hard to see at the painting's size; the line only halves at `0.005`, where it is the blur the plan predicted |
-| **A2** the feather broken by the tooth | **the owner's eye** (question 10) | Read here as a crisp, painted edge at `0.002` on the tower, the headland, a mass on bare ground and a burial, and ragged by `0.003` -- a reading, which is why it is a question. Invisible to both numbers by construction |
+| **A2** the feather broken by the tooth | **the default, at `0.002`** (decided, 10) | Read here as a crisp, painted edge at `0.002` on the tower, the headland, a mass on bare ground and a burial, and ragged by `0.003` -- and the painter's own first choice, blind. Invisible to both numbers by construction |
 | **A3** `roughen()` | **as written** | On the headland the outline moves the picture more than any feather: the roughened and the plain silhouettes differ at a glance on `edges_headland.png`, and no feather at `0.002` does |
-| the default's reach | **a question** (11) | The decided default moves 5 of the painter's 9 edge-drawing calls -- the horizon it wanted ruled among them -- and none of the four the verdict named: the tower, its lit side and the lantern are clips |
-| **B1**, **B2**, **B3** | **B1+B2, tuned** (question 12) | Today's starved bristle is a halftone of dots; B1 makes dashes that run with the brush, B2 a comb's streaks with body, B1+B2 the most like a dry brush. **Both move how much a load lays** -- B1 up to a fifth either way on rough, B2 up to 3.5 times -- so the build keeps the tooth's whole distribution and tunes B2's spread. B3 is contrast only, as the plan expected |
+| the default's reach | **decided: `clip=` too** (11) | The decided default moves 5 of the painter's 9 edge-drawing calls -- the horizon it wanted ruled among them -- and none of the four the verdict named: the tower, its lit side and the lantern are clips |
+| **B1**, **B2**, **B3** | **B1+B2, tuned** (decided, 12) | Today's starved bristle is a halftone of dots; B1 makes dashes that run with the brush, B2 a comb's streaks with body, B1+B2 the most like a dry brush. **Both move how much a load lays** -- B1 up to a fifth either way on rough, B2 up to 3.5 times -- so the build keeps the tooth's whole distribution and tunes B2's spread. B3 is contrast only, as the plan expected |
 | **C0** saved reports | **as written** | Nothing here argues against it; it is what would have made the misfires reproducible from the file |
 | **C1** the crops | **done** | 9 of 337 passes, each cropped with the marks counted drawn over it |
-| **C2** the gate | **not built as prototyped** (question 13) | It silences both misfires and keeps the recipe's failure block, and over the corpus it also silences three stacks read here as true positives. No variant tried is free |
+| **C2** the gate | **the overlap break alone** (decided, 13) | The plan's two clauses together silence both misfires and, over the corpus, three stacks the bench read as passages. Read blind by the painter, and `crop_01` by the owner, the overlap break alone keeps every passage among the nine, halves the false positives and silences the water misfire; the headland misfire, stacked masses, is the kind it leaves |
 | **D0** scripts as alternatives | **as written** | The variant's cost is the paint (10.2-10.6 s of 10.4-10.7), which no sheet takes away; what D0 buys is the comparison |
-| **D1** parallel panels | **declined** (question 14) | 1.6-1.7 times one panel against a target of 1.5; the cost is each worker loading the session file |
+| **D1** parallel panels | **declined** (decided, 14) | 1.6-1.7 times one panel against a target of 1.5; the cost is each worker loading the session file |
 | **F1** frames out | **as written** | 16.43 MB to 7.36 MB; a GIF from the log is 36 to 49 s |
 | **G1-G4** | **as written** | The width (80 / 64 / 30 px), the thirds (`0.858 / 0.787 / 0.408`) and the last twentieth (`0.188`), the recipe's own no-pressure end (`0.162` on `0.150`), the wet bands (16% of the canvas past two levels of value, 34% of colour) |
 
@@ -120,24 +120,28 @@ twice for the sheet (1.6x and 1.7x), and both numbers are quoted.
 script fed through a quoted heredoc lost the backslash of a `\n` inside an f-string and
 wrote a real newline into the probe. Make edits that carry escapes with the editor.
 
-## Open, and for the owner to rule on
+## Answered, the same day
 
-The five questions at the end of the plan's section 5, each with its evidence and a
-recommendation. **The build steps wait on them**: step 3 (E and C0) and step 4 (F) do
-not, and can go ahead; step 5 (A) waits on 10 and 11, step 6 (B) on 12, step 7 (C) on 13,
-and step 8 (D) on 14 only as far as D1 goes.
+The five questions went to the painter as a package, the candidates under letters and
+read blind first, and came back on 2026-09-23; its answers are
+[`paintings/Claude/lighthouse_handover/answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md),
+and the plan's section 5 records them. **Every build step can start.**
 
-- **10. Which edge candidate reads as paint.** Recommended: A2 at `0.002`.
-- **11. Whether the default reaches a clip.** Recommended: feather `clip=` too, inward --
-  which reverses a decision the painter took, so it goes back to the painter if the owner
-  wants it to.
-- **12. Which dry-brush gate.** Recommended: B1+B2, tuned so a load lays today's paint.
-- **13. Whether the graded rule is narrowed.** Recommended: not, on this reading of the
-  crops.
-- **14. D1.** Recommended: declined.
+- **10.** A2 at `0.002` -- the painter's blind first choice. For rock, `roughen()` with
+  the default edge on top. Left for step 5: the feather's unit, because at 1440x960 A2
+  at `0.002` read *a little chewed* against a grain that stays about 3 px.
+- **11.** `clip=` feathers too, inward: not a reversal of the painter's answer 1 but the
+  answer itself, which the plan's reading had mistranslated. The horizon takes
+  `feather=0`.
+- **12.** B1+B2, tuned so each load lays today's paint. Blind, the painter put B2 alone
+  a little ahead; after tuning, look at the two side by side.
+- **13.** The 30% overlap break alone. The painter read the crops blind and differed
+  from the bench on five; the deciding one, `crop_01`, the owner read as speckle.
+- **14.** D1 declined.
 
-To look: `python scripts/probe_handover_session.py --edges --flecks` and
-`python scripts/probe_cohort_session.py --graded` write every sheet the questions cite.
+The painter's one measurement reproduces to the hundredth, and it corrected two of this
+step's sentences, both fixed in `CALIBRATION.md`: the fade gets close and does not arrive,
+and its 35 seconds was a rebuild of the passes, not a GIF.
 
 ## What step 2 did *not* touch
 

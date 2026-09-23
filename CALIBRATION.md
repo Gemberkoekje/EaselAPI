@@ -2547,6 +2547,28 @@ where no feather at `0.002` does. **The containment clip**, the planes held insi
 headland with their `clip=` feathered, leaves the `edges:` line at `64%` for every
 candidate and shows no rim of the mass beneath at four times on `edges_containment_x4.png`.
 
+**Read blind by the painter.** The four were put to the painter under letters, in an
+order it did not know ([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md),
+10a). It ranked A2 at `0.002` first; A2 at `0.003` second, ragged on anything made and
+paint-like only on the plain rock outline; A1 third; today last, A1 and today nearly a
+tie at 1:1. And it measured the steep side of the mass on bare ground itself, in canvas
+pixels -- re-run here on the same sheet, to the hundredth
+([`verify/measure_ground_edges.py`](paintings/Claude/lighthouse_handover/verify/measure_ground_edges.py)):
+
+| | wander about a straight line (sd, px) | largest bite (px) | in-between pixels across the edge (median) |
+|---|---|---|---|
+| today | 0.24 | 0.44 | 0.5 |
+| A1 `0.002` | 0.14 | 0.29 | 1.0 |
+| A2 `0.002` | 0.38 | 0.91 | 0.5 |
+| A2 `0.003` | 0.50 | 1.27 | 0.5 |
+
+A2 is as sharp as today and broken; A1 is the only soft one, and the straightest; today's
+wander is its stair-steps. At 1440x960 the painter found A2 at `0.002` *a little chewed*.
+The tooth A2 breaks against is two fields: a linen thread is 1/130 of the long side
+(7.9 px at 1024, 11.1 at 1440), and the grain mixed into the gate is about 3 px at any
+size. A feather set as a share of the long side -- 2.9 px at 1440 -- grows against the
+grain while the weave keeps pace, which is a bench for the build: the feather's unit.
+
 **What the feather leaves showing.** A mass laid hard on bare ground takes paint on
 every pixel of its own area today; feathered, **117** of them at A1 `0.002` and
 **662** and **981** at A2 `0.002` and `0.003` are left within `10/255` of the ground --
@@ -2645,6 +2667,14 @@ body between them, and B1+B2 is the most like a dry brush dragged; on the painti
 first surf, today's blue specks become strokes of foam under B2. B3 is today's dots,
 fainter.
 
+**Read blind by the painter**, the five under letters
+([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 12a): B2
+first -- *streaks along the stroke, broken inside by the tooth, chunky and varied: a dry
+brush dragged* -- B1+B2 a close second, *combed more than dragged*, then B1, B3 and
+today, today plainly dirt. It could not tell the streaks from the extra paint by eye, and
+asked to see them tuned to lay what today lays -- which is what was decided (the plan's
+question 12): B1+B2, tuned, since B2 does nothing on a tip without a comb.
+
 ### The graded rule's two misfires
 
 The rule as it stands, the plan's two clauses -- judge the run by its **median** brush;
@@ -2665,33 +2695,38 @@ drops a lone accent and keeps a taper. It is here because of what the corpus sho
 
 **Over the corpus** -- all 22 paintings replayed pass by pass, 337 passes that laid paint,
 each firing pass cropped as it left the canvas with the marks the rule counted drawn
-over it (`out/graded/`, from `probe_cohort_session.py --graded`). *Read as* is how the
-crop reads to the eye that wrote this section: **a reading, not a measurement**, and the
-first thing the owner is asked to check.
+over it (`out/graded/`, from `probe_cohort_session.py --graded`). How each crop reads is
+**a reading, not a measurement**, and two readers are given: the bench's, and the
+painter's, made blind -- the crops shuffled and numbered, the gates' verdicts unseen
+([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 13a). T is a
+graded passage coming back as bars, F is not, ? can't tell.
 
-| pass | run | read as | as it stands | median | overlap 30% | both | trimmed | trimmed, 10% |
-|---|---|---|---|---|---|---|---|---|
-| `car_wash/p13_form.py` | 9 marks, `0.024`-`0.046`, step `0.038` | a graded curtain in visible bars | fires | fires | fires | fires | fires | fires |
-| `sonnet/p3_beam.py` | 11, `0.0405`-`0.0874`, step `0.027` | a beam banded across its width | fires | -- | fires | -- | fires | fires |
-| `opus/p3_beam.py` | 6, `0.01`-`0.048`, step `0.007` | a beam laid as rays | fires | -- | fires | -- | -- | -- |
-| `fable/p8_base.py` | 6, `0.005`-`0.014`, step `0.012` | two pot rims, an arch's band, a base line: separate things | fires | fires | -- | -- | fires | -- |
-| `heron2/pass11_last.py` | 7, `0.0045`-`0.036`, step `0.007` | lines across one plank: could be either | fires | fires | fires | fires | fires | fires |
-| `pier/pass2_masses.py` | 10, `0.1`-`0.18`, step `0.077` | the pier's big fields stacked: separate masses | fires | -- | fires | -- | fires | fires |
-| `pier/pass4_water.py` | -- | faint bands in the water: could be either | -- | -- | fires | -- | -- | -- |
-| `hands/pass08_pickmass.py` | 9, `0.015`-`0.05`, step `0.017` | a finger's form hatched in stripes | fires | fires | -- | -- | fires | -- |
-| `hands/pass22_bowl3.py` | 5, `0.038`-`0.05`, step `0.038` | a bowl's inside in bands | fires | fires | fires | fires | fires | fires |
-| `gpt/25-boat-near-hull` | 7, `0.009`-`0.027`, step `0.005` | a hull's form, which reads smooth | fires | -- | -- | -- | -- | -- |
-| **passes it fires on** | | | **9** | **5** | **7** | **3** | **7** | **5** |
+| pass | run | the bench read | the painter, blind | as it stands | median | overlap 30% | both | trimmed | trimmed, 10% |
+|---|---|---|---|---|---|---|---|---|---|
+| `car_wash/p13_form.py` | 9 marks, `0.024`-`0.046`, step `0.038` | T, a graded curtain in visible bars | ?, bars, or hanging strips | fires | fires | fires | fires | fires | fires |
+| `sonnet/p3_beam.py` | 11, `0.0405`-`0.0874`, step `0.027` | T, a beam banded across its width | T | fires | -- | fires | -- | fires | fires |
+| `opus/p3_beam.py` | 6, `0.01`-`0.048`, step `0.007` | T, a beam laid as rays | T | fires | -- | fires | -- | -- | -- |
+| `fable/p8_base.py` | 6, `0.005`-`0.014`, step `0.012` | F, pot rims, an arch's band, a base line | F | fires | fires | -- | -- | fires | -- |
+| `heron2/pass11_last.py` | 7, `0.0045`-`0.036`, step `0.007` | ?, lines across one plank | F, ruled lines on a slab | fires | fires | fires | fires | fires | fires |
+| `pier/pass2_masses.py` | 10, `0.1`-`0.18`, step `0.077` | F, the pier's big fields stacked | F | fires | -- | fires | -- | fires | fires |
+| `pier/pass4_water.py` | -- | ?, faint bands in the water | T | -- | -- | fires | -- | -- | -- |
+| `hands/pass08_pickmass.py` | 9, `0.015`-`0.05`, step `0.017` | T, a finger hatched in stripes | F, speckle | fires | fires | -- | -- | fires | -- |
+| `hands/pass22_bowl3.py` | 5, `0.038`-`0.05`, step `0.038` | T, a bowl's inside in bands | F, no bars | fires | fires | fires | fires | fires | fires |
+| `gpt/25-boat-near-hull` | 7, `0.009`-`0.027`, step `0.005` | F, a hull that reads smooth | F | fires | -- | -- | -- | -- | -- |
+| **passes it fires on** | | | | **9** | **5** | **7** | **3** | **7** | **5** |
 
-**No gate is free.** Read this way, the rule as it stands has five or six true positives
-and three false ones among its nine, and every gate that silences both misfires also
-silences at least two stacks read here as passages coming back as bars: the plan's
-*both* loses the two beams and the hatched finger, and *trimmed, 10%* the rays and the
-finger. *Trimmed* alone keeps the beams and the finger but not the water misfire. The
-plan's own rule for C2 is that a gate must keep every true positive a human calls a
-passage, so on this reading **nothing here is built** -- and the misfires were two lines
-in rehearsals of one painting, against a rule that fires on 9 of 337 passes and never
-on a guide block.
+**No gate is free on the bench's reading, and one is on the painter's.** Read by the
+bench, every gate that silences both misfires also silences at least two stacks read as
+passages coming back as bars. Read blind by the painter -- three true (the two beams
+and the pier's water), six false, one can't tell -- the overlap break alone keeps all
+three, fires on three of the six false ones where the rule as it stands fires on all
+six, and silences the painter's water misfire; the median clause silences all three
+true ones. The two readings split on five crops, and the one that decided it was the
+hands' finger: stripes to the bench, speckle to the painter -- and speckle to the owner,
+whose look the painter left it to. **So the overlap break alone is built, and the median
+clause is not** (the plan's question 13). It fires on 7 of 337 passes, and it still
+fires on the painter's headland misfire: fields of separate masses stacked are the kind
+of false positive it leaves.
 
 ### A variant's cost, and a sheet in four processes
 
@@ -2730,8 +2765,9 @@ Each array compressed on its own: the frames **9.07 MB**, the colour 6.93, the t
 Colour through float16 and back moves **20,455 of 786,432 export pixels (2.6%)**, each
 by one level, so a file that stored it would stop opening as it was painted. PNG frames
 save a sixth of the frames' share and are not worth a format. A GIF rebuilt from the log
-of a file with no frames takes **36 to 49 s** over two runs -- the painter measured 35,
-and it was the only use the painter had for the frames.
+of a file with no frames takes **36 to 49 s** over two runs. The painter's own 35 s was
+its thirteen passes rebuilt through `easel run`, not a GIF, and one GIF at the end was
+the only use it had for the frames.
 
 ### The fade and the wet bands
 
@@ -2743,11 +2779,13 @@ and it was the only use the painter had for the frames.
 | 0.9 | 0.858 | 0.787 | 0.408 | 0.188 | 0.183 |
 | 0.5 | 0.800 | 0.644 | 0.291 | 0.170 | 0.167 |
 
-The painter read the right third, where the profile still averages a quarter pressure;
-it does reach the field at the very end. The recipe's own passage -- *a passage
-brightening toward one side*, six `flat` strokes at `pressure=[0.0, 0.55, 1.0]` -- reads
-`0.162` at its no-pressure end on a `0.150` field, and `0.466` at the other. So the
-fade does arrive; what the recipe does not say is how late.
+The painter read the right third, where the profile still averages a quarter pressure.
+Over the last 4% it reads `0.183`, which is `0.034` above the field at opacity 0.9 and
+`0.018` at 0.5; the recipe's own passage -- *a passage brightening toward one side*, six
+`flat` strokes at `pressure=[0.0, 0.55, 1.0]` -- reads `0.162` at its no-pressure end on
+a `0.150` field, `0.012` above, and `0.466` at the other. **So the fade gets close and
+does not arrive**, which the painter pointed out when this section first said it did;
+what the recipe does not say is how close, and how late.
 
 **Three sky ramps, wet and dried.** `p01_sky.py`'s three scumbles on a fresh canvas, one
 after another wet and again with `dry()` between them: drying between the bands moves

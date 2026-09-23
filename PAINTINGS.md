@@ -890,7 +890,7 @@ what caught it losing at `0.74` before the beam was laid.
 | Spent | 171 strokes of a 300 budget, plus two signature marks that did not count |
 | Rehearsed and thrown away | 21 rehearsals and five variant sheets on throwaway copies, none of them charged |
 | Reproducible | Thirteen pass scripts rebuild the log to the stroke. Pixel-identical on the painter's own machine; on the one that filed it, 729 of 786,432 pixels differ by one 8-bit level, from a mixture two builds of numpy round differently in the seventh decimal |
-| Files | [`paintings/Claude/lighthouse_handover/`](paintings/Claude/lighthouse_handover) — [notes](paintings/Claude/lighthouse_handover/NOTES.md), [time-lapse](paintings/Claude/lighthouse_handover/painting.gif), [verdict](paintings/Claude/lighthouse_handover/verdict.md), [what painting felt like](paintings/Claude/lighthouse_handover/feelings.md), [answers](paintings/Claude/lighthouse_handover/answers.md) |
+| Files | [`paintings/Claude/lighthouse_handover/`](paintings/Claude/lighthouse_handover) — [notes](paintings/Claude/lighthouse_handover/NOTES.md), [time-lapse](paintings/Claude/lighthouse_handover/painting.gif), [verdict](paintings/Claude/lighthouse_handover/verdict.md), [what painting felt like](paintings/Claude/lighthouse_handover/feelings.md), [answers](paintings/Claude/lighthouse_handover/answers.md), [answers to step 2](paintings/Claude/lighthouse_handover/answers-step2.md) |
 
 The [verdict](paintings/Claude/lighthouse_handover/verdict.md) is the painter's own, and
 it checked its claims before making them. An egg-shaped glow, a panel stuck on the

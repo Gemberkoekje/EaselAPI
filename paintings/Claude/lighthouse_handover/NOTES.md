@@ -19,7 +19,9 @@ tests it ran before giving it; [`feelings.md`](feelings.md) is its own account o
 the work was like from the inside, given after the verdict and kept verbatim;
 [`answers.md`](answers.md) is its answers to the nine questions `PLAN-0.7.0.md` put to
 the owner, forwarded to it because the tool is for painters and the owner is not one;
-and [`misfires/`](misfires) is its reconstruction of the two rehearsed passes the check
+[`answers-step2.md`](answers-step2.md) is its answers to the five questions the plan's
+measuring step left, from the package in [`questions-step2/`](questions-step2); and
+[`misfires/`](misfires) is its reconstruction of the two rehearsed passes the check
 misfired on. The account of the files below is the painter's; the last section is the
 filer's.
 
@@ -160,3 +162,17 @@ Everything under this heading is the filer's, not the painter's.
   sandbox on Linux. Its subject was chosen before reading, and the earlier Claude
   [lighthouse at dusk](../lighthouse_dusk) in this directory — glow on the right, a moon
   over it — was never seen.
+- **The five questions of the plan's step 2 went to the painter as a package** -- the
+  edge and dry-brush candidates under letters in an order it did not know, ten corpus
+  crops under numbers, and the key in a file to open afterwards -- filed as
+  [`questions-step2/`](questions-step2), whose `make_package.py` rebuilds its pictures
+  and holds the letters to the ones the answers use. It answered Part 1 blind, and
+  declared that the message that came with the package had named the bench's picks,
+  though not their letters. Its first choice for the edge was the bench's pick; on the
+  dry brush it ranked B2 alone a little above the pick and took the pick for its reach to
+  flats; on the graded crops it differed from the bench on five of ten, and left the
+  deciding crop to the owner, who read it as speckle. Its one measurement,
+  [`verify/measure_ground_edges.py`](verify/measure_ground_edges.py), reproduces here to
+  the hundredth. It also corrected the bench twice -- the fade does not arrive, and its
+  35 seconds was a rebuild, not a GIF -- and conceded one point of its own verdict: a
+  glaze does go into a plan.

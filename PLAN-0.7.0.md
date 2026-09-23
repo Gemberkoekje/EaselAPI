@@ -14,10 +14,11 @@ places in the engine most of this lands -- `Session._clip_cover` in
 is the round before this one and the shape most of the conventions here come from._
 
 **Status: written 2026-09-23 against `main` at `3d6fe74`, which is `v0.6.0`, and
-revised the same day with the decisions taken. Steps 1 and 2 are done; nothing is
-built. Step 2 left five questions for the owner, at the end of section 5 -- the edge
-candidate, whether the default reaches a clip, the dry-brush gate, the graded rule and
-D1 -- each with its evidence and a recommendation, and the build steps wait on them.**
+revised the same day with the decisions taken. Steps 1 and 2 are done, and so are the
+five questions step 2 left, answered by the painter the same day and recorded at the end
+of section 5: A2 at `0.002` on every hard edge and every clip, inward; B1+B2, tuned to
+lay today's paint; the graded rule narrowed by the overlap break alone; D1 declined.
+Nothing is built, and every build step can start.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -161,7 +162,7 @@ file.
 | 7 | **Session files are large**: 16 MB after 171 marks | M | **16.11 MB, and 55% of it is the time-lapse.** 174 frames at 360 px, stored raw, 8.83 MB; the canvas 6.57 (float32 at 1024x768); the log 0.29; the last look 0.28. Re-saved: frames out, **7.64 MB**; colour as float16, 12.26 -- and float16 moves 20,385 export pixels (2.6%) by one level, which breaks *opens as it was painted*; frames as PNG bytes, 6.76 for 8.83, not worth a format. The painter exported its GIF once, at the end, and verified that the rebuild from the log is pixel-exact on its machine, in about 35 s. | **4F** |
 | 8 | **A vertical seam** blamed on the sky blends did not reproduce; *probably how I layered wet paint* | O, withdrawn | **Not reproduced here either**, wet or dried: the three committed sky ramps laid on a fresh canvas show a median column jump of `0.0002` and their largest jumps at the canvas edges. Drying between the bands moves **34% of the canvas by more than two 8-bit levels** and 14% by more than eight, so the wet layering is real and large; it draws no seam. No row. Recorded under the graded-field recipe in `CALIBRATION.md` as a number, not a rule -- `wet-under` was declined in 0.6.0 and nothing here reopens it. | 4G, one line |
 | 9 | **Too much text**: ~340 KB across six documents, ~180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs* | M | **The sizes are right**: 341 KB for the six, 194 for the five it read (`PAINTER.md` 6,654 words, `PAINTING.md` 7,390, `RECIPES.md` 7,703, `REFERENCE.md` 7,690, `DIAGNOSIS.md` 2,131). **The reading was the painter's choice**: the card's first paragraph says to start after *The first hour*, and it is the second painter in two rounds to read everything anyway. Asked, the painter's own answer is *watch* -- and *if you ever cut, start with what the notices already say at the call*. `LESSONS.md` has watched cuts fail on n=1 and forbids one here. | **4G** |
-| 10 | **A caveat far from its rule**: `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured `0.86` to `0.41` on a `0.14` field at opacity 0.9, `0.29` at 0.5 | M | **Both are right, about different things.** The painter's test is a scumble with `pressure=[1.0, 0.75, 0.25, 0.0]`, read over the right *third*, where the profile still averages a quarter pressure: 0.858 / 0.787 / 0.408 by thirds on a 0.149 field here, and **0.201 over the last 4% of the width** -- it does reach nothing, at the end. The recipe's own passage, `pressure=[0.0, 0.55, 1.0]` on six `flat` strokes, reads 0.162 on a 0.156 field at its no-pressure end. What the recipe does not say is how fast the fade arrives: a quarter pressure still lays a quarter of a value step, because dabs overlap and accumulate -- the sentence that lives in `PAINTING.md` under *opacity does not thin a long stroke*. | **4G** |
+| 10 | **A caveat far from its rule**: `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured `0.86` to `0.41` on a `0.14` field at opacity 0.9, `0.29` at 0.5 | M | **Both are right, about different things.** The painter's test is a scumble with `pressure=[1.0, 0.75, 0.25, 0.0]`, read over the right *third*, where the profile still averages a quarter pressure: 0.858 / 0.787 / 0.408 by thirds on a 0.149 field here, and **0.201 over the last 4% of the width** -- it does reach nothing, at the end. *(Corrected after step 2, by the painter: over the last 4% it reads `0.183`, still `0.034` above the field at opacity 0.9 and `0.018` at 0.5 -- close, and not arrived.)* The recipe's own passage, `pressure=[0.0, 0.55, 1.0]` on six `flat` strokes, reads 0.162 on a 0.156 field at its no-pressure end. What the recipe does not say is how fast the fade arrives: a quarter pressure still lays a quarter of a value step, because dabs overlap and accumulate -- the sentence that lives in `PAINTING.md` under *opacity does not thin a long stroke*. | **4G** |
 | 11 | **One sentence is backwards**: the lit-air recipe says `[1.0 ... 0.1]` is *narrow-and-bright at the source and wide-and-gone at the far end*; measured 80 px at the source and 32 at the far end | M | **Confirmed against the source.** A round tip's width follows pressure (`stroke.py`, `_PRESS_WIDTH_FLOOR = 0.35`; `CALIBRATION.md`'s *Pressure* table: 14 px at 0.10, 36 px at 1.00). Full pressure is the wide end. The recipe's code is right and its sentence is not -- *the one factual error I found was in prose*. | **4G** |
 | 12 | **The painting**: competent, coherent, conventional; the headland failed twice and was patched with brushwork; 43% unspent, partly caution; would paint a later dusk, decide fewer larger planes while still a drawing, let the headland dissolve, let the ground show | O | The check's line is the one `LESSONS.md` restated in 0.6.0: it reads marks and measures the canvas, and does not judge an arrangement. `unspent:` printed 129; `ground:` printed `0.00%` and, as the plan said `buried`, asked for nothing. A *repainted passage* count was considered and dropped: the headland took four passes and so did the tower, and the log cannot tell a repair from a subject being developed. Recorded. | **4H** |
 
@@ -240,13 +241,25 @@ verdict, which the painter cannot give because it has not seen them. Then:
   joins `_clip_cover`'s memo key, because *anything a mask is computed from has to be in
   its cache key* (`LESSONS.md`, trap 5) and a mass's passes share the memo. Built with
   PIL's own filters on the coverage image; nothing new is imported.
-- **The default, decided: `edge="hard"` gains the feather, `clip=` keeps `0`.** A
-  mass or a burial laid hard is drawing an edge; a clip is, three times in four,
-  keeping paint in. The eighteen sites, this painting's hard masses and every `cover()`
-  move, with goldens opened and looked at (`LESSONS.md`, trap 2); a moved default never
-  reaches a saved log. The value is the bench's, at the knee, whichever of A1 and A2
-  reads as paint -- and if neither does at a painting's size, the feather ships opt-in
-  at `0` and this row says so.
+- **The default, decided again after step 2 (questions 10 and 11): A2 at `0.002`, on
+  `edge="hard"` and on `clip=` alike, inward.** The first reading of the painter's
+  answer 1 -- `edge="hard"` feathers, `clip=` keeps `0` -- was the plan's, and step 2
+  showed it missed the tower, its lit side and the lantern, which are clips; the painter
+  called it a mistranslation of its own answer, whose only reason for keeping clips
+  hard was an outward feather. Inward, a clip cannot carry paint past its outline, and
+  the containment bench shows no rim. So every hard edge and every clip moves: the
+  eighteen `edge="hard"` sites, this painting's 33 calls, GPT's thirteen clips and every
+  `cover()`, with goldens opened and looked at (`LESSONS.md`, trap 2); a moved default
+  never reaches a saved log. The painter chose A2 blind, before it knew which letter was
+  the bench's pick. A painter who wants a ruled line passes `feather=0` -- the horizon
+  of this painting is that line. **One bench is left for the build**: at 1440x960 the
+  painter found A2 at `0.002` *a little chewed*, and the tooth it breaks against is half
+  a weave that scales with the canvas (a thread is 1/130 of the long side) and half a
+  grain that does not (about 3 px at any size). Bench the feather as a share of the long
+  side against a pixel count at 1440 before fixing its unit.
+- **For rock, `roughen()` and the default edge on top of it**, no wider feather (the
+  painter's answer to 10b): on the headland the outline moved the picture more than
+  any feather did.
 - The notices that name `edge="hard"` as a remedy name the feathered form, in the same
   commit; `PAINTING.md`'s *Masses that are not rectangles* gains one sentence,
   `REFERENCE.md` the argument and the helper. Nothing leaves.
@@ -254,7 +267,14 @@ verdict, which the painter cannot give because it has not seen them. Then:
 ### B. Dry brush that streaks rather than speckles
 
 **Decided: the engine.** *A notice would only have told me to avoid the mark. I'd still
-have had no dry-brush mark that works.*
+have had no dry-brush mark that works.* **And after step 2 (question 12): B1+B2, tuned so
+each load lays about today's paint** -- *the amount was right, the shape was wrong*. B1
+keeps the tooth's whole distribution, not two moments of it, and B2's spread is set
+until the painting's broken-mark loads lay what they lay now. Blind, the painter ranked
+B2 alone slightly above B1+B2 on bristles (B1+B2 read *a bit combed*) and took B1+B2 for
+B1's reach to flats and rounds, which B2 has none of. So after tuning, look at the
+crosser at `0.45` with B2 and B1+B2 side by side, and if B1+B2 still reads combed,
+shorten B1's kernel on a tip that has a comb.
 
 **What is there.** As a brush runs out, `Canvas.stamp` gates each dab against the
 canvas tooth per pixel (`need = (1 - load) x sensitivity`, a smoothstep over a band of
@@ -339,6 +359,18 @@ Neither was a gradient; in both, the rule's *narrowest brush* is an accent.
   the gate silences is a cost, and the corpus decides**, not the two cases the gate
   was drawn on.
 
+  **Decided after step 2 (question 13): the 30% overlap break on its own.** The corpus
+  decided against *both*: read blind by the painter, and on `crop_01` by the owner, the
+  median clause silences every graded passage among the nine, and the overlap break
+  alone keeps all of them -- `crop_04`, the pier's water, which the rule misses today,
+  among them -- while silencing the painter's water misfire and half the false
+  positives, three of the six. What it still fires on: the fields of separate masses
+  stacked (the painter's headland misfire, the pier's `pass2_masses.py`), a slab with
+  lines ruled across it that the painter calls a real fault under another name (the
+  heron's `pass11_last.py`), and the inside of a bowl that is a passage and does not
+  come back as bars (the hands' `pass22_bowl3.py`). The first kind wants another clause
+  if it wants one at all, and none tried here is free.
+
 ### D. Rehearsing alternatives side by side
 
 **What the painter did, and asked for.** It never used `vary=`; its variants were whole
@@ -351,7 +383,7 @@ pass that goes on top of another and wrong for two versions of the same pass.
 | Candidate | What it does | Standing |
 |---|---|---|
 | **D0 scripts as alternatives** | `easel run --rehearse --alternatives a.py b.py c.py`: each script on its own copy of the session, its own check block, one labelled sheet the way `rehearse(vary=)` lays one, and the same on the MCP `run`. In the API, `s.rehearse_each([plan_a, plan_b])` for plans, since a function is what a script is inside Python | **built first**; sequential, so three alternatives cost three rehearsals and a painter reads them together rather than in three files |
-| **D1 panels in parallel** | the panels of a sheet, `vary=` or D0, rendered in their own processes; exact by construction, since each is seeded as the next marks | behind a bench with a target -- a four-panel sheet in under 1.5x one panel on this machine, Windows spawn cost included -- or declined. The painter had no evidence to offer and ran on Linux |
+| **D1 panels in parallel** | the panels of a sheet, `vary=` or D0, rendered in their own processes; exact by construction, since each is seeded as the next marks | **declined** (question 14): the bench's four panels took 1.6-1.7 times one, against a target of 1.5, the cost each process's load of the session file; and the painter's variants cost the paint, which no sheet takes away |
 | **D2 the dab loop** | vectorise the window blend across the dabs of one stroke where their windows do not overlap | not this round; the open item in `LESSONS.md`, and a larger project than a verdict row |
 
 The single rehearsal and the harness loop stay as they are: a painter's own helper
@@ -471,7 +503,7 @@ it had no evidence, the bench decides, which is what it would have decided anywa
 
 | # | Question | The answer | What it changes here |
 |---|---|---|---|
-| 1 | Does `edge="hard"` / `clip=` gain a default feather? | **Yes for `edge="hard"`; keep `clip=` hard when it is only containing paint; feather inward or not at all; `feather=0` stays available.** Of its 33 calls, 9 drew an edge and 24 contained paint; an outward feather would fringe the headland and leak the reflection above the horizon | 4A: every feather is inward; `edge="hard"` moves, `clip=` does not |
+| 1 | Does `edge="hard"` / `clip=` gain a default feather? | **Yes for `edge="hard"`; keep `clip=` hard when it is only containing paint; feather inward or not at all; `feather=0` stays available.** Of its 33 calls, 9 drew an edge and 24 contained paint; an outward feather would fringe the headland and leak the reflection above the horizon | 4A: every feather is inward; `edge="hard"` moves, `clip=` does not. *Corrected by question 11: that column was the plan's reading, and it dropped the half of the answer that mattered -- the four clips that drew an edge. `clip=` feathers too, inward* |
 | 2 | Which edge candidate? | **Cannot choose; has not seen them.** Two data points: it built a wandering outline by hand and would have used A3 for rock; the tower, lantern and cap wanted crisp-but-painted edges, which sounds like A2; A1 reading as blur fits -- *aliasing wasn't the problem, the vector-clean edge was* | 4A: A1 the control, A2 the candidate for made things, A3 built as `roughen()`; the bench and the owner's eye decide |
 | 3 | Is B an engine fix or a fact line? | **The engine.** The recommended loads gave dots, not streaks; a notice would only say avoid the mark; its 16 starved marks replaying differently is fine under its 0.6.0 pin | 4B: decided; the fact line waits |
 | 4 | Do the frames leave the file? | **Yes.** One GIF, at the end; the rebuild from the log is pixel-exact and took 35 s | 4F: decided |
@@ -481,21 +513,32 @@ it had no evidence, the bench decides, which is what it would have decided anywa
 | 8 | The version? | **0.7.0**, and a notice when a pre-0.7 session is replayed or rebuilt under it, because its README's pixel-identical claim relies on the pin | 4F: F2, the engine stamp and the notice |
 | 9 | The model? | **`claude-opus-5-5`, at max effort**, by the session's metadata, with the caveat that a single-turn fallback earlier would not show | `PAINTINGS.md` and the notes say so |
 
-### Put to the owner after step 2
+### Put to the painter after step 2, and answered
 
-The probe answered what it could and rendered what it could not; these are what is left,
-each with its evidence and a recommendation, and **none is answered yet**. The sheets are
-under `out/handover/` after `python scripts/probe_handover_session.py --edges --flecks`
-and `python scripts/probe_cohort_session.py --graded`, and the numbers are in
-`CALIBRATION.md` under *The lighthouse handover's round*.
+Step 2 answered what it could and rendered what it could not, and left five questions.
+They went to the painter on 2026-09-23 as a package -- the candidates under letters,
+blind, first, and the key after -- filed with its answers as
+[`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md) and
+[`questions-step2/`](paintings/Claude/lighthouse_handover/questions-step2). The painter
+answered all five, and left the one reading that decided question 13 -- whether
+`crop_01` is stripes or speckle -- to the owner, who read it as speckle. The bench's
+own recommendations are in the package's `KEY.md`. On four of the five the painter came
+to the same answer by a different road, and on one it disagreed.
 
-| # | Question | Evidence | Recommendation |
+| # | Question | The answer | What it changes here |
 |---|---|---|---|
-| 10 | **Which edge candidate reads as paint** -- question 2, now with something to see | A1 inward at `0.002` is hard to tell from today at the painting's size, and only halves the `edges:` share at `0.005`; A2 at `0.002` breaks the boundary at the weave's scale and keeps it crisp; at `0.003` it starts to look ragged. Neither number can see A2 (`edges_tower_*.png`, `edges_headland.png`, `edges_ground.png`, `edges_burial.png`) | **A2 at `0.002`**, which reads as a painted edge at the painting's size and holds at 1440x960 (2.9 px there). A1 at the plan's knee does too little to see, and at the value that moves the line (`0.005`) it is the blur the plan predicted |
-| 11 | **Does the default reach the tower?** The decided default feathers `edge="hard"` and leaves `clip=` at `0` | Of the painter's 9 edge-drawing calls it moves 5 -- the headland, two stacks, the cap and the horizon, which the painter wanted ruled -- and leaves the tower, its lit side and the lantern twice exactly as they are, because those are clips. Inward, a feather cannot carry paint past a clip, so the containment the painter protected holds by construction; what is left is whether a feathered containment clip leaves a rim (`edges_containment*.png`). The cost: feathering `clip=` by default also moves GPT's thirteen clips in the corpus and this painting's 24 containment calls, and it reverses a decision the painter took, so it goes back to whoever took it | **Feather `clip=` as well, inward** -- or the default misses the very strokes the verdict named. The painter's reason for keeping clips hard was an outward feather breaking containment, which an inward one cannot; the rim was the remaining risk and the bench shows none. Whoever rules should look at `edges_containment_x4.png` first. The horizon then needs `feather=0`, which is what the painter said it wanted available |
-| 12 | **Which dry-brush gate** | At the guide's broken-mark loads today's gate lays a halftone of dots (571 pieces, median 4 px, at `0.45`). B1 makes them dashes that run with the brush, on every tip; B2 makes a comb's streaks, and touches nothing without a comb; B1+B2 is the most like a dry brush on the sheets. B3 changes contrast only. **Both B1 and B2 change how much a load lays** -- B1 by up to a fifth either way on rough, B2 by up to three and a half times (`flecks_*.png`, *A dry brush that streaks*) | **B1+B2**, built with the tooth's whole distribution kept under B1 and B2's spread tuned until each load lays about today's paint -- so what moves is the shape of a starved mark, not its weight, and the loads the guide recommends keep their meaning |
-| 13 | **Is the graded rule narrowed, and how** | Both clauses together silence both misfires and keep the recipe's failure block (`--misfires`). Over the corpus the rule fires on 9 of 337 passes; read by eye, five or six are graded passages coming back as bars and three are separate things. The plan's gate silences all three false ones and three true ones -- two beams and a hatched finger; *trimmed* (the narrowest brush at least half the median, which is not the plan's) with a 10% break silences two of each. No gate tried silences both misfires and keeps every true positive (`out/graded/`, `out/handover/graded_*.png`) | **Not narrowed**, unless the crops read differently to whoever rules: the plan's own condition for C2 is a gate that keeps every true positive a human calls a passage, and none does. C0 is still built -- saving what a rehearsal's check said is what would have made both misfires reproducible from the file |
-| 14 | **Parallel panels (D1)** | One panel 2.8-2.9 s; four in one process 11.1-11.6 s; four in four spawned processes 4.4-4.7 s, **1.6-1.7 times one panel** against a target of 1.5 -- starting the processes and importing the engine 0.4 s, each worker's load of the session file about 1.4 s. The variant's own cost is the paint: 10.2-10.6 s of the harness's 10.4-10.7 | **Declined, as the plan says a missed target is.** D0 goes ahead on its own, sequential |
+| 10 | Which edge candidate reads as paint -- question 2, now with something to see | **A2 at `0.002`, chosen blind, first of four**, before it knew which letter was the bench's pick. A1 reads as blur enlarged and as today at 1:1; A2 at `0.003` reads ragged on anything made, and paint-like only on a plain rock outline. **For rock, `roughen()` with the default edge on top**, no wider feather. One reservation: at 1440x960, `0.002` reads *a little chewed* -- the feather there is 2.9 px against a grain that stays about 3 px | 4A: A2 at `0.002` is the default; the build benches the feather's unit at 1440 -- a share of the long side or a pixel count |
+| 11 | Does the default reach the tower? The plan had read answer 1 as `edge="hard"` feathers, `clip=` keeps `0` | **Yes, `clip=` feathers too, inward -- and that is not a reversal but answer 1 itself, which the plan's reading mistranslated.** Four of the nine edge-drawing calls were clips; containment clips were kept hard only because of an outward feather; the 4x containment crop shows no rim. **The horizon takes `feather=0`** | 4A: both move; row 1 above is corrected where it stands |
+| 12 | Which dry-brush gate | **B1+B2, tuned to lay today's paint at each load** -- *that is exactly what I meant: the amount was right, the shape was wrong*. Blind it ranked B2 alone slightly first on bristles (B1+B2 *a bit combed*) and took B1+B2 for B1's reach to flats and rounds | 4B: B1+B2, tuned; after tuning, B2 and B1+B2 side by side on the crosser at `0.45`, and B1's kernel shortened on a comb if B1+B2 still reads combed |
+| 13 | Is the graded rule narrowed, and how | **The 30% overlap break on its own**, if the owner read `crop_01` as speckle -- which the owner did. Blind, the painter read three of the ten crops as graded passages (`crop_04`, `05`, `09`), six as not and one as can't tell, and differed from the bench on five. On its reading the overlap break alone keeps all three and halves the false positives; the median clause silences all three | 4C: C2 is the overlap break alone; the median clause is not built |
+| 14 | Parallel panels (D1) | **Declined.** The target was missed, and the painter's variants cost the paint, which parallel panels would not take away; what it needed was D0 | 4D: D1 declined; D0 is built |
+
+The painter also listed what the bench got wrong, and each is corrected where it stood:
+the framing of question 11 (above); A2's hold at 1440, one eye against another; five
+crop readings; the fade, which the round's `CALIBRATION.md` section said *does reach
+the field* and which at opacity 0.9 stops `0.034` short of it; and the 35 seconds it
+measured, which was its rebuild of the thirteen passes and not a GIF. And one the bench
+got right against it: a glaze does go into a plan.
 
 ---
 
