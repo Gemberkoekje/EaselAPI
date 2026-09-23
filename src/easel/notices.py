@@ -41,7 +41,8 @@ from dataclasses import dataclass
 
 from easel import docs
 
-__all__ = ["EaselWarning", "Notice", "NoticeSpec", "NOTICES", "KINDS", "explain"]
+__all__ = ["EaselWarning", "Notice", "NoticeSpec", "NOTICES", "KINDS", "MODES",
+           "PassReport", "explain"]
 
 #: The two kinds, in the order they are printed. A fact is a number about what this
 #: call will do; a habit is a judgement about the picture that a painter may be right
@@ -132,6 +133,76 @@ class Notice:
 
     def __str__(self) -> str:
         return self.text
+
+
+#: How a pass was run, as a saved report says it: laid on the painting, laid on a
+#: rehearsal copy, or worked out on a copy that lays no paint (``--count``).
+MODES = ("painted", "rehearsed", "counted")
+
+
+@dataclass(frozen=True)
+class PassReport:
+    """What one pass was told after it ran: the block ``easel run`` printed, kept.
+
+    Saved in the ``.easel`` file beside the notices and never in the log, for the
+    notices' reason -- and saved for a **rehearsed** pass as well, which commits
+    nothing else. That is what keeping it is for. Both of the times a painter saw
+    *graded passage laid too narrow* fire on marks that were not a passage, a
+    rehearsal printed it, of a pass rewritten before it was committed; nothing in the
+    file said the rule had fired at all, and the painter rebuilt both from its own
+    transcript to show that it had.
+
+    ``scripts`` is what ran, as the pass named it. ``mode`` is one of :data:`MODES`.
+    ``at`` is the log index the pass began at, in the painting's own numbering, so
+    ``s.replay(upto=at)`` is the canvas it opened on. ``text`` is the block itself:
+    what was said at the calls, and then the check.
+    """
+
+    scripts: str
+    mode: str
+    at: int
+    text: str
+
+    def __str__(self) -> str:
+        head = f"{self.mode} {self.scripts}, from record {self.at}:"
+        return "\n".join([head] + [f"  {line}" for line in self.text.splitlines()])
+
+    def to_json(self) -> dict:
+        return {"scripts": self.scripts, "mode": self.mode, "at": self.at,
+                "text": self.text}
+
+    @classmethod
+    def from_json(cls, data) -> PassReport | None:
+        """One saved report, or ``None`` for an entry this build cannot read.
+
+        Forgiving on purpose, as the plan's reader is: a file written by a later
+        Easel may carry a mode this one does not know, which is kept as it is, and a
+        damaged entry costs its own line and not the file.
+        """
+        if not isinstance(data, dict) or not isinstance(data.get("text"), str):
+            return None
+        try:
+            at = int(data.get("at", 0))
+        except (TypeError, ValueError):
+            return None
+        return cls(str(data.get("scripts", "")), str(data.get("mode", "")), at,
+                   data["text"])
+
+
+def saved(reports, last: int | None = None) -> str:
+    """The saved reports as ``easel log --reports`` prints them: the last ``last``.
+
+    Oldest first, as the notices are, so a rehearsal reads above the pass it became.
+    """
+    kept = list(reports)
+    if not kept:
+        return ("No pass reports saved. Every `easel run` keeps the block it prints "
+                "after a pass here, rehearsed and counted passes included; a file "
+                "saved by 0.6.0 or earlier has none.")
+    shown = kept[-last:] if last is not None and last > 0 else kept
+    head = (f"{len(kept)} pass report{'s' if len(kept) != 1 else ''} saved, oldest first"
+            + (f"; the last {len(shown)}:" if len(shown) < len(kept) else ":"))
+    return "\n\n".join([head] + [str(r) for r in shown])
 
 
 def _spec(code: str, kind: str, about: str, document: str, heading: str) -> NoticeSpec:

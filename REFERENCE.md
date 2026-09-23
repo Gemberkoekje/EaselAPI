@@ -326,7 +326,8 @@ Textures: `smooth`, `linen`, `rough`.
 
 ```python
 s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, marks=, impasto=,
-       path=)                                   # the last three are on unless turned off
+       path=)                                   # the last three are on unless turned off;
+                                                # sketch=False hides the guides as well
 s.preview(plan, reference=, region=, grid=, values=, scale=, path=)   # where a mark goes
 s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=, vary=)
                                                 # what it looks like -- and with
@@ -352,6 +353,8 @@ s.report(since=None, subject_share=None)        # the post-pass check, read off 
 s.checklist(subject_share=None)                 # the closing checklist, answered -- and
                                                 # the three questions it cannot answer
 s.notices(since=None)   s.explain(code)         # what the calls themselves said, and why
+s.reports()                                     # what each `easel run` printed after its
+                                                # pass, rehearsals included
 s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
                                                 # 7 masses; "medium" 20, "fine" 40
 s.log(last=10)                                  # last=10_000 for the whole record.
@@ -366,8 +369,20 @@ s.contact_sheet("sheet.png", columns=6)
 ```
 
 A **plan** is one object all four planning verbs read: a list whose entries are a path,
-a dict of `stroke` arguments, a dict with `shape=` and any `block_in` argument, or a
-dict with `edge=` and any `sweep` argument. A bare place or shape is a mass.
+a dict of `stroke` arguments, a dict with `shape=` and any `block_in` argument, a dict
+with `edge=` and any `sweep` argument, a passage — `band=`, `color_a=`, `color_b=` and
+any `scumble` argument — or a burial, `cover=` and any `cover` argument. A bare place or
+shape is a mass. A film is a mark, with the glaze verb's brush and opacity written out
+because an entry takes a stroke's, and `to_value=` stays with the verb:
+
+```python
+{"points": band, "glaze": True, "brush": "round_soft", "color": "warm", "opacity": 0.18}
+                                                # lays what s.glaze(band, "warm") lays
+```
+
+So **a whole pass is a plan** — its masses, passages, marks and films in the order it
+lays them — and can be priced, previewed and rehearsed, `vary=` and all, before a
+stroke of it is paid for.
 
 Looks are written to `out_dir` and numbered `look_001.png`, `preview_001.png`,
 `compare_001.png`, `rehearse_001.png` upward — each kind counting on its own, and each
@@ -522,11 +537,15 @@ The blocks it paints sit under each *Goes wrong as* in [`RECIPES.md`](RECIPES.md
 `scripts/check_guide_blocks.py` holds every one to what it says goes wrong.
 
 `s.notices(since=None)` is the list itself, oldest first, and it is saved in the
-`.easel` file, so a painting worked from the shell keeps what it was told. Notices and
-the plan both live **beside** `history.records` and never in it, because the log indexes
-the random stream (*Try the mark before you spend it* in
-[`PAINTING.md`](PAINTING.md#try-the-mark-before-you-spend-it)): anything new that took an
-index would repaint every painting made before it.
+`.easel` file, so a painting worked from the shell keeps what it was told. So is the
+block `easel run` prints after each pass — `s.reports()`, `easel log --reports`, and
+`log` with `reports` through the MCP server — **rehearsed and counted passes
+included**, each saying which it was: a rehearsal is where a pass gets changed, so a
+check that fired on one is otherwise gone with the version it fired on. Notices,
+reports and the plan all live **beside** `history.records` and never in it, because
+the log indexes the random stream (*Try the mark before you spend it* in
+[`PAINTING.md`](PAINTING.md#try-the-mark-before-you-spend-it)): anything new that took
+an index would repaint every painting made before it.
 
 ---
 
@@ -552,6 +571,7 @@ s.save(path)       Session.load(path)
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
+                   [--no-sketch] [--no-marks]
 easel mark p.easel top_l 0.335 0.315
 easel plan p.easel [--why "..."] [--value 'A1:H3=0.70' ...] [--lightest A1:H3]
                    [--subject-share 0.4] [--bands subject] [--ground buried] [--clear]
@@ -561,7 +581,7 @@ easel undo p.easel 3
 easel export p.easel painting.png
 easel timelapse p.easel p.gif [--fps 8] [--every 3] [--scale 240] [--from-log]
 easel check p.easel [--subject-share 0.32]
-easel log p.easel [-n 20] [--check]
+easel log p.easel [-n 20] [--check | --reports]
 easel brushes
 easel guide [--full | --painting | --recipes | --reference | --calibration | --diagnosis] [--path]
 easel explain [code]
@@ -623,9 +643,11 @@ rectangle, an outline, or a shape builder with its own arguments:
 {"ribbon": [[0.2, 0.8], [0.5, 0.5]], "width": 0.09}      hull, ribbon, polygon
 ```
 
-A **plan** is a list of those three kinds of thing, or one on its own: a mass is an
-object with `shape` and any `block_in` argument, a sweep one with `edge` and any
-`sweep` argument, a mark a list of points or an object with `points`.
+A **plan** is a list of entries, or one on its own: a mass is an object with `shape`
+and any `block_in` argument, a sweep one with `edge` and any `sweep` argument, a passage
+one with `band`, `color_a` and `color_b`, a burial one with `cover`, and a mark a list of
+points or an object with `points` — a film among them, with `"glaze": true` and the
+glaze verb's brush and opacity, as under *Looking, planning, measuring*.
 
 ```json
 {"shape": {"blob": "D5", "radius": 0.12, "seed": 3},

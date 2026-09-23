@@ -37,7 +37,45 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-Nothing yet.
+### Looking without the labels, a whole pass as a plan, and what a rehearsal was told
+
+Step 3 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstreams E and C0). One
+painter against 0.6.0 wrote a helper to take the landmark labels off its looks, ran its
+variants through a harness because it believed a glaze could not go into a plan, and
+twice saw a check misfire on a rehearsal that left no trace in the file.
+
+- **`easel look --no-marks`**, and `marks` on the MCP `look` tool: `look(marks=False)`
+  has existed since 0.4.0 and neither the shell nor the server could say it, so the
+  painter's `clean_look.py` is now `easel look p.easel --no-marks --no-sketch`.
+  `--no-sketch` has always hidden the guides `s.guide()` draws as well as the pencil;
+  its help, the MCP `sketch` argument, `look()`'s docstring and `PAINTING.md` now say
+  so. The plan had proposed a `guides=` switch on the belief that nothing hid them, and
+  it was not built.
+- **The plan grammar is written down whole.** `REFERENCE.md`'s sentence named three of
+  the five kinds a plan lays — a mark, a mass, a sweep — and now names the passage
+  (`band=`) and the burial (`cover=`) too, and the film: a mark with `glaze=True` and
+  the glaze verb's own brush and opacity written out, because an entry takes a stroke's
+  defaults and a bristle film at `0.88` is not a glaze. One sentence says a whole pass
+  is a plan. The same in `preview`'s and `rehearse`'s docstrings and the MCP plan help;
+  `tests/test_reference.py` holds the grammar to every kind a plan can lay. A smudge is
+  not named, because as a mark it takes the smudge brush's `0.07` rather than the
+  verb's `0.02` and says none of the verb's notices.
+- **What a pass was told is saved, rehearsals included.** Every `easel run` and MCP
+  `run` keeps the block it prints after a pass — what the calls said, then the check —
+  in the `.easel` file, under a new `reports` key beside `notices`: `s.reports()`,
+  `easel log --reports`, `log` with `reports` through the server. **A rehearsed or
+  counted pass keeps its block too**, marked as such, with the log index it began at.
+  Both of the painter's misfires were printed by rehearsals of passes it then
+  rewrote, so without this nothing in the file could show that either had happened.
+  Older builds do not read the key and open the file as before.
+- **So a rehearsal now writes the session file**, and nothing else of the rehearsal goes
+  into it: the log, the canvas and the random stream come back as they were, held by a
+  test in the *planning verbs leave nothing behind* pattern.
+- **A rehearsal copy has its own palette, landmarks and guides.** `scratch()` shared the
+  painting's three, so a mixture, a landmark or a guide made on the copy stayed on the
+  painting. Nothing saved the painting after a rehearsal, so nothing showed it, until
+  the report had to be saved. **A Python script that made a mixture on a `scratch()`
+  and then used it on the painting now raises `KeyError`**: make it on the painting.
 
 ## [0.6.0] — 2026-09-22
 

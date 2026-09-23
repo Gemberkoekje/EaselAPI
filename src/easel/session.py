@@ -55,7 +55,7 @@ from easel.measure import (
     heat_sheet,
     plan_sheet,
 )
-from easel.notices import NOTICES, EaselWarning, Notice
+from easel.notices import NOTICES, EaselWarning, Notice, PassReport
 from easel.notices import explain as notice_text
 from easel.palette import Palette
 from easel.plan import Plan
@@ -272,6 +272,10 @@ class Session:
         # `history.records`, so a notice that took an index would move every painting
         # made before it. See :meth:`_notify`.
         self._notices: list[Notice] = []
+        # What each pass run from the shell or the MCP server was told afterwards,
+        # rehearsals included. Beside the log for the notices' reason. See
+        # :meth:`reports`.
+        self._reports: list[PassReport] = []
         # What the painter wrote down before painting: the values, the place meant to
         # be lightest, the subject's share, and the two standing warnings this picture
         # has declared its way out of. Beside the log for the same reason the notices
@@ -2324,8 +2328,11 @@ class Session:
             diff: tint what changed since the previous ``look()``.
             path: where to write. Defaults to ``out_dir/look_NNN.png``.
             impasto: shade paint height as relief.
-            sketch: show the pencil underdrawing the paint has not covered.
-            marks: draw the landmarks, on both panels.
+            sketch: show the drawing -- the pencil underdrawing the paint has not
+                covered, and the overlay :meth:`guide` draws. ``False`` hides both.
+            marks: draw the landmarks, on both panels. ``False`` hides them and their
+                labels, which sit over the details they name. ``easel look
+                --no-marks --no-sketch`` is the same clean view from a shell.
 
         Example::
 
@@ -2427,8 +2434,14 @@ class Session:
                 ``brush``, ``size``, ``note``...), or a **mass**, drawn as the area
                 it would cover: a shape, a region, or a dict with ``shape=`` and any
                 :meth:`block_in` argument; or a dict with ``edge=`` and any
-                :meth:`sweep` argument, drawn as the ground that sweep would cover.
-                A single path or shape is also accepted.
+                :meth:`sweep` argument, drawn as the ground that sweep would cover;
+                or a passage, ``band=`` with ``color_a=``, ``color_b=`` and any
+                :meth:`scumble` argument; or a burial, ``cover=`` and any
+                :meth:`cover` argument. A film is a mark with ``glaze=True`` and the
+                verb's own defaults written out, since a mark's are a stroke's --
+                ``{"points": band, "glaze": True, "brush": "round_soft", "color":
+                "warm", "opacity": 0.18}`` is ``glaze(band, "warm")``. A single path
+                or shape is also accepted.
             reference: shown alongside, with the same overlay.
             region: crop both panels to a place, enlarged.
             grid: as :meth:`look`. ``"fine"`` for tenths.
@@ -2505,7 +2518,9 @@ class Session:
 
         Args:
             strokes: as :meth:`preview`, marks and masses alike -- a shaped mass is
-                twenty passes, and worth trying on the scrap of canvas first.
+                twenty passes, and worth trying on the scrap of canvas first. **A
+                whole pass is a plan**: its masses, passages, marks and films, in the
+                order they are laid, rehearsed here as one.
             reference: shown alongside, cropped to the same place.
             region: crop both panels, enlarged. Use one -- the point is feature scale.
             grid: as :meth:`look`.
@@ -2905,7 +2920,13 @@ class Session:
         trial.rng = np.random.default_rng(self.seed)
         trial.rng.bit_generator.state = self.rng.bit_generator.state
         trial.canvas = self.canvas.trial_copy()
-        trial.palette = self.palette
+        # Copies, not the painting's own: a rehearsed pass runs the prelude and its own
+        # mixtures, landmarks and guides, and while the three were shared every one of
+        # them was left behind on the painting. Nothing saved the painting after a
+        # rehearsal, so nothing showed it -- until a rehearsal had to save what its
+        # check said (`reports`), and then a mixture tried on the scrap of canvas would
+        # have gone into the file with it.
+        trial.palette = self.palette._copy()
         trial.history = History()
         trial.out_dir = self.out_dir
         trial.budget = self.budget
@@ -2918,8 +2939,8 @@ class Session:
         # Shared rather than copied: `render_look` reads it and `look` replaces it,
         # neither writes into it, and the trial is thrown away regardless.
         trial._last_look = self._last_look
-        trial.marks = self.marks
-        trial.guides = self.guides
+        trial.marks = dict(self.marks)
+        trial.guides = [dict(g) for g in self.guides]
         # A tuple, so the trial deciding it has been told does not tell the painting:
         # a rehearsed pass gets the same answer the paid pass will get.
         trial._banding_told = self._banding_told
@@ -2941,6 +2962,9 @@ class Session:
         # it about the copy. Carrying the painting's notices in would have `easel run
         # --rehearse` print every notice the painting has ever given.
         trial._notices = []
+        # And no reports: what a rehearsal was told is kept on the painting, by the
+        # shell or the server that ran it. See :meth:`_keep_report`.
+        trial._reports = []
         # The plan itself is carried, because a rehearsal is meant to say what the paid
         # pass will say and every line the plan adds to the check is one of those. It
         # is immutable, so a trial that re-declares its own plan leaves the painting's
@@ -4229,6 +4253,44 @@ class Session:
             return list(self._notices)
         return list(self._notices[max(0, int(since)):])
 
+    def reports(self) -> list[PassReport]:
+        """What each pass was told after it ran, oldest first -- rehearsals included.
+
+        Every ``easel run`` and every MCP ``run`` keeps the block it prints after a
+        pass: what was said at the calls, then the post-pass check. **A rehearsed or
+        counted pass keeps its block too**, flagged as such, though it commits nothing
+        else -- because that is where a pass gets changed, and so where a check that
+        misfires is seen and then rewritten away. Twice a painter watched *graded
+        passage laid too narrow* fire on marks that were not a passage, both times in
+        a rehearsal, and nothing in the file could show it afterwards.
+
+        Each is a :class:`~easel.notices.PassReport`: ``scripts``, ``mode``
+        (``"painted"``, ``"rehearsed"`` or ``"counted"``), ``at`` -- the log index the
+        pass began at, so ``s.replay(upto=r.at)`` is the canvas it opened on -- and
+        ``text``. ``str()`` of one is what ``easel log --reports`` prints.
+
+        Saved in the ``.easel`` file beside the log and never in it, as the notices
+        are. A painter running passes from Python prints :meth:`report` itself, and
+        nothing is kept for that: this is the record of what the shell and the server
+        printed, which a painter reading a session file afterwards cannot otherwise
+        get back.
+        """
+        return list(self._reports)
+
+    def _keep_report(self, target: Session, scripts: str, since: int, text: str) -> None:
+        """Keep what a pass was told, on this session, whichever copy it ran on.
+
+        ``target`` is the session the pass ran against -- this one, or a copy
+        :meth:`scratch` handed out -- which is what says how it ran, and ``since`` is
+        the log index the pass began at in *its* log, which a copy starts at nought.
+        """
+        if target is self:
+            mode = "painted"
+        else:
+            mode = "counted" if target._counting else "rehearsed"
+        self._reports.append(PassReport(str(scripts), mode,
+                                        int(target._index_base) + int(since), str(text)))
+
     # -- what the painter says before painting -----------------------------------
     def plan(self, why=None, values=None, lightest=None, subject_share=None,
              bands=None, ground=None, clear: bool = False) -> Plan:
@@ -4431,6 +4493,10 @@ class Session:
             # it -- see :meth:`_notify` -- and a key an older build does not read, so
             # a 0.5.0 Easel opens a file this one wrote.
             "notices": [[n.code, n.text] for n in self._notices],
+            # What each pass was told afterwards, rehearsals included (`reports()`).
+            # New in 0.7.0, beside the log for the same reason, and read with `.get`:
+            # a 0.6.0 Easel opens a file this one wrote and never sees the key.
+            "reports": [r.to_json() for r in self._reports],
             # What the painter wrote down before painting. Also a new key read with
             # `.get`, and beside the log for the same reason: a painting worked from
             # the shell is loaded and saved once a pass, so without this the plan
@@ -4506,6 +4572,16 @@ class Session:
                     Notice(str(code), str(text))
                     for code, text in meta.get("notices", [])
                     if str(code) in NOTICES
+                ]
+                # New in 0.7.0: a file saved before it has none, and an entry this
+                # build cannot read costs its own report and not the file.
+                saved_reports = meta.get("reports")
+                s._reports = [
+                    report for report in (
+                        PassReport.from_json(entry)
+                        for entry in (saved_reports if isinstance(saved_reports, list)
+                                      else []))
+                    if report is not None
                 ]
                 # New in 0.6.0, read with `.get` and forgiving about its own contents:
                 # a 0.5.0 file has no plan and opens with none. See `easel.plan`.

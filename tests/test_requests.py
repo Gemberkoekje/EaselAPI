@@ -448,7 +448,7 @@ def test_rehearsing_a_pass_commits_nothing(tmp_path, capsys):
     assert main(["run", str(session), str(script), "--rehearse"]) == 0
     out = capsys.readouterr().out
     assert "Nothing committed" in out and "of the 50 left" in out
-    assert Session.load(session).stroke_count == 0        # the file is untouched
+    assert Session.load(session).stroke_count == 0        # the painting is untouched
 
     assert main(["run", str(session), str(script)]) == 0
     assert Session.load(session).stroke_count > 0
@@ -5154,3 +5154,212 @@ def test_a_scumbles_hard_edge_was_left_where_it_was(tmp_path):
                   direction="vertical")
     strip = (place.mask(512, 384) & ~place.inset(3.0 / 512).mask(512, 384))
     assert s.canvas.ground_showing(where=strip) < 0.001
+
+
+# -- 0.7.0 E: looking without the scaffolding ------------------------------------------
+def _pixels(path) -> np.ndarray:
+    return np.asarray(Image.open(path).convert("RGB"))
+
+
+def test_the_shell_takes_the_landmarks_off_a_look(tmp_path):
+    """The lighthouse handover's painter wrote `clean_look.py` because `easel look` had
+    no way to take the landmark labels off the details they named. `look(marks=False)`
+    had one since 0.4.0; the shell and the MCP server did not."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--no-prelude"]) == 0
+    assert main(["look", str(session), "-o", str(tmp_path / "bare.png")]) == 0
+    assert main(["mark", str(session), "lamp", "0.5", "0.4"]) == 0
+    assert main(["look", str(session), "-o", str(tmp_path / "marked.png")]) == 0
+    assert main(["look", str(session), "--no-marks",
+                 "-o", str(tmp_path / "clean.png")]) == 0
+
+    bare = _pixels(tmp_path / "bare.png")
+    assert not np.array_equal(_pixels(tmp_path / "marked.png"), bare)
+    assert np.array_equal(_pixels(tmp_path / "clean.png"), bare)
+
+
+def test_the_drawing_on_the_view_goes_with_the_pencil(tmp_path):
+    """`PLAN-0.7.0.md` said nothing hid the guides; measured, `sketch=False` always has.
+    What was missing was anything saying so, so the flag and the argument say it now."""
+    from easel.cli import build_parser
+
+    s = make(tmp_path)
+    bare = np.asarray(s.look_image(scale=None, sketch=False))
+    s.guide([(0.1, 0.5), (0.9, 0.5)], note="line")
+    assert not np.array_equal(np.asarray(s.look_image(scale=None)), bare)
+    assert np.array_equal(np.asarray(s.look_image(scale=None, sketch=False)), bare)
+
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    said = {o: a.help for a in sub.choices["look"]._actions for o in a.option_strings}
+    assert "guides" in said["--no-sketch"]
+    assert "guide" in Session.look.__doc__.split("sketch:")[1].split("marks:")[0]
+
+
+# -- 0.7.0 E: a whole pass is a plan ---------------------------------------------------
+def test_a_film_written_as_the_grammar_says_is_the_film_the_verb_lays(tmp_path):
+    """The painter's variants were whole passes of scumbles, strokes and glazes, run
+    through a harness, because *as far as I could tell* a glaze could not go into a
+    plan. It could, as a mark -- and the entry `REFERENCE.md` now spells out, with the
+    verb's brush and opacity written in, lays the verb's film to the pixel."""
+    band = [(0.10, 0.45), (0.50, 0.48), (0.90, 0.46)]
+    canvases = []
+    for how in ("verb", "plan"):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.block_in(span("A3", "H6"), "flat", "burnt_umber", size=0.08)
+            s.dry()
+            if how == "verb":
+                s.glaze(band, "yellow_ochre")
+            else:
+                s.paint([{"points": band, "glaze": True, "brush": "round_soft",
+                          "color": "yellow_ochre", "opacity": GLAZE_OPACITY}])
+        canvases.append(s.canvas.rgb.copy())
+    assert np.array_equal(*canvases)
+
+
+def test_a_film_left_to_a_strokes_defaults_is_not_the_verbs(tmp_path):
+    """Why the grammar writes the brush and the opacity out rather than leaving them:
+    an entry takes a stroke's, a bristle at `0.88`, and that is a different film."""
+    band = [(0.10, 0.45), (0.90, 0.46)]
+    s = make(tmp_path)
+    t = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.glaze(band, "yellow_ochre")
+        t.paint([{"points": band, "glaze": True, "color": "yellow_ochre"}])
+    assert not np.array_equal(s.canvas.rgb, t.canvas.rgb)
+
+
+# -- 0.7.0 C0: what the check said, rehearsals included --------------------------------
+_LOOP = "\n".join(
+    f's.stroke([(0.10, {0.20 + 0.05 * i:.2f}), (0.90, {0.20 + 0.05 * i:.2f})], '
+    f'"flat", "ultramarine", size=0.02)'
+    for i in range(6)) + "\n"
+
+
+def test_a_rehearsal_keeps_what_its_check_said(tmp_path, capsys):
+    """Both of the lighthouse painter's *graded passage laid too narrow* misfires were
+    printed by rehearsals of passes rewritten before they were committed, and nothing
+    in the session file said the rule had fired at all: the painter rebuilt both from
+    its own transcript. What a pass is told is kept now, rehearsals and counts
+    included, each saying which it was -- and it is exactly what was printed."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--budget", "50", "--no-prelude"]) == 0
+    painted = tmp_path / "pass.py"
+    painted.write_text('s.block_in("D5", "flat", "burnt_umber", size=0.06)\n')
+    loop = tmp_path / "loop.py"
+    loop.write_text(_LOOP)
+
+    assert main(["run", str(session), str(painted)]) == 0
+    records = len(Session.load(session).history.records)
+    capsys.readouterr()
+    assert main(["run", str(session), str(loop), "--rehearse"]) == 0
+    assert main(["run", str(session), str(loop), "--count"]) == 0
+    printed = capsys.readouterr().out
+
+    kept = Session.load(session).reports()
+    assert [(r.mode, r.scripts, r.at) for r in kept] == [
+        ("painted", "pass.py", 0), ("rehearsed", "loop.py", records),
+        ("counted", "loop.py", records)]
+    assert "a loop's signature" in kept[1].text
+    assert kept[1].text in printed and kept[2].text in printed
+
+    assert main(["log", str(session), "--reports", "-n", "2"]) == 0
+    shown = capsys.readouterr().out
+    assert "3 pass reports saved" in shown and "the last 2" in shown
+    assert "rehearsed loop.py, from record" in shown and "painted pass.py" not in shown
+
+
+def test_a_rehearsal_writes_nothing_of_itself_but_the_report(tmp_path):
+    """The file is written after a rehearsal now, so everything else in it has to come
+    back as it was: the log, the canvas and the stream -- the *planning verbs leave
+    nothing behind* test, for the one planning path that writes."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--no-prelude"]) == 0
+    painted = tmp_path / "pass.py"
+    painted.write_text('s.block_in("D5", "flat", "burnt_umber", size=0.06)\n')
+    assert main(["run", str(session), str(painted)]) == 0
+    before = Session.load(session)
+
+    trial = tmp_path / "trial.py"
+    trial.write_text(
+        's.palette["tried"] = s.palette.mix("ultramarine", "titanium_white", 0.5)\n'
+        's.mark("tried", 0.3, 0.3)\n'
+        's.guide([(0.1, 0.1), (0.9, 0.1)], note="tried")\n'
+        's.block_in("E6", "flat", "tried", size=0.06)\n')
+    assert main(["run", str(session), str(trial), "--rehearse"]) == 0
+    after = Session.load(session)
+
+    assert after.history.to_json() == before.history.to_json()
+    assert np.array_equal(after.canvas.rgb, before.canvas.rgb)
+    assert after.rng.bit_generator.state == before.rng.bit_generator.state
+    assert after.palette.slots.keys() == before.palette.slots.keys()
+    assert after.marks == before.marks and after.guides == before.guides
+    assert len(after.reports()) == len(before.reports()) + 1
+
+
+def test_a_scrap_of_canvas_mixes_marks_and_draws_on_its_own(tmp_path):
+    """Why the file can be written after a rehearsal at all: the copy shared the
+    painting's palette, landmarks and guides, so a mixture tried on the scrap of canvas
+    stayed on the painting -- harmless while nothing saved it. The painter's own
+    harness tried variants on `scratch()` one after another, so each started on the
+    last one's mixtures; its variants re-mixed every slot they used, and a variant
+    that had not would have painted with the last one's."""
+    s = make(tmp_path)
+    s.palette["kept"] = s.palette.mix("burnt_umber", "titanium_white", 0.3)
+    s.mark("kept", 0.2, 0.2)
+    s.guide([(0.1, 0.9), (0.9, 0.9)], note="kept")
+
+    c = s.scratch()
+    assert "kept" in c.palette and c.pt("kept") == s.pt("kept")   # it starts from them
+    c.palette["tried"] = c.palette.mix("ultramarine", "titanium_white", 0.5)
+    c.palette["kept"] = "#ff0000"
+    c.mark("tried", 0.4, 0.4)
+    c.unmark("kept")
+    c.guide([(0.1, 0.1), (0.9, 0.1)], note="tried")
+    c.unguide("kept")
+
+    assert sorted(s.palette.slots) == ["kept"]
+    assert not np.array_equal(s.palette["kept"], c.palette["kept"])
+    assert s.marks == {"kept": (0.2, 0.2)}
+    assert [g["note"] for g in s.guides] == ["kept"]
+
+
+def test_a_saved_report_is_read_forgivingly(tmp_path):
+    """A file saved before 0.7.0 has no reports and opens with none; one written by a
+    later Easel may carry a mode this build does not know, which is kept; and an entry
+    this build cannot read costs its own line, not the file."""
+    import json
+
+    s = make(tmp_path)
+    path = s.save(tmp_path / "p.easel")
+    assert Session.load(path).reports() == []
+
+    with np.load(path, allow_pickle=False) as data:
+        arrays = {k: data[k] for k in data.files}
+    meta = json.loads(str(arrays["meta"]))
+    del meta["reports"]
+    for saved, kept in ((None, []),
+                        (5, []),
+                        ([{"text": 3}, "junk", {"scripts": "a.py", "mode": "later",
+                                                "at": 2, "text": "said"}],
+                         [("a.py", "later", 2, "said")])):
+        if saved is not None:
+            meta["reports"] = saved
+        arrays["meta"] = np.array(json.dumps(meta))
+        with open(path, "wb") as fh:
+            np.savez_compressed(fh, **arrays)
+        got = [(r.scripts, r.mode, r.at, r.text) for r in Session.load(path).reports()]
+        assert got == kept
+
+
+def test_the_shell_says_when_a_file_has_no_reports(tmp_path, capsys):
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--no-prelude"]) == 0
+    capsys.readouterr()
+    assert main(["log", str(session), "--reports"]) == 0
+    assert "No pass reports saved" in capsys.readouterr().out

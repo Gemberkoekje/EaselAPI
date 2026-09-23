@@ -575,6 +575,41 @@ def test_a_quote_says_why_it_is_that_large(call, painting):
     assert "direction-default" in call("cost", session=painting, plan=tall).text
 
 
+def test_run_keeps_what_it_handed_back_rehearsals_included(call, painting):
+    """0.7.0's C0 through the wire: the block `run` hands back after a pass is kept in
+    the session file, a rehearsal's too, and `log` with `reports` reads it back."""
+    stack = ("s.block_in(Region(0.1, 0.1, 0.9, 0.4), 'flat', 'ochre', size=0.04)\n"
+             "s.block_in(Region(0.1, 0.5, 0.9, 0.8), 'flat', 'ochre', size=0.04)\n")
+    reply = call("run", session=painting, rehearse=True, script=stack)
+    kept = Session.load(painting).reports()
+    assert [r.mode for r in kept] == ["painted", "rehearsed"]
+    assert kept[-1].text in reply.text and "from 2 calls" in kept[-1].text
+    assert Session.load(painting).stroke_count == 1       # and nothing else was kept
+
+    log = call("log", session=painting, reports=True, n=1)
+    assert "rehearsed <script>, from record 1" in log.text
+    assert "painted <script>" not in log.text
+
+
+def test_look_takes_the_landmarks_off(call, painting):
+    """The lighthouse painter's `clean_look.py` in one argument, through the wire."""
+    bare = np.asarray(call("look", session=painting, scale=0).picture.convert("RGB"))
+    call("mark", session=painting, name="lamp", x=0.5, y=0.4)
+    marked = call("look", session=painting, scale=0).picture.convert("RGB")
+    clean = call("look", session=painting, scale=0, marks=False).picture.convert("RGB")
+    assert not np.array_equal(np.asarray(marked), bare)
+    assert np.array_equal(np.asarray(clean), bare)
+
+
+def test_the_plan_help_names_every_kind_and_the_film():
+    """The grammar a client reads is `_PLAN_HELP`, quoted by preview, rehearse and cost."""
+    from easel.mcp_server import _PLAN_HELP
+
+    for key in ("'points'", "'shape'", "'edge'", "'band'", "'cover'", "'glaze': true"):
+        assert key in _PLAN_HELP, key
+    assert "whole pass is a plan" in _PLAN_HELP
+
+
 def test_rehearse_and_preview_say_what_they_found(call, painting):
     small = {"shape": {"ellipse": "D5", "rx": 0.10, "ry": 0.10}, "brush": "flat",
              "color": "ochre", "size": 0.001}

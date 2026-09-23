@@ -120,7 +120,10 @@ _PLACE_HELP = (
 
 _PLAN_HELP = (
     "A plan is a list of entries, or one entry on its own. A mark is a list of "
-    "points, or an object with 'points' and any stroke argument. A mass is an "
+    "points, or an object with 'points' and any stroke argument. A film is a mark "
+    "with 'glaze': true, and the glaze verb's own 'brush': \"round_soft\" and an "
+    "'opacity' such as 0.18 written beside it, since a mark takes a stroke's "
+    "defaults. A mass is an "
     "object with 'shape' (a place) and any block_in argument -- 'brush', 'color', "
     "'size', 'direction', 'density', 'edge': \"clean\" for a drawn contour or "
     "\"hard\" for one no paint crosses, and 'solid': true for paint with no ground "
@@ -131,7 +134,8 @@ _PLAN_HELP = (
     "'color_b' and any scumble argument -- 'n', 'direction': \"inward\" for a "
     "centred fall-off. A burial is an object with 'cover' (a place) and 'color', "
     "held to that place unless 'edge' says \"ragged\". "
-    "A bare place on its own is a mass."
+    "A bare place on its own is a mass. A whole pass is a plan: its masses, "
+    "passages, marks and films, in the order they are laid."
 )
 
 
@@ -552,7 +556,9 @@ def build_server() -> MCPServer:
                 run for real. `rehearse` (the planning tool) tries a plan; this tries
                 a script, which is what a pass actually is. Costs nothing but a look,
                 and about sixty of one painting's 224 strokes went on masses
-                that were repainted because rehearsing meant retyping the pass.
+                that were repainted because rehearsing meant retyping the pass. The
+                one thing it keeps is what the check said, in the session file,
+                where `log` with `reports` reads it back.
             count: price the pass without painting it -- a rehearsal with the pixel
                 work skipped, so a helper that calls a dozen verbs comes back with a
                 stroke count and a check in about a thirtieth of the time. No look,
@@ -591,6 +597,8 @@ def build_server() -> MCPServer:
         # "the tool warns you" was false here for everything except this check.
         check = target.report(since=before)
         said = target.notices(since=told)
+        block = _notices.block(said, check)
+        short = Path(name).name
         if trying:
             if result.code != 0:
                 return _join(_notices.block(said), result.text)
@@ -599,21 +607,29 @@ def build_server() -> MCPServer:
             cost = (f"{laid} strokes" if left is None
                     else f"{laid} strokes of the {left} left")
             if count:
-                return (f"Counted {Path(name).name}: {cost}. Nothing painted, "
-                        f"nothing committed.\n{_notices.block(said, check)}")
-            return (f"Rehearsed {Path(name).name}: {cost}. Nothing committed.\n"
-                    f"{_notices.block(said, check)}\n{target.look()}")
+                text = (f"Counted {short}: {cost}. Nothing painted, "
+                        f"nothing committed.\n{block}")
+            else:
+                text = (f"Rehearsed {short}: {cost}. Nothing committed.\n"
+                        f"{block}\n{target.look()}")
+            # What the check said is the one thing a rehearsal keeps: on the
+            # painting, as `easel run --rehearse` keeps it. See `Session.reports`.
+            s._keep_report(target, short, before, block)
+            s.save(session)
+            return text
+        if result.code == 0:
+            s._keep_report(target, short, before, block)
         if result.save:
             s.save(session)
         if result.code != 0:
             return _join(_notices.block(said), result.text)
-        return f"{result.text}\n{_notices.block(said, check)}"
+        return f"{result.text}\n{block}"
 
     @server.tool()
     @_tool
     def look(session: str, region: Place | None = None, grid: bool | str = False,
              values: bool = False, reference: str = "", diff: bool = False,
-             scale: int | None = None, sketch: bool = True,
+             scale: int | None = None, sketch: bool = True, marks: bool = True,
              output: str = "") -> list:
         """Look at the canvas. Returns the PNG, and the path it was written to.
 
@@ -632,7 +648,11 @@ def build_server() -> MCPServer:
             reference: a photograph to place alongside, for the copy stage.
             diff: tint what has changed since the previous look.
             scale: long-side pixels. 0 for full resolution.
-            sketch: show the pencil underdrawing the paint has not covered.
+            sketch: show the drawing: the pencil the paint has not covered, and the
+                guides drawn on the view. false hides both.
+            marks: draw the landmarks. false hides them and their labels, which sit
+                over the details they name -- take them off before judging the
+                picture.
             output: where to write the PNG. Defaults to out_dir/look_NNN.png.
         """
         s = Session.load(session)
@@ -644,6 +664,7 @@ def build_server() -> MCPServer:
             reference=reference or None,
             diff=diff,
             sketch=sketch,
+            marks=marks,
             path=output or None,
         )
         s.save(session)
@@ -852,16 +873,21 @@ def build_server() -> MCPServer:
 
     @server.tool()
     @_tool
-    def log(session: str, n: int = 20) -> str:
+    def log(session: str, n: int = 20, reports: bool = False) -> str:
         """The recent marks, and what the painting has cost so far.
 
         Args:
             session: the .easel file.
-            n: how many marks to show.
+            n: how many marks to show -- or with reports, how many reports.
+            reports: what `run` handed back after each pass instead, as the session
+                file kept it: what the calls said and the post-pass check, rehearsed
+                and counted passes included, each saying which it was.
         """
         s = Session.load(session)
-        return (f"{s.stroke_count} strokes, seed {s.seed}, "
-                f"{s.size[0]}x{s.size[1]}\n{s.log(n)}")
+        head = f"{s.stroke_count} strokes, seed {s.seed}, {s.size[0]}x{s.size[1]}"
+        if reports:
+            return f"{head}\n{_notices.saved(s.reports(), last=n)}"
+        return f"{head}\n{s.log(n)}"
 
     @server.tool()
     @_tool

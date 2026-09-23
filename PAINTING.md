@@ -573,7 +573,7 @@ s.look(diff=True)                         # tint what changed since the last loo
 s.look(reference="ref.jpg")               # reference beside your painting
 s.look(scale=None)                        # full resolution
 s.look(region=cell("D4"), reference="ref.jpg", grid="fine")   # both panels, tenths
-s.look(sketch=False)                      # hide the pencil underdrawing
+s.look(sketch=False)                      # hide the drawing: pencil and guides
 s.look(marks=False)                       # hide the landmark labels
 s.look(impasto=False)                     # hide the relief: flat colour, no paint height
 ```
@@ -587,9 +587,9 @@ Each look writes a numbered PNG under `out/` and returns the path; rehearsals ha
 their own run of numbers, so a pass can be tried three ways and the three put side by
 side. The numbering comes from **what is already in the directory**, so two sessions
 sharing one do not write over each other — but they do interleave, and `path=` is what
-makes nine looks tellable apart afterwards. `marks=False` and `sketch=False` take the
-scaffolding off before you judge the picture: a landmark label sitting on the focal
-point is not something you stop seeing. Use `values=True` far more often than feels
+makes nine looks tellable apart afterwards. `marks=False` and `sketch=False` —
+`--no-marks --no-sketch` from a shell — take the scaffolding off before you judge the
+picture: a landmark label sitting on the focal point is not something you stop seeing. Use `values=True` far more often than feels
 necessary, and `diff=True` after a pass to confirm you changed what you meant to and
 nothing else. When a mark seems to
 have gone missing, `s.log()` says how much paint each one laid and prints `NO PAINT

@@ -18,7 +18,10 @@ revised the same day with the decisions taken. Steps 1 and 2 are done, and so ar
 five questions step 2 left, answered by the painter the same day and recorded at the end
 of section 5: A2 at `0.002` on every hard edge and every clip, inward; B1+B2, tuned to
 lay today's paint; the graded rule narrowed by the overlap break alone; D1 declined.
-Nothing is built, and every build step can start.**
+Step 3 is built -- E and C0, `NOTES-step3.md` -- and corrected two statements of this
+plan on the way, each marked where it stands: `sketch=False` has always hidden the
+guides, so `guides=` was not built, and `REFERENCE.md`'s grammar named three kinds, not
+five. Steps 4 to 10 are next, F first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -157,8 +160,8 @@ file.
 | 2 | **Dry-brush speckle reads as dirt** more often than texture: the flecks in the sky, the first try at the swells | O | **Measured on the sky's own crosser** (`bristle`, size 0.065, opacity 0.40): at `load=0.45` it lands **3,705 px in 509 pieces, median 4 px**, 58% of the pieces under 4 px and no body to speak of; at `0.30`, 363 pieces carrying 39% of the paint in pieces of 4 px or under; at `0.80`, 374 pieces with a median of 8 px and 1% of the paint in specks. The gate is per pixel at the weave's scale, so a starved brush leaves confetti rather than the broken streaks a comb leaves. The painter used the loads the guide recommends for broken marks, 0.35 to 0.6, and got dots; its workaround, films for the swells, dropped the texture it wanted. | **4B** |
 | 3 | **One check misfired**: *graded passage laid too narrow* flagged marks that were not one, twice | O, then **M** | **Not reproducible from the scripts** -- the line fires on none of the thirteen committed passes -- because both fires were printed by rehearsals of passes rewritten before they were committed, and nothing records what a pass's check said. **Then reproduced**: the painter rebuilt both from its transcript, and re-run here each prints its original line exactly (`misfires/`). In both, the brush the line names is a thin dark accent laid among wide marks -- a `0.006` crevice along the join of two rock faces laid at `0.03` and `0.07`; a `0.006` ripple among glints -- and the rule judges a stack's step against its *narrowest* brush. In the water case the run is five glints of one colour, a foam mark and a ripple that never overlap along the stack's axis. Over the corpus the rule fires on 9 of 325 passes (3%), never on a guide block. | **4C** |
 | 4 | **About 15 s per variant**, in the one run timed | M | **Confirmed, and it is the paint.** A three-band sky variant as the painter's `harness.py` ran it takes **11.5 s** here: 10.3 s the three 8-pass scumbles at full width, 0.15 s the look, 0.01 s the copy. One band is 3.1 s, 0.39 s a pass. A `rehearse(vary=)` sheet of the same band at two sizes takes 10.2 s. The bookkeeping 0.6.0 cut is gone; what is left is the dab loop. The painter never used `vary=`: its variants were whole passes, and what it wanted was scripts rehearsed as alternatives side by side, which `easel run --rehearse a.py b.py` does not do -- it stacks them on one copy. | **4D** |
-| 5 | **The built-in side-by-side comparison doesn't support soft blends or glazes** | R | **It does.** `{"points": ..., "glaze": True, "color": ..., "opacity": ...}` is a stroke entry, as is `{"points": ..., "smudge": 1.0}`; a sheet of three opacities of the beam's own glaze rendered in 1.7 s and adopted `glaze-far` per panel. **No document says so** -- `REFERENCE.md`'s plan grammar names a stroke, a mass, a sweep, a scumble and a burial -- which is the whole of the gap, and the painter's answer to question 6 makes it twice: *whole passes of scumbles, strokes and glazes, which as far as I could tell can't go into a plan*. | **4E** |
-| 6 | **`easel look` has `--no-sketch` but no `--no-marks`**, so landmark labels covered small details; wrote a helper | M | **Confirmed, and one worse.** `look(marks=False)` exists in the API and `PAINTING.md` names it; the CLI has no flag for it, the MCP `look` tool has no `marks` argument, and **nothing at any level hides the guides** -- `look()` has no `guides=` and `render_look` always draws them. The painter's helper still shows every guide line it drew. | **4E** |
+| 5 | **The built-in side-by-side comparison doesn't support soft blends or glazes** | R | **It does.** `{"points": ..., "glaze": True, "color": ..., "opacity": ...}` is a stroke entry, as is `{"points": ..., "smudge": 1.0}`; a sheet of three opacities of the beam's own glaze rendered in 1.7 s and adopted `glaze-far` per panel. **No document says so** -- `REFERENCE.md`'s plan grammar names a stroke, a mass, a sweep, a scumble and a burial -- which is the whole of the gap, and the painter's answer to question 6 makes it twice: *whole passes of scumbles, strokes and glazes, which as far as I could tell can't go into a plan*. *(Corrected in step 3: `REFERENCE.md` named three of the five kinds, a mark, a mass and a sweep; only the MCP server's plan help named the passage and the burial.)* | **4E** |
+| 6 | **`easel look` has `--no-sketch` but no `--no-marks`**, so landmark labels covered small details; wrote a helper | M | **Confirmed, and one worse.** `look(marks=False)` exists in the API and `PAINTING.md` names it; the CLI has no flag for it, the MCP `look` tool has no `marks` argument, and **nothing at any level hides the guides** -- `look()` has no `guides=` and `render_look` always draws them. The painter's helper still shows every guide line it drew. *(Corrected in step 3: `render_look` draws the guides only when `sketch` is on, so `sketch=False` hides them with the pencil and always has, and the helper passes it -- a look with a guide drawn and `sketch=False` differs from one with none in no pixel. What was missing was anything saying so.)* | **4E** |
 | 7 | **Session files are large**: 16 MB after 171 marks | M | **16.11 MB, and 55% of it is the time-lapse.** 174 frames at 360 px, stored raw, 8.83 MB; the canvas 6.57 (float32 at 1024x768); the log 0.29; the last look 0.28. Re-saved: frames out, **7.64 MB**; colour as float16, 12.26 -- and float16 moves 20,385 export pixels (2.6%) by one level, which breaks *opens as it was painted*; frames as PNG bytes, 6.76 for 8.83, not worth a format. The painter exported its GIF once, at the end, and verified that the rebuild from the log is pixel-exact on its machine, in about 35 s. | **4F** |
 | 8 | **A vertical seam** blamed on the sky blends did not reproduce; *probably how I layered wet paint* | O, withdrawn | **Not reproduced here either**, wet or dried: the three committed sky ramps laid on a fresh canvas show a median column jump of `0.0002` and their largest jumps at the canvas edges. Drying between the bands moves **34% of the canvas by more than two 8-bit levels** and 14% by more than eight, so the wet layering is real and large; it draws no seam. No row. Recorded under the graded-field recipe in `CALIBRATION.md` as a number, not a rule -- `wet-under` was declined in 0.6.0 and nothing here reopens it. | 4G, one line |
 | 9 | **Too much text**: ~340 KB across six documents, ~180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs* | M | **The sizes are right**: 341 KB for the six, 194 for the five it read (`PAINTER.md` 6,654 words, `PAINTING.md` 7,390, `RECIPES.md` 7,703, `REFERENCE.md` 7,690, `DIAGNOSIS.md` 2,131). **The reading was the painter's choice**: the card's first paragraph says to start after *The first hour*, and it is the second painter in two rounds to read everything anyway. Asked, the painter's own answer is *watch* -- and *if you ever cut, start with what the notices already say at the call*. `LESSONS.md` has watched cuts fail on n=1 and forbids one here. | **4G** |
@@ -336,7 +339,11 @@ Neither was a gradient; in both, the rule's *narrowest brush* is an accent.
   the way `_adopt_notices` already carries a copy's notices back. Read with
   `s.reports()` and `easel log --reports`. Beside the log and never in it; a key an
   older build does not read, so 0.6.0 opens the file. **Decided**, with the painter's
-  rider that it is only worth having if rehearsals are in it.
+  rider that it is only worth having if rehearsals are in it. *(Built in step 3, counted
+  passes included, each report carrying the log index its pass began at. Writing the
+  file after a rehearsal needed one more change: the copy shared the painting's palette,
+  landmarks and guides, so a mixture a rehearsed pass made would have been saved with
+  its report. The copy has its own of all three now.)*
 - **C1. Crop the nine.** The probe replays the corpus and crops the marks each of the
   nine fires counted, in finding 12's pattern, so a human can say which are a graded
   passage laid badly. The rule's own origin -- a dawn band of seven hand-laid strokes --
@@ -398,13 +405,23 @@ Small and certain; one PR, early.
   which today has `sketch` and neither. `REFERENCE.md`'s `look` line gains the
   argument, and `tests/test_reference.py` already holds every optional parameter of
   `look` to that page, so it will fail until the row is written. The painter's
-  `clean_look.py` becomes two flags.
+  `clean_look.py` becomes two flags. *(Built in step 3 without the guides half:
+  `sketch=False` already hides them -- see section 3, row 6 -- so the two flags are
+  `--no-marks --no-sketch`, and what the guides needed was the flag's help and the
+  docstrings saying so.)*
 - The plan grammar names a glaze and a smudge, and says in one sentence that a whole
   pass -- a scumble, a stroke, a glaze -- is a plan: `REFERENCE.md` under *Looking,
   planning, measuring* (the sentence at line 369 that lists the five kinds),
   `rehearse`'s and `preview`'s docstrings, and the MCP `rehearse` tool's, each with the
   one-line entry. A test in `test_reference.py`'s pattern: every `stroke()` keyword a
-  plan entry can carry is named on the page where the grammar is.
+  plan entry can carry is named on the page where the grammar is. *(Built in step 3
+  with two changes. The sentence listed three kinds, not five, and names all five now;
+  the test holds the grammar to every kind `PLAN_ACCEPTS` lays, since
+  `test_every_parameter_a_painter_can_name_is_somewhere_on_the_page` already held every
+  `stroke()` keyword. And **the smudge was not named**: as a mark it takes the smudge
+  brush's `0.07`, the width `smudge()`'s `0.02` default was moved off, and says none of
+  the verb's three notices; the film is named with the glaze verb's brush and opacity
+  written out, because an entry takes a stroke's defaults.)*
 
 ### F. The session file, and what it says about the engine that saved it
 
@@ -565,7 +582,7 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
    owner looks at for question 2.
 3. **E and C0**: the looking flags, the plan grammar documented, the check's lines
    saved with rehearsals in. Small, certain, one PR, with tests in
-   `tests/test_requests.py`'s pattern.
+   `tests/test_requests.py`'s pattern. *Done: `NOTES-step3.md`.*
 4. **F**: the frames out of the file, and the engine stamp with its notice.
 5. **A**: `feather=`, inward, `roughen()`, the default on `edge="hard"`, the goldens.
 6. **B**: the gate, the goldens, the sampler and the exercise re-rendered, the fix named
@@ -607,12 +624,12 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
 
 | File | Change |
 |---|---|
-| `src/easel/session.py` | `feather=` on the clipped verbs and in `_clip_cover`'s key, inward; `reports` saved and loaded beside `notices`, rehearsals included; `engine` in the meta and the notice at load; the graded rule's two clauses if C1 earns them; `look(guides=)`; `rehearse_each`; the notices that name `edge="hard"` |
+| `src/easel/session.py` | `feather=` on the clipped verbs and in `_clip_cover`'s key, inward; `reports` saved and loaded beside `notices`, rehearsals included, and a rehearsal copy with its own palette, landmarks and guides; `engine` in the meta and the notice at load; the graded rule's overlap break; `rehearse_each`; the notices that name `edge="hard"` |
 | `src/easel/canvas.py`, `stroke.py`, `brush.py` | the tooth gate read along the travel or per bristle (B) |
 | `src/easel/regions.py` | the inward, tooth-broken coverage; `roughen()` |
 | `src/easel/history.py` | frames no longer saved; `timelapse_gif` on a loaded session falls back to the log |
 | `src/easel/notices.py` | the load-time notice and the per-version list of rebuild-changing fixes |
-| `src/easel/look.py`, `cli.py`, `mcp_server.py` | `--no-marks`, `--no-guides`, `marks` and `guides` on the MCP `look`; `--alternatives` on `run --rehearse` and the sheet it writes; `easel log --reports`; the sheet's parallel panels if D1 pays |
+| `src/easel/look.py`, `cli.py`, `mcp_server.py` | `--no-marks`, and `marks` on the MCP `look`; `--alternatives` on `run --rehearse` and the sheet it writes; `easel log --reports`, and `reports` on the MCP `log` |
 | `scripts/probe_handover_session.py` (new), `probe_cohort_session.py` | the benches as a probe; `--graded` with the prototype gate |
 | `tests/test_requests.py`, `test_reference.py`, `test_golden.py`, `test_notices.py` | one test per row, named for the finding; the plan grammar and `look` rows; the misfires as two tests that the gate silences and the recipe's demo as one it must not; goldens looked at |
 | `paintings/Claude/lighthouse_handover/` | filed: the passes, the helpers, `verdict.md`, `feelings.md`, `answers.md`, `verify/`, `evidence/`, `misfires/` |

@@ -291,6 +291,54 @@ def test_a_spelled_out_signature_names_all_of_it(label, fn, call):
     )
 
 
+# -- the plan grammar ------------------------------------------------------------------
+#
+# The lighthouse handover's painter ran its variants through a harness of its own, one
+# whole pass at a time, because *as far as I could tell* a glaze could not go into a
+# plan. It could, as a mark -- and the one sentence on this page that says what a plan
+# holds named three of the five kinds `_plan_specs` lays, and no film. Every
+# `stroke()` keyword a plan can carry is held to the page by the test above; what was
+# missing was the grammar itself, so that is what is held here.
+
+#: The key that says which kind a plan entry is, for every kind a plan can lay.
+PLAN_KIND_KEYS = {"stroke": "points", "mass": "shape", "sweep": "edge",
+                  "scumble": "band", "cover": "cover"}
+
+
+def _grammar() -> str:
+    """The paragraph that says what a plan is, and the entry printed under it."""
+    return TEXT.split("A **plan** is one object")[1].split("Looks are written to")[0]
+
+
+def test_every_kind_a_plan_lays_has_a_key_here():
+    """A guard on the guard: a sixth kind has to be named before this can pass."""
+    from easel.session import PLAN_ACCEPTS
+
+    assert set(PLAN_KIND_KEYS) == set(PLAN_ACCEPTS)
+
+
+@pytest.mark.parametrize("kind", sorted(set(PLAN_KIND_KEYS) - {"stroke"}))
+def test_the_grammar_names_every_kind_a_plan_lays(kind):
+    """A mark is named as *a path, a dict of `stroke` arguments*; the rest by their key."""
+    assert f"`{PLAN_KIND_KEYS[kind]}=`" in _grammar(), kind
+
+
+def test_the_grammar_says_a_film_goes_in_as_a_mark_and_a_pass_is_a_plan():
+    grammar = _grammar()
+    assert '"glaze": True' in grammar and '"round_soft"' in grammar
+    assert "whole pass is a plan" in grammar
+
+
+def test_the_planning_verbs_say_the_same_grammar():
+    """`preview`'s docstring is the one `rehearse`, `cost` and `paint` point at."""
+    from easel.session import Session as S
+
+    doc = " ".join(S.preview.__doc__.split())
+    for key in ("shape=", "edge=", "band=", "cover=", "glaze=True"):
+        assert key in doc, key
+    assert "whole pass is a plan" in " ".join(S.rehearse.__doc__.split())
+
+
 # -- the verb x hold matrix ------------------------------------------------------------
 def _hold_matrix() -> list[tuple[str, str, str, str]]:
     """*Which verb takes which hold*, as rows of (verb, clip, solid, edge)."""
