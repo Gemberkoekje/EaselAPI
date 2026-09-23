@@ -5363,3 +5363,274 @@ def test_the_shell_says_when_a_file_has_no_reports(tmp_path, capsys):
     capsys.readouterr()
     assert main(["log", str(session), "--reports"]) == 0
     assert "No pass reports saved" in capsys.readouterr().out
+
+
+# -- 0.7.0 F1: the time-lapse leaves the file ------------------------------------------
+def _painted(tmp_path, **kw):
+    """A few marks of every kind that makes a frame, and a drying that does not."""
+    kw.setdefault("timelapse", True)
+    s = make(tmp_path, **kw)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(cell("D5"), "bristle", "burnt_umber", size=0.03)
+        s.stroke([(0.1, 0.2), (0.9, 0.25)], "flat", "ultramarine", size=0.04)
+        s.dry()
+        s.smudge([(0.3, 0.5), (0.7, 0.5)])
+        s.pencil([(0.1, 0.9), (0.9, 0.9)])
+    return s
+
+
+def _stored(path, key: str):
+    import json
+
+    with np.load(path, allow_pickle=False) as data:
+        return json.loads(str(data["meta"])) if key == "meta" else data[key]
+
+
+def _rewrite_meta(path, change) -> None:
+    """One `.easel` file's meta edited in place, the way another release wrote it."""
+    import json
+
+    with np.load(path, allow_pickle=False) as data:
+        arrays = {k: data[k] for k in data.files}
+    meta = json.loads(str(arrays["meta"]))
+    change(meta)
+    arrays["meta"] = np.array(json.dumps(meta))
+    with open(path, "wb") as fh:
+        np.savez_compressed(fh, **arrays)
+
+
+def test_the_session_file_keeps_no_frames_and_the_film_comes_back_from_the_log(tmp_path):
+    """The lighthouse handover's file was 16.1 MB after 171 marks, and 8.8 MB of it was
+    a time-lapse its painter made once, at the end. The file keeps none now; a session
+    loaded from it rebuilds the film from the log at the frame size it was made with --
+    and that is the film it recorded, frame for frame."""
+    s = _painted(tmp_path, timelapse=120)
+    recorded = list(s.history._frames)
+    path = s.save(tmp_path / "p.easel")
+    assert _stored(path, "frames").shape == (0, 1, 1, 3)   # what 0.6.0 writes for none
+
+    loaded = Session.load(path)
+    assert loaded.history.frame_count == 0
+    rebuilt = loaded._film()._frames
+    assert len(rebuilt) == len(recorded)
+    assert all(np.array_equal(a, b) for a, b in zip(rebuilt, recorded, strict=True))
+    # A GIF merges a frame identical to the one before it, so the count is a floor.
+    assert Image.open(loaded.timelapse_gif(tmp_path / "t.gif")).n_frames > 1
+    assert Image.open(loaded.contact_sheet(tmp_path / "t.png")).size[0] > 0
+
+
+def test_a_loaded_session_records_no_frames_and_its_film_ends_at_the_painting(tmp_path,
+                                                                              monkeypatch):
+    """A frame recorded after a load would begin the film in the middle of the painting,
+    and every pass run from the shell is a load: so none is built -- the dearest thing a
+    mark does that is not paint -- and the film asked for afterwards is the log's, with
+    the pass in it."""
+    from easel.canvas import Canvas
+
+    path = _painted(tmp_path).save(tmp_path / "p.easel")
+    loaded = Session.load(path)
+    built = []
+    real = Canvas.thumbnail_srgb8
+
+    def counted(self, *args, **kwargs):
+        built.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(Canvas, "thumbnail_srgb8", counted)
+    loaded.stroke([(0.2, 0.7), (0.8, 0.7)], "bristle", "burnt_umber")
+    assert built == [] and loaded.history.frame_count == 0
+    last = loaded._film()._frames[-1]
+    assert np.array_equal(last, real(loaded.canvas, loaded.frame_px))
+
+
+def test_an_undo_from_a_file_builds_no_frames(tmp_path, monkeypatch):
+    """`easel undo` rebuilds the painting from the log, and the rebuild built a frame
+    after every mark it laid again -- for a film the file's next save threw away."""
+    from easel.canvas import Canvas
+
+    s = _painted(tmp_path)
+    expected = s.replay(upto=len(s.history.records) - 1).canvas.rgb
+    loaded = Session.load(s.save(tmp_path / "p.easel"))
+    built = []
+    real = Canvas.thumbnail_srgb8
+    monkeypatch.setattr(Canvas, "thumbnail_srgb8",
+                        lambda self, *a, **k: built.append(1) or real(self, *a, **k))
+    assert loaded.undo(1) == 1
+    assert built == []
+    assert np.array_equal(loaded.canvas.rgb, expected)
+
+
+def test_a_file_that_kept_its_frames_keeps_them(tmp_path, monkeypatch):
+    """A file saved before 0.7.0 carries its time-lapse, which is the painting as it was
+    painted under the release that painted it -- so it is used, not rebuilt, and goes on
+    being recorded."""
+    s = _painted(tmp_path)
+    recorded = np.stack(s.history._frames)
+    path = s.save(tmp_path / "p.easel")
+    with np.load(path, allow_pickle=False) as data:
+        arrays = {k: data[k] for k in data.files}
+    arrays["frames"] = recorded
+    with open(path, "wb") as fh:
+        np.savez_compressed(fh, **arrays)
+
+    loaded = Session.load(path)
+    assert loaded.history.frame_count == len(recorded)
+
+    def no_rebuild(*args, **kwargs):
+        raise AssertionError("a film the file kept was rebuilt")
+
+    monkeypatch.setattr(Session, "replay", no_rebuild)
+    loaded.stroke([(0.2, 0.7), (0.8, 0.7)], "bristle", "burnt_umber")
+    assert loaded.history.frame_count == len(recorded) + 1
+    assert loaded.timelapse_gif(tmp_path / "t.gif").exists()
+
+
+def test_a_painting_made_without_a_time_lapse_is_still_told_how_to_have_one(tmp_path):
+    """Off means no film was asked for, from a file as much as in one process; the
+    film is one flag away, and the message says which."""
+    path = _painted(tmp_path, timelapse=False).save(tmp_path / "p.easel")
+    loaded = Session.load(path)
+    with pytest.raises(ValueError, match="No time-lapse frames.*--from-log"):
+        loaded.timelapse_gif(tmp_path / "none.gif")
+    assert loaded.timelapse_gif(tmp_path / "built.gif", from_log=True).exists()
+
+
+def test_the_shell_says_it_is_rebuilding_before_it_does(tmp_path, capsys):
+    """`easel timelapse` was a read and is a repaint now: a command that goes quiet for
+    half a minute looks like one that hung, so it says what it is doing first."""
+    path = _painted(tmp_path).save(tmp_path / "p.easel")
+    capsys.readouterr()
+    assert main(["timelapse", str(path), str(tmp_path / "t.gif"), "--every", "2"]) == 0
+    caught = capsys.readouterr()
+    assert "Rebuilding the film from the log" in caught.err
+    assert caught.out.strip() == str(tmp_path / "t.gif")
+
+
+# -- 0.7.0 F2: the engine that saved a file, and what has moved since --------------------
+def _smudged(tmp_path):
+    """A painting with a smudge in it: the one kind of mark a fix since 0.5.0 moves."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(span("C4", "F5"), "flat", "burnt_umber", size=0.05)
+        s.smudge([(0.3, 0.5), (0.7, 0.5)])
+        s.smudge([(0.3, 0.6), (0.7, 0.6)])
+    return s
+
+
+def _said_at_load(path) -> list:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return [(n.code, n.text) for n in Session.load(path)._load_notices]
+
+
+def test_a_file_says_which_release_saved_it(tmp_path):
+    import easel
+
+    path = make(tmp_path).save(tmp_path / "p.easel")
+    assert _stored(path, "meta")["engine"] == easel.__version__
+
+
+def test_a_file_from_before_the_stamp_is_dated_by_what_it_carries(tmp_path):
+    """No file saved so far carries the stamp. 0.6.0 wrote a `notices` key on every save
+    and nothing before it wrote one, so the key dates a file to 0.6.0, and its absence
+    to 0.5.0 or earlier."""
+    from easel.session import _saved_by
+
+    assert _saved_by({"engine": "0.7.0", "notices": []}) == "0.7.0"
+    assert _saved_by({"notices": []}) == "0.6.0"
+    assert _saved_by({}) == ""
+    assert _saved_by({"engine": "unknown", "notices": []}) == "0.6.0"
+
+
+def test_an_older_file_says_which_marks_a_rebuild_lays_differently(tmp_path):
+    """The painter's rider on the version: its notes promise a pixel-identical rebuild,
+    which relies on the release that painted it. A file saved before a fix that moves
+    some of its marks says so as it opens, with how many -- and the canvas itself is
+    untouched, because loading never repaints."""
+    s = _smudged(tmp_path)
+    path = s.save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
+
+    with pytest.warns(UserWarning, match="saved by Easel 0.5.0 or earlier") as caught:
+        loaded = Session.load(path)
+    said = [w.message for w in caught if getattr(w.message, "code", "") == "older-engine"]
+    assert len(said) == 1
+    text = str(said[0])
+    assert "2 of the marks in its log lay differently" in text
+    assert "a smudge no longer starts loaded with white" in text and "(0.6.0, 2 marks)" in text
+    assert [n.code for n in loaded._load_notices] == ["older-engine"]
+    assert np.array_equal(loaded.canvas.rgb, s.canvas.rgb)
+
+
+def test_it_is_said_once_and_only_where_something_moves(tmp_path):
+    """Said once: the next save stamps the file with this release, and a painting
+    continued here is this release's from then on. And only where a fix moves one of
+    its marks -- a painting with no smudge in it is not told about the smudge, and a
+    file saved by 0.6.0 is not told about a fix 0.6.0 made."""
+    path = _smudged(tmp_path).save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        Session.load(path).save(path)
+    assert _said_at_load(path) == []
+
+    path = _smudged(tmp_path).save(tmp_path / "q.easel")
+    _rewrite_meta(path, lambda meta: meta.pop("engine"))
+    assert _said_at_load(path) == []
+
+    plain = make(tmp_path)
+    plain.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    path = plain.save(tmp_path / "r.easel")
+    _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
+    assert _said_at_load(path) == []
+
+
+def test_a_fix_is_counted_against_the_release_that_saved_the_file(tmp_path, monkeypatch):
+    """What step 6's dry-brush fix will do to a 0.6.0 file, with a stand-in fix: the
+    marks it moves are counted, the release that saved the file is named, and the way
+    back is that release. A file from a later release than this one is not dated
+    against fixes this build has never heard of."""
+    import sys
+
+    from easel import notices
+
+    session_module = sys.modules["easel.session"]
+    later = notices.RebuildChange("9.0.0", "every flat lays a stand-in fix", "### none",
+                                  lambda record: record.brush == "flat")
+    monkeypatch.setattr(notices, "REBUILDS", (*notices.REBUILDS, later))
+    monkeypatch.setattr(session_module, "_engine", lambda: "9.0.0")
+
+    path = _smudged(tmp_path).save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: meta.update(engine="0.6.0"))
+    (code, text), = _said_at_load(path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        flats = sum(1 for r in Session.load(path).history.records if r.brush == "flat")
+    assert code == "older-engine"
+    assert f"{flats} of the marks in its log lay differently under 9.0.0" in text
+    assert "smudge" not in text                              # 0.6.0 made that fix itself
+    assert "pip install easel-paint==0.6.0" in text
+
+    _rewrite_meta(path, lambda meta: meta.update(engine="10.0.0"))
+    assert _said_at_load(path) == []
+
+
+def test_the_shell_says_what_the_file_said_at_load_on_its_own(tmp_path, capsys):
+    """What a file says as it opens reached the shell as a raw Python warning -- the
+    engine's own file name and line first -- and an MCP painter not at all. The shell
+    says it under its own heading, once, on stderr: stdout is where `look` prints the
+    path a script reads back."""
+    path = _smudged(tmp_path).save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
+    capsys.readouterr()
+    look = tmp_path / "look.png"
+    assert main(["look", str(path), "-o", str(look)]) == 0
+    caught = capsys.readouterr()
+    assert caught.out.strip() == str(look)
+    assert "at load, 1 thing said:" in caught.err
+    assert caught.err.count("older-engine") == 1 and "EaselWarning" not in caught.err
+    # ...and `look` saved the file, so it is not said again.
+    assert main(["look", str(path), "-o", str(look)]) == 0
+    assert "at load" not in capsys.readouterr().err

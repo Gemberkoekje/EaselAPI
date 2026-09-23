@@ -473,6 +473,31 @@ def test_export_and_timelapse_write_what_they_say(tmp_path, call, painting):
     assert Image.open(sheet).size[0] > 0
 
 
+def test_what_a_file_says_as_it_opens_comes_back_with_the_answer(call, painting):
+    """What a file said as it opened was warned to the server's stderr, which a painter
+    working through a client never sees: 0.6.0 closed that gap for what a *call* says
+    and left it open for what a *file* says. An older file's rebuild notice comes back
+    at the top of whatever the tool answers -- until a tool saves the file, which
+    stamps it with this release."""
+    import json
+
+    call("run", session=painting, script="s.smudge([(0.3, 0.5), (0.7, 0.5)])")
+    with np.load(painting, allow_pickle=False) as data:
+        arrays = {k: data[k] for k in data.files}
+    meta = json.loads(str(arrays["meta"]))
+    del meta["engine"], meta["notices"]              # as 0.5.0 wrote it
+    arrays["meta"] = np.array(json.dumps(meta))
+    with open(painting, "wb") as fh:
+        np.savez_compressed(fh, **arrays)
+
+    told = call("log", session=painting).text
+    assert told.startswith("at load, 1 thing said:") and "older-engine" in told
+    assert "older-engine" in call("log", session=painting).text     # log does not save
+    looked = call("look", session=painting)
+    assert "older-engine" in looked.text and len(looked.images) == 1
+    assert "at load" not in call("log", session=painting).text
+
+
 # -- failures ---------------------------------------------------------------------------
 def test_a_missing_session_says_how_to_make_one(call, tmp_path):
     with pytest.raises(ToolError, match="No session at"):

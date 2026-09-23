@@ -35,6 +35,8 @@ It does four things:
     python scripts/probe_handover_session.py --misfires   # 4C: the four cases in hand
     python scripts/probe_handover_session.py --sheet      # 4D
     python scripts/probe_handover_session.py --file       # 4F
+    python scripts/probe_handover_session.py --shell      # 4F built: the passes from a shell
+    python scripts/probe_handover_session.py --shell --engine DIR/src   # ...under another
     python scripts/probe_handover_session.py --pressure   # 4G: the fade and the wet bands
 
 The corpus half of workstream C -- every pass of the twenty-two paintings the graded rule
@@ -1367,6 +1369,11 @@ def probe_file() -> None:
         saved = rb.session.save(tmp / "lighthouse.easel")
         with np.load(saved, allow_pickle=False) as npz:
             data = {k: npz[k] for k in npz.files}
+        if not data["frames"].size and rb.session.history._frames:
+            # Since step 4 a save keeps no frames; put them back, so what is measured
+            # here is still the file as 0.6.0 wrote it -- the one the round began from.
+            data["frames"] = np.stack(rb.session.history._frames)
+            _resave(data, saved)
         frames = data["frames"]
         print(f"  as saved: {saved.stat().st_size / 1e6:.2f} MB, with {len(frames)} "
               f"time-lapse frames of {frames.shape[1:] if frames.size else '-'}")
@@ -1408,6 +1415,79 @@ def probe_file() -> None:
         loaded = Session.load(tmp / "noframes.easel")
         took, _ = _time(lambda: loaded.timelapse_gif(tmp / "rebuilt.gif", from_log=True))
         print(f"  a GIF rebuilt from the log of a file with no frames: {took:.0f}s")
+
+
+#: The painter's own workflow, run in a process of its own: ``easel new``, the thirteen
+#: passes through ``easel run`` one at a time -- each a load, a pass and a save, which is
+#: what the shell does -- then the file, and ``easel timelapse`` at the end. A child
+#: started with ``-S`` so that an editable install's import hook cannot hand it the
+#: checkout instead of the engine named (``LESSONS.md``'s papercut); site-packages are
+#: put back by hand for numpy and PIL.
+_SHELL_CHILD = r'''
+import contextlib, io, shutil, site, sys, tempfile, time, warnings
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+sys.path.extend(site.getsitepackages())
+import easel
+from easel import Session
+from easel.cli import main
+from PIL import Image
+
+here, painting = Path(sys.argv[2]), sys.argv[3:]
+warnings.simplefilter("ignore")
+print(f"  engine {easel.__version__} from {Path(easel.__file__).parent}")
+with tempfile.TemporaryDirectory(prefix="easel-shell-") as tmp:
+    tmp = Path(tmp)
+    shutil.copy(here / "prelude.py", tmp / "prelude.py")
+    session, sink = tmp / "lighthouse.easel", io.StringIO()
+    with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+        assert main(["new", str(session), *painting, "--out-dir", str(tmp / "out")]) == 0
+    took = []
+    for script in sorted(here.glob("p[0-9][0-9]_*.py")):
+        started = time.perf_counter()
+        with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+            assert main(["run", str(session), str(script)]) == 0, sink.getvalue()[-2000:]
+        took.append(time.perf_counter() - started)
+    loads, saves = [], []
+    for _ in range(3):
+        started = time.perf_counter()
+        s = Session.load(session)
+        loads.append(time.perf_counter() - started)
+        started = time.perf_counter()
+        s.save(tmp / "again.easel")
+        saves.append(time.perf_counter() - started)
+    started = time.perf_counter()
+    with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+        assert main(["timelapse", str(session), str(tmp / "film.gif")]) == 0
+    film = time.perf_counter() - started
+    with Image.open(tmp / "film.gif") as im:
+        frames, size = im.n_frames, im.size
+    print(f"  the {len(took)} passes through `easel run`: {sum(took):.1f} s "
+          f"({', '.join(f'{t:.1f}' for t in took)})")
+    print(f"  the file: {session.stat().st_size / 1e6:.2f} MB, {len(s.history.records)} "
+          f"records, {s.history.frame_count} time-lapse frames in it; load "
+          f"{min(loads):.2f} s, save {min(saves):.2f} s, best of three")
+    print(f"  `easel timelapse` at the end: {film:.1f} s, {frames} frames at {size}, "
+          f"{(tmp / 'film.gif').stat().st_size / 1e6:.2f} MB")
+'''
+
+
+def probe_shell(engines: list[str]) -> None:
+    """4F, built: what the painter's workflow costs from the shell, engine by engine.
+
+    Each engine is a ``src`` directory; the checkout's own when none is named. To set
+    this build beside the one before it: ``git archive <commit> src | tar -x -C DIR``
+    and pass ``--engine DIR/src`` as well. Timings only on a quiet machine.
+    """
+    import subprocess
+
+    print("\n== 4F, built: the painter's passes through the shell ==")
+    painting = ["--size", "1024x768", "--texture", PAINTING["texture"], "--ground",
+                PAINTING["ground"], "--seed", str(PAINTING["seed"]), "--budget",
+                str(PAINTING["budget"])]
+    for src in engines or [str(ROOT / "src")]:
+        subprocess.run([sys.executable, "-S", "-c", _SHELL_CHILD, src, str(HERE), *painting],
+                       check=True)
 
 
 # -- 4G. the pressure-list fade, and the wet bands -------------------------------------------
@@ -1515,10 +1595,16 @@ def main(argv: list[str] | None = None) -> int:
                        ("--misfires", "4C: the narrowed rule on the four cases in hand"),
                        ("--sheet", "4D: a variant's cost, and a sheet in four processes"),
                        ("--file", "4F: the session file, saved each way"),
+                       ("--shell", "4F, built: the passes through `easel run`, the file "
+                                   "and `easel timelapse`, engine by engine"),
                        ("--pressure", "4G: the pressure-list fade and the wet bands")):
         parser.add_argument(flag, action="store_true", help=what)
+    parser.add_argument("--engine", action="append", default=[], metavar="SRC",
+                        help="with --shell: an engine's src directory to time, "
+                             "repeatable; the checkout's own when left off")
     args = parser.parse_args(argv)
-    chosen = {k for k, v in vars(args).items() if v}
+    engines = args.engine
+    chosen = {k for k, v in vars(args).items() if v and k != "engine"}
     every = not chosen
 
     print("The lighthouse handover's round, measured. Engine "
@@ -1539,6 +1625,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_sheet()
     if every or "file" in chosen:
         probe_file()
+    if every or "shell" in chosen:
+        probe_shell(engines)
     if every or "pressure" in chosen:
         probe_pressure()
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The lighthouse "

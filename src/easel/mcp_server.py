@@ -37,10 +37,12 @@ easel-paint[mcp]``. Nothing else in the engine imports it.
 from __future__ import annotations
 
 import argparse
+import contextvars
 import dataclasses
 import functools
 import os
 import traceback
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -54,6 +56,7 @@ from easel import regions as _regions
 from easel.brush import Brush
 from easel.cli import parse_size, reference_text, run_script
 from easel.look import DEFAULT_LOOK_SIZE
+from easel.notices import EaselWarning
 from easel.regions import Region, as_place
 from easel.session import PLAN_ACCEPTS, Session
 
@@ -387,27 +390,73 @@ def _py_edge(value) -> str:
 
 
 # --------------------------------------------------------------------------------------
-# Saying what went wrong
+# Saying what went wrong, and what the file said as it opened
 # --------------------------------------------------------------------------------------
+#: What the session files a tool opened said as they opened, for :func:`_tool` to hand
+#: back first. ``None`` outside a tool.
+_OPENED: contextvars.ContextVar[list | None] = contextvars.ContextVar("easel_opened",
+                                                                     default=None)
+
+
+def _load(path) -> Session:
+    """Open a session file for a tool, keeping what opening it said.
+
+    What a file says as it opens -- an ``out_dir`` somewhere foreign, an engine older
+    than this one -- was warned to this process's stderr, which a painter working
+    through a client never sees: the gap 0.6.0 closed for what a *call* says, left
+    open for what a *file* says. Every tool opens its file here, and :func:`_tool`
+    puts what was said at the top of the answer.
+    """
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=EaselWarning)
+        session = Session.load(path)
+    said = _OPENED.get()
+    if said is not None:
+        said.extend(session._load_notices)
+    return session
+
+
+def _said_first(said: list, result):
+    """A tool's answer with what its file said at load above it, the way the shell prints it."""
+    head = _notices.block(said, when="at load")
+    if not head:
+        return result
+    if isinstance(result, str):
+        return _join(head, result)
+    if isinstance(result, list):
+        if result and isinstance(result[0], str):
+            return [_join(head, result[0]), *result[1:]]
+        return [head, *result]
+    return result
+
+
 def _tool(fn):
-    """Turn a failure into words the painter can act on.
+    """Turn a failure into words the painter can act on, and say what the file said.
 
     The CLI catches the bad-input exceptions and prints one ``easel: ...`` line;
     this says the same words for the same input. Anything else is a crash, and gets
     its type and traceback rather than the generic "error executing tool" the SDK
     would otherwise hand the client -- there is no console for a painter to read
-    here, so a withheld message is a message nobody sees.
+    here, so a withheld message is a message nobody sees. For the same reason,
+    whatever the session file said as the tool opened it (:func:`_load`) comes back
+    at the top of the answer, or of the failure.
     """
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
+        said: list = []
+        token = _OPENED.set(said)
         try:
-            return fn(*args, **kwargs)
+            return _said_first(said, fn(*args, **kwargs))
         except _EXPECTED as exc:
-            raise ToolError(f"easel: {exc}") from exc
+            raise ToolError(_join(_notices.block(said, when="at load"),
+                                  f"easel: {exc}")) from exc
         except Exception as exc:
-            raise ToolError(
-                f"easel: {type(exc).__name__}: {exc}\n\n{traceback.format_exc()}"
-            ) from exc
+            raise ToolError(_join(
+                _notices.block(said, when="at load"),
+                f"easel: {type(exc).__name__}: {exc}\n\n{traceback.format_exc()}",
+            )) from exc
+        finally:
+            _OPENED.reset(token)
 
     return wrapper
 
@@ -506,9 +555,10 @@ def build_server() -> MCPServer:
                 Painting on white is the hardest thing to judge values against.
             seed: the determinism seed. Same seed and same calls, same painting.
             out_dir: where look(), preview() and compare() write their PNGs.
-            timelapse: record a frame after every mark, for the time-lapse. A
-                number is the frame's long side in pixels; the default is 360, and
-                a frame is the dearest thing a mark does that is not paint.
+            timelapse: keep a time-lapse. A number is the frame's long side in
+                pixels; the default is 360. The session file keeps no frames, so
+                `timelapse` rebuilds the film from the log at this size when it is
+                asked for.
             force: overwrite an existing session file.
             budget: how many strokes this painting is allowed. Nothing is refused
                 when it runs out, but `run` then reports spent and remaining and
@@ -584,7 +634,7 @@ def build_server() -> MCPServer:
         pre = (Path(prelude_path).read_text(encoding="utf-8") if prelude_path
                else prelude)
 
-        s = Session.load(session)
+        s = _load(session)
         trying = rehearse or count
         target = s.scratch(count_only=count) if trying else s
         before = target._open_pass()
@@ -655,7 +705,7 @@ def build_server() -> MCPServer:
                 picture.
             output: where to write the PNG. Defaults to out_dir/look_NNN.png.
         """
-        s = Session.load(session)
+        s = _load(session)
         path = s.look(
             scale=_scale(scale),
             grid=_grid(grid),
@@ -706,7 +756,7 @@ def build_server() -> MCPServer:
                 "compare takes either reference (an image) or plan (the values you "
                 "meant to paint), and needs exactly one of them."
             )
-        s = Session.load(session)
+        s = _load(session)
         if plan is not None:
             targets = {}
             for i, entry in enumerate(plan):
@@ -747,7 +797,7 @@ def build_server() -> MCPServer:
                 painter, and says so in its write-up. See PAINTER.md.
             output: where to write the overlay.
         """
-        s = Session.load(session)
+        s = _load(session)
         prep = s.prepare(reference, level=level, path=output or None)
         for group in merge or []:
             numbers = [int(n) for n in group]
@@ -785,7 +835,7 @@ def build_server() -> MCPServer:
             y: position down, 0..1 from the top.
             forget: remove the named landmark instead of setting it.
         """
-        s = Session.load(session)
+        s = _load(session)
         if forget and not name:
             raise ValueError("Forgetting a landmark needs its name.")
         if not name:
@@ -822,7 +872,7 @@ def build_server() -> MCPServer:
             session: the .easel file.
             n: how many log records to scrape back.
         """
-        s = Session.load(session)
+        s = _load(session)
         undone = s.undo(n)
         s.save(session)
         return f"Undid {undone} stroke(s). {s.stroke_count} remain."
@@ -839,7 +889,7 @@ def build_server() -> MCPServer:
             impasto: shade paint height as relief.
             sketch: include whatever pencil the paint has not covered.
         """
-        s = Session.load(session)
+        s = _load(session)
         return str(s.export(output, impasto=impasto, sketch=sketch))
 
     @server.tool()
@@ -847,6 +897,11 @@ def build_server() -> MCPServer:
     def timelapse(session: str, output: str, fps: float = 8.0, every: int = 1,
                   scale: int | None = None, from_log: bool = False) -> str:
         """Write the painting happening: .gif for the animation, .png for a contact sheet.
+
+        The session file keeps no frames, so the film is rebuilt from the log at the
+        session's frame size: a full repaint, about half a minute for a painting of a
+        couple of hundred marks. A file saved before 0.7.0 that kept its frames uses
+        them.
 
         Args:
             session: the .easel file.
@@ -856,15 +911,14 @@ def build_server() -> MCPServer:
                 stroke, so a couple of hundred marks make a couple of megabytes at
                 every=1 and a third of that at every=3, reading the same. The
                 finished painting is always the last frame.
-            scale: long side in pixels (GIF only). Frames are recorded at 360
-                unless the session asked for another size, and this only shrinks
-                them -- with from_log it is the size they are built at instead.
-            from_log: rebuild the frames by replaying the painting rather than using
-                the ones it recorded. The whole painting is in the log, so the film
-                can be made at any resolution afterwards -- including for a painting
-                that recorded no frames at all. Costs a full repaint.
+            scale: long side in pixels (GIF only). Frames are made at 360 unless the
+                session asked for another size, and this only shrinks them -- with
+                from_log it is the size they are built at instead.
+            from_log: build the frames at `scale` rather than at the session's frame
+                size -- the canvas's own when `scale` is left off. Also a full
+                repaint, and it works on a painting made with the time-lapse off.
         """
-        s = Session.load(session)
+        s = _load(session)
         out = Path(output)
         path = (s.contact_sheet(out) if out.suffix.lower() == ".png"
                 else s.timelapse_gif(out, fps=fps, every=every, scale=scale,
@@ -883,7 +937,7 @@ def build_server() -> MCPServer:
                 file kept it: what the calls said and the post-pass check, rehearsed
                 and counted passes included, each saying which it was.
         """
-        s = Session.load(session)
+        s = _load(session)
         head = f"{s.stroke_count} strokes, seed {s.seed}, {s.size[0]}x{s.size[1]}"
         if reports:
             return f"{head}\n{_notices.saved(s.reports(), last=n)}"
@@ -908,7 +962,7 @@ def build_server() -> MCPServer:
             subject_share: the share of the budget the subject was to get, 0..1.
                 The plan's own is used when this is left off.
         """
-        return Session.load(session).checklist(subject_share=subject_share)
+        return _load(session).checklist(subject_share=subject_share)
 
     @server.tool()
     @_tool
@@ -1073,7 +1127,7 @@ def build_server() -> MCPServer:
                 the ground line stops asking for some back.
             clear: start from nothing rather than from what is already declared.
         """
-        s = Session.load(session)
+        s = _load(session)
         told = len(s.notices())
         declared = s.plan(
             why=why or None,
@@ -1117,7 +1171,7 @@ def build_server() -> MCPServer:
             scale: long-side pixels. 0 for full resolution.
             output: where to write the PNG.
         """
-        s = Session.load(session)
+        s = _load(session)
         told = len(s.notices())
         specs, lines = _plan(plan)
         path = s.preview(specs, reference=reference or None,
@@ -1165,7 +1219,7 @@ def build_server() -> MCPServer:
                 question about size is a question only comparison answers. At most
                 twelve panels: two arguments vary together as their combinations.
         """
-        s = Session.load(session)
+        s = _load(session)
         told = len(s.notices())
         specs, lines = _plan(plan)
         path = s.rehearse(specs, reference=reference or None,
@@ -1196,7 +1250,7 @@ def build_server() -> MCPServer:
             session: the .easel file.
             plan: """ + _PLAN_HELP + """
         """
-        s = Session.load(session)
+        s = _load(session)
         told = len(s.notices())
         specs, lines = _plan(plan)
         # Why, not only how much: a number four to twelve times what a painter would

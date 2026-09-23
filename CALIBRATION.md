@@ -56,6 +56,7 @@ their own sessions rather than measurements of the engine.
 | A dab is a light touch; `press=3` lands; scale a mark off the thing | *At the scale of a feature* |
 | A bristle under `0.025` is four streaks; round tips repeat, `tip_wobble` redraws | *The bristle comb* |
 | A rehearsal is the next strokes; `pencil`, `dry` and `erase` are logged | *The log, undo, and the stream* |
+| A file opens as painted and rebuilds as the engine installed lays; its time-lapse is the log | *The log, undo, and the stream* |
 | What a mass costs, before the call | *Budget* |
 | A daisy leaves one point every way; a loop is one length at one spacing; a film or a mass takes what was showing | *What the check reads after a pass* |
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
@@ -1674,6 +1675,28 @@ then a detour, then the detour undone, then a third mass, 320×240, seed 5, agai
 third mass laid straight after the first: identical in-process for a mark undone,
 identical in-process for a whole mass undone, identical through the session file.
 
+**A file saved by an earlier release opens as it was painted, and rebuilds as this one
+lays.** The file holds the canvas, so loading never repaints it; an `undo` from the shell
+or the server, `replay()` and a time-lapse made from the log lay every mark again with
+the engine installed, so a fix to how a mark is laid reaches every mark of that kind in
+every painting ever saved. The smudge fix of 0.6.0 is the size of it: a smudge that
+started loaded with white laid a cap `0.13` of value over a mass at `0.45`, and a rebuild
+lays it without one. So since 0.7.0 a file says which release saved it, and a file from
+before the stamp is dated by what it carries — a `notices` key is 0.6.0, which wrote one
+on every save, and none is 0.5.0 or earlier. Opened under a later release, a file whose
+log holds marks a fix since then lays differently says so once, with how many for each
+fix (`older-engine`); the next save stamps it with the release that saved it. The fixes
+are the ones each release's entry in `CHANGELOG.md` names as changing what a rebuild
+lays, which a test holds against the engine's own list. Rebuilt under the release that
+saved it, a painting comes back as painted, byte for byte on the same machine.
+
+**The time-lapse is not in the file, and comes back from the log.** A session loaded from
+a file records no frames — every pass run from the shell or the server is such a
+session, and a frame is the dearest thing a mark does that is not paint — and its film is
+rebuilt when one is asked for, at the frame size the painting was made with. Rebuilt,
+it is the film the painting recorded, frame for frame: the per-index seeding that makes
+a replay the painting makes each frame of it the frame that was taken.
+
 **The planning verbs leave nothing behind, and three free verbs do.** One `bristle`
 stroke laid after each verb, 400×300, seed 9, hashed against the same stroke laid after
 nothing:
@@ -2768,6 +2791,23 @@ save a sixth of the frames' share and are not worth a format. A GIF rebuilt from
 of a file with no frames takes **36 to 49 s** over two runs. The painter's own 35 s was
 its thirteen passes rebuilt through `easel run`, not a GIF, and one GIF at the end was
 the only use it had for the frames.
+
+**Built (step 4): the file keeps no frames, and a loaded session records none.** The
+painter's workflow as it ran it — `easel new`, the thirteen passes through `easel run`
+one at a time, `easel timelapse` at the end — timed under the engine before the change
+and after it, each in a process of its own (`probe_handover_session.py --shell`):
+
+| | before | after |
+|---|---|---|
+| the thirteen passes through `easel run` | 45.6 s | **36.5 s** |
+| the file | 16.43 MB | **7.37 MB** |
+| load, save | 0.30 s, 0.79 s | 0.24 s, 0.29 s |
+| `easel timelapse` at the end | 2.4 s, the frames read | **26.6 s**, the log replayed |
+
+The GIF is the same, 172 frames at 341 x 256 and 1.14 MB: the film is rebuilt at the
+frame size the painting was made with, and the rebuilt frames are the recorded ones,
+array for array. It costs a full repaint at 341 px rather than at the canvas's own size,
+which is why it is under the 36 to 49 s above.
 
 ### The fade and the wet bands
 

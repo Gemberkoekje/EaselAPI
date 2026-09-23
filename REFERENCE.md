@@ -476,11 +476,13 @@ that measured it. That is where a rule's reason lives once it is no longer in th
 reading path: not deleted, handed over at the one moment it applies.
 
 `easel run` prints them above the post-pass check, in one block, said once each
-however many calls tripped them, and **facts first**. A *fact* is a number about what
-this call is going to do — the mark lands nothing, the mass costs 3.9× its own axis,
-the value that comes back measures neither mass. A *habit* is a rule of thumb about
-the picture that a painter can be right to break, and one painting broke the comb
-floor twenty-eight times and was right every time.
+however many calls tripped them, and **facts first**. What a session file says as it
+opens — `foreign-out-dir`, `older-engine` — is said **at load**, before anything else:
+on stderr from the shell, and at the top of the answer through the MCP server. A *fact*
+is a number about what this call is going to do — the mark lands nothing, the mass
+costs 3.9× its own axis, the value that comes back measures neither mass. A *habit* is
+a rule of thumb about the picture that a painter can be right to break, and one
+painting broke the comb floor twenty-eight times and was right every time.
 
 | Code | Kind | What it says | Measured under |
 |---|---|---|---|
@@ -502,6 +504,7 @@ floor twenty-eight times and was right every time.
 | `glaze-nothing` | fact | a film aimed at a value the paint under it already reads solves to no opacity, and still costs a stroke | `CALIBRATION.md`, *Aiming a film at a value* |
 | `inward-flat` | fact | an inward scumble's brush wider than about three ring steps: the last rings bury the first and the middle comes back flat | `CALIBRATION.md`, *`scumble`* |
 | `jitter-beads` | fact | `jitter=` a multiple of its default, which comes out as width: a chain of beads rather than a line | `PAINTING.md`, *Per-stroke overrides* |
+| `older-engine` | fact | a session file saved by an earlier Easel, with marks in its log that a fix since then lays differently: an undo, a replay or a film rebuilt from it will not match the canvas there | `CALIBRATION.md`, *The log, undo, and the stream* |
 | `plan-pairs` | fact | two places a plan puts closer than `0.10` meet on the canvas, so one will read as the other exactly where they join | `CALIBRATION.md`, *The plan a painter declares* |
 | `round-fringe` | fact | a round tip blocking in a feature lays about half again the shape's area, and the fringe is the silhouette | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `sample-split` | fact | `sample()` averaged two masses, so the value it returns is a measurement of neither | `PAINTING.md`, *Colour* |
@@ -554,7 +557,8 @@ an index would repaint every painting made before it.
 ```python
 Session(width=1024, height=768, texture="linen", ground="white", seed=0,
         timelapse=True, out_dir="out", texture_strength=1.0, budget=None)
-                   # timelapse=<px> is the frame's long side; the default is 360
+                   # timelapse=<px> is the frame's long side; the default is 360.
+                   # The frames stay in memory: the .easel file keeps none
 s.size   s.aspect   s.ground   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
 s.guides s.guide(points, note="")        s.unguide(note=None)
@@ -615,6 +619,17 @@ stroke and none of it is laid, so a helper that calls a dozen verbs has a price 
 check in about a thirtieth of the time and there is no look to write.
 `s.scratch(count_only=True)` is the same thing from Python and `run(count=True)` through
 the MCP server. Rehearse when the question is what it looks like.
+
+**The `.easel` file keeps everything but the time-lapse.** The frames were more than half
+of a painting's file, for a film made once, at the end, so a session loaded from a file
+records none and `easel timelapse` rebuilds the film from the log at the session's frame
+size — the same film, frame for frame, at the price of a full repaint. A file saved
+before 0.7.0 that kept its frames still uses them. **And the file says which release
+saved it**: the canvas opens as it was painted under any later one, but a rebuild — an
+`undo`, a `replay()`, a film made from the log — lays every mark again with the engine
+installed, so a file whose log has marks a fix since then lays differently says so as
+it opens, with how many (`older-engine`). Said once: the next save stamps the file with
+the release that saved it.
 
 ---
 

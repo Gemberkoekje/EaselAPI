@@ -77,6 +77,48 @@ twice saw a check misfire on a rehearsal that left no trace in the file.
   the report had to be saved. **A Python script that made a mixture on a `scratch()`
   and then used it on the painting now raises `KeyError`**: make it on the painting.
 
+### The session file without its time-lapse, and the release that saved it
+
+Step 4 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream F). The painter's
+file was 16.1 MB after 171 marks, and 8.8 MB of it was a time-lapse it made once, at the
+end. And its notes promise a pixel-identical rebuild that relies on the release it
+painted with, which it asked to be told about when that stops holding.
+
+- **The `.easel` file keeps no time-lapse frames.** The painter's painting, rebuilt the
+  way it was painted, saves at **7.37 MB** where it saved at 16.43. The `frames` array
+  is still written, empty, which is what 0.6.0 writes for a painting with none, so 0.6.0
+  opens the file — checked against the tag.
+- **A session loaded from a file makes its film from the log.** It records no frames — a
+  frame recorded after a load would begin the film in the middle of the painting — and
+  `timelapse_gif()`, `contact_sheet()`, `easel timelapse` and the MCP `timelapse` replay
+  the log when asked, at the session's own frame size: **frame for frame the film it
+  recorded**, for a full repaint where it was a read: **26.6 s** for the painter's
+  painting, where reading its frames took 2.4, and the same GIF of 172 frames. A
+  painting made in one Python process keeps its frames in memory as before; a file
+  saved before 0.7.0 that kept its frames still uses them; `from_log=True` still builds
+  at any size. `easel timelapse` says it is rebuilding before it starts.
+- **So every pass from the shell or the server is cheaper**: no frame is built after a
+  load, and the file is written without them. The painter's thirteen passes through
+  `easel run` take **36.5 s** where they took 45.6, and every save — which every
+  rehearsal makes since the report went into the file — takes 0.29 s where it took
+  0.79. A painting that makes one film at the end spends about 15 s more in all, which
+  is the trade the painter chose: *paying that once for a GIF is fine*. An undo from the
+  shell or the server builds no frames as it rebuilds.
+- **The file says which release saved it** — `engine` in its meta, read with `.get` —
+  **and a file saved by an earlier release says so as it opens when a fix since then
+  lays some of its marks differently**: `older-engine`, a fact, with how many marks each
+  fix moves and the release to rebuild it under. The canvas opens as it was painted
+  under any release; what does not is an undo, a replay or a film made from the log,
+  which lay every mark again with the engine installed. Said once, since the next save
+  stamps the file, and said only where a fix moves something. A file without the stamp is
+  dated by what it carries — a `notices` key is 0.6.0, none is 0.5.0 or earlier. The
+  fixes are `easel.notices.REBUILDS`, and `tests/test_notices.py` holds them to the ones
+  each release below names as changing what a rebuild lays: so far, 0.6.0's smudge.
+- **What a file says as it opens reaches the painter.** The shell prints it on stderr,
+  under *at load*, where it arrived as a raw Python warning with the engine's own file
+  name and line first; the MCP server puts it at the top of the tool's answer, where it
+  went to the server's stderr and reached nobody. `foreign-out-dir` arrives the same way.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with

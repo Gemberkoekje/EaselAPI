@@ -26,15 +26,16 @@ MAX_SNAPSHOTS = 24
 
 #: Cap on time-lapse frames held in memory. Past this the sequence is decimated
 #: (every other frame dropped), which keeps the whole arc of the painting visible
-#: while bounding both memory and the size of a saved session.
+#: while bounding memory. (It bounded the size of a saved session too, until 0.7.0
+#: took the frames out of the file.)
 MAX_FRAMES = 200
 
-#: The long side a time-lapse frame is recorded at, unless the painter asks for
-#: another. It was unreachable from `Session` or the CLI until 0.6.0 -- a 1440x960
-#: painting had a 360x240 time-lapse and no way to say otherwise, and the frames are
-#: stored in the `.easel` file at that size, so raising it later could not help a
-#: painting already made. `Session(timelapse=<px>)` sets it, and
-#: `timelapse_gif(from_log=True)` rebuilds the film at any size from the log.
+#: The long side a time-lapse frame is made at, unless the painter asks for another --
+#: recorded as a painting is painted, or rebuilt from the log for a session loaded from
+#: a file, which keeps none. It was unreachable from `Session` or the CLI until 0.6.0 --
+#: a 1440x960 painting had a 360x240 time-lapse and no way to say otherwise.
+#: `Session(timelapse=<px>)` sets it, and `timelapse_gif(from_log=True)` rebuilds the
+#: film at any size from the log.
 DEFAULT_FRAME_PX = 360
 
 
@@ -301,7 +302,8 @@ class History:
                 "No time-lapse frames were recorded. Create the session with "
                 "timelapse=True, or call session.capture_frame() as you paint. "
                 "s.timelapse_gif(path, from_log=True) builds one from the log "
-                "instead, at whatever size you ask for."
+                "instead, at whatever size you ask for -- `easel timelapse "
+                "--from-log` from a shell."
             )
         if int(every) < 1:
             raise ValueError(
