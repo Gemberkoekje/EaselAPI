@@ -174,7 +174,10 @@ change and for a load to keep its meaning: *the amount was right, the shape was 
 **One fix changes what a rebuild lays**: a brush running dry drags its paint into
 streaks along its travel rather than dotting it, so a mark saved before 0.7.0 that ran
 dry replays streaked — and a file saved before it says so as it opens, with how many of
-its marks (`older-engine`).
+its marks (`older-engine`). Over the committed paintings, rebuilt, 2,788 of 5,628 marks
+run dry somewhere — a preset bristle's tail drags as surely as a mark laid starved — and
+a rebuild moves a median `2.4%` of a canvas, up to `19.8%`: in every painting, the dots
+in a dry passage become streaks along its strokes.
 
 - **A brush running dry drags.** Under `0.9` of its load, and wholly by `0.7`, the
   tooth a brush is gated against is read along the stroke's own direction — averaged

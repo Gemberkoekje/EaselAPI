@@ -329,8 +329,8 @@ because the sampler *shows isolated strokes at full load* and has been fooled be
 (`LESSONS.md`, trap 1). **This is a fix that changes what a rebuild lays**: every
 starved stroke in every saved painting replays with the new gate -- sixteen of this
 painting's own, eleven `bristle` and five `flat` *(corrected in step 6: those sixteen
-were laid starved on purpose; every mark that runs dry somewhere along its length moves,
-which is most of its bristle marks)*, which its painter accepts because its
+were laid starved on purpose; 65 of its 173 marks run dry somewhere along their length
+and move)*, which its painter accepts because its
 README pins 0.6.0 -- so it is named under 0.7.0 in `CHANGELOG.md` as the smudge was
 under 0.6.0, said at load by F2 below, and every golden that carries a starved stroke
 is opened before it is regenerated.
@@ -351,8 +351,8 @@ how much of the tip it is, and a bristle running out fades rather than stopping 
 on average, a comb whose wet bristles fell on its weakest laid half, and cut off hard a
 nearly empty stroke could lay only nothing or one bristle's worth. And **the notice counts
 every mark that ran dry, not the sixteen laid starved**: a brush spends its load along
-every stroke and the bristle preset starts at `0.9`, so most of the painting's bristle
-marks move, not only the ones laid starved. Built side by side as the painter asked, B2 alone is dots again once it lays today's
+every stroke and the bristle preset starts at `0.9`, so 65 of the painting's 173 marks
+move, and 2,788 of the corpus's 5,628. Built side by side as the painter asked, B2 alone is dots again once it lays today's
 paint, and B1+B2 is dragged rather than combed, so B1's kernel is the same on a comb. The
 fact at the call is not built: at `0.45` the specks under 4 px carry 1% of the crosser's
 paint, where they carried 8%.)*

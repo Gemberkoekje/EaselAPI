@@ -108,8 +108,8 @@ come from the comb. On linen and smooth the read along does the work: linen's go
 **8. The notice counts every mark that ran dry, not the sixteen laid starved.** The plan
 said the fix moves *sixteen of this painting's own* -- the marks laid with a low load on
 purpose. A brush spends its load along every stroke, and the `bristle` preset starts at
-`0.9`, so most bristle marks' tails run dry and drag, and move: `--corpus-dry` counts
-them for every committed painting (*The numbers*). `drags()` asks a saved mark what the stamp will: some dab under `0.9` of its load
+`0.9`, so most bristle marks' tails run dry and drag: **65 of the painting's 173 marks
+move**, and 2,788 of the 5,628 in the corpus (`--corpus-dry`). `drags()` asks a saved mark what the stamp will: some dab under `0.9` of its load
 where the tooth can gate it, and a travel or a comb. It needs the canvas the log is
 rebuilt on -- the tooth's floor decides whether the gate reads anything -- so a fix's
 `moves` takes the canvas now. A test lays eight kinds of mark both ways and holds
@@ -120,8 +120,13 @@ rebuilt on -- the tooth's floor decides whether the gate reads anything -- so a 
 the gate left the flecks where the painter found them. It did not: at `0.45` the specks
 under 4 px carry 1% of the crosser's paint, where they carried 8%.
 
-**10. What it costs** is timed on the painter's thirteen passes, each gate in fresh
-processes (*The numbers*).
+**10. What it costs.** The painter's thirteen passes, rebuilt in one process, take `31.5`
+s under this gate against `29.6` under 0.6.0's, best of three each in fresh processes on
+a quiet machine: `1.9` s, a sixteenth. Some of it is the read along: a field per ten
+degrees of travel a starving brush meets, built once per canvas and shared with every
+rehearsal -- 16 for this painting, `50` MB at 1024x768 (about `90` at 1440x960). Stored
+as float16 they would be half that; not done, because a field read in float16 would
+move every golden again for memory nobody has run short of.
 
 ## The numbers
 
@@ -133,8 +138,8 @@ On this machine, the probe's (`--dry`, `--corpus-dry`):
 | **Exercise 3, rough** | at `0.6`, 15 islands of a median 176 px, `1.4` times as long as wide -> 25 pieces of 26 px, `2.5` times, laying `36,968` against `37,435`; at `0.35`, 54 pieces of 50 px -> 41 of 80 px, `2.0` times |
 | **The painter's ledges (flat)** | 25 pieces of a median 52 px, `1.3` times as long as wide -> 26 of 11 px, `3.9` times: dashes |
 | **What each load lays** | summed over 24 strokes, against 0.6.0: a `bristle` `0.99`-`1.02` on linen from `0.30` to `0.8`, `0.92`-`0.99` on rough, `0.94`-`1.06` on smooth; a `flat` and a `round_hard` `0.99`-`1.01` |
-| **The corpus** | follows: `--corpus-dry` was still running when this was written |
-| **What it costs** | follows, timed alone once the corpus replay is done |
+| **The corpus** | 2,788 of 5,628 marks run dry somewhere; a rebuild moves a median `2.4%` of a canvas by more than two levels, `0.18%` to `19.8%` (the Opus greenhouse, then the car wash at `16.9%`), and in every painting the largest change is a dry passage's dots become streaks; `ground:` rises by `0.05` of a point at most |
+| **What it costs** | the thirteen passes `31.5` s against `29.6`, best of three in fresh processes; 16 fields read along the travel, `50` MB at 1024x768 |
 
 ## What step 6 did *not* touch
 

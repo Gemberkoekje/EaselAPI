@@ -2929,9 +2929,55 @@ either way -- so the read along hardly moves it (`0.89` along, `0.85` across) an
 streaks come from the comb. Linen's, at the same size and distance, correlates `0.08`
 either way raw and `0.73` along against `-0.04` across once it is read along.
 
-**The corpus rebuilt under each gate, and what the gate costs**, come from
-`--corpus-dry` and a timing of the painter's thirteen passes in fresh processes; both
-were still running when this section was written, and their numbers follow here.
+**The corpus, rebuilt under each gate** (`--corpus-dry`): every committed painting from
+its scripts, holds cut on the line both times -- a saved clip replays at the feather it was
+laid with, and none was laid with one -- so what differs is the gate alone. This is what a
+rebuild of each saved painting lays now. *Run dry* is the marks `stroke.drags()` counts,
+which is what the rebuild notice counts; *moved* is the share of the canvas more than two
+8-bit levels apart, and more than eight; *ground* is `Canvas.ground_showing`'s own, under
+0.6.0's gate and this one:
+
+| painting | marks | run dry | moved | past 8 levels | ground |
+|---|---|---|---|---|---|
+| car wash | 212 | 143 | 16.94% | 9.30% | 0.02% -> 0.00% |
+| pears | 231 | 198 | 3.28% | 1.45% | 1.27% -> 1.27% |
+| lighthouse at dusk | 185 | 50 | 0.60% | 0.24% | 0.01% -> 0.01% |
+| laundromat | 288 | 142 | 5.82% | 1.64% | 0.48% -> 0.47% |
+| greenhouse lighthouse, Sonnet | 275 | 59 | 0.26% | 0.10% | 13.70% -> 13.70% |
+| greenhouse lighthouse, Opus | 297 | 142 | 19.79% | 7.00% | 0.17% -> 0.07% |
+| greenhouse lighthouse, Fable | 285 | 87 | 0.38% | 0.08% | 0.01% -> 0.01% |
+| pool | 244 | 118 | 7.52% | 1.91% | 0.03% -> 0.01% |
+| heron, first | 295 | 143 | 2.55% | 0.56% | 0.11% -> 0.11% |
+| heron, second | 255 | 147 | 2.91% | 0.97% | 1.31% -> 1.32% |
+| winter greenhouse | 299 | 95 | 0.18% | 0.07% | 0.52% -> 0.52% |
+| fogged glass | 314 | 193 | 6.19% | 1.27% | 0.16% -> 0.16% |
+| pier | 259 | 222 | 7.14% | 2.44% | 0.40% -> 0.30% |
+| hands | 327 | 133 | 2.77% | 0.86% | 24.69% -> 24.74% |
+| **lighthouse handover** | 173 | **65** | 1.02% | 0.13% | 0.00% -> 0.00% |
+| BigPickle | 50 | 26 | 7.08% | 3.93% | 31.94% -> 31.94% |
+| DeepSeek | 69 | 19 | 0.60% | 0.22% | 0.00% -> 0.00% |
+| Gemini | 726 | 517 | 2.21% | 0.86% | 0.38% -> 0.37% |
+| GLM | 127 | 44 | 1.14% | 0.22% | 12.78% -> 12.80% |
+| GPT | 411 | 170 | 0.64% | 0.29% | 0.07% -> 0.07% |
+| Grok | 134 | 34 | 0.39% | 0.05% | 0.00% -> 0.00% |
+| Kimi | 172 | 41 | 0.36% | 0.12% | 0.00% -> 0.00% |
+
+**Half the corpus's marks run dry somewhere**: 2,788 of 5,628, because a brush spends its
+load along every stroke and the `bristle` preset starts at `0.9`, so a preset bristle's
+tail drags as surely as a mark laid starved. The plan counted *sixteen* of the handover's
+own -- the marks laid starved on purpose -- and it is 65. What a rebuild moves is a median
+of `2.4%` of a canvas, from `0.18%` to `19.8%`, most where a painting lays large passages
+with the bristle at its own load -- the Opus greenhouse and the car wash. **What moves is
+what was meant to**: `dry_corpus.png` crops the largest change in each painting, and in
+every one it is a dry passage's dots become streaks along its strokes -- the car wash's
+pale verticals, the pool's glints, BigPickle's sky, GPT's roofs. **`ground:` rises by
+`0.05` of a point at most** (the hands), in three paintings, and falls in six.
+
+**What it costs**: the painter's thirteen passes rebuild in `31.5` s under this gate
+against `29.6` under 0.6.0's, best of three each in fresh processes on a quiet machine --
+a sixteenth more. Part of it is the tooth read along: one field per ten degrees of travel
+a starving brush meets, built once per canvas and shared with its rehearsals -- 16 for
+this painting, `50` MB at 1024x768.
 
 ### The graded rule's two misfires
 
