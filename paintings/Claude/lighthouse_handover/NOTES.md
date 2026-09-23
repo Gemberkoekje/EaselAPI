@@ -126,8 +126,9 @@ Everything under this heading is the filer's, not the painter's.
   declared-bands line twice (13 long horizontals after the sky, nothing crossing them
   yet; 18 after the water, 6 crossing); and the standing lines after every pass — the
   `lightest:` line reading the glow's core at `0.77` against the lantern's `0.47` until
-  the tower was laid, `0.78` after it and `0.85` after the beam; `edges:` at `60%`–`65%`
-  under 2.5 px from the sea pass on and `54%` at the end, median `2.2` px; the
+  the tower was laid, `0.78` after it and `0.85` after the beam; `edges:` at `19%` under
+  2.5 px after the sky, then `60%`, `64%`, `65%` and falling a point or two a pass to
+  `54%` at the end, median `2.2` px; the
   `subject:` line behind its planned share on every pass from the tower's. The file
   carries one notice, the same `glaze-far`. `checklist()` on the finished painting: 7 of
   7 planned places inside `0.10`; the lantern the lightest of them at `0.86`; `0 of 10`

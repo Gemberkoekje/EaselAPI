@@ -10,20 +10,28 @@ this plan's questions, which are the decisions this round runs under; then the t
 places in the engine most of this lands -- `Session._clip_cover` in
 `src/easel/session.py` (the mask a hard edge is cut with), the tooth gate in
 `Canvas.stamp` in `src/easel/canvas.py` (where dry brush comes from), and
-`_graded_band` in `session.py` (the rule that misfired). [`PLAN-0.6.0.md`](PLAN-0.6.0.md)
+`_graded_band` in `session.py` (the rule that misfired). [`PLAN-0.6.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/PLAN-0.6.0.md)
 is the round before this one and the shape most of the conventions here come from._
 
 **Status: written 2026-09-23 against `main` at `3d6fe74`, which is `v0.6.0`, and
-revised the same day with the decisions taken. Nothing is built.** The painting is
-filed (`paintings/Claude/lighthouse_handover/`, a section in `PAINTINGS.md`, an entry
-in the corpus probe), every number in section 3 was measured on this machine on the
-checkout's own engine, and the two misfires the plan could not reproduce at first were
-reconstructed by the painter, reproduced here exactly, and are filed beside the
+revised the same day with the decisions taken. Step 1 is done; nothing is built.** The
+painting is filed (`paintings/Claude/lighthouse_handover/`, a section in `PAINTINGS.md`,
+an entry in the corpus probe), every number in section 3 was measured on this machine
+on the checkout's own engine, and the two misfires the plan could not reproduce at first
+were reconstructed by the painter, reproduced here exactly, and are filed beside the
 painting. **The nine questions in section 5 were put to the owner and answered by the
 painter**: the owner's ruling is that the tool is for painters and the owner is not
 one, so the answers are a painter's, forwarded as the decisions. Where the painter said
 it had no evidence -- which edge candidate reads as paint, whether a parallel sheet
-pays -- the bench decides, as before.
+pays -- the bench decides, as before. **Step 1 finished** with the round open at the top
+of `SUGGESTIONS.md` -- six engine items and four documentation items, the right-hand
+column blank -- and with 0.6.0's claim, which had waited on its tag: `CHANGELOG.md` says
+it shipped, and `PLAN-0.6.0.md` and its step notes left the repository, so this round's
+own `NOTES-step<N>.md` start from an empty root. Two statements here were corrected on
+the way, each marked where it stands: the `edges:` line did not print 54% on every
+pass (it read 54% to 65% from the sea's pass on), and finding 15's count does not move.
+`CALIBRATION.md`'s section for the round arrives with the probe that fills it, step 2,
+rather than empty ahead of it.
 
 ---
 
@@ -59,12 +67,14 @@ one claim that had none, the painter rebuilt it from its transcript and sent it
 - **The cut-out risk materialised, and the counterweight did not hold it.** The 0.6.0
   plan's risk table said the new remedies push toward `edge="hard"` and `clip=`, and
   named the `edges:` line as the counterweight. This painter laid its tower and
-  headland as clipped strokes and hard masses, the `edges:` line printed **54%** of
-  edges under 2.5 px on every pass from the fourth -- the share of the two cohort
-  painters who called their own pictures *flat cut-out shapes* -- and the painter
-  relied on the hard edge regardless, then named it *the least paint-like thing in the
-  engine*. A measurement line printed nine times changed nothing. That is *warning is
-  not method* arriving for a number, and it is what section 4A is for.
+  headland as clipped strokes and hard masses, the `edges:` line printed between
+  **54% and 65%** of edges under 2.5 px after every pass from the sea's on -- the range
+  of the two cohort painters who called their own pictures *flat cut-out shapes* -- and
+  the painter relied on the hard edge regardless, then named it *the least paint-like
+  thing in the engine*. A measurement line printed eleven times changed nothing. That
+  is *warning is not method* arriving for a number, and it is what section 4A is for.
+  *(Corrected in step 1: this said 54% on every pass from the fourth; the rebuild, pass
+  by pass, reads 19% after the sky, then 60, 64, 65, 63, 59, 57, 57, 57, 56, 54, 54.)*
 - **The plan object, the notices and the demos worked as designed.** All of
   `s.plan(...)` was declared, `bands="subject"` turned the bars warning into the
   crossing count, the `lightest:` line caught the lantern losing to the glow at `0.74`
@@ -76,9 +86,11 @@ one claim that had none, the painter rebuilt it from its transcript and sent it
   broke them anyway: go back to the drawing after two failures, no slabs on a hull, no
   spoon-shaped islands. Looking at rehearsals caught those, not reading.* The eighth
   painter to say so; `LESSONS.md`'s first rule, from the other side.
-- **Finding 15 recurred.** 129 of 300 unspent, the `unspent:` line said so, and the
-  painter stopped anyway -- *partly caution*. Nothing in the engine can act on that,
-  and section 4H says so.
+- **The budget was left again, though not by finding 15's measure.** 129 of 300
+  unspent, the `unspent:` line said so, and the painter stopped anyway -- *partly
+  caution* -- at 57% of its budget, which is past the 45% the cohort's five were counted
+  under. Nothing in the engine can act on that, and section 4H says so. *(Corrected in
+  step 1: this said finding 15 recurred.)*
 - **A rebuild is to the stroke everywhere and to the pixel on one machine.** The
   thirteen passes rebuild the log identically here and the export differs from the
   painter's by 729 pixels at one 8-bit level, from a mixture two builds of numpy round
@@ -135,7 +147,7 @@ file.
 
 | # | What the painter said | Kind | What checking found | Goes to |
 |---|---|---|---|---|
-| 1 | **Hard edges are all-or-nothing**: `0.59` to `0.28` in one pixel at the tower, `0.36` to `0.17` at the waterline; *the least paint-like thing in the engine, and I relied on it* | M | **Confirmed to the hundredth**: `0.30` in one pixel on the tower's left side, `0.28` on its right, `0.19` at the waterline, `0.44` where the headland meets the sky. The clip mask is `Polygon.coverage(samples=2)`, which leaves **exactly one fractional pixel per side** at the tower's row. The `edges:` line said 54% on every pass. Benched: a Gaussian feather of 2 px on the same two strokes takes the step to `0.10` and the picture's hard share from 64% to **9%**, at no cost in time -- and reads as blur, not paint. **The painter's answer sharpens it**: the jaggies are invisible at 1024x768 unless you zoom; what read as vector graphics was the clean, uniform edge. And of its 33 hard or clipped calls, 9 draw an edge and 24 only keep paint inside a shape, which a feather that reaches outward would break. | **4A** |
+| 1 | **Hard edges are all-or-nothing**: `0.59` to `0.28` in one pixel at the tower, `0.36` to `0.17` at the waterline; *the least paint-like thing in the engine, and I relied on it* | M | **Confirmed to the hundredth**: `0.30` in one pixel on the tower's left side, `0.28` on its right, `0.19` at the waterline, `0.44` where the headland meets the sky. The clip mask is `Polygon.coverage(samples=2)`, which leaves **exactly one fractional pixel per side** at the tower's row. The `edges:` line said 54% to 65% on every pass from the sea's. Benched: a Gaussian feather of 2 px on the same two strokes takes the step to `0.10` and the picture's hard share from 64% to **9%**, at no cost in time -- and reads as blur, not paint. **The painter's answer sharpens it**: the jaggies are invisible at 1024x768 unless you zoom; what read as vector graphics was the clean, uniform edge. And of its 33 hard or clipped calls, 9 draw an edge and 24 only keep paint inside a shape, which a feather that reaches outward would break. | **4A** |
 | 2 | **Dry-brush speckle reads as dirt** more often than texture: the flecks in the sky, the first try at the swells | O | **Measured on the sky's own crosser** (`bristle`, size 0.065, opacity 0.40): at `load=0.45` it lands **3,705 px in 509 pieces, median 4 px**, 58% of the pieces under 4 px and no body to speak of; at `0.30`, 363 pieces carrying 39% of the paint in pieces of 4 px or under; at `0.80`, 374 pieces with a median of 8 px and 1% of the paint in specks. The gate is per pixel at the weave's scale, so a starved brush leaves confetti rather than the broken streaks a comb leaves. The painter used the loads the guide recommends for broken marks, 0.35 to 0.6, and got dots; its workaround, films for the swells, dropped the texture it wanted. | **4B** |
 | 3 | **One check misfired**: *graded passage laid too narrow* flagged marks that were not one, twice | O, then **M** | **Not reproducible from the scripts** -- the line fires on none of the thirteen committed passes -- because both fires were printed by rehearsals of passes rewritten before they were committed, and nothing records what a pass's check said. **Then reproduced**: the painter rebuilt both from its transcript, and re-run here each prints its original line exactly (`misfires/`). In both, the brush the line names is a thin dark accent laid among wide marks -- a `0.006` crevice along the join of two rock faces laid at `0.03` and `0.07`; a `0.006` ripple among glints -- and the rule judges a stack's step against its *narrowest* brush. In the water case the run is five glints of one colour, a foam mark and a ripple that never overlap along the stack's axis. Over the corpus the rule fires on 9 of 325 passes (3%), never on a guide block. | **4C** |
 | 4 | **About 15 s per variant**, in the one run timed | M | **Confirmed, and it is the paint.** A three-band sky variant as the painter's `harness.py` ran it takes **11.5 s** here: 10.3 s the three 8-pass scumbles at full width, 0.15 s the look, 0.01 s the copy. One band is 3.1 s, 0.39 s a pass. A `rehearse(vary=)` sheet of the same band at two sizes takes 10.2 s. The bookkeeping 0.6.0 cut is gone; what is left is the dab loop. The painter never used `vary=`: its variants were whole passes, and what it wanted was scripts rehearsed as alternatives side by side, which `easel run --rehearse a.py b.py` does not do -- it stacks them on one copy. | **4D** |
@@ -422,9 +434,10 @@ with each change alone):
 
 - **The picture's composition, and the budget left.** Outside the check's line by
   `LESSONS.md`'s own restatement; `s.plan(why=)` is the instrument and it was used.
-  Finding 15's count moves from five of six to six of seven budgeted paintings by
-  painters that stopped early since the cohort, against none of the thirteen before
-  them.
+  Finding 15's count does not move: it was counted as budgeted paintings that stopped
+  under 45% of budget, and this one stopped at 57% -- well short of the 86% median of
+  the thirteen before the cohort, past the line the cohort's five were under.
+  *(Corrected in step 1: this said the count moved to six of seven.)*
 - **A repainted-passage count**, considered and dropped: the headland took four passes
   and the tower four, and the log cannot tell a passage failing from a subject being
   built. The card's rule -- *if a passage has failed twice, the fault is upstream of the

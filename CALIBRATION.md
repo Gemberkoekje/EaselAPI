@@ -1497,7 +1497,7 @@ with a bristle under size=0.025* over it. So the notice offers the comb only at
 `size=0.025` and over. Under that it offers `direction=` along a side, which closes the
 sides that run with it, and `edge="clean"`, which halves the rest (`22%` to `11%`
 above) — the pair that recipe lays now, whose faces rendered at 1024×768 read as
-planes (`NOTES-step9.md`, part three).
+planes ([`NOTES-step9.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/NOTES-step9.md) at `v0.6.0`, part three).
 
 The named profiles, widest and narrowest point of one stroke, same brush:
 
@@ -1803,7 +1803,8 @@ from **47 passes to 38 — 14% to 12%**. Every line that went was a pass laid mo
 scumble: skies, fog, water, a field. One of them was the round's only true positive —
 BigPickle's, over the whole painting, which reached its share only by counting the sky
 passes its own painter called fine; without them its block-ins and crossers fall under
-it. That was ruled a price worth paying (`PLAN-0.6.0.md`, the decisions table).
+it. That was ruled a price worth paying ([`PLAN-0.6.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/PLAN-0.6.0.md) at
+`v0.6.0`, the decisions table).
 
 **The bare-ground floor is older than the round that reported it.** Five of seven
 painters in the 0.5.0 cohort accepted `ground: 0.0x% … the checklist asks for some` by
