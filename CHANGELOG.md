@@ -163,6 +163,51 @@ wander.
   `clean-small` for a burial — say the edge is broken rather than cut. A new golden
   case, `edges`, holds the edge where it was decided.
 
+### A dry brush that streaks rather than speckles
+
+Step 6 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream B). At the loads
+the guide recommends for a broken mark the painter's starved brushes left dots, not
+streaks — *dark flecks in the sky, speckled first swells, and blue specks in the surf* —
+and its way round them, films, dropped the texture it wanted. It asked for the engine to
+change and for a load to keep its meaning: *the amount was right, the shape was wrong*.
+
+**One fix changes what a rebuild lays**: a brush running dry drags its paint into
+streaks along its travel rather than dotting it, so a mark saved before 0.7.0 that ran
+dry replays streaked — and a file saved before it says so as it opens, with how many of
+its marks (`older-engine`).
+
+- **A brush running dry drags.** Under `0.9` of its load, and wholly by `0.7`, the
+  tooth a brush is gated against is read along the stroke's own direction — averaged
+  over a thread of linen, `0.0088` of the long side, and given back the tooth's own
+  values rank for rank — so what clears the gate is a run of pixels rather than one;
+  and a `bristle` comb's bristles run dry one by one, each keeping its own share of the
+  canvas, the wettest the most. The sky's own crosser at `load=0.45`: **571 pieces with
+  a median of 4 px become 125 with a median of 12**, nearly three times as long along
+  the travel as across it, and the specks under 4 px carry 1% of its paint where they
+  carried 8%. On the painter's first surf, the blue specks become strokes of foam.
+- **Each load lays what it laid.** Summed over 24 strokes at a load, a starving
+  `bristle` on linen lays `0.99` to `1.02` of what it laid, from `0.30` to `0.8`; the
+  rest of the table is in `CALIBRATION.md`, under *A dry brush that streaks*. One stroke
+  on its own can lay a third more or less than the next where one or two bristles carry
+  it, as a dry brush does.
+- **A loaded brush, and a dab, lay exactly what they laid.** Above `0.9` of its load a
+  brush is gated as it always was, to the bit: `solid=True`, every `cover()` and banded
+  `scumble` (laid solid since 0.6.0), the inward scumble at the brush's own `0.9`, a
+  loaded preset over a short run. A one-point mark has no travel to drag along; a
+  `bristle` one still runs dry bristle by bristle.
+- **Nothing new touches the stream or the log.** A bristle's share is drawn from its
+  comb, not from the stroke's generator, so the log, the stream states in it and every
+  mark laid after a starving one are what they were.
+- The goldens that carry a brush running dry — the three `marks_*` cases, `shapes`,
+  `sweep` and the sampler's hash — were opened and regenerated, and
+  `samples/brushes.png` re-rendered: the dry tails' square holes run with the stroke
+  now. `scripts/probe_handover_session.py --dry` benches the built gate beside 0.6.0's,
+  and `--corpus-dry` rebuilds every committed painting under both.
+- Five sentences said *speckle* or *flecks* for what a starved brush leaves and say
+  *broken streaks* now: exercise 3 in `PAINTER.md`, the `load` paragraph in
+  `PAINTING.md`, the plane recipe's failure in `RECIPES.md` and its row in
+  `DIAGNOSIS.md`, and the graded field's row beside it.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with

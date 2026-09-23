@@ -316,6 +316,11 @@ painted rather than generated:
 - **The tooth gate is roughened with aperiodic grain.** Gating a near-periodic weave
   with a smooth threshold produces a halftone dot screen as paint runs out, which
   reads as print rather than as dry brush.
+- **A brush running dry drags.** Gated a pixel at a time, a starving brush still left
+  dots at the weave's scale -- confetti, which reads as dirt. So as its load falls the
+  gate reads the tooth along the stroke's travel, and a bristle comb's bristles run
+  dry one by one; both are matched to the tooth's own distribution, so a load lays
+  what it laid and only the shape changes, into streaks that run with the brush.
 - **The bristle comb is drawn per stroke, and a bristle has a width of its own.**
   One fixed comb per brush means every wide mark prints the same streaks and a mass
   laid in passes comes out as corduroy; a fixed *count* across the tip means the

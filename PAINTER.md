@@ -512,8 +512,8 @@ for i, p in enumerate(["taper", "press_in", "lift_off", "even", "swell", "dab"])
 s.look()      # soft brush on the left reads the profiles most clearly
 ```
 
-**3. Paint running out.** The same stroke at four loads, on rough canvas. The speckle a
-starved brush leaves is what everything laid after it sits on.
+**3. Paint running out.** The same stroke at four loads, on rough canvas. The broken
+streaks a starved brush drags are what everything laid after it sits on.
 
 ```python
 from easel import Session

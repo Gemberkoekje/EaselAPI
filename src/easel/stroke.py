@@ -7,7 +7,10 @@ an image look mechanical.
 
 Paint runs out along a stroke. The brush starts with a load and spends it; as the
 load drops, the canvas tooth starts to show through and the stroke breaks up on
-its own. Nothing here special-cases dry brush -- it falls out of load plus tooth.
+its own. Dry brush falls out of load plus tooth -- read along the stroke's travel
+once the brush runs dry, and bristle by bristle on a comb, so what a starving brush
+leaves is streaks dragged with it rather than dots (0.7.0; :meth:`Canvas.stamp
+<easel.canvas.Canvas.stamp>`).
 """
 
 from __future__ import annotations
@@ -17,12 +20,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from easel.brush import Brush, tip_mask
-from easel.canvas import Canvas
+from easel.brush import Brush, bristle_shares, tip_mask
+from easel.canvas import Canvas, DryComb
 from easel.color import mix_many, parse_color
 
 __all__ = ["PRESSURE_PROFILES", "StrokeResult", "paint_stroke", "draw_pencil", "catmull_rom",
-           "pressure_curve", "press_width"]
+           "pressure_curve", "press_width", "drags"]
 
 #: Named pressure profiles. Anything else can be given as a scalar or a list.
 PRESSURE_PROFILES = ("taper", "press_in", "lift_off", "even", "swell", "dab")
@@ -211,6 +214,65 @@ def _wander(rng: np.random.Generator, n: int, dims: int, span: int = 9) -> np.nd
     return out
 
 
+def _dabs(canvas: Canvas, pts: np.ndarray, brush: Brush, smooth: bool):
+    """Where a mark's dabs land, in pixels: ``(positions, travel angles, distances, diameter)``.
+
+    The path smoothed and walked at the brush's own spacing -- everything about a
+    mark's dabs that is decided before any of them is stamped, so :func:`drags` can
+    ask it of a saved mark without laying it.
+    """
+    path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
+
+    # Normalised to pixels. Brush size is a fraction of the canvas long side.
+    px = np.empty_like(path)
+    px[:, 0] = path[:, 0] * (canvas.width - 1)
+    px[:, 1] = path[:, 1] * (canvas.height - 1)
+
+    diameter = max(brush.size * canvas.long_side, 1.5)
+    # Spacing is measured against the tip's extent *along travel*, not its width. A
+    # flat or knife tip is thin in that direction, so spacing it like a round tip
+    # leaves visible gaps between stamps and the stroke reads as a picket fence.
+    along = diameter if brush.tip in ("round_soft", "round_hard") else diameter * brush.aspect
+    spacing_px = max(brush.spacing * max(along, diameter * 0.12), 1.0)
+
+    pos, angles, dists = _resample(px, spacing_px)
+    return pos, angles, dists, diameter
+
+
+def _loads(brush: Brush, dists: np.ndarray, diameter: float) -> np.ndarray:
+    """The brush's load at each dab: it spends itself over the stroke, in diameters travelled."""
+    consumed = dists / max(diameter * _LOAD_DISTANCE_DIAMETERS, 1e-5)
+    return np.clip(brush.load * np.exp(-brush.load_falloff * consumed), 0.0, 1.0)
+
+
+def drags(canvas: Canvas, points, brush: Brush, smooth: bool = True) -> bool:
+    """Whether a mark laid with ``brush`` along ``points`` drags dry anywhere on ``canvas``.
+
+    What 0.7.0's gate changes (:meth:`Canvas.stamp <easel.canvas.Canvas.stamp>`,
+    ``travel`` and ``bristles``), asked of a mark without laying it: some dab of it has
+    to run under :data:`~easel.canvas._DRY_FROM` of its load where the tooth can gate
+    it (:meth:`Canvas.drag <easel.canvas.Canvas.drag>`), and the mark has to travel or
+    carry a comb. A mark that does neither lays exactly what it laid under 0.6.0, and
+    this is how the rebuild notice counts the ones that do not (``older-engine``,
+    :data:`easel.notices.REBUILDS`).
+
+    Generous at the margins, never short: a dab too small to stamp, or one whose
+    pressure lays nothing, is counted as if it had landed.
+    """
+    ts = float(np.clip(brush.texture_sensitivity, 0.0, 1.0))
+    pts = np.atleast_2d(np.asarray(points, dtype=np.float32))
+    if ts <= 0.0 or pts.shape[1] != 2 or not len(pts) or not np.isfinite(pts).all():
+        return False
+    pos, _angles, dists, diameter = _dabs(canvas, pts, brush, smooth)
+    if len(pos) < 2 and brush.tip != "bristle":
+        return False
+    # The load only falls along a mark, and the need only rises with it: the driest dab
+    # is the one to ask.
+    low = float(_loads(brush, dists, diameter).min())
+    need = min((1.0 - low) * ts, canvas.tooth_ceiling)
+    return canvas.drag(low, need) > 0.0
+
+
 
 def paint_stroke(
     canvas: Canvas,
@@ -263,22 +325,11 @@ def paint_stroke(
         raise ValueError(f"Points must be finite numbers, got {points!r}")
 
     base_color = parse_color(color)
-    path = catmull_rom(pts) if (smooth and len(pts) >= 3) else pts
-
-    # Normalised to pixels. Brush size is a fraction of the canvas long side.
-    px = np.empty_like(path)
-    px[:, 0] = path[:, 0] * (canvas.width - 1)
-    px[:, 1] = path[:, 1] * (canvas.height - 1)
-
-    diameter = max(brush.size * canvas.long_side, 1.5)
+    pos, angles, dists, diameter = _dabs(canvas, pts, brush, smooth)
     radius = diameter * 0.5
-    # Spacing is measured against the tip's extent *along travel*, not its width. A
-    # flat or knife tip is thin in that direction, so spacing it like a round tip
-    # leaves visible gaps between stamps and the stroke reads as a picket fence.
-    along = diameter if brush.tip in ("round_soft", "round_hard") else diameter * brush.aspect
-    spacing_px = max(brush.spacing * max(along, diameter * 0.12), 1.0)
-
-    pos, angles, dists = _resample(px, spacing_px)
+    # A mark that goes somewhere drags along its way as it runs dry; a dab has no way
+    # to drag along, and is gated where it lands (Canvas.stamp, ``travel``).
+    travels = len(pos) > 1
     stamps = max(1, int(press))
     if stamps > 1:
         if len(pos) > 1:
@@ -297,6 +348,12 @@ def paint_stroke(
     # stroke the way real ones do, and the next stroke picks the brush up again.
     comb = int(rng.integers(1, 1 << 31)) if brush.tip == "bristle" else 0
     bristles = brush.bristles(diameter) if brush.tip == "bristle" else 0
+    # Where each of those bristles stands in the paint, for when the brush runs dry:
+    # drawn from the comb, not from ``rng``, so the stream every mark after this one is
+    # laid from is the stream it always was.
+    shares = (bristle_shares(bristles, brush.bristle_seed, comb)
+              if brush.tip == "bristle" and not dry_run else None)
+    dry = None
     width_follows_press = brush.tip in _ROUND_TIPS
     # And the silhouette a wobbled round tip prints, drawn the same way and for the
     # same reason: held along this stroke, so the mark has one outline rather than a
@@ -316,9 +373,7 @@ def paint_stroke(
     size_var = 1.0 + _wander(rng, n, 1)[:, 0] * (brush.size_jitter * 0.5)
     size_var = np.clip(size_var, 0.45, 1.7)
 
-    # Paint load spends itself over the stroke, measured in brush diameters travelled.
-    consumed = dists / max(diameter * _LOAD_DISTANCE_DIAMETERS, 1e-5)
-    load = np.clip(brush.load * np.exp(-brush.load_falloff * consumed), 0.0, 1.0)
+    load = _loads(brush, dists, diameter)
 
     carried = base_color.copy()
     pickup = 0.45 if brush.smudge > 0.0 else 0.0
@@ -380,6 +435,16 @@ def paint_stroke(
         iy = math.floor(cy)
         mask = brush.mask(r, float(angles[i]), cx - ix, cy - iy,
                           comb=comb, count=bristles or None, wobble_seed=wobble_seed)
+        held = None
+        if shares is not None:
+            index = brush.comb_of(r, float(angles[i]), cx - ix, cy - iy, comb=comb,
+                                  count=bristles or None, wobble_seed=wobble_seed)
+            if dry is None:
+                # Each bristle weighed by how much of the tip it is, once a stroke: the
+                # comb is held for the stroke, and so are the proportions of it.
+                dry = DryComb(shares, np.bincount(index.ravel(), weights=mask.ravel(),
+                                                  minlength=shares.size)[:shares.size])
+            held = (index, dry)
 
         if brush.smudge > 0.0:
             sampled = canvas.sample(float(ix), float(iy), mask)
@@ -433,6 +498,8 @@ def paint_stroke(
             texture_sensitivity=brush.texture_sensitivity,
             glaze=glaze,
             clip=clip,
+            travel=float(angles[i]) if travels else None,
+            bristles=held,
         )
         stamped += 1
 

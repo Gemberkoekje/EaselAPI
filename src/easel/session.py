@@ -1564,7 +1564,7 @@ class Session:
         the area dried first so new paint covers instead of mixing, a **solid tip**
         because a comb leaves the old paint showing between its streaks however high
         the opacity goes, ``load=1.0`` and ``load_falloff=0.0`` because a brush that
-        runs dry leaves a speckled film that everything after it has to sit on,
+        runs dry leaves a broken film that everything after it has to sit on,
         ``opacity=1.0``, ``pressure="even"``, and passes that **run past the area and
         are held to it**, so no chisel end stops inside the mistake and no paint lands
         outside the place it was handed::
@@ -1572,7 +1572,7 @@ class Session:
             s.cover(cell("D5"), "corrected_sky")     # that is the whole repair
 
         ``load_falloff=0.0`` is the clause that is easy to miss: a full-width
-        correction stroke at ``load=1.0`` still runs dry and speckles at its far end
+        correction stroke at ``load=1.0`` still runs dry and breaks at its far end
         without it, which is the failure that sends a painter back for a second
         correction over the first. Those two clauses are
         :meth:`block_in`'s ``solid=True``, which is the same pair of defaults for a
@@ -4778,6 +4778,9 @@ class Session:
                     canvas.texture_strength,
                 )
                 canvas.tooth_ceiling = tooth_ceiling(canvas.height_map, canvas.grain)
+                # What a starving brush reads the tooth through, as `Canvas.__init__`
+                # leaves it: empty, and built the first time a brush runs dry.
+                canvas._gating = {}
                 canvas.stroke_count = int(meta["stroke_count"])
                 # Format 1 has no sketch array at all; format 2 stores one only when
                 # something was drawn.
@@ -8856,11 +8859,11 @@ def _warn_older_engine(session, session_path: Path, saved_by: str) -> None:
     if version_key(saved_by) >= version_key(engine):
         return
     records = session.history.records
-    moved = rebuild_moves(saved_by, records)
+    moved = rebuild_moves(saved_by, records, session.canvas)
     if not moved:
         return
     touched = sum(1 for record in records
-                  if any(change.moves(record) for change, _ in moved))
+                  if any(change.moves(record, session.canvas) for change, _ in moved))
     fixes = "; ".join(
         f"{change.what} ({change.version}, {count} mark{'s' if count != 1 else ''})"
         for change, count in moved

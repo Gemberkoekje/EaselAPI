@@ -17,7 +17,8 @@ from dataclasses import dataclass, field, replace
 
 import numpy as np
 
-__all__ = ["Brush", "BRUSHES", "brush", "TIPS", "tip_mask", "bristles_for"]
+__all__ = ["Brush", "BRUSHES", "brush", "TIPS", "tip_mask", "tip_comb", "bristles_for",
+           "bristle_shares"]
 
 #: Tip shapes available to :class:`Brush`.
 TIPS = ("round_soft", "round_hard", "flat", "bristle", "knife")
@@ -25,7 +26,9 @@ TIPS = ("round_soft", "round_hard", "flat", "bristle", "knife")
 # Angles are quantised before a mask is built, so a curved stroke reuses masks
 # instead of rebuilding one per dab. 10 degrees is fine enough not to show.
 _ANGLE_STEP_DEG = 10.0
-_MASK_CACHE: dict[tuple, np.ndarray] = {}
+#: Each built stamp, with the comb it was built with: ``(mask, comb index)``, the index
+#: ``None`` for a tip without a comb. One entry for both, so the two cannot disagree.
+_MASK_CACHE: dict[tuple, tuple[np.ndarray, np.ndarray | None]] = {}
 _MASK_CACHE_LIMIT = 16384
 # Sub-pixel phases per axis. Dab centres are placed to this fraction of a pixel.
 _SUBPIXEL_STEPS = 4
@@ -202,6 +205,43 @@ class Brush:
             wobble_seed=wobble_seed,
         )
 
+    def comb_of(
+        self,
+        radius_px: float,
+        angle_rad: float,
+        frac_x: float = 0.0,
+        frac_y: float = 0.0,
+        comb: int = 0,
+        count: int | None = None,
+        wobble_seed: int = 0,
+    ) -> np.ndarray | None:
+        """Which bristle of the comb each pixel of :meth:`mask`'s stamp lies under.
+
+        The same arguments as :meth:`mask`, and the same stamp: an array of its shape
+        holding each pixel's bristle, ``0`` to the comb's last. ``None`` for a tip
+        without a comb, which is every tip but ``bristle``. What a starving stroke
+        reads each bristle's own load through (:meth:`Canvas.stamp
+        <easel.canvas.Canvas.stamp>`, ``bristles=``).
+        """
+        return tip_comb(
+            tip=self.tip,
+            radius_px=radius_px,
+            angle_rad=angle_rad if self.angle_follow else math.radians(self.angle),
+            hardness=self.hardness,
+            aspect=self.aspect,
+            bristle_count=(
+                count if count is not None
+                else bristles_for(self.size, self.bristle_pitch,
+                                  radius_px * 2.0, self.bristle_count)
+            ),
+            bristle_seed=self.bristle_seed,
+            frac_x=frac_x,
+            frac_y=frac_y,
+            comb=comb,
+            wobble=self.tip_wobble,
+            wobble_seed=wobble_seed,
+        )
+
     def bristles(self, diameter_px: float) -> int:
         """How many bristles this brush combs a stroke into, at ``diameter_px`` wide."""
         return bristles_for(self.size, self.bristle_pitch, diameter_px, self.bristle_count)
@@ -257,6 +297,37 @@ def tip_mask(
     far it wanders off a disc, and which wander. Both are in the key, and at
     ``wobble=0`` -- every preset in the box -- the stamp is the disc it always was.
     """
+    return _tip(tip, radius_px, angle_rad, hardness, aspect, bristle_count, bristle_seed,
+                frac_x, frac_y, comb, wobble, wobble_seed)[0]
+
+
+def tip_comb(
+    tip: str,
+    radius_px: float,
+    angle_rad: float,
+    hardness: float,
+    aspect: float = 1.0,
+    bristle_count: int = 22,
+    bristle_seed: int = 0,
+    frac_x: float = 0.0,
+    frac_y: float = 0.0,
+    comb: int = 0,
+    wobble: float = 0.0,
+    wobble_seed: int = 0,
+) -> np.ndarray | None:
+    """Which bristle each pixel of :func:`tip_mask`'s stamp lies under, or ``None``.
+
+    The same arguments and the same cache entry as :func:`tip_mask`, so the index is
+    always the one the stamp was built with: an ``int16`` array of its shape, ``0`` to
+    the comb's last bristle. ``None`` for every tip but ``bristle``, which has no comb.
+    """
+    return _tip(tip, radius_px, angle_rad, hardness, aspect, bristle_count, bristle_seed,
+                frac_x, frac_y, comb, wobble, wobble_seed)[1]
+
+
+def _tip(tip, radius_px, angle_rad, hardness, aspect, bristle_count, bristle_seed,
+         frac_x, frac_y, comb, wobble, wobble_seed) -> tuple[np.ndarray, np.ndarray | None]:
+    """Build (and cache) a stamp and its comb index: :func:`tip_mask` and :func:`tip_comb`."""
     # Quantise the radius *before* anything is computed from it, so that the mask is
     # a pure function of the cache key. A quarter of a pixel is finer than the
     # sub-pixel phase, so nothing visible is given up.
@@ -313,6 +384,7 @@ def tip_mask(
     # Edge softness in normalised units; at least one pixel, so nothing aliases.
     edge = max((1.0 - hard) * 0.9, 1.0 / r)
 
+    index = None
     if is_round:
         d = np.sqrt(u * u + v * v)
         limit = 1.0 if wob <= 0.0 else _wobbled_edge(u, v, wob, wobble_seed)
@@ -333,13 +405,15 @@ def tip_mask(
         mask = _falloff(np.abs(u), max(aspect, 1e-3), u_edge)
         mask = mask * _falloff(np.abs(v), 1.0, edge * 0.5)
         if tip == "bristle":
-            mask = mask * _bristle_profile(v, bristle_count, bristle_seed, comb)
+            index, strengths = _bristle_index(v, bristle_count, bristle_seed, comb)
+            mask = mask * strengths[index]
+            index = index.astype(np.int16)
 
     mask = np.clip(mask, 0.0, 1.0).astype(np.float32)
     if len(_MASK_CACHE) > _MASK_CACHE_LIMIT:  # pragma: no cover - only on huge sessions
         _MASK_CACHE.clear()
-    _MASK_CACHE[key] = mask
-    return mask
+    _MASK_CACHE[key] = (mask, index)
+    return mask, index
 
 
 def _falloff(dist: np.ndarray, limit: float, edge: float) -> np.ndarray:
@@ -375,8 +449,8 @@ def _wobbled_edge(u: np.ndarray, v: np.ndarray, wobble: float, seed: int) -> np.
     return (1.0 + _WOBBLE_REACH * float(wobble) * harm).astype(np.float32)
 
 
-def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.ndarray:
-    """Per-bristle alpha across the tip width.
+def _comb(count: int, seed: int, comb: int = 0):
+    """One comb: how many bristles, where it sits, and each bristle's strength and offset.
 
     The pattern is fixed for a given ``(seed, comb)``, so striations stay put along a
     stroke the way real bristles do, rather than shimmering from dab to dab. What
@@ -384,6 +458,9 @@ def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.
     spacing, where the comb sits across the tip, and which bristles are missing are
     all drawn afresh. Without that, every wide bristle mark in a painting printed
     the identical set of streaks and masses went to corduroy.
+
+    Returns ``(n, phase, top, strengths, offsets)``: the bristles are numbered ``0`` to
+    ``top``, and ``strengths`` and ``offsets`` hold one value for each.
     """
     rng = np.random.default_rng([1000 + int(seed), int(comb)])
     # Spacing: the comb is not the same width every time the brush is picked up.
@@ -400,11 +477,38 @@ def _bristle_profile(v: np.ndarray, count: int, seed: int, comb: int = 0) -> np.
         strengths[gaps] *= rng.uniform(0.0, 0.25, size=int(gaps.sum())).astype(np.float32)
     # Bristles cluster slightly rather than sitting on a perfect comb.
     offsets = rng.uniform(-0.4, 0.4, size=top + 1).astype(np.float32)
+    return n, phase, top, strengths, offsets
 
+
+def _bristle_index(v: np.ndarray, count: int, seed: int,
+                   comb: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    """Which bristle lies at each ``v`` across the tip, and every bristle's strength."""
+    n, phase, top, strengths, offsets = _comb(count, seed, comb)
     idx_f = (v + 1.0) * 0.5 * (n - 1) + phase
     base = np.clip(idx_f.astype(np.int32), 0, top)
     idx = np.clip(np.round(idx_f + offsets[base]), 0, top).astype(np.int32)
-    return strengths[idx]
+    return idx, strengths
+
+
+def bristle_shares(count: int, seed: int, comb: int = 0) -> np.ndarray:
+    """Where each bristle of a comb stands in the brush's paint: ``0`` wettest, ``1`` driest.
+
+    One value per bristle of the comb :func:`tip_comb` numbers, ``0..1``. A brush does
+    not run dry evenly: some bristles hold their paint longer than others, and as the
+    load falls the dry ones stop laying before the wet ones do, which is what drags a
+    starving stroke into streaks along its travel rather than dots across it
+    (:meth:`Canvas.stamp <easel.canvas.Canvas.stamp>`, ``bristles=``).
+
+    Drawn from the comb, the way its strengths are, and from a generator of its own --
+    so it touches neither the comb nor the stroke's stream -- and stratified: one
+    share in each of the comb's equal slices of ``0..1``, in a shuffled order, so every
+    stroke's bristles between them hold about the brush's own load rather than
+    whatever a small comb happened to draw.
+    """
+    top = _comb(count, seed, comb)[2]
+    rng = np.random.default_rng([2000 + int(seed), int(comb)])
+    slots = rng.permutation(top + 1)
+    return ((slots + rng.random(top + 1)) / float(top + 1)).astype(np.float32)
 
 
 # --------------------------------------------------------------------------------------

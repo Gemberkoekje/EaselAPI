@@ -15,7 +15,8 @@ Three channels beyond colour:
     loaded areas resist new paint slightly.
 ``height``
     The canvas tooth (see :mod:`easel.texture`). Read-only after creation. This is
-    what turns a low paint load into a dry-brush stroke without any special case.
+    what turns a low paint load into a dry-brush stroke: a starving brush is gated
+    against it, read along the brush's travel as it runs dry (:meth:`Canvas.stamp`).
 ``sketch``
     Graphite, 0..1. A channel, not a layer: it sits *under* the paint and paint
     covers it in proportion to how much actually landed, so it shows through thin
@@ -34,7 +35,7 @@ from easel.color import blend_wet, linear_to_srgb, luminance, parse_color, srgb_
 from easel.history import DEFAULT_FRAME_PX
 from easel.texture import make_texture, value_noise
 
-__all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
+__all__ = ["Canvas", "DryComb", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
 
 # How the surface height and its finer grain combine into the field that gates
 # deposition. Kept here rather than inline in `stamp` so that `tooth_ceiling` below
@@ -53,6 +54,89 @@ _TOOTH_GRAIN_W = 0.48
 #: stamp's own gate and a held edge's (:meth:`Canvas.broken_edge`) read the tooth with
 #: the one band, so an edge breaks the way a starving brush does.
 _GATE_BAND = 0.18
+
+# -- a brush running dry (0.7.0) ------------------------------------------------------
+# A starving brush used to be gated against the tooth one pixel at a time, so what it
+# left was the weave's peaks wherever it passed: at the loads the guide recommends for
+# a broken mark, confetti -- 509 pieces with a median of 4 px from one crosser at
+# ``load=0.45`` -- where a real dry brush leaves streaks. Two things now drag it along
+# its travel as it runs dry, both tuned so a load lays what it laid before:
+#
+# * the tooth it is gated against is read along the stroke's own direction, so what
+#   clears the gate is a run of pixels rather than one (:meth:`Canvas.tooth_along`);
+# * a bristle tip's bristles run dry one by one rather than together, so the comb
+#   leaves streaks where some bristles still carry paint (``bristles=`` on
+#   :meth:`Canvas.stamp`, :func:`easel.brush.bristle_shares`).
+
+#: How far along its travel a starving brush reads the tooth, as a fraction of the
+#: canvas's long side: 9 px on a canvas 1024 wide, about one thread of linen, whose
+#: weave scales with the canvas the same way.
+_DRAG_ALONG = 9.0 / 1024.0
+#: Below the first share of its load a brush starts to drag dry, and by the second it
+#: drags wholly dry; in between the old gate and the dragged one are blended. So a
+#: loaded mark -- every mark at ``load`` 0.9 and over, ``solid=True`` among them -- lays
+#: exactly what it laid before, and a starving one changes shape and keeps its weight.
+_DRY_FROM = 0.9
+_DRY_BY = 0.7
+#: How far apart a starving comb's bristles run dry. A bristle's own share of the canvas
+#: is the stroke's raised to a power between ``1 / _BRISTLE_SPREAD`` (the wettest) and
+#: ``_BRISTLE_SPREAD`` (the driest), with the stroke's share set so the comb between
+#: them lays what the stroke would have laid at its load (:class:`DryComb`).
+_BRISTLE_SPREAD = 3.0
+#: A bristle whose own share of the canvas falls under this is running out: what it lays
+#: falls away as the fourth power of how far under it is, so the driest bristles lay
+#: nothing -- without that they lay a pixel here and there, which is the confetti this
+#: is here to end -- and the comb's total stays continuous, so the wettest bristle can
+#: always carry what a nearly empty stroke keeps. (Cut off hard, a comb whose stroke
+#: kept half a percent of the tooth could only lay nothing or one bristle's worth: a
+#: starving bristle on smooth laid an eighth of what it had.)
+_BRISTLE_EMPTY = 0.05
+#: How far past the lowest tooth on the canvas a need has to be before the gate can
+#: read anything there. Under it the old gate is exactly one on every pixel, so nothing
+#: a dragged gate did could show; the margin keeps float32's rounding on the safe side.
+_BITE_MARGIN = 1e-4
+
+
+def _running_out(each: np.ndarray) -> np.ndarray:
+    """What a bristle lays, for the share ``each`` of the canvas it would: see
+    :data:`_BRISTLE_EMPTY`."""
+    return each * np.minimum(each / _BRISTLE_EMPTY, 1.0) ** 4
+
+
+class DryComb:
+    """One stroke's comb as it runs dry: which bristles hold their paint, and for how long.
+
+    Each bristle's share of the paint (:func:`easel.brush.bristle_shares`, ``0`` the
+    wettest) sets its power, ``_BRISTLE_SPREAD ** (2 * share - 1)``: where the stroke's
+    load would let a share ``c`` of the tooth take paint, the bristle lets ``x ** power``
+    of it -- the wettest more, the driest less, one far under :data:`_BRISTLE_EMPTY`
+    none -- around the ``x`` for which the comb, each bristle weighed by how much of the
+    tip it is, lets through ``c``. So a starving comb lays streaks and lays what the
+    stroke would have laid, stroke by stroke rather than on average: a comb of a dozen
+    bristles whose wet ones happened to be its weakest would otherwise lay half.
+
+    Args:
+        shares: each bristle's share, ``0..1``, numbered as the comb index numbers them.
+        weights: how much of the stamp each bristle is -- its mask summed, a missing
+            bristle nearly nothing. All zero is read as all equal.
+    """
+
+    __slots__ = ("powers", "kept", "x")
+
+    def __init__(self, shares: np.ndarray, weights: np.ndarray) -> None:
+        self.powers = _BRISTLE_SPREAD ** (2.0 * np.asarray(shares, dtype=np.float64) - 1.0)
+        w = np.asarray(weights, dtype=np.float64)
+        total = float(w.sum())
+        w = w / total if total > 0.0 else np.full(w.size, 1.0 / max(w.size, 1))
+        # From nothing to everything, finest where the loads that starve a brush are.
+        self.x = np.concatenate([[0.0], np.geomspace(1e-12, 1.0, 256)])
+        kept = _running_out(self.x[:, None] ** self.powers[None, :]) @ w
+        # Strictly rising, to be read backwards.
+        self.kept = np.maximum.accumulate(kept) + np.arange(self.x.size) * 1e-15
+
+    def each(self, kept: float) -> np.ndarray:
+        """What each bristle lays, as a share of the canvas, for a comb that keeps ``kept``."""
+        return _running_out(float(np.interp(kept, self.kept, self.x)) ** self.powers)
 
 
 def build_surface(
@@ -191,6 +275,10 @@ class Canvas:
             texture, self.height, self.width, seed, texture_strength
         )
         self.tooth_ceiling = tooth_ceiling(self.height_map, self.grain)
+        # What a starving brush reads the tooth through, built the first time one does
+        # (:meth:`_gate_tables`, :meth:`tooth_along`). One dict, so a trial copy shares
+        # it with the canvas it was copied from, as it shares the tooth itself.
+        self._gating: dict = {}
 
         self.rgb = self.bare()
 
@@ -319,6 +407,8 @@ class Canvas:
         texture_sensitivity: float,
         glaze: bool = False,
         clip: np.ndarray | None = None,
+        travel: float | None = None,
+        bristles: tuple[np.ndarray, DryComb] | None = None,
     ) -> float:
         """Deposit one dab. Centre is in pixel coordinates and may be fractional.
 
@@ -331,6 +421,19 @@ class Canvas:
         ``block_in(edge="hard")`` is, and it is the only way this engine ends a pass
         on a line rather than on a chisel end. Fractional values feather the
         boundary; zero is outside it.
+
+        ``travel`` and ``bristles`` are how a brush running dry drags (0.7.0). As
+        ``load`` falls from :data:`_DRY_FROM` to :data:`_DRY_BY` the gate against the
+        tooth moves from reading it pixel by pixel -- a halftone of dots -- to reading it
+        along ``travel``, the stroke's direction in radians, so what clears it is a run
+        of pixels (:meth:`tooth_along`); and a comb's bristles run dry one by one rather
+        than together: ``bristles`` is which bristle each pixel of ``mask`` lies under
+        (:func:`easel.brush.tip_comb`) and the stroke's :class:`DryComb`. Both keep what
+        a load lays -- the tooth read along is given back the tooth's own distribution,
+        and the comb's spread is matched to the stroke's own share -- and change only
+        its shape. A dab whose brush is loaded, and one with neither a travel nor a
+        comb -- a one-point mark of any tip but ``bristle`` -- is gated as it always
+        was.
 
         Returns:
             How much paint actually landed, as the sum of the deposited alpha --
@@ -376,9 +479,24 @@ class Canvas:
         # the point; stopping dead is not.
         ts = float(np.clip(texture_sensitivity, 0.0, 1.0))
         if ts > 0.0:
-            need = min((1.0 - float(np.clip(load, 0.0, 1.0))) * ts, self.tooth_ceiling)
-            gate = np.clip((tooth - need) / _GATE_BAND, 0.0, 1.0)
-            gate = gate * gate * (3.0 - 2.0 * gate)
+            ld = float(np.clip(load, 0.0, 1.0))
+            need = min((1.0 - ld) * ts, self.tooth_ceiling)
+            drag = self.drag(ld, need) if (travel is not None or bristles is not None) else 0.0
+            if drag < 1.0:
+                gate = np.clip((tooth - need) / _GATE_BAND, 0.0, 1.0)
+                gate = gate * gate * (3.0 - 2.0 * gate)
+            if drag > 0.0:
+                # The same gate, dragged: the tooth read along the travel, and each
+                # bristle's own need where the comb carries the load.
+                read = (tooth if travel is None
+                        else self.tooth_along(travel)[cy0:cy1, cx0:cx1])
+                if bristles is not None:
+                    index, comb = bristles
+                    per = self._bristle_needs(need, comb)
+                    need = per[index[sy0:sy0 + (cy1 - cy0), sx0:sx0 + (cx1 - cx0)]]
+                dragged = np.clip((read - need) / _GATE_BAND, 0.0, 1.0)
+                dragged = dragged * dragged * (3.0 - 2.0 * dragged)
+                gate = dragged if drag >= 1.0 else gate + drag * (dragged - gate)
             # Even a full brush sits slightly heavier on the peaks.
             gate = gate * (1.0 - 0.22 * ts * (1.0 - tooth))
             alpha = alpha * gate
@@ -446,6 +564,118 @@ class Canvas:
         gate = gate * gate * (3.0 - 2.0 * gate)
         gate = np.where(ramp >= 1.0, 1.0, gate)
         return np.where(ramp <= 0.0, 0.0, gate).astype(np.float32)
+
+    # -- a brush running dry ---------------------------------------------------------
+    def drag(self, load: float, need: float) -> float:
+        """How far a dab at ``load`` drags dry rather than dotting, ``0..1``.
+
+        ``0`` while the brush is loaded -- :data:`_DRY_FROM` of its load and over, to
+        float32's rounding, since a stroke's loads are float32 and ``0.9`` is laid as
+        ``0.89999998`` -- and wherever the tooth cannot gate it at all (``need``, the
+        threshold the load sets, still under the lowest tooth on this canvas by the
+        gate's own band), so such a dab lays exactly what it laid before 0.7.0; ``1``
+        from :data:`_DRY_BY` down, and a smoothstep between. What
+        :func:`easel.stroke.drags` asks of a saved mark.
+        """
+        if load > _DRY_FROM - 1e-6:
+            return 0.0
+        if need <= self._gate_tables()["floor"] - _GATE_BAND - _BITE_MARGIN:
+            return 0.0
+        t = min(max((_DRY_FROM - load) / (_DRY_FROM - _DRY_BY), 0.0), 1.0)
+        return t * t * (3.0 - 2.0 * t)
+
+    def _gate_tables(self) -> dict:
+        """The tooth's distribution, as a starving brush is gated against it.
+
+        Built once per surface and shared with every trial copy: the lowest tooth
+        anywhere (``floor``), a sorted sample of the tooth (``sorted``, at the pixels
+        ``pick`` names), and how much of a dab the gate lets through at each need
+        (``needs`` rising, ``cover`` falling from 1 to 0), which is what a comb's
+        bristles are spread in.
+
+        The sample is pixels drawn at random, from a generator of its own, and not a
+        grid: smooth's grain is a lattice four pixels apart, and every fourth pixel lands
+        on its points and reads the tooth wider than it is -- a 90th percentile of
+        `0.637` read as `0.657`, and a gate read along the travel that let through
+        twice what it should near the tooth's ceiling. (:func:`tooth_ceiling` reads
+        that grid, and has since before 0.7.0; it is left as it is.)
+        """
+        tables = self._gating
+        if "floor" not in tables:
+            tooth = self.height_map * _TOOTH_HEIGHT_W + self.grain * _TOOTH_GRAIN_W
+            flat = tooth.ravel()
+            pick = np.random.default_rng(0xD7A6).integers(0, flat.size,
+                                                          size=min(flat.size, 1 << 16))
+            sample = np.sort(flat[pick]).astype(np.float64)
+            # A quarter of the sample is plenty for a curve this smooth. From its own
+            # lowest value less the band, where it lets everything through, to its
+            # highest, where it lets nothing: falling all the way, with no flat run
+            # for a need to be read back off.
+            coarse = sample[::4]
+            low, high = float(coarse[0]), float(coarse[-1])
+            needs = np.linspace(low - _GATE_BAND, max(high, low + 1e-3), 257)
+            t = np.clip((coarse[None, :] - needs[:, None]) / _GATE_BAND, 0.0, 1.0)
+            tables.update(floor=float(tooth.min()), pick=pick, sorted=sample, needs=needs,
+                          cover=(t * t * (3.0 - 2.0 * t)).mean(axis=1))
+        return tables
+
+    def tooth_along(self, travel: float) -> np.ndarray:
+        """The tooth as a brush travelling at ``travel`` radians reads it once it runs dry.
+
+        Averaged over :data:`_DRAG_ALONG` of the long side along that direction, and
+        then given back the tooth's own distribution, rank for rank: what clears a need
+        is the same share of the canvas as before, and it is a run of pixels along the
+        travel where it was one pixel at a time. Kept per ten degrees of direction, the
+        steps a tip's own angle is kept in, and shared with every trial copy.
+        """
+        bucket = int(round(math.degrees(float(travel)) / 10.0)) % 18
+        fields = self._gating.setdefault("along", {})
+        field = fields.get(bucket)
+        if field is None:
+            field = self._read_along(math.radians(bucket * 10.0))
+            fields[bucket] = field
+        return field
+
+    def _read_along(self, theta: float) -> np.ndarray:
+        tooth = self.height_map * _TOOTH_HEIGHT_W + self.grain * _TOOTH_GRAIN_W
+        reach = max(1, int(round(self.long_side * _DRAG_ALONG)) // 2)
+        padded = np.pad(tooth, reach, mode="reflect")
+        h, w = tooth.shape
+        run = np.zeros_like(tooth)
+        for k in range(-reach, reach + 1):
+            dx = int(round(k * math.cos(theta)))
+            dy = int(round(k * math.sin(theta)))
+            run += padded[reach + dy:reach + dy + h, reach + dx:reach + dx + w]
+        run /= float(2 * reach + 1)
+        # Rank for rank onto the tooth's own values: an average is narrower than what it
+        # averages, and read raw it would let a different share of the canvas through at
+        # every load -- 22% more paint at 0.60 on rough, 12% less at 0.35, as benched.
+        # Both are ranked at the same random pixels (see `_gate_tables`), so the k-th
+        # smallest average is given the k-th smallest tooth.
+        tables = self._gate_tables()
+        ranked = np.sort(run.ravel()[tables["pick"]])
+        return np.interp(run, ranked, tables["sorted"]).astype(np.float32)
+
+    def _bristle_needs(self, need: float, comb: DryComb) -> np.ndarray:
+        """Each bristle's own need, for a comb whose stroke's need is ``need``.
+
+        The share of the tooth ``need`` lets through on this canvas is spread across the
+        comb by :meth:`DryComb.each`, and each bristle's share is turned back into a
+        need on the same tooth -- measured from ``need`` itself, so a bristle keeping
+        the stroke's own share is gated exactly as the stroke is. A bristle that has run
+        out, laying under a millionth of the canvas, gets a need past every tooth there
+        is.
+        """
+        tables = self._gate_tables()
+        needs, cover = tables["needs"], tables["cover"]
+        kept = float(np.interp(need, needs, cover))
+        if kept >= 1.0:
+            return np.full(comb.powers.size, need, dtype=np.float32)
+        each = comb.each(kept)
+        rising, below = cover[::-1], needs[::-1]
+        per = need + (np.interp(each, rising, below) - float(np.interp(kept, rising, below)))
+        per[each < 1e-6] = 4.0
+        return per.astype(np.float32)
 
     def sample(self, cx: float, cy: float, mask: np.ndarray) -> np.ndarray:
         """Average canvas colour under a stamp. Used by smudge and knife drag."""
@@ -722,11 +952,14 @@ class Canvas:
 
         The mutable channels are copied; the tooth, its grain and the ceiling
         derived from them are *shared*, because they never change and they are the
-        expensive part. This is what :meth:`easel.session.Session.rehearse` paints
-        on, so that trying a mark three ways costs three small copies rather than
-        three canvases.
+        expensive part -- and so is what a starving brush reads the tooth through.
+        This is what :meth:`easel.session.Session.rehearse` paints on, so that trying
+        a mark three ways costs three small copies rather than three canvases.
         """
         c = Canvas.__new__(Canvas)
+        # Before the copy, so the two share one: what a starving brush reads the tooth
+        # through is as fixed as the tooth, and as dear to build.
+        self.__dict__.setdefault("_gating", {})
         c.__dict__.update(self.__dict__)
         c.rgb = self.rgb.copy()
         c.wetness = self.wetness.copy()
