@@ -357,7 +357,7 @@ comes back as it was painted, and golden-image tests hold that — laid by the e
 installed, so a stroke an earlier version laid wrongly comes back fixed, and
 [`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
-painting — seven of the twenty-one say **Reproducible: not claimed** in their own table in
+painting — seven of the twenty-two say **Reproducible: not claimed** in their own table in
 [`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
 or `look` scripts ran as passes between the painting ones, and a mark's texture is
 seeded from its place in the log. Each painting's table says which of the two it

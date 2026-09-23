@@ -1,0 +1,10 @@
+Prelude: /tmp/claude-0/-home-user-projects/4e972117-80a5-5a10-a694-531a4b50dfd9/scratchpad/repro/headland/prelude.py
+Rehearsed 03_headland_v2.py: 42 strokes of the 254 left. Nothing committed.
+check over this pass, 42 marks: 1 thing to look at
+  - 19 marks at stepping colours run parallel 0.020 apart, and the narrowest brush laying them is 0.006 -- 0.3 of that step. Under 2 the passes stop overlapping and a graded passage comes back as bars. Use about three steps (size=0.0607 here), or hand the passage to scumble(), which sizes its own brush from its own step.
+  plan: 5 of 7 places inside 0.10; lantern -0.39; tower +0.27
+  lightest: place 2 reads 0.77 and lantern, the plan's own light, 0.47 -- 0.30 under
+  values: 0.16-0.69 of a box that reaches 0.13-0.96, clusters at 0.23, 0.42, 0.62; a clear light, mid and dark
+  edges: 60% of edges are under 2.5 px wide, median 2.0 px
+  ground: 0.00% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+/tmp/claude-0/-home-user-projects/4e972117-80a5-5a10-a694-531a4b50dfd9/scratchpad/repro/headland/out/rehearse_001.png

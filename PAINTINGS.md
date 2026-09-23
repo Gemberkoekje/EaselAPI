@@ -68,7 +68,11 @@ arrived at their convention on its own.
   then `PAINTING.md`, `REFERENCE.md` and `RECIPES.md`, and nothing else — no
   `CALIBRATION.md`, and no earlier painting, from the installed package in an empty
   directory. That makes it the widest read of the package-only sessions and still
-  narrower than half the sessions that had a checkout. So where they
+  narrower than half the sessions that had a checkout. The lighthouse handover, the
+  first painted against 0.6.0, read every document the package ships except
+  `CALIBRATION.md` — `easel guide --full`, `--painting`, `--recipes`, `--reference` and
+  `--diagnosis`, 194 KB — before its first mark, ran `easel demo mistakes` and five of
+  the nine exercises, and had no checkout and no earlier painting. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -79,7 +83,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the twenty-one do not make
+  itself**, in its own `Reproducible` row below, and seven of the twenty-two do not make
   it. What holds everywhere is that a *saved* painting opens as it was painted, because
   the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
   randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
@@ -866,6 +870,41 @@ and rebuilt instead as five bent, starved strokes down the sides where the tower
 interrupt the middle. Stopped at 170 of 420 because more sea marks were making the
 picture busier, not better.
 
+## Two warm lights handing over: a lighthouse at dusk
+
+![A lighthouse at dusk standing on a dark headland at the right, its lamp lit and a faint
+beam reaching back across a blue-grey sky toward an orange afterglow low on the left
+horizon, the glow broken into slivers down a calm sea toward the
+viewer](paintings/Claude/lighthouse_handover/painting.png)
+
+The first painting made against 0.6.0, by `claude-opus-5-5` at max effort, from the
+installed package and nothing else. The sun's glow is going out low on the left while the lamp comes on at the right: two warm
+lights handing over, and the small made one has to win — the sentence the painter wrote
+into `s.plan(why=...)` before the first mark, and the one `checklist()` quoted back at
+the end. The lamp reads `0.86` against the glow's `0.77`, and the `lightest:` line is
+what caught it losing at `0.74` before the beam was laid.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `burnt_sienna` ground, seed 11 |
+| Spent | 171 strokes of a 300 budget, plus two signature marks that did not count |
+| Rehearsed and thrown away | 21 rehearsals and five variant sheets on throwaway copies, none of them charged |
+| Reproducible | Thirteen pass scripts rebuild the log to the stroke. Pixel-identical on the painter's own machine; on the one that filed it, 729 of 786,432 pixels differ by one 8-bit level, from a mixture two builds of numpy round differently in the seventh decimal |
+| Files | [`paintings/Claude/lighthouse_handover/`](paintings/Claude/lighthouse_handover) — [notes](paintings/Claude/lighthouse_handover/NOTES.md), [time-lapse](paintings/Claude/lighthouse_handover/painting.gif), [verdict](paintings/Claude/lighthouse_handover/verdict.md), [what painting felt like](paintings/Claude/lighthouse_handover/feelings.md), [answers](paintings/Claude/lighthouse_handover/answers.md) |
+
+The [verdict](paintings/Claude/lighthouse_handover/verdict.md) is the painter's own, and
+it checked its claims before making them. An egg-shaped glow, a panel stuck on the
+headland, gold-coin reflections and a stair-stepped tower were all caught in rehearsal and
+never paid for; the two best passages, the beam and the broken reflection, came straight
+from two recipes and `easel demo`. What it holds against the tool is measured — a tower
+edge that steps from `0.59` to `0.28` in one pixel, a starved brush whose flecks read as
+dirt, a 16 MB session file — and against itself, a headland that failed twice and was
+patched with brushwork rather than redrawn, and a picture it calls a postcard subject done
+the safe way. The `edges:` line said `54%` of its edges were under 2.5 px on every pass
+from the fourth, the share the two cohort painters who named *flat cut-out shapes* laid;
+the painter relied on the hard edge anyway and named it the least paint-like thing in the
+engine. What is being done about all of it is [`PLAN-0.7.0.md`](PLAN-0.7.0.md).
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -891,7 +930,12 @@ golden-image tests in CI.
 > actually felt like — pasted in verbatim rather than summarised or written on its
 > behalf. Until that text is added, the honest reading of these pictures is the "What
 > still bothers me" section at the foot of each painting's notes, which the painter
-> wrote about its own canvas while it could still see it.*
+> wrote about its own canvas while it could still see it. Three later painters were
+> asked the second question and answered it; their words are filed beside their
+> pictures as `feelings.md` — [DeepSeek's](paintings/Deepseek/tidal_sky/feelings.md),
+> [GPT's](paintings/GPT/seaside-village/feelings.md) and the
+> [lighthouse handover's](paintings/Claude/lighthouse_handover/feelings.md) — and
+> linked from each one's table above as *what painting felt like*.*
 
 ## What these paintings are not
 
@@ -917,7 +961,9 @@ golden-image tests in CI.
   `0.07%` of the canvas;
   and the pool stopped 79 strokes early on purpose and names the dark it left thin —
   the upper-left quarter and the deck corners — while arguing that a night picture needs
-  them quiet. Both herons name the same unfinished thing, which is the point of having
+  them quiet; and the lighthouse handover names a headland that failed twice and was
+  patched with brushwork rather than redrawn, and stopped with 129 of 300 unspent,
+  partly — its painter says — from caution rather than judgement. Both herons name the same unfinished thing, which is the point of having
   two of them: a bird's body that is a smooth pebble where it should be built of planes,
   abandoned once for want of the recipe and once with the recipe open.
 
