@@ -14,7 +14,14 @@ places in the engine most of this lands -- `Session._clip_cover` in
 is the round before this one and the shape most of the conventions here come from._
 
 **Status: written 2026-09-23 against `main` at `3d6fe74`, which is `v0.6.0`, and
-revised the same day with the decisions taken. Step 1 is done; nothing is built.** The
+revised the same day with the decisions taken. Steps 1 and 2 are done; nothing is
+built. Step 2 left five questions for the owner, at the end of section 5 -- the edge
+candidate, whether the default reaches a clip, the dry-brush gate, the graded rule and
+D1 -- each with its evidence and a recommendation, and the build steps wait on them.**
+Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
+their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
+sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
+decided and what surprised. The
 painting is filed (`paintings/Claude/lighthouse_handover/`, a section in `PAINTINGS.md`,
 an entry in the corpus probe), every number in section 3 was measured on this machine
 on the checkout's own engine, and the two misfires the plan could not reproduce at first
@@ -30,8 +37,6 @@ it shipped, and `PLAN-0.6.0.md` and its step notes left the repository, so this 
 own `NOTES-step<N>.md` start from an empty root. Two statements here were corrected on
 the way, each marked where it stands: the `edges:` line did not print 54% on every
 pass (it read 54% to 65% from the sea's pass on), and finding 15's count does not move.
-`CALIBRATION.md`'s section for the round arrives with the probe that fills it, step 2,
-rather than empty ahead of it.
 
 ---
 
@@ -207,7 +212,10 @@ must not do; the numbers stand as the shape of the curve.
 | 3 px | `0.12` | 14% | 4.7 px | 0.23 s |
 | 5 px | `0.11` | 23% | 4.8 px | 0.22 s |
 
-Two pixels is the knee, it costs nothing, **and looked at it reads as blur**: the
+*(Step 2 rebuilt this bench inward, and the knee moved: an inward ramp over `F` pixels
+rises over about `F/1.5`, so A1 at 2 px barely moves the line -- 77% to 69% -- and only
+halves it at 5 px. `CALIBRATION.md`, *The lighthouse handover's round*.)* Two pixels is
+the knee, it costs nothing, **and looked at it reads as blur**: the
 tower's stair-stepped side becomes a smooth soft edge, which is a different wrong thing
 -- and the painter says the staircase was never the problem, the uniform edge was. A
 painted hard edge is neither -- it is crisp *and* broken, because the brush meets the
@@ -472,6 +480,22 @@ it had no evidence, the bench decides, which is what it would have decided anywa
 | 7 | The documentation's weight? | **Watch.** Never opened `CALIBRATION.md` or `DIAGNOSIS.md`, never ran `explain` or `diagnose`; steered by the notices, the demos and `lightest:`; read three rules and broke them; *if you ever cut, start with what the notices already say at the call* | 4G: recorded in `LESSONS.md`; the code-to-symptom link stays unbuilt |
 | 8 | The version? | **0.7.0**, and a notice when a pre-0.7 session is replayed or rebuilt under it, because its README's pixel-identical claim relies on the pin | 4F: F2, the engine stamp and the notice |
 | 9 | The model? | **`claude-opus-5-5`, at max effort**, by the session's metadata, with the caveat that a single-turn fallback earlier would not show | `PAINTINGS.md` and the notes say so |
+
+### Put to the owner after step 2
+
+The probe answered what it could and rendered what it could not; these are what is left,
+each with its evidence and a recommendation, and **none is answered yet**. The sheets are
+under `out/handover/` after `python scripts/probe_handover_session.py --edges --flecks`
+and `python scripts/probe_cohort_session.py --graded`, and the numbers are in
+`CALIBRATION.md` under *The lighthouse handover's round*.
+
+| # | Question | Evidence | Recommendation |
+|---|---|---|---|
+| 10 | **Which edge candidate reads as paint** -- question 2, now with something to see | A1 inward at `0.002` is hard to tell from today at the painting's size, and only halves the `edges:` share at `0.005`; A2 at `0.002` breaks the boundary at the weave's scale and keeps it crisp; at `0.003` it starts to look ragged. Neither number can see A2 (`edges_tower_*.png`, `edges_headland.png`, `edges_ground.png`, `edges_burial.png`) | **A2 at `0.002`**, which reads as a painted edge at the painting's size and holds at 1440x960 (2.9 px there). A1 at the plan's knee does too little to see, and at the value that moves the line (`0.005`) it is the blur the plan predicted |
+| 11 | **Does the default reach the tower?** The decided default feathers `edge="hard"` and leaves `clip=` at `0` | Of the painter's 9 edge-drawing calls it moves 5 -- the headland, two stacks, the cap and the horizon, which the painter wanted ruled -- and leaves the tower, its lit side and the lantern twice exactly as they are, because those are clips. Inward, a feather cannot carry paint past a clip, so the containment the painter protected holds by construction; what is left is whether a feathered containment clip leaves a rim (`edges_containment*.png`). The cost: feathering `clip=` by default also moves GPT's thirteen clips in the corpus and this painting's 24 containment calls, and it reverses a decision the painter took, so it goes back to whoever took it | **Feather `clip=` as well, inward** -- or the default misses the very strokes the verdict named. The painter's reason for keeping clips hard was an outward feather breaking containment, which an inward one cannot; the rim was the remaining risk and the bench shows none. Whoever rules should look at `edges_containment_x4.png` first. The horizon then needs `feather=0`, which is what the painter said it wanted available |
+| 12 | **Which dry-brush gate** | At the guide's broken-mark loads today's gate lays a halftone of dots (571 pieces, median 4 px, at `0.45`). B1 makes them dashes that run with the brush, on every tip; B2 makes a comb's streaks, and touches nothing without a comb; B1+B2 is the most like a dry brush on the sheets. B3 changes contrast only. **Both B1 and B2 change how much a load lays** -- B1 by up to a fifth either way on rough, B2 by up to three and a half times (`flecks_*.png`, *A dry brush that streaks*) | **B1+B2**, built with the tooth's whole distribution kept under B1 and B2's spread tuned until each load lays about today's paint -- so what moves is the shape of a starved mark, not its weight, and the loads the guide recommends keep their meaning |
+| 13 | **Is the graded rule narrowed, and how** | Both clauses together silence both misfires and keep the recipe's failure block (`--misfires`). Over the corpus the rule fires on 9 of 337 passes; read by eye, five or six are graded passages coming back as bars and three are separate things. The plan's gate silences all three false ones and three true ones -- two beams and a hatched finger; *trimmed* (the narrowest brush at least half the median, which is not the plan's) with a 10% break silences two of each. No gate tried silences both misfires and keeps every true positive (`out/graded/`, `out/handover/graded_*.png`) | **Not narrowed**, unless the crops read differently to whoever rules: the plan's own condition for C2 is a gate that keeps every true positive a human calls a passage, and none does. C0 is still built -- saving what a rehearsal's check said is what would have made both misfires reproducible from the file |
+| 14 | **Parallel panels (D1)** | One panel 2.8-2.9 s; four in one process 11.1-11.6 s; four in four spawned processes 4.4-4.7 s, **1.6-1.7 times one panel** against a target of 1.5 -- starting the processes and importing the engine 0.4 s, each worker's load of the session file about 1.4 s. The variant's own cost is the paint: 10.2-10.6 s of the harness's 10.4-10.7 | **Declined, as the plan says a missed target is.** D0 goes ahead on its own, sequential |
 
 ---
 

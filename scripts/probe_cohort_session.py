@@ -38,6 +38,7 @@ from memory.
     python scripts/probe_cohort_session.py --corpus       # the replay and its tables
     python scripts/probe_cohort_session.py --corpus --only kimi glm
     python scripts/probe_cohort_session.py --closing      # finding 12 alone, about 20 min
+    python scripts/probe_cohort_session.py --graded       # PLAN-0.7.0.md's C1, about 20 min
 
 **The rebuild is itself a measurement.** ``PAINTINGS.md`` claims a byte-for-byte
 rebuild for some of these paintings and explicitly declines to for others; where a
@@ -229,6 +230,11 @@ READS_CANVAS = ("smudge", "glaze", "scumble", "block_in", "cover", "stroke", "da
 #: What a replay must not do: write into the repository, or spend its time drawing.
 STUBBED = ("look", "look_image", "export", "timelapse_gif", "contact_sheet", "save",
            "look_areas", "capture_frame")
+
+#: Called as ``hook(pass, session)`` once a pass has closed and its check has been read,
+#: with the canvas still as that pass left it. ``--graded`` crops what it counted here,
+#: because the finished canvas has usually painted over the marks a pass was judged on.
+PASS_HOOKS: list = []
 
 
 @dataclass
@@ -423,6 +429,8 @@ class Watcher:
             open_pass.findings = [line.strip()[2:] for line in said.splitlines()
                                   if line.strip().startswith("- ")]
             self._judge_pass(open_pass, session)
+            for hook in PASS_HOOKS:
+                hook(open_pass, session)
         if self.echo:
             print(f"    {open_pass.name:<26} {open_pass.marks:4d} records "
                   f"{open_pass.seconds:6.1f}s  {len(open_pass.notices)} notices, "
@@ -2966,6 +2974,250 @@ def probe_gpt_joins(replays: list[Replay]) -> None:
     print("  read: a hole at a join is B8's, and a hole in the middle of a mass is B2's.")
 
 
+# -- the graded passage, narrowed: PLAN-0.7.0.md, workstream C ----------------------------
+#
+# *Graded passage laid too narrow* misfired twice for the lighthouse handover's painter,
+# both times in a rehearsal, and both times the brush the line named was a `0.006` accent
+# laid among wide marks -- a crevice along the join of two rock faces, a ripple among
+# glints. The rule judges a stack's step against its *narrowest* brush, and one accent is
+# enough to make a stack of planes read as a passage laid too narrow. The plan's gate has
+# two clauses, each answering one misfire: judge the run by its **median** brush, and
+# **break the run** where two neighbours do not overlap along the stack's axis. A clause
+# is only worth building if it keeps the rule's true positives, and the corpus is where
+# they are -- which is what `--graded` is for: every pass the rule fires on, cropped as
+# that pass left the canvas, with every gate's verdict beside it.
+
+#: The four ways the rule is asked. *As it stands* is the engine's own `_graded_band`,
+#: re-implemented so the run it counted can be drawn; `--graded` checks that the two
+#: agree on every pass, and says so if they do not.
+GATES = {
+    "as it stands": {"judge": "narrowest", "overlap": 0.0},
+    "median brush": {"judge": "median", "overlap": 0.0},
+    "overlap break": {"judge": "narrowest", "overlap": 0.30},
+    "both": {"judge": "median", "overlap": 0.30},
+    # Not in the plan: what the corpus asked for once its crops were looked at. The
+    # median silences two beams laid as rays, where the narrow ray is part of the
+    # passage rather than an accent among it; *trimmed* judges by the narrowest brush
+    # that is at least half the run's median, which drops a lone accent and keeps a
+    # taper. Staggered hatching overlaps its neighbours by less than 30%, and glints
+    # side by side not at all, so the looser break is 10%.
+    "trimmed": {"judge": "trimmed", "overlap": 0.0},
+    "trimmed, 10%": {"judge": "trimmed", "overlap": 0.10},
+}
+
+#: How the engine words the line, for telling its findings apart.
+GRADED_WORDS = "marks at stepping colours run parallel"
+
+
+@dataclass
+class GradedRun:
+    """A stack the rule counted: its marks, its step, and the brush it judged it by."""
+
+    marks: list
+    step: float
+    brush: float
+    per_step: float
+    fires: bool
+
+
+def pass_long_marks(marks: list, canvas) -> list:
+    """The long marks of a pass, as `_pass_findings` gathers them for the rule."""
+    out = []
+    for r in marks:
+        length, angle = session_module._mark_length_and_angle(r, canvas)
+        if length >= 2.0 * float(r.params.get("size", 0.0)) and length > 0.0:
+            out.append((r, angle))
+    return out
+
+
+def _extent_along(record, axis: tuple[float, float], canvas) -> tuple[float, float]:
+    """A mark's reach along the stack's axis, in the rule's own long-side units."""
+    pts = np.asarray(record.points, dtype=np.float64)
+    long_side = float(canvas.long_side)
+    xs = pts[:, 0] * canvas.width / long_side
+    ys = pts[:, 1] * canvas.height / long_side
+    along = xs * axis[0] + ys * axis[1]
+    return float(along.min()), float(along.max())
+
+
+def _overlap(a: tuple[float, float], b: tuple[float, float]) -> float:
+    """How much of the shorter of two reaches the other one covers, 0..1."""
+    shorter = min(a[1] - a[0], b[1] - b[0])
+    if shorter <= 1e-9:
+        return 1.0
+    return max(0.0, min(a[1], b[1]) - max(a[0], b[0])) / shorter
+
+
+def graded_run(long_marks: list, canvas, judge: str = "narrowest",
+               overlap: float = 0.0) -> GradedRun | None:
+    """The engine's `_graded_band`, step for step, with the two clauses the plan adds.
+
+    ``judge`` is which brush the step is held against: ``"narrowest"``, as the engine
+    does, ``"median"``, the size most of the run was laid with, or ``"trimmed"``, the
+    narrowest that is at least half the median. ``overlap`` above
+    zero breaks the run wherever two marks next to each other across the stack do not
+    cover that share of the shorter one's reach *along* it -- a graded passage is laid
+    stroke over stroke, and a ripple beside five glints is not. Returns the run whether
+    or not it fires, so a crop can show what was counted; ``None`` where there is no run.
+    """
+    sm = session_module
+    marks = [(r, a) for r, a in long_marks
+             if float(r.params.get("smudge", 0.0) or 0.0) < 1.0]
+    best: list = []
+    for _, centre in marks:
+        near = [(r, a) for r, a in marks
+                if min(abs(a - centre), 180.0 - abs(a - centre)) <= sm._REPORT_ANGLE_DEG]
+        if len(near) > len(best):
+            best = near
+    if len(best) < sm._REPORT_BAND_MARKS:
+        return None
+    long_side = float(canvas.long_side)
+    angle = math.radians(sm._angle_centre(a for _, a in best))
+    nx, ny = -math.sin(angle), math.cos(angle)
+    axis = (math.cos(angle), math.sin(angle))
+    across = []
+    for r, _ in best:
+        pts = np.asarray(r.points, dtype=np.float64)
+        x = float(pts[:, 0].mean()) * canvas.width / long_side
+        y = float(pts[:, 1].mean()) * canvas.height / long_side
+        across.append((x * nx + y * ny, r))
+    across.sort(key=lambda pair: pair[0])
+    runs: list[list] = [[]]
+    for i, (off, r) in enumerate(across):
+        if i:
+            prev_off, prev = across[i - 1]
+            narrow = min(float(r.params.get("size", 0.0)), float(prev.params.get("size", 0.0)))
+            broken = off - prev_off > sm._REPORT_BAND_GAP * narrow
+            if not broken and overlap > 0.0:
+                broken = _overlap(_extent_along(prev, axis, canvas),
+                                  _extent_along(r, axis, canvas)) < overlap
+            if broken:
+                runs.append([])
+        runs[-1].append((off, r))
+    run = max(runs, key=len)
+    if len(run) < sm._REPORT_BAND_MARKS:
+        return None
+    records = [r for _, r in run]
+    colours = {tuple(round(float(v), 4) for v in (r.params.get("color") or ()))
+               for r in records}
+    if len(colours - {()}) < sm._REPORT_BAND_COLOURS:
+        return None
+    if sm._value_turns(records) > sm._REPORT_BAND_TURNS:
+        return None
+    steps = np.diff(np.asarray([off for off, _ in run]))
+    steps = steps[steps > 1e-9]
+    if steps.size < sm._REPORT_BAND_MARKS - 1:
+        return None
+    step = float(np.median(steps))
+    sizes = [float(r.params.get("size", 0.0)) for r in records]
+    middle = float(np.median(sizes))
+    brush = {"narrowest": min(sizes), "median": middle,
+             "trimmed": min(size for size in sizes if size >= 0.5 * middle)}[judge]
+    if brush <= 0.0 or step <= 0.0:
+        return None
+    per_step = brush / step
+    fires = sm._REPORT_BAND_FLOOR <= per_step < sm._LINEAR_MIN_STEPS
+    return GradedRun(records, step, brush, per_step, fires)
+
+
+def graded_verdicts(marks: list, canvas) -> dict[str, GradedRun | None]:
+    """Every gate's answer for one pass's marks."""
+    long_marks = pass_long_marks(marks, canvas)
+    return {name: graded_run(long_marks, canvas, **gate) for name, gate in GATES.items()}
+
+
+def crop_graded(canvas, run: GradedRun, path: Path) -> Path:
+    """What the rule counted, as the pass left it: the canvas beside the marks drawn on it.
+
+    Each counted mark's own path is drawn over the right-hand panel, so a human can say
+    whether the stack is a graded passage laid badly or a row of separate things. The
+    box is every counted mark's reach and a brush past it, enlarged to about 480 px.
+    """
+    from PIL import Image, ImageDraw
+
+    width, height = canvas.width, canvas.height
+    pts = np.concatenate([np.asarray(r.points, dtype=np.float64) for r in run.marks])
+    pad = max(float(r.params.get("size", 0.0)) for r in run.marks) * canvas.long_side
+    x0 = int(max(pts[:, 0].min() * width - pad, 0))
+    x1 = int(min(pts[:, 0].max() * width + pad, width))
+    y0 = int(max(pts[:, 1].min() * height - pad, 0))
+    y1 = int(min(pts[:, 1].max() * height + pad, height))
+    image = Image.fromarray(canvas.to_srgb8(impasto=False, sketch=False)[y0:y1, x0:x1])
+    zoom = max(1, min(4, 480 // max(image.width, image.height, 1)))
+    image = image.resize((image.width * zoom, image.height * zoom), Image.NEAREST)
+    drawn = image.copy()
+    pen = ImageDraw.Draw(drawn)
+    for r in run.marks:
+        line = [((x * width - x0) * zoom, (y * height - y0) * zoom) for x, y in r.points]
+        if len(line) > 1:
+            pen.line(line, fill=(255, 0, 200), width=max(1, zoom // 2))
+    sheet = Image.new("RGB", (image.width * 2 + 8, image.height), (255, 255, 255))
+    sheet.paste(image, (0, 0))
+    sheet.paste(drawn, (image.width + 8, 0))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(path)
+    return path
+
+
+@dataclass
+class GradedFire:
+    """One pass the rule, or one of its narrowed forms, fires on."""
+
+    label: str
+    marks: int
+    engine_said: bool
+    verdicts: dict
+    crop: Path | None = None
+
+
+def graded_hook(found: list, out: Path):
+    """The `PASS_HOOKS` entry `--graded` installs: judge the pass, and crop what fired."""
+    def hook(done: Pass, session: Session) -> None:
+        marks = [r for r in session.history.records[done.start:done.end]
+                 if r.kind not in History.UNPAINTED_KINDS]
+        verdicts = graded_verdicts(marks, session.canvas)
+        engine = any(GRADED_WORDS in line for line in done.findings)
+        fired = {name: run for name, run in verdicts.items() if run is not None and run.fires}
+        if not fired and not engine:
+            return
+        fire = GradedFire(done.label, len(marks), engine, verdicts)
+        run = fired.get("as it stands") or next(iter(fired.values()), None)
+        if run is not None:
+            name = re.sub(r"[^A-Za-z0-9_.-]+", "_", done.label)
+            fire.crop = crop_graded(session.canvas, run, out / f"{name}.png")
+        found.append(fire)
+    return hook
+
+
+def report_graded(found: list, passes: int) -> None:
+    """C1: every graded fire in the corpus, and what each narrowed rule says about it."""
+    print("\n== C1: graded passage laid too narrow, over the corpus ==")
+    print(f"  {passes} passes replayed; a pass is listed where any form of the rule fires")
+    names = list(GATES)
+    print(f"  {'pass':<44}{'marks':>6}  " + "  ".join(f"{n:>13}" for n in names))
+    for fire in found:
+        cells = []
+        for name in names:
+            run = fire.verdicts.get(name)
+            cells.append(f"{'FIRES' if run is not None and run.fires else '-':>13}")
+        agree = "" if fire.engine_said == bool(
+            fire.verdicts["as it stands"] and fire.verdicts["as it stands"].fires) else \
+            "   (the engine disagrees with the re-implementation)"
+        print(f"  {fire.label:<44}{fire.marks:>6}  " + "  ".join(cells) + agree)
+        run = fire.verdicts.get("as it stands")
+        if run is not None:
+            sizes = sorted(float(r.params.get("size", 0.0)) for r in run.marks)
+            print(f"  {'':<44}  {len(run.marks)} marks, step {run.step:.3f}, sizes "
+                  f"{sizes[0]:.3g}..{sizes[-1]:.3g}, median {float(np.median(sizes)):.3g}"
+                  + (f"  -> {fire.crop.relative_to(ROOT)}" if fire.crop else ""))
+    for name in names:
+        count = sum(1 for f in found if f.verdicts.get(name) is not None
+                    and f.verdicts[name].fires)
+        print(f"  {name}: fires on {count} of {passes} passes")
+    print("  read: look at each crop. A true positive is a graded passage laid with too")
+    print("  narrow a brush; a gate that silences one is a cost, and the corpus decides.")
+
+
 # -- running it -------------------------------------------------------------------------
 
 CLAIMS = (
@@ -3004,6 +3256,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--closing", action="store_true",
                         help="finding 12 alone: the closing audit over the finished "
                              "paintings, rebuilt without the candidates' canvas reads")
+    parser.add_argument("--graded", action="store_true",
+                        help="PLAN-0.7.0.md's C1: every pass the graded-passage rule "
+                             "fires on, cropped into out/graded/, with the narrowed "
+                             "gates' verdicts beside it")
     args = parser.parse_args(argv)
 
     if args.list:
@@ -3030,6 +3286,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {entry.name} ...", flush=True)
             replays.append(replay(entry, keep_canvas=False, echo=not args.quiet))
         report_closing_audit(replays)
+        return 0
+    if args.graded:
+        # Every painting pass by pass with a hook on each pass's close, and no
+        # candidate run beside it: the crops are taken as each pass left the canvas.
+        found: list[GradedFire] = []
+        painted = 0
+        PASS_HOOKS.append(graded_hook(found, OUT / "graded"))
+        try:
+            for entry in wanted:
+                print(f"  {entry.name} ...", flush=True)
+                rep = replay(entry, keep_canvas=False, echo=not args.quiet)
+                painted += sum(1 for p in rep.passes if p.marks)
+        finally:
+            PASS_HOOKS.clear()
+        report_graded(found, painted)
         return 0
     if not args.corpus:
         for label, probe in CLAIMS:
