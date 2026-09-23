@@ -41,6 +41,10 @@ Nothing yet.
 
 ## [0.6.0] — 2026-09-22
 
+**Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with
+`easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.6.0 in the MCP registry.
+Every job of the publish run passed on its first attempt.
+
 **One round, and the first painted by models other than Claude.** Seven painters — GPT,
 GLM, DeepSeek, Gemini, Grok, Kimi and BigPickle — each installed `easel-paint` 0.5.0
 from the package and painted one picture, and were told nothing about what to read. They
@@ -123,9 +127,12 @@ and `publish.yml` refuses a tag that disagrees with `pyproject.toml` before it u
 anything, because a PyPI version number cannot be reused once taken. The version is
 written by hand in `pyproject.toml` and copied into `src/easel/__init__.py` and both
 entries in `server.json`; `tests/test_version.py` and `tests/test_server_json.py` hold
-every copy to the one in `pyproject.toml`. This round is cut as 0.6.0 in all four of
-them, and what is left of `PLAN-0.6.0.md`'s last step is the tag and then the claim:
-nothing here says it shipped until `v0.6.0` exists.
+every copy to the one in `pyproject.toml`. This round was cut as 0.6.0 in all four of
+them, tagged `v0.6.0` at `3d6fe74`, and given its claim only once the tag and the run
+it starts had both happened. The round's working file and its step notes left the
+repository with the claim; the tagged copies are
+[`PLAN-0.6.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/PLAN-0.6.0.md)
+and `NOTES-step6.md` to `NOTES-step9.md` beside it.
 
 ### Eighteen reported bugs, and the API gaps behind them
 

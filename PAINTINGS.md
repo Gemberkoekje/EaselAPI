@@ -890,7 +890,7 @@ what caught it losing at `0.74` before the beam was laid.
 | Spent | 171 strokes of a 300 budget, plus two signature marks that did not count |
 | Rehearsed and thrown away | 21 rehearsals and five variant sheets on throwaway copies, none of them charged |
 | Reproducible | Thirteen pass scripts rebuild the log to the stroke. Pixel-identical on the painter's own machine; on the one that filed it, 729 of 786,432 pixels differ by one 8-bit level, from a mixture two builds of numpy round differently in the seventh decimal |
-| Files | [`paintings/Claude/lighthouse_handover/`](paintings/Claude/lighthouse_handover) — [notes](paintings/Claude/lighthouse_handover/NOTES.md), [time-lapse](paintings/Claude/lighthouse_handover/painting.gif), [verdict](paintings/Claude/lighthouse_handover/verdict.md), [what painting felt like](paintings/Claude/lighthouse_handover/feelings.md), [answers](paintings/Claude/lighthouse_handover/answers.md) |
+| Files | [`paintings/Claude/lighthouse_handover/`](paintings/Claude/lighthouse_handover) — [notes](paintings/Claude/lighthouse_handover/NOTES.md), [time-lapse](paintings/Claude/lighthouse_handover/painting.gif), [verdict](paintings/Claude/lighthouse_handover/verdict.md), [what painting felt like](paintings/Claude/lighthouse_handover/feelings.md), [answers](paintings/Claude/lighthouse_handover/answers.md), [answers to step 2](paintings/Claude/lighthouse_handover/answers-step2.md) |
 
 The [verdict](paintings/Claude/lighthouse_handover/verdict.md) is the painter's own, and
 it checked its claims before making them. An egg-shaped glow, a panel stuck on the
@@ -900,10 +900,10 @@ from two recipes and `easel demo`. What it holds against the tool is measured �
 edge that steps from `0.59` to `0.28` in one pixel, a starved brush whose flecks read as
 dirt, a 16 MB session file — and against itself, a headland that failed twice and was
 patched with brushwork rather than redrawn, and a picture it calls a postcard subject done
-the safe way. The `edges:` line said `54%` of its edges were under 2.5 px on every pass
-from the fourth, the share the two cohort painters who named *flat cut-out shapes* laid;
-the painter relied on the hard edge anyway and named it the least paint-like thing in the
-engine. What is being done about all of it is [`PLAN-0.7.0.md`](PLAN-0.7.0.md).
+the safe way. The `edges:` line said between `54%` and `65%` of its edges were under
+2.5 px after every pass from the sea's on, the range of the two cohort painters who named
+*flat cut-out shapes*; the painter relied on the hard edge anyway and named it the least
+paint-like thing in the engine. What is being done about all of it is [`PLAN-0.7.0.md`](PLAN-0.7.0.md).
 
 ## The log
 

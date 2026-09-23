@@ -384,7 +384,7 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty-one painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
 each. Everything on it is done — including the eight that were answered by measuring
 them and finding nothing to fix, which say so — except the round at the top, which is

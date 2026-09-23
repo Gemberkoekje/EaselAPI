@@ -60,6 +60,7 @@ their own sessions rather than measurements of the engine.
 | A daisy leaves one point every way; a loop is one length at one spacing; a film or a mass takes what was showing | *What the check reads after a pass* |
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
 | What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
+| What the lighthouse handover's round measured: an edge that is not a step, a dry brush that streaks, the graded rule's misfires, the file | *The lighthouse handover's round* |
 
 ---
 
@@ -1497,7 +1498,7 @@ with a bristle under size=0.025* over it. So the notice offers the comb only at
 `size=0.025` and over. Under that it offers `direction=` along a side, which closes the
 sides that run with it, and `edge="clean"`, which halves the rest (`22%` to `11%`
 above) — the pair that recipe lays now, whose faces rendered at 1024×768 read as
-planes (`NOTES-step9.md`, part three).
+planes ([`NOTES-step9.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/NOTES-step9.md) at `v0.6.0`, part three).
 
 The named profiles, widest and narrowest point of one stroke, same brush:
 
@@ -1803,7 +1804,8 @@ from **47 passes to 38 — 14% to 12%**. Every line that went was a pass laid mo
 scumble: skies, fog, water, a field. One of them was the round's only true positive —
 BigPickle's, over the whole painting, which reached its share only by counting the sky
 passes its own painter called fine; without them its block-ins and crossers fall under
-it. That was ruled a price worth paying (`PLAN-0.6.0.md`, the decisions table).
+it. That was ruled a price worth paying ([`PLAN-0.6.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/PLAN-0.6.0.md) at
+`v0.6.0`, the decisions table).
 
 **The bare-ground floor is older than the round that reported it.** Five of seven
 painters in the 0.5.0 cohort accepted `ground: 0.0x% … the checklist asks for some` by
@@ -2418,3 +2420,375 @@ bezel is not innocent: laying the rings over it wet moves pixels by up to **0.13
 which is past the `0.10` that makes a new mass. The bezel reads `0.14`, and the darkest
 band in the wide-span reconstructions reads `0.14` too — which is the band frame 5
 shows.
+
+---
+
+## The lighthouse handover's round
+
+One painter, `claude-opus-5-5`, installed `easel-paint` 0.6.0 from the package, painted a
+lighthouse at dusk in 171 of 300 strokes, and checked its claims before making them.
+Acting on its verdict is one round, and its measuring step is
+[`scripts/probe_handover_session.py`](scripts/probe_handover_session.py): it rebuilds
+the painting from its thirteen committed passes through the CLI's own `run_script`,
+keeps a rehearsal copy of the canvas after each pass, and benches every candidate of
+the round on the canvas the painter actually had -- each candidate patched in for one
+bench and never into the engine. The corpus half of the graded rule is
+`scripts/probe_cohort_session.py --graded`. Everything in this section is those two
+scripts' output; re-run them rather than trusting the numbers here. The probe takes
+about fifteen minutes, `--claims`, `--edges`, `--flecks`, `--misfires`, `--sheet`,
+`--file` and `--pressure` cut it down, and `--graded` is about twenty-five on its own.
+
+**What the numbers cannot decide, the probe renders**, into `out/handover/`: the edge
+candidates in the painting at its own size, and the flecks each dry-brush gate leaves.
+Two of the round's questions are *does it read as paint*, which is the eye's.
+
+### The painting, rebuilt
+
+192 records, **171 strokes spent**, in about 40 seconds -- the painter's own count, and
+every mark's geometry the painter's. What the check printed after each pass, as the
+painter's shell printed it:
+
+| pass | `edges:` under 2.5 px | median rise |
+|---|---|---|
+| `p01_sky.py` | 19% | 5.0 px |
+| `p02_sea.py` | 60% | 2.1 px |
+| `p03_headland.py` | 64% | 2.0 px |
+| `p04_tower.py` | 65% | 2.0 px |
+| `p05_light.py` | 63% | 2.0 px |
+| `p06_water.py` | 59% | 2.1 px |
+| `p07_subject.py` to `p09_edges.py` | 57% | 2.2 px |
+| `p10_surround.py` | 56% | 2.2 px |
+| `p11_final.py`, `p12_sign.py` | 54% | 2.2 px |
+
+Over half the painting's edges under 2.5 px on every pass from the sea's, which is the
+range of the two cohort paintings whose painters named *flat cut-out shapes* (Grok's
+`62%`, GPT's `54%`).
+
+### The claims, re-measured
+
+| Claim | What the probe found |
+|---|---|
+| **Hard edges are all-or-nothing** (1) | **Survived, to the hundredth.** In the painter's own measure -- Rec. 709 weights on the export's bytes -- the tower's left side at `y=0.40` goes `0.59` to `0.28` in one pixel (a step of **`0.30`**), its right side `0.31` to `0.59` (**`0.28`**), the waterline at `y=0.70` **`0.19`**, and the headland against the sky at `x=0.60` **`0.48`**. The clip mask (`Polygon.coverage`, two samples a pixel) leaves at most one fractional pixel a side on any of the tower's rows, and the rest of the boundary is a step. |
+| **The side-by-side sheet cannot take a glaze** (5) | **Did not survive.** `{"points": ..., "glaze": True, ...}` is a stroke entry of a plan; a `vary=` sheet of three opacities of a glaze renders in under two seconds (*A variant's cost*, below). |
+| **About 15 s a variant** (4) | **Survived, and it is the paint**: see *A variant's cost*, below. |
+| **16 MB a session** (7) | **Survived**: see *The session file*, below. |
+| **A vertical seam from the sky blends** (8, withdrawn) | **Not reproduced**, wet or dried: the three sky ramps on a fresh canvas give a median column jump of `0.0002`, largest at the canvas's own edges. See *The fade and the wet bands*. |
+| **A pressure list fades less than the recipe says** (10) | **Both are right**: see *The fade and the wet bands*. |
+| **The lit-air sentence is backwards** (11) | **Survived.** A `round_soft` glaze at pressure `[1.0, 0.55, 0.1]`, `size=0.10`, is **80 px** tall near its source, 64 in the middle and **30** at the far end: full pressure is the wide end of a round tip. |
+
+### An edge that is not a step
+
+**Which calls a default would move.** The painter counted 33 calls that clip or lay hard,
+and sorted them: 9 draw an edge and 24 only keep paint inside a shape. The probe reads the
+same 33 off the calls as they are made -- the log carries a clip's outline but not the
+`edge=` its call was given -- and the same 9 by the painter's own list:
+
+| the 9 that draw an edge | how | under the decided default |
+|---|---|---|
+| the horizon (`scumble` of the sea) | `edge="hard"` | feathers -- and the painter wanted it ruled |
+| the headland, two sea stacks, the cap | `edge="hard"` | feather |
+| the tower, its lit side, the lantern twice | `clip=` | **stay hard** |
+
+**The decided default -- `edge="hard"` feathers, `clip=` keeps `0` -- moves 5 of the 9,
+and not the four the verdict named.** The tower and the lantern are clipped strokes;
+under it they are exactly what they are today (the probe's *default only* rows below).
+
+**The curve, inward.** The tower's two clipped strokes on a canvas set to the sky's
+value (`0.59`), so the tower's are the only edges there are. *Step* is the largest
+one-pixel move either side of the tower, median over its rows.
+
+| canvas | candidate | feather | px | step | `edges:` under 2.5 px | median rise |
+|---|---|---|---|---|---|---|
+| 1024x768 | today | 0 | 0 | 0.298 | 77% | 2.0 px |
+| | A1 | 0.001 | 1.0 | 0.294 | 76% | 2.0 px |
+| | A1 | 0.002 | 2.0 | 0.247 | 69% | 2.0 px |
+| | A1 | 0.003 | 3.1 | 0.210 | 66% | 2.2 px |
+| | A1 | 0.005 | 5.1 | 0.167 | 42% | 2.6 px |
+| | A2 | 0.002 | 2.0 | 0.306 | 81% | 2.0 px |
+| | A2 | 0.003 | 3.1 | 0.298 | 80% | 2.0 px |
+| | A2 | 0.005 | 5.1 | 0.280 | 78% | 2.0 px |
+| 1440x960 | today | 0 | 0 | 0.294 | 70% | 2.0 px |
+| | A1 | 0.002 | 2.9 | 0.222 | 64% | 2.1 px |
+| | A1 | 0.003 | 4.3 | 0.188 | 56% | 2.4 px |
+| | A1 | 0.005 | 7.2 | 0.133 | 13% | 2.9 px |
+| | A2 | 0.002 | 2.9 | 0.298 | 75% | 2.0 px |
+| | A2 | 0.003 | 4.3 | 0.294 | 72% | 2.0 px |
+
+**The knee is not where the plan's table put it.** That table was a *centred* Gaussian,
+which spreads a 2 px feather over about eight pixels and reaches outward; an inward ramp
+over `F` pixels rises over about `F/1.5`, so the `edges:` line reads it as hard until the
+ramp is past 3.75 px. **A2 is invisible to both numbers by construction** -- it keeps
+every pixel crisp and breaks the boundary where the tooth is low -- so neither the step
+nor the line can tell it from today. The two strokes cost 0.2 s today and about a second
+feathered, most of it the distance to the outline, which the build would memoise as the
+engine's own mask is.
+
+**In the painting**, each candidate laid by the committed pass on the canvas the painter
+had: the tower's step goes `0.294` to `0.227` under A1 at `0.002` and stays at `0.294`
+under A2 -- and under the decided default, with only `edge="hard"` feathered, it stays
+at `0.294` for every candidate. The sheets:
+
+| sheet | what it shows |
+|---|---|
+| `edges_tower_1024x768.png`, `..._x3.png` | the tower as `p04_tower.py` laid it: today, A1 `0.002`, A2 `0.002` and `0.003` with every edge feathered, and the three again under the decided default |
+| `edges_tower_1440x960.png`, `..._x3.png` | the same on the painting rebuilt at 1440x960 |
+| `edges_headland.png` | `p03_headland.py`'s mass, its own outline feathered, on the prelude's roughened outline and on the plain one |
+| `edges_containment.png`, `..._x4.png` | the planes held inside the headland, their `clip=` feathered: the rim the plan's risk table names |
+| `edges_ground.png` | a hard mass on bare ground |
+| `edges_burial.png` | `cover()` over a worked passage |
+
+The painting's own `edges:` line hardly moves under any of them, because the tower is a
+small part of it: `65%` today, `62%` with A1 `0.002` on every edge, `65%` with A2. **The
+headland**, laid by `p03_headland.py` with only its own outline feathered, keeps a step of
+`0.425` across its top today, `0.398` under A1 and `0.416` under A2 -- and the outline
+it is laid in moves it further than any feather does: the prelude's roughened silhouette
+and the plain one the painter drew first differ at a glance on `edges_headland.png`,
+where no feather at `0.002` does. **The containment clip**, the planes held inside the
+headland with their `clip=` feathered, leaves the `edges:` line at `64%` for every
+candidate and shows no rim of the mass beneath at four times on `edges_containment_x4.png`.
+
+**Read blind by the painter.** The four were put to the painter under letters, in an
+order it did not know ([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md),
+10a). It ranked A2 at `0.002` first; A2 at `0.003` second, ragged on anything made and
+paint-like only on the plain rock outline; A1 third; today last, A1 and today nearly a
+tie at 1:1. And it measured the steep side of the mass on bare ground itself, in canvas
+pixels -- re-run here on the same sheet, to the hundredth
+([`verify/measure_ground_edges.py`](paintings/Claude/lighthouse_handover/verify/measure_ground_edges.py)):
+
+| | wander about a straight line (sd, px) | largest bite (px) | in-between pixels across the edge (median) |
+|---|---|---|---|
+| today | 0.24 | 0.44 | 0.5 |
+| A1 `0.002` | 0.14 | 0.29 | 1.0 |
+| A2 `0.002` | 0.38 | 0.91 | 0.5 |
+| A2 `0.003` | 0.50 | 1.27 | 0.5 |
+
+A2 is as sharp as today and broken; A1 is the only soft one, and the straightest; today's
+wander is its stair-steps. At 1440x960 the painter found A2 at `0.002` *a little chewed*.
+The tooth A2 breaks against is two fields: a linen thread is 1/130 of the long side
+(7.9 px at 1024, 11.1 at 1440), and the grain mixed into the gate is about 3 px at any
+size. A feather set as a share of the long side -- 2.9 px at 1440 -- grows against the
+grain while the weave keeps pace, which is a bench for the build: the feather's unit.
+
+**What the feather leaves showing.** A mass laid hard on bare ground takes paint on
+every pixel of its own area today; feathered, **117** of them at A1 `0.002` and
+**662** and **981** at A2 `0.002` and `0.003` are left within `10/255` of the ground --
+the broken boundary, which on bare ground *is* the ground. The `ground:` line moves
+from `92.28%` to `92.44%`, which says nothing either way on a canvas that is mostly
+ground. A burial -- 0.6.0's F1 bench, `cover()` over a worked passage -- keeps its
+contrast whatever the feather: *seen* goes `0.51x` to `0.47x` the place, and the
+outline, sampled two pixels either side, stays `0.0417` against the passage's own
+`0.0097`, because a feather inward changes how the rectangle is crossed and not what it
+is. How the rectangle is crossed does move: its largest one-pixel step goes `0.047` today, `0.031` under A1 `0.002`, `0.043` and `0.039` under A2 `0.002` and `0.003`.
+
+### A dry brush that streaks
+
+**The gate as it stands, and three candidates, on the marks the painter starved.**
+*B1* reads the tooth along the travel: a nine-pixel line kernel in the dab's own
+direction, rescaled to the tooth's own mean and spread so a load lets through about the
+same share. *B2* gives each bristle of the comb its own load -- the stroke's, raised to
+a power drawn per bristle between a third and three, so a full brush is full in every
+bristle and an empty one in none -- and a bristle under `0.10` lays nothing. *B3* thins
+what a starved brush lays by its load. A piece is eight-connected pixels moved one 8-bit
+level or more; *specks* is the share of the paint in pieces under four pixels; *long*
+is a piece's extent along the travel over its extent across, median over pieces, and
+*paint* the same for the piece the median pixel of paint sits in.
+
+**The sky's crosser** (`bristle`, `size=0.065`, `opacity=0.40`, `pressure="swell"`,
+its load running down along the stroke as every stroke's does) on a canvas set to the
+sky's value, `0.56`:
+
+| gate | load | landed | pieces | median | under 4 px | specks | long | paint |
+|---|---|---|---|---|---|---|---|---|
+| today | 0.30 | 1,954 | 475 | 3 | 62% | 26% | 1.0 | 1.0 |
+| | 0.45 | 6,060 | 571 | 4 | 49% | 8% | 1.0 | 1.0 |
+| | 0.60 | 16,363 | 531 | 5 | 42% | 2% | 1.0 | 3.4 |
+| | 0.80 | 34,504 | 426 | 7 | 31% | 1% | 1.0 | 6.2 |
+| B1 | 0.30 | 2,534 | 205 | 7 | 31% | 5% | 2.5 | 2.8 |
+| | 0.45 | 6,710 | 218 | 9 | 28% | 2% | 2.5 | 2.8 |
+| | 0.60 | 17,104 | 226 | 11 | 25% | 1% | 2.6 | 4.3 |
+| | 0.80 | 33,816 | 205 | 15 | 17% | 0% | 2.6 | 7.0 |
+| B2 | 0.30 | 7,256 | 548 | 4 | 46% | 6% | 1.3 | 1.8 |
+| | 0.45 | 14,405 | 542 | 5 | 41% | 3% | 1.3 | 3.2 |
+| | 0.60 | 22,589 | 445 | 5 | 39% | 1% | 1.3 | 15.1 |
+| | 0.80 | 34,222 | 269 | 6 | 38% | 1% | 1.3 | 13.0 |
+| B1+B2 | 0.30 | 7,510 | 239 | 8 | 27% | 2% | 2.8 | 4.4 |
+| | 0.45 | 14,641 | 230 | 13 | 21% | 1% | 2.9 | 8.0 |
+| | 0.60 | 22,736 | 203 | 13 | 21% | 0% | 2.8 | 20.1 |
+| | 0.80 | 34,662 | 124 | 14 | 27% | 0% | 3.2 | 13.0 |
+| B3 | 0.30 | 789 | 257 | 2 | 73% | 39% | 1.0 | 1.0 |
+| | 0.45 | 4,430 | 432 | 4 | 48% | 8% | 1.0 | 1.1 |
+| | 0.60 | 14,495 | 450 | 4 | 42% | 2% | 1.0 | 3.4 |
+| | 0.80 | 32,625 | 414 | 8 | 30% | 1% | 1.0 | 6.3 |
+
+At the loads the guide recommends for a broken mark, today's gate lays confetti: at
+`0.45`, 571 pieces with a median of 4 px, as long across the travel as along it. B1 makes
+the same paint into 218 pieces of 9, two and a half times as long as they are wide. B2
+lays long streaks along the comb -- the *paint* column, 15 and 20 at `0.60` -- among its
+flecks, which the median over pieces cannot see. B3 thins and changes nothing else.
+
+**Exercise 3**, as `PAINTER.md` gives it -- one `bristle` stroke at `size=0.07` and four
+loads, `load_falloff=0`, on rough canvas:
+
+| gate | load | landed | pieces | median | long | paint |
+|---|---|---|---|---|---|---|
+| today | 0.60 | 35,052 | 15 | 176 | 1.4 | 7.5 |
+| | 0.35 | 6,060 | 54 | 50 | 1.2 | 1.1 |
+| | 0.20 | 2,725 | 51 | 23 | 1.0 | 1.2 |
+| B1 | 0.60 | 42,939 | 9 | 8 | 4.2 | 10.7 |
+| | 0.35 | 5,347 | 263 | 11 | 2.7 | 2.8 |
+| | 0.20 | 2,616 | 181 | 8 | 3.0 | 3.2 |
+| B2 | 0.60 | 35,075 | 30 | 72 | 2.4 | 10.0 |
+| | 0.35 | 21,109 | 67 | 29 | 2.0 | 5.6 |
+| | 0.20 | 7,367 | 61 | 28 | 1.4 | 1.5 |
+| B1+B2 | 0.60 | 39,781 | 25 | 15 | 3.7 | 10.8 |
+| | 0.35 | 23,069 | 147 | 14 | 3.0 | 19.8 |
+| | 0.20 | 7,775 | 237 | 13 | 2.7 | 3.3 |
+| B3 | 0.35 | 5,385 | 53 | 57 | 1.3 | 1.1 |
+
+At full load every gate lays the same 51,119 pixels. **Two costs are in the *landed*
+column.** B1 keeps the tooth's mean and spread but not its shape, so a load lays a
+different amount under it -- 22% more at `0.60` on rough, 12% less at `0.35`; a build
+would match the tooth's whole distribution. And **B2 as benched makes a starved brush
+heavier**: at `0.35` it lays 3.5 times today's paint, because the bristles that keep
+their load keep all of it. Its spread is a number the build tunes until a load lays
+about what it lays today; the streaks, not the weight, are what the candidate is for.
+
+**The painting's five starved flats** -- `p08_rock.py`'s ledges, `size` 0.009 to 0.016
+at loads 0.7 and 0.8 -- barely starve: 6,346 pixels in 25 pieces today, the same under
+B2 (a flat has no comb for it to hold the load in), 26 pieces three times as long under
+B1. **The planes recipe's scrape** (`bristle`, `size=0.03`, `load=0.35`) lands 76
+pixels, a trace, whatever the gate.
+
+**What the sheets show** -- `flecks_crosser.png`, `flecks_exercise3.png`,
+`flecks_water.png`, `flecks_ledges.png`, `flecks_planes.png`, `flecks_sampler.png` --
+is the numbers' order made visible: today's starved bristle is a halftone of dots, B1's
+is dashes running with the brush, B2's is thin continuous streaks along the comb with
+body between them, and B1+B2 is the most like a dry brush dragged; on the painting's
+first surf, today's blue specks become strokes of foam under B2. B3 is today's dots,
+fainter.
+
+**Read blind by the painter**, the five under letters
+([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 12a): B2
+first -- *streaks along the stroke, broken inside by the tooth, chunky and varied: a dry
+brush dragged* -- B1+B2 a close second, *combed more than dragged*, then B1, B3 and
+today, today plainly dirt. It could not tell the streaks from the extra paint by eye, and
+asked to see them tuned to lay what today lays -- which is what was decided (the plan's
+question 12): B1+B2, tuned, since B2 does nothing on a tip without a comb.
+
+### The graded rule's two misfires
+
+The rule as it stands, the plan's two clauses -- judge the run by its **median** brush;
+**break** the run where two neighbours overlap along the stack's axis by less than 30% of
+the shorter -- and both, on the four cases the clauses were drawn on, each rebuilt as its
+own README says:
+
+| case | wanted | the engine | as it stands | median | overlap 30% | both | trimmed | trimmed, 10% |
+|---|---|---|---|---|---|---|---|---|
+| the headland misfire (19 marks, sizes `0.006`-`0.07`, step `0.020`) | silent | fires | fires | -- | fires | -- | -- | -- |
+| the water misfire (7 marks, `0.006`-`0.0095`, step `0.009`) | silent | fires | fires | fires | -- | -- | fires | -- |
+| the recipe's passage (6 marks at `0.085`) | silent | -- | -- | -- | -- | -- | -- | -- |
+| the recipe's failure block (6 marks at `0.02`) | fires | fires | fires | fires | fires | fires | fires | fires |
+
+The engine and the probe's re-implementation agree on every case. *Trimmed* is not the
+plan's: it judges by the narrowest brush that is at least half the run's median, which
+drops a lone accent and keeps a taper. It is here because of what the corpus showed.
+
+**Over the corpus** -- all 22 paintings replayed pass by pass, 337 passes that laid paint,
+each firing pass cropped as it left the canvas with the marks the rule counted drawn
+over it (`out/graded/`, from `probe_cohort_session.py --graded`). How each crop reads is
+**a reading, not a measurement**, and two readers are given: the bench's, and the
+painter's, made blind -- the crops shuffled and numbered, the gates' verdicts unseen
+([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 13a). T is a
+graded passage coming back as bars, F is not, ? can't tell.
+
+| pass | run | the bench read | the painter, blind | as it stands | median | overlap 30% | both | trimmed | trimmed, 10% |
+|---|---|---|---|---|---|---|---|---|---|
+| `car_wash/p13_form.py` | 9 marks, `0.024`-`0.046`, step `0.038` | T, a graded curtain in visible bars | ?, bars, or hanging strips | fires | fires | fires | fires | fires | fires |
+| `sonnet/p3_beam.py` | 11, `0.0405`-`0.0874`, step `0.027` | T, a beam banded across its width | T | fires | -- | fires | -- | fires | fires |
+| `opus/p3_beam.py` | 6, `0.01`-`0.048`, step `0.007` | T, a beam laid as rays | T | fires | -- | fires | -- | -- | -- |
+| `fable/p8_base.py` | 6, `0.005`-`0.014`, step `0.012` | F, pot rims, an arch's band, a base line | F | fires | fires | -- | -- | fires | -- |
+| `heron2/pass11_last.py` | 7, `0.0045`-`0.036`, step `0.007` | ?, lines across one plank | F, ruled lines on a slab | fires | fires | fires | fires | fires | fires |
+| `pier/pass2_masses.py` | 10, `0.1`-`0.18`, step `0.077` | F, the pier's big fields stacked | F | fires | -- | fires | -- | fires | fires |
+| `pier/pass4_water.py` | -- | ?, faint bands in the water | T | -- | -- | fires | -- | -- | -- |
+| `hands/pass08_pickmass.py` | 9, `0.015`-`0.05`, step `0.017` | T, a finger hatched in stripes | F, speckle | fires | fires | -- | -- | fires | -- |
+| `hands/pass22_bowl3.py` | 5, `0.038`-`0.05`, step `0.038` | T, a bowl's inside in bands | F, no bars | fires | fires | fires | fires | fires | fires |
+| `gpt/25-boat-near-hull` | 7, `0.009`-`0.027`, step `0.005` | F, a hull that reads smooth | F | fires | -- | -- | -- | -- | -- |
+| **passes it fires on** | | | | **9** | **5** | **7** | **3** | **7** | **5** |
+
+**No gate is free on the bench's reading, and one is on the painter's.** Read by the
+bench, every gate that silences both misfires also silences at least two stacks read as
+passages coming back as bars. Read blind by the painter -- three true (the two beams
+and the pier's water), six false, one can't tell -- the overlap break alone keeps all
+three, fires on three of the six false ones where the rule as it stands fires on all
+six, and silences the painter's water misfire; the median clause silences all three
+true ones. The two readings split on five crops, and the one that decided it was the
+hands' finger: stripes to the bench, speckle to the painter -- and speckle to the owner,
+whose look the painter left it to. **So the overlap break alone is built, and the median
+clause is not** (the plan's question 13). It fires on 7 of 337 passes, and it still
+fires on the painter's headland misfire: fields of separate masses stacked are the kind
+of false positive it leaves.
+
+### A variant's cost, and a sheet in four processes
+
+**The painter's harness, part by part** -- a copy of the session after the drawing,
+`p01_sky.py`'s three 8-pass scumbles, a look -- takes **10.4 to 10.7 s**: the copy
+`0.00 s`, the three scumbles **10.2 to 10.6 s**, the look `0.16 s`. One band is 3.1 s,
+`0.39` s a pass. The verdict's fifteen seconds is the paint, not the bookkeeping 0.6.0
+already cut. A `rehearse(vary=)` sheet of one band at two opacities takes 5.4 to 5.6 s,
+and a sheet of three opacities of a glaze -- `{"points": ..., "glaze": True, ...}`, the
+plan entry no document names -- **1.7 s**.
+
+**A sheet in four processes.** Four panels of one band: one panel **2.8 to 2.9 s**; the
+four in one process 11.1 to 11.6 s, four times one; in four spawned processes **4.4 to
+4.7 s, 1.6 to 1.7 times one panel**, of which starting the four processes and importing
+the engine in each is `0.4 s` and each panel's own load of the session file about
+1.4 s. **The plan's target for D1 was under 1.5 times, and it is missed on this
+machine**; what it would cost to get under it is sending the session to a pool that is
+already warm, which is a larger thing than D1 was proposed as.
+
+### The session file
+
+The painting rebuilt with its time-lapse, as `easel new` and `easel run` make it, and
+saved: **16.43 MB**, with 174 frames of 341 x 256 -- the painter's own file was 16.12.
+Each array compressed on its own: the frames **9.07 MB**, the colour 6.93, the thickness
+0.14, the log 0.28.
+
+| the file re-saved with | size |
+|---|---|
+| nothing changed | 16.43 MB |
+| **the time-lapse frames left out** | **7.36 MB** |
+| colour as float16 | 11.98 MB |
+| every canvas plane as float16 | 11.90 MB |
+| both: frames out, colour float16 | 2.91 MB |
+| the frames stored as PNG bytes | 14.88 MB |
+
+Colour through float16 and back moves **20,455 of 786,432 export pixels (2.6%)**, each
+by one level, so a file that stored it would stop opening as it was painted. PNG frames
+save a sixth of the frames' share and are not worth a format. A GIF rebuilt from the log
+of a file with no frames takes **36 to 49 s** over two runs. The painter's own 35 s was
+its thirteen passes rebuilt through `easel run`, not a GIF, and one GIF at the end was
+the only use it had for the frames.
+
+### The fade and the wet bands
+
+**A pressure list's fade, on the painter's own test** -- a `scumble` at `pressure=[1.0,
+0.75, 0.25, 0.0]` on a `0.149` field, read in the painter's measure:
+
+| opacity | left third | middle third | right third | last twentieth | last 4% |
+|---|---|---|---|---|---|
+| 0.9 | 0.858 | 0.787 | 0.408 | 0.188 | 0.183 |
+| 0.5 | 0.800 | 0.644 | 0.291 | 0.170 | 0.167 |
+
+The painter read the right third, where the profile still averages a quarter pressure.
+Over the last 4% it reads `0.183`, which is `0.034` above the field at opacity 0.9 and
+`0.018` at 0.5; the recipe's own passage -- *a passage brightening toward one side*, six
+`flat` strokes at `pressure=[0.0, 0.55, 1.0]` -- reads `0.162` at its no-pressure end on
+a `0.150` field, `0.012` above, and `0.466` at the other. **So the fade gets close and
+does not arrive**, which the painter pointed out when this section first said it did;
+what the recipe does not say is how close, and how late.
+
+**Three sky ramps, wet and dried.** `p01_sky.py`'s three scumbles on a fresh canvas, one
+after another wet and again with `dry()` between them: drying between the bands moves
+**16%** of the canvas by more than two 8-bit levels of value and **5%** by more than
+eight -- **34%** and **13%** in the export's colour, any channel. Neither draws a seam:
+the median column jump is `0.0002` both ways, the largest at the canvas's own edges.

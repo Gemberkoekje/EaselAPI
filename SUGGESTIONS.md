@@ -1,14 +1,17 @@
 # What the painters asked for, and what was done
 
-Twenty sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — twenty-one paintings, because the ninth painted its
+Twenty-one sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — twenty-two paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**No round is open.** The newest, at the top, is the 0.5.0 cohort — seven painters that
+**One round is open: the lighthouse handover, at the top** — one painter against 0.6.0,
+**6 engine items and 4 documentation items**, none of them acted on. It is written where
+every open round before it has been written, and will be folded in where it stands rather
+than moved once it is acted on. Below it is the 0.5.0 cohort — seven painters that
 are not Claude, one picture each, **32 engine items and 6 documentation items** — and
 every item in it is done, in 0.6.0, folded in where it was filed rather than moved, as
 every open round before it was. Everything below it is done too: 72 engine
@@ -49,6 +52,7 @@ changed rather than that it worked.
 | …and that session painting, 257 of 300, `paintings/Claude/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
 | Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
 | The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
+| The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | **6 open** | **4 open** |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -78,6 +82,133 @@ disagree, it may be the context talking.
   read a great deal: ~2,600 lines, ~2,500 lines and *2000+ lines of docstrings* are the
   three counts they took themselves, and one of them read all five files. That is the
   round's largest documentation item and it is measured by the people who did it.
+- **The lighthouse handover** read five of the six documents the package ships, all
+  through `easel guide`, before its first mark — 194 KB, everything but
+  `CALIBRATION.md` — though the card's first paragraph says to start after *The first
+  hour*. It is the second painter in two rounds to read everything anyway, and the
+  first to do it against the card and body 0.6.0 split them into, so its reading is
+  the owner's own test of that split rather than a control.
+
+---
+
+## The lighthouse handover: one painter against 0.6.0
+
+**OPEN.** Six engine items and four documentation items, from one painter —
+`claude-opus-5-5`, at max effort — which installed `easel-paint` 0.6.0 from the package
+in a sandbox on Linux and painted a lighthouse at dusk, *two warm lights handing over*,
+**171 of 300 strokes**. **The right-hand column of every table below is empty because
+nothing has been done yet.** The candidate answers, the decisions taken on them and the
+measurements that will decide which survive are in [`PLAN-0.7.0.md`](PLAN-0.7.0.md); a
+row gets filled in when its PR lands, not before.
+
+**It is the first fresh session to paint against 0.6.0**, so it is also the first run of
+that release's hypotheses — the card and the body, the notices at the call, the plan
+object, the demos — which 0.6.0 left to the owner's own run, and it answers the three
+things the cohort's round said the next run should look for (*What the cohort's round
+asked the next run*, below).
+
+**It checked its own claims before making them**, with small tests it delivered with the
+painting ([`verify/verify.py`](paintings/Claude/lighthouse_handover/verify/verify.py)),
+and dropped two that did not survive — the labelling [`LESSONS.md`](LESSONS.md) asks
+every round for, done unasked. **Kind** is assigned here all the same, as for every
+round on this page — **M** measured by the painter, **O** observed, **R** reasoned —
+because the painter labelled its tests rather than its claims. Every *what checking
+found* below was measured on the checkout at `v0.6.0` on 2026-09-23, with the painter's
+own scripts. **Two claims changed shape under that checking and are struck through where
+they stand**: the side-by-side sheet that *does* take a glaze, and the seam the painter
+had already withdrawn. Both were reasoned rather than measured, which is the shape
+`LESSONS.md` predicts.
+
+**The decisions are the painter's.** The plan's nine questions were put to the owner,
+whose ruling is that the tool is for painters and any answer of his would be by someone
+who would never use it directly — so they were forwarded to the painter, and its answers,
+filed verbatim as [`answers.md`](paintings/Claude/lighthouse_handover/answers.md), are the
+decisions this round runs under. Where it said it had no evidence — which edge reads as
+paint, whether a parallel sheet pays — the bench measured, and the five questions the
+bench left went back to it with the candidates under letters, to be read blind; its
+answers are [`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md).
+
+### The engine
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Hard edges are all-or-nothing**: `0.59` to `0.28` in one pixel at the tower, `0.36` to `0.17` at the waterline — *they read as vector graphics; the least paint-like thing in the engine, and I relied on it*. Confirmed to the hundredth on the rebuilt painting — `0.30` in one pixel on the tower's left side, `0.28` on its right, `0.19` at the waterline, `0.44` where the headland meets the sky — and the mask a clip is cut with (`Polygon.coverage` at two samples a pixel) leaves exactly one fractional pixel per side. **The `edges:` line printed between 54% and 65% under 2.5 px after every pass from the sea's on — eleven times — and nothing changed**: that is 0.6.0's own risk table — its remedies push toward `edge="hard"` and `clip=`, with the line as the counterweight — arriving, and a measurement printed nine times not holding. The painter's own count is the design constraint: of its 33 hard or clipped calls, 9 draw an edge and **24 only keep paint inside a shape**, which a feather reaching outward would break. And it was never the jaggies, which do not show at 1024×768: *the vector-clean edge was*. | M | |
+| **Dry-brush speckle reads as dirt** more often than texture — flecks in the sky, the first swells, blue specks in the first surf. Measured on the sky's own crosser (`bristle`, `size=0.065`, `opacity=0.40`): at `load=0.45` it lands **509 pieces with a median of 4 px**, 58% of them under 4 px, at a median contrast of `0.009`. The tooth gate is per pixel at the weave's scale, so a starved brush leaves confetti where a real one leaves streaks — and the painter was using the loads the guide recommends for a broken mark, 0.35 to 0.6. Its workaround, films for the swells, dropped the texture it wanted. | O | |
+| **One check misfired, twice**: *graded passage laid too narrow* on marks that were not one. **Not reproducible from the scripts** — the line fires on none of the thirteen committed passes — because both fires were printed by rehearsals of passes rewritten before they were committed, and nothing saves what a pass's check said. **Then reproduced**: the painter rebuilt both passes from its transcript, and each prints its original line exactly ([`misfires/`](paintings/Claude/lighthouse_handover/misfires)). In both, the brush the line names is a `0.006` accent — a crevice along the join of two rock faces laid at `0.03` and `0.07`, a ripple among glints — and the rule judges a stack's step against its *narrowest* brush. Over the corpus it fires on 9 of 325 passes, never on a guide block. | O, then M | |
+| **About 15 seconds a variant**, in the one run timed. Confirmed, **and it is the paint**: a three-band sky variant as the painter's harness ran it takes 11.5 s here, 10.3 s of it the three 8-pass scumbles at full width, 0.15 s the look and 0.01 s the copy. The painter never used `rehearse(vary=)`: its variants were whole passes, and what it asked for is scripts rehearsed as alternatives side by side — which `easel run --rehearse a.py b.py` does not do, because it lays them in order on one copy. | M | |
+| **`easel look` has `--no-sketch` but no `--no-marks`**, so the landmark labels covered small details; the painter wrote a helper. Confirmed, **and one worse**: `look(marks=False)` exists and `PAINTING.md` names it, but the CLI has no flag for it, the MCP `look` tool has no argument for it, and nothing at any level hides the guides — the helper's clean views still show every guide line it drew. | M | |
+| **Session files are large**: 16 MB after 171 marks. **55% of it is the time-lapse** — 174 frames at 360 px, stored raw, 8.83 MB — against 6.57 MB of canvas; frames left out, the painter's own file re-saves at 7.64 MB. Storing colour as float16 would save another 4 MB and move 2.6% of the export's pixels by a level, which *opens as it was painted* forbids. The painter exported its GIF once, at the end. | M | |
+
+### The documentation
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| ~~**The built-in side-by-side comparison doesn't support soft blends or glazes.**~~ **It does**: `{"points": ..., "glaze": True, "color": ..., "opacity": ...}` is a stroke entry of a plan, as is `{"points": ..., "smudge": 1.0}`, and a `vary=` sheet of three opacities of the painting's own beam rendered in 1.7 s. **No document says so** — `REFERENCE.md`'s plan grammar names a stroke, a mass, a sweep, a scumble and a burial — and the painter's answer to the plan makes the same gap twice: *whole passes of scumbles, strokes and glazes, which as far as I could tell can't go into a plan*. They can. | R | |
+| **One sentence is backwards.** The lit-air recipe calls a glaze at pressure `[1.0 … 0.1]` *narrow-and-bright at the source and wide-and-gone at the far end*; the painter measured 80 px at the source and 32 at the far end. Confirmed against the source: a round tip's width follows pressure, so full pressure is the wide end. The recipe's code is right and its sentence is not — *the one factual error I found was in prose*. | M | |
+| **A caveat far from its rule.** `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured, a scumble at `pressure=[1.0, 0.75, 0.25, 0.0]` went from `0.86` to `0.41` over a `0.14` field at opacity 0.9. **Both are right, about different things**: the painter read the last *third*, where the profile still averages a quarter pressure, and over the last 4% of the width it reads `0.20` — it does reach nothing, at the very end. What the recipe does not say is how fast the fade arrives, and the reason — dabs overlap and accumulate, so a quarter pressure lays a quarter of a step — lives in `PAINTING.md`, not beside it. | M | |
+| **Too much text**: about 340 KB across six documents and 180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs*. The sizes are right — 341 KB for the six, 194 for the five it read. The reading was its own choice: the card says to start after *The first hour*. Asked, its answer is *watch* — and *if you ever cut, start with what the notices already say at the call*. | M | |
+
+### Withdrawn, and recorded so it is not filed again
+
+- ~~**A vertical seam, blamed on the sky blends.**~~ Withdrawn by the painter, which could
+  not reproduce it in a minimal test and put it down to *how I layered wet paint*. Not
+  reproduced here either, wet or dried: the three committed sky ramps on a fresh canvas
+  show a median column jump of `0.0002`, largest at the canvas edges. The wet layering is
+  real and large — drying between the bands moves a third of the canvas by more than two
+  8-bit levels — and draws no seam. (O, withdrawn.)
+
+### What the check cannot see
+
+Not items, and recorded so they are not filed again: **the picture** — *competent,
+coherent, conventional*, the headland failed twice and was patched with brushwork where
+the card says to go back to the drawing, and 43% of the budget left, *partly caution*.
+`unspent:` printed 129 and the painter stopped anyway, at 57% of its budget — past the
+45% the cohort's finding 15 was counted under, so that count stays five of six, and well
+short of the 86% median of the thirteen budgeted paintings before the cohort. The reason
+it gives is the cohort's: more marks were a risk to what stood on the headland. **A
+repainted-passage count** was considered for it and
+dropped: the headland took four passes and so did the tower, and the log cannot tell a
+passage failing from a subject being built. Both stay with the painter's own sentence,
+`s.plan(why=...)`, which this painter wrote and was quoted back.
+
+### What the cohort's round asked the next run
+
+The cohort's round ended by naming what the next run should look for first. This is that
+run, and it answered all three:
+
+- **The way in.** The known risk was a card so sufficient that the recipes go unread.
+  The opposite happened: the painter read everything, and the two passages it rates
+  best — the beam and the broken reflection — came from recipes and `easel demo`. What
+  steered it, by its own account, was the notices at the call, the recipes with `demo`,
+  and the plan's `lightest:` line.
+- **The code-to-symptom link.** It never ran `explain` or `diagnose` — *the one-line
+  notices were enough* — and never opened `DIAGNOSIS.md` or `CALIBRATION.md`. One data
+  point, and the one the ruling of 2026-09-21 said to wait for.
+- **The cut-out risk.** It arrived, as recorded in the first engine row: over half the
+  edges under 2.5 px on eleven passes running, printed and not acted on.
+
+### What worked, recorded because a finding is still true afterwards
+
+The painter defended these unprompted, and **nothing in this round touches them**:
+rehearsal seeded as the next real strokes (*exactly what lands when you commit it*,
+which caught an egg-shaped glow, a panel stuck on the headland, gold-coin reflections and
+a stair-stepped tower before a mark was paid for); the notices naming the problem and the
+fix — a glow too shallow for its technique, pointed at *a volume of lit air*, and the
+grass's brush size; the plan held against the checklist, and the `lightest:` line
+catching the lantern at `0.74` losing to the glow at `0.77`, *the one number my whole
+idea depended on*; `cost_line` finding a 32-mark cliff face where 15 did the job; an
+error message carrying the exact numbers; and learning the whole tool from the command
+line without opening a file. **Reading the rule did not stop the mistake, again**: *I
+read three rules and then broke them anyway ... Looking at rehearsals caught those, not
+reading* — the eighth painter to say so.
+
+### The painting, and what the painter owns
+
+- **A postcard subject done the safe way**, in its own words; *ruled tower edges, flat
+  fills, crisp masked outlines*, and the paint quality living mostly in the sky.
+- **What it would do differently**: a later, darker dusk so the lamp dominates more;
+  fewer, larger rock planes decided while it is still a drawing; a headland that
+  dissolves into the water in more places; some of the warm ground left showing.
 
 ---
 
@@ -88,7 +219,7 @@ documentation items from seven painters, GPT, GLM, DeepSeek, Gemini, Grok, Kimi 
 BigPickle, each of whom installed `easel-paint` 0.5.0 from the package and painted one
 picture. A row's right-hand column was filled in when its PR landed, and not before. The
 candidate answers, and the measurements that decided which of them survived, are in
-[`PLAN-0.6.0.md`](PLAN-0.6.0.md); what the round left open is at the end of this
+[`PLAN-0.6.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.6.0/PLAN-0.6.0.md), as tagged; what the round left open is at the end of this
 section.
 
 **Kind** is this project's own distinction and every finding below carries it: **M**
