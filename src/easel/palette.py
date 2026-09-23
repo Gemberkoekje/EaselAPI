@@ -317,5 +317,18 @@ class Palette:
             return self[color]
         return color
 
+    def _copy(self) -> Palette:
+        """The same pigments and mixed slots, on a palette of its own.
+
+        What a rehearsal copy mixes on. A pass tried on the scrap of canvas runs the
+        painter's prelude and its own mixtures; sharing the painting's palette left
+        every slot it mixed behind on the painting, which was harmless only while
+        nothing saved the painting after a rehearsal. Since 0.7.0 a rehearsal saves
+        what its check said, so the slots have to stay on the copy.
+        """
+        copied = Palette(self._pigments)
+        copied._slots = {name: np.array(rgb, copy=True) for name, rgb in self._slots.items()}
+        return copied
+
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return f"Palette({len(set(self._pigments))} pigments, {len(self._slots)} mixed slots)"

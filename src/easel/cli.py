@@ -149,7 +149,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_look.add_argument("--reference", type=Path, default=None, help="show a reference alongside")
     p_look.add_argument("--diff", action="store_true", help="tint what changed since last look")
     p_look.add_argument("--scale", type=int, default=None, help="long-side pixels (0 for full)")
-    p_look.add_argument("--no-sketch", action="store_true", help="hide the pencil underdrawing")
+    p_look.add_argument("--no-sketch", action="store_true",
+                        help="hide the drawing: the pencil the paint has not covered, "
+                             "and the guides s.guide() drew on the view")
+    p_look.add_argument("--no-marks", action="store_true",
+                        help="hide the landmarks, whose labels sit over the details "
+                             "they name")
     p_look.add_argument("-o", "--output", type=Path, default=None)
 
     p_cmp = sub.add_parser("compare", help="per-cell value of the reference, canvas and difference")
@@ -254,9 +259,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_log = sub.add_parser("log", help="show recent marks")
     p_log.add_argument("session", type=Path)
-    p_log.add_argument("-n", type=int, default=20)
-    p_log.add_argument("--check", action="store_true",
+    p_log.add_argument("-n", type=int, default=20,
+                       help="how many marks to show -- or with --reports, how many "
+                            "reports")
+    g_log = p_log.add_mutually_exclusive_group()
+    g_log.add_argument("--check", action="store_true",
                        help="run the post-pass check over the whole painting instead")
+    g_log.add_argument("--reports", action="store_true",
+                       help="what each `easel run` printed after its pass, as the "
+                            "session file kept it -- rehearsed and counted passes "
+                            "included, each saying which it was")
 
     sub.add_parser("brushes", help="list brushes, pigments, grounds and regions")
 
@@ -483,6 +495,7 @@ def _dispatch(args) -> int:
             diff=args.diff,
             path=args.output,
             sketch=not args.no_sketch,
+            marks=not args.no_marks,
             **({} if scale is None and args.scale is None else {"scale": scale}),
         )
         session.save(args.session)
@@ -536,7 +549,10 @@ def _dispatch(args) -> int:
     if args.command == "log":
         print(f"{session.stroke_count} strokes, seed {session.seed}, "
               f"{session.size[0]}x{session.size[1]}")
-        print(session.report() if args.check else session.log(args.n))
+        if args.reports:
+            print(notices.saved(session.reports(), last=args.n))
+        else:
+            print(session.report() if args.check else session.log(args.n))
         return 0
 
     return 1
@@ -885,12 +901,14 @@ def _cmd_run(session: Session, args) -> int:
 
     # A rehearsal runs the pass against a copy of the session. The strokes are
     # seeded as if they were the next marks of the real painting, so what is
-    # rehearsed is what lands when the same pass is run for real -- and because the
-    # session file is never written, it costs nothing but the look. Several scripts
-    # share the one copy, in order, so a pass is judged on the pass under it.
+    # rehearsed is what lands when the same pass is run for real -- and because
+    # nothing it lays reaches the session file, it costs nothing but the look. The
+    # one thing it writes there is what its check said (`Session.reports`). Several
+    # scripts share the one copy, in order, so a pass is judged on the pass under it.
     # `--count` is the same copy with the pixel work skipped: the price and the check
     # in a fraction of the time, and nothing to look at. See `Session.scratch`.
     rehearsing = args.rehearse or args.count
+    names = ", ".join(s.name for s in scripts)
     target = session.scratch(count_only=args.count) if rehearsing else session
     before = target._open_pass()
     told = len(target.notices())
@@ -915,6 +933,7 @@ def _cmd_run(session: Session, args) -> int:
     # changed for free.
     check = target.report() if args.check else target.report(since=before)
     said = target.notices(since=told)
+    block = notices.block(said, check)
 
     def failed() -> None:
         """A pass that raised still laid marks and still said things.
@@ -938,25 +957,33 @@ def _cmd_run(session: Session, args) -> int:
             left = session.remaining
             cost = (f"{spent} strokes" if left is None
                     else f"{spent} strokes of the {left} left")
-            names = ", ".join(s.name for s in scripts)
             if args.count:
                 # No look: a counted pass lays no paint, and a picture of the canvas
                 # it borrowed is a picture of the last pass, which is worse than none.
                 print(f"Counted {names}: {cost}. Nothing painted, nothing committed.")
-                print(notices.block(said, check))
+                print(block)
             else:
                 print(f"Rehearsed {names}: {cost}. Nothing committed.")
-                print(notices.block(said, check))
+                print(block)
                 print(target.look(path=None))
+            # What the check said is the one thing a rehearsal keeps, and it is kept
+            # on the painting: the copy's canvas, log, palette, landmarks and guides
+            # are thrown away with it, so writing the file back changes nothing else.
+            # After the printing, so a file that cannot be written costs the record
+            # and not the rehearsal the painter is waiting for.
+            session._keep_report(target, names, before, block)
+            session.save(args.session)
         else:
             failed()
         return result.code
 
+    if result.code == 0:
+        session._keep_report(target, names, before, block)
     if result.save:
         session.save(args.session)
     if result.code == 0:
         print(result.report)
-        print(notices.block(said, check))
+        print(block)
     else:
         failed()
     return result.code
