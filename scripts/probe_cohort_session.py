@@ -180,6 +180,12 @@ CORPUS = [
     Painting("hands", "Claude/hands_beans", spent=329, rebuilds=False,
              session=dict(width=1024, height=768, texture="linen",
                           ground="#5f4a39", seed=11, budget=420)),
+    # The first painting made against 0.6.0, from the package. Its passes rebuild the
+    # log to the stroke; the export differs from the painter's own by 729 pixels at one
+    # 8-bit level across machines, which its notes explain.
+    Painting("handover", "Claude/lighthouse_handover", spent=171,
+             session=dict(width=1024, height=768, texture="linen",
+                          ground="burnt_sienna", seed=11, budget=300)),
     # The 0.5.0 cohort. Three of the seven wrote one script rather than passes.
     Painting("bigpickle", "BigPickle_blind/sunset_landscape", cohort=True, spent=50,
              driver="sunset_paint.py"),
