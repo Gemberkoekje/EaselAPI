@@ -67,6 +67,7 @@ from easel.regions import (
     region,
     ribbon,
     right_of,
+    roughen,
     span,
     thirds,
     union,
@@ -135,6 +136,7 @@ __all__ = [
     "blob",
     "hull",
     "ribbon",
+    "roughen",
     "union",
     # looking, measuring and reading the reference
     "render_look",

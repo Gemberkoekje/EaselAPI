@@ -27,7 +27,7 @@ import numpy as np
 __all__ = ["Region", "region", "cell", "span", "thirds", "golden", "horizon", "below",
            "above", "left_of", "right_of", "between", "REGION_NAMES", "GRID_COLS",
            "GRID_ROWS", "as_region", "as_place",
-           "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon"]
+           "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen"]
 
 #: Columns of the ``look(grid=True)`` overlay, left to right.
 GRID_COLS = "ABCDEFGH"
@@ -561,6 +561,105 @@ class Polygon:
         out[cy0:cy1, cx0:cx1] = acc / float(n * n)
         return out
 
+    def _edge_depth(self, width: int, height: int, reach: float, cover=None
+                    ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        """How far inside the outline each pixel near it sits, in pixels.
+
+        Returns ``(rows, cols, depth, full)`` for every pixel whose centre is within
+        ``reach`` pixels of the line: ``depth`` is positive inside, by the same
+        even-odd test :meth:`mask` asks, and negative outside. What a feathered edge
+        is ramped over (``Session._clip_cover``), ``reach`` being the feather.
+
+        **To the outline itself, not to the pixel mask.** The distance is from the
+        pixel centre to the nearest segment, so it is the same in every direction; a
+        ramp counted in erosions of the mask eats a diagonal side faster than a
+        straight one (``NOTES-step2.md``).
+
+        **A side lying on the canvas frame is left out**, for the reason
+        :meth:`inset` keeps the frame: there is no line out there to break against,
+        and a mass that meets the frame runs off it. A shape clamps its points to the
+        canvas, so a side drawn past the frame lies on it, and this is the test.
+
+        ``full`` is the depth at which the edge should reach full paint: ``reach``,
+        or **a quarter of the shape's own width there** where that is less -- half the
+        deepest inside pixel within twice the reach. A strip narrower than four
+        feathers has no inside that deep, and ramped over the whole feather it would
+        be broken from both sides into its middle: a clip two pixels wide kept `37%`
+        of its paint at a feather of two pixels. So a thin shape keeps its body and
+        breaks at its rim, and so does the tip of a sharp corner. ``cover`` is the
+        shape's :meth:`coverage` at this size, where the caller has it, which says
+        inside from outside away from the line without a second pass over the shape.
+        """
+        w, h = int(width), int(height)
+        r = float(reach)
+        empty = (np.zeros(0, dtype=np.intp), np.zeros(0, dtype=np.intp),
+                 np.zeros(0, dtype=np.float32), np.zeros(0, dtype=np.float32))
+        if r <= 0.0:
+            return empty
+        # How far round each pixel the shape's width is looked for, and so how far
+        # from the line the distance has to be known: the corner of that square
+        # window is half as far again as its side.
+        look = int(np.ceil(2.0 * r)) + 1
+        far = r + 1.5 * look + 1.0
+        pts = np.asarray(self.points, dtype=np.float64)
+        ends = np.roll(pts, -1, axis=0)
+        on_frame = (((pts[:, 0] <= 0.0) & (ends[:, 0] <= 0.0))
+                    | ((pts[:, 0] >= 1.0) & (ends[:, 0] >= 1.0))
+                    | ((pts[:, 1] <= 0.0) & (ends[:, 1] <= 0.0))
+                    | ((pts[:, 1] >= 1.0) & (ends[:, 1] >= 1.0)))
+        a = pts[~on_frame] * (w, h)
+        b = ends[~on_frame] * (w, h)
+        if not len(a):
+            return empty
+        # One grid over the shape's box and its reach, and each side's distance laid
+        # into it over that side's own box: the work is the sides' boxes, not the
+        # sides times the canvas.
+        grow = far + 1.0
+        gx0 = max(0, int(np.floor(min(a[:, 0].min(), b[:, 0].min()) - grow)))
+        gy0 = max(0, int(np.floor(min(a[:, 1].min(), b[:, 1].min()) - grow)))
+        gx1 = min(w, int(np.ceil(max(a[:, 0].max(), b[:, 0].max()) + grow)) + 1)
+        gy1 = min(h, int(np.ceil(max(a[:, 1].max(), b[:, 1].max()) + grow)) + 1)
+        if gx1 <= gx0 or gy1 <= gy0:
+            return empty
+        centres_x = np.arange(gx0, gx1, dtype=np.float64) + 0.5
+        centres_y = np.arange(gy0, gy1, dtype=np.float64) + 0.5
+        near = np.full((gy1 - gy0, gx1 - gx0), np.inf, dtype=np.float64)
+        for (ax, ay), (bx, by) in zip(a, b, strict=True):
+            x0 = max(gx0, int(np.floor(min(ax, bx) - grow)))
+            x1 = min(gx1, int(np.ceil(max(ax, bx) + grow)) + 1)
+            y0 = max(gy0, int(np.floor(min(ay, by) - grow)))
+            y1 = min(gy1, int(np.ceil(max(ay, by) + grow)) + 1)
+            if x1 <= x0 or y1 <= y0:
+                continue
+            px = centres_x[x0 - gx0:x1 - gx0][None, :] - ax
+            py = centres_y[y0 - gy0:y1 - gy0][:, None] - ay
+            dx, dy = bx - ax, by - ay
+            t = np.clip((px * dx + py * dy) / max(dx * dx + dy * dy, 1e-12), 0.0, 1.0)
+            ex, ey = px - t * dx, py - t * dy
+            block = near[y0 - gy0:y1 - gy0, x0 - gx0:x1 - gx0]
+            np.minimum(block, ex * ex + ey * ey, out=block)
+        dist = np.sqrt(near)
+        if not (dist < r).any():
+            return empty
+        # Inside or out, wherever the distance is known. A pixel centre a whole pixel
+        # off the line has all four of the coverage's samples on its own side, so
+        # the coverage says which; only the ones nearer than that are asked outright.
+        known = dist < far
+        inside = np.zeros(dist.shape, dtype=bool)
+        close = dist < 1.0 if cover is not None else known
+        ry, rx = np.nonzero(close)
+        inside[ry, rx] = self.inside((rx + gx0 + 0.5) / w, (ry + gy0 + 0.5) / h)
+        if cover is not None:
+            rest = known & ~close
+            inside[rest] = np.asarray(cover)[gy0:gy1, gx0:gx1][rest] >= 0.5
+        # The shape's width round each pixel: the deepest inside pixel in the window.
+        deepest = _grow_max(np.where(known & inside, dist, 0.0), look)
+        rows, cols = np.nonzero(dist < r)
+        depth = np.where(inside[rows, cols], dist[rows, cols], -dist[rows, cols])
+        full = np.minimum(r, 0.5 * deepest[rows, cols])
+        return ((rows + gy0).astype(np.intp), (cols + gx0).astype(np.intp),
+                depth.astype(np.float32), full.astype(np.float32))
+
     # -- reshaping ---------------------------------------------------------------
     def inset(self, amount: float, frame: bool = True) -> Polygon:
         """Shrink the silhouette by ``amount`` all the way round; negative grows it.
@@ -950,7 +1049,207 @@ def ribbon(places, width: float, end_width: float | None = None,
                          for x, y in np.vstack([left, right[::-1]])), name=name)
 
 
+#: How much of itself :func:`roughen`'s walk keeps from one step to the next: the
+#: painter's own ``0.72``, which turns the outline about every three steps.
+_ROUGHEN_KEEP = 0.72
+
+#: Over how many steps the wander dies away toward a point that must not move -- the
+#: two ends of an open run, a point on the frame -- so the outline arrives there
+#: rather than kinking into it.
+_ROUGHEN_EASE = 3
+
+
+def roughen(shape, amp: float = 0.006, step: float = 0.008, seed: int = 0, calm=None,
+            aspect: float | None = None, name: str = ""):
+    """An outline walked off its own line: a silhouette nobody drew with a ruler.
+
+    A shape drawn through a dozen points is a dozen straight sides, and laid hard it
+    reads as a cut-out however the edge is painted -- on a headland of rock, the
+    outline moved the picture more than any edge treatment did. This cuts every side
+    into steps and walks each step off the line by a correlated random amount: the
+    wander keeps most of itself from one step to the next, so the outline turns and
+    comes back rather than fizzing::
+
+        headland = roughen(polygon(ridge + shore), amp=0.006, seed=4)
+        s.block_in(headland, "flat", "rock", size=0.07, solid=True, edge="hard")
+
+    A shape comes back a shape; **an open run of points comes back a run**, with its
+    two ends exactly where they were, so one stretch of an outline can be roughened
+    and the rest left alone -- ``polygon(roughen(ridge, amp=0.0045) + shore)``.
+    Nothing on the canvas frame moves, and a side lying on the frame is left whole:
+    a mass that meets the frame should run off it.
+
+    Built from a painter's own fifteen lines, written to roughen a headland by hand,
+    who said it would have used this for rock had it existed.
+
+    Args:
+        shape: a shape, or anything :func:`polygon` takes -- a region, a name, a
+            4-tuple -- whose whole outline is walked; or an open run of ``(x, y)``
+            points, one stretch of an outline being put together.
+        amp: how far the outline wanders off its own line, as a fraction of the
+            canvas's **long side**, like a brush's ``size``: the typical distance,
+            and about three times it at the furthest. The default is about six
+            pixels on a canvas 1024 wide.
+        step: how far apart along the outline the wander is drawn, in the same unit.
+            The walk keeps ``0.72`` of itself from one step to the next, so it turns
+            about every three steps -- a coarser step is a slower, broader wander.
+        seed: the outline's own seed, not the session's: the same seed is the same
+            outline, so one you liked comes back.
+        calm: where the wander dies away -- the stretch something stands on. A place,
+            a point, or a list of them: the wander is nothing on it and comes back in
+            full ``5 x amp`` from it. Or a function of the point, ``calm(x, y)``,
+            returning ``0`` for still and ``1`` for the whole wander.
+        aspect: the canvas's width over its height -- ``s.aspect`` -- so a step and
+            the wander are the same distance across as down. Left off, the canvas is
+            taken as square, and on a 4:3 canvas the wander runs a third wider across
+            than down.
+        name: the shape's name. A shape keeps its own when this is left off.
+
+    Returns:
+        A :class:`Polygon` for a shape, or a list of ``(x, y)`` points for a run.
+    """
+    amp = float(amp)
+    step = float(step)
+    if not (math.isfinite(amp) and amp >= 0.0):
+        raise ValueError(f"roughen(amp={amp!r}) is how far the outline wanders, a "
+                         f"fraction of the long side like size: 0.006 is about six "
+                         f"pixels at 1024.")
+    if not (math.isfinite(step) and step > 0.0):
+        raise ValueError(f"roughen(step={step!r}) is how far apart along the outline "
+                         f"the wander is drawn, and has to be above zero: 0.008 is "
+                         f"about eight pixels at 1024.")
+    run = (isinstance(shape, (list, tuple)) and len(shape) >= 2
+           and all(_looks_like_point(p) for p in shape) and not _looks_like_bounds(shape))
+    if run:
+        pts = [(float(x), float(y)) for x, y in shape]
+        closed = None
+    else:
+        closed = polygon(shape)
+        pts = list(closed.points)
+    # Long-side units, which is what `size` is in: a step across and a step down are
+    # the same distance, and so is the wander either way.
+    a = 1.0 if aspect is None else float(aspect)
+    ux, uy = (1.0, 1.0 / a) if a >= 1.0 else (a, 1.0)
+    iso = np.asarray(pts, dtype=np.float64) * (ux, uy)
+    frame = [x <= 0.0 or x >= 1.0 or y <= 0.0 or y >= 1.0 for x, y in pts]
+
+    samples: list[np.ndarray] = []
+    normals: list[np.ndarray] = []
+    still: list[bool] = []
+    sides = len(iso) if closed is not None else len(iso) - 1
+    for i in range(sides):
+        j = (i + 1) % len(iso)
+        p, q = iso[i], iso[j]
+        (px, py), (qx, qy) = pts[i], pts[j]
+        along = q - p
+        length = float(np.hypot(*along))
+        if length < 1e-12:
+            continue
+        normal = np.array([-along[1], along[0]]) / length
+        on_frame = ((px <= 0.0 and qx <= 0.0) or (px >= 1.0 and qx >= 1.0)
+                    or (py <= 0.0 and qy <= 0.0) or (py >= 1.0 and qy >= 1.0))
+        k = 1 if on_frame else max(1, int(round(length / step)))
+        for m in range(k):
+            samples.append(p + along * (m / k))
+            normals.append(normal)
+            still.append(frame[i] if m == 0 else False)
+    if closed is None:
+        samples.append(iso[-1])
+        normals.append(normals[-1] if normals else np.zeros(2))
+        still.append(True)
+        still[0] = True
+    n = len(samples)
+    if n < 2:
+        return list(pts) if closed is None else closed
+
+    rng = np.random.default_rng(int(seed))
+    kick = rng.standard_normal(n) * math.sqrt(1.0 - _ROUGHEN_KEEP ** 2)
+    walk = np.zeros(n)
+    w = 0.0
+    # Round a closed outline twice and keep the second lap, so where the walk
+    # starts is where it ends and the outline has no seam; a run starts at rest,
+    # and its ends are held still below anyway.
+    for i in range(n * 2 if closed is not None else n):
+        w = _ROUGHEN_KEEP * w + kick[i % n]
+        walk[i % n] = w
+
+    # Die away toward every point that must not move, over a few steps.
+    held = np.flatnonzero(still)
+    if len(held):
+        index = np.arange(n)
+        gap = np.abs(index[:, None] - held[None, :])
+        if closed is not None:
+            gap = np.minimum(gap, n - gap)
+        ease = np.clip(gap.min(axis=1) / float(_ROUGHEN_EASE), 0.0, 1.0)
+        ease = ease * ease * (3.0 - 2.0 * ease)
+    else:
+        ease = np.ones(n)
+    at = np.asarray(samples)
+    moved = at + np.asarray(normals) * (amp * walk * ease * _calm_of(
+        calm, at / (ux, uy), amp, ux, uy))[:, None]
+    out = [(float(x), float(y)) for x, y in moved / (ux, uy)]
+    if closed is None:
+        out[0], out[-1] = pts[0], pts[-1]
+        return out
+    return Polygon(tuple(out), name=name or closed.name, traced=closed.traced)
+
+
+def _calm_of(calm, points: np.ndarray, amp: float, ux: float, uy: float) -> np.ndarray:
+    """How much of :func:`roughen`'s wander each point keeps, ``0..1``."""
+    if calm is None:
+        return np.ones(len(points))
+    if callable(calm):
+        return np.clip(np.asarray([float(calm(float(x), float(y))) for x, y in points]),
+                       0.0, 1.0)
+    # A point, a place, or a list of either -- and a list of points is that many
+    # points, not an outline: an outline to calm along is handed over as a shape.
+    many = (isinstance(calm, (list, tuple)) and not _looks_like_point(calm)
+            and not _looks_like_bounds(calm))
+    places = list(calm) if many else [calm]
+    reach = max(5.0 * amp, 1e-9)
+    nearest = np.full(len(points), np.inf)
+    iso = points * (ux, uy)
+    for place in places:
+        if _looks_like_point(place):
+            gap = np.hypot(iso[:, 0] - float(place[0]) * ux,
+                           iso[:, 1] - float(place[1]) * uy)
+        else:
+            shape = polygon(place) if not isinstance(place, Polygon) else place
+            ring = np.asarray(shape.points, dtype=np.float64) * (ux, uy)
+            a, b = ring, np.roll(ring, -1, axis=0)
+            d = b - a
+            t = np.clip(((iso[:, None, 0] - a[None, :, 0]) * d[None, :, 0]
+                         + (iso[:, None, 1] - a[None, :, 1]) * d[None, :, 1])
+                        / np.maximum((d ** 2).sum(axis=1), 1e-12)[None, :], 0.0, 1.0)
+            gap = np.hypot(iso[:, None, 0] - (a[None, :, 0] + t * d[None, :, 0]),
+                           iso[:, None, 1] - (a[None, :, 1] + t * d[None, :, 1])).min(axis=1)
+            gap = np.where(shape.inside(points[:, 0], points[:, 1]), 0.0, gap)
+        nearest = np.minimum(nearest, gap)
+    return np.clip(nearest / reach, 0.0, 1.0)
+
+
 # -- shape internals ---------------------------------------------------------------
+def _grow_max(values: np.ndarray, reach: int) -> np.ndarray:
+    """Each cell's largest neighbour within ``reach`` cells either way, the cell included.
+
+    A square window, taken one axis at a time, so it costs ``4 x reach`` passes over
+    the grid rather than one per cell of the window.
+    """
+    out = values.copy()
+    for k in range(1, int(reach) + 1):
+        if k >= out.shape[0]:
+            break
+        np.maximum(out[k:], values[:-k], out=out[k:])
+        np.maximum(out[:-k], values[k:], out=out[:-k])
+    rows = out.copy()
+    for k in range(1, int(reach) + 1):
+        if k >= out.shape[1]:
+            break
+        np.maximum(out[:, k:], rows[:, :-k], out=out[:, k:])
+        np.maximum(out[:, :-k], rows[:, k:], out=out[:, :-k])
+    return out
+
+
 def _clean_points(points) -> tuple[tuple[float, float], ...]:
     """Normalised, finite, on the canvas, with no repeated neighbours."""
     out: list[tuple[float, float]] = []

@@ -853,8 +853,8 @@ expensive kind of damage: burying a thumbprint means repainting the mass it sits
 which buries everything else standing there.
 
 ```python
-# the passage: two masses that meet
-s.block_in(Region(0.0, 0.0, 0.22, 1.0), "flat", "dark", size=0.08, solid=True, edge="hard")
+# the passage: two masses that meet, the first laid past the line
+s.block_in(Region(0.0, 0.0, 0.24, 1.0), "flat", "dark", size=0.08, solid=True, edge="hard")
 s.block_in(Region(0.22, 0.0, 1.0, 1.0), "flat", "light", size=0.08, solid=True, edge="hard")
 # goes wrong: smudge-across
 s.smudge([(0.34, 0.50), (0.10, 0.52)], size=0.03)  # dragged across the join, out of the light

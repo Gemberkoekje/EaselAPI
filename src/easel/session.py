@@ -386,6 +386,7 @@ class Session:
         clip=None,
         solid: bool = False,
         note: str = "",
+        feather: float | None = None,
         **brush_overrides,
     ) -> StrokeRecord:
         """Paint one stroke and log it.
@@ -411,13 +412,26 @@ class Session:
                 clipped stroke and its unclipped twin lay the same dabs from the same
                 draws. **A list of places holds the paint inside all of them** -- it
                 lands where they agree -- which is what a mass masked to its own
-                outline and to a window besides is made of.
+                outline and to a window besides is made of. Its edge is broken
+                rather than cut: see ``feather``.
             solid: lay this mark as solid paint -- ``load=1.0`` and
                 ``load_falloff=0.0``, so the brush does not run dry along the stroke.
                 The same pair :meth:`block_in` has always taken under this name, and
                 the clause painters type by hand most often. An explicit ``load=`` or
                 ``load_falloff=`` beside it wins.
             note: a line recorded in the log, for the painter's own benefit.
+            feather: how far inside ``clip``'s outline the edge breaks, as a fraction
+                of the canvas's long side like ``size``. **Left off, 0.002** -- two
+                pixels on a canvas 1024 wide -- and the edge is cut the way a loaded
+                brush meets tooth: nothing on the drawn line, all of it that far in
+                (or a quarter of the way across a shape narrower than four feathers,
+                so a thin one keeps its body), and between the two the canvas's own
+                weave decides, so the edge is crisp where the tooth is high and
+                broken where it is low. Nothing lands past the line. ``feather=0`` cuts it on the line -- a ruled
+                edge, which is what every clip was until 0.7.0, and what a ruled
+                thing wants. A saved mark replays at the feather it was laid with.
+                Only a held mark has an edge to break: given without ``clip=``, it
+                is refused.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
         Returns:
@@ -431,7 +445,9 @@ class Session:
         if stamps < 1:
             raise ValueError(f"press must be at least 1, got {press}.")
         holds = _as_outlines(clip)
-        cover = None if not holds or self._counting else self._clip_cover(holds)
+        feather = _held_feather(feather, bool(holds), "stroke")
+        cover = (None if not holds or self._counting
+                 else self._clip_cover(holds, feather))
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         # A count-only copy has nothing to undo to and nothing to undo, and copying
@@ -493,6 +509,12 @@ class Session:
                                          rng=self._stream_state(),
                                          **({"clip": _clip_params(holds)}
                                             if holds else {}),
+                                         # Beside the clip, and only where the edge
+                                         # was broken: a record without it replays
+                                         # cut on the line, as every clip before
+                                         # 0.7.0 was laid.
+                                         **({"feather": feather}
+                                            if holds and feather > 0.0 else {}),
                                          **({"via": self._call_verb} if self._call_verb
                                             else {}),
                                          **({"boxed": True} if self._call_boxed
@@ -784,6 +806,7 @@ class Session:
         clip=None,
         dry_first: bool = False,
         note: str = "",
+        feather: float | None = None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Fill a place with overlapping strokes, the way a painter blocks in a mass.
@@ -929,7 +952,12 @@ class Session:
                 sloping outline, laid solid: a ``round_hard`` left ``0.85%`` to
                 ``3.26%`` of it bare at one brush and ``0.055%`` to ``0.33%`` at
                 two. The pass count does not move, so neither does what
-                :meth:`cost` quotes.
+                :meth:`cost` quotes. **The edge is broken, not cut** (0.7.0): just
+                inside the outline -- ``0.002`` of the long side, two pixels at 1024
+                -- the paint lands where the canvas's tooth is high and not where it
+                is low (``feather``), because a mask cut on the line was one pixel of
+                four values and then a step, which a painter who relied on it called
+                the least paint-like thing in the engine.
             solid: lay the mass as solid paint -- ``load=1.0`` and
                 ``load_falloff=0.0``, so no pass runs dry partway across. Density
                 spaces the passes; this is what fills the gaps *along* them.
@@ -960,6 +988,10 @@ class Session:
                 (``CALIBRATION.md``, *GLM's rings*). :meth:`cover` has had this
                 since it was built, and has it on.
             note: recorded in the log.
+            feather: how far inside the outline a held edge breaks -- under
+                ``edge="hard"``, and on ``clip=`` -- as on :meth:`stroke`: **0.002**
+                left off, ``0`` for an edge cut on the line. Only a held mass has an
+                edge to break, so a ragged or clean one without ``clip=`` refuses it.
 
         Returns:
             The records for every stroke laid down.
@@ -994,6 +1026,8 @@ class Session:
         # and the contour pass below draws it.
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
         held = _mass_hold(place, edge, clip)
+        feather = _held_feather(feather, bool(held),
+                                "cover" if self._call_verb == "cover" else "block_in")
         _check_solid_comb(self, b, density, solid, stacklevel=3)
         if edge == "clean" and b.tip == "bristle":
             self._notify(
@@ -1038,6 +1072,7 @@ class Session:
                         color=color,
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                         clip=held,
+                        feather=feather,
                         note=note or (f"block-in "
                                       f"{place.name or ('shape' if shaped else 'region')} "
                                       f"{pass_dir}{traced}"),
@@ -1048,7 +1083,7 @@ class Session:
                     fill, b, color, pressure,
                     note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
                              f"{traced}"),
-                    clip=held,
+                    clip=held, feather=feather,
                 ))
         # The same test `_check_solid_comb` asks, and for the same reason: what
         # matters is what the paint did, not which keyword was typed. `cover()` lays
@@ -1060,7 +1095,7 @@ class Session:
         return records
 
     def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
-                       clip=None) -> list[StrokeRecord]:
+                       clip=None, feather: float = 0.0) -> list[StrokeRecord]:
         """The one pass ``edge="clean"`` lays along the inset outline.
 
         Along the *inset* outline, not the drawn one, so that the outer half of the
@@ -1089,7 +1124,7 @@ class Session:
             out.append(self.stroke(
                 path, brush=b, color=color,
                 pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                clip=clip,
+                clip=clip, feather=feather if clip else None,
                 note=note,
             ))
         return out
@@ -1286,6 +1321,7 @@ class Session:
         solid: bool = False,
         clip=None,
         note: str = "",
+        feather: float | None = None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Lay a mass that has a silhouette: passes swept along its edge, stepped inward.
@@ -1361,10 +1397,13 @@ class Session:
                 this is how its passes are held to a silhouette instead of breaking
                 past it.
             note: recorded in the log.
+            feather: how far inside ``clip``'s outline its edge breaks, as on
+                :meth:`stroke`: **0.002** left off, ``0`` for an edge cut on the line.
 
         Returns:
             The records for every stroke laid down.
         """
+        feather = _held_feather(feather, bool(_as_outlines(clip)), "sweep")
         if isinstance(edge, Polygon):
             # A shape *is* a boundary that comes back on itself, which is what a
             # closed sweep wants. Its outline repeats the first point, so `closed`
@@ -1389,6 +1428,7 @@ class Session:
                         brush=b, color=color,
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                         clip=clip,
+                        feather=feather,
                         note=note or kind,
                     )
                 )
@@ -1514,6 +1554,7 @@ class Session:
         dry_first: bool = True,
         clip=None,
         note: str = "",
+        feather: float | None = None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Bury a mistake, with every clause of the burying recipe already set.
@@ -1591,12 +1632,19 @@ class Session:
                 repair has to stop at something else as well -- the pane it sits in,
                 the form it is on.
             note: recorded in the log.
+            feather: how far inside the place the burial's edge breaks, as on
+                :meth:`stroke`: **0.002** left off, so the patch's border takes paint
+                where the tooth is high and lets the passage show where it is low,
+                rather than standing as a cut rectangle; ``0`` for an edge cut on
+                the line, the burial before 0.7.0.
 
         Returns:
             The records for every stroke laid down, the ``dry`` not among them --
             drying is free and is not a mark.
         """
         target = as_place(place)
+        # Asked before anything is laid: the dry below is a record too.
+        _held_feather(feather, bool(_mass_hold(target, edge, clip)), "cover")
         reach = _cover_overhang(edge, overhang)
         b = self._resolve_brush(
             brush, size, None,
@@ -1615,7 +1663,7 @@ class Session:
                 self.dry(1.0, target)
             return self.block_in(
                 target, brush=b, color=color, direction=direction, density=density,
-                pressure="even", overhang=reach, edge=edge, clip=clip,
+                pressure="even", overhang=reach, edge=edge, clip=clip, feather=feather,
                 note=note or f"cover {target.name or 'area'}",
             )
 
@@ -1635,6 +1683,7 @@ class Session:
         edge: str = "ragged",
         clip=None,
         note: str = "",
+        feather: float | None = None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """A soft passage: ``n`` overlapping passes stepping from one value to another.
@@ -1783,6 +1832,9 @@ class Session:
                 paint may land, as on :meth:`stroke`. ``edge="hard"`` is this clip
                 pointed at the band itself; this one points it somewhere else.
             note: recorded in the log.
+            feather: how far inside a held band its edge breaks, as on
+                :meth:`stroke`: **0.002** left off, ``0`` for an edge cut on the line
+                -- a horizon ruled on purpose, say.
 
         Returns:
             The records for every pass laid down.
@@ -1802,6 +1854,7 @@ class Session:
         place = as_place(band)
         n = int(n)
         held = _mass_hold(place, edge, clip)
+        feather = _held_feather(feather, bool(held), "scumble")
         if solid:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
         b, inward, paths = self._scumble_paths(place, n, brush, size, opacity,
@@ -1809,7 +1862,7 @@ class Session:
                                                held=held)
         if inward:
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
-                                        paths, clip=held)
+                                        paths, clip=held, feather=feather)
 
         records: list[StrokeRecord] = []
         laid = 0
@@ -1819,7 +1872,7 @@ class Session:
                 records.append(self.stroke(
                     path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    clip=held,
+                    clip=held, feather=feather,
                     note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
                 ))
                 laid += 1
@@ -1901,7 +1954,8 @@ class Session:
         return b, False, paths
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
-                        pressure, note: str, paths, clip=None) -> list[StrokeRecord]:
+                        pressure, note: str, paths, clip=None,
+                        feather: float = 0.0) -> list[StrokeRecord]:
         """A centred fall-off: ``n`` rings stepping in from the boundary.
 
         The band version grades edge to edge, which is what a band wants and is not a
@@ -1926,7 +1980,7 @@ class Session:
                     path, brush=b,
                     color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    clip=clip,
+                    clip=clip, feather=feather if clip else None,
                     note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
                 ))
         return records
@@ -3151,8 +3205,8 @@ class Session:
             spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
             {k: v for k, v in spec.items()
              if k not in ("points", "brush", "size", "opacity", "color", "pressure",
-                          "glaze", "smooth", "press", "clip", "solid", "note",
-                          "label")},
+                          "glaze", "smooth", "press", "clip", "feather", "solid",
+                          "note", "label")},
         )
         # The band stands for how wide the mark will be, and on a round tip that now
         # depends on the pressure it is planned with -- a lone stamp most of all.
@@ -4863,6 +4917,10 @@ class Session:
                 smooth = bool(params.pop("smooth", True))
                 held = params.pop("clip", None)
                 clip = None if held is None else _clips_from_params(held)
+                # A clip laid before 0.7.0 has no feather on its record and was cut on
+                # the line, so it replays cut on the line: the default moved for new
+                # marks, and never reaches a saved one.
+                feather = float(params.pop("feather", 0.0))
                 # Logs written before press existed have no key for it, and one stamp
                 # is what they meant: they replay unchanged.
                 press = int(params.pop("press", 1))
@@ -4876,6 +4934,7 @@ class Session:
                     smooth=smooth,
                     press=press,
                     clip=clip,
+                    feather=feather if clip else None,
                     note=record.note,
                 )
             # The record's own account of the stream and of the call that laid it,
@@ -4961,7 +5020,7 @@ class Session:
         self._uncounted.append(what)
         self._notify("count-only", f"scratch(count_only=True): {what}", stacklevel=4)
 
-    def _clip_cover(self, holds: tuple[Polygon, ...]) -> np.ndarray:
+    def _clip_cover(self, holds: tuple[Polygon, ...], feather: float = 0.0) -> np.ndarray:
         """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
 
         ``block_in(edge="hard")`` hands every one of its passes the same outline, and
@@ -4975,13 +5034,30 @@ class Session:
         Held inside more than one place, a dab lands where every one of them agrees:
         the masks multiply, which is what the word *and* means to a coverage between
         zero and one, and the memo holds the product so a mass pays for it once.
+
+        ``feather`` breaks each outline's edge inward, against this canvas's tooth
+        (:meth:`~easel.canvas.Canvas.broken_edge`), over that share of the long side
+        measured from the outline itself -- or over a quarter of the shape's own width
+        where it is narrower than four feathers, so a thin shape keeps its body
+        (``Polygon._edge_depth``). It is in the key beside the outlines, because
+        anything a mask is computed from has to be in its cache key (``LESSONS.md``,
+        trap 5): the same outline at two feathers in one session is two masks.
         """
-        key = (tuple(one.points for one in holds), self.canvas.width, self.canvas.height)
+        width, height = self.canvas.width, self.canvas.height
+        key = (tuple(one.points for one in holds), width, height, float(feather))
         if self._clip_memo is not None and self._clip_memo[0] == key:
             return self._clip_memo[1]
-        cover = holds[0].coverage(self.canvas.width, self.canvas.height)
-        for extra in holds[1:]:
-            cover = cover * extra.coverage(self.canvas.width, self.canvas.height)
+        px = float(feather) * self.canvas.long_side
+        cover = None
+        for one in holds:
+            mask = one.coverage(width, height)
+            if px > 0.0:
+                rows, cols, depth, full = one._edge_depth(width, height, px, mask)
+                if len(rows):
+                    mask[rows, cols] = np.minimum(
+                        mask[rows, cols],
+                        self.canvas.broken_edge(rows, cols, depth, full))
+            cover = mask if cover is None else cover * mask
         self._clip_memo = (key, cover)
         return cover
 
@@ -6314,7 +6390,8 @@ def _check_mass_spill(session, place, fill, b: Brush, direction, density: float,
         f"of the place's shorter side ({short:.3f}), and a brush hangs half its width past "
         f"every pass it lays. Inset the place by half the brush "
         f"(place.inset({b.size * 0.5:.3g})), or take a brush under a fifth of it "
-        f"(size={short / 5:.3g}); edge=\"hard\" holds the paint to the outline.",
+        f"(size={short / 5:.3g}); edge=\"hard\" holds the paint to the outline, its "
+        f"edge broken by the tooth rather than cut.",
         stacklevel=stacklevel,
     )
 
@@ -6357,7 +6434,8 @@ def _check_band_spill(session, place, b: Brush, degrees: float, step: float, n: 
         f"{step:.3f} apart across it at {degrees:.0f} degrees, so the brush "
         f"{'picked from that step is' if picked else 'is'} {b.size:.3g} -- "
         f"{b.size / max(short, 1e-9):.1f}x the band's own depth ({short:.3f}). "
-        f"edge=\"hard\" lays the same passes held to the band.{turn}",
+        f"edge=\"hard\" lays the same passes held to the band, its edge broken by the "
+        f"tooth rather than cut.{turn}",
         stacklevel=stacklevel,
     )
 
@@ -6437,8 +6515,9 @@ def _check_round_block(session, place, b: Brush, canvas, stacklevel: int = 3) ->
         f"brush is {share:.0%} of that. A round tip's overhang goes out all the way "
         f"round, so at this share the mass lands about half again the area of the "
         f"shape and the fringe is the silhouette. Use a chisel ('flat', 'knife') at "
-        f"this size, size={_CLEAN_SHARE * short:.3g} and under, edge='hard' to mask "
-        f"the fringe away, or lay the shape as a pair of strokes that meet.",
+        f"this size, size={_CLEAN_SHARE * short:.3g} and under, edge='hard' to hold "
+        f"the paint inside the outline, its edge broken by the tooth rather than a "
+        f"fringe of discs, or lay the shape as a pair of strokes that meet.",
         stacklevel=stacklevel,
     )
 
@@ -6473,7 +6552,8 @@ def _check_clean_size(session, place, b: Brush, canvas, stacklevel: int = 2,
         return
     kept = _place_area(place.inset(b.size * 0.5)) / max(_place_area(place), 1e-12)
     shaped = isinstance(place, Polygon)
-    other = ("leave edge= off: the default holds the burial to its place"
+    other = ("leave edge= off: the default holds the burial to its place and breaks "
+             "its border against the tooth"
              if verb == "cover" else "leave the edge ragged")
     session._notify(
         "clean-small",
@@ -8128,6 +8208,59 @@ def _mass_hold(place, edge: str, clip):
     if edge == "hard":
         holds = (_as_outline(place),) + holds
     return holds or None
+
+
+#: How far inside a held outline its edge breaks when ``feather=`` is left off, as a
+#: fraction of the long side like ``size``: two pixels on a canvas 1024 wide, three at
+#: 1440. **0.7.0; every clip was cut on the line before it.** Chosen blind by the
+#: painter whose verdict raised it, first of four candidates, for the tower, the
+#: lantern and the cap it had laid hard; ``0.003`` read ragged on anything made.
+#:
+#: A share of the long side and not a count of pixels, measured at 1440x960, where the
+#: painter found the bench's copy of it *a little chewed*: built, the edge there bites
+#: at the export's own pixels as 1024's does -- ``0.94`` px at its largest against
+#: ``0.94``, wandering ``0.44`` about a straight line against ``0.40`` -- and two
+#: pixels are no closer (``1.06``, ``0.38``). ``CALIBRATION.md``, *A held edge,
+#: broken*.
+_EDGE_FEATHER = 0.002
+
+#: Past this a ``feather=`` is most of a small place -- and far likelier a count of
+#: pixels typed into a unit that is not one.
+_FEATHER_MAX = 0.05
+
+
+def _held_feather(feather, held: bool, verb: str) -> float:
+    """The feather a call's held edge breaks over, from what the painter passed.
+
+    Left off, the default where the call holds its paint to an outline and nothing
+    where it does not. Given, it has to have an edge to break: a ragged mass is
+    broken by its own brush, and a feather handed to a call that holds nothing would
+    change nothing and say nothing, so it is refused -- except ``0``, which asks for
+    what such a call does anyway, so a helper that passes it on every mark is not
+    refused on the marks it does not clip.
+    """
+    if feather is None:
+        return _EDGE_FEATHER if held else 0.0
+    try:
+        f = float(feather)
+    except (TypeError, ValueError):
+        raise ValueError(f"{verb}(feather={feather!r}) is a number: how far inside the "
+                         f"outline the edge breaks, a fraction of the long side like "
+                         f"size.") from None
+    if not math.isfinite(f) or f < 0.0:
+        raise ValueError(f"{verb}(feather={feather!r}) is how far inside the outline the "
+                         f"edge breaks, and is zero or more: 0 cuts it on the line.")
+    if f > _FEATHER_MAX:
+        raise ValueError(
+            f"{verb}(feather={feather!r}) is a fraction of the canvas's long side, like "
+            f"size -- {_EDGE_FEATHER} is two pixels at 1024 -- so this is the edge "
+            f"broken over {f:.0%} of the canvas. Up to {_FEATHER_MAX} is taken.")
+    if f > 0.0 and not held:
+        raise ValueError(
+            f"{verb}(feather={feather!r}) breaks the edge of an outline the paint is held "
+            f"inside, and this call holds it to none: give it clip=, or edge='hard' on a "
+            f"call that fills a place. A ragged edge is broken by the brush already.")
+    return f
 
 
 def _smudge_path(edge, size: float) -> list:

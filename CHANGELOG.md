@@ -119,6 +119,50 @@ painted with, which it asked to be told about when that stops holding.
   name and line first; the MCP server puts it at the top of the tool's answer, where it
   went to the server's stderr and reached nobody. `foreign-out-dir` arrives the same way.
 
+### An edge that breaks rather than steps, and an outline nobody ruled
+
+Step 5 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream A). The painter
+laid its tower, lantern and headland hard and called the edge *the least paint-like
+thing in the engine, and I relied on it*: a clip was cut as one pixel of four values and
+then a step, `0.30` of value in one pixel at the tower. Blind, it chose one of four
+candidates for every hard edge and every clip, and asked for the rock's outline to
+wander.
+
+- **A held edge breaks inward, against the canvas's own tooth** — `feather=`, on every
+  verb that takes `clip=` and on `block_in`, `scumble` and `cover` under `edge="hard"`.
+  Over the last `0.002` of the long side inside the outline — two pixels at 1024 — the
+  tooth decides how much of the edge takes paint, the way it does for a starving brush:
+  crisp where the weave is high, broken where it is low. **Nothing lands on or past the
+  drawn line.** It reads as paint and not as blur, which a plain ramp did.
+- **This is the default, and one moved.** Every hold breaks at `0.002` unless told
+  otherwise — `clip=` as well as `edge="hard"`, because four of the painter's nine
+  edge-drawing calls were clips — and `feather=0` cuts the edge on the line, which is
+  what every hold was before and what a line ruled on purpose wants. **A saved mark
+  replays at the feather it was laid with**, and one saved before 0.7.0 carries none and
+  replays cut, so no saved painting moves and `older-engine` has nothing new to say;
+  **a script that leaves `feather=` off lays the broken edge where it laid a cut one**.
+  Over the ten corpus paintings whose scripts hold an edge that moves 0.00% to 1.92% of
+  a canvas; the scripts are listed in `NOTES-step5.md`.
+- **A share of the long side, like `size`**, benched at 1440, where the painter found the
+  bench's copy *a little chewed*: built, the edge there bites at the export's own pixels
+  as it does at 1024 (`0.94` px against `0.94`), and a two-pixel count is no closer.
+- **The frame is not an edge**: a side lying on the canvas frame never breaks, so a mass
+  run off the canvas does not pull back from it. **A thin shape keeps its body**: on a
+  shape narrower than four feathers the edge breaks over a quarter of its width, where a
+  clip two pixels wide had kept 37% of its paint.
+- **Two masses held to one line both break back from it**, and on bare ground the ground
+  shows between them — the guide's *paint masses, never up to a line*, now visible where
+  a cut edge hid it. No committed painting lays its masses that way; one of
+  `RECIPES.md`'s passages did, and lays its first mass past the line now.
+- **`roughen(shape, amp=, step=, seed=, calm=)`** walks an outline off its own line with
+  a correlated wander — the painter's own fifteen lines — for rock, a shore, anything
+  nobody ruled. Nothing on the frame moves; `calm=` stills it where something stands on
+  it; an open run of points comes back a run with its two ends where they were. On the
+  MCP server it is a place builder beside `blob`.
+- The notices that name `edge="hard"` as a remedy — `spill`, `round-fringe`, and
+  `clean-small` for a burial — say the edge is broken rather than cut. A new golden
+  case, `edges`, holds the edge where it was decided.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with

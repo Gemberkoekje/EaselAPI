@@ -31,7 +31,7 @@ _REPO = Path(__file__).resolve().parents[1]
 if str(_REPO / "src") not in sys.path:  # pragma: no cover - import plumbing
     sys.path.insert(0, str(_REPO / "src"))
 
-from easel.regions import blob, hull, polygon, ribbon  # noqa: E402
+from easel.regions import Region, blob, hull, polygon, ribbon, roughen  # noqa: E402
 from easel.session import Session  # noqa: E402
 from easel.texture import TEXTURES  # noqa: E402
 
@@ -230,6 +230,48 @@ def build_sweep() -> np.ndarray:
     return s.canvas.to_srgb8()
 
 
+def draw_edges(s: Session) -> None:
+    """0.7.0: every held edge broken inward against the tooth, and the one ruled on purpose.
+
+    A mass held to its own outline at the default feather; a mark clipped to a shape
+    at a feather wide enough to see at this size; a roughened outline laid hard on top
+    of it; a burial over a worked patch; a band held and cut on the line
+    (``feather=0``) beside one broken; and a mass run off the frame, whose frame sides
+    are not an edge. Between them they cover the distance to the outline, the gate
+    that breaks it, and the frame -- the three things that could change what a hard
+    edge looks like without anything else in this file noticing.
+    """
+    p = s.palette
+    p["dark"] = p.mix("ultramarine", "burnt_umber", 0.45)
+    p["light"] = p.tint("yellow_ochre", 0.6)
+    p["mid"] = p.tint("burnt_sienna", 0.35)
+
+    s.block_in(Region(0.55, 0.0, 1.0, 0.45), "flat", "light", size=0.08, solid=True,
+               edge="hard")
+    rock = polygon([(0.06, 0.92), (0.12, 0.40), (0.30, 0.30), (0.44, 0.52),
+                    (0.40, 0.92)], name="rock")
+    s.block_in(rock, "flat", "dark", size=0.06, solid=True, edge="hard")
+    s.stroke([(0.02, 0.62), (0.52, 0.66)], "flat", "light", size=0.08, clip=rock,
+             feather=0.006, solid=True)
+    shore = roughen(polygon([(0.50, 0.95), (0.62, 0.62), (0.98, 0.58), (0.98, 0.95)]),
+                    amp=0.01, seed=6, aspect=s.aspect)
+    s.block_in(shore, "flat", "mid", size=0.06, solid=True, edge="hard", feather=0.004)
+    s.cover(Region(0.20, 0.45, 0.32, 0.60), "light", size=0.04, feather=0.006)
+    s.scumble(Region(0.58, 0.08, 0.96, 0.22), "dark", "mid", 6, edge="hard", feather=0)
+    s.scumble(Region(0.58, 0.26, 0.96, 0.40), "dark", "mid", 6, edge="hard",
+              feather=0.006)
+
+
+def build_edges() -> np.ndarray:
+    """The held edges, on linen. Returns 8-bit sRGB."""
+    w, h = GOLDEN_SIZE
+    s = Session(w, h, texture="linen", ground="toned_grey", seed=23, timelapse=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        draw_edges(s)
+    return s.canvas.to_srgb8()
+
+
 def build_sampler() -> np.ndarray:
     """Every painted cell of ``samples/brushes.png``, stacked, as one array.
 
@@ -266,6 +308,7 @@ CASES: dict[str, object] = {f"marks_{t}": (lambda t=t: build_marks(t)) for t in 
 CASES["drawing"] = build_drawing
 CASES["shapes"] = build_shapes
 CASES["sweep"] = build_sweep
+CASES["edges"] = build_edges
 CASES["sampler"] = build_sampler
 
 #: Cases stored as a hash only. The sampler is 190x19440 as one strip and a

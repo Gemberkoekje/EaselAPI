@@ -38,6 +38,7 @@ It does four things:
     python scripts/probe_handover_session.py --shell      # 4F built: the passes from a shell
     python scripts/probe_handover_session.py --shell --engine DIR/src   # ...under another
     python scripts/probe_handover_session.py --pressure   # 4G: the fade and the wet bands
+    python scripts/probe_handover_session.py --corpus-edges   # 4A built, on the corpus
 
 The corpus half of workstream C -- every pass of the twenty-two paintings the graded rule
 fires on, cropped, with each narrowed gate's verdict -- is
@@ -72,7 +73,7 @@ import probe_cohort_session as cohort  # noqa: E402
 import easel  # noqa: E402
 import easel.session as session_module  # noqa: E402
 from easel import Region, Session, polygon  # noqa: E402
-from easel.canvas import _TOOTH_GRAIN_W, _TOOTH_HEIGHT_W  # noqa: E402
+from easel.canvas import _GATE_BAND, _TOOTH_GRAIN_W, _TOOTH_HEIGHT_W  # noqa: E402
 from easel.checklist import edges_line  # noqa: E402
 from easel.cli import run_script  # noqa: E402
 from easel.demo import demos, preamble  # noqa: E402
@@ -89,8 +90,9 @@ OUT = ROOT / "out" / "handover"
 PASSES = tuple(sorted(p.name for p in HERE.glob("p[0-9][0-9]_*.py")))
 #: The canvas `PAINTINGS.md` records for the painting, which `easel new` was given.
 PAINTING = {"texture": "linen", "ground": "burnt_sienna", "seed": 11, "budget": 300}
-#: The tooth gate's own band in `Canvas.stamp`, which A2 and B reuse rather than restate.
-GATE_BAND = 0.18
+#: The tooth gate's own band in `Canvas.stamp`, which B reuses rather than restates --
+#: and A2 with it, since step 5 built A2 on the same constant (`Canvas.broken_edge`).
+GATE_BAND = _GATE_BAND
 
 
 # -- the painting, rebuilt ------------------------------------------------------------
@@ -156,8 +158,13 @@ def _watching(calls: list[dict], current: list[str]):
 
 def rebuild(width: int = 1024, height: int = 768, timelapse: bool = False,
             upto: str | None = None, prelude: Path | None = None,
-            keep: bool = True, watch: bool = False) -> Rebuilt:
+            keep: bool = True, watch: bool = False, cut: bool = True) -> Rebuilt:
     """The painting from its committed passes, through the CLI's own ``run_script``.
+
+    ``cut`` lays every hold cut on the line, as 0.6.0 laid it -- the painting the
+    painter had, which every claim and bench here starts from. Since step 5 the engine
+    breaks every hold it is not told otherwise about, and ``cut=False`` is the painting
+    as this engine lays the same scripts.
 
     Each pass opens as ``easel run`` opens one, runs in a fresh scope with the prelude
     executed in front of it, and is then read by ``report()`` over the pass alone --
@@ -176,7 +183,9 @@ def rebuild(width: int = 1024, height: int = 768, timelapse: bool = False,
         out = Rebuilt(session=session)
         current = [""]
         watcher = _watching(out.calls, current) if watch else contextlib.nullcontext()
-        with watcher, warnings.catch_warnings(), contextlib.redirect_stdout(io.StringIO()):
+        edges = feather("today", 0.0) if cut else contextlib.nullcontext()
+        with watcher, edges, warnings.catch_warnings(), \
+                contextlib.redirect_stdout(io.StringIO()):
             warnings.simplefilter("ignore")
             for name in PASSES:
                 current[0] = name
@@ -559,37 +568,46 @@ def feathered(poly, canvas, px: float, kind: str) -> np.ndarray:
     """A clip mask ramped **inward** over ``px`` pixels: nothing lands outside the line.
 
     *A1* is the ramp itself, from nothing at the drawn line to full paint at the
-    feather's depth. *A2* is the same ramp read against the canvas tooth, the way
-    ``Canvas.stamp`` reads a starving brush: near the line only the peaks of the weave
-    take paint, and deeper in the valleys do too -- so the boundary breaks at the
-    weave's scale and stays crisp where the tooth is high. Both are clamped under
-    today's coverage, so neither can reach past the outline where today's cannot.
+    feather's depth -- the probe's own, as step 2 benched it. *A2* is the same ramp
+    read against the canvas tooth, the way ``Canvas.stamp`` reads a starving brush:
+    near the line only the peaks of the weave take paint, and deeper in the valleys do
+    too -- so the boundary breaks at the weave's scale and stays crisp where the tooth
+    is high. **Since step 5, A2 is the engine's own** (``Polygon._edge_depth`` and
+    ``Canvas.broken_edge``, which ``Session._clip_cover`` lays), so what this measures
+    is what shipped; it differs from step 2's copy in two places, both built on
+    purpose: a side on the canvas frame is not an edge, and nothing lands past the
+    line even on the peaks. Both are clamped under today's coverage.
     """
     width, height = canvas.width, canvas.height
     cover = poly.coverage(width, height)
-    ramp = np.clip(inside_depth(poly, width, height, px) / px, 0.0, 1.0)
     if kind == "A1":
-        mask = smooth(ramp)
-    else:
-        tooth = canvas.height_map * _TOOTH_HEIGHT_W + canvas.grain * _TOOTH_GRAIN_W
-        mask = np.where(ramp >= 1.0, 1.0,
-                        smooth((tooth - (1.0 - ramp) * canvas.tooth_ceiling) / GATE_BAND))
-    return np.minimum(cover, mask).astype(np.float32)
+        ramp = np.clip(inside_depth(poly, width, height, px) / px, 0.0, 1.0)
+        return np.minimum(cover, smooth(ramp)).astype(np.float32)
+    rows, cols, depth, full = poly._edge_depth(width, height, px, cover)
+    if len(rows):
+        cover[rows, cols] = np.minimum(cover[rows, cols],
+                                       canvas.broken_edge(rows, cols, depth, full))
+    return cover
 
 
 @contextlib.contextmanager
 def feather(kind: str, amount: float, which: str = "all"):
-    """``Session._clip_cover`` feathered for the length of a bench.
+    """``Session._clip_cover`` held to one candidate for the length of a bench.
 
     ``which`` is whose outline feathers: ``"all"`` of them; ``"hard"``, only the outline
-    a mass holds itself to under ``edge="hard"`` -- **the default the painter decided**,
-    which leaves every ``clip=`` as it is; or ``"clip"``, only the ``clip=`` outlines,
-    which is the containment bench. A mass's own outline is told apart by catching it
-    as ``_mass_hold`` builds it, since the mask is asked with the outlines alone.
+    a mass holds itself to under ``edge="hard"`` -- the default step 2 first read the
+    painter's answer as, which leaves every ``clip=`` as it is; or ``"clip"``, only the
+    ``clip=`` outlines, which is the containment bench. A mass's own outline is told
+    apart by catching it as ``_mass_hold`` builds it, since the mask is asked with the
+    outlines alone.
+
+    **Every candidate patches, "today" included**, because since step 5 the engine's
+    own default breaks every hold at ``0.002``: left alone, a bench of *today* would
+    have measured the new default under the old name. The feather each call resolves
+    is ignored here, so the benches mean what they meant in step 2.
     """
-    if kind == "today" or amount <= 0.0:
-        yield
-        return
+    if kind == "today":
+        amount = 0.0
     own: list = []
     memo: dict = {}
     original_cover = Session._clip_cover
@@ -601,13 +619,14 @@ def feather(kind: str, amount: float, which: str = "all"):
             own.append(holds[0])
         return holds
 
-    def clip_cover(self, holds):
+    def clip_cover(self, holds, feather=0.0):
         canvas = self.canvas
         px = amount * canvas.long_side
         out = None
         for poly in holds:
             mine = any(poly is one for one in own)
-            soft = which == "all" or (which == "hard" and mine) or (which == "clip" and not mine)
+            soft = px > 0.0 and (which == "all" or (which == "hard" and mine)
+                                 or (which == "clip" and not mine))
             key = (poly.points, canvas.width, canvas.height, soft)
             if key not in memo:
                 if len(memo) > 8:
@@ -846,6 +865,168 @@ def bench_edge_burial() -> None:
     print(f"       -> {save_sheet(panels, 'edges_burial.png', columns=4).relative_to(ROOT)}")
 
 
+def _look_px(image: Image.Image) -> Image.Image:
+    """The image as a look at the default size shows it: a long side of 1024."""
+    f = 1024 / max(image.size)
+    return image if f >= 1.0 else image.resize((round(image.width * f),
+                                                round(image.height * f)), Image.LANCZOS)
+
+
+def ground_edge_numbers(s: Session, box=(0.28, 0.42, 0.50, 0.62)) -> tuple[float, float]:
+    """The painter's ``measure_ground_edges.py``, read off the canvas at its own pixels.
+
+    The steep left side of the rock on bare ground, row by row: where each row first
+    crosses half way from the ground to the rock, the wander of that line about a
+    straight one (sd), and its largest departure -- the biggest bite. In canvas pixels;
+    the painter measured the same on a sheet enlarged twice and halved it.
+    """
+    w, h = s.canvas.width, s.canvas.height
+    x0, y0, x1, y1 = box
+    lum = painters_lum(s.canvas.to_srgb8(impasto=True, sketch=False)
+                       [int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)])
+    lo, hi = np.percentile(lum, 5), np.percentile(lum, 95)
+    level = (lum - lo) / (hi - lo)
+    pos, ys = [], []
+    for y in range(int(0.55 * level.shape[0]), int(0.92 * level.shape[0])):
+        k = np.nonzero(level[y] < 0.5)[0]
+        if not len(k) or k[0] < 2:
+            continue
+        e = k[0]
+        pos.append(e - 1 + (level[y, e - 1] - 0.5) / max(level[y, e - 1] - level[y, e], 1e-6))
+        ys.append(y)
+    ys, pos = np.array(ys), np.array(pos)
+    off = pos - np.polyval(np.polyfit(ys, pos, 1), ys)
+    return float(off.std()), float(np.abs(off).max())
+
+
+#: The feather's unit at 1440: the knee at 1024 as a share (0.002) and as two pixels.
+UNIT = (("1024x768", 1024, 768, "today", 0.0, ""), ("1024x768", 1024, 768, "A2", 2.048, "0.002"),
+        ("1024x768", 1024, 768, "A2", 3.072, "0.003"), ("1440x960", 1440, 960, "today", 0.0, ""),
+        ("1440x960", 1440, 960, "A2", 2.88, "0.002"), ("1440x960", 1440, 960, "A2", 2.0, ""))
+
+
+def bench_edge_unit() -> None:
+    """The one bench step 2 left for the build: the feather as a share, or in pixels.
+
+    At 1440x960 the painter found A2 at ``0.002`` -- 2.9 px there -- *a little chewed*,
+    and could not tell whether a pixel count would read better (``answers-step2.md``,
+    10b). The tooth it breaks against is a weave that scales with the canvas and a
+    grain that does not. So the rock on bare ground and the tower's two strokes, at
+    both sizes, the feather as a share of the long side and as two pixels: the
+    painter's own numbers at the export's pixels and as a look at the default size
+    shows them, and a sheet of each at four times.
+    """
+    print("     the feather's unit: the painter's measure on the rock's steep side, in px "
+          "at the export's size and in a look at 1024")
+    print(f"       {'canvas':<10}{'candidate':<22}{'wander':>8}{'bite':>7}"
+          f"{'look: wander':>15}{'bite':>7}")
+    rock = polygon([(0.30, 0.70), (0.36, 0.52), (0.46, 0.44), (0.58, 0.47), (0.66, 0.58),
+                    (0.70, 0.72)], name="rock")
+    towers, towers_look, rocks, rocks_look = [], [], [], []
+    for size, width, height, kind, px, share in UNIT:
+        amount = px / max(width, height)
+        s = Session(width, height, timelapse=False, **PAINTING)
+        s.palette["rock"] = s.palette.at_value(s.palette.mix("ultramarine", "burnt_umber",
+                                                             0.5), 0.18)
+        with warnings.catch_warnings(), feather(kind, amount, "hard"):
+            warnings.simplefilter("ignore")
+            s.block_in(rock, "flat", "rock", size=0.05, density=1.0, solid=True,
+                       edge="hard", direction=15)
+        wander, bite = ground_edge_numbers(s)
+        f = 1024 / max(width, height)
+        tag = "today" if kind == "today" else (
+            f"A2 {px:.1f} px" + (f" (={share})" if share else ""))
+        print(f"       {size:<10}{tag:<22}{wander:>8.2f}{bite:>7.2f}{wander * f:>15.2f}"
+              f"{bite * f:>7.2f}")
+        tower = _flat_field(width, height, 0.59)
+        names = scope_of(tower)
+        with warnings.catch_warnings(), feather(kind, amount, "all"):
+            warnings.simplefilter("ignore")
+            _tower_strokes(tower, names)
+        label = f"{size} {tag}"
+        for session, box, native, looked in ((tower, (0.665, 0.30, 0.735, 0.42), towers,
+                                              towers_look),
+                                             (s, (0.30, 0.50, 0.40, 0.64), rocks,
+                                              rocks_look)):
+            whole = Image.fromarray(session.canvas.to_srgb8(impasto=True, sketch=False))
+            for picture, into in ((whole, native), (_look_px(whole), looked)):
+                w, h = picture.size
+                part = picture.crop((int(box[0] * w), int(box[1] * h), int(box[2] * w),
+                                     int(box[3] * h)))
+                into.append((label, part.resize((part.width * 4, part.height * 4),
+                                                Image.NEAREST)))
+    for name, panels in (("edges_unit_tower.png", towers),
+                         ("edges_unit_tower_look.png", towers_look),
+                         ("edges_unit_rock.png", rocks),
+                         ("edges_unit_rock_look.png", rocks_look)):
+        print(f"       -> {save_sheet(panels, name, columns=3).relative_to(ROOT)}")
+
+
+def bench_edge_seam() -> None:
+    """Two hard masses that share a seam, each laid on bare ground -- a case step 2 missed.
+
+    A mass laid back to front breaks over the paint behind it, which is what the
+    feather is for. Two masses laid *up to one line*, each held to it, both break back
+    from it, and what shows between them is the ground: a broken line along the seam,
+    which is an outline. The far mass laid past the line first -- the guide's *paint
+    masses, never up to a line* -- leaves the near one's edge breaking over paint.
+    """
+    print("     two hard masses sharing a seam on bare ground: the ground within 4 px of it")
+    panels = []
+    for ground in ("burnt_sienna", "toned_grey"):
+        for kind, amount, past in (("today", 0.0, 0.0), ("A2", 0.002, 0.0),
+                                   ("A2", 0.002, 0.01)):
+            s = Session(1024, 768, texture="linen", ground=ground, seed=11, timelapse=False)
+            p = s.palette
+            p["dark"] = p.at_value(p.mix("ultramarine", "burnt_umber", 0.5), 0.20)
+            p["light"] = p.at_value(p.mix("yellow_ochre", "titanium_white", 0.6), 0.75)
+            with warnings.catch_warnings(), feather(kind, amount, "all"):
+                warnings.simplefilter("ignore")
+                s.block_in(Region(0.0, 0.0, 0.42 + past, 1.0), "flat", "dark", size=0.08,
+                           solid=True, edge="hard")
+                s.block_in(Region(0.42, 0.0, 1.0, 1.0), "flat", "light", size=0.08,
+                           solid=True, edge="hard")
+            seam = np.zeros((768, 1024), dtype=bool)
+            seam[20:748, 430 - 4:430 + 4] = True
+            tag = (f"{ground}, {'today' if kind == 'today' else f'A2 {amount}'}"
+                   + (", the far one past the line" if past else ""))
+            print(f"       {tag:<50} {s.canvas.ground_showing(where=seam):6.1%}")
+            rgb = Image.fromarray(s.canvas.to_srgb8(impasto=True, sketch=False))
+            part = rgb.crop((400, 300, 460, 380))
+            panels.append((tag, part.resize((part.width * 5, part.height * 5),
+                                            Image.NEAREST)))
+    print(f"       -> {save_sheet(panels, 'edges_seam.png', columns=3).relative_to(ROOT)}")
+
+
+def bench_edge_built(rb: Rebuilt) -> None:
+    """The painting as this engine lays its thirteen scripts, against the one it had.
+
+    None of the scripts passes ``feather=``, so every one of the 33 holds breaks at the
+    default -- the horizon too, which its painter wants ruled and would now write
+    ``feather=0`` for. What the check says after each pass, the tower's step, the
+    ground, and the two places the verdict named, side by side.
+    """
+    built = rebuild(keep=False, cut=False)
+    print(f"     the painting as this engine lays its scripts ({built.seconds:.0f} s), "
+          f"against the one the painter had")
+    for name in PASSES:
+        was = next((line.strip() for line in rb.said[name] if "edges:" in line), "-")
+        now = next((line.strip() for line in built.said[name] if "edges:" in line), "-")
+        print(f"       {name:<18} {_edges_numbers(was)[0]:>5} -> {_edges_numbers(now)[0]:>5}")
+    names = scope_of(built.session.scratch())
+    rows = np.linspace(0.25, 0.52, 14)
+    for label, session in (("had", rb.session), ("built", built.session)):
+        steps = one_pixel_steps(values(session), names["tower"], rows)
+        print(f"       {label:<6} tower's step {np.median(steps):.3f}   "
+              f"{session._ground_line()}   {edges_line(values(session))}")
+    panels = []
+    for label, session in (("had", rb.session), ("built", built.session)):
+        panels.append((f"tower, {label}", crop(session, (0.665, 0.18, 0.735, 0.42), zoom=3)))
+        panels.append((f"headland, {label}", crop(session, (0.36, 0.46, 0.62, 0.66),
+                                                  zoom=2)))
+    print(f"       -> {save_sheet(panels, 'edges_built.png', columns=2).relative_to(ROOT)}")
+
+
 def probe_edges(rb: Rebuilt, rb1440: Rebuilt | None) -> None:
     print("\n== 4A. an edge that is not a step: A1 feathered inward, A2 broken by the tooth ==")
     bench_edge_curve()
@@ -853,6 +1034,85 @@ def probe_edges(rb: Rebuilt, rb1440: Rebuilt | None) -> None:
     print("  read: the step and the edges: line are the numbers, and A2 keeps each pixel "
           "crisp on purpose,\n  so neither can tell it from today. The sheets are the "
           "verdict.")
+    print("\n  built (step 5): A2 at 0.002 on every hold")
+    bench_edge_unit()
+    bench_edge_seam()
+    bench_edge_built(rb)
+
+
+#: The corpus paintings whose scripts hold an edge somewhere -- `edge="hard"`, `clip=`
+#: or `cover()` -- and so are the ones a moved default lays differently.
+HELD = ("handover", "fogged", "hands", "pier", "bigpickle", "deepseek", "glm", "gpt",
+        "grok", "kimi")
+
+
+def _runs(mask: np.ndarray) -> list[tuple[int, tuple[int, int, int, int]]]:
+    """The eight-connected runs of ``mask``, largest first, as (pixels, box)."""
+    labels = label_components(mask)
+    ys, xs = np.nonzero(labels)
+    if not len(ys):
+        return []
+    lab = labels[ys, xs]
+    order = np.argsort(lab, kind="stable")
+    lab, ys, xs = lab[order], ys[order], xs[order]
+    starts = np.flatnonzero(np.r_[True, lab[1:] != lab[:-1]])
+    sizes = np.diff(np.r_[starts, len(lab)])
+    boxes = zip(np.minimum.reduceat(xs, starts), np.minimum.reduceat(ys, starts),
+                np.maximum.reduceat(xs, starts) + 1, np.maximum.reduceat(ys, starts) + 1,
+                strict=True)
+    return sorted(((int(n), tuple(int(v) for v in box)) for n, box in zip(sizes, boxes,
+                                                                          strict=True)),
+                  reverse=True)
+
+
+def probe_corpus_edges() -> None:
+    """Every corpus painting that holds an edge, laid cut and laid broken, and what shows.
+
+    The seam bench's question asked of real paintings: where two held masses were laid
+    up to one line, both break back from it and the ground shows along it. Each
+    painting is replayed from its committed scripts twice -- every hold cut on the line
+    as its painter had it, then as this engine lays the same scripts -- and the second
+    is read against the first for the ground it leaves showing that the first did not,
+    and for how that ground lies: a seam is a long thin run of it, a broken silhouette
+    on bare ground a fringe. The runs that are longest are cropped for looking.
+    """
+    print("\n== 4A built: the corpus's held edges, cut and broken, and the ground each leaves ==")
+    print(f"     {'painting':<11}{'moved':>8}{'ground cut':>12}{'broken':>9}{'new bare px':>13}"
+          f"{'longest run':>13}{'runs over 60 px':>17}")
+    panels = []
+    for name in HELD:
+        entry = next(p for p in cohort.CORPUS if p.name == name)
+        with feather("today", 0.0):
+            cut = cohort.replay(entry, keep_canvas=False)
+        broken = cohort.replay(entry, keep_canvas=False)
+        if cut.session is None or broken.session is None:
+            print(f"     {name:<11} did not rebuild: {cut.error or broken.error}")
+            continue
+        a = cut.session.canvas.to_srgb8(impasto=False, sketch=False).astype(int)
+        b = broken.session.canvas.to_srgb8(impasto=False, sketch=False).astype(int)
+        moved = float((np.abs(a - b).max(axis=2) > 2).mean())
+        was = cohort._bare(cut.session)
+        now = cohort._bare(broken.session)
+        new = now & ~was
+        runs = _runs(new)
+        longest = max((max(box[2] - box[0], box[3] - box[1]) for _, box in runs), default=0)
+        long_runs = [r for r in runs if max(r[1][2] - r[1][0], r[1][3] - r[1][1]) > 60]
+        print(f"     {name:<11}{moved:>8.2%}{float(was.mean()):>12.2%}{float(now.mean()):>9.2%}"
+              f"{int(new.sum()):>13}{longest:>11} px{len(long_runs):>17}")
+        for size, (x0, y0, x1, y1) in runs[:2]:
+            if size < 20:
+                continue
+            pad = 12
+            box = (max(0, x0 - pad), max(0, y0 - pad), min(a.shape[1], x1 + pad),
+                   min(a.shape[0], y1 + pad))
+            for tag, rgb in (("cut", a), ("broken", b)):
+                part = Image.fromarray(rgb.astype(np.uint8)).crop(box)
+                zoom = max(1, min(4, 240 // max(part.width, part.height, 1)))
+                panels.append((f"{name} {tag} {size} px",
+                               part.resize((part.width * zoom, part.height * zoom),
+                                           Image.NEAREST)))
+    if panels:
+        print(f"       -> {save_sheet(panels, 'edges_corpus.png', columns=4).relative_to(ROOT)}")
 
 
 # -- 4B. dry brush that streaks rather than speckles ------------------------------------
@@ -1597,7 +1857,9 @@ def main(argv: list[str] | None = None) -> int:
                        ("--file", "4F: the session file, saved each way"),
                        ("--shell", "4F, built: the passes through `easel run`, the file "
                                    "and `easel timelapse`, engine by engine"),
-                       ("--pressure", "4G: the pressure-list fade and the wet bands")):
+                       ("--pressure", "4G: the pressure-list fade and the wet bands"),
+                       ("--corpus-edges", "4A built: the corpus's held edges, cut and "
+                                          "broken, and the ground each leaves")):
         parser.add_argument(flag, action="store_true", help=what)
     parser.add_argument("--engine", action="append", default=[], metavar="SRC",
                         help="with --shell: an engine's src directory to time, "
@@ -1629,6 +1891,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_shell(engines)
     if every or "pressure" in chosen:
         probe_pressure()
+    if every or "corpus_edges" in chosen:
+        probe_corpus_edges()
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The lighthouse "
           "handover's round*.\nThe sheets under out/handover/ are what decides the plan's "
           "question 2.")

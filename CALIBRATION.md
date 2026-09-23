@@ -45,6 +45,7 @@ their own sessions rather than measurements of the engine.
 | Passes along the form come out less square | *Laying a mass along its own axis* |
 | A shape costs its box along the passes, times the crossings | *Shaped masses (M8)* |
 | A clean edge spills half what a ragged one does, and eats corners past a quarter | *The contour of a clean edge*, *A clean edge on a narrow mass* |
+| A held edge breaks inward over `0.002` of the long side; a thin shape keeps its body; two masses held to one line leave the ground between them | *A held edge, broken (0.7.0: the default moved)* |
 | A shaped mass with `direction` left off can cost many times its axis | *A shaped mass with `direction` left off* |
 | A sequence of directions is priced as the sum | *`direction` given a sequence* |
 | A sweep follows an edge; crossing closes it | *`sweep`* |
@@ -801,6 +802,86 @@ at `0.35`, `1.0` and `2.0` alike with either brush. `cover` does move, because i
 priced and laid as the block-in it becomes; its published area ratios are unchanged
 (`1.00x` the area it was handed at `hard`, at every overhang).
 
+These were measured with the edge cut on the line, as it was then. Since 0.7.0 the edge
+itself breaks over the feather's depth on purpose (*A held edge, broken*, next), which is
+a different thing from a bite between pass ends, and the tests hold this table at
+`feather=0`.
+
+### A held edge, broken (0.7.0: the default moved)
+
+Until 0.7.0 a hold -- `clip=`, `edge="hard"`, `cover()` -- cut its edge on the line: the
+mask was the outline's coverage at two samples a pixel, so a boundary was one pixel of
+four possible values and then a step, `0.30` of value in one pixel at the lighthouse
+handover's tower. The edge now breaks **inward, against the canvas's own tooth**: over
+`feather=` of the long side inside the outline (`0.002` left off), each pixel's need
+falls with its depth, from the tooth's own ceiling on the drawn line to nothing at the
+feather's depth, and the pixel takes paint as far as its tooth clears the need, over the
+stamp's own band. Near the line only the peaks of the weave take paint; deeper in, the
+valleys do too. **Nothing lands on or past the line**, a side lying on the canvas frame
+is not an edge, and where a shape is narrower than four feathers the edge reaches full
+paint a quarter of the way across it. The bench it was chosen on, blind, is *An edge
+that is not a step*, under *The lighthouse handover's round*.
+
+**Neither of the check's two numbers for an edge can see it**, by construction: every
+pixel stays crisp and the boundary breaks where the tooth is low, so the one-pixel step
+and the `edges:` line read it as a cut. Laid by the lighthouse handover's own thirteen
+scripts, the tower's step reads `0.288` against `0.290` cut, and the `edges:` line ends
+at `54%` either way. The eye is the instrument.
+
+**The unit is a share of the long side, like `size`**, measured at 1440x960, where the
+painter found the bench's copy *a little chewed*. The painter's own measure on a rock laid
+hard on bare ground -- its steep left side row by row: how far the edge wanders about a
+straight line (sd) and its largest bite, in pixels -- at the export's own pixels, and in a
+look at the default 1024 long side (`probe_handover_session.py --edges`):
+
+| canvas | feather | wander | largest bite | in a look: wander | bite |
+|---|---|---|---|---|---|
+| 1024x768 | cut | 0.28 | 0.46 | 0.28 | 0.46 |
+| 1024x768 | `0.002`, 2.0 px | 0.40 | 0.94 | 0.40 | 0.94 |
+| 1024x768 | `0.003`, 3.1 px | 0.51 | 1.29 | 0.51 | 1.29 |
+| 1440x960 | cut | 0.24 | 0.27 | 0.17 | 0.19 |
+| 1440x960 | `0.002`, 2.9 px | 0.44 | 0.94 | 0.32 | 0.67 |
+| 1440x960 | two pixels, `0.0014` | 0.38 | 1.06 | 0.27 | 0.75 |
+
+At 1440 the share bites at the export's own pixels as 1024's does, and two pixels are no
+closer; in the look both are crisper than 1024's, as anything shrunk is. The weave the
+edge breaks against scales with the canvas and the grain does not, which is why neither
+unit is exact. The largest bite is one row's and noisy; the wander is the steadier number.
+
+**A thin shape keeps its body.** A strip narrower than two feathers has no inside as deep
+as the feather, and ramped over the whole feather it would be broken from both sides into
+its middle. A stroke clipped to a strip, `flat` at `size=0.03`, laid solid, 1024x768
+linen, at the default -- the share of the strip's pixels that took paint:
+
+| strip | cut | ramped over the whole feather | over a quarter of the width (built) |
+|---|---|---|---|
+| 2 px | 100% | 37% | **100%** |
+| 3 px | 100% | 60% | 68% |
+| 4 px | 100% | 70% | **99%** |
+| 6 px | 100% | 79% | 91% |
+| 8 px | 100% | 84% | 87% |
+| 12 px | 100% | 90% | 90% |
+
+The 3 px strip's top line runs through a row of pixel centres, and that row, being on the
+line, takes nothing -- a third of the strip. A shape wider than four feathers is untouched.
+
+**Two masses held to one line both break back from it.** A mass laid over paint breaks
+over that paint, which is what the feather is for. Two laid *up to one line* on bare
+ground, each held to it -- `block_in(..., solid=True, edge="hard")` either side of
+`x=0.42`, `flat` at `0.08`, 1024x768 -- both break back from it, and the ground shows
+along the seam. The share of an 8 px band on the seam within `10/255` of bare:
+
+| ground | cut | broken | broken, the first laid past the line |
+|---|---|---|---|
+| `burnt_sienna` | 0.0% | 14.6% | 0.0% |
+| `toned_grey` | 0.0% | 14.6% | 0.0% |
+
+A broken line of ground where two masses meet is an outline: the guide's *paint masses,
+never up to a line*, arriving as a picture. No committed painting lays its masses that
+way -- over the ten whose scripts hold an edge, the longest run of ground the feather
+uncovers is 12 px (*The lighthouse handover's round*) -- so it is a number here and not a
+check. One of `RECIPES.md`'s passages did, and lays its first mass past the line now.
+
 ### A burial and the place it was handed (0.6.0: the default moved)
 
 Until 0.6.0 `cover()` ran its passes a full brush past the place it was handed — the
@@ -846,7 +927,10 @@ back as a step of `0.042` where the passage has `0.010`: a crisp patch exactly t
 of the place, which does read as cut out. Ragged leaves no step at the place, because
 its patch ends a brush and more further out — in a burial eight times the size of the
 held one on the same passage, with the neighbouring marks under it. The smaller fault is
-the default.
+the default. **Since 0.7.0 the patch's border is broken rather than cut** (*A held edge,
+broken*, above), and the rectangle is still there: a feather inward changes how the
+place is crossed and not what it is, so the outline's step stays `0.0417` while its
+largest one-pixel step goes `0.047` to `0.043`, and *seen* `0.51x` to `0.48x`.
 
 **`clean` is the worst of the three at this size.** The inset takes the place rather
 than a rim of it, the fill is two stubs in the middle, and the contour pass does not
@@ -2602,6 +2686,60 @@ contrast whatever the feather: *seen* goes `0.51x` to `0.47x` the place, and the
 outline, sampled two pixels either side, stays `0.0417` against the passage's own
 `0.0097`, because a feather inward changes how the rectangle is crossed and not what it
 is. How the rectangle is crossed does move: its largest one-pixel step goes `0.047` today, `0.031` under A1 `0.002`, `0.043` and `0.039` under A2 `0.002` and `0.003`.
+
+#### Built, in step 5
+
+**What shipped is A2 at `0.002` on every hold** -- *A held edge, broken (0.7.0: the
+default moved)*, in the `block_in` chapter, has the rule's numbers -- and the probe's A2
+has been the engine's own since, so re-running the tables above prints the build's; they
+stand here as what the painter was shown. The build differs from the bench's copy in
+three places, each on purpose: nothing lands on or past the drawn line, where the copy
+let the weave's highest peaks through; a side on the canvas frame is not an edge; and a
+shape narrower than four feathers breaks over a quarter of its width. **The unit is a
+share of the long side**: built, the edge at 1440 bites at the export's own pixels as
+1024's does (`0.94` against `0.94`), where the copy the painter found *a little chewed*
+measured `1.32`, wandering `0.49` against the build's `0.44`.
+
+**The painting as 0.7.0 lays its own scripts.** None of the thirteen passes a feather, so
+all 33 holds break, the horizon too. Rebuilt both ways, the `edges:` line moves by two
+points at most after any pass (`64%` to `62%` after the headland) and ends at `54%`
+either way; the tower's step reads `0.288` against `0.290`, and `ground:` `0.00%` both;
+`edges_built.png` shows the tower and the headland. **It costs nothing a painting can
+measure**: the thirteen scripts rebuild in 41.7 and 41.9 s broken against 42.2 and 41.2 s
+cut, each in a fresh process on a quiet machine. **At the horizon** the sea's top row
+takes the sky's colour with the weave's highest peaks of sea left in it: the line sits a
+pixel lower and frays by a pixel. That is the broken edge on a line ruled on purpose,
+and the painter's answer for it was `feather=0` (`answers-step2.md`, 11).
+
+**The corpus.** Every painting whose committed scripts hold an edge -- `edge="hard"`,
+`clip=` or `cover()` -- rebuilt from its scripts twice, cut as its painter had it and as
+this engine lays the same scripts (`probe_handover_session.py --corpus-edges`). *Moved*
+is the share of the canvas more than two 8-bit levels apart; *ground* is
+`Canvas.ground_showing`'s own; *new bare* is ground the broken edges uncover that the cut
+ones covered, and the longest run of it is the question the seam asks:
+
+| painting | moved | ground, cut | ground, broken | new bare px | its longest run |
+|---|---|---|---|---|---|
+| lighthouse handover | 0.46% | 0.00% | 0.00% | 0 | -- |
+| fogged glass | 0.00% | 0.16% | 0.16% | 0 | -- |
+| hands | 0.05% | 24.69% | 24.69% | 73 | 12 px |
+| pier | 0.34% | 0.40% | 0.39% | 80 | 11 px |
+| BigPickle | 0.30% | 31.94% | 31.94% | 0 | -- |
+| DeepSeek | 0.34% | 0.00% | 0.00% | 0 | -- |
+| GLM | 0.15% | 12.78% | 12.71% | 5 | 1 px |
+| GPT | 1.92% | 0.07% | 0.06% | 136 | 5 px |
+| Grok | 0.53% | 0.00% | 0.00% | 0 | -- |
+| Kimi | 0.36% | 0.00% | 0.00% | 0 | -- |
+
+**No seam.** No painting's `ground:` rises, and the ground the feather uncovers is specks
+of a few pixels where a hard mass's broken rim met bare ground -- none of it a line. The
+fogged glass's scripts name `cover()` only in a comment, and nothing in it moves. GPT's
+painting moves the most, because its own helper lays every mass hard -- each house, roof
+and the quay -- besides its thirteen clips, and **it moves at its edges**: of the 19,748
+pixels more than eight levels apart, all but 19 lie within 3 px of a hold's outline, none
+of them further than 10 px, and a map of the change is a line drawing of the village.
+Past 3 px nothing moves more than 12 levels -- the brush picking up what shows through a
+broken rim.
 
 ### A dry brush that streaks
 

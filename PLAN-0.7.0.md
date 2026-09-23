@@ -24,7 +24,11 @@ guides, so `guides=` was not built, and `REFERENCE.md`'s grammar named three kin
 five. Step 4 is built -- F, `NOTES-step4.md` -- with two things the plan did not say,
 each marked in 4F: a session loaded from a file records no frames and its film is
 rebuilt at its own frame size, and the notice is said at load, in the shell and through
-the server alike. Steps 5 to 10 are next, A first.**
+the server alike. Step 5 is built -- A, `NOTES-step5.md` -- with three things the plan did
+not say, each marked in 4A: a thin shape breaks over a quarter of its width, nothing
+lands on the drawn line and the frame is not an edge, and two masses held to one line
+leave the ground between them, which no committed painting does. Steps 6 to 10 are next,
+B first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -269,6 +273,21 @@ verdict, which the painter cannot give because it has not seen them. Then:
 - The notices that name `edge="hard"` as a remedy name the feathered form, in the same
   commit; `PAINTING.md`'s *Masses that are not rectangles* gains one sentence,
   `REFERENCE.md` the argument and the helper. Nothing leaves.
+
+*(Built in step 5, `NOTES-step5.md`, as decided -- A2 at `0.002` on every hold, inward,
+`roughen()` beside it -- and with three things the plan did not say. **The unit stayed a
+share of the long side**: built, the edge at 1440 bites at the export's own pixels as
+1024's does (`0.94` against `0.94`), where the bench's copy the painter found chewed
+measured `1.32`, and a two-pixel count is no closer. **Nothing lands on or past the drawn
+line, and a side on the canvas frame is not an edge** -- the copy let the weave's peaks
+through on the line and broke the frame. **A shape narrower than four feathers breaks over
+a quarter of its width**: ramped over the whole feather, a clip two pixels wide kept 37%
+of its paint. And **two masses held to one line on bare ground both break back from it**,
+leaving a broken line of ground between them -- 14.6% of the band on the seam; over the
+ten corpus paintings whose scripts hold an edge the longest run of ground the feather
+uncovers is 12 px, so it is a number and not a check, and the one `RECIPES.md` passage
+that laid masses that way lays its first past the line. The step-2 risk *a rim that reads
+as an outline* was the seam, not the containment clip.)*
 
 ### B. Dry brush that streaks rather than speckles
 
@@ -607,6 +626,7 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
 4. **F**: the frames out of the file, and the engine stamp with its notice. *Done:
    `NOTES-step4.md`.*
 5. **A**: `feather=`, inward, `roughen()`, the default on `edge="hard"`, the goldens.
+   *Done: `NOTES-step5.md`.*
 6. **B**: the gate, the goldens, the sampler and the exercise re-rendered, the fix named
    in `CHANGELOG.md` and in F2's list.
 7. **C1, C2**: the crops, then the gate if the crops keep every true positive.

@@ -467,6 +467,12 @@ ribbon([(0.15, 0.8), (0.5, 0.55), (0.9, 0.62)], 0.18)   # a mass following a lin
 polygon([(0.2, 0.9), (0.35, 0.4), (0.6, 0.5), (0.7, 0.95)])   # an outline you have
 ```
 
+An outline built from a dozen points is a dozen straight sides, and laid hard it reads
+as a cut-out however its edge is painted, so **for anything nobody ruled — rock, a
+shore, a torn edge — `roughen(shape)` walks every side off its line**, and a hard edge
+laid on it breaks against the tooth by itself (`feather=`, *Which verb takes which hold*
+in [`REFERENCE.md`](REFERENCE.md#which-verb-takes-which-hold)).
+
 Look at it before you spend twenty passes on it, then fill it along its own axis:
 
 ```python
