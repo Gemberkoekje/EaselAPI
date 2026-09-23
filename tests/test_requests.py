@@ -35,6 +35,7 @@ from easel import (
     hull,
     polygon,
     ribbon,
+    roughen,
     span,
     union,
 )
@@ -5081,7 +5082,9 @@ def test_two_brushes_close_the_bites_inside_a_sloping_hard_edge(tmp_path):
     The 3 px strip just inside a mass whose sides slope, laid solid with a round tip
     -- which loses *width* with pressure and is therefore the worst case. The
     document measures `0.85%`-`3.26%` bare at one brush against `0.055%`-`0.33%` at
-    two; this asks only for the order of magnitude, on a small canvas.
+    two; this asks only for the order of magnitude, on a small canvas. With the edge
+    cut on the line, as 0.6.0 measured it: since 0.7.0 the edge breaks inward on
+    purpose, and a bite between pass ends is a different thing from a broken edge.
     """
     lean = math.tan(math.radians(14)) * 0.6
     place = polygon([(0.30, 0.18), (0.70, 0.18),
@@ -5093,7 +5096,8 @@ def test_two_brushes_close_the_bites_inside_a_sloping_hard_edge(tmp_path):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             s.block_in(place, "round_hard", "burnt_umber", size=0.05, density=1.0,
-                       solid=True, edge="hard", overhang=over, direction="vertical")
+                       solid=True, edge="hard", overhang=over, direction="vertical",
+                       feather=0)
         strip = (place.mask(512, 384) & ~place.inset(3.0 / 512).mask(512, 384))
         share[over] = s.canvas.ground_showing(where=strip)
     assert share[None] < share[1.0] / 2.0, share
@@ -5140,7 +5144,8 @@ def test_a_hard_edge_still_lets_nothing_outside_the_outline(tmp_path):
 def test_a_scumbles_hard_edge_was_left_where_it_was(tmp_path):
     """Measured separately and not moved: a scumble's passes are `pressure="even"`
     already, which is the whole of B8's mechanism, so it has no pass-end bites to
-    close and keeps its own `0.35`."""
+    close and keeps its own `0.35`. With the edge cut on the line, as 0.6.0 measured
+    it -- the break 0.7.0 gives every hold is not a bite."""
     import inspect
     assert inspect.signature(Session.scumble).parameters["overhang"].default == 0.35
     lean = math.tan(math.radians(14)) * 0.6
@@ -5151,7 +5156,7 @@ def test_a_scumbles_hard_edge_was_left_where_it_was(tmp_path):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         s.scumble(place, "burnt_umber", "umber", 8, edge="hard",
-                  direction="vertical")
+                  direction="vertical", feather=0)
     strip = (place.mask(512, 384) & ~place.inset(3.0 / 512).mask(512, 384))
     assert s.canvas.ground_showing(where=strip) < 0.001
 
@@ -5634,3 +5639,270 @@ def test_the_shell_says_what_the_file_said_at_load_on_its_own(tmp_path, capsys):
     # ...and `look` saved the file, so it is not said again.
     assert main(["look", str(path), "-o", str(look)]) == 0
     assert "at load" not in capsys.readouterr().err
+
+
+# -- 0.7.0 A: an edge that is not a step -----------------------------------------------
+#: A rock with four straight sides, none of them on the frame.
+_ROCK = polygon([(0.22, 0.78), (0.34, 0.22), (0.70, 0.30), (0.78, 0.74)], name="rock")
+
+
+def _held_mass(tmp_path, feather, place=_ROCK, size=(512, 384)):
+    s = Session(*size, texture="linen", ground="toned_grey", seed=7, timelapse=False,
+                out_dir=tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(place, "flat", "burnt_umber", size=0.06, solid=True, edge="hard",
+                   feather=feather)
+    return s
+
+
+def test_a_hard_edge_breaks_inside_its_outline_and_lands_nowhere_past_it(tmp_path):
+    """The lighthouse handover's finding 1: *hard edges are all-or-nothing*, `0.30` in
+    one pixel at the tower -- the clip was one pixel of four values and then a step.
+    The edge is broken inward now: past the drawn line nothing lands at all, inside it
+    the canvas's tooth decides how much of the feather's depth takes paint, and deeper
+    than that it is the mass it always was."""
+    cut, broken = _held_mass(tmp_path, 0.0), _held_mass(tmp_path, 0.008)
+    px = 0.008 * 512
+    rows, cols, depth, _ = _ROCK._edge_depth(512, 384, 40.0)
+    bare = np.abs(broken.canvas.rgb - broken.canvas.bare()).max(axis=2) < 1e-6
+    assert bare[rows[depth <= 0], cols[depth <= 0]].all()
+    band = (depth > 0) & (depth < px)
+    took = ~bare[rows[band], cols[band]]
+    assert 0.2 < took.mean() < 0.9                       # broken: neither cut nor gone
+    # Deeper in, the same mass -- to within the few levels a brush carries in from a
+    # rim it picked wet paint up off (`WET_PICKUP` in `stroke.py`): 6 of 255 at most,
+    # measured, against over a hundred inside the feather.
+    moved = np.abs(cut.canvas.to_srgb8().astype(int)
+                   - broken.canvas.to_srgb8().astype(int)).max(axis=2)
+    assert moved[rows[band], cols[band]].max() > 60
+    assert moved[rows[depth > px + 1.0], cols[depth > px + 1.0]].max() <= 8
+
+
+def test_the_default_edge_is_broken_over_two_thousandths_of_the_long_side(tmp_path):
+    """Chosen blind by the painter, first of four, for the made things it had laid
+    hard; and on every hold, `clip=` as well as `edge="hard"`, because four of its nine
+    edge-drawing calls were clips (`answers-step2.md`, 10 and 11)."""
+    from easel.session import _EDGE_FEATHER
+
+    assert _EDGE_FEATHER == 0.002
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        mass = s.block_in(_ROCK, "flat", "burnt_umber", size=0.06, edge="hard")
+        mark = s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", clip=_ROCK)
+        ragged = s.block_in("D5", "flat", "burnt_umber", size=0.06)
+    assert {r.params["feather"] for r in mass} == {0.002}
+    assert mark.params["feather"] == 0.002
+    assert all("feather" not in r.params and "clip" not in r.params for r in ragged)
+
+
+def test_a_saved_clip_replays_at_the_feather_it_was_laid_with(tmp_path):
+    """A moved default never reaches a saved log. A clip laid before 0.7.0 carries no
+    feather and was cut on the line, and replays cut on the line; one laid since
+    carries its own, the default included, and replays at that."""
+    path = [(0.1, 0.45), (0.9, 0.55)]
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.stroke(path, "flat", "burnt_umber", size=0.2, clip=_ROCK, feather=0.01)
+        s.stroke(path, "flat", "ultramarine", size=0.1, clip=_ROCK, feather=0)
+    first, second = s.history.records
+    assert first.params["feather"] == 0.01 and "feather" not in second.params
+    saved = s.save(tmp_path / "p.easel")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        loaded = Session.load(saved)
+        assert np.array_equal(loaded.replay().canvas.rgb, s.canvas.rgb)
+        # The shape a 0.6.0 record has: a clip, and no feather.
+        del loaded.history.records[0].params["feather"]
+        cut = make(tmp_path)
+        cut.stroke(path, "flat", "burnt_umber", size=0.2, clip=_ROCK, feather=0)
+        cut.stroke(path, "flat", "ultramarine", size=0.1, clip=_ROCK, feather=0)
+        assert np.array_equal(loaded.replay().canvas.rgb, cut.canvas.rgb)
+
+
+def test_the_same_outline_at_two_feathers_is_two_masks(tmp_path):
+    """The plan's risk: the mask memo serving a stale mask. Anything a mask is computed
+    from has to be in its cache key (`LESSONS.md`, trap 5), and the feather is."""
+    def lay(second, forget=False):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.stroke([(0.1, 0.40), (0.9, 0.40)], "flat", "burnt_umber", size=0.15,
+                     clip=_ROCK, feather=0)
+            if forget:
+                s._clip_memo = None
+            s.stroke([(0.1, 0.60), (0.9, 0.60)], "flat", "ultramarine", size=0.15,
+                     clip=_ROCK, feather=second)
+        return s.canvas.rgb
+
+    assert np.array_equal(lay(0.01), lay(0.01, forget=True))
+    assert not np.array_equal(lay(0.01), lay(0.0))
+
+
+def test_a_side_on_the_frame_is_not_an_edge(tmp_path):
+    """A mass that meets the frame should run off it, and a shape clamps a side drawn
+    past the frame onto it: broken there, the frame would get a strip of ground down
+    it. Only the one side that is a line moves."""
+    band = Region(0.0, 0.0, 1.0, 0.5)
+    cut = _held_mass(tmp_path, 0.0, place=band)
+    broken = _held_mass(tmp_path, 0.01, place=band)
+    moved = np.abs(cut.canvas.to_srgb8().astype(int)
+                   - broken.canvas.to_srgb8().astype(int)).max(axis=2)
+    assert moved[186:192].max() > 60                     # the line at y=0.5, row 192
+    frame = np.concatenate([moved[:20, :].ravel(), moved[:180, :20].ravel(),
+                            moved[:180, -20:].ravel()])
+    assert frame.max() <= 1                              # the frame is not an edge
+
+
+def test_a_thin_shape_keeps_its_body_and_breaks_at_its_rim(tmp_path):
+    """A strip narrower than four feathers has no inside as deep as the feather, and
+    ramped over the whole of it would be broken from both sides into its middle: a
+    clip two pixels wide kept `37%` of its paint at the default on a 1024 canvas. The
+    edge breaks over a quarter of the shape's own width there instead -- and a shape
+    wider than four feathers is exactly what it was."""
+    def painted(px):
+        half = px / 768 / 2
+        strip = polygon([(0.2, 0.5 - half), (0.8, 0.5 - half), (0.8, 0.5 + half),
+                         (0.2, 0.5 + half)])
+        s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                    timelapse=False, out_dir=tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            s.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.03,
+                     solid=True, clip=strip)
+        bare = np.abs(s.canvas.rgb - s.canvas.bare()).max(axis=2) < 0.02
+        return 1.0 - bare[strip.mask(1024, 768)].mean()
+
+    assert painted(2) > 0.95 and painted(4) > 0.95
+    tower = polygon([(0.68, 0.54), (0.72, 0.54), (0.7135, 0.207), (0.6865, 0.207)])
+    rows, cols, depth, full = tower._edge_depth(1024, 768, 2.048, tower.coverage(1024, 768))
+    sides = (depth > 0) & (np.abs(rows - 380) < 100)
+    assert np.allclose(full[sides], 2.048)
+
+def _each_hold(s, verb: str, feather):
+    """One call of ``verb`` held to the left half of the canvas, at ``feather``."""
+    left = Region(0.0, 0.0, 0.5, 1.0)
+    path = [(0.2, 0.48), (0.8, 0.52)]
+    if verb == "stroke":
+        return s.stroke(path, "flat", "burnt_umber", size=0.2, clip=left, feather=feather)
+    if verb == "dab":
+        return s.dab(0.5, 0.5, "round_hard", "burnt_umber", size=0.2, press=3, clip=left,
+                     feather=feather)
+    if verb == "glaze":
+        return s.glaze(path, "burnt_umber", opacity=0.6, size=0.2, clip=left,
+                       feather=feather)
+    if verb == "smudge":
+        s.block_in(Region(0.0, 0.0, 0.5, 1.0), "flat", "burnt_umber", size=0.1, solid=True)
+        s.block_in(Region(0.5, 0.0, 1.0, 1.0), "flat", "titanium_white", size=0.1,
+                   solid=True)
+        return s.smudge([(0.35, 0.3), (0.65, 0.7)], size=0.04,
+                        clip=Region(0.0, 0.0, 0.55, 1.0), feather=feather)
+    if verb == "block_in":
+        return s.block_in(Region(0.2, 0.2, 0.5, 0.8), "flat", "burnt_umber", size=0.06,
+                          solid=True, edge="hard", feather=feather)
+    if verb == "sweep":
+        return s.sweep(path, "flat", "burnt_umber", into="down", depth=0.1, size=0.05,
+                       clip=left, feather=feather)
+    if verb == "scumble":
+        return s.scumble(Region(0.2, 0.2, 0.5, 0.8), "burnt_umber", "titanium_white", 4,
+                         size=0.05, edge="hard", feather=feather)
+    return s.cover(Region(0.2, 0.2, 0.5, 0.8), "burnt_umber", size=0.05, feather=feather)
+
+
+@pytest.mark.parametrize("verb", ["stroke", "dab", "glaze", "smudge", "block_in", "sweep",
+                                  "scumble", "cover"])
+def test_every_verb_that_holds_its_paint_breaks_the_edge(tmp_path, verb):
+    """Every verb that takes a hold takes the feather that breaks it -- three of them
+    through ``**kw``, which a signature does not show, so each is called."""
+    canvases = []
+    for feather in (0.0, 0.01):
+        s = make(tmp_path)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _each_hold(s, verb, feather)
+        canvases.append(s.canvas.rgb.copy())
+    assert not np.array_equal(*canvases)
+
+
+def test_a_feather_needs_an_edge_to_break(tmp_path):
+    """Given to a call that holds nothing, a feather would change nothing and say
+    nothing -- a ragged edge is broken by its brush -- so it is refused; ``0`` asks for
+    what such a call does anyway and is taken, so a helper passing it on every mark
+    works. The unit is the long side's, like ``size``, and a pixel count is named as
+    one. A burial is refused before its dry is laid."""
+    path = [(0.1, 0.5), (0.9, 0.5)]
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        for call in (lambda: s.stroke(path, "flat", "burnt_umber", feather=0.003),
+                     lambda: s.block_in("D5", "flat", "burnt_umber", feather=0.003),
+                     lambda: s.block_in("D5", "flat", "burnt_umber", edge="clean",
+                                        feather=0.003),
+                     lambda: s.sweep(path, "flat", "burnt_umber", into="down",
+                                     feather=0.003)):
+            with pytest.raises(ValueError, match="holds it to none"):
+                call()
+        with pytest.raises(ValueError, match="long side, like size"):
+            s.stroke(path, "flat", "burnt_umber", clip="D5", feather=2)
+        with pytest.raises(ValueError, match="zero or more"):
+            s.stroke(path, "flat", "burnt_umber", clip="D5", feather=-0.001)
+        with pytest.raises(ValueError, match="holds it to none"):
+            s.cover("D5", "burnt_umber", edge="ragged", feather=0.003)
+        assert s.history.records == []
+        s.stroke(path, "flat", "burnt_umber", feather=0)
+    assert len(s.history.records) == 1
+
+
+def test_a_plan_carries_the_feather(tmp_path):
+    """An entry takes every keyword its call does, this one included -- priced,
+    previewed, rehearsed and painted as it was written."""
+    plan = [{"shape": _ROCK, "brush": "flat", "color": "burnt_umber", "size": 0.06,
+             "edge": "hard", "feather": 0},
+            {"points": [(0.1, 0.5), (0.9, 0.5)], "brush": "flat", "size": 0.1,
+             "clip": _ROCK, "feather": 0.006}]
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        quoted = s.cost(plan)
+        s.preview(plan)
+        s.rehearse(plan)
+        laid = s.paint(plan)
+    assert len(laid) == quoted
+    assert all("feather" not in r.params for r in laid[:-1])
+    assert laid[-1].params["feather"] == 0.006
+
+
+def test_roughen_walks_an_outline_off_its_line_and_leaves_the_frame_alone():
+    """A3, from the painter's own fifteen lines: *if A3 existed as a shape option, I'd
+    have used it for rock*. A shape comes back a shape, the same seed the same outline
+    -- and nothing on the frame moves, or a mass that ran off the canvas would pull
+    back from it and leave a strip of ground."""
+    land = polygon([(0.1, 0.6), (0.5, 0.42), (1.2, 0.5), (1.2, 1.2), (0.1, 1.2)],
+                   name="land")
+    rough = roughen(land, seed=3, aspect=4 / 3)
+    assert isinstance(rough, Polygon) and rough.name == "land"
+    assert len(rough.points) > len(land.points)
+    assert roughen(land, seed=3, aspect=4 / 3).points == rough.points
+    assert roughen(land, seed=4, aspect=4 / 3).points != rough.points
+    framed = {p for p in land.points if p[0] >= 1.0 or p[1] >= 1.0}
+    assert framed <= set(rough.points)
+    assert not any(0.999 < x < 1.0 or 0.999 < y < 1.0 for x, y in rough.points)
+
+
+def test_roughen_wanders_by_amp_keeps_a_runs_ends_and_calms_where_asked():
+    """``amp`` is the typical distance off the line, in the long side's unit; a run
+    keeps its two ends so it still meets the outline it is part of; and ``calm``
+    stills the wander where something stands on it."""
+    line = [(0.0, 0.5), (1.0, 0.5)]
+    walked = roughen(line, amp=0.01, step=0.004, seed=5)
+    assert walked[0] == (0.0, 0.5) and walked[-1] == (1.0, 0.5)
+    spread = float(np.std([y - 0.5 for _, y in walked]))
+    assert 0.006 < spread < 0.014
+    still = roughen(line, amp=0.01, step=0.004, seed=5, calm=lambda x, y: 0.0)
+    assert all(y == 0.5 for _, y in still)
+    seat = roughen(line, amp=0.01, step=0.004, seed=5, calm=(0.5, 0.5))
+    assert max(abs(y - 0.5) for x, y in seat if abs(x - 0.5) < 0.005) < 0.004
+    with pytest.raises(ValueError, match="long side like size"):
+        roughen(line, amp=-1)

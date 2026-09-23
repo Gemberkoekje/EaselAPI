@@ -18,7 +18,7 @@ here without the rule beside it is how a painting comes out correct and dead.
 | Quantity | Unit |
 |---|---|
 | A coordinate `(x, y)` | `0..1`, origin **top-left**. `x` is a fraction of the **width**, `y` of the **height** |
-| `size` (brush) | a fraction of the canvas's **long side**, whichever way the brush travels |
+| `size` (brush), `feather`, `roughen()`'s `amp` and `step` | a fraction of the canvas's **long side**, whichever way the brush travels |
 | `depth`, `inset()`, `overhang` distance | normalised canvas units, the same as a coordinate |
 | An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture does not have to be converted: hand `direction=` the two points instead — `direction=((0.33, 0.01), (0.58, 0.29))` — and it does the `atan2` for you |
 | A value | `0..1`, the sRGB luminance `look(values=True)` shows and `palette.value_of` reports |
@@ -95,6 +95,16 @@ agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
 `load=1.0, load_falloff=0.0` already, because that pair is the burying recipe, and
 `scumble` lays it too — so `solid=` is still taken there and no longer moves anything.
 
+**Every hold breaks its edge inward** (0.7.0). Over `feather=` — `0.002` of the long
+side left off, two pixels at 1024 — the canvas's own tooth decides how much of the edge
+takes paint, the way it does for a starving brush: crisp where the weave is high, broken
+where it is low, and nothing past the drawn line. `feather=0` cuts the edge on the line,
+which is what every hold was before 0.7.0 and what a line ruled on purpose wants. Every
+verb that takes `clip=` takes `feather=`. On a shape narrower than four feathers the
+break reaches a quarter of its width and no further, so a thin shape keeps its body. A
+side lying on the canvas frame is not an edge and never breaks, and a saved mark replays
+at the feather it was laid with — one saved before 0.7.0 at `0`.
+
 ---
 
 ## The arguments that mean something particular
@@ -125,6 +135,7 @@ agree. A scumble has no contour to draw, so it has no `"clean"`; `cover` lays
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
 | `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
 | `clip` (every verb that lays paint) | `None` | a place — a shape, a region, a name, a run of points — outside which none of the call's paint lands. A **list** of places holds it inside all of them at once: the paint lands where they agree. `block_in(edge="hard")` is this same clip pointed at the mass's own outline |
+| `feather` (wherever `clip` or `edge="hard"` holds the paint) | `0.002` held, nothing otherwise | how far inside the outline the held edge breaks, as a fraction of the long side: two pixels at 1024, three at 1440, where it bites at the export's own pixels as it does at 1024, measured. Between the line and that depth the tooth decides; past the line nothing lands. `0` cuts it on the line. Refused on a call that holds nothing — a ragged edge is broken by its brush — except `0`, so a helper can pass it on every mark |
 | `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
@@ -254,6 +265,8 @@ blob(place, radius=None, ry=None, wobble=0.22, points=15, seed=0, rotate=0,
      aspect=None, name="")
 hull(places, name="")                  # the mass around some points
 ribbon(places, width, end_width=None, smooth=True, name="")   # a mass along a line
+roughen(shape, amp=0.006, step=0.008, seed=0, calm=None, aspect=None, name="")
+                                       # an outline walked off its own line
 union(a, b, ..., resolution=1024, name="")     # one silhouette round overlapping shapes
 s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="")
                                        # round in *pixels* on any canvas
@@ -262,6 +275,15 @@ shape.box  shape.area  shape.axis  shape.center  shape.closed
 shape.contains(x, y)                   # is this mark inside the mass?
 shape.inside(xs, ys)                   # ...and the same question for many at once
 ```
+
+`roughen()` is for an outline nobody ruled — rock, a shore, a torn edge. It cuts every
+side into steps `step` apart and walks each off its line by a wander that keeps most of
+itself from one step to the next, about `amp` either side; the same `seed` is the same
+outline. Nothing on the canvas frame moves. `calm=` stills the wander where something
+stands on the outline — a place, a point, a list of them, or a function `calm(x, y)`
+returning `0` to `1` — and `aspect=s.aspect` makes a step the same distance across as
+down. Handed an open run of points rather than a shape, it roughens that stretch alone
+and keeps its two ends where they were, so the stretch still meets the rest.
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
 on — worth looking at before blocking in anything long and curved. It is a `Region`,

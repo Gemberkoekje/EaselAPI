@@ -28,7 +28,7 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from easel import Session, blob, cell, ellipse, hull, polygon, ribbon, span
+from easel import Session, blob, cell, ellipse, hull, polygon, ribbon, roughen, span
 from easel.cli import build_parser, reference_text
 from easel.mcp_server import MCP_AVAILABLE
 
@@ -247,6 +247,12 @@ def test_a_grid_that_was_asked_for_is_the_one_drawn(call, painting):
         ({"ribbon": [[0.2, 0.8], [0.5, 0.5]], "width": 0.09},
          ribbon([(0.2, 0.8), (0.5, 0.5)], 0.09)),
         ({"hull": ["D4", "F6", [0.2, 0.9]]}, hull([cell("D4"), cell("F6"), (0.2, 0.9)])),
+        ({"roughen": {"blob": "D5", "radius": 0.12, "seed": 3}, "amp": 0.004, "seed": 2},
+         roughen(blob(cell("D5"), 0.12, seed=3), amp=0.004, seed=2)),
+        ({"roughen": [[0.2, 0.2], [0.6, 0.15], [0.7, 0.5]], "seed": 1,
+          "calm": [[0.6, 0.15], "D2"]},
+         roughen(polygon([(0.2, 0.2), (0.6, 0.15), (0.7, 0.5)]), seed=1,
+                 calm=[(0.6, 0.15), cell("D2")])),
     ],
 )
 def test_a_place_arrives_as_the_shape_the_python_builds(wire, built):
@@ -302,6 +308,11 @@ PLANS = [
     [[0.2, 0.6], [0.5, 0.55], [0.8, 0.6]],
     {"blob": "D5", "radius": 0.12, "seed": 3},
     "D4",
+    {"shape": {"roughen": "C3:F6", "amp": 0.005, "seed": 2,
+               "calm": {"ellipse": [0.45, 0.3], "rx": 0.05}},
+     "size": 0.05, "edge": "hard", "feather": 0},
+    {"points": [[0.2, 0.6], [0.8, 0.55]], "brush": "flat", "size": 0.08,
+     "clip": [[0.1, 0.4], [0.9, 0.4], [0.9, 0.8], [0.1, 0.8]], "feather": 0.004},
 ]
 
 

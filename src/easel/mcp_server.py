@@ -107,6 +107,7 @@ _BUILDERS = {
     "blob": _regions.blob,
     "hull": _regions.hull,
     "ribbon": _regions.ribbon,
+    "roughen": _regions.roughen,
 }
 
 # The CLI turns these into one clean `easel: ...` line instead of a traceback, and
@@ -118,7 +119,9 @@ _PLACE_HELP = (
     "a named region ('upper-band'), a grid cell ('D4'), a span of cells ('C3:F6'), "
     "a rectangle [x0, y0, x1, y1], an outline [[x, y], ...], or a shape builder "
     "like {'blob': 'D5', 'radius': 0.12, 'seed': 3} -- also 'ellipse', 'hull', "
-    "'ribbon' and 'polygon', each taking its first argument under its own name"
+    "'ribbon' and 'polygon', each taking its first argument under its own name, and "
+    "'roughen', which walks another place's outline off its line: "
+    "{'roughen': {'blob': 'D5'}, 'amp': 0.006, 'seed': 4}"
 )
 
 _PLAN_HELP = (
@@ -129,8 +132,9 @@ _PLAN_HELP = (
     "defaults. A mass is an "
     "object with 'shape' (a place) and any block_in argument -- 'brush', 'color', "
     "'size', 'direction', 'density', 'edge': \"clean\" for a drawn contour or "
-    "\"hard\" for one no paint crosses, and 'solid': true for paint with no ground "
-    "showing through it. "
+    "\"hard\" for one no paint crosses -- broken against the tooth over 'feather', "
+    "0.002 left off and 0 to cut it on the line -- and 'solid': true for paint with "
+    "no ground showing through it. "
     "A sweep is an object with 'edge' (a place, or "
     "an open run of points) and any sweep argument -- 'into', 'depth', 'cross', "
     "'passes', 'closed'. A passage is an object with 'band' (a place), 'color_a', "
@@ -201,6 +205,12 @@ def _build(spec: dict):
             )
         first = [p if isinstance(p, (int, float)) else _place(p, point_ok=True)
                  for p in first]
+    elif key == "roughen":
+        # An outline to walk, so never a bare point -- and a run of points is the
+        # closed outline it is everywhere else here. `calm` is places too.
+        first = _place(first)
+        if "calm" in kwargs:
+            kwargs["calm"] = _calm(kwargs["calm"])
     elif key != "polygon":
         first = _place(first, point_ok=True)
     try:
@@ -211,6 +221,22 @@ def _build(spec: dict):
             f"builder's own arguments only -- brush, colour and the rest of a mass "
             f"go beside it, under 'shape'."
         ) from exc
+
+
+def _calm(value):
+    """Where a roughened outline is still: a place, a point, or a list of either.
+
+    A list of points is that many points, as ``roughen`` reads it, and not an
+    outline -- an outline to calm along arrives as a shape object.
+    """
+    if isinstance(value, (list, tuple)) and value and not _numbers(value):
+        return [_calm(one) for one in value]
+    return _place(value, point_ok=True)
+
+
+def _numbers(value) -> bool:
+    """A point or a rectangle: a place written as numbers, not a list of places."""
+    return all(isinstance(v, (int, float)) for v in value)
 
 
 def _is_place_object(entry: dict) -> bool:
@@ -360,13 +386,18 @@ def _py_place(value) -> str:
     if isinstance(value, dict):
         named = [k for k in value if k in _BUILDERS][0]
         first = value[named]
-        if _one_path(first):
+        if named == "roughen":
+            # A run of points here is the outline `_place` closed, and `roughen`
+            # handed a bare run in Python walks it open and returns a run.
+            head = _py_place(first)
+        elif _one_path(first):
             head = _py_points(first)
         elif named in ("hull", "ribbon"):
             head = "[" + ", ".join(_py_place(p) for p in first) + "]"
         else:
             head = _py_place(first)
-        rest = "".join(f", {k}={v!r}" for k, v in value.items() if k != named)
+        rest = "".join(f", {k}={_py_calm(v) if k == 'calm' else repr(v)}"
+                       for k, v in value.items() if k != named)
         return f"{named}({head}{rest})"
     if isinstance(value, str):
         text = value.strip()
@@ -381,6 +412,13 @@ def _py_place(value) -> str:
     if len(items) == 2:
         return f"({float(items[0]):.4g}, {float(items[1]):.4g})"
     return "Region(" + ", ".join(f"{float(v):.4g}" for v in items) + ")"
+
+
+def _py_calm(value) -> str:
+    """``roughen``'s ``calm`` as Python: :func:`_calm`, the other way round."""
+    if isinstance(value, (list, tuple)) and value and not _numbers(value):
+        return "[" + ", ".join(_py_calm(one) for one in value) + "]"
+    return _py_place(value)
 
 
 def _py_edge(value) -> str:

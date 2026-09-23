@@ -49,6 +49,11 @@ __all__ = ["Canvas", "GROUNDS", "GRAPHITE", "build_surface", "tooth_ceiling"]
 _TOOTH_HEIGHT_W = 0.52
 _TOOTH_GRAIN_W = 0.48
 
+#: How much tooth the gate's smoothstep rises over, above the need a load sets. The
+#: stamp's own gate and a held edge's (:meth:`Canvas.broken_edge`) read the tooth with
+#: the one band, so an edge breaks the way a starving brush does.
+_GATE_BAND = 0.18
+
 
 def build_surface(
     texture: str, height: int, width: int, seed: int, texture_strength: float = 1.0
@@ -372,8 +377,7 @@ class Canvas:
         ts = float(np.clip(texture_sensitivity, 0.0, 1.0))
         if ts > 0.0:
             need = min((1.0 - float(np.clip(load, 0.0, 1.0))) * ts, self.tooth_ceiling)
-            band = 0.18
-            gate = np.clip((tooth - need) / band, 0.0, 1.0)
+            gate = np.clip((tooth - need) / _GATE_BAND, 0.0, 1.0)
             gate = gate * gate * (3.0 - 2.0 * gate)
             # Even a full brush sits slightly heavier on the peaks.
             gate = gate * (1.0 - 0.22 * ts * (1.0 - tooth))
@@ -414,6 +418,34 @@ class Canvas:
         # and never happens at all for NaN.
         np.clip(wet, 0.0, 1.0, out=wet)
         return float(effective.sum())
+
+    def broken_edge(self, rows: np.ndarray, cols: np.ndarray, depth: np.ndarray,
+                    px) -> np.ndarray:
+        """How much paint a held edge lets through at each pixel just inside it, ``0..1``.
+
+        The inward edge a clip is cut with since 0.7.0 (``feather=``): nothing at the
+        drawn line, everything ``px`` pixels in, and between the two the canvas's own
+        tooth decides, read the way :meth:`stamp` reads a starving brush -- near the
+        line only the peaks take paint, deeper in the valleys do too. So the boundary
+        breaks at the weave's scale and stays crisp where the tooth is high, which is
+        what a loaded brush's edge does over tooth, rather than blurring, which is what
+        a ramp alone does.
+
+        Args:
+            rows, cols: the pixels, as indices into the canvas.
+            depth: how far inside the outline each one sits, in pixels; negative is
+                outside, and lets nothing through.
+            px: how deep the edge reaches full paint, in pixels -- the feather, or
+                per pixel, where a thin shape takes less (``Polygon._edge_depth``).
+        """
+        tooth = (self.height_map[rows, cols] * _TOOTH_HEIGHT_W
+                 + self.grain[rows, cols] * _TOOTH_GRAIN_W)
+        full = np.maximum(np.asarray(px, dtype=np.float32), 1e-6)
+        ramp = np.clip(np.asarray(depth, dtype=np.float32) / full, 0.0, 1.0)
+        gate = np.clip((tooth - (1.0 - ramp) * self.tooth_ceiling) / _GATE_BAND, 0.0, 1.0)
+        gate = gate * gate * (3.0 - 2.0 * gate)
+        gate = np.where(ramp >= 1.0, 1.0, gate)
+        return np.where(ramp <= 0.0, 0.0, gate).astype(np.float32)
 
     def sample(self, cx: float, cy: float, mask: np.ndarray) -> np.ndarray:
         """Average canvas colour under a stamp. Used by smudge and knife drag."""
