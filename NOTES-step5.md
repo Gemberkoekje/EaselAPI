@@ -37,7 +37,7 @@ count of pixels.
 | **The notices** | `spill` (both), `round-fringe` and `clean-small`'s burial branch name the broken edge where they name `edge="hard"` |
 | **The golden** | a new case, `edges`: a mass held to its own outline at the default, a clipped mark, a roughened outline laid hard, a burial, a band cut on the line beside one broken, and a mass run off the frame |
 | **The probe** | `probe_handover_session.py`: A2 is the engine's own now; `rebuild(cut=)`; `--edges` gains the unit, the seam and the painting as this engine lays it; `--corpus-edges` is new |
-| **Tests** | `test_requests.py` *0.7.0 A* (19); the MCP place and plan cases (4); `test_reference.py` holds `roughen` to the page |
+| **Tests** | `test_requests.py` *0.7.0 A* (18); the MCP place and plan cases (4); `test_reference.py` holds `roughen` to the page |
 
 ## Decisions and gotchas
 
@@ -178,7 +178,7 @@ which the broken edge is invisible to on purpose.
 | `src/easel/__init__.py` | `roughen` exported |
 | `src/easel/mcp_server.py` | `roughen` as a place builder, `_calm`, `_py_calm`; the plan help names the feather |
 | `scripts/probe_handover_session.py` | A2 the engine's own; `feather()` patches "today"; `rebuild(cut=)`; the unit, seam and built benches; `--corpus-edges` |
-| `tests/test_requests.py` | *0.7.0 A* (19 tests); the B8 bite tests held at `feather=0` |
+| `tests/test_requests.py` | *0.7.0 A* (18 tests); the B8 bite tests held at `feather=0` |
 | `tests/test_mcp.py`, `test_reference.py`, `golden_cases.py`, `golden/` | the `roughen` place and plan cases; `roughen` held to the page; the `edges` golden case, its image and hash |
 | `REFERENCE.md` | the units row, the hold paragraph, the `feather` argument, `roughen` in Shapes |
 | `PAINTING.md` | one sentence under *Masses that are not rectangles* |
