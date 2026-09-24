@@ -420,8 +420,10 @@ calls, **said once and again only when the picture has picked up a long mark 30 
 off the bars it was said about** (`--check`, which is asked for rather than printed at
 you, says it whenever it is true); **a graded passage laid too narrow**, five or more
 long parallel marks at three or more colours, in one run with no gap wider than four
-brushes, their colours turning at most once, stepped further apart than half the
-narrowest brush laying them (a brush that lays no colour of its own is not counted); a
+brushes and **each laid over the next rather than beside it** — two neighbours sharing
+under 30% of the shorter one's reach along the stack break it, as glints do — their
+colours turning at most once, stepped further apart than half the narrowest brush
+laying them (a brush that lays no colour of its own is not counted); a
 bristle under `size=0.025` **at a load over `0.6`**, because below that the comb's gaps
 are the mark; eight or more marks under `size=0.02` inside the painting's first sixty; a
 pressure list on a short chisel mark; three or more small round-tip marks at

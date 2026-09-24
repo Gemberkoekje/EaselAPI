@@ -211,6 +211,37 @@ in a dry passage become streaks along its strokes.
   `PAINTING.md`, the plane recipe's failure in `RECIPES.md` and its row in
   `DIAGNOSIS.md`, and the graded field's row beside it.
 
+### The graded rule, broken where marks lie side by side
+
+Step 7 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream C). Twice the
+check told the painter *graded passage laid too narrow* about marks that were not a
+passage, both times on a rehearsal, and both times the brush it named was a thin accent
+laid among wider marks: a crevice along the join of two rock faces, a ripple among the
+glints of a reflection.
+
+- **A graded passage is laid one stroke over the next, and the rule now asks.** Its run
+  of parallel marks breaks between two neighbours across the stack whose reaches *along*
+  it share under 30% of the shorter one's. The painter's water misfire — five glints of
+  one colour, a foam mark and a `0.006` ripple, one below the next and none over another —
+  falls apart into marks and is told nothing; laid again from the painter's rehearsal,
+  the rule as 0.6.0 had it prints the painter's line to the character. The recipe's own
+  failure block still fires, and its passage still says nothing.
+- **Over the committed paintings it fires on 7 of 337 painted passes, where it fired on
+  9.** It keeps the three the painter, reading the crops blind, called a passage coming
+  back as bars — two beams, and the pier's water, which 0.6.0's rule missed — and goes
+  quiet on three of the six it called separate things. What it still tells is separate
+  masses stacked edge to edge, which overlap along the stack as a passage does: the
+  painter's headland misfire is one, and was the price it chose. On the pier's water the
+  brush the line names is a reflection laid across the field, not the field's own.
+- **The share is the middle of a plateau**: every share from 10% to 40% fires on the same
+  seven passes.
+- **Judging the run by its median brush was not built.** On the painter's reading it
+  silences every passage among the rule's fires.
+- The check reads the log, so nothing a pass lays, and nothing a rebuild lays, changes.
+  `scripts/probe_cohort_session.py --graded` holds the engine's own line to the gate on
+  every pass of the corpus and sweeps the share; `scripts/probe_handover_session.py
+  --misfires` lays the four cases the gate was drawn on.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with

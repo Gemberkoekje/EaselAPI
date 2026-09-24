@@ -2987,11 +2987,13 @@ def probe_gpt_joins(replays: list[Replay]) -> None:
 # they are -- which is what `--graded` is for: every pass the rule fires on, cropped as
 # that pass left the canvas, with every gate's verdict beside it.
 
-#: The four ways the rule is asked. *As it stands* is the engine's own `_graded_band`,
-#: re-implemented so the run it counted can be drawn; `--graded` checks that the two
-#: agree on every pass, and says so if they do not.
+#: The ways the rule is asked. *0.6.0* is the rule as that release shipped it, which is
+#: the one the crops were read against; *overlap break* is the one step 7 built
+#: (question 13), re-implemented so the run it counted can be drawn -- `--graded`
+#: checks that it and the engine's own `_graded_band` agree on every pass, and says so
+#: if they do not.
 GATES = {
-    "as it stands": {"judge": "narrowest", "overlap": 0.0},
+    "0.6.0": {"judge": "narrowest", "overlap": 0.0},
     "median brush": {"judge": "median", "overlap": 0.0},
     "overlap break": {"judge": "narrowest", "overlap": 0.30},
     "both": {"judge": "median", "overlap": 0.30},
@@ -3004,6 +3006,13 @@ GATES = {
     "trimmed": {"judge": "trimmed", "overlap": 0.0},
     "trimmed, 10%": {"judge": "trimmed", "overlap": 0.10},
 }
+
+#: The gate the engine lays since step 7, which its own line is held to.
+BUILT = "overlap break"
+
+#: The overlap break's share, swept: where the built `0.30` sits on the curve -- on a
+#: plateau, where a share either side says the same thing, or at a knee.
+SWEEP = (0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.70, 0.90)
 
 #: How the engine words the line, for telling its findings apart.
 GRADED_WORDS = "marks at stepping colours run parallel"
@@ -3050,15 +3059,17 @@ def _overlap(a: tuple[float, float], b: tuple[float, float]) -> float:
 
 def graded_run(long_marks: list, canvas, judge: str = "narrowest",
                overlap: float = 0.0) -> GradedRun | None:
-    """The engine's `_graded_band`, step for step, with the two clauses the plan adds.
+    """The engine's `_graded_band`, step for step, with the two clauses the plan proposed.
 
     ``judge`` is which brush the step is held against: ``"narrowest"``, as the engine
     does, ``"median"``, the size most of the run was laid with, or ``"trimmed"``, the
     narrowest that is at least half the median. ``overlap`` above
     zero breaks the run wherever two marks next to each other across the stack do not
     cover that share of the shorter one's reach *along* it -- a graded passage is laid
-    stroke over stroke, and a ripple beside five glints is not. Returns the run whether
-    or not it fires, so a crop can show what was counted; ``None`` where there is no run.
+    stroke over stroke, and a ripple beside five glints is not. The engine breaks at
+    ``0.30`` since step 7 (`_REPORT_BAND_OVERLAP`); ``0.0`` is the rule as 0.6.0 had it.
+    Returns the run whether or not it fires, so a crop can show what was counted;
+    ``None`` where there is no run.
     """
     sm = session_module
     marks = [(r, a) for r, a in long_marks
@@ -3120,10 +3131,18 @@ def graded_run(long_marks: list, canvas, judge: str = "narrowest",
     return GradedRun(records, step, brush, per_step, fires)
 
 
+def swept(share: float) -> str:
+    """The name one share of the overlap break's sweep goes by among the verdicts."""
+    return f"overlap {share:.0%}"
+
+
 def graded_verdicts(marks: list, canvas) -> dict[str, GradedRun | None]:
-    """Every gate's answer for one pass's marks."""
+    """Every gate's answer for one pass's marks, and the break's at each share swept."""
     long_marks = pass_long_marks(marks, canvas)
-    return {name: graded_run(long_marks, canvas, **gate) for name, gate in GATES.items()}
+    verdicts = {name: graded_run(long_marks, canvas, **gate) for name, gate in GATES.items()}
+    for share in SWEEP:
+        verdicts[swept(share)] = graded_run(long_marks, canvas, overlap=share)
+    return verdicts
 
 
 def crop_graded(canvas, run: GradedRun, path: Path) -> Path:
@@ -3181,7 +3200,7 @@ def graded_hook(found: list, out: Path):
         if not fired and not engine:
             return
         fire = GradedFire(done.label, len(marks), engine, verdicts)
-        run = fired.get("as it stands") or next(iter(fired.values()), None)
+        run = fired.get("0.6.0") or fired.get(BUILT) or next(iter(fired.values()), None)
         if run is not None:
             name = re.sub(r"[^A-Za-z0-9_.-]+", "_", done.label)
             fire.crop = crop_graded(session.canvas, run, out / f"{name}.png")
@@ -3194,28 +3213,46 @@ def report_graded(found: list, passes: int) -> None:
     print("\n== C1: graded passage laid too narrow, over the corpus ==")
     print(f"  {passes} passes replayed; a pass is listed where any form of the rule fires")
     names = list(GATES)
+
+    def fires(fire: GradedFire, name: str) -> bool:
+        run = fire.verdicts.get(name)
+        return run is not None and run.fires
+
+    shown = [f for f in found if any(fires(f, name) for name in names) or f.engine_said]
     print(f"  {'pass':<44}{'marks':>6}  " + "  ".join(f"{n:>13}" for n in names))
-    for fire in found:
-        cells = []
-        for name in names:
-            run = fire.verdicts.get(name)
-            cells.append(f"{'FIRES' if run is not None and run.fires else '-':>13}")
-        agree = "" if fire.engine_said == bool(
-            fire.verdicts["as it stands"] and fire.verdicts["as it stands"].fires) else \
+    for fire in shown:
+        cells = [f"{'FIRES' if fires(fire, name) else '-':>13}" for name in names]
+        agree = "" if fire.engine_said == fires(fire, BUILT) else \
             "   (the engine disagrees with the re-implementation)"
         print(f"  {fire.label:<44}{fire.marks:>6}  " + "  ".join(cells) + agree)
-        run = fire.verdicts.get("as it stands")
-        if run is not None:
+        for name in ("0.6.0", BUILT):
+            run = fire.verdicts.get(name)
+            if run is None:
+                continue
             sizes = sorted(float(r.params.get("size", 0.0)) for r in run.marks)
-            print(f"  {'':<44}  {len(run.marks)} marks, step {run.step:.3f}, sizes "
-                  f"{sizes[0]:.3g}..{sizes[-1]:.3g}, median {float(np.median(sizes)):.3g}"
-                  + (f"  -> {fire.crop.relative_to(ROOT)}" if fire.crop else ""))
+            print(f"  {'':<44}  {name}: {len(run.marks)} marks, step {run.step:.3f}, "
+                  f"sizes {sizes[0]:.3g}..{sizes[-1]:.3g}, median "
+                  f"{float(np.median(sizes)):.3g}, {run.per_step:.2f} of a step")
+        if fire.crop:
+            print(f"  {'':<44}  -> {fire.crop.relative_to(ROOT)}")
     for name in names:
-        count = sum(1 for f in found if f.verdicts.get(name) is not None
-                    and f.verdicts[name].fires)
+        count = sum(1 for f in found if fires(f, name))
         print(f"  {name}: fires on {count} of {passes} passes")
+    said = sum(1 for f in found if f.engine_said)
+    print(f"  the engine's own line: {said} of {passes} passes")
     print("  read: look at each crop. A true positive is a graded passage laid with too")
     print("  narrow a brush; a gate that silences one is a cost, and the corpus decides.")
+
+    # The share swept: which passes each share fires on that the built one does not,
+    # and the other way about.
+    print(f"\n  the overlap break's share, swept (built: {GATES[BUILT]['overlap']:.0%})")
+    built = {f.label for f in found if fires(f, BUILT)}
+    for share in SWEEP:
+        now = {f.label for f in found if fires(f, swept(share))}
+        gained, lost = sorted(now - built), sorted(built - now)
+        print(f"  {share:>5.0%}: fires on {len(now):>2} of {passes}"
+              + (f"; also {', '.join(gained)}" if gained else "")
+              + (f"; not {', '.join(lost)}" if lost else ""))
 
 
 # -- running it -------------------------------------------------------------------------

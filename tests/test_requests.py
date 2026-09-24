@@ -20,6 +20,7 @@ import math
 import re
 import warnings
 from contextlib import nullcontext
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -6190,3 +6191,77 @@ def _brush_of(record):
 
     names = {f.name for f in fields(Brush)} - {"meta"}
     return Brush(**{k: v for k, v in record.params.items() if k in names})
+
+
+# -- 0.7.0 C2: a graded passage is laid one stroke over the next -----------------------
+_MISFIRES = (Path(__file__).resolve().parents[1] / "paintings" / "Claude"
+             / "lighthouse_handover" / "misfires")
+
+
+def _misfire(tmp_path, case: str, script: str) -> str:
+    """The graded line one of the lighthouse painter's misfired passes is told.
+
+    Laid as the painter rehearsed it, on the prelude of its own moment -- counted on a
+    fresh canvas rather than painted over the passes before it, because the rule reads
+    the pass's own log and the canvas's shape, and a counted pass logs what a painted one
+    does. The water pass takes its geometry from its own generator, so its line is the
+    one the painter was shown."""
+    folder = _MISFIRES / case
+    s = Session(1024, 768, texture="linen", ground="burnt_sienna", seed=11,
+                out_dir=tmp_path, timelapse=False, budget=300)
+    copy = s.scratch(count_only=True)
+    start = copy._open_pass()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        result = run_script(copy, (folder / script).read_text(encoding="utf-8"), script,
+                            prelude=(folder / "prelude.py").read_text(encoding="utf-8"))
+    assert result.code == 0, result.text
+    return next((ln.strip().removeprefix("- ")
+                 for ln in copy.report(since=start).splitlines()
+                 if "stepping colours" in ln), "")
+
+
+def test_glints_laid_one_beside_the_next_are_not_a_graded_passage(tmp_path, monkeypatch):
+    """The lighthouse painter's second misfire, from its rehearsal log: *7 marks at
+    stepping colours run parallel 0.009 apart, and the narrowest brush laying them is
+    0.006 -- 0.6 of that step*. The seven were five glints of one colour, a foam mark
+    and a ripple, adjacent down the picture and never overlapping along it -- a broken
+    reflection, not a passage. A graded passage is laid stroke over stroke, so the run
+    breaks between two neighbours that share under 30% of the shorter one's reach along
+    the stack, and this one falls apart into marks.
+
+    The painter's other misfire, a crevice laid along the join of two rock faces, is
+    planes stacked edge to edge -- which overlap along the stack as a passage does --
+    and is still told; the corpus decided that price (``PLAN-0.7.0.md``, question 13)."""
+    import sys
+
+    said = _misfire(tmp_path, "water", "06_water_v1.py")
+    assert said == ""
+
+    # And without the break it is the painter's own line, to the character.
+    log = (_MISFIRES / "water" / "rehearse.log").read_text(encoding="utf-8")
+    shown = next(ln.strip().removeprefix("- ") for ln in log.splitlines()
+                 if "stepping colours" in ln)
+    monkeypatch.setattr(sys.modules["easel.session"], "_REPORT_BAND_OVERLAP", 0.0)
+    assert _misfire(tmp_path, "water", "06_water_v1.py") == shown
+
+
+def test_a_band_whose_strokes_start_and_stop_apart_is_still_one_passage(tmp_path):
+    """What the break must not cost: a hand-laid band too narrow for its step, whose
+    strokes each start a little further along than the last -- a band that leans, or
+    one laid short of the canvas on purpose -- is still one passage, and still told.
+    The same six strokes laid alternately left and right are not a passage at all:
+    no stroke lies over its neighbour."""
+    leaning = _ramped(tmp_path)
+    for i in range(6):
+        x, y = 0.05 + 0.08 * i, 0.20 + i * 0.028
+        leaning.stroke([(x, y), (x + 0.50, y)], "flat", f"v{i}", size=0.02, load=1.0,
+                       load_falloff=0.0)
+    assert "6 marks at stepping colours" in _band_line(leaning)
+
+    beside = _ramped(tmp_path)
+    for i in range(6):
+        x, y = (0.05 if i % 2 == 0 else 0.55), 0.20 + i * 0.028
+        beside.stroke([(x, y), (x + 0.40, y)], "flat", f"v{i}", size=0.02, load=1.0,
+                      load_falloff=0.0)
+    assert _band_line(beside) == ""

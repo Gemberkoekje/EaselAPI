@@ -31,7 +31,11 @@ leave the ground between them, which no committed painting does. Step 6 is built
 `NOTES-step6.md` -- with three things the plan did not say, each marked in 4B: a brush
 drags only as it runs dry, so a loaded mark lays exactly what it laid; the comb lays what
 the stroke would stroke by stroke, not only on average; and a rebuild moves every mark
-that ran dry, not the sixteen laid starved. Steps 7 to 10 are next, C first.**
+that ran dry, not the sixteen laid starved. Step 7 is built -- C2, `NOTES-step7.md` --
+with two things the plan did not say, each marked in 4C: the one pass the break fires on
+that the rule missed, the pier's water, is told about a reflection's brush and not the
+field's; and the hands' finger, whose reading decided the gate, looks different since step
+6 and was read again by the owner -- still not bars. Steps 8 to 10 are next, D0 first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -422,6 +426,18 @@ Neither was a gradient; in both, the rule's *narrowest brush* is an accent.
   come back as bars (the hands' `pass22_bowl3.py`). The first kind wants another clause
   if it wants one at all, and none tried here is free.
 
+  *(Built in step 7, `NOTES-step7.md`, as decided -- the overlap break at `0.30`, the
+  engine's own line firing on the same 7 of 337 passes as the bench's copy, and `0.30` the
+  middle of a plateau: every share from 10% to 40% fires on the same seven -- and with two
+  things the plan did not say. **The pass it adds is told about the wrong brush**: the
+  pier's water was one run of fourteen under the old rule, a field's nine passes and five
+  reflections whose colours turned three times; broken, its longest piece is seven of the
+  field's passes and one reflection, and the brush the line names is the reflection's
+  `0.02` where the field's own is `0.108`. And **the reading that decided the gate was
+  read again**: the painter's pick was conditional on the hands' finger reading as
+  speckle, and warned that B might turn it to stripes; under step 6's gate it is crossed
+  streaks, and the owner read it, before and after side by side, as still not bars.)*
+
 ### D. Rehearsing alternatives side by side
 
 **What the painter did, and asked for.** It never used `vary=`; its variants were whole
@@ -651,7 +667,8 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
    *Done: `NOTES-step5.md`.*
 6. **B**: the gate, the goldens, the sampler and the exercise re-rendered, the fix named
    in `CHANGELOG.md` and in F2's list. *Done: `NOTES-step6.md`.*
-7. **C1, C2**: the crops, then the gate if the crops keep every true positive.
+7. **C1, C2**: the crops, then the gate if the crops keep every true positive. *Done:
+   `NOTES-step7.md`.*
 8. **D0**, then **D1** if its bench meets the target.
 9. **G**: the three sentences with `scripts/check_guide_blocks.py` green, the numbers
    into `CALIBRATION.md`, and the record -- `LESSONS.md` (the data points on the way

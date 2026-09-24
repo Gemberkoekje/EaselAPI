@@ -3831,12 +3831,13 @@ class Session:
           ``plan(bands="subject")`` the painter has answered that, and the line stops
           warning and counts what crosses the bars instead;
         - **a graded passage laid too narrow** -- five or more long parallel marks at
-          three or more colours, in one run with no gap wider than four brushes and
-          with their colours turning at most once, stepped further apart than half
-          the narrowest brush laying them. That is the same wall ``scumble`` warns
-          on and the one a hand-laid band gets no protection from; the clauses around
-          it are what keeps ten pots and two ramps laid end to end out of it, and a
-          brush that lays no colour of its own is not counted at all;
+          three or more colours, in one run with no gap wider than four brushes, each
+          laid over the next rather than beside it, and with their colours turning at
+          most once, stepped further apart than half the narrowest brush laying them.
+          That is the same wall ``scumble`` warns on and the one a hand-laid band gets
+          no protection from; the clauses around it are what keeps ten pots, two
+          ramps laid end to end and the glints of a broken reflection out of it, and
+          a brush that lays no colour of its own is not counted at all;
         - **a loaded bristle under ``size=0.025``**, which is a comb of four streaks
           with gaps rather than a brush. Not a *starved* one: below ``load=0.6`` the
           gaps are the mark, and a painting made of broken glints tripped this
@@ -7131,6 +7132,16 @@ _REPORT_BAND_MARKS = 5
 #: three quarters of a brush and only the gaps between pots are wide.
 _REPORT_BAND_GAP = 4.0
 
+#: How much of the shorter of two neighbours' reach *along* the stack the other has to
+#: share for the two to be one passage -- neighbours being the marks next to each other
+#: across it. A graded passage is laid stroke over stroke, each pass along the whole of
+#: it; the glints of a broken reflection lie one below the next, each beside the last
+#: rather than over it, and a ripple laid among them does too. That was the second of
+#: the lighthouse painter's two misfires: five glints of one colour, a foam mark and a
+#: ``0.006`` ripple, adjacent down the picture and never overlapping along it, came back
+#: as *7 marks at stepping colours ... the narrowest brush laying them is 0.006*.
+_REPORT_BAND_OVERLAP = 0.30
+
 #: How many times the value sequence across a run may change direction and still be a
 #: graded passage. One: a band that brightens, or brightens and falls back, is a
 #: passage; the ninth session's dawn band rises over four marks and falls over three.
@@ -7179,6 +7190,10 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
       *median* step, which three trunks fail and ten pots of three strokes each do
       not: inside a pot the step is three quarters of a brush, and only the gaps
       between pots are wide;
+    * **laid one over the other**: the run breaks between two neighbours whose
+      reaches along the stack share less than :data:`_REPORT_BAND_OVERLAP` of the
+      shorter one's. A graded passage is laid stroke over stroke; the glints of a
+      broken reflection, and a ripple laid among them, lie one beside the next;
     * **and stepping one way**, turning at most :data:`_REPORT_BAND_TURNS` time. A
       band that brightens, or brightens and falls back, is a passage. A sequence that
       turns again is a row of things -- ten pots at three terracotta values, or two
@@ -7201,17 +7216,21 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
     if len(best) < _REPORT_BAND_MARKS:
         return None
 
-    # Where each mark sits across the stack, in the brush's own unit.
+    # Where each mark sits across the stack, and how far it reaches along it, in the
+    # brush's own unit.
     long_side = float(canvas.long_side)
     angle = math.radians(_angle_centre(a for _, a in best))
     nx, ny = -math.sin(angle), math.cos(angle)
+    ax, ay = math.cos(angle), math.sin(angle)
     across = []
     for r, _ in best:
         pts = np.asarray(r.points, dtype=np.float64)
         x = float(pts[:, 0].mean()) * canvas.width / long_side
         y = float(pts[:, 1].mean()) * canvas.height / long_side
-        across.append((x * nx + y * ny, r))
-    across.sort(key=lambda pair: pair[0])
+        along = (pts[:, 0] * canvas.width / long_side * ax
+                 + pts[:, 1] * canvas.height / long_side * ay)
+        across.append((x * nx + y * ny, r, (float(along.min()), float(along.max()))))
+    across.sort(key=lambda mark: mark[0])
     run = _longest_run(across)
     if len(run) < _REPORT_BAND_MARKS:
         return None
@@ -7238,22 +7257,38 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
 
 
 def _longest_run(across) -> list[tuple[float, StrokeRecord]]:
-    """The longest stretch of ``(offset, record)`` with no wide gap in it.
+    """The longest stretch of ``(offset, record)`` with no wide gap in it, and no two
+    neighbours laid beside each other rather than one over the other.
 
     Wide is :data:`_REPORT_BAND_GAP` brushes, measured on the narrower of the two
     marks either side of the gap, so a fine mark next to a broad one is judged by the
-    fine one. Input sorted by offset.
+    fine one. Beside is two neighbours whose reaches along the stack share less than
+    :data:`_REPORT_BAND_OVERLAP` of the shorter one's. Input is ``(offset, record,
+    reach)`` sorted by offset, ``reach`` the ``(first, last)`` of the mark along the
+    stack in the same unit.
     """
     runs: list[list[tuple[float, StrokeRecord]]] = [[]]
-    for i, (off, r) in enumerate(across):
+    for i, (off, r, reach) in enumerate(across):
         if i:
-            prev_off, prev = across[i - 1]
+            prev_off, prev, prev_reach = across[i - 1]
             narrow = min(float(r.params.get("size", 0.0)),
                          float(prev.params.get("size", 0.0)))
-            if off - prev_off > _REPORT_BAND_GAP * narrow:
+            if (off - prev_off > _REPORT_BAND_GAP * narrow
+                    or _shared_reach(prev_reach, reach) < _REPORT_BAND_OVERLAP):
                 runs.append([])
         runs[-1].append((off, r))
     return max(runs, key=len)
+
+
+def _shared_reach(a: tuple[float, float], b: tuple[float, float]) -> float:
+    """How much of the shorter of two reaches the other one covers, ``0`` to ``1``.
+
+    A reach of no length, which no long mark in a stack has, counts as covered.
+    """
+    shorter = min(a[1] - a[0], b[1] - b[0])
+    if shorter <= 1e-9:
+        return 1.0
+    return max(0.0, min(a[1], b[1]) - max(a[0], b[0])) / shorter
 
 
 def _value_turns(run: list[StrokeRecord]) -> int:
