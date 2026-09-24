@@ -3102,6 +3102,27 @@ the engine in each is `0.4 s` and each panel's own load of the session file abou
 machine**; what it would cost to get under it is sending the session to a pool that is
 already warm, which is a larger thing than D1 was proposed as.
 
+**Built (step 8): versions side by side, and not in parallel.** The painter's own two
+skies -- `try_sky3.py`'s B, a cool rose horizon with warmth laid in from the left, and C,
+a peach horizon -- from the painting's drawing, each three 8-pass scumbles and three films
+(B lays 33 strokes, C 27), laid three ways (`probe_handover_session.py --alternatives`):
+
+| | the two versions |
+|---|---|
+| through the painter's harness: a copy and a look each | 31.9 to 32.8 s |
+| `easel run --alternatives`, loading and saving the session file included | 32.1 to 32.3 s |
+| `s.rehearse_each`, the same two as functions | 31.0 to 31.1 s |
+
+About 16 s a version, over two runs: the painter's own *about 15 s a variant*, for
+versions that lay their films and dry between them, where the three ramps alone took the
+10.4 to 10.7 s above.
+
+Each version, painted for real on the painting it was tried on, is its panel **to the
+pixel** on both sheets, above the label drawn over the panel's corner. The paint is the
+cost, as it was: what the sheet changes is one image where the harness wrote two files for
+`montage.py` to stitch, and each version's own check printed beside it. D1 was declined on
+the numbers above.
+
 ### The session file
 
 The painting rebuilt with its time-lapse, as `easel new` and `easel run` make it, and

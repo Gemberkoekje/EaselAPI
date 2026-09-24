@@ -35,7 +35,11 @@ that ran dry, not the sixteen laid starved. Step 7 is built -- C2, `NOTES-step7.
 with two things the plan did not say, each marked in 4C: the one pass the break fires on
 that the rule missed, the pier's water, is told about a reflection's brush and not the
 field's; and the hands' finger, whose reading decided the gate, looks different since step
-6 and was read again by the owner -- still not bars. Steps 8 to 10 are next, D0 first.**
+6 and was read again by the owner -- still not bars. Step 8 is built -- D0, `NOTES-step8.md`
+-- with three things the plan did not say, each marked in 4D: a version that raises is said
+and the others are still rehearsed; the Python form takes a function as well as a plan, and
+stops one that paints the painting; and the MCP `run` answers as a list now, so that its
+sheet can come back beside the text. Steps 9 and 10 are next, G first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -456,6 +460,21 @@ pass that goes on top of another and wrong for two versions of the same pass.
 The single rehearsal and the harness loop stay as they are: a painter's own helper
 laying three bands pays for three bands.
 
+*(Built in step 8, `NOTES-step8.md`, as decided -- D0: `easel run --alternatives`, `run`
+with `alternatives` through the server, and `s.rehearse_each()` -- and with three things the
+plan did not say. **A version that raises does not stop the others**: scripts on one copy
+stop at the first that fails because the next stands on it, and no version stands on
+another, so it is said, left off the sheet and out of the reports, and the run exits with
+its code. **In Python a version is a plan or a function**, the function handed the copy as
+the painter's harness handed each variant its own -- and one that paints the painting
+instead, through a helper that reaches `s`, is stopped with the records to undo. And **the
+MCP `run` answers as a list**: declared as text, the SDK holds every answer to a text
+schema and refuses a picture beside it, so the sheet could not come back otherwise, and
+`run` carries no `structuredContent` now. The painter's own two skies, `try_sky3.py`'s B
+and C, land as their panels show them, on both sheets. One thing is left as a question for
+the painter: the sheet draws each copy as a rehearsal's own look does, landmarks and
+drawing included, where its harness looked at its variants without them.)*
+
 ### E. The looking tools, and the plan grammar's documentation
 
 Small and certain; one PR, early.
@@ -669,7 +688,8 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
    in `CHANGELOG.md` and in F2's list. *Done: `NOTES-step6.md`.*
 7. **C1, C2**: the crops, then the gate if the crops keep every true positive. *Done:
    `NOTES-step7.md`.*
-8. **D0**, then **D1** if its bench meets the target.
+8. **D0**, then **D1** if its bench meets the target. *Done: `NOTES-step8.md`; D1
+   declined on the bench (question 14).*
 9. **G**: the three sentences with `scripts/check_guide_blocks.py` green, the numbers
    into `CALIBRATION.md`, and the record -- `LESSONS.md` (the data points on the way
    in and on `explain`; *a measurement is not a method*; the cross-machine papercut),

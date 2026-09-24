@@ -205,6 +205,7 @@ easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --s
 easel run painting.easel first_pass.py
 easel run painting.easel first_pass.py --rehearse   # against a copy, committing nothing
 easel run painting.easel p2_sea.py p3_rocks.py --rehearse   # ...both passes, one copy
+easel run painting.easel sky_a.py sky_b.py --alternatives   # ...two versions, side by side
 easel run painting.easel p4_tower.py --check         # the post-pass check over the whole painting
 easel look painting.easel --grid
 easel look painting.easel --values
@@ -263,8 +264,9 @@ the repository root is what is published there.
 Twenty tools: the seventeen CLI verbs, plus `preview`, `rehearse` and `cost` — the
 three questions about a mark that has not been made yet. Marks are made by `run`,
 which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
-copy and commits nothing. A place is a name, a cell, a span, a rectangle, an outline,
-or a shape builder like `{"blob": "D5", "radius": 0.12}`.
+copy and commits nothing; `run(alternatives=[...])` tries versions of one, each on a
+copy of its own, and hands them back side by side. A place is a name, a cell, a span,
+a rectangle, an outline, or a shape builder like `{"blob": "D5", "radius": 0.12}`.
 
 `run` executes Python sent by its client, exactly as `easel run` does: launch it
 for a painter you would hand a shell to.

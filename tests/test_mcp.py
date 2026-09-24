@@ -627,6 +627,29 @@ def test_run_keeps_what_it_handed_back_rehearsals_included(call, painting):
     assert "painted <script>" not in log.text
 
 
+def test_run_rehearses_versions_side_by_side_and_hands_the_sheet_back(call, painting):
+    """0.7.0's D0 through the wire: versions of one pass, each on a copy of its own and
+    each told what a rehearsal is told, and their sheet inline -- a client has no shell
+    to open a PNG from. An object names each version; a list numbers them."""
+    dark = "s.block_in(cell('D5'), 'flat', 'burnt_umber', size=0.02)"
+    blue = "s.block_in(cell('D5'), 'flat', 'ultramarine', size=0.02)"
+    reply = call("run", session=painting, alternatives={"dark": dark, "blue": blue})
+    assert "Rehearsed dark (1 of 2)" in reply.text and "Rehearsed blue (2 of 2)" in reply.text
+    assert "dark and blue side by side" in reply.text
+    wide, tall = reply.picture.size
+    assert wide > 1.8 * tall
+    kept = Session.load(painting)
+    assert kept.stroke_count == 1                      # the fixture's mark, and no more
+    assert [(r.mode, r.scripts) for r in kept.reports()[-2:]] == [
+        ("rehearsed", "dark"), ("rehearsed", "blue")]
+
+    counted = call("run", session=painting, alternatives=[dark, blue], count=True)
+    assert "Counted <alternative 2> (2 of 2)" in counted.text and not counted.images
+
+    with pytest.raises(ToolError, match="in place of script"):
+        call("run", session=painting, script=dark, alternatives=[blue])
+
+
 def test_look_takes_the_landmarks_off(call, painting):
     """The lighthouse painter's `clean_look.py` in one argument, through the wire."""
     bare = np.asarray(call("look", session=painting, scale=0).picture.convert("RGB"))
