@@ -357,6 +357,10 @@ s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=, vary=)
                                                 # one labelled panel per setting, in
                                                 # place, in one image. At most twelve:
                                                 # two arguments multiply
+s.rehearse_each([plan, fn], reference=, region=, grid=, values=, scale=, path=,
+                labels=)                        # versions of a pass, each on a copy of
+                                                # its own, side by side in one sheet: a
+                                                # plan, or a function handed the copy
 s.cost(plan, share=0.25)   s.cost_line(plan)    # what it charges, and why; share= is
                                                 # how much of what is left it may eat
 s.paint(plan, note="")                          # the same plan, now paid for
@@ -404,7 +408,12 @@ because an entry takes a stroke's, and `to_value=` stays with the verb:
 
 So **a whole pass is a plan** — its masses, passages, marks and films in the order it
 lays them — and can be priced, previewed and rehearsed, `vary=` and all, before a
-stroke of it is paid for.
+stroke of it is paid for. **Versions of one pass** go side by side with
+`s.rehearse_each([...])`: each is a plan, or a function that paints on the copy it is
+handed, as a script would — each on a copy of its own, seeded as the next marks of the
+painting, so the one chosen off the sheet lands as its panel shows it. Every panel is
+labelled with its version — a function's name, a plan's place in the list, or
+`labels=` — and the strokes it laid.
 
 Looks are written to `out_dir` and numbered `look_001.png`, `preview_001.png`,
 `compare_001.png`, `rehearse_001.png` upward — each kind counting on its own, and each
@@ -597,7 +606,7 @@ s.save(path)       Session.load(path)
 
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
-easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--prelude other.py] [--no-prelude] [--check]
+easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--alternatives] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
                    [--no-sketch] [--no-marks]
 easel mark p.easel top_l 0.335 0.315
@@ -627,6 +636,16 @@ to.
 Several scripts run in the order given, each in its own scope with the prelude in front
 of it — the same painting as running them one at a time, and with `--rehearse` they go
 on **one** copy, so a pass that lands on top of another pass is judged on it.
+
+**With `--alternatives` they are versions of one pass instead**, and each goes on a copy
+of its own: each is checked and keeps its report on its own, and their looks are laid
+side by side in one sheet, `rehearse_NNN.png`, each panel labelled with the script and
+the strokes it laid. Every copy is seeded as the next marks of the painting, so the
+version then run for real lands as its panel shows it. A version that raises is said and
+left off the sheet, and the others are still rehearsed, since none stands on another.
+It implies `--rehearse`; with `--count` each is priced and no sheet is laid; a sheet
+holds at most twelve. `s.rehearse_each()` is the same from Python and `run` with
+`alternatives` through the MCP server.
 
 After every pass, rehearsed or committed, `run` prints the budget line and then the
 post-pass check over that pass; `--check` runs it over the whole painting instead, and
@@ -664,10 +683,11 @@ having is that **the looking tools hand you the picture**: `look`, `preview`,
 `rehearse`, `compare` and `prepare` return their PNG beside the path they wrote it to,
 so looking every five to fifteen strokes costs one call instead of a call and a file
 read. Marks are still made by `run`, which takes the script as text — the same Python
-the guide teaches, with `s` and the whole API already in scope. `preview`, `rehearse`
-and `cost` each hand back the Python that paints the plan they checked; paste that into
-`run` rather than retyping it, because a plan retyped between checking and painting
-drifts.
+the guide teaches, with `s` and the whole API already in scope — or, as `alternatives`,
+several versions of one pass, rehearsed each on a copy of its own and handed back side
+by side in one sheet, inline like the looking tools. `preview`, `rehearse` and `cost`
+each hand back the Python that paints the plan they checked; paste that into `run`
+rather than retyping it, because a plan retyped between checking and painting drifts.
 
 A **place** arrives as JSON in any of six forms — a named region, a grid cell, a span, a
 rectangle, an outline, or a shape builder with its own arguments:

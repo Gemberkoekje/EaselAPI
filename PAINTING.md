@@ -226,12 +226,14 @@ A rehearsal is seeded as if its marks were the next strokes of the real painting
 what you rehearse is what lands, pixel for pixel. That is the property *rehearse every
 pass* in the guide rests on. From the shell it is `easel run pass.py --rehearse`; in
 Python it is `s.scratch()`, the same throwaway copy, and several scripts rehearse
-together onto one copy so a pass that lands on another is judged on it. `look`,
-`preview`, `rehearse`, `cost` and `compare` leave nothing behind; `pencil`, `dry` and
-`erase` are free but logged, and a mark's texture is seeded from its place in the log,
-so adding or removing one shifts the texture of every mark after it — deterministic,
-and a painting still rebuilds from its scripts (*The log, undo, and the stream* in
-[`CALIBRATION.md`](CALIBRATION.md#the-log-undo-and-the-stream)).
+together onto one copy so a pass that lands on another is judged on it — or, with
+`--alternatives`, each onto a copy of its own, their looks side by side in one sheet, so
+two versions of one pass are judged against each other (`s.rehearse_each()` from
+Python). `look`, `preview`, `rehearse`, `cost` and `compare` leave nothing behind;
+`pencil`, `dry` and `erase` are free but logged, and a mark's texture is seeded from its
+place in the log, so adding or removing one shifts the texture of every mark after it —
+deterministic, and a painting still rebuilds from its scripts (*The log, undo, and the
+stream* in [`CALIBRATION.md`](CALIBRATION.md#the-log-undo-and-the-stream)).
 
 ---
 

@@ -54,7 +54,7 @@ from easel import docs as _docs
 from easel import notices as _notices
 from easel import regions as _regions
 from easel.brush import Brush
-from easel.cli import parse_size, reference_text, run_script
+from easel.cli import parse_size, reference_text, run_alternatives, run_script
 from easel.look import DEFAULT_LOOK_SIZE
 from easel.notices import EaselWarning
 from easel.regions import Region, as_place
@@ -618,7 +618,8 @@ def build_server() -> MCPServer:
     @_tool
     def run(session: str, script: str = "", script_path: str = "",
             rehearse: bool = False, count: bool = False, prelude: str = "",
-            prelude_path: str = "") -> str:
+            prelude_path: str = "",
+            alternatives: list[str] | dict[str, str] | None = None) -> list:
         """Paint: run a Python script against the session.
 
         This is where every mark is made. The script has `s` (the session),
@@ -655,22 +656,51 @@ def build_server() -> MCPServer:
             prelude: Python run first, in the same scope -- helpers, mixtures and
                 landmarks a pass should not have to redefine.
             prelude_path: a file to use as the prelude instead.
+            alternatives: versions of one pass, in place of `script` -- a list of
+                scripts, or an object naming each one, {"bristle": "...", "flat":
+                "..."}. Each is rehearsed on a copy of its own, with its own check,
+                and their looks come back side by side in one sheet, each panel
+                labelled with the version and the strokes it laid: two skies judged
+                against each other rather than one on top of the other. Implies
+                `rehearse`; with `count`, prices each and lays no sheet. Each copy is
+                seeded as the next marks of the painting, so the version then run for
+                real lands as its panel shows it. At most twelve on a sheet.
         """
-        if bool(script) == bool(script_path):
-            raise ValueError(
-                "run takes either script (the Python itself) or script_path (a file), "
-                "and needs exactly one of them."
-            )
         if prelude and prelude_path:
             raise ValueError(
                 "run takes either prelude (the Python itself) or prelude_path (a "
                 "file), not both."
             )
-        name = script_path or "<script>"
-        source = Path(script_path).read_text(encoding="utf-8") if script_path else script
         pre_name = prelude_path or "<prelude>"
         pre = (Path(prelude_path).read_text(encoding="utf-8") if prelude_path
                else prelude)
+        if alternatives:
+            if script or script_path:
+                raise ValueError(
+                    "run takes alternatives in place of script and script_path: each "
+                    "version is one script of its own."
+                )
+            versions = (list(alternatives.items()) if isinstance(alternatives, dict)
+                        else [(f"<alternative {i}>", text)
+                              for i, text in enumerate(alternatives, 1)])
+            s = _load(session)
+            tried = run_alternatives(
+                s, [(str(text), str(label)) for label, text in versions],
+                prelude=pre, prelude_name=pre_name, count_only=count)
+            # What each version's check said is kept, as a rehearsal's is.
+            if any(one.code == 0 for one in tried.tried):
+                s.save(session)
+            if tried.sheet is None:
+                return [tried.text]
+            return [tried.text, Image(path=str(tried.sheet))]
+        if bool(script) == bool(script_path):
+            raise ValueError(
+                "run takes either script (the Python itself) or script_path (a file), "
+                "and needs exactly one of them -- or alternatives, several versions of "
+                "one pass."
+            )
+        name = script_path or "<script>"
+        source = Path(script_path).read_text(encoding="utf-8") if script_path else script
 
         s = _load(session)
         trying = rehearse or count
@@ -687,9 +717,11 @@ def build_server() -> MCPServer:
         said = target.notices(since=told)
         block = _notices.block(said, check)
         short = Path(name).name
+        # Every answer is a list, because a sheet of alternatives comes back as a
+        # picture: a tool the SDK is told answers in text has its answer checked as text.
         if trying:
             if result.code != 0:
-                return _join(_notices.block(said), result.text)
+                return [_join(_notices.block(said), result.text)]
             left = s.remaining
             laid = target.history.stroke_count      # the copy's own log: this pass
             cost = (f"{laid} strokes" if left is None
@@ -704,14 +736,14 @@ def build_server() -> MCPServer:
             # painting, as `easel run --rehearse` keeps it. See `Session.reports`.
             s._keep_report(target, short, before, block)
             s.save(session)
-            return text
+            return [text]
         if result.code == 0:
             s._keep_report(target, short, before, block)
         if result.save:
             s.save(session)
         if result.code != 0:
-            return _join(_notices.block(said), result.text)
-        return f"{result.text}\n{block}"
+            return [_join(_notices.block(said), result.text)]
+        return [f"{result.text}\n{block}"]
 
     @server.tool()
     @_tool

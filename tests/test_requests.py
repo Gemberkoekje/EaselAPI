@@ -6265,3 +6265,182 @@ def test_a_band_whose_strokes_start_and_stop_apart_is_still_one_passage(tmp_path
         beside.stroke([(x, y), (x + 0.40, y)], "flat", f"v{i}", size=0.02, load=1.0,
                       load_falloff=0.0)
     assert _band_line(beside) == ""
+
+
+# -- 0.7.0 D0: versions of a pass, rehearsed side by side ------------------------------
+#
+# *What would have replaced the harness is rehearsing scripts as side-by-side
+# alternatives. `easel run --rehearse a.py b.py` stacks them instead.* The lighthouse
+# painter compared its variants as whole passes, run one after another through a harness
+# around `scratch()` and looked at as a file each. Every test here asks the tool what the
+# harness did: each version on a copy of its own, told what a rehearsal is told, the
+# looks in one sheet -- and the version chosen off it landing as it was shown.
+_DARK = 's.block_in("D5", "flat", "burnt_umber", size=0.06)'
+_BLUE = 's.block_in(span("C3", "F4"), "bristle", "ultramarine", size=0.08, direction="axis")'
+
+
+def _versions(tmp_path, **scripts: str) -> tuple[Path, list[Path]]:
+    """A 320x240 session file with a budget, and one script file per version, by name."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--budget", "60", "--no-prelude"]) == 0
+    paths = []
+    for name, source in scripts.items():
+        paths.append(tmp_path / f"{name}.py")
+        paths[-1].write_text(source + "\n")
+    return session, paths
+
+
+def test_versions_of_a_pass_are_rehearsed_each_on_a_copy_of_its_own(tmp_path, capsys):
+    """Two scripts the shell lays on one copy -- right for a pass that goes on top of
+    another -- are two versions of one pass here, and neither sees the other: each is
+    charged what it lays alone, each is checked alone and keeps its report, and the
+    painting is untouched."""
+    session, (dark, blue) = _versions(tmp_path, dark=_DARK, blue=_BLUE)
+    assert main(["run", str(session), str(dark), "--rehearse"]) == 0
+    assert main(["run", str(session), str(blue), "--rehearse"]) == 0
+    alone = re.findall(r"(\d+) strokes of the 60 left", capsys.readouterr().out)
+
+    assert main(["run", str(session), str(dark), str(blue), "--alternatives"]) == 0
+    printed = capsys.readouterr().out
+    assert re.findall(r"(\d+) strokes of the 60 left", printed) == alone
+    assert "Rehearsed dark.py (1 of 2)" in printed and "Rehearsed blue.py (2 of 2)" in printed
+    assert "dark.py and blue.py side by side" in printed and "rehearse_003.png" in printed
+
+    kept = Session.load(session)
+    assert kept.stroke_count == 0                  # no --rehearse, and nothing committed
+    assert [(r.mode, r.scripts, r.at) for r in kept.reports()[-2:]] == [
+        ("rehearsed", "dark.py", 0), ("rehearsed", "blue.py", 0)]
+    assert all(r.text in printed for r in kept.reports()[-2:])
+    wide, tall = Image.open(tmp_path / "out" / "rehearse_003.png").size
+    assert wide > 1.8 * tall                       # two panels, side by side
+
+
+def test_the_version_run_for_real_lands_as_its_panel_shows_it(tmp_path, capsys):
+    """The bargain every rehearsal makes, kept for a sheet of them: each copy is seeded
+    as the next marks of the painting, so the version chosen off the sheet and then run
+    for real paints its panel to the pixel -- the second as well as the first."""
+    session, (dark, blue) = _versions(tmp_path, dark=_DARK, blue=_BLUE)
+    assert main(["run", str(session), str(dark), str(blue), "--alternatives"]) == 0
+    sheet = _pixels(tmp_path / "out" / "rehearse_001.png")
+    assert main(["run", str(session), str(blue)]) == 0
+
+    painted = np.asarray(Session.load(session).look_image(scale=512))
+    h, w = painted.shape[:2]
+    gap = 12                                       # label_sheet's, round every panel
+    second = sheet[gap:gap + h, gap + w + gap:gap + w + gap + w]
+    # Above the label, which is drawn over the panel's bottom-left corner.
+    assert np.array_equal(second[:h - 14], painted[:h - 14])
+    first = sheet[gap:gap + h, gap:gap + w]
+    assert not np.array_equal(first[:h - 14], painted[:h - 14])
+
+
+def test_a_version_that_raises_is_said_and_the_others_are_still_rehearsed(tmp_path, capsys):
+    """Passes laid on one copy stop at the first that fails, because the next stands on
+    it. No version stands on another, so one that raises costs its own panel and its own
+    report, and the others are rehearsed and laid side by side as asked."""
+    session, (dark, bad, blue) = _versions(
+        tmp_path, dark=_DARK, bad="raise ValueError('not this one')", blue=_BLUE)
+    assert main(["run", str(session), str(dark), str(bad), str(blue), "--alternatives"]) == 1
+    out, err = capsys.readouterr()
+    assert "(bad.py, 2 of 3)" in err and "not this one" in err
+    assert "Rehearsed dark.py (1 of 3)" in out and "Rehearsed blue.py (3 of 3)" in out
+    assert "dark.py and blue.py side by side" in out
+    assert [r.scripts for r in Session.load(session).reports()] == ["dark.py", "blue.py"]
+
+
+def test_counted_versions_are_priced_each_and_lay_no_sheet(tmp_path, capsys):
+    """Which version costs least is a question a count answers in a second -- and a
+    counted copy lays no paint, so there is nothing to put side by side."""
+    session, (dark, blue) = _versions(tmp_path, dark=_DARK, blue=_BLUE)
+    assert main(["run", str(session), str(dark), str(blue), "--alternatives",
+                 "--count"]) == 0
+    printed = capsys.readouterr().out
+    assert "Counted dark.py (1 of 2)" in printed and "Counted blue.py (2 of 2)" in printed
+    assert "side by side" not in printed
+    assert not list((tmp_path / "out").glob("*.png"))
+    assert [r.mode for r in Session.load(session).reports()] == ["counted", "counted"]
+
+
+def test_a_sheet_of_versions_has_the_ceiling_a_sheet_of_settings_has(tmp_path, capsys):
+    """Twelve panels, as for ``vary=``: past that a sheet is a contact sheet of a question.
+    Refused before anything is laid. A count lays no sheet, and takes any number."""
+    session, (dark,) = _versions(tmp_path, dark=_DARK)
+    assert main(["run", str(session), *[str(dark)] * 13, "--alternatives"]) == 1
+    assert "past the 12" in capsys.readouterr().err
+    assert Session.load(session).reports() == []
+    assert main(["run", str(session), *[str(dark)] * 13, "--alternatives", "--count"]) == 0
+
+
+def test_rehearse_each_lays_plans_and_functions_side_by_side(tmp_path):
+    """The same from Python, where a function is what a script is: handed the copy, it
+    paints on it, mixtures and all, and they stay on the copy. A panel is named for its
+    function, or its place in the list; what each version's calls said is kept on the
+    painting, as a rehearsal's is; and no version spends the painting's stream, so the
+    one chosen lands as it was shown."""
+    def dark(c):
+        c.block_in(cell("E5"), "flat", "burnt_umber", size=0.02)
+
+    def pale(c):
+        c.palette["pale"] = c.palette.mix("titanium_white", "yellow_ochre", 0.2)
+        c.block_in(cell("E5"), "flat", "pale", size=0.02)
+
+    mark = {"points": [(0.2, 0.7), (0.8, 0.72)], "brush": "flat", "color": "ultramarine",
+            "size": 0.04}
+    s = make(tmp_path)
+    stream, told = s.rng.bit_generator.state, len(s.notices())
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        sheet = s.rehearse_each([dark, pale, [mark], [dict(mark, size=0.001)]])
+    wide, tall = Image.open(sheet).size
+    assert sheet.name == "rehearse_001.png" and wide > 3 * tall      # four in a row
+    assert not s.history.records and s.rng.bit_generator.state == stream
+    assert "pale" not in s.palette.slots
+    assert "chisel-blank" in [n.code for n in s.notices(since=told)]
+    assert [label for label, _ in s._versions([dark, pale, [mark], lambda c: None],
+                                              None)] == ["dark", "pale", "3", "4"]
+
+    chosen = s.scratch()
+    pale(chosen)
+    plain = make(tmp_path)
+    pale(plain)
+    assert np.array_equal(chosen.canvas.rgb, plain.canvas.rgb)
+
+
+def test_rehearse_each_takes_a_list_of_versions_and_says_what_else_it_was_given(tmp_path):
+    """A plan is a list itself, so a list of single entries is a version per entry. What
+    can only be one plan -- an entry, a path, a place -- is refused as one, and text is
+    neither a plan nor a function: a script is rehearsed side by side from a shell."""
+    s = make(tmp_path)
+    entry = {"points": [(0.2, 0.7), (0.8, 0.72)], "brush": "flat"}
+    for one in (entry, [(0.2, 0.7), (0.8, 0.72)], cell("D5")):
+        with pytest.raises(ValueError, match="this is one plan"):
+            s.rehearse_each(one)
+    for text in ("a.py", ["a.py", [entry]]):
+        with pytest.raises(ValueError, match="is text"):
+            s.rehearse_each(text)
+    with pytest.raises(ValueError, match="nothing to try"):
+        s.rehearse_each([])
+    with pytest.raises(ValueError, match="past the 12"):
+        s.rehearse_each([[entry]] * 13)
+    with pytest.raises(ValueError, match="one label for each"):
+        s.rehearse_each([[entry], [entry]], labels=["only one"])
+
+
+def test_a_version_that_paints_the_painting_is_stopped(tmp_path):
+    """Python lets a version's helper reach the painting -- a function that paints on
+    ``s``, called from one handed the copy -- and a rehearsal that paints the painting is
+    the one thing a rehearsal must not be. The painter's harness rebound its scope's
+    ``s`` to each copy for exactly this reason; here it is said, with the way back."""
+    s = make(tmp_path)
+
+    def helper():
+        s.stroke([(0.1, 0.1), (0.5, 0.5)], "flat", "burnt_umber", size=0.02)
+
+    def strays(c):
+        helper()
+
+    with pytest.raises(ValueError, match=r"'strays' laid 1 log record on the painting"
+                                         r".*s\.undo\(1\) takes it back"):
+        s.rehearse_each([strays])
+    assert s.undo(1) == 1 and not s.history.records

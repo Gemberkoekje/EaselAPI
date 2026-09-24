@@ -28,15 +28,17 @@ from PIL import Image as _PILImage
 from easel import demo, diagnosis, docs, notices
 from easel.brush import BRUSHES
 from easel.canvas import GROUNDS
+from easel.look import DEFAULT_LOOK_SIZE, label_sheet, save_look
 from easel.notices import NOTICES, EaselWarning
 from easel.palette import PIGMENTS
 from easel.prepare import LEVELS
 from easel.regions import REGION_NAMES
-from easel.session import Session
+from easel.session import _MAX_PANELS, Session, _panel_label, _panel_scale
 from easel.texture import TEXTURES
 
 __all__ = ["main", "build_parser", "parse_size", "reference_text", "run_script",
-           "run_scripts", "ScriptResult"]
+           "run_scripts", "run_alternatives", "ScriptResult", "Alternative",
+           "Alternatives"]
 
 _REGION_HELP = (
     "a named region (" + ", ".join(REGION_NAMES) + "), a grid cell like D4, "
@@ -122,7 +124,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("script", type=Path, nargs="+",
                        help="one or more scripts, run in the order given against the "
                             "same session -- with --rehearse, against one copy, so a "
-                            "pass that goes on top of another is judged on it")
+                            "pass that goes on top of another is judged on it; with "
+                            "--alternatives, each against a copy of its own")
     p_run.add_argument("--rehearse", action="store_true",
                        help="run the pass against a copy: write the look, print the "
                             "cost, commit nothing")
@@ -131,6 +134,12 @@ def build_parser() -> argparse.ArgumentParser:
                             "the pixel work skipped, so a helper that calls a dozen "
                             "verbs has a price in a second. No look, nothing "
                             "committed. Implies --rehearse")
+    p_run.add_argument("--alternatives", action="store_true",
+                       help="the scripts are versions of one pass, not passes on top "
+                            "of each other: rehearse each on a copy of its own, print "
+                            "each one's check, and lay their looks side by side in one "
+                            "sheet. Implies --rehearse; with --count, prices each and "
+                            "lays no sheet")
     p_run.add_argument("--prelude", type=Path, default=None,
                        help="run this file first, in the same scope (helpers, "
                             "mixtures, landmarks)")
@@ -895,6 +904,130 @@ def run_scripts(session: Session, scripts, prelude: str = "",
     return ScriptResult(0, f"Ran {ran}: {session.budget_line()}.")
 
 
+@dataclass(frozen=True)
+class Alternative:
+    """One version of a pass, rehearsed on a copy of its own.
+
+    ``text`` is what it came to -- the line saying what it cost and the block after it,
+    or what it raised -- and ``code`` its exit code, ``0`` when it ran. ``laid`` is the
+    strokes its copy laid, and ``panel`` its look at the sheet's panel size: ``None``
+    for a counted version, which lays no paint, and for one that raised.
+    """
+
+    name: str
+    code: int
+    text: str
+    laid: int = 0
+    panel: _PILImage.Image | None = None
+
+
+@dataclass(frozen=True)
+class Alternatives:
+    """Every version :func:`run_alternatives` rehearsed, and the sheet it laid them in."""
+
+    tried: tuple[Alternative, ...]
+    sheet: Path | None = None
+
+    @property
+    def code(self) -> int:
+        """The first code that is not ``0``, or ``0`` when every version ran."""
+        return next((one.code for one in self.tried if one.code), 0)
+
+    @property
+    def sheet_line(self) -> str:
+        """Which versions the sheet holds, and where it is -- ``""`` with no sheet."""
+        if self.sheet is None:
+            return ""
+        shown = [one.name for one in self.tried if one.panel is not None]
+        if len(shown) == 1:
+            return f"{shown[0]}, on a copy of its own: {self.sheet}"
+        return f"{', '.join(shown[:-1])} and {shown[-1]} side by side: {self.sheet}"
+
+    @property
+    def text(self) -> str:
+        """Everything, in order, as one answer: what the MCP server hands back."""
+        return "\n\n".join([one.text for one in self.tried]
+                           + ([self.sheet_line] if self.sheet else []))
+
+
+def run_alternatives(session: Session, scripts, prelude: str = "",
+                     prelude_name: str = "prelude.py", count_only: bool = False,
+                     whole: bool = False) -> Alternatives:
+    """Rehearse versions of one pass, each on a copy of its own, and lay them side by side.
+
+    ``scripts`` is a sequence of ``(source, name)`` pairs, as :func:`run_scripts` takes
+    them. That lays them on **one** copy in order, so a pass is judged on the pass under
+    it; this gives each its own, because what is being compared is **versions of one
+    pass**. The lighthouse painter compared whole passes that way through a harness of
+    its own, a file per version opened one after another, and said what would have
+    replaced it: *rehearsing scripts as side-by-side alternatives*.
+
+    Each version runs in a fresh scope with the prelude in front of it, is checked over
+    what it laid -- over the whole painting under it with ``whole``, as ``--check`` --
+    and keeps its report on ``session`` as a rehearsal does. Their looks are laid in one
+    sheet, each panel labelled with the version and the strokes it laid; a counted run
+    lays no paint, and so no sheet. **One that raises is said and left off the sheet,
+    and the rest are still rehearsed**, since none of them stands on another. Every copy
+    is seeded as the next marks of the painting, so whichever is then run for real
+    lands as its panel shows it.
+
+    Nothing is written but the sheet: the caller saves ``session``, whose reports have
+    grown by one for every version that ran.
+    """
+    pairs = list(scripts)
+    if not pairs:  # pragma: no cover - argparse requires at least one
+        raise ValueError("run_alternatives needs at least one script.")
+    if not count_only and len(pairs) > _MAX_PANELS:
+        raise ValueError(
+            f"{len(pairs)} alternatives would be {len(pairs)} panels, past the "
+            f"{_MAX_PANELS} a sheet can be compared at a glance. Rehearse them as two "
+            f"sheets -- or count them, which lays no sheet."
+        )
+    shorts = [Path(name).name for _, name in pairs]
+    # A version is called by its file's name, as a rehearsal is -- unless two share one,
+    # when the path it was given by is what tells them apart on the sheet.
+    names = [short if shorts.count(short) == 1 else name
+             for short, (_, name) in zip(shorts, pairs, strict=True)]
+    px = _panel_scale(DEFAULT_LOOK_SIZE, len(pairs))
+    left = session.remaining
+    tried: list[Alternative] = []
+    for i, ((source, name), label) in enumerate(zip(pairs, names, strict=True), 1):
+        target = session.scratch(count_only=count_only)
+        before = target._open_pass()
+        told = len(target.notices())
+        result = run_script(target, source, name, prelude=prelude,
+                            prelude_name=prelude_name)
+        said = target.notices(since=told)
+        which = f"{label} ({i} of {len(pairs)})"
+        if result.code != 0:
+            # Said the way a rehearsal that raised is said -- what the calls that ran
+            # said, then what went wrong and where -- with which version it was.
+            tried.append(Alternative(label, result.code, "\n".join(
+                part for part in (notices.block(said),
+                                  f"{result.report} ({label}, {i} of {len(pairs)})",
+                                  result.trace.rstrip()) if part)))
+            continue
+        check = target.report() if whole else target.report(since=before)
+        block = notices.block(said, check)
+        laid = target.history.stroke_count
+        cost = f"{laid} strokes" if left is None else f"{laid} strokes of the {left} left"
+        if count_only:
+            head = f"Counted {which}: {cost}. Nothing painted, nothing committed."
+            panel = None
+        else:
+            head = f"Rehearsed {which}: {cost}. Nothing committed."
+            # The view a rehearsal's own look is, at the size one panel of the sheet has.
+            panel = target.look_image(scale=px)
+        session._keep_report(target, label, before, block)
+        tried.append(Alternative(label, 0, "\n".join(p for p in (head, block) if p),
+                                 laid, panel))
+    shown = [(_panel_label(one.name, one.laid), one.panel)
+             for one in tried if one.panel is not None]
+    sheet = (save_look(label_sheet(shown), session._look_path(None, "rehearse"))
+             if shown else None)
+    return Alternatives(tuple(tried), sheet)
+
+
 def _resolve_prelude(args) -> tuple[str, str]:
     """The prelude source to run before a pass, and what to call it.
 
@@ -928,6 +1061,27 @@ def _cmd_run(session: Session, args) -> int:
     prelude, prelude_name = _resolve_prelude(args)
     if prelude and args.prelude is None:
         print(f"Prelude: {prelude_name}")
+
+    if args.alternatives:
+        # Versions of one pass: each on a copy of its own, each with its own check, and
+        # their looks in one sheet. Warnings are said in each version's block, as below.
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=EaselWarning)
+            tried = run_alternatives(
+                session, [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
+                prelude=prelude, prelude_name=prelude_name or "prelude.py",
+                count_only=args.count, whole=args.check,
+            )
+        for one in tried.tried:
+            # Flushed, so a version that raised is said in its place among the others.
+            print(f"{one.text}\n", file=sys.stderr if one.code else sys.stdout, flush=True)
+        if tried.sheet is not None:
+            print(tried.sheet_line)
+        # What each version's check said is kept, as a rehearsal's is, and written after
+        # the printing for the same reason. A run in which none ran has nothing to keep.
+        if any(one.code == 0 for one in tried.tried):
+            session.save(args.session)
+        return tried.code
 
     # A rehearsal runs the pass against a copy of the session. The strokes are
     # seeded as if they were the next marks of the real painting, so what is

@@ -2588,7 +2588,8 @@ class Session:
             strokes: as :meth:`preview`, marks and masses alike -- a shaped mass is
                 twenty passes, and worth trying on the scrap of canvas first. **A
                 whole pass is a plan**: its masses, passages, marks and films, in the
-                order they are laid, rehearsed here as one.
+                order they are laid, rehearsed here as one -- and versions of one,
+                side by side, with :meth:`rehearse_each`.
             reference: shown alongside, cropped to the same place.
             region: crop both panels, enlarged. Use one -- the point is feature scale.
             grid: as :meth:`look`.
@@ -2639,7 +2640,7 @@ class Session:
         settings = _vary_settings(vary)
         ref_img = None if reference is None else load_reference(reference)
         columns = min(len(settings), 4)
-        panel = None if scale is None else max(int(scale) // columns, 200)
+        panel = _panel_scale(scale, len(settings))
         panels: list[tuple[str, Image.Image]] = []
         for setting in settings:
             trial = self._trial_session()
@@ -2655,6 +2656,130 @@ class Session:
             ))
         return save_look(label_sheet(panels, columns=columns),
                          self._look_path(path, "rehearse"))
+
+    def rehearse_each(
+        self,
+        alternatives,
+        reference: str | Path | Image.Image | None = None,
+        region=None,
+        grid: bool | str = False,
+        values: bool = False,
+        path: str | Path | None = None,
+        scale: int | None = DEFAULT_LOOK_SIZE,
+        labels=None,
+    ) -> Path:
+        """Rehearse versions of a pass, each on a copy of its own, side by side in one sheet.
+
+        :meth:`rehearse` tries one plan and ``vary=`` tries one mark at several settings.
+        This tries **versions** -- two skies, three ways of laying a rock face -- each on
+        its own copy of the canvas, and lays what each would look like side by side in
+        one image, every panel labelled with what it is and the strokes it laid. The
+        lighthouse painter compared its variants as whole passes, run one after another
+        through a harness of its own around :meth:`scratch` and written to a file each,
+        and said what would have replaced the harness: *rehearsing scripts as
+        side-by-side alternatives*.
+
+        A version is a **plan** -- anything :meth:`rehearse` takes -- or a **function**,
+        which is what a script is inside Python: it is handed the copy and paints on it,
+        mixtures, masses, passages, films and all::
+
+            def bristle(c):
+                c.scumble(top, "zenith", "high", 8, direction=3)
+                c.scumble(low, "high", "pale", 8, direction=-2)
+
+            def flat(c):
+                c.scumble(top, "zenith", "high", 8, direction=3, brush="flat")
+                c.scumble(low, "high", "pale", 8, direction=-2, brush="flat")
+
+            s.rehearse_each([bristle, flat])        # one sheet: bristle, flat
+            s.rehearse_each([plan, [dict(plan[0], size=0.05)]], labels=["0.09", "0.05"])
+
+        Nothing is committed and nothing is logged, and no copy sees another: each is
+        seeded as the next marks of the real painting, so the version chosen off the
+        sheet lands as it was shown -- ``flat(s)`` paints the second panel. A function
+        paints on the copy it is handed, not on ``s``; one that reaches the painting
+        instead -- through a helper that paints on ``s`` -- is stopped, with the records
+        to :meth:`undo`. What each copy was told at its calls is kept on the painting, as
+        a rehearsal's is. From a shell it is ``easel run p.easel a.py b.py
+        --alternatives``, which prints each version's own check besides.
+
+        Args:
+            alternatives: the versions, a list of plans and functions that each take
+                the copy. At most twelve, as for ``vary=``.
+            reference: shown beside every panel, cropped to the same place.
+            region: crop every panel, enlarged.
+            grid: as :meth:`look`.
+            values: greyscale.
+            path: where to write. Defaults to ``out_dir/rehearse_NNN.png``.
+            scale: the whole sheet's long-side pixel limit.
+            labels: what each panel is called. Left off, a function goes by its name
+                and a plan by its place in the list, counting from 1.
+
+        Returns:
+            The path the sheet was written to.
+        """
+        versions = self._versions(alternatives, labels)
+        ref_img = None if reference is None else load_reference(reference)
+        panel = _panel_scale(scale, len(versions))
+        panels: list[tuple[str, Image.Image]] = []
+        for label, version in versions:
+            trial = self._trial_session()
+            if callable(version):
+                logged = len(self.history.records)
+                version(trial)
+                strayed = len(self.history.records) - logged
+                if strayed:
+                    raise ValueError(_strayed_text(label, strayed))
+            else:
+                for kind, spec in self._plan_specs(version):
+                    trial._lay(kind, spec)
+            self._adopt_notices(trial)
+            panels.append((
+                _panel_label(label, trial.history.stroke_count),
+                render_look(trial.canvas, scale=panel, grid=grid, values=values,
+                            region=region, reference=ref_img,
+                            marks=trial.marks or None),
+            ))
+        return save_look(label_sheet(panels), self._look_path(path, "rehearse"))
+
+    def _versions(self, alternatives, labels) -> list[tuple[str, object]]:
+        """What :meth:`rehearse_each` was handed, as ``(label, version)``, or why it cannot be.
+
+        A plan is a list itself, so a list of single entries is a version per entry --
+        allowed, and what it looks like. What is refused is a thing that can only be one
+        plan -- a path, an entry, a place -- and text, which in Python is neither a plan
+        nor a function: a script is rehearsed beside another from a shell.
+        """
+        if isinstance(alternatives, (dict, Polygon, Region)) or _is_path(alternatives):
+            raise ValueError(
+                "rehearse_each() takes a list of versions, each a plan or a function, and "
+                "this is one plan: rehearse() it, or put it in a list beside another."
+            )
+        tried = [alternatives] if isinstance(alternatives, str) else list(alternatives)
+        if not tried:
+            raise ValueError("rehearse_each([]) has nothing to try. Give it two versions "
+                             "of a pass, each a plan or a function taking the copy.")
+        if len(tried) > _MAX_PANELS:
+            raise ValueError(
+                f"rehearse_each() would lay {len(tried)} panels, past the {_MAX_PANELS} a "
+                f"sheet can be compared at a glance. Try them in two sheets."
+            )
+        for version in tried:
+            if isinstance(version, str):
+                raise ValueError(
+                    f"A version is a plan or a function taking the copy, and {version!r} "
+                    f"is text. Scripts are rehearsed side by side from a shell: easel run "
+                    f"p.easel a.py b.py --alternatives."
+                )
+        if labels is None:
+            named = [getattr(v, "__name__", "") if callable(v) else "" for v in tried]
+            labels = [n if n and not n.startswith("<") else str(i)
+                      for i, n in enumerate(named, 1)]
+        labels = [str(label) for label in labels]
+        if len(labels) != len(tried):
+            raise ValueError(f"rehearse_each() was given {len(tried)} versions and "
+                             f"{len(labels)} labels; give one label for each.")
+        return list(zip(labels, tried, strict=True))
 
     def _lay(self, kind: str, spec: dict) -> list[StrokeRecord]:
         """Paint one plan entry on this session.
@@ -2931,7 +3056,8 @@ class Session:
 
         :meth:`rehearse` is this for a plan. This is it for a whole pass: ``easel run
         --rehearse`` runs a script against one of these, looks at the result and
-        prints what it would cost, and then throws it away.
+        prints what it would cost, and then throws it away. :meth:`rehearse_each` lays
+        several versions of a pass on copies of their own, side by side.
 
         ``count_only=True`` is the same copy with **the pixel work skipped**: every
         pass is worked out, every stroke is logged, and not one dab is stamped. The
@@ -5280,6 +5406,43 @@ def _setting_text(value) -> str:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return str(value)
     return f"{float(value):.3g}"
+
+
+def _panel_scale(scale: int | None, panels: int) -> int | None:
+    """The long side each panel of a sheet is drawn at, so the sheet keeps to ``scale``.
+
+    Four to a row, and never under 200 pixels, which is about the smallest a panel can
+    be and still show a mark. ``None`` is full resolution, panels and all.
+    """
+    return None if scale is None else max(int(scale) // min(panels, 4), 200)
+
+
+def _panel_label(name: str, laid: int) -> str:
+    """A version's panel label: what it is, and the strokes it laid on its copy.
+
+    The strokes because the price is half of what a version is being compared on --
+    the painter's own harness printed nothing else beside each variant's file.
+    """
+    return f"{name}  {laid} stroke{'' if laid == 1 else 's'}"
+
+
+def _strayed_text(label: str, records: int) -> str:
+    """Why a function handed a copy by :meth:`Session.rehearse_each` was stopped.
+
+    Python lets a version's helper reach ``s`` -- a module-level function that paints on
+    the painting, called from one that was handed the copy -- and a rehearsal that
+    paints the painting is the one thing a rehearsal must not be. The painter's harness
+    rebound its scope's ``s`` to each copy for exactly this reason.
+    """
+    if records < 0:
+        return (f"The version {label!r} took {-records} log records off the painting "
+                f"rather than working on the copy it was handed. Nothing after it was "
+                f"rehearsed.")
+    them = "it" if records == 1 else "them"
+    return (f"The version {label!r} laid {records} log record{'' if records == 1 else 's'} "
+            f"on the painting rather than on the copy it was handed -- a helper that "
+            f"paints on `s` and not on its argument does that. Nothing after it was "
+            f"rehearsed; s.undo({records}) takes {them} back.")
 
 
 def _as_timelapse(value) -> bool | int:
