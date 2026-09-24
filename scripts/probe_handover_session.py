@@ -34,6 +34,7 @@ It does four things:
     python scripts/probe_handover_session.py --flecks     # 4B, with its sheets
     python scripts/probe_handover_session.py --misfires   # 4C: the four cases, and the built gate
     python scripts/probe_handover_session.py --sheet      # 4D
+    python scripts/probe_handover_session.py --alternatives   # 4D built: two skies, side by side
     python scripts/probe_handover_session.py --file       # 4F
     python scripts/probe_handover_session.py --shell      # 4F built: the passes from a shell
     python scripts/probe_handover_session.py --shell --engine DIR/src   # ...under another
@@ -1792,6 +1793,128 @@ def probe_sheet() -> None:
               f"{'met' if parallel < 1.5 * one else 'missed'} on this machine")
 
 
+#: The painter's own versions of its sky, compared before `p01_sky.py` was committed:
+#: `try_sky3.py`'s B -- a cool rose horizon, warmth laid in from the left, then films --
+#: and C, a peach horizon and films only. Its harness ran them one after another on
+#: `scratch()`, a file each, and `montage.py` stitched the files.
+TRIALS = HERE / "try_sky3.py"
+
+
+def trial_versions() -> tuple[str, list[str]]:
+    """``try_sky3.py``'s shapes and functions as the painter wrote them, and its versions.
+
+    The file imports the painter's harness and runs it as it is imported, against a
+    session file this repository does not keep, so what it defines is lifted out of it
+    statement by statement, as written, and the harness left behind.
+    """
+    import ast
+
+    text = TRIALS.read_text(encoding="utf-8")
+    tree = ast.parse(text)
+    kept = []
+    for node in tree.body:
+        segment = ast.get_source_segment(text, node) or ""
+        if (isinstance(node, ast.ImportFrom) and node.module == "harness") \
+                or "run_variants" in segment or "sys.path" in segment:
+            continue
+        kept.append(segment)
+    versions = [node.name for node in tree.body
+                if isinstance(node, ast.FunctionDef) and node.name.startswith("v")]
+    return "\n".join(kept) + "\n", versions
+
+
+def _panel_of(sheet: Image.Image, index: int, size: tuple[int, int]) -> np.ndarray:
+    """One panel of a one-row sheet, above the label drawn over its bottom-left corner."""
+    gap, (w, h) = 12, size
+    x = gap + index * (w + gap)
+    return np.asarray(sheet.convert("RGB"))[gap:gap + h - 14, x:x + w]
+
+
+def _read(path: Path) -> Image.Image:
+    """An image read whole and let go of, so the directory it sits in can be removed."""
+    with Image.open(path) as image:
+        return image.convert("RGB")
+
+
+def probe_alternatives() -> None:
+    """4D, built: the painter's versions of its sky, laid three ways, and whether each lands.
+
+    As its harness laid them -- a copy each, a look each -- then as ``easel run
+    --alternatives`` lays the same two as scripts, load and save included, and as
+    ``s.rehearse_each`` lays them as functions. Then each version is painted for real on
+    the painting it was tried on, and its panel on each sheet held to what it laid.
+    """
+    print("\n== 4D, built: the painter's two skies, side by side ==")
+    from easel.cli import main as easel_main
+    from easel.session import _panel_scale
+
+    source, versions = trial_versions()
+    print(f"  {TRIALS.name}: versions {', '.join(versions)}, each three 8-pass scumbles "
+          f"and three films")
+    state = rebuild(upto="p00_draw.py", keep=False).session
+    # The file imports what it uses and paints only on the copy it is handed, so it
+    # needs no scope of the painting's -- and one would run the prelude on it again.
+    scope: dict = {"__name__": TRIALS.stem}
+    exec(compile(source, TRIALS.name, "exec"), scope)  # noqa: S102
+    functions = [scope[name] for name in versions]
+    prelude = HERE / "prelude.py"
+    px = _panel_scale(session_module.DEFAULT_LOOK_SIZE, len(versions))
+    quiet = contextlib.redirect_stdout(io.StringIO())
+    with warnings.catch_warnings(), tempfile.TemporaryDirectory() as tmp, quiet:
+        warnings.simplefilter("ignore")
+        tmp = Path(tmp)
+        state.out_dir = tmp
+        saved = state.save(tmp / "sky.easel")
+        scripts = []
+        for name in versions:
+            scripts.append(tmp / f"{name}.py")
+            scripts[-1].write_text(f"{source}\n{name}(s, s.palette, {{}})\n", encoding="utf-8")
+
+        started = time.perf_counter()
+        harness = Session.load(saved)
+        for name, fn in zip(versions, functions, strict=True):
+            c = harness.scratch()
+            fn(c, c.palette, {})
+            c.look(path=tmp / f"var_{name}.png", marks=False, sketch=False)
+        by_harness = time.perf_counter() - started
+
+        started = time.perf_counter()
+        code = easel_main(["run", str(saved), *map(str, scripts), "--alternatives",
+                           "--prelude", str(prelude)])
+        by_shell = time.perf_counter() - started
+        shell_sheet = _read(max(tmp.glob("rehearse_*.png")))
+
+        started = time.perf_counter()
+        api_sheet = _read(state.rehearse_each(
+            [lambda c, fn=fn: fn(c, c.palette, {}) for fn in functions], labels=versions))
+        by_api = time.perf_counter() - started
+
+        landed = []
+        for i, fn in enumerate(functions):
+            painted = rebuild(upto="p00_draw.py", keep=False).session
+            fn(painted, painted.palette, {})
+            look = np.asarray(painted.look_image(scale=px))
+            view = np.asarray(render_look(painted.canvas, scale=px,
+                                          marks=painted.marks or None))
+            size = (look.shape[1], look.shape[0])
+            landed.append((np.array_equal(_panel_of(shell_sheet, i, size), look[:size[1] - 14]),
+                           np.array_equal(_panel_of(api_sheet, i, size), view[:size[1] - 14])))
+        kept = Session.load(saved).reports()
+        OUT.mkdir(parents=True, exist_ok=True)
+        shell_sheet.save(OUT / "alternatives_sky.png")
+    print(f"  the harness, a copy and a look each: {by_harness:.1f}s for the two, then a "
+          f"file each and montage.py")
+    print(f"  easel run --alternatives, load and save included: {by_shell:.1f}s, exit "
+          f"{code}, {len(kept)} reports kept "
+          f"({', '.join(f'{r.mode} {r.scripts}' for r in kept)}), one sheet")
+    print(f"  s.rehearse_each, the same two as functions: {by_api:.1f}s")
+    for name, (shell_ok, api_ok) in zip(versions, landed, strict=True):
+        print(f"  {name}, painted for real on the painting it was tried on: "
+              f"{'lands as' if shell_ok else 'DIFFERS FROM'} its panel on the shell's sheet, "
+              f"{'as' if api_ok else 'DIFFERENT FROM'} on rehearse_each's")
+    print(f"  the shell's sheet: {OUT / 'alternatives_sky.png'}")
+
+
 # -- 4F. the session file -------------------------------------------------------------------
 
 def _resave(data: dict, path: Path, **changes) -> float:
@@ -2038,6 +2161,9 @@ def main(argv: list[str] | None = None) -> int:
                        ("--flecks", "4B: the dry-brush gates, and their sheets"),
                        ("--misfires", "4C: the narrowed rule on the four cases in hand"),
                        ("--sheet", "4D: a variant's cost, and a sheet in four processes"),
+                       ("--alternatives", "4D built: the painter's two skies laid as its "
+                                          "harness laid them, by `easel run "
+                                          "--alternatives` and by `rehearse_each`"),
                        ("--file", "4F: the session file, saved each way"),
                        ("--shell", "4F, built: the passes through `easel run`, the file "
                                    "and `easel timelapse`, engine by engine"),
@@ -2073,6 +2199,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_misfires()
     if every or "sheet" in chosen:
         probe_sheet()
+    if every or "alternatives" in chosen:
+        probe_alternatives()
     if every or "file" in chosen:
         probe_file()
     if every or "shell" in chosen:

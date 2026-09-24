@@ -242,6 +242,44 @@ glints of a reflection.
   every pass of the corpus and sweeps the share; `scripts/probe_handover_session.py
   --misfires` lays the four cases the gate was drawn on.
 
+### Versions of a pass, rehearsed side by side
+
+Step 8 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream D). The painter
+compared its variants as whole passes — scumbles, strokes and films — run one after
+another through a harness of its own around `scratch()`, a file each, looked at in turn,
+and said what would have replaced the harness: *rehearsing scripts as side-by-side
+alternatives. `easel run --rehearse a.py b.py` stacks them instead.* Laying them on one
+copy is right for a pass that goes on top of another, and wrong for two versions of one.
+
+- **`easel run p.easel a.py b.py --alternatives`**: the scripts are versions of one pass,
+  and each is rehearsed on a copy of its own — its own check printed and its own report
+  kept, as a rehearsal's is — and their looks are laid side by side in one sheet,
+  `rehearse_NNN.png`, each panel labelled with the script and the strokes it laid. **Every
+  copy is seeded as the next marks of the painting, so the version then run for real
+  lands as its panel shows it**, to the pixel. It implies `--rehearse`; with `--count` it
+  prices each version and lays no sheet; `--check` checks each over the painting under it;
+  a sheet holds at most twelve, as `vary=`'s does. A version that raises is said and left
+  off the sheet, and the others are still rehearsed, because none stands on another.
+- **`s.rehearse_each([...])`** is the same from Python, where a version is a plan or a
+  function handed the copy — which is what a script is inside Python. A function whose
+  helper paints on the painting instead of the copy is stopped, with the records to undo.
+- **Through the MCP server, `run` takes `alternatives`** — a list of scripts, or an
+  object naming each — and hands the sheet back inline, as the looking tools do. **So
+  `run` answers as a list**: declared as answering in text, it had its answers checked as
+  text, and a picture beside the text failed as an error. What a client reads is the same;
+  `run` no longer carries `structuredContent`.
+- **The painter's own two skies**, `try_sky3.py`'s B and C from the painting's drawing,
+  take 32.1 to 32.3 s through `--alternatives`, loading and saving the file included,
+  where its harness took 31.9 to 32.8 s for the same two: about 16 s a version, the
+  *about 15 s a variant* it timed, because the cost is the paint. What changes is one
+  sheet where it had two files and `montage.py`, and each version's own check beside it.
+  Each lands as its panel shows it.
+- **D1, a sheet's panels in processes of their own, is not built**, as the painter decided
+  on step 2's bench: four panels in four processes took 1.6 to 1.7 times one here, against
+  a target of 1.5, and a version's cost is its paint, which no sheet takes away.
+- A version is a rehearsal, on a copy: nothing a pass lays, and nothing a rebuild lays,
+  changes.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with
