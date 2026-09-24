@@ -683,11 +683,13 @@ having is that **the looking tools hand you the picture**: `look`, `preview`,
 `rehearse`, `compare` and `prepare` return their PNG beside the path they wrote it to,
 so looking every five to fifteen strokes costs one call instead of a call and a file
 read. Marks are still made by `run`, which takes the script as text — the same Python
-the guide teaches, with `s` and the whole API already in scope — or, as `alternatives`,
-several versions of one pass, rehearsed each on a copy of its own and handed back side
-by side in one sheet, inline like the looking tools. `preview`, `rehearse` and `cost`
-each hand back the Python that paints the plan they checked; paste that into `run`
-rather than retyping it, because a plan retyped between checking and painting drifts.
+the guide teaches, with `s` and the whole API already in scope — and **what it
+rehearses comes back inline too**: with `rehearse`, the copy's look beside the path it
+was written to, and as `alternatives`, several versions of one pass, rehearsed each on
+a copy of its own and handed back side by side in one sheet. `preview`, `rehearse` and
+`cost` each hand back the Python that paints the plan they checked; paste that into
+`run` rather than retyping it, because a plan retyped between checking and painting
+drifts.
 
 A **place** arrives as JSON in any of six forms — a named region, a grid cell, a span, a
 rectangle, an outline, or a shape builder with its own arguments:

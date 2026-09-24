@@ -10,7 +10,8 @@ script in any order.
 What the server adds is that **the looking tools hand back the image**. ``look``,
 ``preview``, ``rehearse``, ``compare`` and ``prepare`` return their PNG inline
 beside the path they wrote it to, so the loop the guide asks for -- look every five
-to fifteen strokes -- costs one call instead of a call and a file read.
+to fifteen strokes -- costs one call instead of a call and a file read. ``run`` does
+the same for a pass it rehearses.
 
 It adds three tools the CLI has not got, and they are the three questions about a
 mark that has not been made yet: ``preview`` (where does it go), ``rehearse`` (what
@@ -646,8 +647,10 @@ def build_server() -> MCPServer:
                 a script, which is what a pass actually is. Costs nothing but a look,
                 and about sixty of one painting's 224 strokes went on masses
                 that were repainted because rehearsing meant retyping the pass. The
-                one thing it keeps is what the check said, in the session file,
-                where `log` with `reports` reads it back.
+                look comes back as the picture, beside the path it was written to,
+                as `look` hands back its own. The one thing it keeps is what the
+                check said, in the session file, where `log` with `reports` reads it
+                back.
             count: price the pass without painting it -- a rehearsal with the pixel
                 work skipped, so a helper that calls a dozen verbs comes back with a
                 stroke count and a check in about a thirtieth of the time. No look,
@@ -717,8 +720,9 @@ def build_server() -> MCPServer:
         said = target.notices(since=told)
         block = _notices.block(said, check)
         short = Path(name).name
-        # Every answer is a list, because a sheet of alternatives comes back as a
-        # picture: a tool the SDK is told answers in text has its answer checked as text.
+        # Every answer is a list, because a rehearsal's look and a sheet of alternatives
+        # come back as pictures: a tool the SDK is told answers in text has its answer
+        # checked as text.
         if trying:
             if result.code != 0:
                 return [_join(_notices.block(said), result.text)]
@@ -727,16 +731,20 @@ def build_server() -> MCPServer:
             cost = (f"{laid} strokes" if left is None
                     else f"{laid} strokes of the {left} left")
             if count:
-                text = (f"Counted {short}: {cost}. Nothing painted, "
-                        f"nothing committed.\n{block}")
+                answer = [f"Counted {short}: {cost}. Nothing painted, "
+                          f"nothing committed.\n{block}"]
             else:
-                text = (f"Rehearsed {short}: {cost}. Nothing committed.\n"
-                        f"{block}\n{target.look()}")
+                # The look is what a rehearsal is for, and a path is no use to a client
+                # that cannot open a file: the picture comes back beside the text, as
+                # the looking tools hand theirs back, and the path stays in the text.
+                looked = target.look()
+                answer = [f"Rehearsed {short}: {cost}. Nothing committed.\n"
+                          f"{block}\n{looked}", Image(path=str(looked))]
             # What the check said is the one thing a rehearsal keeps: on the
             # painting, as `easel run --rehearse` keeps it. See `Session.reports`.
             s._keep_report(target, short, before, block)
             s.save(session)
-            return [text]
+            return answer
         if result.code == 0:
             s._keep_report(target, short, before, block)
         if result.save:

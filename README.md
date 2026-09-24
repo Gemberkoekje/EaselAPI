@@ -241,8 +241,9 @@ run first in the same scope, so helpers and mixtures survive between passes;
 
 The same verbs again, for a client that speaks MCP — and the difference worth
 having is that the looking tools hand back the picture rather than a path to it.
-`look`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline, so
-the loop the guide asks for (look every five to fifteen strokes) costs one call.
+`look`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline, as
+`run` does when it rehearses a pass, so the loop the guide asks for (look every five
+to fifteen strokes) costs one call.
 
 ```bash
 pip install "easel-paint[mcp]"
