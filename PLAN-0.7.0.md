@@ -27,8 +27,11 @@ rebuilt at its own frame size, and the notice is said at load, in the shell and 
 the server alike. Step 5 is built -- A, `NOTES-step5.md` -- with three things the plan did
 not say, each marked in 4A: a thin shape breaks over a quarter of its width, nothing
 lands on the drawn line and the frame is not an edge, and two masses held to one line
-leave the ground between them, which no committed painting does. Steps 6 to 10 are next,
-B first.**
+leave the ground between them, which no committed painting does. Step 6 is built -- B,
+`NOTES-step6.md` -- with three things the plan did not say, each marked in 4B: a brush
+drags only as it runs dry, so a loaded mark lays exactly what it laid; the comb lays what
+the stroke would stroke by stroke, not only on average; and a rebuild moves every mark
+that ran dry, not the sixteen laid starved. Steps 7 to 10 are next, C first.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -325,7 +328,9 @@ loads on rough canvas), and on `samples/brushes.png` -- and look, at all of them
 because the sampler *shows isolated strokes at full load* and has been fooled before
 (`LESSONS.md`, trap 1). **This is a fix that changes what a rebuild lays**: every
 starved stroke in every saved painting replays with the new gate -- sixteen of this
-painting's own, eleven `bristle` and five `flat`, which its painter accepts because its
+painting's own, eleven `bristle` and five `flat` *(corrected in step 6: those sixteen
+were laid starved on purpose; 65 of its 173 marks run dry somewhere along their length
+and move)*, which its painter accepts because its
 README pins 0.6.0 -- so it is named under 0.7.0 in `CHANGELOG.md` as the smudge was
 under 0.6.0, said at load by F2 below, and every golden that carries a starved stroke
 is opened before it is regenerated.
@@ -334,6 +339,23 @@ Not proposed until B lands: a fact at the call (*`load=0.45` at this size lands 
 its paint in pieces under 4 px*). If the gate change leaves the flecks where the painter
 found them, that line is cheap and the tooth histogram predicts it; if it does not, the
 line would be describing a fault that is gone.
+
+*(Built in step 6, `NOTES-step6.md`, as decided -- B1+B2, tuned so each load lays what it
+laid -- and with three things the plan did not say. **A brush drags only as it runs
+dry**: on linen and rough the lowest tooth lies under the gate's own band, so the gate
+reads the tooth even for a full brush, and a gate read along the travel wherever it
+reads anything would have moved every loaded mark on those surfaces; so the drag is
+blended in as the load falls from `0.9` to `0.7`, and a loaded brush lays exactly what
+it laid. **The comb is matched to the stroke stroke by stroke**, each bristle weighed by
+how much of the tip it is, and a bristle running out fades rather than stopping -- matched
+on average, a comb whose wet bristles fell on its weakest laid half, and cut off hard a
+nearly empty stroke could lay only nothing or one bristle's worth. And **the notice counts
+every mark that ran dry, not the sixteen laid starved**: a brush spends its load along
+every stroke and the bristle preset starts at `0.9`, so 65 of the painting's 173 marks
+move, and 2,788 of the corpus's 5,628. Built side by side as the painter asked, B2 alone is dots again once it lays today's
+paint, and B1+B2 is dragged rather than combed, so B1's kernel is the same on a comb. The
+fact at the call is not built: at `0.45` the specks under 4 px carry 1% of the crosser's
+paint, where they carried 8%.)*
 
 ### C. The rule that misfired, and the instrument that would have caught it
 
@@ -628,7 +650,7 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
 5. **A**: `feather=`, inward, `roughen()`, the default on `edge="hard"`, the goldens.
    *Done: `NOTES-step5.md`.*
 6. **B**: the gate, the goldens, the sampler and the exercise re-rendered, the fix named
-   in `CHANGELOG.md` and in F2's list.
+   in `CHANGELOG.md` and in F2's list. *Done: `NOTES-step6.md`.*
 7. **C1, C2**: the crops, then the gate if the crops keep every true positive.
 8. **D0**, then **D1** if its bench meets the target.
 9. **G**: the three sentences with `scripts/check_guide_blocks.py` green, the numbers

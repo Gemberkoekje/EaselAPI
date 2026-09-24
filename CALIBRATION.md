@@ -305,7 +305,7 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
 - The window for a deliberately broken mark is roughly `load=0.4` to `0.6`. Below
   about `0.35` a `bristle` brush leaves almost nothing. `flat` and `knife` keep
   marking further down; `bristle` is the most texture-sensitive.
-- A pass laid at `0.5` because it sounded painterly leaves a speckled film that
+- A pass laid at `0.5` because it sounded painterly leaves a broken film that
   everything after it sits on. Anything meant to read as a solid mass wants
   `load=1.0`.
 - **`density` spaces the passes; it does not fill them.** `density=1.0` reads as a
@@ -356,8 +356,12 @@ few strokes of the first. `dry()` takes wetness to zero (or by `amount`, or in a
   quarter; on `linen` and `smooth` it loses about a fifth. `load_falloff=0.25`
   keeps a canvas-wide stroke even from end to end; `0.0` never runs dry; the
   default is right for marks a brush-length or three long.
-- The texture decides the breakup: `rough` skips in chunky islands, `linen`
-  speckles at the scale of the weave, `smooth` leaves broader open gaps.
+- The texture decides the breakup and the travel its direction: `rough` skips in
+  chunky islands, and `linen` and `smooth` break into dashes that run with the
+  stroke, because since 0.7.0 a brush under `0.9` of its load is gated against the
+  tooth read along its travel, a thread of linen long, and a comb's bristles run dry
+  one by one. Before that `linen` speckled at the scale of the weave; *A dry brush
+  that streaks*, under the lighthouse handover's round, has the numbers.
 - `s.log()` reports how much paint each mark actually laid, and prints
   `NO PAINT LANDED` for one that changed nothing.
 
@@ -2835,6 +2839,145 @@ brush dragged* -- B1+B2 a close second, *combed more than dragged*, then B1, B3 
 today, today plainly dirt. It could not tell the streaks from the extra paint by eye, and
 asked to see them tuned to lay what today lays -- which is what was decided (the plan's
 question 12): B1+B2, tuned, since B2 does nothing on a tip without a comb.
+
+#### Built, in step 6
+
+**What shipped is B1+B2, tuned** (`Canvas.drag`, `tooth_along`, `DryComb`), and it
+differs from the bench's copies in four places, each on purpose. **It drags only as the
+brush runs dry**: nothing at `0.9` of the load and over, all of it from `0.7` down, a
+smoothstep between -- because on linen and rough the lowest tooth lies under the gate's
+own band (`0.116` and `0.053` at 1024), so the gate reads the tooth even for a full
+brush, and a gate read along the travel wherever it reads anything would have moved
+every loaded mark on those surfaces. **The tooth read along is given back the tooth's own
+values rank for rank**, where B1's copy kept only its mean and spread. **Each bristle's
+share of the paint comes from its comb, stratified, and the comb is matched to the
+stroke's share stroke by stroke**, each bristle weighed by how much of the tip it is.
+And **a bristle running out fades as the fourth power** of how far it is under `0.05` of
+the canvas, where the copy cut it off at `0.10` of its load. The distributions all of this
+is matched to are read at pixels drawn at random: every fourth pixel each way -- the grid
+`tooth_ceiling` reads -- lands on smooth's grain, a lattice four pixels apart, and reads
+its tooth wider than the field is (a 90th percentile of `0.667` against `0.637`), which
+let a first build lay twice its paint on smooth. `tooth_ceiling` reads that grid still,
+as it always has, so smooth's ceiling is `0.692` where the field's own 95th percentile is
+`0.667`. The probe's `--dry` benches
+it beside 0.6.0's gate -- *today*, which is the engine with `Canvas.drag` held at `0`,
+0.6.0's own lines -- and beside B2 alone as built, which the painter asked to see:
+
+| gate | load | laid | pieces | median | under 4 px | specks | long | paint |
+|---|---|---|---|---|---|---|---|---|
+| today | 0.30 | 277 | 475 | 3 | 62% | 26% | 1.0 | 1.0 |
+| | 0.45 | 1,321 | 571 | 4 | 49% | 8% | 1.0 | 1.0 |
+| | 0.60 | 5,482 | 531 | 5 | 42% | 2% | 1.0 | 3.4 |
+| | 0.80 | 16,363 | 426 | 7 | 31% | 1% | 1.0 | 6.2 |
+| B2 alone, built | 0.30 | 247 | 230 | 3 | 51% | 12% | 1.1 | 1.1 |
+| | 0.45 | 1,225 | 320 | 5 | 43% | 4% | 1.1 | 1.4 |
+| | 0.60 | 5,389 | 341 | 6 | 37% | 1% | 1.1 | 3.4 |
+| **built** | 0.30 | 246 | 101 | 7 | 26% | 3% | 2.3 | 2.4 |
+| | 0.45 | 1,400 | 125 | 12 | 25% | 1% | 2.8 | 3.5 |
+| | 0.60 | 5,750 | 156 | 13 | 24% | 0% | 2.9 | 3.8 |
+| | 0.80 | 16,318 | 143 | 16 | 16% | 0% | 2.8 | 7.0 |
+
+*Laid* is the stroke's own count of the paint it put down. **Tuned to lay today's paint,
+B2 alone is dots again, in the comb's rows** -- the bench's B2 read as streaks at more than
+three times the paint -- and B1+B2 is chunky dashes of every length running with the
+brush: dragged, not combed, so B1's kernel was not shortened on a comb (the painter's
+12b). A 5 px kernel, looked at beside it, sits between the two.
+
+**What each load lays**, summed over 24 strokes at random places and directions, each
+with its own comb (`bench_amounts`), against the same strokes under 0.6.0's gate, with
+the tenth and ninetieth percentile stroke by stroke:
+
+| mark | load | built / today | one stroke |
+|---|---|---|---|
+| `bristle` `0.065`, linen | 0.30 | `1.02` | `0.79`-`1.33` |
+| | 0.45 | `1.00` | `0.90`-`1.06` |
+| | 0.60 | `0.99` | `0.94`-`1.06` |
+| | 0.80 | `1.00` | `0.97`-`1.02` |
+| `bristle` `0.07`, rough, no falloff | 0.20 | `0.92` | `0.64`-`2.49` |
+| | 0.35 | `0.95` | `0.82`-`1.25` |
+| | 0.60 | `0.99` | `0.97`-`1.02` |
+| `bristle` `0.05`, smooth | 0.30 | `1.06` | `0.42`-`2.76` |
+| | 0.45 | `0.94` | `0.78`-`1.14` |
+| | 0.60 | `0.98` | `0.93`-`1.02` |
+| `flat` `0.03`, linen | 0.35 | `0.99` | `0.88`-`1.11` |
+| | 0.50 | `1.00` | `0.93`-`1.08` |
+| | 0.70 | `0.99` | `0.95`-`1.03` |
+| `round_hard` `0.02`, linen | 0.30 | `1.01` | `0.93`-`1.09` |
+| | 0.50 | `1.00` | `0.96`-`1.04` |
+| | 0.70 | `1.00` | `0.97`-`1.02` |
+
+**One stroke is a lottery where one or two bristles carry it**, as a dry brush is, and the
+sums hold. Cut off hard, a bristle under `0.05` laid nothing, and the comb's total jumped
+from nothing to one bristle's worth: a `bristle` at `0.30` on smooth, whose need sits at
+the tooth's ceiling, laid **an eighth** of what it had, summed. The fade is what the
+table above is built with.
+
+**Exercise 3** on rough: at `0.6` the stroke lays `36,968` against `37,435`, in 25 pieces
+with a median of 26 px, `2.5` times as long along the travel as across, where 0.6.0's
+gate left 15 islands with a median of 176 px, `1.4` times; at `0.35`, `3,584` against
+`3,221`, 41 pieces of a median 80 px, `2.0` times. **The painter's five ledges** (`flat`,
+`0.7` and `0.8`): 26 pieces with a median of 11 px, `3.9` times as long as wide, where
+they were 25 of 52 px at `1.3` -- the same paint as dashes. **The planes recipe's scrape**
+lays a trace under either.
+
+**What the sheets show** -- `dry_crosser.png`, `dry_exercise3.png`, `dry_water.png`,
+`dry_ledges.png`, `dry_sampler.png` -- is the dots gone: the crosser's flecks become
+dashes dragged with it, the painter's first surf strokes of foam along the rock, the
+sampler's dry tails gaps that run with the stroke. Rough changes least, because rough's
+tooth is coarse islands already -- at 1024x768, four pixels on, it correlates `0.83`
+either way -- so the read along hardly moves it (`0.89` along, `0.85` across) and its
+streaks come from the comb. Linen's, at the same size and distance, correlates `0.08`
+either way raw and `0.73` along against `-0.04` across once it is read along.
+
+**The corpus, rebuilt under each gate** (`--corpus-dry`): every committed painting from
+its scripts, holds cut on the line both times -- a saved clip replays at the feather it was
+laid with, and none was laid with one -- so what differs is the gate alone. This is what a
+rebuild of each saved painting lays now. *Run dry* is the marks `stroke.drags()` counts,
+which is what the rebuild notice counts; *moved* is the share of the canvas more than two
+8-bit levels apart, and more than eight; *ground* is `Canvas.ground_showing`'s own, under
+0.6.0's gate and this one:
+
+| painting | marks | run dry | moved | past 8 levels | ground |
+|---|---|---|---|---|---|
+| car wash | 212 | 143 | 16.94% | 9.30% | 0.02% -> 0.00% |
+| pears | 231 | 198 | 3.28% | 1.45% | 1.27% -> 1.27% |
+| lighthouse at dusk | 185 | 50 | 0.60% | 0.24% | 0.01% -> 0.01% |
+| laundromat | 288 | 142 | 5.82% | 1.64% | 0.48% -> 0.47% |
+| greenhouse lighthouse, Sonnet | 275 | 59 | 0.26% | 0.10% | 13.70% -> 13.70% |
+| greenhouse lighthouse, Opus | 297 | 142 | 19.79% | 7.00% | 0.17% -> 0.07% |
+| greenhouse lighthouse, Fable | 285 | 87 | 0.38% | 0.08% | 0.01% -> 0.01% |
+| pool | 244 | 118 | 7.52% | 1.91% | 0.03% -> 0.01% |
+| heron, first | 295 | 143 | 2.55% | 0.56% | 0.11% -> 0.11% |
+| heron, second | 255 | 147 | 2.91% | 0.97% | 1.31% -> 1.32% |
+| winter greenhouse | 299 | 95 | 0.18% | 0.07% | 0.52% -> 0.52% |
+| fogged glass | 314 | 193 | 6.19% | 1.27% | 0.16% -> 0.16% |
+| pier | 259 | 222 | 7.14% | 2.44% | 0.40% -> 0.30% |
+| hands | 327 | 133 | 2.77% | 0.86% | 24.69% -> 24.74% |
+| **lighthouse handover** | 173 | **65** | 1.02% | 0.13% | 0.00% -> 0.00% |
+| BigPickle | 50 | 26 | 7.08% | 3.93% | 31.94% -> 31.94% |
+| DeepSeek | 69 | 19 | 0.60% | 0.22% | 0.00% -> 0.00% |
+| Gemini | 726 | 517 | 2.21% | 0.86% | 0.38% -> 0.37% |
+| GLM | 127 | 44 | 1.14% | 0.22% | 12.78% -> 12.80% |
+| GPT | 411 | 170 | 0.64% | 0.29% | 0.07% -> 0.07% |
+| Grok | 134 | 34 | 0.39% | 0.05% | 0.00% -> 0.00% |
+| Kimi | 172 | 41 | 0.36% | 0.12% | 0.00% -> 0.00% |
+
+**Half the corpus's marks run dry somewhere**: 2,788 of 5,628, because a brush spends its
+load along every stroke and the `bristle` preset starts at `0.9`, so a preset bristle's
+tail drags as surely as a mark laid starved. The plan counted *sixteen* of the handover's
+own -- the marks laid starved on purpose -- and it is 65. What a rebuild moves is a median
+of `2.4%` of a canvas, from `0.18%` to `19.8%`, most where a painting lays large passages
+with the bristle at its own load -- the Opus greenhouse and the car wash. **What moves is
+what was meant to**: `dry_corpus.png` crops the largest change in each painting, and in
+every one it is a dry passage's dots become streaks along its strokes -- the car wash's
+pale verticals, the pool's glints, BigPickle's sky, GPT's roofs. **`ground:` rises by
+`0.05` of a point at most** (the hands), in three paintings, and falls in six.
+
+**What it costs**: the painter's thirteen passes rebuild in `31.5` s under this gate
+against `29.6` under 0.6.0's, best of three each in fresh processes on a quiet machine --
+a sixteenth more. Part of it is the tooth read along: one field per ten degrees of travel
+a starving brush meets, built once per canvas and shared with its rehearsals -- 16 for
+this painting, `50` MB at 1024x768.
 
 ### The graded rule's two misfires
 

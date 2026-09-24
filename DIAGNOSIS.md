@@ -26,7 +26,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | What you are looking at | Where |
 |---|---|
 | A mass that came out a rectangle when you built it as a shape | `PAINTER.md` -> *What you are bad at*; `PAINTING.md` -> *Masses that are not rectangles* |
-| A mottled field with the ground showing through in flecks, at `density=1.0` | `RECIPES.md` -> *A plane that is a plane* |
+| A mottled field with the ground showing through in broken streaks along its passes, at `density=1.0` | `RECIPES.md` -> *A plane that is a plane* |
 | Faint striping across a large flat plane, and `opacity` will not remove it | `PAINTER.md` -> *2. Tone the ground*; `CALIBRATION.md` -> *`block_in`* |
 | A mass that has eaten a sawtooth out of the one beside it | `CALIBRATION.md` -> *`block_in`* |
 | A staircase along a boundary that is not parallel to the passes | `CALIBRATION.md` -> *The chisel staircase*; `PAINTING.md` -> *The shape each tool leaves behind* |
@@ -43,7 +43,7 @@ its passage, because a dead one is now a command that answers with an apology.
 |---|---|
 | A wide soft passage that came out as three or four hard bars, or a venetian blind with gaps between the passes | `RECIPES.md` -> *A quiet gradient*; `CALIBRATION.md` -> *The band, and the brush that closes its joins* |
 | A band you laid by hand, stroke by stroke, that ribbed where a `scumble` of the same shape did not | `RECIPES.md` -> *A passage brightening toward one side* |
-| A sky, a far field or a sheet of water — a third of the canvas, graded — that reads as a stack of bands, or shows horizontal strata with flecks of bare ground in them | `RECIPES.md` -> *A graded field that is most of the picture* |
+| A sky, a far field or a sheet of water — a third of the canvas, graded — that reads as a stack of bands, or shows horizontal strata with streaks of bare ground in them | `RECIPES.md` -> *A graded field that is most of the picture* |
 | A glow with visible concentric rings, like a contour map | `CALIBRATION.md` -> *`scumble`* |
 | A glow that came back a solid disc with a thin ramp round it, a daisy of petals radiating from a shared centre, or a rim with nothing in the middle | `RECIPES.md` -> *A passage light in the middle* |
 | A passage that will not go quiet however low you set `opacity` | `CALIBRATION.md` -> *Opacity does not make a passage quieter* |

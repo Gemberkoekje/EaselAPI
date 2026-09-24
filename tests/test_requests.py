@@ -19,6 +19,7 @@ from __future__ import annotations
 import math
 import re
 import warnings
+from contextlib import nullcontext
 
 import numpy as np
 import pytest
@@ -5514,11 +5515,12 @@ def test_the_shell_says_it_is_rebuilding_before_it_does(tmp_path, capsys):
 
 # -- 0.7.0 F2: the engine that saved a file, and what has moved since --------------------
 def _smudged(tmp_path):
-    """A painting with a smudge in it: the one kind of mark a fix since 0.5.0 moves."""
+    """A painting with a smudge in it, and nothing else a fix since 0.5.0 moves: its mass
+    is laid solid, so no pass of it runs dry (0.7.0's dry-brush fix, 0.7.0 B below)."""
     s = make(tmp_path)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        s.block_in(span("C4", "F5"), "flat", "burnt_umber", size=0.05)
+        s.block_in(span("C4", "F5"), "flat", "burnt_umber", size=0.05, solid=True)
         s.smudge([(0.3, 0.5), (0.7, 0.5)])
         s.smudge([(0.3, 0.6), (0.7, 0.6)])
     return s
@@ -5586,24 +5588,25 @@ def test_it_is_said_once_and_only_where_something_moves(tmp_path):
     assert _said_at_load(path) == []
 
     plain = make(tmp_path)
-    plain.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05)
+    plain.stroke([(0.1, 0.5), (0.9, 0.5)], "flat", "burnt_umber", size=0.05, solid=True)
     path = plain.save(tmp_path / "r.easel")
     _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
     assert _said_at_load(path) == []
 
 
 def test_a_fix_is_counted_against_the_release_that_saved_the_file(tmp_path, monkeypatch):
-    """What step 6's dry-brush fix will do to a 0.6.0 file, with a stand-in fix: the
-    marks it moves are counted, the release that saved the file is named, and the way
-    back is that release. A file from a later release than this one is not dated
-    against fixes this build has never heard of."""
+    """A fix after the release that saved a file, with a stand-in for one: the marks it
+    moves are counted, the release that saved the file is named, and the way back is
+    that release. A file from a later release than this one is not dated against fixes
+    this build has never heard of. (Step 6's own fix is in the list too, and moves
+    nothing here: the painting's mass is solid and a smudge does not run dry.)"""
     import sys
 
     from easel import notices
 
     session_module = sys.modules["easel.session"]
     later = notices.RebuildChange("9.0.0", "every flat lays a stand-in fix", "### none",
-                                  lambda record: record.brush == "flat")
+                                  lambda record, canvas: record.brush == "flat")
     monkeypatch.setattr(notices, "REBUILDS", (*notices.REBUILDS, later))
     monkeypatch.setattr(session_module, "_engine", lambda: "9.0.0")
 
@@ -5906,3 +5909,284 @@ def test_roughen_wanders_by_amp_keeps_a_runs_ends_and_calms_where_asked():
     assert max(abs(y - 0.5) for x, y in seat if abs(x - 0.5) < 0.005) < 0.004
     with pytest.raises(ValueError, match="long side like size"):
         roughen(line, amp=-1)
+
+
+# -- 0.7.0 B: a dry brush that streaks rather than speckles ----------------------------
+@pytest.fixture
+def old_gate(monkeypatch):
+    """0.6.0's gate, for the length of a call: ``with old_gate(): ...``.
+
+    Not a copy of the old stamp. The engine lays exactly 0.6.0's gate wherever
+    ``Canvas.drag`` says a dab does not drag -- a loaded brush, a tooth that cannot gate
+    it -- so a brush that never drags is 0.6.0's brush, line for line.
+    """
+    from contextlib import contextmanager
+
+    from easel.canvas import Canvas
+
+    @contextmanager
+    def held():
+        with monkeypatch.context() as m:
+            m.setattr(Canvas, "drag", lambda self, load, need: 0.0)
+            yield
+    return held
+
+
+def _field(value=0.56, size=(1024, 768), texture="linen"):
+    """A canvas set to one colour rather than painted, so all that moves is the mark."""
+    s = Session(*size, texture=texture, ground="burnt_sienna", seed=11, timelapse=False)
+    s.palette["field"] = s.palette.at_value(s.palette.mix("cerulean", "titanium_white", 0.7),
+                                            value)
+    s.canvas.rgb[...] = s.palette["field"]
+    s.palette["cloud"] = s.palette.at_value(s.palette.mix("ultramarine", "alizarin", 0.25),
+                                            0.39)
+    return s
+
+
+def _took_paint(s, before):
+    """Where a mark moved the canvas's values by an 8-bit level or more."""
+    return np.abs(s.canvas.values(sketch=False).astype(int) - before) >= 1
+
+
+def _runs_along(mask, step, axis):
+    """How often a pixel that took paint has paint ``step`` pixels on along ``axis``."""
+    if axis == 1:
+        a, b = mask[:, :-step], mask[:, step:]
+    else:
+        a, b = mask[:-step, :], mask[step:, :]
+    return float((a & b).sum() / max(a.sum(), 1))
+
+
+def test_a_starving_bristle_drags_streaks_where_it_dotted(tmp_path, old_gate):
+    """The lighthouse handover's finding 2: *dry-brush speckle reads as dirt*. The sky's
+    own crosser at `load=0.45` landed 571 pieces with a median of 4 px, as long across
+    the travel as along it -- the tooth gated a pixel at a time. Dragged, what it lays
+    runs with the brush: paint a few pixels on along the travel is far likelier than a
+    few pixels across it, which for dots it is not."""
+    def lay(old):
+        s = _field()
+        before = s.canvas.values(sketch=False).astype(int)
+        with warnings.catch_warnings(), (old_gate() if old else nullcontext()):
+            warnings.simplefilter("ignore")
+            s.stroke([(-0.06, 0.46), (0.5, 0.46), (1.06, 0.46)], "bristle", "cloud",
+                     size=0.065, load=0.45, opacity=0.40, pressure="swell", smooth=False)
+        return _took_paint(s, before)
+
+    dots, streaks = lay(True), lay(False)
+    # Measured: 0.32 along and 0.31 across three pixels on for the dots, 0.73 and 0.37
+    # for the streaks.
+    assert _runs_along(dots, 3, 1) < 1.25 * _runs_along(dots, 3, 0)
+    assert _runs_along(streaks, 3, 1) > 1.6 * _runs_along(streaks, 3, 0)
+    assert _runs_along(streaks, 3, 1) > 1.8 * _runs_along(dots, 3, 1)
+
+
+def test_each_load_lays_about_the_paint_it_laid(tmp_path, old_gate):
+    """The painter's condition, and the plan's decision 12: *the amount was right, the
+    shape was wrong* -- a load keeps its meaning and only its shape changes. Summed over
+    strokes at different places, each with its own comb, a starving bristle lays what it
+    laid under 0.6.0's gate; one stroke on its own can differ, as brushes do."""
+    paths = [[(0.05, y), (0.5, y + 0.03), (0.95, y + 0.01)] for y in (0.2, 0.35, 0.5, 0.65, 0.8)]
+
+    def total(load, old):
+        laid = 0.0
+        for path in paths:
+            s = _field()
+            with warnings.catch_warnings(), (old_gate() if old else nullcontext()):
+                warnings.simplefilter("ignore")
+                laid += s.stroke(path, "bristle", "cloud", size=0.065, load=load,
+                                 opacity=0.4).paint
+        return laid
+
+    for load in (0.35, 0.5, 0.7):
+        assert total(load, False) == pytest.approx(total(load, True), rel=0.2), load
+
+
+def test_a_loaded_mark_and_a_dab_lay_exactly_what_they_laid(tmp_path, old_gate):
+    """A brush drags only as it runs dry -- under `0.9` of its load -- and a dab has no
+    travel to drag along: so `solid=True`, the loaded presets over a short run, and a
+    single stamp of a round tip lay what they laid under 0.6.0, to the bit."""
+    def lay(old):
+        s = make(tmp_path)
+        with warnings.catch_warnings(), (old_gate() if old else nullcontext()):
+            warnings.simplefilter("ignore")
+            s.stroke([(0.1, 0.3), (0.9, 0.35)], "bristle", "burnt_umber", solid=True)
+            s.stroke([(0.2, 0.5), (0.26, 0.52)], "flat", "yellow_ochre", size=0.04)
+            s.glaze([(0.1, 0.7), (0.15, 0.71)], "ultramarine")
+            s.dab(0.6, 0.6, "round_hard", "titanium_white", size=0.03, load=0.3)
+            s.block_in("D5", "flat", "burnt_umber", size=0.06, solid=True)
+        return s.canvas.rgb
+
+    assert np.array_equal(lay(True), lay(False))
+
+
+def test_the_log_and_the_stream_are_where_they_were(tmp_path, old_gate):
+    """Rule 6 of the plan: nothing new may touch the log index or the random stream. The
+    comb's bristles hold their paint by a draw from the comb itself, not from the
+    stroke's generator, so a pass of starving marks logs what it logged and leaves the
+    stream where it left it."""
+    def lay(old):
+        s = make(tmp_path)
+        with warnings.catch_warnings(), (old_gate() if old else nullcontext()):
+            warnings.simplefilter("ignore")
+            s.stroke([(0.1, 0.3), (0.9, 0.35)], "bristle", "burnt_umber", load=0.4)
+            s.block_in("C3", "bristle", "yellow_ochre", size=0.05, load=0.5)
+            s.scumble("D4", "ultramarine", "yellow_ochre")
+        return [r.to_json() for r in s.history.records], s.rng.bit_generator.state
+
+    (old_log, old_state), (new_log, new_state) = lay(True), lay(False)
+    for a, b in zip(old_log, new_log, strict=True):
+        a.pop("paint"), b.pop("paint")
+    assert old_log == new_log and old_state == new_state
+
+
+def test_the_tooth_read_along_the_travel_keeps_the_tooths_own_values():
+    """Read along the travel, the tooth is averaged over a thread's length -- and then
+    given back its own distribution rank for rank, because an average is narrower than
+    what it averages and would let a different share of the canvas through at every
+    load: 22% more paint at `0.60` on rough, 12% less at `0.35`, as step 2 benched it.
+    On every surface, in the tail a starving brush reads too: ranked against every
+    fourth pixel, smooth's -- whose grain is a lattice four pixels apart -- came back
+    wider than it is, and let through twice what it should at the tooth's ceiling."""
+    from easel.canvas import _TOOTH_GRAIN_W, _TOOTH_HEIGHT_W, Canvas
+
+    for texture in ("smooth", "linen", "rough"):
+        c = Canvas(512, 384, texture=texture, seed=5)
+        tooth = c.height_map * _TOOTH_HEIGHT_W + c.grain * _TOOTH_GRAIN_W
+        for travel in (0.0, 0.5):
+            along = c.tooth_along(travel)
+            qs = np.r_[np.linspace(0.02, 0.98, 25), 0.99, 0.995]
+            assert np.allclose(np.quantile(along, qs), np.quantile(tooth, qs), atol=0.005), \
+                (texture, travel)
+            assert along.min() >= tooth.min() and along.max() <= tooth.max()
+
+    c = Canvas(512, 384, texture="linen", seed=5)
+    tooth = c.height_map * _TOOTH_HEIGHT_W + c.grain * _TOOTH_GRAIN_W
+    along = c.tooth_along(0.0)
+
+    def corr(field, dx, dy):
+        h, w = field.shape
+        a = field[max(dy, 0):h + min(dy, 0), max(dx, 0):w + min(dx, 0)]
+        b = field[max(-dy, 0):h + min(-dy, 0), max(-dx, 0):w + min(-dx, 0)]
+        return float(np.corrcoef(a.ravel(), b.ravel())[0, 1])
+
+    # Measured: 0.20 and 0.19 four pixels on, raw; 0.45 along and 0.18 across, read along.
+    assert abs(corr(tooth, 4, 0) - corr(tooth, 0, 4)) < 0.05
+    assert corr(along, 4, 0) > corr(along, 0, 4) + 0.15
+    assert c.tooth_along(math.pi) is along                 # one field for both ways along
+    assert c.trial_copy().tooth_along(0.0) is along        # and a rehearsal reads the same
+
+
+def test_a_comb_between_its_bristles_lays_what_the_stroke_would():
+    """B2, tuned: each bristle keeps a share of the tooth of its own -- the wettest
+    more, the driest less, one gone dry nothing -- around a share chosen so the comb,
+    each bristle weighed by how much of the tip it is, keeps what the stroke would.
+    Down to a stroke that keeps a fraction of a percent, which the wettest bristle
+    carries: a comb whose bristles could only be in or out laid nothing there, or one
+    bristle's worth."""
+    from easel.brush import bristle_shares
+    from easel.canvas import DryComb
+
+    rng = np.random.default_rng(3)
+    for comb in range(1, 6):
+        shares = bristle_shares(14, 0, comb)
+        weights = rng.uniform(0.0, 1.0, shares.size)
+        dry = DryComb(shares, weights)
+        for kept in (0.002, 0.005, 0.05, 0.2, 0.5, 0.8, 0.95):
+            each = dry.each(kept)
+            assert float(each @ weights / weights.sum()) == pytest.approx(kept, rel=0.01)
+            if 0.05 <= kept <= 0.8:
+                assert each.max() - each.min() > 0.2      # and it is spread, not even
+            if 0.05 <= kept <= 0.2:
+                assert each.min() < 1e-3                  # its driest bristles out
+    assert np.array_equal(bristle_shares(14, 0, 2), bristle_shares(14, 0, 2))
+    assert sorted((bristle_shares(14, 0, 2) * bristle_shares(14, 0, 2).size).astype(int)) \
+        == list(range(bristle_shares(14, 0, 2).size))    # one share in every slice
+
+
+def test_drags_says_which_marks_the_gate_moves(tmp_path, old_gate):
+    """The rebuild notice counts the marks this fix lays differently (`NOTES-step4.md`,
+    4: *the one piece of it that has to be exact enough to count*). Asked of each mark
+    before it is laid, `drags()` agrees with laying it both ways."""
+    from easel.brush import brush
+    from easel.stroke import drags
+
+    marks = [
+        ([(0.1, 0.5), (0.9, 0.52)], "bristle", {"load": 0.4}),
+        ([(0.1, 0.5), (0.9, 0.52)], "flat", {"size": 0.03}),
+        ([(0.1, 0.5), (0.9, 0.52)], "round_hard", {"size": 0.02, "load": 0.5}),
+        ([(0.4, 0.5), (0.45, 0.5)], "flat", {"size": 0.04}),
+        ([(0.1, 0.5), (0.9, 0.52)], "bristle", {"load": 1.0, "load_falloff": 0.0}),
+        # The preset's own 0.9, which a stroke's float32 loads carry as 0.89999998:
+        # loaded, not dragging, and not counted.
+        ([(0.1, 0.5), (0.9, 0.52)], "bristle", {"load_falloff": 0.0}),
+        ([(0.5, 0.5)], "round_hard", {"size": 0.04, "load": 0.3}),
+        ([(0.5, 0.5)], "bristle", {"size": 0.06, "load": 0.4}),
+        ([(0.1, 0.5), (0.9, 0.52)], "round_soft", {"texture_sensitivity": 0.0, "load": 0.2}),
+    ]
+    for points, name, kw in marks:
+        size = kw.pop("size", None)
+        b = brush(name, **({"size": size} if size else {}), **kw)
+        laid = []
+        for old in (True, False):
+            s = make(tmp_path)
+            with warnings.catch_warnings(), (old_gate() if old else nullcontext()):
+                warnings.simplefilter("ignore")
+                s.stroke(points, b, "titanium_white")
+            laid.append(s.canvas.rgb)
+        moved = not np.array_equal(*laid)
+        assert drags(s.canvas, points, b) == moved, (name, kw)
+
+
+def test_an_older_file_counts_its_marks_that_ran_dry(tmp_path, monkeypatch):
+    """What the painter asked for with the version (question 8): told, as the file
+    opens, which of its marks a rebuild lays differently under the release that dragged
+    them. The count is the marks that ran dry and nothing else -- not the loaded ones,
+    not the dab."""
+    import sys
+
+    from easel.stroke import drags
+
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.stroke([(0.1, 0.3), (0.9, 0.35)], "bristle", "burnt_umber", solid=True)
+        s.stroke([(0.1, 0.5), (0.9, 0.52)], "bristle", "yellow_ochre", load=0.4)
+        s.stroke([(0.1, 0.7), (0.9, 0.68)], "flat", "ultramarine", size=0.03)
+        s.dab(0.5, 0.5, "round_hard", "titanium_white", size=0.03)
+    path = s.save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: meta.update(engine="0.6.0"))
+    monkeypatch.setattr(sys.modules["easel.session"], "_engine", lambda: "0.7.0")
+
+    (code, text), = _said_at_load(path)
+    assert code == "older-engine"
+    assert "2 of the marks in its log lay differently under 0.7.0" in text
+    assert "drags its paint into streaks" in text and "(0.7.0, 2 marks)" in text
+    assert [drags(s.canvas, r.points, _brush_of(r)) for r in s.history.records] \
+        == [False, True, True, False]
+
+
+def test_a_file_from_before_both_fixes_hears_of_both_and_counts_each_mark_once(tmp_path):
+    """A file saved by 0.5.0 or earlier is told of every fix since, each with its own
+    count, and the total counts a mark once however many fixes move it."""
+    s = make(tmp_path)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.smudge([(0.3, 0.5), (0.7, 0.5)])
+        s.stroke([(0.1, 0.6), (0.9, 0.62)], "bristle", "yellow_ochre", load=0.4)
+        s.stroke([(0.1, 0.7), (0.9, 0.72)], "bristle", "burnt_umber", solid=True)
+    path = s.save(tmp_path / "p.easel")
+    _rewrite_meta(path, lambda meta: (meta.pop("engine"), meta.pop("notices")))
+
+    (code, text), = _said_at_load(path)
+    assert code == "older-engine" and "saved by Easel 0.5.0 or earlier" in text
+    assert "2 of the marks in its log lay differently" in text
+    assert "(0.6.0, 1 mark)" in text and "(0.7.0, 1 mark)" in text
+
+
+def _brush_of(record):
+    from dataclasses import fields
+
+    from easel.brush import Brush
+
+    names = {f.name for f in fields(Brush)} - {"meta"}
+    return Brush(**{k: v for k, v in record.params.items() if k in names})

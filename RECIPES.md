@@ -191,16 +191,17 @@ length, `opacity=1.0` so the overlapping dabs do not accumulate unevenly, `even`
 pressure because a taper puts a light end on every pass, and `direction="axis"` so the
 passes run the way the plane runs rather than the way the canvas does.
 
-**Goes wrong as:** a mottled field with the ground showing through in flecks — that is
-`density=1.0` without `solid=True`, which spaces the passes rather than filling them.
-Or as faint striping, which is the pass structure itself at about `0.03` of value
-whatever you do to `opacity`: hide it with a bigger brush or a `bristle`, never with an
-argument. Neither is anything the tool can see, so look for them.
+**Goes wrong as:** a mottled field with the ground showing through in broken streaks
+along the passes — that is `density=1.0` without `solid=True`, which spaces the passes
+rather than filling them. Or as faint striping, which is the pass structure itself at
+about `0.03` of value whatever you do to `opacity`: hide it with a bigger brush or a
+`bristle`, never with an argument. Neither is anything the tool can see, so look for
+them.
 
 ```python
 # goes wrong: nothing says so
 s.block_in(span("C4", "F6"), "flat", "mid", size=0.05, density=1.0,
-           direction="axis")                               # no solid=True: flecks
+           direction="axis")                               # no solid=True: ground shows
 ```
 
 ---

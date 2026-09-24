@@ -221,15 +221,47 @@ class RebuildChange:
     ``version`` is the release the fix shipped in; ``what`` is the fix in one clause,
     as the notice prints it; ``heading`` is the heading under that release in
     `CHANGELOG.md` that says it at length, held there by `tests/test_notices.py` the way
-    a notice's ``where`` is held to the guide; ``moves`` says which records of a log the
-    fix lays differently, so the notice can count them -- and say nothing to a painting
-    that has none.
+    a notice's ``where`` is held to the guide; ``moves(record, canvas)`` says which
+    records of a log the fix lays differently when the log is rebuilt on ``canvas`` --
+    a fix to how the tooth is read moves a mark on one surface and not on another -- so
+    the notice can count them, and say nothing to a painting that has none.
     """
 
     version: str
     what: str
     heading: str
-    moves: Callable[[object], bool]
+    moves: Callable[[object, object], bool]
+
+
+#: The kinds of record a rebuild lays as paint, through the stroke. Drying, drawing and
+#: erasing are rebuilt too, and no fix to how paint is laid reaches them.
+_PAINTED = ("stroke", "glaze", "smudge")
+
+
+def _drags_dry(record, canvas) -> bool:
+    """Whether 0.7.0's dry-brush gate lays a saved mark differently on ``canvas``.
+
+    Read off the record the way a rebuild reads it -- its brush, its points, whether its
+    path was smoothed -- and asked of :func:`easel.stroke.drags`: a mark that never runs
+    dry where the tooth can gate it, or a dab with no comb, is laid exactly as before.
+    """
+    if canvas is None or getattr(record, "kind", "") not in _PAINTED:
+        return False
+    # Imported here: the engine imports this module, and a record's brush is only
+    # rebuilt when a file from an older release is opened.
+    from dataclasses import fields
+
+    from easel.brush import Brush
+    from easel.stroke import drags
+
+    params = dict(getattr(record, "params", None) or {})
+    names = {f.name for f in fields(Brush)} - {"meta"}
+    try:
+        brush = Brush(**{k: v for k, v in params.items() if k in names})
+    except (TypeError, ValueError):
+        return False
+    return drags(canvas, getattr(record, "points", []), brush,
+                 smooth=bool(params.get("smooth", True)))
 
 
 #: Every fix that changes what a rebuild lays, oldest first. `CHANGELOG.md` names each
@@ -244,7 +276,14 @@ REBUILDS: tuple[RebuildChange, ...] = (
         "cap it laid at its start",
         "### Three checks that read the canvas under the mark, and a smudge that lays "
         "nothing of its own",
-        lambda record: getattr(record, "kind", "") == "smudge",
+        lambda record, canvas: getattr(record, "kind", "") == "smudge",
+    ),
+    RebuildChange(
+        "0.7.0",
+        "a brush running dry drags its paint into streaks along its travel rather than "
+        "dotting it, so a mark that ran dry replays streaked",
+        "### A dry brush that streaks rather than speckles",
+        _drags_dry,
     ),
 )
 
@@ -258,19 +297,20 @@ def version_key(text: str) -> tuple[int, ...]:
     return tuple(int(n) for n in re.findall(r"\d+", str(text))[:3])
 
 
-def rebuild_moves(saved_by: str, records) -> list[tuple[RebuildChange, int]]:
+def rebuild_moves(saved_by: str, records, canvas=None) -> list[tuple[RebuildChange, int]]:
     """The fixes since ``saved_by`` that lay some of ``records`` differently, with how many.
 
     ``saved_by`` is the release that saved the log, or ``""`` for one older than every
-    fix listed. Only fixes that move at least one record are returned: a painting with
-    no smudge in it is not told about the smudge.
+    fix listed; ``canvas`` is the surface the log would be rebuilt on. Only fixes that
+    move at least one record are returned: a painting with no smudge in it is not told
+    about the smudge.
     """
     after = version_key(saved_by)
     moved = []
     for change in REBUILDS:
         if version_key(change.version) <= after:
             continue
-        count = sum(1 for record in records if change.moves(record))
+        count = sum(1 for record in records if change.moves(record, canvas))
         if count:
             moved.append((change, count))
     return moved

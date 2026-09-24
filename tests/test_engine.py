@@ -411,10 +411,18 @@ def test_a_starved_stroke_still_marks_every_surface(texture):
 
 
 def test_surfaces_break_up_at_their_own_scale():
-    """Rough leaves chunky islands; linen's fine weave leaves fine speckle."""
-    rough = _mean_run(_starved_band("rough", 0.35))
-    linen = _mean_run(_starved_band("linen", 0.35))
-    assert rough > linen * 1.5
+    """Rough leaves chunky islands; linen's fine weave leaves fine pieces.
+
+    Since 0.7.0 a starving brush drags, so on every surface what it leaves runs longer
+    along the travel than across it, and the scale is read both ways: rough's pieces are
+    longer in each direction, and over twice linen's by the product of the two --
+    measured `7.2 x 3.2` px against `4.9 x 2.1` at this load, where 0.6.0's gate left
+    `7.3 x 4.9` against linen's dots of `2.0 x 1.9`.
+    """
+    rough, linen = _starved_band("rough", 0.35), _starved_band("linen", 0.35)
+    along, across = (_mean_run(rough), _mean_run(linen)), (_mean_run(rough.T), _mean_run(linen.T))
+    assert along[0] > along[1] and across[0] > across[1]
+    assert along[0] * across[0] > 1.8 * along[1] * across[1]
 
 
 @pytest.mark.parametrize("texture", TEXTURES)

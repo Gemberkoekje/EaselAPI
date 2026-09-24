@@ -393,7 +393,7 @@ for, and a quiet passage is two colours mixed closer together, not a lower opaci
 brush — one of the best tools you have for making a surface look worked. The window for
 a deliberately broken mark is about `0.4` to `0.6`. But pass `load=1.0` for anything
 that has to read as a *solid* mass, a correction included: a pass laid low because it
-sounded painterly leaves a speckled film that everything after it sits on. On a mass,
+sounded painterly leaves a broken film that everything after it sits on. On a mass,
 `solid=True` is that clause together with the `load_falloff=0.0` that keeps the far end
 of each pass from running dry.
 

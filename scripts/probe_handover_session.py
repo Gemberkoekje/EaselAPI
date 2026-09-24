@@ -39,6 +39,8 @@ It does four things:
     python scripts/probe_handover_session.py --shell --engine DIR/src   # ...under another
     python scripts/probe_handover_session.py --pressure   # 4G: the fade and the wet bands
     python scripts/probe_handover_session.py --corpus-edges   # 4A built, on the corpus
+    python scripts/probe_handover_session.py --dry        # 4B built, beside 0.6.0's gate
+    python scripts/probe_handover_session.py --corpus-dry # 4B built, on the corpus
 
 The corpus half of workstream C -- every pass of the twenty-two paintings the graded rule
 fires on, cropped, with each narrowed gate's verdict -- is
@@ -161,10 +163,11 @@ def rebuild(width: int = 1024, height: int = 768, timelapse: bool = False,
             keep: bool = True, watch: bool = False, cut: bool = True) -> Rebuilt:
     """The painting from its committed passes, through the CLI's own ``run_script``.
 
-    ``cut`` lays every hold cut on the line, as 0.6.0 laid it -- the painting the
-    painter had, which every claim and bench here starts from. Since step 5 the engine
-    breaks every hold it is not told otherwise about, and ``cut=False`` is the painting
-    as this engine lays the same scripts.
+    ``cut`` lays the painting as 0.6.0 laid it -- every hold cut on the line, every
+    starving brush gated a pixel at a time -- the painting the painter had, which every
+    claim and bench here starts from. Since step 5 the engine breaks every hold it is
+    not told otherwise about, and since step 6 a starving brush drags; ``cut=False`` is
+    the painting as this engine lays the same scripts.
 
     Each pass opens as ``easel run`` opens one, runs in a fresh scope with the prelude
     executed in front of it, and is then read by ``report()`` over the pass alone --
@@ -184,7 +187,8 @@ def rebuild(width: int = 1024, height: int = 768, timelapse: bool = False,
         current = [""]
         watcher = _watching(out.calls, current) if watch else contextlib.nullcontext()
         edges = feather("today", 0.0) if cut else contextlib.nullcontext()
-        with watcher, edges, warnings.catch_warnings(), \
+        dry = gate("today") if cut else contextlib.nullcontext()
+        with watcher, edges, dry, warnings.catch_warnings(), \
                 contextlib.redirect_stdout(io.StringIO()):
             warnings.simplefilter("ignore")
             for name in PASSES:
@@ -1117,7 +1121,12 @@ def probe_corpus_edges() -> None:
 
 # -- 4B. dry brush that streaks rather than speckles ------------------------------------
 
+#: The candidates as step 2 benched them: copies of the stamp patched in for one bench.
 GATES = ("today", "B1", "B2", "B1+B2", "B3")
+#: The gate as step 6 built it (``Canvas.drag``, ``tooth_along``, ``DryComb``), beside
+#: 0.6.0's -- and without its read along the travel, which is B2 alone as built, because
+#: the painter asked to see the two side by side once they were tuned (12b).
+BUILT = ("today", "built B2", "built")
 #: How far along the travel B1 reads the tooth, in pixels: about one weave of linen.
 ALONG = 9
 #: B2: a bristle's own load is the stroke's raised to a power drawn per bristle between
@@ -1158,8 +1167,9 @@ def _tooth_along(canvas, angle: float) -> np.ndarray:
 def _gated_mask(self, radius_px, angle_rad, *args, **kw):
     """``Brush.mask``, noting the travel and, for a comb under B2, which bristle is where.
 
-    The comb's per-bristle strengths are what ``_bristle_profile`` multiplies the body
-    by, so the stamp over the body without the comb is each pixel's bristle strength;
+    The comb's per-bristle strengths are what the body is multiplied by (``strengths``
+    from ``_bristle_index``), so the stamp over the body without the comb is each
+    pixel's bristle strength;
     a hash of it gives each bristle its own draw, the same for the length of the stroke.
     """
     mask = _MASK(self, radius_px, angle_rad, *args, **kw)
@@ -1176,12 +1186,14 @@ def _gated_mask(self, radius_px, angle_rad, *args, **kw):
 
 
 def _gated_stamp(self, cx, cy, mask, color, strength, load, wetness_gain, thickness_gain,
-                 texture_sensitivity, glaze=False, clip=None):
+                 texture_sensitivity, glaze=False, clip=None, travel=None, bristles=None):
     """``Canvas.stamp`` with the tooth gate swapped for the bench's candidate.
 
-    A copy of the engine's own body, line for line, except inside the gate: B1 reads the
-    tooth along the travel, B2 reads each bristle's own load, B3 thins what a starved
-    brush lays. Anything the engine does after the gate is the engine's.
+    A copy of the engine's own body at ``v0.6.0``, line for line, except inside the gate:
+    B1 reads the tooth along the travel, B2 reads each bristle's own load, B3 thins what
+    a starved brush lays. Anything the engine does after the gate is the engine's. The
+    travel and the comb step 6's stroke hands the stamp are ignored: these are step 2's
+    candidates as benched, not the gate that was built from them.
     """
     name = _GATE["name"]
     n = mask.shape[0]
@@ -1247,11 +1259,37 @@ _MASK = BRUSH_MODULE.Brush.mask
 _STAMP = CANVAS_MODULE.Canvas.stamp
 
 
+_DRAG = CANVAS_MODULE.Canvas.drag
+_ALONG = CANVAS_MODULE.Canvas.tooth_along
+
+
+def _raw_tooth(self, travel):
+    return self.height_map * _TOOTH_HEIGHT_W + self.grain * _TOOTH_GRAIN_W
+
+
 @contextlib.contextmanager
 def gate(name: str):
-    """The tooth gate as candidate ``name``, for the length of a bench."""
-    if name == "today":
+    """The tooth gate as candidate ``name``, for the length of a bench.
+
+    **"today" patches too**, as ``feather("today")`` does for the edge: since step 6 the
+    engine drags a starving brush, and 0.6.0's gate is what it lays when ``Canvas.drag``
+    says a brush never drags -- the same code path, line for line, not a copy. "built" is
+    the engine as it stands, and "built B2" the same with the tooth read where it lies
+    rather than along the travel. The rest are step 2's copies.
+    """
+    if name == "built":
         yield
+        return
+    if name in ("today", "built B2"):
+        if name == "today":
+            CANVAS_MODULE.Canvas.drag = lambda self, load, need: 0.0
+        else:
+            CANVAS_MODULE.Canvas.tooth_along = _raw_tooth
+        try:
+            yield
+        finally:
+            CANVAS_MODULE.Canvas.drag = _DRAG
+            CANVAS_MODULE.Canvas.tooth_along = _ALONG
         return
     _GATE["name"] = name
     BRUSH_MODULE.Brush.mask = _gated_mask
@@ -1264,21 +1302,22 @@ def gate(name: str):
         _GATE.update(name="today", share=None)
 
 
-def bench_crosser() -> None:
+def bench_crosser(gates=GATES, prefix: str = "flecks") -> None:
     """The sky's own crosser, starved at four loads, on a field of the sky it crossed.
 
     ``p01_sky.py``'s first crosser -- ``bristle``, ``size=0.065``, ``opacity=0.40``,
     ``pressure="swell"`` -- on a canvas set to the sky's value, so what is counted is
     the mark and nothing under it. Its load runs down along the stroke as every
     stroke's does, so each row is a range of loads and the first number is where it
-    starts.
+    starts. *Laid* is the stroke's own count of the paint it put down
+    (``StrokeResult.paint``), which is what a gate tuned to lay today's paint keeps.
     """
     print("\n  the sky's crosser at four starting loads, on the sky's own value (0.56)")
-    print(f"     {'gate':<7}{'load':>5}  {FLECK_HEAD}")
+    print(f"     {'gate':<9}{'load':>5}{'laid':>8}  {FLECK_HEAD}")
     path = [(-0.06, 0.40), (0.45, 0.46), (1.06, 0.52)]
     angle = math.atan2((0.52 - 0.40) * 768, 1.12 * 1024)
     panels = []
-    for name in GATES:
+    for name in gates:
         for load in (0.3, 0.45, 0.6, 0.8):
             s = _flat_field(1024, 768, 0.56)
             s.palette["cloud"] = s.palette.at_value(
@@ -1286,12 +1325,13 @@ def bench_crosser() -> None:
             before = values(s)
             with warnings.catch_warnings(), gate(name):
                 warnings.simplefilter("ignore")
-                s.stroke(path, "bristle", "cloud", size=0.065, load=load, opacity=0.40,
-                         pressure="swell")
-            print(f"     {name:<7}{load:>5.2f}  {flecks(np.abs(values(s) - before), angle).row()}")
+                laid = s.stroke(path, "bristle", "cloud", size=0.065, load=load,
+                                opacity=0.40, pressure="swell").paint
+            print(f"     {name:<9}{load:>5.2f}{laid:>8.0f}  "
+                  f"{flecks(np.abs(values(s) - before), angle).row()}")
             if load in (0.3, 0.45, 0.6):
                 panels.append((f"{name} load {load}", crop(s, (0.10, 0.36, 0.40, 0.56))))
-    print(f"     -> {save_sheet(panels, 'flecks_crosser.png', columns=3).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_crosser.png', columns=3).relative_to(ROOT)}")
 
 
 #: ``p08_rock.py``'s five ledges, as the painter wrote them: the painting's five starved
@@ -1310,7 +1350,7 @@ LEDGES = (
 )
 
 
-def bench_ledges(rb: Rebuilt) -> None:
+def bench_ledges(rb: Rebuilt, gates=GATES, prefix: str = "flecks") -> None:
     """The painting's five starved flats, laid on the canvas they were laid on.
 
     A flat has no comb, so B2 has nothing to hold the load in and changes nothing here;
@@ -1318,9 +1358,9 @@ def bench_ledges(rb: Rebuilt) -> None:
     """
     print("\n  the rock's five ledges (flat, size 0.009-0.016, load 0.7-0.8), on the canvas "
           "after p07")
-    print(f"     {'gate':<7}  {FLECK_HEAD}")
+    print(f"     {'gate':<9}  {FLECK_HEAD}")
     panels = []
-    for name in GATES:
+    for name in gates:
         s = rb.after["p07_subject.py"].scratch()
         names = scope_of(s)
         p = names["p"]
@@ -1332,17 +1372,17 @@ def bench_ledges(rb: Rebuilt) -> None:
             for points, colour, size, opacity, load, pressure in LEDGES:
                 s.stroke(points, "flat", colour, size=size, opacity=opacity, load=load,
                          pressure=pressure, clip=names["headland"])
-        print(f"     {name:<7}  {flecks(np.abs(values(s) - before), 0.0).row()}")
+        print(f"     {name:<9}  {flecks(np.abs(values(s) - before), 0.0).row()}")
         panels.append((name, crop(s, (0.50, 0.57, 1.0, 0.83), zoom=2)))
-    print(f"     -> {save_sheet(panels, 'flecks_ledges.png', columns=1).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_ledges.png', columns=1).relative_to(ROOT)}")
 
 
-def bench_exercise_three() -> None:
+def bench_exercise_three(gates=GATES, prefix: str = "flecks") -> None:
     """``PAINTER.md``'s exercise 3, exactly: one stroke at four loads, on rough canvas."""
     print("\n  exercise 3: the same bristle stroke at four loads on rough canvas, no falloff")
-    print(f"     {'gate':<7}{'load':>5}  {FLECK_HEAD}")
+    print(f"     {'gate':<9}{'load':>5}{'laid':>8}  {FLECK_HEAD}")
     panels = []
-    for name in GATES:
+    for name in gates:
         s = Session(900, 400, texture="rough", ground="toned_grey", seed=3, timelapse=False)
         moved = []
         with warnings.catch_warnings(), gate(name):
@@ -1350,13 +1390,14 @@ def bench_exercise_three() -> None:
             for i, load in enumerate([1.0, 0.6, 0.35, 0.2]):
                 y = 0.15 + i * 0.22
                 before = values(s)
-                s.stroke([(0.06, y), (0.94, y)], "bristle", "titanium_white", size=0.07,
-                         load=load, load_falloff=0.0, pressure="even")
-                moved.append((load, np.abs(values(s) - before)))
-        for load, diff in moved:
-            print(f"     {name:<7}{load:>5.2f}  {flecks(diff, 0.0).row()}")
+                laid = s.stroke([(0.06, y), (0.94, y)], "bristle", "titanium_white",
+                                size=0.07, load=load, load_falloff=0.0,
+                                pressure="even").paint
+                moved.append((load, laid, np.abs(values(s) - before)))
+        for load, laid, diff in moved:
+            print(f"     {name:<9}{load:>5.2f}{laid:>8.0f}  {flecks(diff, 0.0).row()}")
         panels.append((name, crop(s, (0.0, 0.0, 1.0, 1.0))))
-    print(f"     -> {save_sheet(panels, 'flecks_exercise3.png', columns=1).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_exercise3.png', columns=1).relative_to(ROOT)}")
 
 
 def _recipe_scope(width: int = 1024, height: int = 768) -> dict:
@@ -1368,41 +1409,41 @@ def _recipe_scope(width: int = 1024, height: int = 768) -> dict:
     return scope
 
 
-def bench_planes_recipe() -> None:
+def bench_planes_recipe(gates=GATES, prefix: str = "flecks") -> None:
     """*A mass built of planes*, which lays ``load=0.35`` for its surface, at 1024x768."""
     print("\n  the planes recipe's dry-brush scrape (bristle 0.03, load=0.35, opacity 0.6)")
-    print(f"     {'gate':<7}  {FLECK_HEAD}")
+    print(f"     {'gate':<9}  {FLECK_HEAD}")
     block = next(d for d in demos() if d.heading == "A mass built of planes").recipe
     body, scrape = block.rsplit("s.stroke([(0.14, 0.72)", 1)
     scrape = "s.stroke([(0.14, 0.72)" + scrape
     angle = math.atan2(0.04 * 768, 0.12 * 1024)
     panels = []
-    for name in GATES:
+    for name in gates:
         scope = _recipe_scope()
         with warnings.catch_warnings(), gate(name):
             warnings.simplefilter("ignore")
             exec(compile(body, "<planes>", "exec"), scope)  # noqa: S102
             before = values(scope["s"])
             exec(compile(scrape, "<scrape>", "exec"), scope)  # noqa: S102
-        print(f"     {name:<7}  {flecks(np.abs(values(scope['s']) - before), angle).row()}")
+        print(f"     {name:<9}  {flecks(np.abs(values(scope['s']) - before), angle).row()}")
         panels.append((name, crop(scope["s"], (0.04, 0.54, 0.60, 0.94))))
-    print(f"     -> {save_sheet(panels, 'flecks_planes.png', columns=5).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_planes.png', columns=5).relative_to(ROOT)}")
 
 
-def bench_water(rb: Rebuilt) -> None:
+def bench_water(rb: Rebuilt, gates=GATES, prefix: str = "flecks") -> None:
     """The painter's first swells and surf: its water pass as rehearsed, on the painting."""
     print("\n  the first water pass, as rehearsed (misfires/water): surf and swells, to look at")
     panels = []
-    for name in GATES:
+    for name in gates:
         s = rb.after["p05_light.py"].scratch()
         with gate(name):
             lay_pass(s, "06_water_v1.py", prelude=MISFIRES / "water" / "prelude.py",
                      folder=MISFIRES / "water")
         panels.append((name, crop(s, (0.30, 0.60, 0.86, 0.99))))
-    print(f"     -> {save_sheet(panels, 'flecks_water.png', columns=2).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_water.png', columns=2).relative_to(ROOT)}")
 
 
-def bench_sampler() -> None:
+def bench_sampler(gates=GATES, prefix: str = "flecks") -> None:
     """The brush sampler's linen rows for the two brushes a painting starves, under each gate.
 
     ``LESSONS.md`` trap 1: the sampler shows isolated strokes at full load, and a full
@@ -1412,7 +1453,7 @@ def bench_sampler() -> None:
 
     print("\n  the sampler, bristle and flat on linen: every size and pressure")
     panels = []
-    for name in GATES:
+    for name in gates:
         with gate(name):
             cells = [sampler.render_cell(brush, size, pressure, "linen", 100 + r * 31 + c * 7)
                      for r, brush in enumerate(("bristle", "flat"))
@@ -1423,7 +1464,7 @@ def bench_sampler() -> None:
         for i, cell in enumerate(cells):
             grid.paste(cell, ((i % 9) * cw, (i // 9) * ch))
         panels.append((name, grid))
-    print(f"     -> {save_sheet(panels, 'flecks_sampler.png', columns=1).relative_to(ROOT)}")
+    print(f"     -> {save_sheet(panels, f'{prefix}_sampler.png', columns=1).relative_to(ROOT)}")
 
 
 def probe_flecks(rb: Rebuilt) -> None:
@@ -1438,6 +1479,134 @@ def probe_flecks(rb: Rebuilt) -> None:
     print("  read: *specks* is the confetti, *long* is whether the pieces run with the "
           "brush. B3 changes\n  contrast and nothing else, as the plan expected; look at "
           "the sheets before any number.")
+
+
+def _starving_paths(n: int, seed: int) -> list[list[tuple[float, float]]]:
+    """``n`` three-point strokes at random places and directions, a third of them backwards."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n):
+        x0, y0 = rng.uniform(0.05, 0.35), rng.uniform(0.15, 0.85)
+        turn = rng.uniform(-0.6, 0.6) + (math.pi if rng.random() < 0.3 else 0.0)
+        length = rng.uniform(0.3, 0.6)
+        x1, y1 = x0 + length * math.cos(turn) * 0.75, y0 + length * math.sin(turn)
+        bend = rng.uniform(-0.03, 0.03, 2)
+        out.append([(x0, y0), ((x0 + x1) / 2 + bend[0], (y0 + y1) / 2 + bend[1]), (x1, y1)])
+    return out
+
+
+#: The marks the amounts are counted over: the painting's own starving bristle, the
+#: guide's exercise, and a flat and a round, which have no comb and drag only along.
+AMOUNTS = (
+    ("bristle", "linen", 0.065, None, (0.3, 0.45, 0.6, 0.8)),
+    ("bristle", "rough", 0.07, 0.0, (0.2, 0.35, 0.6)),
+    ("bristle", "smooth", 0.05, None, (0.3, 0.45, 0.6)),
+    ("flat", "linen", 0.03, None, (0.35, 0.5, 0.7)),
+    ("round_hard", "linen", 0.02, None, (0.3, 0.5, 0.7)),
+)
+
+
+def bench_amounts(gates=BUILT, n: int = 24) -> None:
+    """Does each load still lay today's paint? ``n`` strokes a row, summed, against today's.
+
+    The painter's condition on B: *the amount was right, the shape was wrong*. One stroke
+    says little -- which bristles hold their paint, and where a stroke's footprint falls
+    on the tooth, move a single mark's weight either way -- so each row is ``n`` strokes
+    at random places and directions, each with its own comb, and the ratio is their
+    paint against the same strokes today, with the tenth and ninetieth percentile of the
+    ratio stroke by stroke.
+    """
+    print(f"\n  what each load lays, {n} strokes a row, against today's")
+    paths = _starving_paths(n, 7)
+    for tip, texture, size, falloff, loads in AMOUNTS:
+        print(f"     {tip} size {size} on {texture}"
+              + ("" if falloff is None else f", load_falloff={falloff}"))
+        for load in loads:
+            laid = {}
+            for name in gates:
+                per = []
+                for path in paths:
+                    s = Session(1024, 768, texture=texture, ground="toned_grey", seed=11,
+                                timelapse=False)
+                    kw = {"load": load, "size": size, "opacity": 0.6}
+                    if falloff is not None:
+                        kw["load_falloff"] = falloff
+                    with warnings.catch_warnings(), gate(name):
+                        warnings.simplefilter("ignore")
+                        per.append(s.stroke(path, tip, "titanium_white", **kw).paint)
+                laid[name] = np.array(per)
+            base = laid[gates[0]]
+            cells = []
+            for name in gates[1:]:
+                ratio = laid[name] / np.maximum(base, 1e-6)
+                cells.append(f"{name} x{laid[name].sum() / max(base.sum(), 1e-6):.2f} "
+                             f"({np.percentile(ratio, 10):.2f}-{np.percentile(ratio, 90):.2f})")
+            print(f"       load {load:.2f}  today {base.sum():>9.0f}   " + "   ".join(cells))
+
+
+def probe_dry(rb: Rebuilt) -> None:
+    """4B as built, beside 0.6.0's gate: the painter's marks, the amounts, the sheets."""
+    print("\n== 4B built: a brush running dry, as the engine drags it, beside 0.6.0's gate ==")
+    bench_crosser(BUILT, "dry")
+    bench_exercise_three(BUILT, "dry")
+    bench_ledges(rb, BUILT, "dry")
+    bench_planes_recipe(BUILT, "dry")
+    bench_water(rb, BUILT, "dry")
+    bench_sampler(BUILT, "dry")
+    bench_amounts()
+    print("  read: *laid* and the ratios are the painter's condition, the pieces and their "
+          "length the shape;\n  the sheets are the verdict.")
+
+
+def probe_corpus_dry() -> None:
+    """Every corpus painting rebuilt under 0.6.0's gate and under this one: what moves.
+
+    A saved painting's log replays with the engine installed, so this is what a rebuild
+    of each committed painting lays now -- its holds cut on the line both times, since a
+    saved clip replays at the feather it was laid with and none was laid with one. For
+    each: how much of the canvas moves, how many of its marks the rebuild notice counts
+    as dragging (``notices.REBUILDS``, ``easel.stroke.drags``), and the two canvases'
+    ground. The largest change in each is cropped for looking.
+    """
+    from easel import notices
+
+    print("\n== 4B built: the corpus rebuilt under 0.6.0's gate and this one ==")
+    print(f"     {'painting':<11}{'marks':>7}{'drag':>6}{'moved >2':>10}{'>8':>8}"
+          f"{'ground was':>12}{'now':>7}{'seconds':>9}")
+    dry = next(c for c in notices.REBUILDS if c.version == "0.7.0")
+    panels = []
+    for entry in cohort.CORPUS:
+        started = time.time()
+        with feather("today", 0.0), gate("today"):
+            was = cohort.replay(entry, keep_canvas=False)
+        with feather("today", 0.0):
+            now = cohort.replay(entry, keep_canvas=False)
+        if was.session is None or now.session is None:
+            print(f"     {entry.name:<11} did not rebuild: {was.error or now.error}")
+            continue
+        records = [r for r in now.session.history.records if r.kind in ("stroke", "glaze",
+                                                                          "smudge")]
+        dragging = sum(1 for r in records if dry.moves(r, now.session.canvas))
+        a = was.session.canvas.to_srgb8(impasto=False, sketch=False).astype(int)
+        b = now.session.canvas.to_srgb8(impasto=False, sketch=False).astype(int)
+        moved = np.abs(a - b).max(axis=2)
+        print(f"     {entry.name:<11}{len(records):>7}{dragging:>6}{float((moved > 2).mean()):>10.2%}"
+              f"{float((moved > 8).mean()):>8.2%}{float(cohort._bare(was.session).mean()):>12.2%}"
+              f"{float(cohort._bare(now.session).mean()):>7.2%}{time.time() - started:>9.0f}")
+        runs = _runs(moved > 8)
+        if runs and runs[0][0] >= 40:
+            x0, y0, x1, y1 = runs[0][1]
+            pad = 16
+            box = (max(0, x0 - pad), max(0, y0 - pad), min(a.shape[1], x1 + pad),
+                   min(a.shape[0], y1 + pad))
+            for tag, rgb in (("0.6.0", a), ("now", b)):
+                part = Image.fromarray(rgb.astype(np.uint8)).crop(box)
+                zoom = max(1, min(3, 300 // max(part.width, part.height, 1)))
+                panels.append((f"{entry.name} {tag}",
+                               part.resize((part.width * zoom, part.height * zoom),
+                                           Image.LANCZOS)))
+    if panels:
+        print(f"       -> {save_sheet(panels, 'dry_corpus.png', columns=4).relative_to(ROOT)}")
 
 
 # -- 4C. the four cases in hand ------------------------------------------------------------
@@ -1859,7 +2028,11 @@ def main(argv: list[str] | None = None) -> int:
                                    "and `easel timelapse`, engine by engine"),
                        ("--pressure", "4G: the pressure-list fade and the wet bands"),
                        ("--corpus-edges", "4A built: the corpus's held edges, cut and "
-                                          "broken, and the ground each leaves")):
+                                          "broken, and the ground each leaves"),
+                       ("--dry", "4B built: the gate as built beside 0.6.0's, the "
+                                 "amounts each load lays, and their sheets"),
+                       ("--corpus-dry", "4B built: every corpus painting rebuilt under "
+                                        "each gate, and what moves")):
         parser.add_argument(flag, action="store_true", help=what)
     parser.add_argument("--engine", action="append", default=[], metavar="SRC",
                         help="with --shell: an engine's src directory to time, "
@@ -1872,7 +2045,7 @@ def main(argv: list[str] | None = None) -> int:
     print("The lighthouse handover's round, measured. Engine "
           f"{easel.__version__} from {Path(easel.__file__).parent}")
     rb = None
-    if every or chosen & {"claims", "edges", "flecks"}:
+    if every or chosen & {"claims", "edges", "flecks", "dry"}:
         rb = rebuild(watch=True)
     if every or "claims" in chosen:
         probe_claims(rb)
@@ -1893,6 +2066,10 @@ def main(argv: list[str] | None = None) -> int:
         probe_pressure()
     if every or "corpus_edges" in chosen:
         probe_corpus_edges()
+    if every or "dry" in chosen:
+        probe_dry(rb)
+    if every or "corpus_dry" in chosen:
+        probe_corpus_dry()
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The lighthouse "
           "handover's round*.\nThe sheets under out/handover/ are what decides the plan's "
           "question 2.")
