@@ -675,7 +675,7 @@ def build_server() -> MCPServer:
                 "file), not both."
             )
         pre_name = prelude_path or "<prelude>"
-        pre = (Path(prelude_path).read_text(encoding="utf-8") if prelude_path
+        pre = (Path(prelude_path).read_text(encoding="utf-8-sig") if prelude_path
                else prelude)
         if alternatives:
             if script or script_path:
@@ -703,7 +703,7 @@ def build_server() -> MCPServer:
                 "one pass."
             )
         name = script_path or "<script>"
-        source = Path(script_path).read_text(encoding="utf-8") if script_path else script
+        source = Path(script_path).read_text(encoding="utf-8-sig") if script_path else script
 
         s = _load(session)
         trying = rehearse or count
