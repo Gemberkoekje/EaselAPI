@@ -6444,3 +6444,29 @@ def test_a_version_that_paints_the_painting_is_stopped(tmp_path):
                                          r".*s\.undo\(1\) takes it back"):
         s.rehearse_each([strays])
     assert s.undo(1) == 1 and not s.history.records
+
+
+# -- a pass or a prelude saved with a byte-order mark ----------------------------------
+def test_a_script_and_a_prelude_saved_with_a_bom_still_run(tmp_path):
+    """Windows PowerShell 5.1's ``Set-Content -Encoding utf8`` starts the file with a
+    byte-order mark, as older Notepad did, and a script read as plain utf-8 failed as
+    *does not parse* on it before a single mark was laid -- every time, whatever the
+    script said (``NOTES-step8.md``, gotcha 7). The prelude beside the session is read
+    the same way and runs before every pass, so one saved like that stopped them all."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--out-dir",
+                 str(tmp_path / "out"), "--no-prelude"]) == 0
+    script = tmp_path / "pass.py"
+    script.write_text("\ufeff" + 's.block_in("D5", "flat", "burnt_umber", size=0.06)\n',
+                      encoding="utf-8")
+    assert main(["run", str(session), str(script)]) == 0
+    laid = Session.load(session).stroke_count
+    assert laid > 0
+
+    # A pass that calls the prelude's helper lands only if the prelude ran.
+    (tmp_path / "prelude.py").write_text(
+        "\ufeff" + "def band(a, b):\n    return (0.0, a, 1.0, b)\n", encoding="utf-8")
+    script.write_text('s.block_in(band(0.1, 0.4), "flat", "burnt_umber", size=0.06)\n',
+                      encoding="utf-8")
+    assert main(["run", str(session), str(script)]) == 0
+    assert Session.load(session).stroke_count > laid

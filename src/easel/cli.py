@@ -1039,12 +1039,12 @@ def _resolve_prelude(args) -> tuple[str, str]:
         path = Path(args.prelude)
         if not path.exists():
             raise FileNotFoundError(f"Prelude not found: {path}")
-        return path.read_text(encoding="utf-8"), str(path)
+        return path.read_text(encoding="utf-8-sig"), str(path)
     if args.no_prelude:
         return "", ""
     beside = Path(args.session).resolve().parent / "prelude.py"
     if beside.exists():
-        return beside.read_text(encoding="utf-8"), str(beside)
+        return beside.read_text(encoding="utf-8-sig"), str(beside)
     return "", ""
 
 
@@ -1068,7 +1068,7 @@ def _cmd_run(session: Session, args) -> int:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=EaselWarning)
             tried = run_alternatives(
-                session, [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
+                session, [(s.read_text(encoding="utf-8-sig"), str(s)) for s in scripts],
                 prelude=prelude, prelude_name=prelude_name or "prelude.py",
                 count_only=args.count, whole=args.check,
             )
@@ -1108,7 +1108,7 @@ def _cmd_run(session: Session, args) -> int:
         warnings.filterwarnings("ignore", category=EaselWarning)
         result = run_scripts(
             target,
-            [(s.read_text(encoding="utf-8"), str(s)) for s in scripts],
+            [(s.read_text(encoding="utf-8-sig"), str(s)) for s in scripts],
             prelude=prelude, prelude_name=prelude_name or "prelude.py",
         )
     # The post-pass check, beside the budget line: what the pass just laid would be

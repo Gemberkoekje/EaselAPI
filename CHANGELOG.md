@@ -37,6 +37,9 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
+- **A script or prelude saved with a byte-order mark runs** in `easel run` and MCP `run`:
+  Windows PowerShell 5.1's `Set-Content -Encoding utf8` writes one, and it did not parse.
+
 ### Looking without the labels, a whole pass as a plan, and what a rehearsal was told
 
 Step 3 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstreams E and C0). One
