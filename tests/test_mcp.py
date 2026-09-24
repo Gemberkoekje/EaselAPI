@@ -627,6 +627,23 @@ def test_run_keeps_what_it_handed_back_rehearsals_included(call, painting):
     assert "painted <script>" not in log.text
 
 
+def test_run_hands_back_the_look_it_rehearsed(call, painting):
+    """A rehearsal is for looking at, and the path its text ends in is no use to a
+    client that cannot open a file: the look comes back beside it, as the looking
+    tools hand theirs back. A counted pass lays no paint and has no look to hand back."""
+    import base64
+    from pathlib import Path
+
+    stroke = "s.stroke([(0.1, 0.5), (0.9, 0.5)], 'flat', 'ochre')"
+    rehearsed = call("run", session=painting, rehearse=True, script=stroke)
+    assert len(rehearsed.images) == 1
+    written = Path(rehearsed.text.splitlines()[-1])      # the path, still in the text
+    assert base64.b64decode(rehearsed.images[0]) == written.read_bytes()
+
+    counted = call("run", session=painting, count=True, script=stroke)
+    assert not counted.images
+
+
 def test_run_rehearses_versions_side_by_side_and_hands_the_sheet_back(call, painting):
     """0.7.0's D0 through the wire: versions of one pass, each on a copy of its own and
     each told what a rehearsal is told, and their sheet inline -- a client has no shell

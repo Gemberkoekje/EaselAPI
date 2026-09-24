@@ -268,6 +268,8 @@ copy is right for a pass that goes on top of another, and wrong for two versions
   `run` answers as a list**: declared as answering in text, it had its answers checked as
   text, and a picture beside the text failed as an error. What a client reads is the same;
   `run` no longer carries `structuredContent`.
+- **`run(rehearse=True)` hands back the copy's look inline too**, beside the text that
+  still ends in its path: a client that cannot open a file had no way to see it.
 - **The painter's own two skies**, `try_sky3.py`'s B and C from the painting's drawing,
   take 32.1 to 32.3 s through `--alternatives`, loading and saving the file included,
   where its harness took 31.9 to 32.8 s for the same two: about 16 s a version, the
