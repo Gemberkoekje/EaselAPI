@@ -3032,6 +3032,58 @@ clause is not** (the plan's question 13). It fires on 7 of 337 passes, and it st
 fires on the painter's headland misfire: fields of separate masses stacked are the kind
 of false positive it leaves.
 
+#### Built, in step 7
+
+**What shipped is the overlap break alone, at `0.30`** (`_REPORT_BAND_OVERLAP`,
+`_longest_run`): the run breaks between two neighbours across the stack whose reaches
+along it share under 30% of the shorter one's. Replayed over the corpus
+(`probe_cohort_session.py --graded`), **the engine's own line fires on 7 of 337 painted
+passes**, the seven of the table above, and agrees with the re-implementation on every
+pass. Laid again from the painter's rehearsal, the water misfire is silent, and under
+0.6.0's rule prints the painter's line to the character; the recipe's passage is silent
+and its failure block fires.
+
+**The share, swept.** On the four cases in hand it does not matter: the headland misfire
+fires at every share from 5% to 90%, because its planes run along the rock's strata over
+one span and overlap along the stack as a passage does; the water misfire is silent at
+every share, because its glints and ripple share no reach at all; the recipe's failure
+block fires at every share. Over the corpus:
+
+| share | fires on | against `0.30` |
+|---|---|---|
+| 5% | 8 | the laundromat's `p5_inside.py` as well |
+| **10% to 40%** | **7** | the same seven |
+| 50% | 6 | not the pier's stacked masses (`pass2_masses.py`) |
+| 70% | 7 | not those; the laundromat's street (`p3_street.py`) instead |
+| 90% | 4 | not the pier's masses, the pier's water or the hands' bowl |
+
+So `0.30` is the middle of a plateau and not a knee. At 50% one more of the painter's false
+positives goes quiet -- the kind the break was said to leave -- but that is one pass at the
+plateau's edge, and past it passes nobody has read start to fire. It stays at `0.30`.
+
+**What the line says on the pass it adds.** The pier's water (`pass4_water.py`), which the
+painter read blind as a passage coming back as bars and 0.6.0's rule missed, is told *8
+marks at stepping colours run parallel 0.025 apart, and the narrowest brush laying them is
+0.02 -- 0.8 of that step*. Under 0.6.0's rule the pass was one run of 14 -- the nine passes
+of its `scumble` and the five reflections laid across the field after it, lighter than
+the passes they lie among -- whose colours turn three times, so it said nothing. The break
+cuts that run where the reflections lie side by side, into 8, 4 and 2, and the longest
+piece is seven of the field's passes with one reflection at its end. **The brush the line
+names is that reflection's**: the field's own is `0.108`, over four of its steps, so the
+line is right that the field shows bands and wrong about why, and the size it offers,
+`0.075`, is narrower than the field was laid with. Judged by the median brush it would
+have named the field's own and gone silent; that clause was declined (question 13). Read
+without this crop as a kept passage, the break still keeps both beams and fires on three
+false positives where 0.6.0's rule fires on six, so the choice does not move.
+
+**The hands' finger, after step 6.** The painter chose the break on condition that the
+hands' `pass08_pickmass.py` read as speckle, and warned that the dry brush, once fixed,
+might turn the speckle into the stripes the bench saw. Under step 6's gate the dots are
+gone: the patch is crossed streaks dragged along its two directions, most of them across
+the nine counted marks rather than along them. Re-read by the owner on 2026-09-24, before
+and after side by side: still not a passage coming back as bars. The run is unchanged --
+9 marks, step `0.017`, sizes `0.015` to `0.05` -- and so is every gate's verdict.
+
 ### A variant's cost, and a sheet in four processes
 
 **The painter's harness, part by part** -- a copy of the session after the drawing,

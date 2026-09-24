@@ -32,7 +32,7 @@ It does four things:
     python scripts/probe_handover_session.py --claims     # section 3, re-measured
     python scripts/probe_handover_session.py --edges      # 4A, with its sheets
     python scripts/probe_handover_session.py --flecks     # 4B, with its sheets
-    python scripts/probe_handover_session.py --misfires   # 4C: the four cases in hand
+    python scripts/probe_handover_session.py --misfires   # 4C: the four cases, and the built gate
     python scripts/probe_handover_session.py --sheet      # 4D
     python scripts/probe_handover_session.py --file       # 4F
     python scripts/probe_handover_session.py --shell      # 4F built: the passes from a shell
@@ -1625,8 +1625,10 @@ def probe_misfires() -> None:
     their own moment, through the passes before them -- and rehearsed; and the recipe's
     own passage and failure block (*A passage brightening toward one side*), which the
     rule must stay silent on and must fire on. A gate that silences both misfires and
-    keeps the failure is the candidate; the corpus decides whether it is built
-    (``probe_cohort_session.py --graded``).
+    keeps the failure was the candidate, and the corpus decided otherwise
+    (``probe_cohort_session.py --graded``): step 7 built the overlap break alone, which
+    silences the water and leaves the headland. The *engine* column is the engine's own
+    line, held to the re-implementation of the built gate.
     """
     print("\n== 4C. graded passage laid too narrow: the four cases in hand ==")
     cases = []
@@ -1656,19 +1658,32 @@ def probe_misfires() -> None:
         engine = any(cohort.GRADED_WORDS in line for line in said)
         verdicts = cohort.graded_verdicts(marks, s.canvas)
         cells = "".join(f"{'FIRES' if v is not None and v.fires else '-':>15}"
-                        for v in verdicts.values())
+                        for v in (verdicts[name] for name in names))
         print(f"  {label:<28}{want:>8}{'FIRES' if engine else '-':>8}  {cells}")
-        run = verdicts["as it stands"]
-        if run is not None:
+        built = verdicts[cohort.BUILT]
+        if engine != (built is not None and built.fires):
+            print(f"  {'':<28}  (the engine disagrees with the re-implementation of "
+                  f"'{cohort.BUILT}')")
+        for name in ("0.6.0", cohort.BUILT):
+            run = verdicts[name]
+            if run is None:
+                continue
             sizes = sorted(float(r.params.get("size", 0.0)) for r in run.marks)
-            print(f"  {'':<28}  {len(run.marks)} marks, step {run.step:.3f}, sizes "
-                  f"{sizes[0]:.3g}..{sizes[-1]:.3g}, median {float(np.median(sizes)):.3g}")
-            if run.fires and want == "silent":
-                slug = label.split()[1]
-                path = cohort.crop_graded(s.canvas, run, OUT / f"graded_{slug}.png")
-                print(f"  {'':<28}  -> {path.relative_to(ROOT)}")
-    print("  read: the candidate gate is the one silent on both misfires and firing on the "
-          "failure block.")
+            print(f"  {'':<28}  {name}: {len(run.marks)} marks, step {run.step:.3f}, sizes "
+                  f"{sizes[0]:.3g}..{sizes[-1]:.3g}, median {float(np.median(sizes)):.3g}, "
+                  f"{run.per_step:.2f} of a step")
+        swept = [share for share in cohort.SWEEP
+                 if verdicts[cohort.swept(share)] is not None
+                 and verdicts[cohort.swept(share)].fires]
+        print(f"  {'':<28}  the break swept: fires at "
+              + (", ".join(f"{share:.0%}" for share in swept) if swept else "no share"))
+        run = verdicts["0.6.0"]
+        if run is not None and run.fires and want == "silent":
+            slug = label.split()[1]
+            path = cohort.crop_graded(s.canvas, run, OUT / f"graded_{slug}.png")
+            print(f"  {'':<28}  -> {path.relative_to(ROOT)}")
+    print(f"  read: the engine is '{cohort.BUILT}' since step 7 -- silent on the water, "
+          f"firing on the failure block, and still on the headland's stacked masses.")
 
 
 # -- 4D. rehearsing alternatives side by side ---------------------------------------------
