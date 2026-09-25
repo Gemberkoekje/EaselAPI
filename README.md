@@ -50,7 +50,7 @@ swinging in from the right, past a steering wheel and rear-view mirror](https://
 
 *[**Inside a car wash, from the driver's seat**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/car_wash/NOTES.md) — 206
 strokes of a 300 budget, 1152×720 linen, no reference photograph. The nineteen pass
-scripts beside it reproduce that PNG byte for byte.*
+scripts it was painted from are beside it.*
 
 ![A laundromat at night seen from the sidewalk opposite: a wide lit shopfront window set
 in a dark building, a row of washing machines with round doors inside it, one person
@@ -58,8 +58,8 @@ sitting alone at the right-hand end, and the window's light broken into streaks 
 wet road in the foreground](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/laundromat_night/painting.png)
 
 *[**A laundromat at night, from across the street**](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/laundromat_night/NOTES.md) — 286
-strokes of a 300 budget, 1024×768 linen, no reference photograph. Fourteen pass scripts
-beside it reproduce that PNG byte for byte.*
+strokes of a 300 budget, 1024×768 linen, no reference photograph. The fourteen pass
+scripts it was painted from are beside it.*
 
 ![A grey heron seen from high above in a flooded parking lot at dawn, the water filling
 nearly the whole frame: a near-black band of trees across the top with a warm yellow
