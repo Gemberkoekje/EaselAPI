@@ -13,7 +13,15 @@ painter's answers use.
 About ten minutes; it writes `out/painter-questions-step2/` and a zip beside it. The
 painter's one measurement, `../verify/measure_ground_edges.py`, runs from the package's
 root against `blind/q10_ground.png`. `numbers/` is the repository's as it stands when
-this runs, so it is not what the painter read if the round has moved on since.
+this runs, so it is not what the painter read if the round has moved on since -- and
+`PLAN-0.7.0.md` and `NOTES-step2.md` left the repository with 0.7.0's claim, so after it
+`numbers/` carries neither.
+
+**To rebuild the package as the painter read it, check out `427901a`** (#76, the step
+that made it). The crops are laid by the engine installed, and from step 5 on that engine
+breaks a held edge and drags a dry brush, so a later `crop_01` is not the crop that was
+read. `out/graded/` is gitignored and rewritten by every `--graded` run: copy a crop out
+before re-running the probe if it is evidence for a reading.
 """
 
 from __future__ import annotations
@@ -147,11 +155,13 @@ def main() -> None:
     (numbers / "CALIBRATION-the-lighthouse-handovers-round.md").write_text(
         calibration[calibration.index("## The lighthouse handover's round"):],
         encoding="utf-8", newline="\n")
-    plan = (ROOT / "PLAN-0.7.0.md").read_text(encoding="utf-8")
-    section = plan[plan.index("## 5. Decisions taken"):plan.index("## 6. Order of work")]
-    section = section.rstrip().removesuffix("---").rstrip()
-    (numbers / "PLAN-0.7.0-section-5.md").write_text(section + "\n", encoding="utf-8",
-                                                     newline="\n")
+    plan = ROOT / "PLAN-0.7.0.md"
+    if plan.exists():
+        text = plan.read_text(encoding="utf-8")
+        section = text[text.index("## 5. Decisions taken"):text.index("## 6. Order of work")]
+        section = section.rstrip().removesuffix("---").rstrip()
+        (numbers / "PLAN-0.7.0-section-5.md").write_text(section + "\n", encoding="utf-8",
+                                                         newline="\n")
     notes = ROOT / "NOTES-step2.md"
     if notes.exists():
         shutil.copy2(notes, numbers / "NOTES-step2.md")

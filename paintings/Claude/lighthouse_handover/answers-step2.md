@@ -1,5 +1,5 @@
 *The painter's answers to the five questions step 2 of
-[`PLAN-0.7.0.md`](../../../PLAN-0.7.0.md) left, pasted here verbatim. They were put to
+[`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md) left, pasted here verbatim. They were put to
 it as a package -- the candidates under letters first, blind, and the key after -- which
 is filed as [`questions-step2/`](questions-step2); the letters and crop numbers below
 are that package's. Its one measurement is

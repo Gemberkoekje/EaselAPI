@@ -41,6 +41,13 @@ Nothing yet.
 
 ## [0.7.0] — 2026-09-25
 
+**Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with
+`easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.7.0 in the MCP registry.
+Every job of the publish run passed on its first attempt. The round's plan and its step
+notes left the repository with this line, as 0.6.0's did; the tagged copies are
+[`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md)
+and `NOTES-step2.md` to `NOTES-step9.md` beside it.
+
 **One round, and one painter: the first painting against 0.6.0.** `claude-opus-5-5`, at
 max effort, installed `easel-paint` 0.6.0 from the package in a sandbox and painted a
 lighthouse at dusk in 171 of 300 marks, then wrote a verdict on the tool, the
@@ -189,7 +196,9 @@ wander.
   replays cut, so no saved painting moves and `older-engine` has nothing new to say;
   **a script that leaves `feather=` off lays the broken edge where it laid a cut one**.
   Over the ten corpus paintings whose scripts hold an edge that moves 0.00% to 1.92% of
-  a canvas; the scripts are listed in `NOTES-step5.md`.
+  a canvas; the scripts are listed in
+  [`NOTES-step5.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/NOTES-step5.md) at
+  `v0.7.0`.
 - **A share of the long side, like `size`**, benched at 1440, where the painter found the
   bench's copy *a little chewed*: built, the edge there bites at the export's own pixels
   as it does at 1024 (`0.94` px against `0.94`), and a two-pixel count is no closer.

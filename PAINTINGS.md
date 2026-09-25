@@ -903,7 +903,10 @@ patched with brushwork rather than redrawn, and a picture it calls a postcard su
 the safe way. The `edges:` line said between `54%` and `65%` of its edges were under
 2.5 px after every pass from the sea's on, the range of the two cohort painters who named
 *flat cut-out shapes*; the painter relied on the hard edge anyway and named it the least
-paint-like thing in the engine. What is being done about all of it is [`PLAN-0.7.0.md`](PLAN-0.7.0.md).
+paint-like thing in the engine. What was done about all of it, in 0.7.0, is in
+[`SUGGESTIONS.md`](SUGGESTIONS.md) under *The lighthouse handover*, and the plan it was
+worked from is [`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md),
+as tagged.
 
 ## The log
 
