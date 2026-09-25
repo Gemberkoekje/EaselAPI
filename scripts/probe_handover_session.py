@@ -38,7 +38,7 @@ It does four things:
     python scripts/probe_handover_session.py --file       # 4F
     python scripts/probe_handover_session.py --shell      # 4F built: the passes from a shell
     python scripts/probe_handover_session.py --shell --engine DIR/src   # ...under another
-    python scripts/probe_handover_session.py --pressure   # 4G: the fade and the wet bands
+    python scripts/probe_handover_session.py --pressure   # 4G: the lit-air films, the fade, the wet bands
     python scripts/probe_handover_session.py --corpus-edges   # 4A built, on the corpus
     python scripts/probe_handover_session.py --dry        # 4B built, beside 0.6.0's gate
     python scripts/probe_handover_session.py --corpus-dry # 4B built, on the corpus
@@ -2059,28 +2059,114 @@ def probe_shell(engines: list[str]) -> None:
 
 # -- 4G. the pressure-list fade, and the wet bands -------------------------------------------
 
+def probe_lit_air() -> None:
+    """Finding 11 on the recipe's own films: which end of each is wide.
+
+    *A volume of lit air*'s block is run with ``glaze`` recording its calls, and each film
+    is laid again on its own in titanium white over the painter's dark field -- the
+    painter's test in ``verify.py``, on the recipe's own path, size, pressure and opacity
+    -- and read down the canvas near the light and near where the film gives out.
+    """
+    demo = next(d for d in demos() if d.heading == "A volume of lit air")
+    scope = _recipe_scope()
+    s, films = scope["s"], []
+    real = s.glaze
+
+    def recording(points, color, **kw):
+        films.append(([tuple(p) for p in points], kw))
+        return real(points, color, **kw)
+
+    s.glaze = recording
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        exec(compile(demo.recipe, "<recipe>", "exec"), scope)  # noqa: S102
+    print("  the lit-air recipe's own films, each laid alone in titanium white, read down "
+          "the canvas near the light and near where each gives out:")
+    for points, kw in films:
+        t = Session(1024, 768, ground="toned_grey", seed=3, timelapse=False)
+        t.canvas.rgb[...] = t.palette.mix("ultramarine", "burnt_umber", 0.5)
+        before = painters_lum(t.canvas.to_srgb8(sketch=False))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            t.glaze(points, "titanium_white", **kw)
+        moved = np.abs(painters_lum(t.canvas.to_srgb8(sketch=False)) - before)
+        read = []
+        for fx in (points[0][0] - 0.04, max(points[-1][0], 0.0) + 0.04):
+            column = moved[:, int(fx * 1024)]
+            read.append(f"{int((column > 0.01).sum())} px tall at x={fx:.2f}, "
+                        f"peak {float(column.max()):.2f}")
+        print(f"     size {kw.get('size')}, pressure {kw.get('pressure')}: "
+              + "; ".join(read))
+
+
+#: The list the recipe's own passage lays each stroke at, and the opacity -- replaced
+#: in its block to lay the same six strokes at one pressure.
+_RECIPE_PRESSURE = "pressure=[0.0, 0.55, 1.0]"
+_RECIPE_OPACITY = "opacity=0.5"
+#: The constant pressures the fade's arrival is read at. Full pressure is the step.
+_FADE_PRESSURES = (0.5, 0.25, 0.1)
+
+
+def _painters_band(opacity: float, pressure) -> tuple[float, np.ndarray]:
+    """The painter's own test from ``verify.py``: a six-pass ``scumble`` over a dark field.
+
+    Read in the painter's measure over the band's middle rows; the field comes back
+    beside it. The band is drawn past both sides of the canvas and its passes are cut
+    at the frame, so its list runs out there.
+    """
+    rows = slice(int(0.35 * 768), int(0.65 * 768))
+    s = Session(1024, 768, ground="toned_grey", seed=2, timelapse=False)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(Region(0, 0, 1, 1), "flat",
+                   s.palette.mix("ultramarine", "burnt_umber", 0.5), size=0.1,
+                   solid=True, edge="hard")
+        s.dry()
+        field = float(painters_lum(s.canvas.to_srgb8(sketch=False))[rows].mean())
+        s.scumble(Region(-0.06, 0.30, 1.06, 0.70), "cadmium_yellow", "titanium_white",
+                  6, opacity=opacity, pressure=pressure)
+    return field, painters_lum(s.canvas.to_srgb8(sketch=False))[rows]
+
+
+def _recipes_passage(opacity: float | None = None,
+                     pressure: float | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """*A passage brightening toward one side* at a painting's size, on the recipe's own dark.
+
+    Laid from the recipe's own block, so the probe follows the recipe if it changes;
+    ``opacity`` and ``pressure`` replace the block's own, to lay its six strokes at one
+    pressure across their whole length. The values view of the field, then of the passage.
+    """
+    demo = next(d for d in demos() if d.heading == "A passage brightening toward one side")
+    source = demo.recipe
+    for given, written in ((pressure, _RECIPE_PRESSURE), (opacity, _RECIPE_OPACITY)):
+        if given is not None:
+            assert written in source, f"the recipe no longer lays {written}"
+            source = source.replace(written, f"{written.split('=')[0]}={given!r}")
+    scope = _recipe_scope()
+    s = scope["s"]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.block_in(Region(0, 0, 1, 1), "flat", "dark", size=0.1, solid=True, edge="hard")
+        s.dry()
+        field = values(s)
+        exec(compile(source, "<recipe>", "exec"), scope)  # noqa: S102
+    return field, values(s)
+
+
 def probe_pressure() -> None:
     """Finding 10: how fast a pressure list's fade arrives, on the painter's test and the recipe's.
 
     The painter's own test from ``verify.py`` -- a scumble at ``pressure=[1.0, 0.75,
     0.25, 0.0]`` on a dark field, read by thirds -- and the same band read over its last
-    twentieth and its last 4%, where the profile reaches nothing. Then the recipe's own
-    passage, *a passage brightening toward one side*, read at its no-pressure end.
+    twentieth and its last 4%, as the profile runs out at the frame. Then why it arrives
+    late: the share of its step a pass lays at a constant pressure, on the painter's band
+    and on the recipe's own six strokes. Then the recipe's own passage, *a passage
+    brightening toward one side*, read at its no-pressure end.
     """
-    print("\n== 4G. a pressure list's fade, and three bands laid wet ==")
+    print("\n== 4G. the lit-air films, a pressure list's fade, and three bands laid wet ==")
+    probe_lit_air()
     for opacity in (0.9, 0.5):
-        s = Session(1024, 768, ground="toned_grey", seed=2, timelapse=False)
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            s.block_in(Region(0, 0, 1, 1), "flat",
-                       s.palette.mix("ultramarine", "burnt_umber", 0.5), size=0.1,
-                       solid=True, edge="hard")
-            s.dry()
-            field_lum = painters_lum(s.canvas.to_srgb8(sketch=False))
-            s.scumble(Region(-0.06, 0.30, 1.06, 0.70), "cadmium_yellow", "titanium_white",
-                      6, opacity=opacity, pressure=[1.0, 0.75, 0.25, 0.0])
-        lum = painters_lum(s.canvas.to_srgb8(sketch=False))[int(0.35 * 768):int(0.65 * 768)]
-        field = float(field_lum[int(0.35 * 768):int(0.65 * 768)].mean())
+        field, lum = _painters_band(opacity, [1.0, 0.75, 0.25, 0.0])
 
         def over(a: float, b: float, lum=lum) -> float:
             return float(lum[:, int(a * 1024):int(b * 1024)].mean())
@@ -2090,19 +2176,31 @@ def probe_pressure() -> None:
               f"{field:.3f} field; {over(0.95, 1.0):.3f} over the last twentieth, "
               f"{over(0.96, 1.0):.3f} over the last 4%")
 
-    demo = next(d for d in demos() if d.heading == "A passage brightening toward one side")
-    scope = _recipe_scope()
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        s = scope["s"]
-        s.block_in(Region(0, 0, 1, 1), "flat", "dark", size=0.1, solid=True, edge="hard")
-        s.dry()
-        view = values(s)
-        field = float(view[int(0.44 * 768):int(0.58 * 768), int(0.24 * 1024):int(0.32 * 1024)]
-                      .mean())
-        exec(compile(demo.recipe, "<recipe>", "exec"), scope)  # noqa: S102
-    view = values(s)
+    print("  the share of its step a pass lays at one pressure -- the dabs overlap:")
+    middle = (slice(int(0.46 * 768), int(0.56 * 768)), slice(int(0.45 * 1024), int(0.85 * 1024)))
+    shares: dict[str, dict[float, list[float]]] = {"the recipe's six flat strokes": {},
+                                                   "the painter's scumble": {}}
+    for opacity in (0.5, 0.9):
+        field, full = _recipes_passage(opacity, 1.0)
+        field, top = float(field[middle].mean()), float(full[middle].mean())
+        for pressure in _FADE_PRESSURES:
+            v = float(_recipes_passage(opacity, pressure)[1][middle].mean())
+            shares["the recipe's six flat strokes"].setdefault(pressure, []).append(
+                (v - field) / (top - field))
+        field, lum = _painters_band(opacity, 1.0)
+        top = float(lum[:, int(0.10 * 1024):int(0.90 * 1024)].mean())
+        for pressure in _FADE_PRESSURES:
+            _, lum = _painters_band(opacity, pressure)
+            v = float(lum[:, int(0.10 * 1024):int(0.90 * 1024)].mean())
+            shares["the painter's scumble"].setdefault(pressure, []).append(
+                (v - field) / (top - field))
+    for name, by_pressure in shares.items():
+        print(f"     {name}, at opacity 0.5 / 0.9: " + "; ".join(
+            f"pressure {p} lays {a:.2f} / {b:.2f}" for p, (a, b) in by_pressure.items()))
+
+    before, view = _recipes_passage()
     rows = slice(int(0.44 * 768), int(0.58 * 768))
+    field = float(before[rows, int(0.24 * 1024):int(0.32 * 1024)].mean())
     start = float(view[rows, int(0.24 * 1024):int(0.32 * 1024)].mean())
     end = float(view[rows, int(0.90 * 1024):int(1.0 * 1024)].mean())
     print(f"  the recipe's own passage: {start:.3f} at its no-pressure end on a {field:.3f} "
@@ -2167,7 +2265,8 @@ def main(argv: list[str] | None = None) -> int:
                        ("--file", "4F: the session file, saved each way"),
                        ("--shell", "4F, built: the passes through `easel run`, the file "
                                    "and `easel timelapse`, engine by engine"),
-                       ("--pressure", "4G: the pressure-list fade and the wet bands"),
+                       ("--pressure", "4G: the lit-air films, the pressure-list fade "
+                                      "and the wet bands"),
                        ("--corpus-edges", "4A built: the corpus's held edges, cut and "
                                           "broken, and the ground each leaves"),
                        ("--dry", "4B built: the gate as built beside 0.6.0's, the "

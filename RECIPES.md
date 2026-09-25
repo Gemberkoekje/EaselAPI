@@ -372,13 +372,15 @@ s.dry()                                            # and again, before anything 
 **Mix the glazes close to the field, in value and in hue** — a step or two above it,
 leaning toward its own colour — because a glaze far from what it lands on has no usable
 opacity. Lay them with the soft round tip along the axis, and **taper by pressure**: a
-round tip's width follows pressure, so `[1.0, ..., 0.1]` is narrow-and-bright at the
-source and wide-and-gone at the far end, which is what a cone of lit air is. The wide
-faint one runs the other way, so the cone opens as it travels. `dry()` first, so the
-film sits on the field rather than mixing into it — **and again after**, which is the
-clause that gets left off. The three films leave the beam wet (`0.14` at the core), and
-an opaque mark laid across it afterwards drags what it lands on: up to `0.30` in value
-where a mass crosses it, `0.40` where a stroke does.
+round tip's width follows pressure, and a light touch keeps about a third of it
+(*Pressure* in [`CALIBRATION.md`](CALIBRATION.md#pressure)), so `[1.0, ..., 0.1]` is
+wide and bright at the source and narrow and gone at the far end — the core and the
+body thinning away from the light. The wide faint one runs the other way, so the cone
+opens as it travels. `dry()` first, so the film sits on the field rather than mixing
+into it — **and again after**, which is the clause that gets left off. The three films
+leave the beam wet (`0.14` at the core), and an opaque mark laid across it afterwards
+drags what it lands on: up to `0.30` in value where a mass crosses it, `0.40` where a
+stroke does.
 
 **Goes wrong as:** a ribbed slab (a `bristle` block-in of the wedge); a fan of ribbons
 (five `flat` rays); a searchlight that owns the picture (the glaze mixed to the light's
@@ -478,6 +480,15 @@ one side and full pressure on the other — so the passage brightens without any
 having a visible end. The ends run off the canvas on purpose. The same thing works as
 one `block_in`, `scumble` or `sweep` call with a pressure list, which is read in canvas
 order on every pass.
+
+**The fade arrives late.** The dabs overlap and pile up — *`opacity` does not thin a
+long stroke*, in [`PAINTING.md`](PAINTING.md#per-stroke-overrides) — so at this
+passage's `opacity=0.5` a quarter pressure moves the value over half as far as full
+pressure does, and a tenth still a quarter as far. Laid as one `scumble` at
+`pressure=[1.0, 0.75, 0.25, 0.0]` and `opacity=0.9` over a `0.15` field, a band reads
+`0.86` over its first third, `0.41` over its last and still `0.19` over its last
+twentieth, where the list runs out (*Pressure* in
+[`CALIBRATION.md`](CALIBRATION.md#pressure)).
 
 **Written by hand, the brush is yours to get right.** Above, the passes step `0.028`
 apart and the brush is `0.085` — three steps, on purpose. **Keep the narrowest brush in
