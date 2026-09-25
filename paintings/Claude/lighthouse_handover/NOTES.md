@@ -9,7 +9,9 @@ five of the nine exercises (`ex/`: the value scale, wet against dry, edges, box 
 shape, and the swatch strip with this painting's own mixtures). The subject was chosen
 before any of it was read. **It is the first painting made against 0.6.0**, so it is also
 the first fresh session to paint against that release's changes to the guide and the
-tool, and what it says about them is read in [`PLAN-0.7.0.md`](../../../PLAN-0.7.0.md).
+tool, and what it says about them is read in
+[`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md), as
+tagged at `v0.7.0`.
 
 **To understand this, start by reading [`prelude.py`](prelude.py)** — the palette, the
 headland's roughened silhouette, the tower, the landmarks and the `s.plan(...)` — then

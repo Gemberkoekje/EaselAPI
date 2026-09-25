@@ -98,7 +98,7 @@ installed `easel-paint` 0.6.0 from the package in a sandbox on Linux and painted
 lighthouse at dusk, *two warm lights handing over*, **171 of 300 strokes**. A row's
 right-hand column was filled in when its PR landed, and not before. The candidate
 answers, the decisions taken on them and the measurements that decided which survived
-are in [`PLAN-0.7.0.md`](PLAN-0.7.0.md); what the round left open is at the end of this
+are in [`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md), as tagged; what the round left open is at the end of this
 section.
 
 **It is the first fresh session to paint against 0.6.0**, so it is also the first run of
