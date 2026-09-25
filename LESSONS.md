@@ -58,6 +58,15 @@ warning, which is why a painter could count four instances of a rule it had igno
 times. Repetition is what a document does instead of having an answer. When a rule keeps
 failing, the fix is a procedure, not a louder warning.
 
+**Nor is a measurement.** The lighthouse handover's `edges:` line printed between 54% and
+65% of the picture's edges under 2.5 px after every pass from the sea's on — eleven
+times, in the range of the two cohort painters who called their own pictures cut-outs —
+and the painter kept the hard edge regardless, then named it *the least paint-like thing
+in the engine*. A number printed beside the work is a warning with a figure in it. What
+moved the edges was the engine, which in 0.7.0 breaks every held edge against the tooth:
+where a line was printed and did not change what the painter did, the answer is in the
+engine, not in a louder line.
+
 ### A separate file of warnings is the fourth copy, and it does not work either
 
 Asked directly whether the warnings should be gathered into their own file for a painter
@@ -409,6 +418,14 @@ the unprompted paintings before the human has.
   so I'm trusting the tool*, which is the whole method's one requirement failing quietly.
   Its verdict was weighted accordingly, and the three front pages now say vision is
   required.
+- **A painter told where to start reads what it likes, so record what it read.** The
+  lighthouse handover, the first fresh session against the card and body 0.6.0 split
+  the guide into, read five documents before its first mark — 194 KB, everything but
+  `CALIBRATION.md` — though the card's first paragraph says to start after *The first
+  hour*; it is the second painter in two rounds to read everything. It read three rules
+  and broke them anyway, and rehearsals caught all three: *looking at rehearsals caught
+  those, not reading*. Its instruction for whichever round does cut the documentation
+  is the one to keep: **start with what the notices already say at the call.**
 - **Stop running verbal naming probes.** Three attempts settled it: 0 of 8 sessions *name*
   water, 4 of 4 *paint* it. A verbal probe measures what a session says when interrupted.
   The finding they did produce is better than any tally — the estuary is not a subject
@@ -591,7 +608,13 @@ base with a fractional exponent is NaN. `np.cross` no longer takes 2-D vectors i
 numpy rejects a float32 probability vector that misses 1.0 by an ulp, which a quarter of a
 million squared distances comfortably does. Check what `import easel` actually resolves to
 before trusting a measurement — an editable install can point at a stale copy of the repo.
-The repo is LF (`.gitattributes`), even on a Windows checkout.
+The repo is LF (`.gitattributes`), even on a Windows checkout. Two builds of numpy can
+round a mixture differently in the seventh decimal — `2.4e-7` in one blue channel of the
+lighthouse handover's palette — and the wet blend carries it into the export: its
+thirteen passes rebuild the log to the stroke on the machine that filed it, and the
+export differs from the painter's in 729 of 786,432 pixels, each by one level — the kind
+of noise the golden tests' `TOLERANCE` is there for. *Byte for byte* is a claim about one
+machine; *to the stroke* is the one that travels.
 
 ---
 
@@ -664,6 +687,12 @@ decided. The last two came out of the ninth session, which was the first to be h
   **whether a painter reaches for it unprompted at the moment they are stuck**, which
   is what the recall failure above was really about, and the next run should say
   whether the command was in the instructions and how often it was called.
+
+  **One run has said so since.** The lighthouse handover read the documents that name
+  both commands and called neither `easel diagnose` nor `easel explain` in 171 marks —
+  *the one-line notices were enough*. That is the answer 0.6.0 said to wait for before
+  linking a notice's code to its `DIAGNOSIS.md` row, and the link is not built, on the
+  evidence. n=1 again.
 - **Decide whether a restricted arm gets the index at all, and record it.** Four of
   the rows most relevant to a painter without the essay point into files that arm
   does not have — *two masses you planned as different that read as one* lands in
@@ -811,6 +840,10 @@ the same rate, because the prose never prevented them; and the session reaches i
 subject earlier, because it spent less of its first hour reading. If the shorter
 corpus produces a painter that skips the exercises or paints boxes for backgrounds at a
 higher rate, the cut went too far and the row above says where the words went.
+
+**The lighthouse handover did not spend less of its first hour reading**: told by the
+card where to start, it read everything anyway (*a painter told where to start reads what
+it likes*, in the protocol above). One data point against the prediction's last clause.
 
 ## The milestones, as a key
 

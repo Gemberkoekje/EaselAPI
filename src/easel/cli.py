@@ -293,7 +293,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="print the painting guide that ships with the engine",
         description="Print PAINTER.md, the guide this engine is written around. "
                     "With no arguments: `The first hour`, which is the whole "
-                    "method in under a thousand words and enough to start.",
+                    "method in about 1,400 words and enough to start.",
     )
     g_which = p_guide.add_mutually_exclusive_group()
     g_which.add_argument("--full", action="store_true",

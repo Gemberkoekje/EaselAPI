@@ -53,7 +53,7 @@ their own sessions rather than measurements of the engine.
 | A glaze far from its ground has no usable opacity | *`glaze`* |
 | An inward scumble is a glow; three steps of brush is the window; `n` is bounded by the patch | *`scumble`* |
 | A band's brush is three steps; a wedge needs two bands; `opacity` does not quieten a passage | *The band, and the brush that closes its joins*, *The band across a wedge*, *Opacity does not make a passage quieter* |
-| A chisel does not taper; a chisel ending on a slope is a staircase | *Pressure*, *The chisel staircase* |
+| A chisel does not taper; a chisel ending on a slope is a staircase; a pressure list's fade arrives late | *Pressure*, *The chisel staircase* |
 | A dab is a light touch; `press=3` lands; scale a mark off the thing | *At the scale of a feature* |
 | A bristle under `0.025` is four streaks; round tips repeat, `tip_wobble` redraws | *The bristle comb* |
 | A rehearsal is the next strokes; `pencil`, `dry` and `erase` are logged | *The log, undo, and the stream* |
@@ -1492,6 +1492,23 @@ arguments are for. This is *"`opacity` does not thin a long stroke, it only slow
 down"* arriving on the verb where a painter reaches for a low opacity to keep a passage
 down, which is where one of them met it.
 
+### Ramps laid over one another, wet or dried between
+
+A graded field is two or three ramps, overlapped, and whether the one underneath is
+still wet decides how much each takes from the other. The lighthouse handover's sky —
+`p01_sky.py`'s three 8-pass scumbles at `opacity=0.95`, 1024×768 linen on
+`burnt_sienna` — laid one after another on a fresh canvas, and again with `dry()`
+between them: **drying between the ramps moves 16% of the canvas by more than two 8-bit
+levels of value and 5% by more than eight, and 34% and 13% in the export's colour, any
+channel.** Neither draws a seam: the median jump from one column to the next is `0.0002`
+both ways, the largest at the canvas's own edges.
+
+**A number for choosing, not a rule.** Laid wet, a ramp picks up what it crosses where
+the two overlap; dried between, each lands as it was mixed. `wet-under`, a notice at the
+call for an opaque mark laid on paint still wet, was declined in 0.6.0, and this reopens
+nothing. The number is `probe_handover_session.py --pressure`'s, under *The fade and the
+wet bands* below.
+
 ---
 
 ## Pressure
@@ -1516,6 +1533,27 @@ painters read that and laid every pot as a rectangle with chisel ends under
 `pressure=[1.0, 0.35]` regardless, so since 0.2.0 a hand-laid mark shorter than four
 brush widths given a pressure list on one of these tips says so at the call; a list on
 a long pass is how a passage brightens toward one side and is left alone.
+
+**On a long pass a light pressure makes far more than its share of the change**,
+because the dabs overlap and each lays its fraction over the last: *`opacity` does not
+thin a long stroke*, one argument over. The table above counts the paint a mark lays;
+what a painter sees is the value it moves, and that saturates. A pass laid at one
+pressure along its whole length, as a share of the change the same pass makes at full
+pressure on the same field — *a passage brightening toward one side*'s own six `flat`
+strokes, read in the values view, and a six-pass `scumble` on its own `bristle` at
+`0.20`, read in the painter's measure, both at 1024×768:
+
+| pressure | six `flat` strokes, `opacity=0.5` | at `0.9` | the `scumble`, `opacity=0.5` | at `0.9` |
+|---|---|---|---|---|
+| 0.50 | 0.85 | 1.00 | 0.76 | 0.92 |
+| 0.25 | 0.56 | 0.82 | 0.43 | 0.67 |
+| 0.10 | 0.24 | 0.43 | 0.15 | 0.28 |
+
+**So a pressure list's fade arrives late.** The same `scumble` at
+`pressure=[1.0, 0.75, 0.25, 0.0]` over a `0.149` field — the test a painter took the
+recipe's word to — reads `0.858`, `0.787` and `0.408` by thirds at `opacity=0.9`, and
+still `0.188` over its last twentieth, where its list runs out at the frame; at `0.5`,
+`0.800`, `0.644`, `0.291` and `0.170`. `probe_handover_session.py --pressure` takes both.
 
 ### The chisel staircase
 
@@ -3173,16 +3211,52 @@ which is why it is under the 36 to 49 s above.
 | 0.9 | 0.858 | 0.787 | 0.408 | 0.188 | 0.183 |
 | 0.5 | 0.800 | 0.644 | 0.291 | 0.170 | 0.167 |
 
-The painter read the right third, where the profile still averages a quarter pressure.
-Over the last 4% it reads `0.183`, which is `0.034` above the field at opacity 0.9 and
-`0.018` at 0.5; the recipe's own passage -- *a passage brightening toward one side*, six
-`flat` strokes at `pressure=[0.0, 0.55, 1.0]` -- reads `0.162` at its no-pressure end on
-a `0.150` field, `0.012` above, and `0.466` at the other. **So the fade gets close and
-does not arrive**, which the painter pointed out when this section first said it did;
-what the recipe does not say is how close, and how late.
+The painter read the right third, where the profile averages `0.135` of full pressure
+*(corrected in step 9: this said a quarter, and the passes run from the frame to the
+frame, so the list's `0` is the canvas's last column)*. Over the last 4% it reads
+`0.183`, which is `0.034` above the field at opacity 0.9 and `0.018` at 0.5; the
+recipe's own passage -- *a passage brightening toward one side*, six `flat` strokes at
+`pressure=[0.0, 0.55, 1.0]` -- reads `0.162` at its no-pressure end on a `0.150` field,
+`0.012` above, and `0.466` at the other. **So the fade gets close and does not arrive**,
+which the painter pointed out when this section first said it did; what the recipe does
+not say is how close, and how late.
 
 **Three sky ramps, wet and dried.** `p01_sky.py`'s three scumbles on a fresh canvas, one
 after another wet and again with `dry()` between them: drying between the bands moves
 **16%** of the canvas by more than two 8-bit levels of value and **5%** by more than
 eight -- **34%** and **13%** in the export's colour, any channel. Neither draws a seam:
 the median column jump is `0.0002` both ways, the largest at the canvas's own edges.
+
+#### Written, in step 9
+
+Three sentences, each written on the probe's own numbers, re-taken on the engine the
+round built (`--pressure`). Every figure above came back to the third decimal.
+
+**The lit-air sentence, the right way round.** *A volume of lit air* says a round tip at
+`[1.0, ..., 0.1]` is wide and bright at the source and narrow and gone at the far end,
+and cites *Pressure*. Its block was right and is unchanged, and its own three films, each
+laid alone in titanium white over the painter's dark field and read down the canvas near
+the light and near where it gives out, say so:
+
+| film | near the light | where it gives out |
+|---|---|---|
+| the core, `0.06` at `[1.0, 0.7, 0.12]` | 49 px, peak `0.30` | 16 px, peak `0.02` |
+| the body, `0.11` at `[1.0, 0.8, 0.4]` | 97 px, peak `0.29` | 60 px, peak `0.08` |
+| the wide faint one, `0.20` at `[0.4, 0.8, 1.0]` | 90 px, peak `0.04` | **159 px**, peak `0.13` |
+
+The last is the film that opens the cone.
+
+**How late the fade arrives, beside its rule.** *A passage brightening toward one side*
+says it now, with the table under *Pressure*: at the recipe's own `opacity=0.5` a
+quarter pressure makes `0.56` of the change full pressure makes and a tenth `0.24`, and
+the painter's band reads `0.41` over its last third and `0.19` over its last twentieth.
+**The plan's own sentence for it was wrong** -- *a quarter pressure still lays a quarter
+of the step* -- reasoned from the thirds above rather than measured: on the painter's
+band a quarter lays two-thirds of the step. The table accounts for the thirds: the right
+third's mean pressure is `0.135`, between the table's `0.10` and `0.25` at `0.28` and
+`0.67` of the step, and the band's right third reads `0.365` of it.
+
+**The wet bands, as a number**, under *`scumble`*: *Ramps laid over one another, wet or
+dried between*. The plan put it under the graded-field recipe's measurement, and this
+file has no section of that name -- the recipe's band and its brush are measured under
+*`scumble`*, so the ramps went beside them.

@@ -285,6 +285,48 @@ copy is right for a pass that goes on top of another, and wrong for two versions
 - A version is a rehearsal, on a copy: nothing a pass lays, and nothing a rebuild lays,
   changes.
 
+### Three sentences put right, and the round recorded
+
+Step 9 of the lighthouse handover's round (`PLAN-0.7.0.md`, workstream G). The painter
+found one sentence of prose backwards — *the one factual error I found was in prose* — and
+a caveat a file away from its rule; asked what to do about the weight of the
+documentation, it answered *watch*.
+
+- **The lit-air recipe says which end of a round tip is wide.** *A volume of lit air*
+  called a film at `pressure=[1.0, ..., 0.1]` narrow and bright at the source. A round
+  tip's width follows pressure, so it is wide and bright there and narrow and gone at
+  the far end, and the wide faint film runs the other way to open the cone; the
+  sentence says so and cites *Pressure* in `CALIBRATION.md`. The block and its demo were
+  right and are unchanged: laid alone, the core is 49 px across near the light and 16
+  where it gives out.
+- **The fade arrives late, and the recipe says how late.** *A passage brightening toward
+  one side* gains the number beside its rule: the dabs overlap, so at the recipe's own
+  `opacity=0.5` a quarter pressure moves the value over half as far as full pressure
+  does and a tenth still a quarter as far, and a band at
+  `pressure=[1.0, 0.75, 0.25, 0.0]` reads `0.41` over its last third and `0.19` over its
+  last twentieth on a `0.15` field. It names the reason where it lives, *`opacity` does
+  not thin a long stroke* in `PAINTING.md`, and the table is new under *Pressure* in
+  `CALIBRATION.md`.
+- **Ramps laid wet, as a number and not a rule**: three ramps laid one on another wet
+  change a third of the canvas by more than two levels of colour against the same
+  ramps dried between, and draw no seam either way — under *`scumble`* in
+  `CALIBRATION.md`. `wet-under` stays declined.
+- **The record.** `LESSONS.md`: a measurement printed beside the work is a warning with
+  a figure in it — the `edges:` line said 54% to 65% eleven times and the painter kept
+  its hard edge; a painter told where to start reads what it likes, and read three rules
+  and broke them; `explain` and `diagnose` went uncalled, so a notice's code stays
+  unlinked to its `DIAGNOSIS.md` row, on the evidence; and *byte for byte* is a claim
+  about one machine, *to the stroke* the one that travels. `SUGGESTIONS.md` closes the
+  round, every item in it done.
+- **Counts that had moved.** Thirty notices, where the README and `llms.txt` said
+  twenty-nine before `older-engine`; the README's rebuild claim is to the stroke, and to
+  the byte on one machine; and the documents' sizes are the ones they have — the card is
+  about 1,400 words, where six places said a thousand or under (the CLI's help and the
+  MCP `guide` tool's among them), and `REFERENCE.md` about 8,800, where `llms.txt` said
+  3,600.
+- Nothing a mark lays, and nothing a rebuild lays, changes.
+  `scripts/probe_handover_session.py --pressure` measures all three sentences.
+
 ## [0.6.0] — 2026-09-22
 
 **Released.** Shipped as `v0.6.0`: `easel-paint` 0.6.0 on PyPI, the GitHub release with

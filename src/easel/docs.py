@@ -62,7 +62,7 @@ DOCUMENTS = {
 }
 
 #: The heading of the section the guide means to be read on its own: the whole
-#: workflow in under a thousand words, and enough to start. It ends where the next
+#: workflow in about 1,400 words, and enough to start. It ends where the next
 #: `##` heading begins.
 FRONT_PAGE = "## The first hour"
 
