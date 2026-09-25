@@ -8,14 +8,12 @@ greenhouse was painted before the fogged glass and filed after it, in its own se
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: the lighthouse handover, at the top** — one painter against 0.6.0,
-**6 engine items and 4 documentation items**, all six engine items and one documentation
-item done so far. It is written where
-every open round before it has been written, and will be folded in where it stands rather
-than moved once it is acted on. Below it is the 0.5.0 cohort — seven painters that
+**No round is open.** The newest, at the top, is the lighthouse handover — one painter
+against 0.6.0, **6 engine items and 4 documentation items** — and every item in it is
+done, in 0.7.0, folded in where it was filed rather than moved, as every open round
+before it was. Below it is the 0.5.0 cohort — seven painters that
 are not Claude, one picture each, **32 engine items and 6 documentation items** — and
-every item in it is done, in 0.6.0, folded in where it was filed rather than moved, as
-every open round before it was. Everything below it is done too: 72 engine
+every item in it is done, in 0.6.0. Everything below it is done too: 72 engine
 items and 90 documentation items, all of them — the eighth session's eight and the
 ninth's fourteen in 0.3.0, the tenth and the greenhouse's fifteen engine items and three
 left-over documentation items in 0.4.0 with the install session's three, the pier
@@ -53,7 +51,7 @@ changed rather than that it worked.
 | …and that session painting, 257 of 300, `paintings/Claude/pier_underside/`, in an empty folder | 5 | 5, and one that is neither |
 | Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
 | The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
-| The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | **none open** | **3 open** |
+| The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | 6 | 4 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -94,13 +92,13 @@ disagree, it may be the context talking.
 
 ## The lighthouse handover: one painter against 0.6.0
 
-**OPEN.** Six engine items and four documentation items, from one painter —
-`claude-opus-5-5`, at max effort — which installed `easel-paint` 0.6.0 from the package
-in a sandbox on Linux and painted a lighthouse at dusk, *two warm lights handing over*,
-**171 of 300 strokes**. **A blank right-hand column below is an item nothing has been
-done about yet.** The candidate answers, the decisions taken on them and the
-measurements that will decide which survive are in [`PLAN-0.7.0.md`](PLAN-0.7.0.md); a
-row gets filled in when its PR lands, not before.
+**Every item in this section is done, in 0.7.0** — six engine items and four
+documentation items, from one painter — `claude-opus-5-5`, at max effort — which
+installed `easel-paint` 0.6.0 from the package in a sandbox on Linux and painted a
+lighthouse at dusk, *two warm lights handing over*, **171 of 300 strokes**. A row's
+right-hand column was filled in when its PR landed, and not before. The candidate
+answers, the decisions taken on them and the measurements that decided which survived
+are in [`PLAN-0.7.0.md`](PLAN-0.7.0.md).
 
 **It is the first fresh session to paint against 0.6.0**, so it is also the first run of
 that release's hypotheses — the card and the body, the notices at the call, the plan
@@ -145,9 +143,9 @@ answers are [`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-st
 | What was wrong | Kind | What was done |
 |---|---|---|
 | ~~**The built-in side-by-side comparison doesn't support soft blends or glazes.**~~ **It does**: `{"points": ..., "glaze": True, "color": ..., "opacity": ...}` is a stroke entry of a plan, as is `{"points": ..., "smudge": 1.0}`, and a `vary=` sheet of three opacities of the painting's own beam rendered in 1.7 s. **No document says so** — ~~`REFERENCE.md`'s plan grammar names a stroke, a mass, a sweep, a scumble and a burial~~ *(corrected when it was built: `REFERENCE.md` named three of the five kinds — a mark, a mass and a sweep — and only the MCP server's plan help named the passage and the burial)* — and the painter's answer to the plan makes the same gap twice: *whole passes of scumbles, strokes and glazes, which as far as I could tell can't go into a plan*. They can. | R | **0.7.0**: the grammar names all five kinds, and the film as a mark **with the glaze verb's brush and opacity written out** — an entry takes a stroke's defaults, and `{"points": band, "glaze": True, "color": c}` is a bristle film at `0.88`, not a glaze — with `to_value=` staying with the verb; and one sentence says a whole pass is a plan. The same in `preview`'s and `rehearse`'s docstrings and the MCP plan help, held by `tests/test_reference.py`. **The smudge entry was not named**: written as a mark it takes the smudge brush's own `0.07`, the width the verb's `0.02` default was moved off, and says none of `smudge()`'s three notices — so naming it would hand a painter the lobe the verb exists to stop, and no painter asked for it. |
-| **One sentence is backwards.** The lit-air recipe calls a glaze at pressure `[1.0 … 0.1]` *narrow-and-bright at the source and wide-and-gone at the far end*; the painter measured 80 px at the source and 32 at the far end. Confirmed against the source: a round tip's width follows pressure, so full pressure is the wide end. The recipe's code is right and its sentence is not — *the one factual error I found was in prose*. | M | |
-| **A caveat far from its rule.** `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured, a scumble at `pressure=[1.0, 0.75, 0.25, 0.0]` went from `0.86` to `0.41` over a `0.14` field at opacity 0.9. **Both are right, about different things**: the painter read the last *third*, where the profile still averages a quarter pressure, and over the last 4% of the width it reads `0.20` — it does reach nothing, at the very end. What the recipe does not say is how fast the fade arrives, and the reason — dabs overlap and accumulate, so a quarter pressure lays a quarter of a step — lives in `PAINTING.md`, not beside it. | M | |
-| **Too much text**: about 340 KB across six documents and 180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs*. The sizes are right — 341 KB for the six, 194 for the five it read. The reading was its own choice: the card says to start after *The first hour*. Asked, its answer is *watch* — and *if you ever cut, start with what the notices already say at the call*. | M | |
+| **One sentence is backwards.** The lit-air recipe calls a glaze at pressure `[1.0 … 0.1]` *narrow-and-bright at the source and wide-and-gone at the far end*; the painter measured 80 px at the source and 32 at the far end. Confirmed against the source: a round tip's width follows pressure, so full pressure is the wide end. The recipe's code is right and its sentence is not — *the one factual error I found was in prose*. | M | **0.7.0**: the sentence says what the code does — `[1.0, ..., 0.1]` is wide and bright at the source and narrow and gone at the far end, the core and the body thinning away from the light, and the wide faint film runs the other way so the cone opens as it travels — and cites *Pressure* in `CALIBRATION.md`, where a light touch keeps about a third of the width. The block and its demo are unchanged, because they were right: laid alone, its core is 49 px across near the light and 16 where it gives out, and the wide faint film 90 px and then 159, the one that opens the cone. |
+| **A caveat far from its rule.** `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured, a scumble at `pressure=[1.0, 0.75, 0.25, 0.0]` went from `0.86` to `0.41` over a `0.14` field at opacity 0.9. **Both are right, about different things**: the painter read the last *third*, where the profile ~~still averages a quarter pressure~~ *(corrected when it was written: averages `0.135` of full pressure — the passes run from frame to frame)*, and ~~over the last 4% of the width it reads `0.20` — it does reach nothing, at the very end~~ *(corrected by the painter after step 2: over the last 4% it reads `0.183`, `0.034` above the field — close, and not arrived)*. What the recipe does not say is how fast the fade arrives, and the reason — dabs overlap and accumulate, ~~so a quarter pressure lays a quarter of a step~~ *(corrected when it was written: a quarter pressure lays two-thirds of the step on this band)* — lives in `PAINTING.md`, not beside it. | M | **0.7.0**: *A passage brightening toward one side* says **the fade arrives late**, with the number beside the rule — at the recipe's own `opacity=0.5` a quarter pressure moves the value over half as far as full pressure does and a tenth still a quarter as far, and the painter's band reads `0.41` over its last third and still `0.19` over its last twentieth, where its list runs out — and names the reason where it lives, *`opacity` does not thin a long stroke* in `PAINTING.md`. The measurement is a table under *Pressure* in `CALIBRATION.md`: the share of the change a pass makes at one pressure, on the recipe's six strokes and on the painter's band, at two opacities. The sentence the plan had drafted for it, *a quarter pressure still lays a quarter of the step*, was reasoned rather than measured, and did not survive the measurement. |
+| **Too much text**: about 340 KB across six documents and 180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs*. The sizes are right — 341 KB for the six, 194 for the five it read. The reading was its own choice: the card says to start after *The first hour*. Asked, its answer is *watch* — and *if you ever cut, start with what the notices already say at the call*. | M | **Watched, as the painter ruled, and nothing cut** on one painter's word. `LESSONS.md` records the data points under its protocol: told by the card where to start, the painter read everything; it never ran `explain` or `diagnose`, because the one-line notices were enough, so the link from a notice's code to its `DIAGNOSIS.md` row stays unbuilt, on the evidence; it read three rules and broke them, and a rehearsal caught each; and its instruction for whichever round does cut, *start with what the notices already say at the call*, is written beside them. What watching saw: the five documents it read are 202 KB where they were 194, most of the difference `REFERENCE.md`'s new arguments, and `CALIBRATION.md`, the one it never opened, grew by 54 KB with this round's measurements. The two answers of this round a painter meets without reading a word are the engine's: a held edge that breaks, and a dry brush that drags. |
 
 ### Withdrawn, and recorded so it is not filed again
 
@@ -184,7 +182,8 @@ run, and it answered all three:
   and the plan's `lightest:` line.
 - **The code-to-symptom link.** It never ran `explain` or `diagnose` — *the one-line
   notices were enough* — and never opened `DIAGNOSIS.md` or `CALIBRATION.md`. One data
-  point, and the one the ruling of 2026-09-21 said to wait for.
+  point, and the one the ruling of 2026-09-21 said to wait for: **not built, on the
+  evidence**, and recorded in `LESSONS.md` under *About the protocol*.
 - **The cut-out risk.** It arrived, as recorded in the first engine row: over half the
   edges under 2.5 px on eleven passes running, printed and not acted on.
 
@@ -458,7 +457,8 @@ and `PAINTINGS.md`'s rebuild claims in
   round (ruled 2026-09-21): when it was ruled, sixteen of the engine's twenty-five codes
   already resolved to the passage a row points at, so `easel explain` and
   `easel diagnose` printed the same text and only the name was missing. Revisit once a
-  run shows whether a painter calls either.
+  run shows whether a painter calls either. **Revisited in 0.7.0**: the lighthouse
+  handover called neither, and the link is not built.
 - **Whether the card's six habits and `easel demo mistakes`' six failures should be one
   list.** They are two for now: the card's *six things you will get wrong* are habits,
   the sheet's are failures a painter meets, and the card points at the sheet. Making

@@ -27,7 +27,7 @@ Vision is a requirement here, not a feature.
 **Read the guide before you paint.** The engine is only the brush;
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
 is the half that matters. It ships inside the package, so there is nothing to go and
-find: **`easel guide`** prints its first page — the whole workflow, about a thousand
+find: **`easel guide`** prints its first page — the whole workflow, about 1,400
 words — and `easel guide --full` prints the rest.
 
 ```python
@@ -166,7 +166,7 @@ The engine is designed around one habit:
 [`llms.txt`](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/llms.txt) is
 the same signpost in the format a model fetching this repository is increasingly told
 to look for: the summary, what to know before reading further, and where each document
-is, in about 850 words.
+is, in about 1,500 words.
 
 ## What is in the box
 
@@ -185,7 +185,7 @@ is, in about 850 words.
 | Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
 | Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all — and names the pairs the plan itself puts within `0.10` of each other. `prepare(reference)` cuts the photograph into numbered masses. `palette.chroma_of` is *how coloured*, beside `value_of` for how light. |
 | The check | `report()` reads the guide's standing warnings off the log — one brush at one size for a whole pass, a stack of passes at one angle, a bristle too small to be a brush, detail before the masses, a pressure list asking a chisel for a width, the subject's share of the marks — and measures the canvas for the four that no log can hold: where the values sit and whether the picture has a clear light, how its edges divide between hard and soft, how much ground is left, how much graphite is still showing. `run` prints it beside the budget line after every pass. |
-| At the call | Twenty-nine notices, each carrying a code and the measurement behind it: paint about to land outside the place it was handed, pass ends about to step down a slope, a film past what a film is for, a smudge about to cross a boundary rather than follow it, a mass laid solid with a comb that cannot close. They reach the library, the shell and the MCP results alike, and `easel explain <code>` prints the passage that measured one. |
+| At the call | Thirty notices, each carrying a code and the measurement behind it: paint about to land outside the place it was handed, pass ends about to step down a slope, a film past what a film is for, a smudge about to cross a boundary rather than follow it, a mass laid solid with a comb that cannot close. They reach the library, the shell and the MCP results alike, and `easel explain <code>` prints the passage that measured one. |
 | The closing checklist | `checklist()` — `easel check` — answers every line of the guide's closing checklist that has a number behind it, and then prints the three that nothing can measure as questions, with your own `why` quoted back. |
 | Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
 | The plan | `s.plan(why=, values=, lightest=, subject_share=, bands=, ground=)` holds the rest of what a painter is told to settle before the first mark, and the check measures the canvas against it rather than against generic advice — including two standing warnings a picture can declare its way out of, where the rule concedes something only the painter knows. Saved in the session file; `easel plan` from a shell. |
@@ -217,7 +217,7 @@ easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
-easel guide                                          # the method, in about a thousand words
+easel guide                                          # the method, in about 1,400 words
 easel guide --full                                   # all of PAINTER.md
 easel guide --painting                               # the reasons under the rules
 easel guide --recipes                                # the calls, in order, for a thing
@@ -362,11 +362,13 @@ readable rather than reconstructed, which is the one thing the guide cannot teac
 abstractly and the thing a first-time painter is least sure of.
 
 **Two different claims live here, and this page used to make the stronger one about
-every painting.** The one that holds everywhere is that **the log replays byte for
-byte**: a stroke's randomness is drawn from `(seed, stroke index)`, so a saved painting
-comes back as it was painted, and golden-image tests hold that — laid by the engine
-installed, so a stroke an earlier version laid wrongly comes back fixed, and
-[`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
+every painting.** The one that holds everywhere is that **the log replays to the
+stroke**: a stroke's randomness is drawn from `(seed, stroke index)`, so a saved
+painting's log lays every mark again where it lay, and golden-image tests hold that. To
+the byte it holds on one machine: two builds of numpy can round a mixture differently in
+the seventh decimal, which moved 729 of one painting's 786,432 pixels by one level. It
+is laid by the engine installed, so a stroke an earlier version laid wrongly comes back
+fixed, and [`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
 painting — seven of the twenty-two say **Reproducible: not claimed** in their own table in
 [`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
@@ -398,8 +400,7 @@ is also where the rules about *how* the guide may change are written down.
 [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty-one painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
 each. Everything on it is done — including the eight that were answered by measuring
-them and finding nothing to fix, which say so — except the round at the top, which is
-open and says so on every line.
+them and finding nothing to fix, which say so.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
 defaults moved, and what a script that leaves an argument off will paint differently

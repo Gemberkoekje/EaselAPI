@@ -39,7 +39,13 @@ field's; and the hands' finger, whose reading decided the gate, looks different 
 -- with three things the plan did not say, each marked in 4D: a version that raises is said
 and the others are still rehearsed; the Python form takes a function as well as a plan, and
 stops one that paints the painting; and the MCP `run` answers as a list now, so that its
-sheet can come back beside the text. Steps 9 and 10 are next, G first.**
+sheet can come back beside the text. Step 9 is written -- G, `NOTES-step9.md` -- with
+three things the plan did not say, each marked in 4G: the fade's number was the plan's own
+reasoning and wrong -- a quarter pressure lays two-thirds of the step, not a quarter; this
+file's *graded-field recipe's measurement* is no section of `CALIBRATION.md`, so the wet
+ramps went under *`scumble`*; and the signposts' sizes had gone stale -- the card is 1,369
+words where six places said a thousand or under -- and say what they are. Step 10, the
+cut, is next.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -183,7 +189,7 @@ file.
 | 7 | **Session files are large**: 16 MB after 171 marks | M | **16.11 MB, and 55% of it is the time-lapse.** 174 frames at 360 px, stored raw, 8.83 MB; the canvas 6.57 (float32 at 1024x768); the log 0.29; the last look 0.28. Re-saved: frames out, **7.64 MB**; colour as float16, 12.26 -- and float16 moves 20,385 export pixels (2.6%) by one level, which breaks *opens as it was painted*; frames as PNG bytes, 6.76 for 8.83, not worth a format. The painter exported its GIF once, at the end, and verified that the rebuild from the log is pixel-exact on its machine, in about 35 s. | **4F** |
 | 8 | **A vertical seam** blamed on the sky blends did not reproduce; *probably how I layered wet paint* | O, withdrawn | **Not reproduced here either**, wet or dried: the three committed sky ramps laid on a fresh canvas show a median column jump of `0.0002` and their largest jumps at the canvas edges. Drying between the bands moves **34% of the canvas by more than two 8-bit levels** and 14% by more than eight, so the wet layering is real and large; it draws no seam. No row. Recorded under the graded-field recipe in `CALIBRATION.md` as a number, not a rule -- `wet-under` was declined in 0.6.0 and nothing here reopens it. | 4G, one line |
 | 9 | **Too much text**: ~340 KB across six documents, ~180 KB read before the first mark; *essay-like, dense cross-references, key facts buried in paragraphs* | M | **The sizes are right**: 341 KB for the six, 194 for the five it read (`PAINTER.md` 6,654 words, `PAINTING.md` 7,390, `RECIPES.md` 7,703, `REFERENCE.md` 7,690, `DIAGNOSIS.md` 2,131). **The reading was the painter's choice**: the card's first paragraph says to start after *The first hour*, and it is the second painter in two rounds to read everything anyway. Asked, the painter's own answer is *watch* -- and *if you ever cut, start with what the notices already say at the call*. `LESSONS.md` has watched cuts fail on n=1 and forbids one here. | **4G** |
-| 10 | **A caveat far from its rule**: `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured `0.86` to `0.41` on a `0.14` field at opacity 0.9, `0.29` at 0.5 | M | **Both are right, about different things.** The painter's test is a scumble with `pressure=[1.0, 0.75, 0.25, 0.0]`, read over the right *third*, where the profile still averages a quarter pressure: 0.858 / 0.787 / 0.408 by thirds on a 0.149 field here, and **0.201 over the last 4% of the width** -- it does reach nothing, at the end. *(Corrected after step 2, by the painter: over the last 4% it reads `0.183`, still `0.034` above the field at opacity 0.9 and `0.018` at 0.5 -- close, and not arrived.)* The recipe's own passage, `pressure=[0.0, 0.55, 1.0]` on six `flat` strokes, reads 0.162 on a 0.156 field at its no-pressure end. What the recipe does not say is how fast the fade arrives: a quarter pressure still lays a quarter of a value step, because dabs overlap and accumulate -- the sentence that lives in `PAINTING.md` under *opacity does not thin a long stroke*. | **4G** |
+| 10 | **A caveat far from its rule**: `RECIPES.md` says a pressure list fades a soft blend to nothing at one end; measured `0.86` to `0.41` on a `0.14` field at opacity 0.9, `0.29` at 0.5 | M | **Both are right, about different things.** The painter's test is a scumble with `pressure=[1.0, 0.75, 0.25, 0.0]`, read over the right *third*, where the profile still averages a quarter pressure: 0.858 / 0.787 / 0.408 by thirds on a 0.149 field here, and **0.201 over the last 4% of the width** -- it does reach nothing, at the end. *(Corrected after step 2, by the painter: over the last 4% it reads `0.183`, still `0.034` above the field at opacity 0.9 and `0.018` at 0.5 -- close, and not arrived.)* The recipe's own passage, `pressure=[0.0, 0.55, 1.0]` on six `flat` strokes, reads 0.162 on a 0.156 field at its no-pressure end. What the recipe does not say is how fast the fade arrives: a quarter pressure still lays a quarter of a value step, because dabs overlap and accumulate -- the sentence that lives in `PAINTING.md` under *opacity does not thin a long stroke*. *(Corrected in step 9, measured: a quarter pressure lays two-thirds of the step on this band at opacity 0.9 and 0.56 of it on the recipe's own at 0.5, and the right third averages `0.135` of full pressure, not a quarter -- the passes run from frame to frame.)* | **4G** |
 | 11 | **One sentence is backwards**: the lit-air recipe says `[1.0 ... 0.1]` is *narrow-and-bright at the source and wide-and-gone at the far end*; measured 80 px at the source and 32 at the far end | M | **Confirmed against the source.** A round tip's width follows pressure (`stroke.py`, `_PRESS_WIDTH_FLOOR = 0.35`; `CALIBRATION.md`'s *Pressure* table: 14 px at 0.10, 36 px at 1.00). Full pressure is the wide end. The recipe's code is right and its sentence is not -- *the one factual error I found was in prose*. | **4G** |
 | 12 | **The painting**: competent, coherent, conventional; the headland failed twice and was patched with brushwork; 43% unspent, partly caution; would paint a later dusk, decide fewer larger planes while still a drawing, let the headland dissolve, let the ground show | O | The check's line is the one `LESSONS.md` restated in 0.6.0: it reads marks and measures the canvas, and does not judge an arrangement. `unspent:` printed 129; `ground:` printed `0.00%` and, as the plan said `buried`, asked for nothing. A *repainted passage* count was considered and dropped: the headland took four passes and so did the tower, and the log cannot tell a repair from a subject being developed. Recorded. | **4H** |
 
@@ -565,12 +571,17 @@ with each change alone):
   overlap -- `0.41` on a `0.15` field over the last third of a band at opacity 0.9,
   `0.20` over its last twentieth*) and one clause naming where the reason lives, so a
   painter who reads the recipe alone knows what the end of the pass will read.
+  *(Corrected in step 9: the number in brackets was reasoned, and measured it is wrong
+  twice -- a quarter pressure lays two-thirds of the step on this band, and the last
+  twentieth reads `0.19`. The recipe carries the measured ones.)*
 - **G3 the plan grammar** -- workstream E's row, listed here because it is a document
   that was wrong by omission, twice over.
 - **G4 the wet layering, as a number.** Under the graded-field recipe's measurement in
   `CALIBRATION.md`: three overlapping bands laid wet change each other by more than two
   levels over a third of the canvas against the same bands dried between. A fact for a
-  painter choosing; not a rule, and not `wet-under`.
+  painter choosing; not a rule, and not `wet-under`. *(Written in step 9 under
+  *`scumble`*: `CALIBRATION.md` has no section for the graded-field recipe, whose band
+  and brush are measured there.)*
 - **G5 the weight: watch, decided -- and recorded.** The finding is now six painters'
   -- DeepSeek, GLM, BigPickle, Kimi, this one, and the tenth session whose answer was
   the card-and-body split -- and the answer each time has been the tool absorbing rules
@@ -583,6 +594,18 @@ with each change alone):
   its own instruction for whichever round does cut -- *start with what the notices
   already say at the call* -- which is 0.6.0's migration map continued, and is where
   that round's section 5 already points.
+
+*(Written in step 9, `NOTES-step9.md`, as decided -- G1, G2 and G4 on the probe's own
+numbers, re-taken on the engine the round built, and the record -- and with three things
+the plan did not say. **G2's number was the plan's own reasoning, and wrong**: a quarter
+pressure lays two-thirds of the step on the painter's band, and 0.56 of it on the
+recipe's own at its `opacity=0.5`, where a tenth still lays a quarter; the recipe says
+that beside the painter's `0.41` and `0.19`, and `CALIBRATION.md` has the table under
+*Pressure*. **G4 had nowhere to go by the name the plan gave it**, and went under
+*`scumble`*, beside the band's own measurements. And **the signposts' sizes had gone
+stale**: the card is 1,369 words where the README, `llms.txt`, the CLI's help and the MCP
+`guide` tool said a thousand or under, and `llms.txt` put `REFERENCE.md` at 3,600 words
+where it is 8,800 -- so every size moved with the notices' count, to what it is.)*
 
 ### H. Recorded and not built
 
@@ -602,7 +625,10 @@ with each change alone):
 - **The rebuild across machines.** One line on #70 and one in `LESSONS.md`'s environment
   papercuts: a mixture can differ in the seventh decimal between numpy builds, so
   *byte for byte* is a claim about one machine and *to the stroke* is the one that
-  travels.
+  travels. *(Written in step 9: the papercut, the README's own claim moved to the
+  stroke, and
+  [the line on #70](https://github.com/Gemberkoekje/EaselAPI/issues/70#issuecomment-5824300375),
+  which names `llms.txt`'s two worked examples as well as `PAINTINGS.md`'s rows.)*
 
 ---
 
@@ -694,7 +720,7 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
    into `CALIBRATION.md`, and the record -- `LESSONS.md` (the data points on the way
    in and on `explain`; *a measurement is not a method*; the cross-machine papercut),
    `SUGGESTIONS.md` closed, #70's line, `README.md` and `llms.txt` where a count or a
-   claim moves.
+   claim moves. *Done: `NOTES-step9.md`.*
 10. **Cut 0.7.0**: the version in `pyproject.toml`, `src/easel/__init__.py` and both
     entries in `server.json`; `CHANGELOG.md`'s entry **without the claim**; the tag;
     then the claim. This file and the step notes go the way `PLAN-0.6.0.md`'s did;
