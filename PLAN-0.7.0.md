@@ -44,8 +44,12 @@ three things the plan did not say, each marked in 4G: the fade's number was the 
 reasoning and wrong -- a quarter pressure lays two-thirds of the step, not a quarter; this
 file's *graded-field recipe's measurement* is no section of `CALIBRATION.md`, so the wet
 ramps went under *`scumble`*; and the signposts' sizes had gone stale -- the card is 1,369
-words where six places said a thousand or under -- and say what they are. Step 10, the
-cut, is next.**
+words where six places said a thousand or under -- and say what they are. Step 10 -- the
+cut -- is under way: the version is 0.7.0 and `CHANGELOG.md` has its entry without the
+claim, so the tag and then the claim are what is left. This file and the step notes stay
+through the tag, so `v0.7.0` carries them, and leave in the PR that adds the claim; what
+survives of them and is written nowhere else is in `SUGGESTIONS.md`, under *What the
+round left open*.**
 Step 2 is `scripts/probe_handover_session.py` and `probe_cohort_session.py --graded`;
 their numbers are in `CALIBRATION.md` under *The lighthouse handover's round*, their
 sheets under `out/handover/` and `out/graded/`, and `NOTES-step2.md` says what they
@@ -724,7 +728,11 @@ One round, cut as 0.7.0, in PRs that each stand alone; the repository's rhythm o
 10. **Cut 0.7.0**: the version in `pyproject.toml`, `src/easel/__init__.py` and both
     entries in `server.json`; `CHANGELOG.md`'s entry **without the claim**; the tag;
     then the claim. This file and the step notes go the way `PLAN-0.6.0.md`'s did;
-    what survives of them and is written nowhere else goes to `SUGGESTIONS.md`.
+    what survives of them and is written nowhere else goes to `SUGGESTIONS.md`. **The
+    first is done**: the version is 0.7.0 in all four copies, `[0.7.0]` is written and
+    dated with no claim in it, and `SUGGESTIONS.md` says what the round left open. The
+    tag goes on the commit that merges it; the claim comes after the tag, in the PR that
+    deletes this file and the step notes.
 
 ---
 

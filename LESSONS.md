@@ -752,7 +752,8 @@ Everything else the runs found has been applied.
 the synthesis across them, and **every item is now done** — seventy-two for the engine,
 ninety for the documentation — each with a note saying what it became. The 0.5.0
 cohort's round is filed there too, seven painters that are not this model, and no row of
-it is blank either.
+it is blank either; nor is one of the lighthouse handover's, the first painting against
+0.6.0, whose ten items were done in 0.7.0.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints
@@ -874,12 +875,13 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 652 passed with the mcp extra installed;
+pytest -q                              # 1604 passed with the mcp extra installed;
                                        # the mcp and mixbox tests skip without theirs
 ruff check src tests scripts examples mcpb
 python scripts/check_guide_blocks.py   # every python block in the guide's three
-                                       # files runs (80 ok), and PAINTER.md is
-                                       # inside its word budget
+                                       # files runs (72 ok, 10 pseudo-code), the
+                                       # 19 demos fail as they say, and PAINTER.md
+                                       # is inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
 python examples/exercises.py           # the guide's warm-ups, writes out/ex_*.png

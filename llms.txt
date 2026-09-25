@@ -75,9 +75,9 @@ What to know before reading further:
 ## Worked examples
 
 - [Painting a car wash: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/car_wash/NOTES.md): a full painting, written up afterwards — the plan, what each stage cost, what was rehearsed and thrown away, and what it got wrong. Read it to see how the engine is actually used, not to choose what to paint.
-- [Its nineteen pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/Claude/car_wash): the painting itself, in order, as ordinary Python. Run against a fresh session they reproduce the PNG byte for byte.
+- [Its nineteen pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/Claude/car_wash): the painting itself, in order, as ordinary Python.
 - [Painting three pears: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/windowsill_pears/NOTES.md): a second painting under the same rules, and the one that started the request list the engine has been answering since.
-- [Painting a lighthouse at dusk: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/lighthouse_dusk/NOTES.md): a third, in 184 strokes of a 300 budget with eighteen rehearsals and no stroke spent on repainting anything. Its [ten pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/Claude/lighthouse_dusk) rebuild the PNG byte for byte, and most of `RECIPES.md` came out of them.
+- [Painting a lighthouse at dusk: the notes](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/paintings/Claude/lighthouse_dusk/NOTES.md): a third, in 184 strokes of a 300 budget with eighteen rehearsals and no stroke spent on repainting anything. Most of `RECIPES.md` came out of its [ten pass scripts](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/Claude/lighthouse_dusk).
 - [examples/exercises.py](https://raw.githubusercontent.com/Gemberkoekje/EaselAPI/main/examples/exercises.py): abstract warm-ups straight from the guide — a value scale, pressure profiles, wet-into-wet — deliberately not pictures of anything.
 
 ## Evidence

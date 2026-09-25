@@ -37,8 +37,48 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-- **A script or prelude saved with a byte-order mark runs** in `easel run` and MCP `run`:
-  Windows PowerShell 5.1's `Set-Content -Encoding utf8` writes one, and it did not parse.
+Nothing yet.
+
+## [0.7.0] — 2026-09-25
+
+**One round, and one painter: the first painting against 0.6.0.** `claude-opus-5-5`, at
+max effort, installed `easel-paint` 0.6.0 from the package in a sandbox and painted a
+lighthouse at dusk in 171 of 300 marks, then wrote a verdict on the tool, the
+documentation and its own picture — and checked its claims with small tests before it
+made them. It came back with six engine items and four documentation items, filed in
+`SUGGESTIONS.md` under *The lighthouse handover*; the round was worked from
+`PLAN-0.7.0.md`, and its decisions are the painter's own answers, the last five given
+blind (`answers.md` and `answers-step2.md` in `paintings/Claude/lighthouse_handover/`).
+
+**Its shape is a line that was printed and not acted on.** After each of eleven passes in
+a row the `edges:` line said 54% to 65% of the painting's edges were under 2.5 px, and
+the painter kept its hard edges and called them *the least paint-like thing in the
+engine*.
+So the answers went into the engine rather than into a louder line: a held edge breaks
+inward against the canvas's own tooth, and `roughen()` walks an outline nobody ruled; a
+brush running dry drags its paint into streaks rather than dots, each load laying what
+it laid; the graded rule breaks where marks lie beside one another rather than over one
+another; versions of a pass are rehearsed side by side, each on a copy of its own; and
+what a pass's check said is kept in the session file, rehearsals included. The file
+leaves its time-lapse out — the painter's painting saves at 7.37 MB where it saved at
+16.43, and 0.6.0 still opens it — and says which release saved it. The engine's
+candidates were benched on the painting's own canvas before any was built, and every
+change to what a mark lays or a check says was replayed over the committed paintings
+too. Three sentences of the guide are
+put right, and its weight is watched, as the painter ruled: nothing is cut on one
+painter's word.
+
+**One default moved**: every hold — `clip=`, and `edge="hard"`, which `cover()` lays by
+default — breaks its edge inward over the last `0.002` of the long side unless told
+`feather=0`, so a script that leaves `feather=` off lays a broken edge where it laid a
+cut one, and a mark saved before 0.7.0 replays cut, as it was laid (*An edge that breaks
+rather than steps*). **One fix changes what a rebuild lays**: a brush running dry drags
+its paint along its travel, so a mark saved before 0.7.0 that ran dry replays streaked,
+and a file saved before it says so as it opens (*A dry brush that streaks rather than
+speckles*). And two things a script or a client can meet: a mixture made on a
+`scratch()` copy is the copy's own, so a script that used one on the painting raises
+`KeyError`; and the MCP `run` answers in content blocks alone, without
+`structuredContent`.
 
 ### Looking without the labels, a whole pass as a plan, and what a rehearsal was told
 
@@ -90,7 +130,10 @@ painted with, which it asked to be told about when that stops holding.
 - **The `.easel` file keeps no time-lapse frames.** The painter's painting, rebuilt the
   way it was painted, saves at **7.37 MB** where it saved at 16.43. The `frames` array
   is still written, empty, which is what 0.6.0 writes for a painting with none, so 0.6.0
-  opens the file — checked against the tag.
+  opens the file — checked against the tag. It opens it and no more: its save drops the
+  `engine` stamp and the reports, which it does not know, and whatever it rebuilds from
+  the log it lays as 0.6.0 lays it, every held edge cut and every dry mark dotted. An
+  older release rebuilding a newer file is not something the stamp promises.
 - **A session loaded from a file makes its film from the log.** It records no frames — a
   frame recorded after a load would begin the film in the middle of the painting — and
   `timelapse_gif()`, `contact_sheet()`, `easel timelapse` and the MCP `timelapse` replay
@@ -116,7 +159,8 @@ painted with, which it asked to be told about when that stops holding.
   stamps the file, and said only where a fix moves something. A file without the stamp is
   dated by what it carries — a `notices` key is 0.6.0, none is 0.5.0 or earlier. The
   fixes are `easel.notices.REBUILDS`, and `tests/test_notices.py` holds them to the ones
-  each release below names as changing what a rebuild lays: so far, 0.6.0's smudge.
+  each release names as changing what a rebuild lays: 0.6.0's smudge, and this release's
+  dry brush, below.
 - **What a file says as it opens reaches the painter.** The shell prints it on stderr,
   under *at load*, where it arrived as a raw Python warning with the engine's own file
   name and line first; the MCP server puts it at the top of the tool's answer, where it
@@ -273,6 +317,9 @@ copy is right for a pass that goes on top of another, and wrong for two versions
   `run` no longer carries `structuredContent`.
 - **`run(rehearse=True)` hands back the copy's look inline too**, beside the text that
   still ends in its path: a client that cannot open a file had no way to see it.
+- **A script or prelude saved with a byte-order mark runs** in `easel run` and MCP `run`:
+  Windows PowerShell 5.1's `Set-Content -Encoding utf8` writes one, and it did not parse.
+  Met while this step was built, as the gap above was.
 - **The painter's own two skies**, `try_sky3.py`'s B and C from the painting's drawing,
   take 32.1 to 32.3 s through `--alternatives`, loading and saving the file included,
   where its harness took 31.9 to 32.8 s for the same two: about 16 s a version, the
@@ -2191,7 +2238,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.3.0...v0.4.0
