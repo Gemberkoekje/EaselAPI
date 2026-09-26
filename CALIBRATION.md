@@ -3260,3 +3260,123 @@ third's mean pressure is `0.135`, between the table's `0.10` and `0.25` at `0.28
 dried between*. The plan put it under the graded-field recipe's measurement, and this
 file has no section of that name -- the recipe's band and its brush are measured under
 *`scumble`*, so the ramps went beside them.
+
+## The bell-warden's round
+
+One painter, `claude-opus-5-5`, installed `easel-paint` 0.7.0 from the package and painted
+a stone figure on a plinth that has to pass for a statue, in 280 of 300 strokes, as sample
+art for another of the owner's projects. Acting on its verdict is one round,
+[`PLAN-0.8.0.md`](PLAN-0.8.0.md), and its measuring step -- `scripts/probe_bell_session.py`,
+the plan's step 2 -- has not been run yet. **This section is a stub**: it holds what
+filing the painting measured, and nothing a candidate of the round depends on.
+
+### The painting, rebuilt
+
+292 records, **280 strokes spent**, in about a minute through `easel run`: every record's
+geometry, dab count, brush and colour the painter's, and the export the painter's own PNG
+to the pixel, on the machine it was painted on. **Only in the order its saved reports
+record** -- `p01_draw.py`, `p02_room.py`, `p03_plinth.py`, `p01_draw.py` again, then
+`p04_gargoyle.py` to `p07_glow.py`. In numbered order the second drawing's `erase` is
+missing, every mark from the subject's pass on lands one index early, and 97,126 of
+786,432 pixels (12.4%) move, 2,131 of them by more than 8 levels and the most by 87. The
+corpus probe lays it in the recorded order, and its passes open at the records the saved
+reports name: 1, 46, 96, 97, 199, 269 and 286.
+
+What the check printed after each committed pass, as the painter's file saved it:
+
+| pass | `edges:` under 2.5 px | median | `values:` | `lightest:` |
+|---|---|---|---|---|
+| `p02_room.py` | 36% | 3.6 px | `0.16`-`0.28` | the head's place, unpainted, `0.29` |
+| `p03_plinth.py` | 46% | 2.7 px | `0.16`-`0.31` | the plinth's top `0.49`; the head's place `0.20` under |
+| `p01_draw.py`, again | 46% | 2.7 px | `0.16`-`0.31` | the plinth's top `0.49`; the head's top `0.19` under |
+| `p04_gargoyle.py` | 61% | 2.1 px | `0.16`-`0.36` | the plinth's top `0.47`; the head's top `0.00` under |
+| `p05_details.py` to `p07_glow.py` | 48% | 2.6 px | `0.16`-`0.35` | the head's top, `0.52` |
+
+Every one of them, and every rehearsal's, said *no clear light*: 25 of the file's 27
+reports, all but the two before the first mark.
+
+### The versions, recovered
+
+The painter rewrote every rehearsed version in place, so its folder held only the last
+version of each pass. Its session's transcript holds every change it made to a script
+there -- ten whole files written, fifteen in-place Python edits, one shell heredoc and
+one `sed` -- and **replayed in order, they end byte for byte on the folder the painter
+left**. Each of the 28 `easel run`s in the transcript is then a snapshot of the prelude
+and the pass it ran, and run on `s.replay(upto=at)` of the painter's file -- the canvas
+that pass opened on -- **every one of the file's 27 saved reports comes back word for
+word**; the twenty-eighth run raised, on `at_value(..., 0.13)`, and raises again. One
+needs the plan as it stood: the room's first rehearsal ran before the prelude declared
+`ground=`, `plan()` keeps what it is not given, and a session replayed from the finished
+file carries the finished plan's `ground="buried"` into it. What this round needs of
+them -- the first drawing, the eight rehearsed versions of the subject's and the details
+passes, and the drawing check -- is filed in
+[`versions/`](paintings/Claude/bell_warden/versions/README.md) with the command lines
+that run it; run from the shell, each version prints its saved report word for word,
+and each drawing redraws its picture to the pixel.
+
+### The marks that did not land
+
+Found filing the painting and in the painter's answers, and re-measured here: the
+painter's log laid by a fresh session record by record, and each mark laid again on two
+copies of the canvas it met -- as painted, and dried first -- reading the pixels it moved
+by more than `0.02` in value.
+
+| records | mark | paint | pixels moved | reads, as painted / dried first | its own value |
+|---|---|---|---|---|---|
+| 285 | the eye's spark, `round_hard` `0.0028`, `press=1` | `0.19` | 1 (2 by a level or more; at most 21) | `0.39` / `0.37` | `0.86` |
+| 253 | the eye's ember, `round_hard` `0.0068`, `press=2` | `1.62` | 5 (at most 22 levels) | `0.22` / `0.25` | `0.62` |
+| 254 | the glaze over the eye, `round_soft` `0.022` | `133.5` | 268 (at most 41 levels) | `0.27` / `0.29` | `0.53` |
+| 259, 260 | the claw lights, `round_hard` `0.0035` and `0.0032` | `12.5`, `9.7` | 22, 24 | `0.31` / `0.33`; `0.27` / `0.29` | `0.60` |
+| 250, 251 | the teeth, `round_hard` `0.0035` and `0.003` | `7.7`, `3.2` | 16, 8 | `0.44` / `0.41`; `0.37` / `0.39` | `0.72`, `0.60` |
+
+`easel log` prints any record under `1.0` as *NO PAINT LANDED*. **The eye's glint is the
+glaze**: neither of the two dabs under it landed, and the ember reads a dull `0.22`. On a
+fresh canvas the same spark dab carries `0.19` to `0.21` whatever its wobble, at `0.0040`
+about `0.2`, and at `0.0068` `1.05` to `1.64`. The claw lights lose `0.01` to `0.05` to the
+wet paint under them, as the moved pixels are read, and `0.27` to `0.31` to their size.
+Nothing at the call says so for a round tip: `chisel-blank` is for an oriented tip under
+four pixels, and a round tip is said to have no such cliff.
+
+**Thirteen of the 280 strokes laid under `1.0`**: the spark, and twelve passes of three
+clipped `block_in`s -- records 163 and 164 of the 23 at `p04_gargoyle.py:40`; 214, 216,
+218 and 220 to 222 of the 24 at `p05_details.py:12`; 223 to 225 and 239 of the 17 at
+`p05_details.py:14`. Eleven laid `0.00` and one `0.11`: charged, and laying nothing.
+
+### The places, read four ways
+
+Every planned place at every pass end, by its mean, median, 75th and 90th percentiles,
+and by the share of it more than `0.15` from its own median. At the finish:
+
+| place | planned | mean | median | 75th | 90th | split |
+|---|---|---|---|---|---|---|
+| the wall, `G1`-`H3` | `0.17` | `0.182` | `0.176` | `0.180` | `0.235` | 0% |
+| the glow | `0.31` | `0.277` | `0.263` | `0.290` | `0.361` | 5% |
+| the plinth's top | `0.54` | `0.458` | `0.502` | `0.522` | `0.525` | 18% |
+| the plinth's front | `0.40` | `0.326` | `0.333` | `0.349` | `0.357` | 1% |
+| the plinth's side | `0.27` | `0.255` | `0.267` | `0.267` | `0.267` | 0% |
+| the head's top | `0.66` | `0.524` | `0.608` | `0.620` | `0.627` | 24% |
+| the floor | `0.17` | `0.197` | `0.169` | `0.212` | `0.286` | 4% |
+
+By the mean the head's top misses by `0.14`; by the 90th the floor misses by `0.12`, from
+the plinth's pass on, because the lamp's pool lies in it; by the median and the 75th
+every place is inside `0.10`. The split reaches a tenth twice: the plinth's top from the
+subject's pass on (15%, then 18%), where the creature's feet stand in it, and the head's
+top from the details pass on (24%), the eye and its socket. Nothing else reaches a
+tenth at any pass end; the floor comes nearest, at 7%, over the lamp's pool.
+
+### What it read
+
+Measured from the session's transcript rather than asked: before the first mark, about
+22,300 words were printed to it, 21,262 of them the documents' --
+
+| document | read | words |
+|---|---|---|
+| the README (the package's description) | its first 400 lines of 417 | 4,295 of 4,428 |
+| `PAINTER.md` | lines 1-700 of 754: not *Sign it* or *Working from a shell instead* | 6,260 of 6,655 |
+| `REFERENCE.md` | lines 1-520 of 723: through *Looking, planning, measuring*, not the notices, the shell or the server | 6,266 of 8,904 |
+| `RECIPES.md` | its headings, and seven stretches holding twelve of its twenty-one entries: not *A scene with straight edges* or eight later ones | 4,441 of 7,823 |
+
+`PAINTING.md`, `CALIBRATION.md` and `DIAGNOSIS.md` were not opened. It never ran
+`--count`, `cost()`, `cost_line()`, `--alternatives`, `explain`, `diagnose`, `preview()`
+or `compare()`; it ran `easel demo mistakes`, the nine exercises, 19 rehearsals and
+`easel check` once.

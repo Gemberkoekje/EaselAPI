@@ -122,6 +122,7 @@ class Painting:
     where: str                      # under paintings/
     session: dict = field(default_factory=dict)
     first: tuple[str, ...] = ()     # pass scripts that come before the numbering
+    order: tuple[str, ...] = ()     # every pass as it was run, where that is not the numbering
     driver: str = ""                # a painting written as one script, not as passes
     spent: int = 0                  # what PAINTINGS.md says it cost
     rebuilds: bool = True           # whether that page claims the scripts rebuild it
@@ -133,7 +134,15 @@ class Painting:
 
     @property
     def passes(self) -> tuple[str, ...]:
-        return () if self.driver else _passes(self.folder, self.first)
+        """The pass scripts in the order the painting's log was laid.
+
+        That is the numbering, except where a painting's own saved reports say
+        otherwise: a pass run twice appears twice in ``order``, because a record's
+        texture is seeded from its index and one run fewer moves every mark after it.
+        """
+        if self.driver:
+            return ()
+        return self.order or _passes(self.folder, self.first)
 
 
 CORPUS = [
@@ -187,6 +196,15 @@ CORPUS = [
     Painting("handover", "Claude/lighthouse_handover", spent=171,
              session=dict(width=1024, height=768, texture="linen",
                           ground="burnt_sienna", seed=11, budget=300)),
+    # The first painting made against 0.7.0, from the package. Its passes rebuild the
+    # log exactly, and the export to the pixel on the machine it was painted on, only in
+    # the order its saved reports record: the drawing ran again after the plinth, and
+    # that run's erase is record 96. In numbered order 12% of the pixels move.
+    Painting("bell", "Claude/bell_warden", spent=280,
+             order=("p01_draw.py", "p02_room.py", "p03_plinth.py", "p01_draw.py",
+                    "p04_gargoyle.py", "p05_details.py", "p06_finish.py", "p07_glow.py"),
+             session=dict(width=1024, height=768, texture="linen",
+                          ground="umber_wash", seed=11, budget=300)),
     # The 0.5.0 cohort. Three of the seven wrote one script rather than passes.
     Painting("bigpickle", "BigPickle_blind/sunset_landscape", cohort=True, spent=50,
              driver="sunset_paint.py"),
@@ -657,9 +675,12 @@ def _replay_passes(entry: Painting, work: Path, watcher: Watcher,
     watcher.session = session
     prelude = work / "prelude.py"
     source = prelude.read_text(encoding="utf-8") if prelude.exists() else ""
+    run: set[str] = set()
     for name in entry.passes[:limit]:
         path = work / name
-        made = watcher.open(name, session)
+        # A pass run twice is two passes, and the tables tell the second one apart.
+        made = watcher.open(f"{name} (again)" if name in run else name, session)
+        run.add(name)
         ns = _namespace(session, path)
         # Around the whole pass as well as around each call: the planning verbs warn
         # too -- `cost()` says what a mass with `direction=` left off would charge --

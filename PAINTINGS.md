@@ -32,7 +32,9 @@ arrived at their convention on its own.
   including those of one subject**: the lighthouse-greenhouse brief was written down
   before any of it was read and then handed to more than one painter unchanged, which is
   the rule satisfied twice over — no painter could be steered by a noun in a worked
-  example, and none of them picked the brief either. The heron's second attempt is the
+  example, and none of them picked the brief either. The Bell-Warden is the same case
+  from outside the project: its subject was set by the content pack it was painted for,
+  and handed to its painter. The heron's second attempt is the
   one deliberate exception: the subject was chosen under the rule the first time and then
   repainted on purpose, by the same painter, to find out what reading the rest of the
   files was worth. Two painters have since chosen *near* neighbours independently — a
@@ -72,7 +74,12 @@ arrived at their convention on its own.
   first painted against 0.6.0, read every document the package ships except
   `CALIBRATION.md` — `easel guide --full`, `--painting`, `--recipes`, `--reference` and
   `--diagnosis`, 194 KB — before its first mark, ran `easel demo mistakes` and five of
-  the nine exercises, and had no checkout and no earlier painting. So where they
+  the nine exercises, and had no checkout and no earlier painting. The Bell-Warden, the
+  first painted against 0.7.0, read the package's README, `PAINTER.md` short of its last
+  two sections, `REFERENCE.md` short of its notices and twelve of `RECIPES.md`'s entries
+  — about 21,000 words of the documents, measured from its own session — and never
+  opened `PAINTING.md`, `CALIBRATION.md` or `DIAGNOSIS.md`; it ran `easel demo mistakes`
+  and all nine exercises, and had no checkout and no earlier painting. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -83,7 +90,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the twenty-two do not make
+  itself**, in its own `Reproducible` row below, and seven of the twenty-three do not make
   it. What holds everywhere is that a *saved* painting opens as it was painted, because
   the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
   randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
@@ -103,7 +110,10 @@ landmark; only `pool_night` (`p4_water.py`) and `greenhouse_winter`
 `fogged_glass` and `hands_beans` placed landmarks at all.
 **A worked example is an instruction whatever the prose
 beside it says**, so the example is winning. If you are numbering passes, name the
-second one — `p4_redraw.py` — before you need it.
+second one — `p4_redraw.py` — before you need it. `bell_warden` shows the cost of not
+naming it: it redrew at exactly the right moment, after the room and the plinth and
+before the creature, by running `p01_draw.py` again — so its scripts rebuild the picture
+only in the order its saved reports record, and its section says which.
 
 **There is a second way round it, and `hands_beans` is the one that took it.** It drew
 its whole arrangement with `s.guide()` rather than the pencil — graphite on the *view*
@@ -908,6 +918,42 @@ paint-like thing in the engine. What was done about all of it, in 0.7.0, is in
 worked from is [`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md),
 as tagged.
 
+## A stone gargoyle that has to pass for a statue
+
+![A stone gargoyle in profile, crouched on a pale stone plinth in a dark undercroft and
+lit warm from the upper left: a bat wing raised behind it, one small orange eye, a glow
+on the wall behind its head, a beam of lit air falling from the upper left and a dark
+pillar at the right](paintings/Claude/bell_warden/painting.png)
+
+The first painting made against 0.7.0, by `claude-opus-5-5` at max effort, from the
+installed package, as sample art for a content pack in another of the owner's projects —
+whose details are left out here. The pack set the subject and the painter was handed it:
+*it has to pass for a statue — the stone must read as carved stone at first glance, and
+only the glint of its eye and the claws gripping the plinth's edge give it away*, the
+sentence it wrote into `s.plan(why=...)` and the one `checklist()` quoted back at the end.
+The claws are there. Neither of the eye's two dabs landed, and its glint is the glaze
+laid over them.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, `umber_wash` ground, seed 11 |
+| Spent | 280 strokes of a 300 budget, the subject 61% of them against the 45% planned |
+| Rehearsed and thrown away | 19 rehearsals, none of them charged — five versions of the creature's pass before the one committed, each recovered from the painting session and re-run to the report it printed |
+| Reproducible | Seven pass scripts rebuild the log to the stroke, and the export to the pixel on the machine it was painted on — **in the order its saved reports record**: the drawing, the room, the plinth, the drawing again, then the rest. In numbered order the same 280 marks land, and 12.4% of the pixels move, because the drawing's second run lays a record |
+| Files | [`paintings/Claude/bell_warden/`](paintings/Claude/bell_warden) — [notes](paintings/Claude/bell_warden/NOTES.md), [time-lapse](paintings/Claude/bell_warden/painting.gif), [verdict](paintings/Claude/bell_warden/verdict.md), [answers](paintings/Claude/bell_warden/answers.md), [the versions thrown away](paintings/Claude/bell_warden/versions/README.md) |
+
+The [verdict](paintings/Claude/bell_warden/verdict.md) is the painter's own. For the
+tool: rehearsal — *all four failed versions of the creature cost nothing* — notices that
+came with a measurement and a fix, a palette that mixes to a value exactly, and paint
+that looks painted wherever it was let be. Against it: a drawing that cannot be seen over
+dark paint, a pencil that rounds a box into a pot, a pass whose price no line breaks down
+by call, and a plan that cannot say a picture is low-key on purpose. Against itself: a
+creature that reads as a vinyl toy rather than weathered stone — *I held every zone with
+a hard edge* — with stiff anatomy, and give-aways too small to be seen across a room. The
+`boxes:` line read **0 of 17**, which it credits to the card. Its headline is the step
+the engine does not yet help with, *drawing a complex shape as coordinates*, and what is
+being done about it is [`PLAN-0.8.0.md`](PLAN-0.8.0.md).
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -966,7 +1012,9 @@ golden-image tests in CI.
   the upper-left quarter and the deck corners — while arguing that a night picture needs
   them quiet; and the lighthouse handover names a headland that failed twice and was
   patched with brushwork rather than redrawn, and stopped with 129 of 300 unspent,
-  partly — its painter says — from caution rather than judgement. Both herons name the same unfinished thing, which is the point of having
+  partly — its painter says — from caution rather than judgement; and the Bell-Warden
+  names a creature that reads as a vinyl toy rather than weathered stone, with stiff
+  anatomy and give-aways too small to be seen across a room. Both herons name the same unfinished thing, which is the point of having
   two of them: a bird's body that is a smooth pebble where it should be built of planes,
   abandoned once for want of the recipe and once with the recipe open.
 

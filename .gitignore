@@ -39,6 +39,7 @@ tests/golden/*.actual.png
 # from the pass scripts beside them; the finished painting and its time-lapse are
 # the thing itself and are committed.
 paintings/**/out_*/
+paintings/**/looks/
 paintings/**/look_*.png
 paintings/**/preview_*.png
 paintings/**/rehearse_*.png
