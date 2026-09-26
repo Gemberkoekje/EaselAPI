@@ -370,7 +370,7 @@ the seventh decimal, which moved 729 of one painting's 786,432 pixels by one lev
 is laid by the engine installed, so a stroke an earlier version laid wrongly comes back
 fixed, and [`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
-painting — seven of the twenty-three say **Reproducible: not claimed** in their own table in
+painting — seven of the twenty-four say **Reproducible: not claimed** in their own table in
 [`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
 or `look` scripts ran as passes between the painting ones, and a mark's texture is
 seeded from its place in the log. Each painting's table says which of the two it
@@ -397,7 +397,7 @@ somebody working on the project rather than painting with it.
 review left behind: the method, the engine decisions that are load-bearing, the traps,
 and what is still open — **read it before changing the engine or the guide**, because it
 is also where the rules about *how* the guide may change are written down.
-[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty-two painters asked for
+[`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty-three painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
 each. Everything on it is done — including the eight that were answered by measuring
 them and finding nothing to fix, which say so — except the round at the top, which is

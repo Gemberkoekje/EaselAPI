@@ -3380,3 +3380,81 @@ Measured from the session's transcript rather than asked: before the first mark,
 `--count`, `cost()`, `cost_line()`, `--alternatives`, `explain`, `diagnose`, `preview()`
 or `compare()`; it ran `easel demo mistakes`, the nine exercises, 19 rehearsals and
 `easel check` once.
+
+### Wenna Brask, the second painting
+
+A second session painted the pack's next picture the following morning, with the first
+painter's notes and scripts in hand. Filed as `paintings/Claude/wenna_brask/`.
+
+**Rebuilt** through `easel run` from `p02_setting.py` to `p12_crown.py` in their numbering:
+281 records, **262 strokes spent**, every record's geometry, dab count and brush the
+painter's, and the export the painter's PNG to the pixel, on the machine it was painted on,
+in 43 seconds. `p01_draw.py` is left out: it ran only on a scratch canvas with a light
+ground, and it begins `s.erase()`, which lays a record. The corpus probe lays it the same
+way, and its passes open at the records the saved reports name: 0, 31, 130, 161, 186, 194,
+221, 244, 257, 266 and 278.
+
+**The versions, recovered** from its transcript: 53 changes to its scripts -- Write, Edit
+and two PowerShell `-replace`s -- replayed in order end on the painter's folder in every
+script, but for the byte-order mark `Set-Content -Encoding utf8` wrote into two of them.
+Each of the 36 `easel run`s on the painting's own session gives its saved report word for
+word, **all 31**, and the five with none raise again. Fourteen of the 31, from the
+figure's pass to the fist's, need the plan as it then stood: the eighth pass, not the
+prelude, declared the ground buried.
+
+**What it read**: `PAINTER.md` whole (754 lines, 6,655 words), `RECIPES.md` whole (973
+lines, 7,823 words) and `REFERENCE.md` to line 500 (6,068 of 8,904 words, stopping at
+*What the tool will tell you*) -- 20,546 words of the guide, the *over 2,000 lines* it
+counted -- and before them the first painter's memory note, the Bell-Warden's notes, its
+prelude and six of its passes. Not `PAINTING.md`, `CALIBRATION.md` or `DIAGNOSIS.md`.
+
+**The places, read four ways**, at the finish:
+
+| place | planned | mean | median | 75th | 90th | brightest | split |
+|---|---|---|---|---|---|---|---|
+| the sky high, `A1`-`B2` | `0.29` | `0.307` | `0.302` | `0.318` | `0.341` | `0.416` | 0% |
+| the sky low, `A4` | `0.43` | `0.390` | `0.388` | `0.392` | `0.400` | `0.408` | 0% |
+| the wall, `H5` | `0.145` | `0.165` | `0.165` | `0.165` | `0.165` | `0.165` | 0% |
+| the shawl, `B7` | `0.16` | `0.154` | `0.153` | `0.157` | `0.165` | `0.176` | 0% |
+| the lantern | `0.76` | `0.491` | `0.506` | `0.549` | `0.580` | `0.714` | 10% |
+
+**The lantern is the median's own failure**: its iron is most of its place, so no reading
+of the whole place finds the lit panes, and by every one of them it misses by `0.18` or
+more. The picture's top twentieth, which the `values:` line reads, is `0.42`; its top
+hundredth `0.61`; and `1.4%` of the canvas is above `0.60` -- the lamp, its glow and the
+lit face, too little of the canvas for a percentile of a twentieth to see.
+
+**What its answers measured, re-measured here.** The painter answered its questions with
+three scripts on its own file, filed in `paintings/Claude/wenna_brask/probes/`; run again
+on a copy of its folder, the two that read the painting print its tables exactly.
+
+- **Eleven strokes laid no paint**, `4.2%` of the 262 charged -- records 173 (a
+  `round_hard` dab at `0.006`, the nostril), 237 (`0.0025`, the catchlight), 240 (`0.004`,
+  the flame's core), and all eight of the flour's, 193, 219, 220 and 258 to 262, a
+  `bristle` at `0.009` to `0.024` loaded `0.12` to `0.25`. The far iris, a dab at `0.006`,
+  laid `2.1` units.
+- **The flour's finger stroke, laid again at other loads** on copies of the finished
+  canvas:
+
+| load | at size `0.012` | at size `0.03` |
+|---|---|---|
+| `0.22` | nothing | nothing |
+| `0.35` | `1` unit | `4` |
+| `0.5` | `9` | `72` |
+| `0.7` | `58` | `416` |
+| `0.9` | `133` | `734` |
+
+- **The face against the lantern**, read on the values view:
+
+| place | pixels | mean | median | 90th | 95th | 99th | brightest |
+|---|---|---|---|---|---|---|---|
+| the lantern, as planned | 9,073 | `0.486` | `0.506` | `0.580` | `0.588` | `0.639` | `0.714` |
+| its panes, inside the edge straps | 7,244 | `0.525` | `0.522` | `0.580` | `0.592` | `0.643` | `0.714` |
+| the panes' middle third | 1,775 | `0.577` | `0.573` | `0.624` | `0.639` | `0.655` | `0.714` |
+| the face, whole | 26,094 | `0.505` | `0.584` | `0.620` | `0.620` | `0.639` | `0.718` |
+| the fist, as redrawn | 10,944 | `0.302` | `0.267` | `0.443` | `0.447` | `0.573` | `0.690` |
+
+  The face is the lightest mass by every reading, its mean included. The lantern's mean
+  here, `0.486`, is `0.005` under the `0.491` above because the two masks differ: the
+  table above reads the plan's own mask of the place, 8,880 pixels, and the painter's probe
+  draws the polygon itself, 9,073.
