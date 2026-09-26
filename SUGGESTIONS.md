@@ -1,17 +1,20 @@
 # What the painters asked for, and what was done
 
-Twenty-one sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — twenty-two paintings, because the ninth painted its
+Twenty-two sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — twenty-three paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**No round is open.** The newest, at the top, is the lighthouse handover — one painter
-against 0.6.0, **6 engine items and 4 documentation items** — and every item in it is
-done, in 0.7.0, folded in where it was filed rather than moved, as every open round
-before it was. Below it is the 0.5.0 cohort — seven painters that
+**One round is open: the Bell-Warden, at the top** — one painter against 0.7.0, **8
+engine items and 4 documentation items**, none of them acted on yet. It is written where
+every open round before it has been written, and will be folded in where it stands rather
+than moved once it is acted on. Below it is the lighthouse handover — one painter against
+0.6.0, **6 engine items and 4 documentation items** — and every item in it is done, in
+0.7.0, folded in where it was filed rather than moved, as every open round before it was.
+Below that is the 0.5.0 cohort — seven painters that
 are not Claude, one picture each, **32 engine items and 6 documentation items** — and
 every item in it is done, in 0.6.0. Everything below it is done too: 72 engine
 items and 90 documentation items, all of them — the eighth session's eight and the
@@ -52,6 +55,7 @@ changed rather than that it worked.
 | Twelfth — hands sorting dried beans, 329 of 420, `paintings/Claude/hands_beans/`, from the 0.4.0 wheel in an empty folder | 2 | 4, and one found while filing |
 | The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
 | The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | 6 | 4 |
+| The Bell-Warden — a stone figure on a plinth, 280 of 300, `paintings/Claude/bell_warden/`, the first painting against 0.7.0, from the package, as sample art for another of the owner's projects | 8 | 4 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -87,6 +91,135 @@ disagree, it may be the context talking.
   hour*. It is the second painter in two rounds to read everything anyway, and the
   first to do it against the card and body 0.6.0 split them into, so its reading is
   the owner's own test of that split rather than a control.
+- **The Bell-Warden** read the package's README, `PAINTER.md` short of its last two
+  sections, `REFERENCE.md` short of its notices and twelve of `RECIPES.md`'s entries
+  before its first mark — about 21,000 words of the documents, measured from its own
+  session, which it counted as about 20,000 — and never opened `PAINTING.md`,
+  `CALIBRATION.md` or `DIAGNOSIS.md`. It is the second painter against the card and
+  body 0.6.0 split the guide into and the first to stop short of reading everything, so
+  it is the first data point on where a painter told where to start actually stops —
+  and the first painter to say which of the text it would move.
+
+---
+
+## The Bell-Warden: one painter against 0.7.0
+
+**OPEN.** Eight engine items and four documentation items, from one painter —
+`claude-opus-5-5`, at max effort — which installed `easel-paint` 0.7.0 from the package on
+the owner's machine and painted a stone figure on a plinth that *has to pass for a
+statue*, as sample art for a content pack in another of the owner's projects, **280 of
+300 strokes**. **The right-hand column of every table below is empty because nothing has
+been done yet.** The candidate answers and the measurements that will decide which
+survive are in [`PLAN-0.8.0.md`](PLAN-0.8.0.md); a row gets filled in when its PR lands,
+not before.
+
+**It is the first fresh session to paint against 0.7.0**, and it answers two of the three
+things the handover's round said the next run should look for (*What the handover's round
+asked the next run*, below).
+
+**Its own session is the evidence.** The painter rewrote every version it threw away in
+place, so the painting session's transcript was read when the painting was filed, and it
+settled three things the plan would otherwise have had to ask: what the painter read,
+what each rehearsed version was — every one recovered and re-run to the report it printed,
+in [`versions/`](paintings/Claude/bell_warden/versions/README.md) — and where its `0.52`
+came from. **Kind** is assigned here, as for every round on this page — **M** measured by
+the painter, **O** observed, **R** reasoned. Every *what checking found* below was
+measured on the checkout at `v0.7.0` on 2026-09-25 and 26, from the painter's own session
+file and scripts. **Three claims changed shape under that checking and are struck through
+where they stand**: the highlights in wet paint, the palette's floor, and the feather.
+Two of them were numbers the painter read off the tool, right as numbers and wrong about
+what they measured; the third was reasoned.
+
+**The decisions are the painter's**, by the owner's ruling since 0.7.0: the plan's
+questions go to it through the owner, and its answers will be filed beside the painting.
+
+### The engine
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Guide lines vanish on a dark canvas**; the painter judged its drawings on a separate throwaway canvas with a light ground. Confirmed, and measured: a guide is drawn one pixel wide in a fixed graphite of value `0.23` at 75% alpha, its note in the same ink. Over the painter's 17 guides, on the bare ground the line steps the value by a median `0.147` and no pixel of it by under `0.05`; over the finished canvas by a median `0.045`, and **69% of its pixels by under `0.05`** — gone. Its second drawing, laid over the painted room, shows it ([`drawing_over_paint.png`](paintings/Claude/bell_warden/evidence/drawing_over_paint.png)). | O | |
+| **`pencil()` smooths its path by default**: in the drawing check a box came out as a rounded pot. Confirmed: `smooth=True` fits a Catmull-Rom spline that passes through every corner and bows every side of a closed outline outward ([`drawing_check_smooth.png`](paintings/Claude/bell_warden/evidence/drawing_check_smooth.png), and with `smooth=False` [`drawing_check_corners.png`](paintings/Claude/bell_warden/evidence/drawing_check_corners.png), both redrawn here to the pixel). **And a shape cannot be handed over at all**: `pencil(shape)` and `guide(shape)` raise `TypeError` for a `Polygon` or a `Region`, so the painter passed `shape.closed` — as `RECIPES.md`'s straight-edge recipe does, with `smooth=False`, in the one stretch of the recipes' opening the painter skipped. | O | |
+| **Cost is hard to predict**: the subject's pass rehearsed at 85 to 113 strokes, and the report did not say which call ate them — *partly my fault, since I didn't use `cost()` before each mass*. Confirmed: five rehearsals at 85, 98, 113, 101 and 101, each headed by one total. **The log already knows the answer**: every record of one mass call carries that call's `via` and the stream state it began at, and grouped so, the committed pass is 102 marks in 12 calls, **four `block_in`s laying 23, 22, 20 and 14 — the shade copy, the mid copy, the whole body and the wing — 79 of the 102**. `cost()` takes a plan, and a pass written as functions is not one; the painter never ran `--count`, `cost()` or `cost_line()`. | M, O | |
+| ~~**Nothing warned about highlights mixing into wet paint**: they landed at `0.52` instead of `0.64` until `dry()` was added.~~ **The mechanism is real, and the number is something else.** A brush dragged through wet paint carries what it meets, and a light laid into wet dark lands short of its own value. But the `0.52` is the `lightest:` line's reading of the head's top plane with the eye inside it, and **the painter's own session shows it**: the details pass's second rehearsal read the plane at `0.52`, the painter added an `s.dry()` before the head and another before the lights, and the third read it at `0.52` again ([`p05_v2.py`](paintings/Claude/bell_warden/versions/p05_v2.py), [`p05_v3.py`](paintings/Claude/bell_warden/versions/p05_v3.py)) — at which point its own reasoning put the reading down to the eye. The `0.64` is the value the plane was mixed at. Committed, the plane lands the same with and without the `dry()`s, median `0.607` against `0.606`, because the paint under it had dried by stroke count. Two rehearsals of the subject's pass read the plane at `0.56` and `0.54`; they are the only versions that laid a light on the head in the same pass as the body under it, and both are recovered for the plan's measuring step. | M | |
+| ***No clear light* cannot be switched off for a dark picture**: a buried ground can be declared in the plan, and a low-key picture cannot. Confirmed: the `values:` line said *no clear light — nothing above* `0.30` to `0.38` on **25 of the file's 27 reports**, every one after the first mark, of a picture its notes call low-key *by design, not a fault*. `plan()` has `bands=` and `ground=` for exactly that, and nothing for a key. | O | |
+| **The lightest check averages the whole place**, so the dark eye inside the head's top pulled it down. Confirmed: the plane, planned at `0.66`, reads **`0.524` by its mean**, `0.606` by its median and `0.622` at its 75th percentile, and **14% of its 1,592 pixels are under `0.35`**, the eye's socket first among them. `plan:` called it a miss — *head top -0.14* — where by its median it is `-0.05` and all seven places are inside. The one other painting with a plan, the lighthouse handover, keeps every verdict under the mean, the median and the 75th and 90th percentiles. | M, R | |
+| ~~**The box bottoms out near `0.14`**: *0.13 is below what this mix can reach*.~~ **`0.13` was in the box, and the documents said otherwise.** Burnt umber alone reads **`0.128`**, and `shade()` reaches it; what stopped the painter was `at_value`'s default dark, the blue-umber mix at `0.137`, whose error named nothing else. The documents state the floor three ways: `CALIBRATION.md`'s table puts umber at `0.13` and then calls the `0.14` mix *darker than any single pigment*, `PAINTER.md` calls that mix *the bottom of the range at 0.14*, and `PAINTING.md` *the palette's floor of 0.14*. Asked by the owner whether it is time for a black: no committed painting's scripts ask for a value under `0.14` — no target, planned value or supplied colour — but four low-key pictures sit on the floor. | M | |
+| **No way to see the arrangement before paint** — the painter's first suggestion: *a free silhouette and value thumbnail at drawing time … the painter's classic notan. The cat ears would have been obvious before a single rehearsal.* Each of its three failures in the subject's pass — two symmetric peaks read as ears, lit planes laid as islands, a lit band wrapped round the body — was a drawing failure that paint showed up, and each cost a rehearsal of 85 to 113 marks to see ([`subject_cat.png`](paintings/Claude/bell_warden/evidence/subject_cat.png), [`subject_piebald.png`](paintings/Claude/bell_warden/evidence/subject_piebald.png), [`subject_arch.png`](paintings/Claude/bell_warden/evidence/subject_arch.png)). `preview()` draws a mass in a translucent hue over the canvas at full size, which says where it goes and not whether the arrangement reads. | R | |
+
+### The documentation
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **It's long**: about 20,000 words before the first stroke, a good share of it commentary on the documents themselves and painter anecdotes — *a few anecdotes persuade; dozens cost context*. **Measured from its session**: about 22,300 words printed before the first mark, 21,262 of them the documents' — the README's first 400 lines, `PAINTER.md` to line 700 of 754, `REFERENCE.md` to line 520 of 723, and twelve of `RECIPES.md`'s twenty-one entries. The two sentences it quotes are `PAINTER.md`'s own, the card and the body carry at least five anecdotes and four *every painter so far*, and the file is 45 words under its 6,700-word budget. | M | |
+| **Some passages are hard to parse**: the post-pass check's paragraph lists ten rules with their thresholds in one block. Confirmed: `REFERENCE.md`, *Looking, planning, measuring* — **one paragraph of 678 words** naming ten rules, five standing lines and a dozen thresholds, inside what the painter read. | O | |
+| **The hardest part of the session has the least guidance**: getting a creature's silhouette to read, which no recipe and no exercise covers. Confirmed — **and the painter did find the one tool there is for it**: its first drawing's creature was a `union()` of eight ellipses and ribbons, which read as a spiky blob beside a plinth nearly as wide ([`drawing_first.png`](paintings/Claude/bell_warden/evidence/drawing_first.png)), and after that one look it typed polygons instead, of 32 points and then 42. `union()` is named in `REFERENCE.md`'s list of shapes and in no other guide file, and none of `PAINTING.md`'s ways to make a mass uses it. | O | |
+| ~~**`feather=` was never found as a softening tool**, and *might have softened my hard boundaries between light and shadow*.~~ **It was read, and it would not have.** `REFERENCE.md`'s paragraph on holds and its arguments table both say what `feather=` does — break a held edge inward against the tooth — and both were in what the painter read. Benched on its own pass, at `0.012` and at `0.03` a feather reads as a speckled band along every held edge, and breaks the silhouette too, because one `feather=` applies to every hold of its call; **a half-value join stroke along each terminator turns the form, for two strokes** — the step *A form that turns* already names, for a column only. | R | |
+
+### What the check cannot see
+
+Not items, and recorded so they are not filed again: **the picture** — *a vinyl toy, not
+weathered stone … I held every zone with a hard edge*; the anatomy stiff, the head a
+goat's more than a gargoyle's, the legs sticks, *more cute than eerie* — and **give-aways
+too small for a projector**. Measured, the ember in the eye is a `0.0068` dab, seven
+pixels, and the claws are 8 to 10 pixels wide; **and the spark laid on the ember did not
+land**: a `round_hard` dab at `0.0028` changed two pixels, by at most 21 levels of 255,
+which `easel log` calls *NO PAINT LANDED* and nothing at the call did. The closing
+checklist asked *is that reason still in the picture?*, and the painter's answer is that
+it is, but only on close inspection: the question worked, and it carries no size. The
+`edges:` line read `48%` to `61%` under 2.5 px from the subject's pass on and changed
+nothing — `LESSONS.md`'s *nor is a measurement*, arriving a second time.
+
+### What the handover's round asked the next run
+
+The handover's round ended by naming what the next run should look for first. This is
+that run, and it answered two of the three:
+
+- **The broken edge.** 0.7.0 breaks every held edge against the tooth by default, a
+  choice made blind from sheets. This painter held every zone of its creature to a
+  polygon, and names the result *a vinyl toy … the engine looks least painted exactly
+  where I held everything to a polygon*: the break did not stop a cut-out where every
+  zone was held. The other engine answer, the dry brush that drags, it names unasked
+  among what looks painted: *the dry brush on the plinth*.
+- **The way in.** Told by the card where to start, it read about 21,000 words of the
+  documents — fewer than the handover's 194 KB, far more than the card and its exercises
+  — and stopped short of the end of every file it opened. It is the first painter to say
+  which of the text it would move, and which of it worked.
+- **`--alternatives` unasked**: not answered. It rehearsed one version at a time,
+  nineteen times, and never ran `--alternatives`, `--count`, `explain` or `diagnose`.
+
+### What worked, recorded because a finding is still true afterwards
+
+The painter defended these unprompted, and **nothing in this round touches them**:
+rehearsal (*all four failed versions of the creature cost nothing*); notices that came
+with a measurement and a fix — `plan-pairs` on the empty canvas, `inward-comb`'s ring
+count, `glaze-far` pointing at `to_value=`; `at_value()`, which hit every target of the
+value-scale exercise to two decimals; the paint, wherever it was let be paint — the
+wall's strokes, the dry brush on the plinth, the beam of lit air; and shapes and holds
+composing, since `shifted()`, `clip=` and `edge="hard"` made its final lighting. In the
+documentation: `PAINTER.md` as a method rather than an API tour, *What you are bad at*,
+the upstream rule — *after the cat and the spotted cow I went back to the drawing and the
+value plan, not the brush* — the recipes with their failures shown first, and the units
+table and the table of where a stack of passes starts. **It painted no boxes, 0 of 17**,
+and credits the card, which still says *every painter so far has painted boxes*.
+
+### The painting, and what the painter owns
+
+- *It's usable as the pack's sample art, and "painted with the project's own engine" is
+  a nice story, but I wouldn't call it good art.*
+- **What it would take further**: the creature's broad shade, still smoother than
+  weathered stone — *the dry brush and three carving seams only begin on it*.
+
+### Found while filing, not by the painter
+
+- **The pass scripts rebuild the painting only in the order its saved reports record** —
+  the drawing, the room, the plinth, the drawing again, then the rest. The drawing's
+  second run laid the `erase` that is record 96, and a record's texture is seeded from
+  its index, so in numbered order every mark from the subject's pass on moves. Its
+  `PAINTINGS.md` section says so, and the corpus probe lays it in that order.
+- **One noun of this painting was already in the guide**: `RECIPES.md`'s *A tapered arc*
+  calls a crescent's two points *the horns*, a sentence older than the painting. The
+  guide's no-nouns grep has no committed list — `LESSONS.md` describes it as a check run
+  by hand — so this painting's nouns are recorded in its notes for the next one.
 
 ---
 

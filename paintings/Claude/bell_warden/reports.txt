@@ -1,0 +1,271 @@
+280 strokes, seed 11, 1024x768
+27 pass reports saved, oldest first:
+
+painted p01_draw.py, from record 0:
+  at the call, 1 thing said:
+    - plan-pairs: 2 planned pairs read as one where they meet: plinth side and floor 0.03 apart; plinth top and plinth front 0.10 apart. Two values closer than 0.10 read as one mass, and these places touch -- so separate them in the plan now, or decide that the join is where the edge goes.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 0 marks: nothing to report
+
+painted p01_draw.py, from record 0:
+  check over this pass, 0 marks: nothing to report
+
+rehearsed p02_room.py, from record 1:
+  at the call, 1 thing said:
+    - solid-comb: block_in(solid=True) with a bristle ('bristle'): solid= sets load=1.0 and load_falloff=0.0, which closes the gaps along each pass and not the ones the comb leaves across it. Measured at size=0.04, density=0.8, a shaped mass comes back 0.16% bare in 47 blobs on a mid ground -- and 3.16% in 373 blobs, the largest 2270 px, on a dark one, because a hole is a contrast rather than a gap. density=1.2 closes them, at about a fifth more passes; a 'flat' or 'knife' closes them at this density for the same money; crossed passes for twice it.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 43 marks: 1 thing to look at
+    - 12 of 19 long marks run within 6 degrees of vertical, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    plan: 4 of 7 places inside 0.10; face lit -0.35; plinth top -0.35; plinth front -0.21
+    lightest: face lit reads 0.31, the lightest of the 7 places planned
+    values: 0.16-0.30 of a box that reaches 0.13-0.96, clusters at 0.17, 0.22, 0.29; no clear light -- nothing above 0.30, and the box's own middle is 0.54
+    edges: 17% of edges are under 2.5 px wide, median 3.7 px
+    ground: 0.00% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p02_room.py, from record 1:
+  at the call, 2 things said:
+    - scumble-dabs: scumble on wall: every pass is shorter (0.227) than the brush laying it (0.551), so the passes are dabs and the paint blooms past the outline. The passes run the short way across this place -- turn direction=, or lay a mass this narrow as a stroke.
+    - inward-comb: scumble(direction='inward', n=12) on a patch 0.0659 deep lays its rings with a bristle 0.0165 wide, under the 0.025 where a comb is four streaks with gaps rather than a brush. The brush is 3 x depth / n, so more rings on a patch this shallow buy a narrower brush and not finer banding: this one carries 8 rings before the comb goes under the floor. Drop to n=8.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 56 marks: 3 things to look at
+    - 12 of 20 long marks run within 6 degrees of vertical, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    - 12 marks with a bristle under size=0.025 at a load over 0.6: a comb that small is four streaks with gaps, not a brush. round_hard reads at that size; a small solid plane wants flat at pressure='even'.
+    - 18 marks under size=0.02 inside the painting's first 60: detail before the masses are down. A good painting is mostly big statements.
+    plan: 3 of 7 places inside 0.10; face lit -0.37; plinth top -0.36; plinth front -0.22; and 1 more
+    lightest: face lit reads 0.29, the lightest of the 7 places planned
+    values: 0.16-0.28 of a box that reaches 0.13-0.96, clusters at 0.17, 0.21, 0.27; no clear light -- nothing above 0.28, and the box's own middle is 0.54
+    edges: 34% of edges are under 2.5 px wide, median 3.8 px
+    ground: 0.00% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p02_room.py, from record 1:
+  at the call, 1 thing said:
+    - scumble-dabs: scumble on wall: every pass is shorter (0.227) than the brush laying it (0.551), so the passes are dabs and the paint blooms past the outline. The passes run the short way across this place -- turn direction=, or lay a mass this narrow as a stroke.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 45 marks: 1 thing to look at
+    - 8 marks with a bristle under size=0.025 at a load over 0.6: a comb that small is four streaks with gaps, not a brush. round_hard reads at that size; a small solid plane wants flat at pressure='even'.
+    plan: 3 of 7 places inside 0.10; face lit -0.37; plinth top -0.36; plinth front -0.22; and 1 more
+    lightest: face lit reads 0.29, the lightest of the 7 places planned
+    values: 0.17-0.28 of a box that reaches 0.13-0.96, clusters at 0.17, 0.21, 0.26; no clear light -- nothing above 0.28, and the box's own middle is 0.54
+    edges: 36% of edges are under 2.5 px wide, median 3.6 px
+    ground: 0.00% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p02_room.py, from record 1:
+  at the call, 1 thing said:
+    - scumble-dabs: scumble on wall: every pass is shorter (0.227) than the brush laying it (0.551), so the passes are dabs and the paint blooms past the outline. The passes run the short way across this place -- turn direction=, or lay a mass this narrow as a stroke.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 41 marks: nothing to report
+    plan: 3 of 7 places inside 0.10; face lit -0.37; plinth top -0.36; plinth front -0.22; and 1 more
+    lightest: face lit reads 0.29, the lightest of the 7 places planned
+    values: 0.16-0.28 of a box that reaches 0.13-0.96, clusters at 0.17, 0.20, 0.26; no clear light -- nothing above 0.28, and the box's own middle is 0.54
+    edges: 36% of edges are under 2.5 px wide, median 3.6 px
+    ground: 0.00% of the canvas is still bare ground -- buried, as the plan says
+
+painted p02_room.py, from record 1:
+  at the call, 1 thing said:
+    - scumble-dabs: scumble on wall: every pass is shorter (0.227) than the brush laying it (0.551), so the passes are dabs and the paint blooms past the outline. The passes run the short way across this place -- turn direction=, or lay a mass this narrow as a stroke.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 41 marks: nothing to report
+    plan: 3 of 7 places inside 0.10; face lit -0.37; plinth top -0.36; plinth front -0.22; and 1 more
+    lightest: face lit reads 0.29, the lightest of the 7 places planned
+    values: 0.16-0.28 of a box that reaches 0.13-0.96, clusters at 0.17, 0.20, 0.26; no clear light -- nothing above 0.28, and the box's own middle is 0.54
+    edges: 36% of edges are under 2.5 px wide, median 3.6 px
+    ground: 0.00% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p03_plinth.py, from record 46:
+  at the call, 1 thing said:
+    - clean-small (3 calls): block_in(edge='clean') at size=0.05 on plinth 0.191 across at its narrowest: the brush is 26% of that, so the half-brush inset keeps 67% of the shape to fill and the contour pass lays the rest as one chisel stroke, corners rounded off. Use a brush under a quarter of the shorter extent -- size=0.0478 here -- or leave the edge ragged.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 33 marks: 1 thing to look at
+    - 22 of 29 long marks run within 6 degrees of horizontal, from 5 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    plan: 6 of 7 places inside 0.10; face lit -0.37
+    lightest: plinth top reads 0.47 and face lit, the plan's own light, 0.29 -- 0.18 under
+    values: 0.16-0.38 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.38, and the box's own middle is 0.54
+    edges: 46% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.01% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p03_plinth.py, from record 46:
+  at the call, 1 thing said:
+    - glaze-far: this film moved the passage under it by 0.112 in value, over its own footprint: past 0.08 a film stops shifting a mass and lays a new one. Aim it at the value the passage should read afterwards (to_value=), or lay the change as paint.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 51 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; face lit -0.37
+    lightest: plinth top reads 0.47 and face lit, the plan's own light, 0.29 -- 0.17 under
+    values: 0.16-0.30 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.41; no clear light -- nothing above 0.30, and the box's own middle is 0.54
+    edges: 45% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.01% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p03_plinth.py, from record 46:
+  check over this pass, 49 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; face lit -0.37
+    lightest: plinth top reads 0.49 and face lit, the plan's own light, 0.29 -- 0.20 under
+    values: 0.16-0.31 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.31, and the box's own middle is 0.54
+    edges: 46% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.02% of the canvas is still bare ground -- buried, as the plan says
+
+painted p03_plinth.py, from record 46:
+  check over this pass, 49 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; face lit -0.37
+    lightest: plinth top reads 0.49 and face lit, the plan's own light, 0.29 -- 0.20 under
+    values: 0.16-0.31 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.31, and the box's own middle is 0.54
+    edges: 46% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.02% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p04_gargoyle.py, from record 96:
+  check over this pass, 85 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; plinth top -0.12
+    lightest: face lit reads 0.59, the lightest of the 7 places planned
+    subject: 85 of 175 marks so far (49%), against 45% planned
+    values: 0.16-0.38 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.44; no clear light -- nothing above 0.38, and the box's own middle is 0.54
+    edges: 51% of edges are under 2.5 px wide, median 2.4 px
+    ground: 0.36% of the canvas is still bare ground -- buried, as the plan says
+
+painted p01_draw.py, from record 96:
+  check over this pass, 0 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.36
+    lightest: plinth top reads 0.49 and head top, the plan's own light, 0.30 -- 0.19 under
+    values: 0.16-0.31 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.31, and the box's own middle is 0.54
+    edges: 46% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.02% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p04_gargoyle.py, from record 97:
+  check over this pass, 98 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.10
+    lightest: head top reads 0.56, the lightest of the 7 places planned
+    subject: 98 of 188 marks so far (52%), against 45% planned
+    values: 0.16-0.38 of a box that reaches 0.13-0.96, clusters at 0.18, 0.26, 0.42; no clear light -- nothing above 0.38, and the box's own middle is 0.54
+    edges: 55% of edges are under 2.5 px wide, median 2.3 px
+    ground: 1.15% of the canvas is still bare ground
+
+rehearsed p04_gargoyle.py, from record 97:
+  check over this pass, 113 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.12
+    lightest: head top reads 0.54, the lightest of the 7 places planned
+    subject: 113 of 203 marks so far (56%), against 45% planned
+    values: 0.16-0.38 of a box that reaches 0.13-0.96, clusters at 0.18, 0.27, 0.40; no clear light -- nothing above 0.38, and the box's own middle is 0.54
+    edges: 58% of edges are under 2.5 px wide, median 2.2 px
+    ground: 0.24% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p04_gargoyle.py, from record 97:
+  check over this pass, 101 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.21
+    lightest: plinth top reads 0.47 and head top, the plan's own light, 0.45 -- 0.02 under
+    subject: 101 of 191 marks so far (53%), against 45% planned
+    values: 0.16-0.37 of a box that reaches 0.13-0.96, clusters at 0.18, 0.27, 0.39; no clear light -- nothing above 0.37, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.22% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p04_gargoyle.py, from record 97:
+  check over this pass, 101 marks: 1 thing to look at
+    - 63 of 101 long marks run within 6 degrees of 48 degrees, from 4 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    plan: 6 of 7 places inside 0.10; head top -0.20
+    lightest: plinth top reads 0.47 and head top, the plan's own light, 0.46 -- 0.00 under
+    subject: 101 of 191 marks so far (53%), against 45% planned
+    values: 0.16-0.37 of a box that reaches 0.13-0.96, clusters at 0.18, 0.27, 0.41; no clear light -- nothing above 0.37, and the box's own middle is 0.54
+    edges: 61% of edges are under 2.5 px wide, median 2.1 px
+    ground: 0.04% of the canvas is still bare ground -- buried, as the plan says
+
+painted p04_gargoyle.py, from record 97:
+  check over this pass, 102 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.20
+    lightest: plinth top reads 0.47 and head top, the plan's own light, 0.46 -- 0.00 under
+    subject: 102 of 192 marks so far (53%), against 45% planned
+    values: 0.16-0.36 of a box that reaches 0.13-0.96, clusters at 0.18, 0.27, 0.41; no clear light -- nothing above 0.36, and the box's own middle is 0.54
+    edges: 61% of edges are under 2.5 px wide, median 2.1 px
+    ground: 0.04% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p05_details.py, from record 199:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.164 from what it lands on in hue and chroma (Oklab), and moved the value 0.039: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 22 marks: 1 thing to look at
+    - 11 small marks with a round tip at tip_wobble=0: that is one disc printed 11 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 6 of 7 places inside 0.10; head top -0.15
+    lightest: head top reads 0.51, the lightest of the 7 places planned
+    subject: 124 of 214 marks so far (58%), against 45% planned
+    values: 0.16-0.36 of a box that reaches 0.13-0.96, clusters at 0.18, 0.27, 0.41; no clear light -- nothing above 0.36, and the box's own middle is 0.54
+    edges: 57% of edges are under 2.5 px wide, median 2.2 px
+    ground: 0.05% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p05_details.py, from record 199:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.100 from what it lands on in hue and chroma (Oklab), and moved the value 0.041: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 67 marks: 1 thing to look at
+    - 6 small marks with a round tip at tip_wobble=0: that is one disc printed 6 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 169 of 259 marks so far (65%), against 45% planned
+    values: 0.16-0.36 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.41; no clear light -- nothing above 0.36, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p05_details.py, from record 199:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.100 from what it lands on in hue and chroma (Oklab), and moved the value 0.042: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 68 marks: 1 thing to look at
+    - 6 small marks with a round tip at tip_wobble=0: that is one disc printed 6 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 169 of 260 marks so far (65%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+painted p05_details.py, from record 199:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.100 from what it lands on in hue and chroma (Oklab), and moved the value 0.042: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 68 marks: 1 thing to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 169 of 260 marks so far (65%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p06_finish.py, from record 269:
+  check over this pass, 13 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 170 of 273 marks so far (62%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p06_finish.py, from record 269:
+  check over this pass, 16 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 170 of 276 marks so far (62%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+painted p06_finish.py, from record 269:
+  check over this pass, 16 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 170 of 276 marks so far (62%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p07_glow.py, from record 286:
+  check over this pass, 4 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 170 of 280 marks so far (61%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+painted p07_glow.py, from record 286:
+  check over this pass, 4 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; head top -0.14
+    lightest: head top reads 0.52, the lightest of the 7 places planned
+    subject: 170 of 280 marks so far (61%), against 45% planned
+    values: 0.16-0.35 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.40; no clear light -- nothing above 0.35, and the box's own middle is 0.54
+    edges: 48% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
