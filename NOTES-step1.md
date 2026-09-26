@@ -40,7 +40,7 @@ All three the recommended option, on 2026-09-26:
 | **`paintings/Claude/bell_warden/`** | the prelude and seven passes (line endings made the repository's); `painting.png` and `painting.gif`; `verdict.md`, the painter's message as it wrote it; `NOTES.md` — the painter's own notes with the pack's paragraphs cut and marked, and the filer's account; `reports.txt`, the session file's 27 saved reports; `ex/exercises.py`; `evidence/`, seven pictures; `versions/`, thirteen recovered scripts — ten versions and checks, and the three preludes they ran with — and a README; `questions-step1.md` |
 | **`PAINTINGS.md`** | the painting's section, with the order its passes rebuild in; the reading list, the brief, the convention paragraph and the unfinished list mention it; *seven of the twenty-three* |
 | **`scripts/probe_cohort_session.py`** | the `bell` entry, and a `Painting.order` field for a painting whose passes were not run in their numbering — a pass run twice is listed twice, and the tables call the second run `(again)` |
-| **`SUGGESTIONS.md`** | the round open at the top: 8 engine items and 4 documentation items, M/O/R per row, three struck where they changed shape; the counts in its opening |
+| **`SUGGESTIONS.md`** | the round open at the top: 9 engine items (the ninth from the painter's answers) and 4 documentation items, M/O/R per row, three struck where they changed shape; the counts in its opening |
 | **`CALIBRATION.md`** | the stub of *The bell-warden's round*: the rebuild, the versions, the spark, what it read |
 | **`PLAN-0.8.0.md`** | committed; its status, section 1, rows 4, 6, 8, 9 and 12, 4A4, 4D, section 6's answers, and steps 1 and 2 corrected in place |
 | **`README.md`, `llms.txt`** | *twenty-three* paintings, *twenty-two* painters, and the register's open round |
@@ -113,11 +113,38 @@ painter saw, and its reasoning between them:
 - **A Bash `cd` persists in this environment** and moves the session's working
   directory; every command here starts from the repository root.
 
+## The painter's answers, the same day
+
+The owner put `questions-step1.md` to the painting session, and the painter answered in
+`answers.md`, measuring its own file for every claim, and corrected its own notes. Filed
+verbatim, and **re-measured here** by laying its log again record by record and each mark
+in question on two copies, as painted and dried first
+(`scratchpad/verify_answers.py`). Everything holds:
+
+| its claim | re-measured |
+|---|---|
+| the ember did not land either: `1.6` units, 5 px, at most 22 levels; the glint is the glaze (`133` units) | `1.62` units, 5 px over `0.02`, at most 22 levels, reading `0.22`; the glaze `133.5` units, 268 px, 41 levels |
+| the spark: one pixel over `0.02`, `0.2` units | `0.19` units, 1 px (2 by any level) |
+| the claw lights lose `0.05` to wet paint and about five times that to size | `0.01` to `0.05` to the wet, as the moved pixels are read; dried, still `0.27` to `0.31` short of `0.60` |
+| 13 strokes *NO PAINT LANDED*: the spark, and 2 + 6 + 4 passes of three clipped `block_in`s at `p04:40`, `p05:12`, `p05:14` | exactly those records (163, 164; 214, 216, 218, 220-222; 223-225, 239), eleven at `0.00` units and one at `0.11` |
+| the places four ways at the finish, the floor's 90th a miss, the split at 15-18% and 24% | to the hundredth |
+| the card names none of `at_value`, `edge=`, `s.dry`, `clip=`, `.shifted`, `.inset`; `clip=` is nowhere in `PAINTER.md`; its scripts use them 29, 14, 10, 8, 4 and 3 times | exactly |
+
+What changed with them: the filed `NOTES.md` quotes the painter's corrected notes and
+strikes my *the glint is the ember*; `SUGGESTIONS.md` gains a ninth engine item — marks
+that land short or land nothing — and the wet-paint row the painter's withdrawal;
+`CALIBRATION.md`'s stub gains *The marks that did not land* and *The places, read four
+ways*; and the plan records the answers as decisions: C's format, E1's key and E2's
+median with the split, F1's lists and the card's missing line, and **D rewritten** — the
+painter withdrew `into-wet` as written, and asks instead for a fact at the call for any
+mark that lands far short of its own value, whatever the cause, and for the strokes that
+landed nothing on C's line. Section 5's first row is settled: the decline stands.
+
 ## File map
 
 | File | Change |
 |---|---|
-| `paintings/Claude/bell_warden/**` | new: the painting, as above |
+| `paintings/Claude/bell_warden/**` | new: the painting, as above; `answers.md` added the same day |
 | `PAINTINGS.md` | the section; four passages mention it; a count |
 | `SUGGESTIONS.md` | the round, open; the opening's counts and state |
 | `CALIBRATION.md` | *The bell-warden's round*, a stub |
@@ -129,9 +156,12 @@ painter saw, and its reasoning between them:
 
 ## Next
 
-- The owner pastes `questions-step1.md` into the painting session and brings back the
-  answers, filed verbatim as `paintings/Claude/bell_warden/answers.md`.
+- **A second painting**, *Wenna Brask*, was painted against 0.7.0 the same morning by
+  another session, with the first painter's notes and scripts in hand, and gave its own
+  verdict. The owner chose to file it with the pack's details out and fold its verdict
+  into this round: a second PR, on top of this branch.
 - **Step 2**: `scripts/probe_bell_session.py`. Its `--claims` rebuilds from these files
-  and adds where a round dab stops landing. `--wet` takes the two subject-pass versions
-  that read the head at `0.56` and `0.54`. `--thumbnail` takes the union, the cat, the
-  piebald and the arch from `versions/`.
+  and adds where a round dab stops landing. `--short` (D, rewritten) takes every
+  hand-laid mark's shortfall and the two subject-pass versions that read the head at
+  `0.56` and `0.54`. `--thumbnail` takes the union, the cat, the piebald and the arch from
+  `versions/`.

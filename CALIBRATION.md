@@ -3314,15 +3314,55 @@ passes, and the drawing check -- is filed in
 that run it; run from the shell, each version prints its saved report word for word,
 and each drawing redraws its picture to the pixel.
 
-### The spark in the eye
+### The marks that did not land
 
-The finishing pass's last mark, `s.dab(..., "round_hard", "spark", size=0.0028, press=1,
-tip_wobble=0.7)`, three pixels across at 1024, carries `0.19` of paint in its record, and
-`easel log` prints any record under `1.0` as *NO PAINT LANDED*. On the canvas it changed
-**two pixels, by at most 21 levels** of 255. The same dab on a fresh canvas carries
-`0.19` to `0.21` whatever its wobble, at `0.0040` about `0.2`, and at `0.0068` -- the
-ember's size -- `1.05` to `1.64`. Nothing at the call says so: `chisel-blank` is for an
-oriented tip under four pixels, and a round tip is said to have no such cliff.
+Found filing the painting and in the painter's answers, and re-measured here: the
+painter's log laid by a fresh session record by record, and each mark laid again on two
+copies of the canvas it met -- as painted, and dried first -- reading the pixels it moved
+by more than `0.02` in value.
+
+| records | mark | paint | pixels moved | reads, as painted / dried first | its own value |
+|---|---|---|---|---|---|
+| 285 | the eye's spark, `round_hard` `0.0028`, `press=1` | `0.19` | 1 (2 by a level or more; at most 21) | `0.39` / `0.37` | `0.86` |
+| 253 | the eye's ember, `round_hard` `0.0068`, `press=2` | `1.62` | 5 (at most 22 levels) | `0.22` / `0.25` | `0.62` |
+| 254 | the glaze over the eye, `round_soft` `0.022` | `133.5` | 268 (at most 41 levels) | `0.27` / `0.29` | `0.53` |
+| 259, 260 | the claw lights, `round_hard` `0.0035` and `0.0032` | `12.5`, `9.7` | 22, 24 | `0.31` / `0.33`; `0.27` / `0.29` | `0.60` |
+| 250, 251 | the teeth, `round_hard` `0.0035` and `0.003` | `7.7`, `3.2` | 16, 8 | `0.44` / `0.41`; `0.37` / `0.39` | `0.72`, `0.60` |
+
+`easel log` prints any record under `1.0` as *NO PAINT LANDED*. **The eye's glint is the
+glaze**: neither of the two dabs under it landed, and the ember reads a dull `0.22`. On a
+fresh canvas the same spark dab carries `0.19` to `0.21` whatever its wobble, at `0.0040`
+about `0.2`, and at `0.0068` `1.05` to `1.64`. The claw lights lose `0.01` to `0.05` to the
+wet paint under them, as the moved pixels are read, and `0.27` to `0.31` to their size.
+Nothing at the call says so for a round tip: `chisel-blank` is for an oriented tip under
+four pixels, and a round tip is said to have no such cliff.
+
+**Thirteen of the 280 strokes laid under `1.0`**: the spark, and twelve passes of three
+clipped `block_in`s -- records 163 and 164 of the 23 at `p04_gargoyle.py:40`; 214, 216,
+218 and 220 to 222 of the 24 at `p05_details.py:12`; 223 to 225 and 239 of the 17 at
+`p05_details.py:14`. Eleven laid `0.00` and one `0.11`: charged, and laying nothing.
+
+### The places, read four ways
+
+Every planned place at every pass end, by its mean, median, 75th and 90th percentiles,
+and by the share of it more than `0.15` from its own median. At the finish:
+
+| place | planned | mean | median | 75th | 90th | split |
+|---|---|---|---|---|---|---|
+| the wall, `G1`-`H3` | `0.17` | `0.182` | `0.176` | `0.180` | `0.235` | 0% |
+| the glow | `0.31` | `0.277` | `0.263` | `0.290` | `0.361` | 5% |
+| the plinth's top | `0.54` | `0.458` | `0.502` | `0.522` | `0.525` | 18% |
+| the plinth's front | `0.40` | `0.326` | `0.333` | `0.349` | `0.357` | 1% |
+| the plinth's side | `0.27` | `0.255` | `0.267` | `0.267` | `0.267` | 0% |
+| the head's top | `0.66` | `0.524` | `0.608` | `0.620` | `0.627` | 24% |
+| the floor | `0.17` | `0.197` | `0.169` | `0.212` | `0.286` | 4% |
+
+By the mean the head's top misses by `0.14`; by the 90th the floor misses by `0.12`, from
+the plinth's pass on, because the lamp's pool lies in it; by the median and the 75th
+every place is inside `0.10`. The split reaches a tenth twice: the plinth's top from the
+subject's pass on (15%, then 18%), where the creature's feet stand in it, and the head's
+top from the details pass on (24%), the eye and its socket. Nothing else reaches a
+tenth at any pass end; the floor comes nearest, at 7%, over the lamp's pool.
 
 ### What it read
 

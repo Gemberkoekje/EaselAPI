@@ -23,9 +23,13 @@ painting session's transcript turned out to be evidence this plan had not counte
 answers questions 1 and 3 by measurement and all of 2 but a follow-up, holds every version
 the painter threw away -- each recovered and re-run to the report it printed -- and
 corrects rows 8 and 9 and adds to row 12 (marked where they stand). Question 2's
-follow-up and questions 5 to 8 go to the painter with step 1, as
-[`questions-step1.md`](paintings/Claude/bell_warden/questions-step1.md); 4, 9 and 10 wait
-for step 2's sheets. See [`NOTES-step1.md`](NOTES-step1.md). Nothing under `src/` has
+follow-up and questions 5 to 8 went to the painter as
+[`questions-step1.md`](paintings/Claude/bell_warden/questions-step1.md), and **its answers
+came back the same day** ([`answers.md`](paintings/Claude/bell_warden/answers.md), filed and
+re-measured): they decide C, E1, E2 and F1, withdraw D's `into-wet` as written -- D is
+rewritten -- and find two more things, the ember that did not land and twelve paid
+strokes that laid nothing. 4, 9 and 10 wait for step 2's sheets. See
+[`NOTES-step1.md`](NOTES-step1.md). Nothing under `src/` has
 changed. Every number in section 3 was measured on this machine on the 0.7.0 engine, from
 the painter's own session file (`bell.easel`, 292 records, 27 pass reports), its prelude
 and its seven pass scripts; three of the painter's claims changed shape under that
@@ -165,7 +169,7 @@ step 2 turns into `scripts/probe_bell_session.py`.
 | 9 | **It never found `feather=` as a softening tool**, which *might have softened my hard boundaries between light and shadow*; the *form that turns* recipe only mentions join strokes | R | **It would not have -- and the join would have.** The painter's subject pass, re-laid on the canvas it opened on, with its two shifted copies (a) as painted, (b) at `feather=0.012`, (c) at `feather=0.03`, (d) with their own edge left ragged inside `clip=body`, (e) as painted plus a half-value join stroke along each terminator, and (f) as painted plus a smudge along each. Looked at: **(b) and (c) read as a speckled band** along every held edge -- a feather breaks an edge against the tooth, it does not soften it -- **and they break the silhouette as well**, because one `feather=` applies to every hold of a call; (d) shows a flat brush's pass ends as a staircase down the terminator; **(e) turns the form, for two strokes** (102 to 104), and the tool says nothing; (f) softens it and is told `smudge-across` and `smudge-long`. The recipe the painter read had the right answer, for a column; what was missing was that answer for any silhouette. **Changed shape.** *And it had read what a feather does: `REFERENCE.md`'s paragraph on holds and its arguments table were both in what it printed before the first mark.* | **4B** |
 | 10 | **The painting is a vinyl toy, not weathered stone**: flat grey fills with a hard, even rim of light; *I held every zone with a hard edge* | O | The bench's (a) against (e) is the difference: the terminators are steps, and the fills are flat because nothing broke them -- its own notes say *the dry brush and three carving seams only begin on it*. Both are what 4B's recipe is for. | **4B** |
 | 11 | **The anatomy is stiff**: the head reads as a goat's more than a gargoyle's, the legs are sticks, the profile rigid -- *more cute than eerie* | O | A verdict on the drawing, outside the check's line. The instruments are the drawing's: 4A's thumbnail and its silhouette recipe and exercise. | **4A, 4G** |
-| 12 | **The give-aways are too small for a projector**: the eye glint and the claws are a few pixels across; *the reason the picture exists is in it, but only on close inspection* | O | Measured: the ember is a `0.0068` dab and the spark `0.0028` -- seven pixels and three at 1024 -- and the claws are 8 to 10 pixels wide. The closing checklist asked *is that reason still in the picture?*, and this row is the painter's answer: the question worked, and it carries no size. *Found when it was filed: the spark did not land. It changed two pixels, by at most 21 levels; `easel log` lists it as NO PAINT LANDED, and nothing at the call said so -- `chisel-blank` is for an oriented tip, and a round tip is said to have no such cliff. Step 2 measures where a round dab stops landing.* | **4F3, 4G** |
+| 12 | **The give-aways are too small for a projector**: the eye glint and the claws are a few pixels across; *the reason the picture exists is in it, but only on close inspection* | O | Measured: the ember is a `0.0068` dab and the spark `0.0028` -- seven pixels and three at 1024 -- and the claws are 8 to 10 pixels wide. The closing checklist asked *is that reason still in the picture?*, and this row is the painter's answer: the question worked, and it carries no size. *Found when it was filed: the spark did not land. It changed two pixels, by at most 21 levels; `easel log` lists it as NO PAINT LANDED, and nothing at the call said so -- `chisel-blank` is for an oriented tip, and a round tip is said to have no such cliff. Step 2 measures where a round dab stops landing.* *And the painter's answers found that the ember did not land either: `1.62` units over five pixels, reading a dull `0.22` against its own `0.62`. The glint is the glaze laid over both (re-measured; D, as rewritten).* | **4F3, 4G, 4D** |
 | 13 | **The box bottoms out near 0.14**: *0.13 is below what this mix can reach ... setting the cast shadow to 0.14 from the darkest mix* -- and the owner's question on it, whether it is time for a black | M | **Changed shape: 0.13 was in the box, and the documents said otherwise.** Burnt umber alone reads **`0.128`**, the box's real floor, and `shade()` reaches it; what stopped the painter is `at_value`'s default dark, the blue-umber mix at `0.137`, whose error named nothing else -- mixing that mix *toward itself*, *only gets to 0.137* -- and never the umber or the one route below the box, a supplied colour, which lands as written (`#0d0c10` reads `0.049`, and mixed with umber lays `0.07` to `0.11`). The documents state the floor three ways: `CALIBRATION.md`'s table puts umber at `0.13` and two paragraphs later calls the `0.14` mix *darker than any single pigment*; `PAINTER.md` calls that mix *the bottom of the range at 0.14*; `PAINTING.md` *the palette's floor of 0.14*. **On a black: the corpus has never asked for one** -- parsed, no `at_value` target, planned value or supplied colour under `0.14` in any of the 22 committed paintings' scripts -- **but four low-key pictures sit on the floor**: the GLM terminal window's darkest twentieth at `0.140` with 17% of its canvas under `0.15`, and the darkest 1% of Gemini's forest, BigPickle's sunset and the night pool at `0.137` to `0.143`. | **4E3** |
 | -- | **The headline**: *the engine is more capable than my painting shows; its weakest point is the one step it can't help much with yet, drawing a complex shape as coordinates* | R | Rows 1, 2 and 8 are that step's missing pieces -- a drawing that cannot be seen over paint, a pencil that rounds what was drawn, and no way to judge a silhouette flat and small nor recipe for building one -- and 4A is the answer to all three. | **4A** |
 
@@ -375,8 +379,39 @@ saved only as the report's text.
 - *Step 2*: the line over every pass of the corpus -- how long it runs, whether three calls
   or four is the right count, and whether the line or the function's name is what reads
   (question 8).
+- *Decided by the painter (question 8, 2026-09-26)*: **after every pass** -- rehearsed,
+  counted and committed, because the committed report is the one kept and a painter who
+  does not rehearse sees only that one; **the function named once per run of calls from
+  it, and every call's line** -- its three dearest subject calls are all `lay_body`, all
+  noted `subject`, and told apart only by line; **up to four calls, stopping once three
+  quarters of the pass is named** -- a fixed three stops its room at 71% and its subject at
+  64%; and **per call, the strokes that landed nothing**: *24 block_in at
+  p05_details.py:12 (lay_core_shadow), 6 landing nothing* would have told it to fit that
+  shape before paying for it (D, and the ninth engine row in `SUGGESTIONS.md`).
 
-### D. A light laid into wet paint -- built only on evidence
+### D. ~~A light laid into wet paint -- built only on evidence~~ A mark that lands short, and strokes that land nothing
+
+*Rewritten 2026-09-26, after the painter's answers.* **The painter withdrew `into-wet` as
+written.** The one light in its painting that met wet paint, on the claws, loses `0.01` to
+`0.05` to the wet and `0.27` to `0.31` to its own size -- a `0.0032` to `0.0035` round tip
+lays too little paint to reach its value -- so a notice gated on a light landing short on
+wet paint *would fire on these two and send me to `dry()`, which recovers `0.05` of `0.31`.
+That is the engine making my own misattribution for me.* If one is ever built, it measures
+the mark laid wet against the same mark laid dry, not against the mark's own value.
+**What it asked for instead** is a fact at the call for any mark laid by hand that lands
+far short of its own value, whatever the cause, saying the cause the engine can see -- the
+mark's size in pixels, the wetness under it, the clip that took it. On this painting it
+names the spark, the ember and the claw lights, which are the eye and the claws its
+why-sentence names. And, on C's line, per call, the strokes that landed nothing: twelve of
+its 280 were passes of clipped masses, paid for and laying nothing. The four conditions
+below hold for the new candidate as for the old: a real case (the eye and the claws), about
+one corpus pass in twenty or fewer, a threshold in a gap, and no guide block but a failure
+on purpose. Step 2's `--wet` becomes `--short`: every hand-laid mark's landed shortfall over
+the corpus, and the cause the engine could name. **Whether a stroke that lands nothing is
+charged** is step 2's too, and narrow: dropping it from the log would renumber every later
+record, which rule 7 forbids, so the candidates are saying so, and keeping its place in the
+log while it stops counting against the budget. *The text below is the candidate as it was
+first written.*
 
 Row 4, and the painter's fourth suggestion. **The candidate is a fact at the call, measured
 after the mark as `glaze-far` is** -- the damage rather than the wetness: a mark laid by
@@ -404,6 +439,8 @@ exactly this, so it would say so -- the one place where its saying so is the poi
 - *Changes*: it reopens 0.6.0's decline of `wet-under` (section 5, row 1). If the evidence
   does not come, the decline stands, and the round records its new data point: this
   painter's own number, checked against its file, was the plan's reading and not the paint.
+  *Settled 2026-09-26: the evidence did not come, and the decline stands; section 5, row
+  1.*
 
 ### E. The plan: a declared key, and what a place reads
 
@@ -424,6 +461,17 @@ plan --key low`, `key` on the server's `plan`, the `easel new` prelude, and a ro
   been told that its bottom two clusters are `0.07` apart.
 - *Not a switch*: under either key the line keeps a number and a threshold, and a picture
   that drifts out of its key is told so.
+- *Decided by the painter (question 6, 2026-09-26)*: **(1), the top twentieth under the
+  box's middle.** On its picture it would never have spoken -- its top twentieth ran from
+  `0.28` to `0.38` over all 25 reports, never within `0.16` of `0.54` -- which is the shape
+  a declaration should have: silent while kept, speaking when left. (2) asks for a number a
+  painter does not have, and (3) is a switch. **Under a key, print the clusters and do not
+  yet judge their gaps**: at today's fixed `0.10`, its bottom two clusters, `0.03` to
+  `0.09` apart, would have fired on all 25 reports -- the next *no clear light*. A low key
+  compresses the range, so the gap is measured on the corpus's dark pictures (step 2's
+  `--key`) before the line judges one. Its picture's own fault, the creature's chest
+  against the glow inside one cluster, is one no gap between clusters can see; a planned
+  pair could have.
 
 **E2. A place reads what most of it reads.** One reading for every planned place --
 `plan:`, `lightest:`, and `compare(s.plan())` or any `{place: value}` handed to
@@ -443,6 +491,18 @@ photograph keeps its cells and their means: that is a different question.
   two values should say so -- *head top reads 0.61, 14% of it under 0.35* -- in
   `sample-split`'s manner.
 - *Changes*: 0.6.0's instrument (section 5, row 2).
+- *Decided by the painter (question 5, 2026-09-26)*: **the median, one number for both
+  lines.** By the 90th percentile the floor misses by `0.12` from the plinth's pass on,
+  because the lamp's pool lies in it, so the 90th cannot read `plan:`; and a brightest part
+  for `lightest:` alone would leave `plan:` printing the mean's miss beside a `lightest:`
+  reading `0.63` -- the reading that sent it wrong. **A split place says so, on a line that
+  already names it, measured from its own median**: *head top reads 0.61; 24% of it darker
+  by more than 0.15*. A tenth of a place or more, more than `0.15` from its own median,
+  marks exactly two places over the whole painting, both for a reason -- the plinth's top,
+  where the creature's feet stand (15%, then 18%), and the head's top, the eye (24%) --
+  and nothing else passes 7% (re-measured, `CALIBRATION.md`). A fixed `0.35` was chosen
+  knowing where the eye was. The same clause shows the median's own failure: a detail
+  covering more than half its place.
 
 **E3. The floor, said as it is -- and a black, as a question with a measurement.** Row 13,
 and the owner's follow-up on it.
@@ -495,6 +555,18 @@ the CLI's help, the server's `guide` tool -- moves with it, which is 0.7.0's ste
   context a painter spends on the documents' account of themselves goes to painting, and
   the persuasion that worked is kept.
 - *Changes*: 0.7.0's ruling on the weight (section 5, row 4).
+- *Decided by the painter (question 7, 2026-09-26)*: **keep, beside their rules**, *eighty
+  strokes on four treatments* -- once, where the painter finds it told in five places with
+  three morals -- *the picture finished without opening the other four*, and *the pier*,
+  the one story about a failure no line catches. **Drop** *the four near-parallel fingers*
+  and *the arrangement redrawn three times*, whose rules carry their own instruments, and
+  the framing *every painter so far* (lines 109, 373 and 407), whose work was done by *and
+  the checklist counts them*. **And the card lacks one line**: that a mass can be held to a
+  shape with `clip=` and `edge="hard"`, with `at_value` beside `mix`. The card (lines 1 to
+  143) names none of the six calls its scripts lean on most -- `at_value` 29 times, `edge=`
+  14, `s.dry` 10, `clip=` 8, `.shifted` 4, `.inset` 3 -- and **`clip=` appears nowhere in
+  `PAINTER.md`**, where half its lighting came from. For the method the card carried it;
+  for the vocabulary it did not.
 
 **F2. Tables where a paragraph is a list.** `REFERENCE.md`'s `report()` paragraph becomes
 two tables -- the ten rules, each with when it fires, the number it uses and what it says;
@@ -550,8 +622,8 @@ rebuilds to**, and none of them is a moved default.
 
 | # | What changes | Built or decided in | What it becomes | Why it is warranted | Guard |
 |---|---|---|---|---|---|
-| 1 | **`wet-under`'s decline** | 0.6.0, ruled 2026-09-21: as a habit rule gated on wetness it fired on 22% of the corpus's passes and 8 guide blocks, and the fact line left of it rested on a reconstruction of a take its painter overwrote | reopened as a question, and built as `into-wet` only on the four conditions in 4D | **A different gate, and -- if it comes -- new evidence.** Wetness was no gate because the corpus lays opaque paint into wet on purpose (a median wetness of `0.09` under a mark, a tenth over `0.41`); the landed shortfall of a light meant to stand off its field is what a deliberate wet blend of close colours never reaches. And a painter has now reported the damage with numbers. | built only if it fires on a real case, on about one corpus pass in twenty or fewer, and on no guide block but a failure on purpose; otherwise the decline stands, with this round's data point beside it |
-| 2 | **What a planned place reads**: its mean, in `plan:`, `lightest:` and `compare()` against a value plan | 0.6.0's plan object, and `compare()` against a value plan, whose reading the plan's lines share | its median, or whichever reading step 2 and the painter choose | the mean made a detail inside the plan's own lightest plane into a false miss (`-0.14`) on the one line a painter relies on most, and the only other painting with a plan keeps every verdict under the change | every number those lines print moves a little, so it is named in `CHANGELOG.md`; output only, nothing rebuilds differently; replayed over both plans pass by pass before it lands |
+| 1 | **`wet-under`'s decline** | 0.6.0, ruled 2026-09-21: as a habit rule gated on wetness it fired on 22% of the corpus's passes and 8 guide blocks, and the fact line left of it rested on a reconstruction of a take its painter overwrote | reopened as a question, and built as `into-wet` only on the four conditions in 4D | **A different gate, and -- if it comes -- new evidence.** Wetness was no gate because the corpus lays opaque paint into wet on purpose (a median wetness of `0.09` under a mark, a tenth over `0.41`); the landed shortfall of a light meant to stand off its field is what a deliberate wet blend of close colours never reaches. And a painter has now reported the damage with numbers. | built only if it fires on a real case, on about one corpus pass in twenty or fewer, and on no guide block but a failure on purpose; otherwise the decline stands, with this round's data point beside it. *Settled 2026-09-26: **the decline stands.** The painter withdrew its suggestion as written: the one light in its painting that met wet paint lost `0.01` to `0.05` to it and five times that to its size. What replaces it, a mark that lands short whatever the cause, is 4D as rewritten, and reopens nothing.* |
+| 2 | **What a planned place reads**: its mean, in `plan:`, `lightest:` and `compare()` against a value plan | 0.6.0's plan object, and `compare()` against a value plan, whose reading the plan's lines share | its median, or whichever reading step 2 and the painter choose. *The painter chose the median (question 5).* | the mean made a detail inside the plan's own lightest plane into a false miss (`-0.14`) on the one line a painter relies on most, and the only other painting with a plan keeps every verdict under the change | every number those lines print moves a little, so it is named in `CHANGELOG.md`; output only, nothing rebuilds differently; replayed over both plans pass by pass before it lands |
 | 3 | **The `values:` line judging every picture against the box's middle** | 0.6.0 -- the standing lines | judged against the key a plan declares, where it declares one | *no clear light* printed twenty-five times at a picture declared low-key on purpose -- the stack-of-bars history, which 0.6.0 answered for bars with `bands=` | a declaration, not a switch: the line still measures and says when the picture leaves its key; with no key declared, nothing changes |
 | 4 | **The weight of `PAINTER.md` -- *watch*, and nothing cut on one painter's word** | 0.7.0's G5, the handover painter's own ruling; and before it the tenth round's *one home per rule* | anecdotes and commentary on the documents moved to `LESSONS.md` and `CALIBRATION.md`; the budget lowered to the new size | the seventh painter to call the corpus long, and **the first to say which text** -- none of it a rule -- **and which text worked**; the tenth round had already found *the stories were most of the words, and they did not do what the corpus believed*; and 45 words under its budget, the file cannot take this round's exercise and clauses without it | a move, not a cut: every sentence lands in a file that keeps it; the painter says which anecdotes persuaded, and those stay; `check_guide_overlap.py` and the budget test hold the result; and it is a hypothesis until the next fresh session paints against it |
 | 5 | **How a guide looks** | 0.5.0 -- `guide()`, drawn *thin, dark, the way a pencil line reads* | a graphite core on a light casing, its note in a box | over a dark picture the overlay is invisible -- 69% of its pixels step under `0.05` -- which defeats the one thing it exists for, a drawing that paint cannot bury | the view only; `sketch=False` still hides it; the test that a guide survives the paint and stays out of the picture still holds |
@@ -582,6 +654,18 @@ compare candidates go as the last round's did -- under letters, blind, and the k
 | 8 | The dearest-calls line: after every pass, or only rehearsed and counted ones? By script line, by function, or both? Three calls or four? | row 3 | C's format |
 | 9 | After step 2, blind: the terminator candidates side by side -- which reads as a form turning in stone? | row 9 | B1's recipe and B3's sentence |
 | 10 | Your cast shadow wanted `0.13`, which burnt umber alone reaches (`0.128`). Had the box held a darker dark, would you have used it -- and would the room's darks, planned between `0.15` and `0.21`, have spread further apart? After step 2, blind: this picture's darks re-laid with a near-black under the floor, beside the painting. | row 13 | whether E3's black is ever built |
+
+**Answered by the painter, 2026-09-26**, in
+[`answers.md`](paintings/Claude/bell_warden/answers.md), measured on its own file and
+re-measured here: question 2's follow-up -- no other case; the only light that met wet
+paint lost a sixth of its shortfall to it, and **it withdraws `into-wet` as written** (4D,
+rewritten); 5 -- **the median**, and a split place said from its own median (E2); 6 --
+**(1)**, and under a key the clusters printed but not yet judged (E1); 7 -- **keep three
+anecdotes, drop two and *every painter so far*, and give the card `clip=` and `at_value`**
+(F1); 8 -- **after every pass, function and line, up to four calls until three quarters,
+and the strokes that landed nothing** (C). It also found, measuring, that the ember did
+not land either and that twelve paid strokes landed nothing (row 12; D). Questions 4, 9
+and 10 wait for step 2's sheets.
 
 **For the owner.**
 
@@ -622,7 +706,9 @@ and cut*.
    (`--place`); the `values:` line under each key over the corpus's own low- and high-key
    pictures (`--key`); the landed shortfall of every hand-laid mark over the corpus, and
    ~~the painter's rebuilt pass if it comes~~ *the two recovered subject-pass versions
-   that read the head's top at `0.56` and `0.54`* (`--wet`); the dearest line over every corpus
+   that read the head's top at `0.56` and `0.54`* (~~`--wet`~~ *`--short`, after D was
+   rewritten: every hand-laid mark's shortfall and the cause the engine could name, and how
+   many corpus strokes are charged and land nothing*); the dearest line over every corpus
    pass (`--cost`); and the darks of the low-key pictures that sit on the floor, re-laid
    with a supplied near-black and set beside themselves (`--floor`). Numbers into
    `CALIBRATION.md`, sheets under `out/bell/`. **Its output

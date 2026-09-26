@@ -3,7 +3,9 @@
 *Written to be pasted into the painting session as it stands, by the owner. The answers
 are filed beside the painting as `answers.md`, verbatim. Questions A to E are
 `PLAN-0.8.0.md`'s question 2 (its follow-up), 5, 6, 7 and 8; its questions 1 and 3 were
-answered from the painting session's transcript and are not asked.*
+answered from the painting session's transcript and are not asked. Kept as it was put:
+one sentence in it is wrong, and the painter's answers correct it — the glint in the
+picture is the glaze, and the ember under it did not land either.*
 
 ---
 
