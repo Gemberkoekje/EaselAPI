@@ -63,6 +63,7 @@ their own sessions rather than measurements of the engine.
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
 | What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
 | What the lighthouse handover's round measured: an edge that is not a step, a dry brush that streaks, the graded rule's misfires, the file | *The lighthouse handover's round* |
+| What the bell-warden's round measured: guides on any ground, the arrangement flat and small, the terminator, what a pass costs call by call, marks that land short or nothing, a key, what a place reads, the floor, a named light, a place laid over, rings, drawing units | *The bell-warden's round* |
 
 ---
 
@@ -3265,10 +3266,26 @@ file has no section of that name -- the recipe's band and its brush are measured
 
 One painter, `claude-opus-5-5`, installed `easel-paint` 0.7.0 from the package and painted
 a stone figure on a plinth that has to pass for a statue, in 280 of 300 strokes, as sample
-art for another of the owner's projects. Acting on its verdict is one round,
-[`PLAN-0.8.0.md`](PLAN-0.8.0.md), and its measuring step -- `scripts/probe_bell_session.py`,
-the plan's step 2 -- has not been run yet. **This section is a stub**: it holds what
-filing the painting measured, and nothing a candidate of the round depends on.
+art for another of the owner's projects; a second session painted the next picture for the
+same pack the following morning. Acting on both verdicts is one round,
+[`PLAN-0.8.0.md`](PLAN-0.8.0.md), and its measuring step is
+[`scripts/probe_bell_session.py`](scripts/probe_bell_session.py): it rebuilds both paintings
+from their committed passes through the CLI's own `run_script` -- the Bell-Warden in the
+order its saved reports record -- keeps a copy of the canvas after each pass and every call's
+script line and function, and benches every candidate of the round on the canvas the painter
+actually had, each patched in for one bench and never into the engine. Its corpus benches
+read one replay of every committed painting with this round's watcher -- the corpus probe's,
+keeping each call's site, what each hand-laid mark landed at and a footprint of what each
+call painted -- kept in `out/bell/corpus.pkl` after the first run. Everything from
+*Section 3, re-measured* on is that script's output; re-run it rather than trusting the
+numbers here. The whole probe takes about fifty minutes, half an hour more the first time,
+and its flags cut it down.
+
+**What the numbers cannot decide, the probe renders**, into `out/bell/`: the guide
+candidates on every ground, the painter's arrangements flat at four sizes, its subject's
+pass laid seven ways, and its painting with the darks re-laid under the box's floor. Three
+of the round's questions -- 4, 9 and 10 -- are the eye's, and went to the painter with those
+sheets.
 
 ### The painting, rebuilt
 
@@ -3458,3 +3475,447 @@ on a copy of its folder, the two that read the painting print its tables exactly
   here, `0.486`, is `0.005` under the `0.491` above because the two masks differ: the
   table above reads the plan's own mask of the place, 8,880 pixels, and the painter's probe
   draws the polygon itself, 9,073.
+
+### Section 3, re-measured
+
+`--claims`. Both rebuilds come back exact: the Bell-Warden in 44 seconds, 292 records and
+280 strokes spent, its passes opening at records 0, 1, 46, 96, 97, 199, 269 and 286; Wenna
+Brask in 35 seconds, 281 and 262, opening at 0, 31, 130, 161, 186, 194, 221, 244, 257, 266
+and 278; **each export the painter's PNG to the pixel**. Laid in numbered order the
+Bell-Warden has 291 records and 97,126 of its 786,432 pixels move (12.4%), 2,131 by more than
+8 levels and the most by 87.
+
+| row | what the probe found |
+|---|---|
+| **1**, the guides vanish | The painter's seventeen guides, drawn by `_draw_guides` at the look's own pixels, and the value step at every pixel they change: over the bare ground a median of **`0.147`**, none under `0.05`; over the room -- the canvas the second drawing went on -- **`0.026`, 96% under `0.05`**; over the finished canvas `0.042`, 65% under. The notes add about 1,600 pixels and change none of it. The plan's `0.045` and 69% were measured once by hand on a different set of pixels. |
+| **2**, a shape handed to the drawing | `s.pencil(plinth)` and `s.guide(plinth)` raise `TypeError` (*float() argument must be a string or a real number, not 'Polygon'*), and so does a `Region`. The spline through a closed outline bows every side outward: 99% of the plinth's smoothed path lies outside the plinth, **as far as 21.6 px**; its front plane's, 30.7 px; the body's 42-point outline, 61% outside and 6.7 px at most. |
+| **3**, what the calls cost | The subject's pass: 102 strokes in 12 calls, the four `block_in`s at lines 40, 38, 36 and 18 laying 23, 22, 20 and 14 -- two of the 23 landing nothing. The details pass: 68 in 26 calls, the `block_in`s at lines 12 and 14 laying 24 and 17, six and four of them landing nothing. Wenna Brask's figure pass: 99 in 17 calls, its dearest four 13, 10, 9 and 9. |
+| **4**, a light into wet paint | The wetness under the head's top as its plane was laid: `0.000`. The details pass laid again without its two `s.dry()` calls: the plane's median `0.607` against `0.606`, the chest's and the wing's ridge lights `0.50` and `0.58` either way. **And the two versions of the subject's pass that laid the plane in the same pass as the body under it** -- the piebald and the arch, which read it at `0.56` and `0.54` -- laid again with the canvas dried before the planes: `0.595` against `0.591`, and `0.567` against `0.563`, with `0.014` and `0.005` of wetness under the plane. There was no wet damage in any version of this painting. |
+| **5a**, *no clear light* | 25 of the 27 saved reports, the top twentieth they name running `0.28` to `0.38`. |
+| **5b**, the place read by its mean | As *The places, read four ways*, above, to the thousandth; 14% of the head's top's 1,592 pixels under `0.35`. |
+| **12**, the give-aways | The ember `7.0` px, the spark `2.9`, the claws `8.0` to `9.7`, the claw lights `3.3` and `3.6`. |
+| **13**, the floor | Burnt umber alone reads **`0.128`**, which is `darkest_value`, and `shade("burnt_umber", 1.0)` reaches it; `at_value`'s default dark, ultramarine and umber half and half, reads `0.137`, and umber with 30% ultramarine `0.132`. `at_value(<that mix>, 0.13)` raises *value 0.130 is out of reach: #21232d reads 0.137 and mixing it toward #21232d only gets to 0.137* -- it names nothing else. A supplied `#0d0c10` reads `0.049`; umber with 30, 50 and 70% of it reads `0.107`, `0.093` and `0.077` as mixed, and lands at `0.125`, `0.114` and `0.102` laid as a solid mass on the Bell-Warden's canvas. |
+
+### Where a mark stops landing
+
+A light colour (`0.89`) laid on a flat dark field (`0.16`), twelve marks a size, reading the
+paint each record carries and the pixels it moved by more than `0.02`. A mark carrying under
+one unit of paint is what `easel log` calls *NO PAINT LANDED*.
+
+| tip | `press` | every dab lands from, at 1024x768 | at 1440x960 | reads halfway to its value from |
+|---|---|---|---|---|
+| `round_hard` | 1 | `0.0065`, 6.7 px | `0.0045`, 6.5 px | never, to 12 px: it reads `0.22` |
+| `round_hard` | 2 | `0.0055`, 5.6 px | `0.0040`, 5.8 px | never: `0.29` at most |
+| `round_hard` | 3 | `0.0020`, 2.0 px | `0.0020`, 2.9 px | `0.0035`, 3.6 px (4.3 at 1440) |
+| `round_soft` | 1 | `0.0075`, 7.7 px | `0.0055`, 7.9 px | never |
+| `round_soft` | 2 | `0.0055`, 5.6 px | `0.0040`, 5.8 px | never |
+| `round_soft` | 3 | `0.0025`, 2.6 px | `0.0020`, 2.9 px | never |
+
+**The cliff is in pixels, not in the fraction of the long side a size is given in**: at
+1440 the same dab lands at a size a third smaller. A dab at `tip_wobble=0.7` lands where one
+at `0` does. A one-touch dab never reads more than about a tenth of the way to its colour at
+any size -- it is a light touch by design, which is what the guide says -- and a two-touch
+dab a fifth. A short stroke of the claw lights' shape, `0.015` long, pressure `[1.0, 0.2]`,
+`opacity=0.85`, lands at every size from 2 px, but reads halfway to its value only from
+`0.0060` (6.1 px) with a `round_hard` and at no size to 12 px with a `round_soft`.
+
+A small `bristle` at the loads the flour was laid at, a stroke `0.30` across on a canvas
+768x1024 at `opacity=0.8`, the median paint of six:
+
+| size | load `0.12` | `0.22` | `0.35` | `0.5` | `0.7` | `0.9` |
+|---|---|---|---|---|---|---|
+| `0.009` | `0.9` | `1.0` | `1.5` | `19.6` | `93` | `202` |
+| `0.012` | `1.9` | `2.1` | `3.3` | `40.7` | `218` | `491` |
+| `0.016` | `3.9` | `4.3` | `6.9` | `103` | `515` | `1,153` |
+| `0.024` | `15.3` | `17.1` | `30.5` | `367` | `1,921` | `4,051` |
+| `0.030` | `20.2` | `22.8` | `55.4` | `538` | `2,774` | `5,470` |
+
+A cliff between `0.35` and `0.5` at every size -- ten to twelve times the paint -- which is
+the painter's *a small bristle under about 0.5 lays nothing*, for a stroke this long. The
+flour's own strokes were shorter, and laid under a unit.
+
+### A guide that reads on any ground
+
+`--guides`. Four candidates: **today's** graphite line; **the cased line**, a light neutral
+(`236, 236, 232`) three pixels wide under a one-pixel graphite core, opaque and at 150 of
+255; and **an ink chosen per pixel**, the graphite over what is lighter than `0.45` and the
+casing's colour over what is darker. Every one but today's boxes its notes. Drawn over 35
+grounds -- the seven ground presets bare, a flat mid-grey, the Bell-Warden after the room and
+finished, Wenna Brask finished, and all 24 committed paintings' pictures brought to a
+look's size -- and at every pixel of the line's core, **the larger step of its two tones**: the
+core's own over what is under it, and the largest of the casing pixels beside it.
+
+| candidate | share of the line under a step of `0.25` -- median over the 35 | worst | median step, over the room |
+|---|---|---|---|
+| today | 88% | 100% | `0.03` |
+| the cased line, opaque | **0%** | **0%** | `0.73` |
+| the cased line at 150 | **0%** | **0%** | `0.43` |
+| the ink per pixel | 2% | 100%, on the `burnt_sienna` ground | `0.73` |
+
+Today's line reaches the target only over the two white grounds, and over the lightest
+painting of the corpus (`0.55` mean) 36% of it is still under. The per-pixel ink fails
+where the paint sits at its own switch -- `burnt_sienna` reads `0.46` -- and up to 12% of a
+line elsewhere. **Looked at** (`out/bell/guides_*.png`): the opaque casing is the loudest, a
+white line on a dark canvas and a double line on the grey; the translucent one reads on
+every ground and gives way to the paint most; the per-pixel ink reads as one clean line
+where it works and breaks where the paint crosses its switch.
+
+### The arrangement, flat and small
+
+`--thumbnail`. The prototype fills each mass flat at the value its colour was mixed to, in
+the order laid, later over earlier, on the ground's value, at the canvas's size, and brings
+it down the way a look is brought down. The painter's arrangements were taken from what
+each version's passes handed the mass verbs, run with every verb recording and laying
+nothing:
+
+| arrangement | masses | drawn in |
+|---|---|---|
+| the first drawing: the room, the plinth and the `union()` | 9 | 15 ms |
+| the cat | 16 | 14 ms |
+| the piebald | 18 | 14 ms |
+| the arch | 15 | 16 ms |
+| the rim | 14 | 28 ms |
+| the bars | 14 | 25 ms |
+| as committed, with the details pass's masses | 17 | 36 ms |
+
+**Looked at, at their own sizes and not enlarged**: the cat's two peaks show at 96 px and
+read as ears from 128 up; the piebald's islands of light show at every size; the arch's band
+wrapped round the body reads only from 192, and at 96 and 128 is a paler body. **With no
+argument the prototype draws the plan's own places** -- for this painting the room, the
+plinth's three planes and the head's top, and no creature, because the plan named no mass
+of it (`out/bell/thumbnails/plan_128.png`). The drawing drawn over a 256-px thumbnail in the
+cased line buries the silhouette under its own lines.
+
+### A member that swells and narrows
+
+`--thumbnail`'s last bench, for A4's question whether `ribbon()` needs a width per point.
+One member running down four points, widths `0.030`, `0.060`, `0.042` and `0.016`:
+
+| drawn as | outline points | notches sharper than 25 degrees | pixels across at four heights |
+|---|---|---|---|
+| `ribbon(..., 0.030, end_width=0.016)`, the taper there is | 50 | 0 | 32, 28, 22, 18 |
+| a `union()` of round lobes along the path, each as wide as the member there | 154 | **51** | 40, 63, 42, 20 |
+| the same union, `.smooth()` | 616 | 3 | 40, 64, 42, 20 |
+| a width per point, drawn as a union of one ribbon a segment | 29 | 3 | 41, 64, 44, 20 |
+
+The union swells as a width per point would; unsmoothed its outline is a string of beads,
+smoothed it keeps three notches, the same as the segments' joints, and a faint bead along
+its edge at full size that does not show at 128 px.
+
+### A lit form: the terminator, not the feather
+
+`--terminator`. Row 9's candidates: the painter's subject pass laid seven ways on the canvas
+it opened on. The step across each terminator -- 10 to 90% of the way, along the line's
+normal, averaged over three parallel profiles a pixel apart, sampled every 4 px -- and across
+the silhouette, in pixels, the median over the line. **The terminator is B2's helper as
+benched**: the runs of a copy's outline lying inside the body and 4 px or more from its edge,
+runs shorter than `0.02` of the long side left out -- five runs of the mid copy's outline and
+four of the shade copy's.
+
+| candidate | strokes | lit to mid | mid to shade | silhouette | `edges:` in the box | said at the call |
+|---|---|---|---|---|---|---|
+| as painted | 102 | 0.5 | 1.0 | 0.5 | 61% | -- |
+| the copies at `feather=0.012` | 102 | 0.5 | 10.0 | 0.5 | 63% | -- |
+| the copies at `feather=0.03` | 102 | 14.8 | 14.5 | **1.5** | 65% | -- |
+| the copies' own edges left ragged, held to the body | 102 | 9.2 | 2.5 | 1.0 | 55% | -- |
+| as painted, and a half-value join along each terminator | 111 | **9.0** | **10.5** | **0.5** | 56% | -- |
+| as painted, and a smudge along each terminator | 111 | 2.0 | 17.5 | 1.0 | 54% | `smudge-across`, `smudge-long` |
+| the copies laid with `round_soft` | 102 | 0.5 | 1.0 | 0.5 | 62% | -- |
+
+At 1440x960 the same passes give 1.0, 0.5 and 1.0 as painted; 14.0, 14.0 and 1.0 with the
+join; 15.0, 16.0 and 1.5 at `feather=0.03`. The join is `flat`, `size=0.010`,
+`opacity=0.6`, `pressure="even"`, the two zones' colours mixed half and half, held to the
+body: **it widens the step at each terminator to about ten pixels and leaves the silhouette
+a step**, which is what *turns the form* is as a number. **Looked at**
+(`out/bell/terminator_*.png`): the feathers read as a speckled band along every held edge,
+the silhouette's included at `0.03`; the ragged copies as a staircase down the terminator;
+the smudge as a smear; the soft copies as the painting, because a soft tip held hard is
+held hard. The join leaves a blot where a run ends against the silhouette -- a taper at its
+ends is the recipe's to try.
+
+The recipe's own numbers, on an abstract form of parts -- a large mass, a smaller one
+overlapping it, two members that narrow -- lit from the upper left on a dark field, the shade
+copy two and a half times as far as the mid:
+
+| shift of the mid copy, along the diagonal | at 1024 | strokes | step lit to mid |
+|---|---|---|---|
+| `0.008` | 8 px | 98 | 18.5 -- the rim is narrower than the profile's reach, so it reads across it |
+| `0.016` | 16 px | 98 | 0.5 |
+| `0.024` | 25 px | 99 | 0.5 |
+| `0.032` | 33 px | 97 | 1.0 |
+
+| join size | `opacity` 0.4 | 0.6 | 0.8 |
+|---|---|---|---|
+| `0.006` | 2.5 | 3.8 | 4.5 |
+| `0.010` | 8.5 | 9.5 | 9.5 |
+| `0.016` | 15.0 | 15.0 | 15.0 |
+
+The median step, in pixels, at the mid copy's terminator, ten strokes more than the form's
+98. **The join's width is the turn's width**, and past `0.6` its opacity barely matters.
+
+### A head turned toward a light
+
+B4, on Wenna Brask's face at its own size: the figure pass's three structures laid on the
+canvas it opened on -- its first rehearsal, the Bell-Warden's shifted copies; its second, a
+half-tone band and a lit plane sharing a terminator run beside the profile; and the pass it
+committed, the terminator run back past the near eye. The share of the face reading lighter
+than halfway between the lit and the shadow mixtures:
+
+| structure | strokes | lit share of the face | of each row, median | middle half of the rows |
+|---|---|---|---|---|
+| the shifted copies | 135 | 35% | 36% | 26% to 55% |
+| the terminator beside the profile | 101 | 24% | 27% | 17% to 41% |
+| **the planes sharing the terminator, as painted** | 99 | **74%** | **81%** | 64% to 89% |
+
+The face that worked lights three quarters of what is seen of it, four fifths of a row.
+
+### What a pass costs, call by call
+
+`--cost`, over the 331 corpus passes that lay paint, the line as the painter decided it:
+every call dearer than one stroke, dearest first, up to four and no more once three quarters
+of the pass is named; its function once per run of calls from it, every call's line, and the
+strokes of it that landed nothing.
+
+- **Printed on 143 passes (43%)**; the rest have no call dearer than one stroke.
+- Calls named: one on 53 passes, two on 41, three on 29, four on 20. **The share of the pass
+  named: a median of 76%**, the tenth percentile 41%; four calls fall short of three quarters
+  on 10 passes. A fixed three would have named a median of 74% (the room's pass 71%, the
+  subject's 64%), a fixed four 78%.
+- **Its length: a median of 67 characters**, the ninetieth percentile 90, the longest 163.
+- A named call carrying strokes that landed nothing: on 2 passes, both the Bell-Warden's.
+- A call made inside a helper the prelude defines is named at the helper's line in
+  `prelude.py`, with the helper's name: *8 scumble at prelude.py:117 (sea_mass)*.
+
+The subject's pass, as the line would have said it:
+*dearest: 23 block_in at p04_gargoyle.py:40 (lay_body, 2 landing nothing), 22 at :38, 20 at
+:36, 14 at :18 (lay_wing) -- 79 of the 102*.
+
+**Over the whole corpus, 142 of 6,219 charged strokes (2.3%) laid under one unit of paint**:
+65 starved `bristle` strokes, 42 two-touch round dabs of about 5 px (the misty forest's), 12
+passes of three clipped `block_in`s (the Bell-Warden's), and a tail of small marks.
+
+### A mark that lands short
+
+`--short`. Every mark laid by hand -- a `stroke` or a `dab`, not a film -- over the corpus:
+3,096 of them, 2,047 **meant** to stand `0.10` or more off what they landed on. How far each
+got toward its own value, over the pixels it moved -- and, for its opacity, that divided by
+the opacity it was laid at:
+
+| | 5th pct | 10th | 25th | median | 75th |
+|---|---|---|---|---|---|
+| the way reached | `0.10` | `0.17` | `0.31` | `0.57` | `0.79` |
+| ...for its opacity | `0.15` | `0.27` | `0.50` | `0.75` | `0.94` |
+
+**No gap**: in twentieths from 0, the counts run 68, 2, 29, 37, 34, 64, 60 ... with the
+marks that landed nothing the only cluster. A fact at the call for a mark reaching under a
+share of its way would fire on 13.7% of the corpus's passes at `0.15`, 18.9% at `0.25`, 29%
+at `0.35` and 39% at `0.5` -- because most marks that land short do it on purpose: a starved
+bristle is the dry brush, and a translucent stroke is a film laid as paint. What the misses
+under `0.35` have in common: a bristle loaded under `0.5` (101), a stroke under 6 px (66),
+none of the causes (47), a two-touch round dab under 5.6 px (46), wet paint at `0.3` or more
+under the mark (9). On the guide's own code blocks it fires on 2 of 72 at `0.25` and 4 at
+`0.35`. **One guide block lays a mark that lands nothing**: *A mass built of planes*'s
+dry-brush stroke, a `bristle` 12 px wide at `load=0.35` on the check's own 400x300 canvas;
+no block lays a round dab that does.
+
+**The narrow form**: a mark laid by hand that landed under one unit of paint.
+
+| marks | laid | landed nothing | passes | of the corpus's |
+|---|---|---|---|---|
+| every mark laid by hand | 3,096 | 130 | 48 | 14.1% |
+| a round dab | 196 | 57 | 11 | **3.2%** |
+| ...under its cliff at its `press` | 60 | 56 | 10 | 2.9% |
+| a `bristle` loaded under `0.5` | 388 | 65 | 33 | 9.7% |
+
+**A round dab that lands nothing is predicted by its size in pixels at its `press`**: of the
+196 hand-laid round dabs, 5 of the 10 at `press=1` landed nothing, all under 6.5 px; 51 of
+94 at `press=2`, 50 of them under 5.6 px; 1 of 92 at `press=3`. It fires on 11 passes of 8
+paintings and on no guide block. A starved bristle that lays nothing is a continuum -- the
+paint such strokes laid runs 46 under a quarter of a unit, 7, 12, 24, 34, 26, 54 and 185 over
+16 in doubling bins -- and falls on 33 passes.
+
+The painters' own marks: the spark reaches `0.12` of its way (`0.19` units, 2.9 px,
+`press=1`), the ember `0.11` (`1.6` units, 7.0 px, `press=2`), the claw lights `0.29` and
+`0.22`, the teeth `0.40` and `0.34`; Wenna Brask's catchlight `0.05`, the flame's core
+`0.19`, the flour's strokes `0.00` to `0.14`, and the nostril's dab, centred outside
+the clip it was held to, `0.26`.
+
+### The values line under a key
+
+`--key`, over the 349 corpus passes that had laid paint: the `values:` line says *a clear
+light, mid and dark* on 228, **no clear light on 78**, that two clusters read as one on 42 and
+no clear dark on 1. Seven pictures finish with no clear light -- the pier, the hands, the
+Bell-Warden, Wenna Brask, the terminal window, the harbour and Kimi's lighthouse -- and none
+with no clear dark. Under `plan(key="low")` as decided -- the top twentieth held under the
+box's middle, `0.54`:
+
+| low-key picture | passes | *no clear light* today | would have left its key | top twentieth | closest two clusters | under `0.10` | under `0.05` |
+|---|---|---|---|---|---|---|---|
+| the pier | 14 | 12 | **2** | `0.36`-`0.73` | `0.068`-`0.108` | 13 | 0 |
+| the hands | 26 | 26 | 0 | `0.29`-`0.41` | `0.036`-`0.103` | 25 | 2 |
+| the Bell-Warden | 7 | 7 | 0 | `0.28`-`0.36` | `0.033`-`0.090` | 7 | 1 |
+| Wenna Brask | 11 | 11 | 0 | `0.40`-`0.45` | `0.118`-`0.164` | 0 | 0 |
+| the terminal window | 7 | 7 | 0 | `0.21`-`0.29` | `0.016`-`0.050` | 7 | 7 |
+| the harbour | 5 | 5 | 0 | `0.42`-`0.43` | `0.030`-`0.064` | 5 | 1 |
+| Kimi's lighthouse | 4 | 4 | 0 | `0.37`-`0.48` | `0.076`-`0.087` | 4 | 0 |
+
+A declared key would have said nothing on 72 of these 74 passes and spoken on the two where
+the pier's top twentieth rose to `0.73`. **The clusters inside a key sit close**: their closest
+pair a median of `0.078` apart (`0.047` at the tenth percentile) against `0.141` on every other
+pass, so at today's `0.10` the line would have judged 61 of the 74 as two masses read as one.
+Scaled to the picture's range -- `0.10` times its 5th-to-95th span over the box's -- the
+threshold falls to about `0.027` and fires on none. The low-key pictures' range is a median
+of `0.22` of the box's `0.83`.
+
+### What a place reads
+
+`--place`. **The three plans, pass by pass** -- the Bell-Warden's seven places, Wenna
+Brask's five, the lighthouse handover's seven -- under each reading:
+
+- The Bell-Warden: at the finish the `plan:` line has 6 of 7 inside by the mean, **7 of 7 by
+  the median** and the 75th percentile, 6 by the 90th (the floor, over the lamp's pool). The
+  `lightest:` line names the head's top from the details pass on under every reading.
+- The handover: 7 of 7 from the tower's pass on under every reading -- and **on the tower's
+  pass the mean names another place the lightest and the median names the lantern**.
+- Wenna Brask: 4 of 5 under every reading at every pass; the lantern the lightest of the
+  planned places from its own pass on, under every reading -- the face, lighter by every
+  reading, was not planned.
+- **The split** -- a tenth of a place or more over `0.15` from its own median -- marks four of
+  the nineteen planned places: the Bell-Warden's plinth top (15%, then 18%) and head top
+  (24%), the handover's lantern (12% to 14%) and Wenna Brask's (10%).
+
+**A detail put inside a place**: on every finished corpus canvas, the plans' places and 24
+round places a picture, drawn at random, 595 in all; into each, the pixels nearest one point
+inside it set `0.30` darker or lighter than the place's median, and each reading's move:
+
+| detail | covering | mean moves | median | 75th pct | 90th pct | the split says so |
+|---|---|---|---|---|---|---|
+| dark | 5% | `0.014` | `0.000` | `0.000` | `0.000` | 42% |
+| dark | 20% | `0.056` | `0.007` | `0.003` | `0.000` | 92% |
+| dark | 30% | `0.085` | `0.015` | `0.006` | `0.002` | 91% |
+| dark | 45% | `0.128` | `0.045` | `0.016` | `0.007` | 88% |
+| dark | 55% | `0.156` | **`0.300`** | `0.026` | `0.013` | 97% |
+| light | 5% | `0.015` | `0.000` | `0.004` | `0.009` | 42% |
+| light | 10% | `0.030` | `0.003` | `0.010` | `0.058` | 72% |
+| light | 20% | `0.060` | `0.008` | `0.032` | **`0.237`** | 100% |
+| light | 30% | `0.090` | `0.017` | **`0.272`** | `0.237` | 100% |
+| light | 55% | `0.164` | **`0.300`** | `0.272` | `0.237` | 100% |
+
+**The median holds either way to 45% and flips past half**; the mean moves `0.03` for every
+tenth; the upper percentiles hold a dark detail and give way to a light one at 10 to 30%.
+Undisturbed, **the split fires on 31% of the 595** -- a place drawn at random straddles two
+masses as often as not, which is what the clause is for -- and on 4 of the 19 planned.
+
+### The floor, and the darks under it
+
+`--floor`. Six low-key pictures rebuilt twice: as painted, and with every colour laid darker
+than `0.20` taken further down -- the span from the box's floor to `0.20` stretched to run from
+`0.07`, each colour's linear light scaled so its hue is kept.
+
+| picture | darkest 1% | 5% | under `0.15` | re-laid: 1% | 5% | under `0.15` | planned darks' medians, as painted and re-laid |
+|---|---|---|---|---|---|---|---|
+| the Bell-Warden | `0.157` | `0.161` | 1% | `0.122` | `0.129` | 25% | `0.17`-`0.18`, then `0.15`-`0.16` |
+| Wenna Brask | `0.149` | `0.149` | 9% | `0.102` | `0.106` | 62% | `0.15`-`0.16`, then `0.11`-`0.12` |
+| the terminal window | `0.141` | `0.141` | 18% | `0.090` | `0.094` | 38% | -- |
+| the night pool | `0.141` | `0.161` | 4% | `0.098` | `0.129` | 20% | -- |
+| the misty forest | `0.137` | `0.145` | 10% | `0.090` | `0.098` | 22% | -- |
+| the sunset | `0.137` | `0.149` | 7% | `0.086` | `0.098` | 18% | -- |
+
+**A darker dark moves a picture's darks down together; it separates only what was already
+apart.** The Bell-Warden's planned darks -- the wall and the floor, both planned at `0.17` --
+stay `0.01` apart either way; its room's mixtures, `0.15` to `0.21`, would have run `0.11`
+to `0.21`. The sheets are `out/bell/floor_*.png`.
+
+### A light the plan names
+
+`--lamp`, the named light of each plan pass by pass. At the finish:
+
+| plan | the light | planned | median | 90th | 95th | brightest | the canvas's top twentieth | its share of the canvas |
+|---|---|---|---|---|---|---|---|---|
+| the Bell-Warden | the head's top | `0.66` | `0.606` | `0.626` | `0.630` | `0.699` | `0.35` | 0.20% |
+| the handover | the lantern | `0.86` | `0.881` | `0.900` | `0.907` | `0.946` | `0.69` | 0.08% |
+| Wenna Brask | the lantern | `0.76` | `0.507` | `0.579` | `0.590` | `0.713` | `0.42` | 1.13% |
+
+**Every named light is under a twentieth of its canvas** -- under a fiftieth -- **and every one
+stands clear of the canvas's top twentieth** by `0.17` to `0.28` at its 95th percentile, the
+reading the `values:` line cannot give. Read at its 95th percentile, no plan's `lightest:`
+verdict changes; the number printed does.
+
+### Names a pass binds again
+
+`--rebind`, parsed rather than run: of the 284 committed passes of the 20 paintings whose
+passes run after a prelude, **20 bind a name the prelude bound** -- 17 to the same thing (the
+pier's `p = s.palette` in twelve passes, the fogged glass's `from easel import polygon`, the
+handover's `import random`) and 3 to a loop's variable the prelude's own loop had left bound
+(the handover's `x` and `y`). **Bound again to something else, where the prelude bound it by
+assignment, definition or import: none.** Wenna Brask's `H`, which a dict replaced, was in
+rehearsals that raised on it and are not filed.
+
+### A place laid over and over
+
+`--repaint`: masses (`block_in`, `scumble`, `cover`, `sweep`) half or more of whose footprint
+lies on marks laid in an earlier run, grouped by place, counted by run.
+
+- **Over the corpus's committed passes**, counting the painter's `subject` marks -- 17 of the
+  24 paintings note them: a place reaches two runs in two paintings, Wenna Brask's fist
+  (twice) and the night pool's water at (`0.50`, `0.67`) (three times). Counting every mark
+  instead, every painting but two has such a place, and the seaside village one laid over
+  nineteen times.
+- **The Bell-Warden, its filed rehearsals included**: counting only committed marks as
+  earlier, the count first reaches two at the details pass's second rehearsal -- the creature
+  being built -- and never sees the head's failures, which were laid on a canvas holding no
+  subject yet; counting a rehearsal's own marks as earlier, it reaches two at the arch, the
+  third version, after the upstream rule had already sent the painter back twice.
+- **Wenna Brask, likewise**: committed marks only, the fist reaches two at `p07_fist.py`, the
+  redraw -- exactly as its painter counted; with rehearsals' marks, the figure's place reaches
+  two at `p03_figure.py` itself, the committed pass after its two rehearsals.
+
+The count finds the fist, and speaks on a subject being built as readily as on a passage
+failing.
+
+### An inward scumble's rings
+
+`--rings`: an inward scumble laid on a flat dark field, the Bell-Warden's glow and Wenna
+Brask's first pool, ring count by ring count. The ripple is the RMS of what is left along 24
+radii once a 31-pixel running mean is taken out.
+
+| `n` | the glow, `wall` to `glow` | the pool, `mill` to `glow_wall` |
+|---|---|---|
+| 4 | `0.0065` | `0.0065` |
+| 8 | `0.0040` | `0.0088` |
+| 12 | `0.0035` | `0.0048` |
+| 16 | `0.0027` | `0.0076` |
+| 20 | `0.0026` | `0.0061` |
+
+**Looked at** (`out/bell/rings_*.png`): at every count from 4 to 20 both read as rings -- a
+target on the wall. More rings are finer and fainter, never gone. `inward-comb` spoke only at
+20 on the pool. No ring count answers it: the pool the second painter found was three soft
+strokes of paint.
+
+### Drawing units
+
+`--units`, parsed. **One of the 24 paintings wrote a pixel helper** -- Wenna Brask's `P()`,
+and again in two of its probes -- and **two moved or scaled points about a centre by hand**:
+its `T()`, and the heron's second attempt, whose prelude scales a list of points about a
+centre by `k`. One more drew in units of its own, metres through a perspective projection
+(the winter greenhouse's `P()`). `.shifted()` appears in eight paintings, 13 times in the
+Bell-Warden's scripts and 11 in Wenna Brask's; `aspect=` in seven; `s.circle` in eight.
+
+**What a shape's numbers are, in pixels**, off the masks:
+
+| on a canvas | the shape | measured |
+|---|---|---|
+| 1024x768 | `ribbon(..., 0.05)` across a level ribbon | 38 px |
+| | across an upright one | 52 px |
+| | across one at 45 degrees in pixels | 45 px |
+| | `ellipse(p, 0.05)`, `blob(p, 0.05)` | 102 x 76, 102 x 74 px |
+| | `ellipse(p, 0.05, aspect=s.aspect)` | 102 x 102 px |
+| 768x1024 | `ribbon(..., 0.05)` level, upright, 45 degrees | 52, 38, 45 px |
+| | `ellipse(p, 0.05)` | 76 x 102 px |
+| | `ellipse(p, 0.05, aspect=s.aspect)` | 76 x 76 px |
+
+**A ribbon's width is in the canvas's coordinates across its line** -- a fraction of the height
+across a level ribbon, of the width across an upright one -- so one ribbon changes width as it
+turns. A round shape's radius is a fraction of the width across and of the height down; with
+`aspect=` it is round in pixels, the width's. A brush's `size` of `0.05` is 51 px either way:
+a fraction of the long side.
