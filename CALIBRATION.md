@@ -3560,6 +3560,18 @@ white line on a dark canvas and a double line on the grey; the translucent one r
 every ground and gives way to the paint most; the per-pixel ink reads as one clean line
 where it works and breaks where the paint crosses its switch.
 
+**Built in step 3 as the cased line at 150**, until the painter's pick between the two
+casings (question 4b) comes back: re-run after the build, the bench prints every number
+above again and finds the engine's `_draw_guides` the `casing 150` candidate, notes and
+all, **to the pixel over 35 of 35 grounds**. Its `today` is 0.7.0's line, kept in the probe
+as `draw_07`, so the column and the blind package's F stay the line the painter had. On a
+flat band of each, the smallest step at any pixel of the line is `0.497` over a dark ground
+of `0.08`, `0.273` over a mid-grey of `0.50` and `0.70` over a light one of `0.93`, where
+0.7.0's left 100%, 99.7% and none of its pixels under `0.25`. Swept over flat greys from
+`0.02` to `0.98` a hundredth apart, the worst for the casing at 150 is `0.49`, where the
+better of its two tones steps `0.261` -- the graphite over a lighter grey, the casing over a
+darker -- and no grey puts a pixel of the line under `0.25`.
+
 ### The arrangement, flat and small
 
 `--thumbnail`. The prototype fills each mass flat at the value its colour was mixed to, in
@@ -3919,3 +3931,9 @@ across a level ribbon, of the width across an upright one -- so one ribbon chang
 turns. A round shape's radius is a fraction of the width across and of the height down; with
 `aspect=` it is round in pixels, the width's. A brush's `size` of `0.05` is 51 px either way:
 a fraction of the long side.
+
+**Built in step 3**: `s.px(x, y)` and `s.px_size(r)`, `s.circle(p, px=r)` and `group()`. A
+stroke laid at `size=s.px_size(40)` and `pressure="even"` is 40 px thick on 1024x768 and on
+768x1024; `s.circle(p, px=25)` is 50 px across both ways on 768x1024, and
+`ellipse(p, *s.px(30, 22))` 60 by 44. The units table's rows for a ribbon's width and a
+blob's radii are F7's, in step 9.

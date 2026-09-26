@@ -14,10 +14,23 @@ guide is drawn in), `Session.guide` and `Session.pencil` in `src/easel/session.p
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 2 (measure) is built on branch `measure-bell-round`, 2026-09-26, off `main`
-at `a180395`** -- step 1 merged as [#88](https://github.com/Gemberkoekje/EaselAPI/pull/88) and
-[#89](https://github.com/Gemberkoekje/EaselAPI/pull/89). Nothing under `src/` has changed.
-[`scripts/probe_bell_session.py`](scripts/probe_bell_session.py) rebuilds both paintings to
+**Status: step 3 (A1, A2 and A5) is built on branch `claude/v0-8-0-plan-yqm1vt`, 2026-09-26,
+off `main` at `41eb63b`** -- step 2 merged as
+[#90](https://github.com/Gemberkoekje/EaselAPI/pull/90). As step 2 decided them: `look()`
+draws a guide as a graphite line on a light casing, with its note in a box -- the casing at
+150 of 255 until the painter's question 4b comes back; `guide()` and `pencil()` take a shape
+and draw its outline, corners kept; and `s.px()`, `s.px_size()`, `s.circle(px=)` and
+`group()`. Nothing a mark lays changes. Two things the plan did not say are marked where they
+stand: the server has no `guide` or `pencil` tool to change, and `ellipse(..., px=True)`
+cannot be built as written -- a module function has no canvas to count pixels on -- so an
+oval in pixels is two radii through `s.px`. See [`NOTES-step3.md`](NOTES-step3.md). **The
+painter's answers to questions 4, 9, 10, D and 5f have not come back**: step 4 does not
+wait on them, nor does step 5 but for E4, which waits on 5f; the thumbnail (step 6) waits on
+4, the recipes of step 7 on 9, and D (step 8) on D.
+
+*Step 2 (measure) was built on branch `measure-bell-round`, 2026-09-26, off `main` at
+`a180395` -- step 1 merged as [#88](https://github.com/Gemberkoekje/EaselAPI/pull/88) and
+[#89](https://github.com/Gemberkoekje/EaselAPI/pull/89).* Nothing under `src/` changed. [`scripts/probe_bell_session.py`](scripts/probe_bell_session.py) rebuilds both paintings to
 the pixel and benches every candidate of section 4 on them and on the corpus; its numbers are
 in [`CALIBRATION.md`](CALIBRATION.md), *The bell-warden's round*, and what it decided is
 marked *Step 2* under each workstream and gathered in [`NOTES-step2.md`](NOTES-step2.md). In
@@ -330,6 +343,12 @@ still hides the drawing with the pencil.
   opaque or with its casing at 150 of 255. An ink chosen per pixel fails where the paint
   sits at its switch (100% on `burnt_sienna`). Looked at, the translucent casing gives way
   to the paint most; which of the two is the painter's (question 4b).
+- *Step 3 (2026-09-26): built, its casing at 150 of 255 until question 4b.* The engine's
+  line is the bench's `casing 150` candidate, notes and all, to the pixel over all 35
+  grounds; the probe keeps 0.7.0's line as its own `draw_07`, so its `today` column and the
+  blind package's F stay the line the painter had. Over flat greys the smallest step at any
+  pixel of the line is `0.261`, at `0.49`. If 4b comes back opaque, it is one constant,
+  `look._GUIDE_CASING_ALPHA`, and its test holds either way.
 
 **A2. A shape handed to `guide()` or `pencil()` is drawn as its outline, corners kept.**
 `s.guide(plinth, note="plinth")` and `s.pencil(plinth)` take a shape -- a `Polygon`, a
@@ -337,8 +356,10 @@ still hides the drawing with the pencil.
 record then carries the outline's points and `smooth=False`, so it replays as drawn, and
 `sketch_lines()` and `erase(place)` treat it as any other line. A list of points is drawn
 as it is today, splined by default, and the docstrings and `REFERENCE.md` say in one
-clause what the spline does to a corner. Through the server, the `guide` and `pencil`
-tools take a place where they take points; `RECIPES.md`'s straight-edge recipe loses its
+clause what the spline does to a corner. ~~Through the server, the `guide` and `pencil`
+tools take a place where they take points;~~ *There are no such tools (step 3): the
+server's `guide` hands over the documentation, and a drawing goes through `run`, whose
+script takes a shape as the Python does.* `RECIPES.md`'s straight-edge recipe loses its
 `.closed, ..., smooth=False`.
 
 - *How it answers the painter*: the call that feels natural for a polygon is the shape
@@ -352,6 +373,10 @@ tools take a place where they take points; `RECIPES.md`'s straight-edge recipe l
 - *Step 2 (2026-09-26): built as written.* Both calls raise `TypeError` on a `Polygon` and
   on a `Region`, and the spline through a closed outline puts 99% of the plinth's drawn
   path outside the plinth, as far as 21.6 px (30.7 on its front plane).
+- *Step 3 (2026-09-26): built as written.* The painter's own plinth, drawn from its
+  prelude both ways, is the pot and then the box. `smooth=` left out is now *splined for
+  points, not for a shape*, and passed either way it is kept; a group handed to either
+  call is told to draw each part, since a pencil line is one record.
 
 **A3. A thumbnail of the masses, flat, at drawing time -- the painter's first
 suggestion.** `s.thumbnail({place: value, ...}, size=None, path=None)`: each place filled
@@ -440,8 +465,9 @@ and make every recipe's numbers wrong for the painter who set it.
   fraction of the long side is a size's unit, and `ellipse` and `blob` take a radius per
   axis in coordinate units, so `blob(p, s.px(25), s.px(25))` is an oval on a canvas that
   is not square. So the length says it is a size (`s.px_size(r)`), and the round shapes
-  take pixels themselves (`s.circle(p, px=25)`, `ellipse(..., px=True)`). **The group,
-  yes**, and its whole use in this painting was one scale by `1.3` about a point.
+  take pixels themselves (`s.circle(p, px=25)`, ~~`ellipse(..., px=True)`~~ *an oval as two
+  radii through `s.px`, step 3*). **The group, yes**, and its whole use in this painting was
+  one scale by `1.3` about a point.
 - *Step 2 (2026-09-26): built as decided.* Parsed, the corpus: one painting of 24 wrote a
   pixel helper (this one), two moved or scaled points about a centre by hand (this one and
   the heron's second attempt), one drew in metres through a projection; `.shifted()` is in
@@ -449,6 +475,17 @@ and make every recipe's numbers wrong for the painter who set it.
   size**: `ribbon(..., 0.05)` is 38 px across a level ribbon on a 1024x768 canvas, 52
   across an upright one and 45 at 45 degrees -- a fraction of the height or the width across
   its line -- which F7's row has to say, and which a `px` form of a width would end.
+- *Step 3 (2026-09-26): built as decided, with two things the decision did not say.*
+  **`ellipse(..., px=True)` cannot be built as written**: `ellipse` is a module function,
+  with no canvas to count pixels on. Two radii are measured along the two axes as a point
+  is, so an oval in pixels is `ellipse(p, *s.px(rx, ry))` -- `s.px`'s docstring, `ellipse`'s
+  and `REFERENCE.md` say so -- and a round shape takes `px=` on `s.circle`, which knows the
+  canvas. **The group holds points as well as shapes**, because the painter's `T()` moved
+  the eyes' centres with the head (`far_eye = P(*T(388, 280))`); it unpacks into its parts,
+  holds other groups, and is not a place -- `block_in()`, `guide()` and `pencil()` say so.
+  `Polygon.scaled()` and `Region.scaled()` take `about=` beside their old path. `s.px(r)`
+  with one number raises and names `px_size` and `px=`. Not built: a `px` form of a
+  ribbon's width, which nobody decided.
 
 ### B. Light on a form: the terminator, not the feather
 
@@ -1219,7 +1256,8 @@ and cut*.
    [`NOTES-step2.md`](NOTES-step2.md).*
 3. **A1 and A2**: guides that read on any ground; a shape handed to `guide()` and
    `pencil()`. Small, certain, one PR. *With A5 -- `s.px()` and a group -- after W-Q1 and
-   W-Q2.*
+   W-Q2.* *Built 2026-09-26, A1's casing at 150 until question 4b: see
+   [`NOTES-step3.md`](NOTES-step3.md).*
 4. **C**: the dearest calls. *With H1, which names a finding's marks from the same record
    of each call's site, and H2 and H3, which are small.*
 5. **E**: the key and the place reading, after questions 5 and 6, and `at_value`'s error at
@@ -1275,7 +1313,7 @@ and cut*.
 | `src/easel/plan.py`, `checklist.py`, `measure.py` | `key=`; the median reading; `values_line` under a key; `compare_plan` reading a place as the plan does |
 | `src/easel/palette.py` | `at_value`'s error at the floor; the floor said one way in its docstrings |
 | `src/easel/regions.py` | the terminator helper; `ribbon()`'s widths, if needed |
-| `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`, and places for `guide` and `pencil` through the server |
+| `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)* |
 | `src/easel/notices.py`, `docs.py` | `into-wet`'s code and passage, if built; `FRONT_PAGE_WORDS` lowered |
 | `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |

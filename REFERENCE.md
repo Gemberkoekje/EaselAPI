@@ -31,6 +31,11 @@ here without the rule beside it is how a painting comes out correct and dead.
 height` in `y` — or use `s.circle(place, r)`, which is round in pixels, and
 `ellipse(..., aspect=s.aspect)`.
 
+**To draw in pixels**, `s.px(x, y)` is a pixel's place, `(x / width, y / height)`, and
+`s.px_size(r)` is a length in pixels as a size, `r` over the long side. A round shape
+takes its radius in pixels itself, `s.circle(p, px=r)`; two radii are measured along
+the two axes as a point is, so an oval in pixels is `ellipse(p, *s.px(rx, ry))`.
+
 ---
 
 ## What counts against the budget
@@ -66,7 +71,7 @@ returns the number, and `s.cost_line(plan)` says *why* it is that number.
 | `sweep(edge, ..., into=, depth=)` | a mass, as passes along its boundary stepped inward | one per pass |
 | `scumble(band, a, b, n=8)` | a soft passage, `n` passes stepping between two colours | `n` |
 | `cover(place, color)` | a repair, with every clause of the burying recipe set | one per pass |
-| `pencil(points)` | graphite under the paint | 0 |
+| `pencil(points)` | graphite under the paint. A list of points is splined, which rounds every corner and bows a closed outline outward; a shape handed over whole — a `Polygon`, a `Region`, `"D4"` — is drawn as its own outline, corners kept, and so is one handed to `guide()` | 0 |
 | `erase(region=None)` | takes **both** drawings out — the graphite and the `guide()` overlay | 0 |
 | `dry(amount=1.0, region=None)` | takes the wetness out so new paint covers rather than mixes | 0 |
 
@@ -219,7 +224,7 @@ horizon(0.4)             # a thin band at that height
 below(r, 0.15)   above(r, 0.15)   left_of(r, 0.15)   right_of(r, 0.15)
 between(a, b)            # the gap between two places
 thirds()   golden()      # the x and y lines, to hang a composition on
-r.point(u, v)  r.inset(a)  r.scaled(f)  r.shifted(dx, dy)  r.split_h(n)  r.split_v(n)
+r.point(u, v)  r.inset(a)  r.scaled(f, about=None)  r.shifted(dx, dy)  r.split_h(n)  r.split_v(n)
 ```
 
 **What each name actually covers.** `top`, `bottom`, `left`, `right` and `center` are
@@ -268,12 +273,15 @@ ribbon(places, width, end_width=None, smooth=True, name="")   # a mass along a l
 roughen(shape, amp=0.006, step=0.008, seed=0, calm=None, aspect=None, name="")
                                        # an outline walked off its own line
 union(a, b, ..., resolution=1024, name="")     # one silhouette round overlapping shapes
-s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="")
-                                       # round in *pixels* on any canvas
-shape.inset(a)  shape.smooth(2)  shape.scaled(f)  shape.shifted(dx, dy)
+s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="", px=None)
+                                       # round in *pixels* on any canvas; px= is its
+                                       # radius in pixels, in place of r
+shape.inset(a)  shape.smooth(2)  shape.scaled(f, about=None)  shape.shifted(dx, dy)
 shape.box  shape.area  shape.axis  shape.center  shape.closed
 shape.contains(x, y)                   # is this mark inside the mass?
 shape.inside(xs, ys)                   # ...and the same question for many at once
+group(a, b, ...)                       # shapes, regions and points, moved as one
+g.shifted(dx, dy)  g.scaled(f, about=None)  g.shapes  g.bounds  g.center
 ```
 
 `roughen()` is for an outline nobody ruled — rock, a shore, a torn edge. It cuts every
@@ -284,6 +292,14 @@ stands on the outline — a place, a point, a list of them, or a function `calm(
 returning `0` to `1` — and `aspect=s.aspect` makes a step the same distance across as
 down. Handed an open run of points rather than a shape, it roughens that stretch alone
 and keeps its two ends where they were, so the stretch still meets the rest.
+
+`group()` is for a drawing made of parts, redrawn by moving the parts. `shifted()` and
+`scaled()` move every part the same way — `about` is the point that stays put, a point or
+a place whose middle it is, and left out it is the middle of the box round them all — and
+a group unpacks into its parts, points coming back as points:
+`head, jaw, eye = group(head, jaw, eye).scaled(1.3, about=s.px(300, 266))`.
+`shape.scaled(f, about=)` is the same for one shape. A group is not a place: block in,
+hold and draw its parts one at a time.
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
 on — worth looking at before blocking in anything long and curved. It is a `Region`,
@@ -593,8 +609,11 @@ Session(width=1024, height=768, texture="linen", ground="white", seed=0,
                    # timelapse=<px> is the frame's long side; the default is 360.
                    # The frames stay in memory: the .easel file keeps none
 s.size   s.aspect   s.ground   s.stroke_count   s.spent   s.remaining   s.budget_line()
+s.px(x, y)   s.px_size(r)          # a pixel as a place; a length in pixels as a size
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
 s.guides s.guide(points, note="")        s.unguide(note=None)
+                   # points, or a shape drawn as its outline; drawn on the view as a
+                   # graphite line on a light casing, which reads over any paint
 s.scratch(count_only=False)   # a throwaway copy: the painter's scrap of canvas,
 s.undo(n)          # counting on log entries, not marks you paid for; puts the
                    # stream back too. count_only skips the pixel work

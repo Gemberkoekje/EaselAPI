@@ -46,10 +46,22 @@ _FINE_LINE = (90, 200, 255)
 _FINE_LABEL_BG = (10, 90, 130)
 _MARK_COLOR = (255, 210, 40)
 _MARK_INK = (20, 16, 4)
-#: The overlay drawing's ink: graphite, and translucent, because it sits on top of
-#: paint it must not hide. See :func:`_draw_guides`.
+#: The overlay drawing's ink, in two tones: a graphite core one pixel wide, down the
+#: middle of a light casing three wide. Whatever the paint under it, one of the two
+#: stands off it -- the graphite over a light passage, the casing over a dark one --
+#: which is why a map draws a road that way. Both are neutral: in a values view
+#: nothing on screen carries hue. See :func:`_draw_guides`.
 _GUIDE_COLOR = (58, 58, 64)
-_GUIDE_ALPHA = 190
+_GUIDE_CASING = (236, 236, 232)
+_GUIDE_CASING_WIDTH = 3
+#: The casing's opacity, of 255. Opaque or at 150, over 35 grounds -- every ground
+#: bare, a flat mid-grey, the two paintings of the bell-warden's round and every
+#: committed picture -- it leaves no pixel of the line under a step of 0.25 in value
+#: in both of its tones, where the one-pixel line before it left a median 88%
+#: (``CALIBRATION.md``, *The bell-warden's round*). At 150 it gives way to the paint
+#: most, and opaque is the louder of the two; which of them a painter judges a
+#: silhouette on is put to the painter who asked (``PLAN-0.8.0.md``, question 4b).
+_GUIDE_CASING_ALPHA = 150
 _PREVIEW_BAND = (60, 220, 255)
 _PREVIEW_LINE = (0, 40, 60)
 #: Neutral on purpose. In a values view nothing on screen should carry hue --
@@ -355,31 +367,52 @@ def _draw_marks(frame: _Frame, marks: dict) -> Image.Image:
 
 
 def _draw_guides(frame: _Frame, guides: list) -> Image.Image:
-    """The overlay drawing: graphite lines on the view, which paint cannot reach.
+    """The overlay drawing: a cased line on the view, which paint cannot reach.
 
-    Drawn the way a pencil line reads rather than the way a landmark does -- thin,
-    dark and unlabelled unless it was given a note -- because this *is* the drawing
-    and the painter is looking through it at the paint. ``mark()`` puts a cross and
-    a name on a point; this is the same mechanism along a path.
+    Thin and unlabelled unless it was given a note, because this *is* the drawing and
+    the painter is looking through it at the paint -- and in two tones, because it is
+    judged over whatever the paint has become. Graphite alone read on a light ground
+    and went on a dark one: over a room painted between 0.15 and 0.21, 96% of a
+    one-pixel line stepped the value by under 0.05, and its painter judged its
+    drawing on a throwaway light canvas instead. So each line is a light casing with
+    the graphite down its middle, every casing laid before any core so that no line's
+    casing covers another's graphite, and a note sits in a dark box, as a landmark's
+    name does. ``mark()`` puts a cross and a name on a point; this is the same
+    mechanism along a path.
     """
     base = frame.img.convert("RGBA")
-    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(overlay)
-    ink = _GUIDE_COLOR + (_GUIDE_ALPHA,)
+    paths = []
     for guide in guides:
         pts = [frame.to_px(float(x), float(y)) for x, y in guide.get("points", ())]
-        if not pts:
-            continue
-        if len(pts) == 1:
-            x, y = pts[0]
-            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=ink)
-        else:
-            draw.line(pts, fill=ink, width=1, joint="curve")
-        note = str(guide.get("note") or "")
+        if pts:
+            paths.append((pts, str(guide.get("note") or "")))
+    out = Image.alpha_composite(base, _guide_layer(base.size, paths, _GUIDE_CASING_WIDTH,
+                                                   _GUIDE_CASING, _GUIDE_CASING_ALPHA))
+    out = Image.alpha_composite(out, _guide_layer(base.size, paths, 1, _GUIDE_COLOR, 255))
+    notes = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(notes)
+    for pts, note in paths:
         if note:
             x, y = pts[0]
-            draw.text((x + 4, y - 11), note, fill=ink)
-    return Image.alpha_composite(base, overlay).convert("RGB")
+            draw.rectangle([x + 2, y - 13, x + 7 + 6 * len(note), y + 1],
+                           fill=_PANEL_LABEL_BG + (235,))
+            draw.text((x + 4, y - 12), note, fill=_PANEL_LABEL_INK + (255,))
+    return Image.alpha_composite(out, notes).convert("RGB")
+
+
+def _guide_layer(size, paths, width: int, colour, alpha: int) -> Image.Image:
+    """One tone of every guide at once: a line ``width`` pixels wide, a dot for a point."""
+    layer = Image.new("RGBA", size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    ink = tuple(colour) + (alpha,)
+    for pts, _ in paths:
+        if len(pts) == 1:
+            x, y = pts[0]
+            r = 2 + (width - 1) / 2.0
+            draw.ellipse([x - r, y - r, x + r, y + r], fill=ink)
+        else:
+            draw.line(pts, fill=ink, width=width, joint="curve")
+    return layer
 
 
 def _draw_strokes(frame: _Frame, strokes: list) -> Image.Image:

@@ -63,6 +63,7 @@ from easel.plan import build as build_plan
 from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
+    Group,
     Polygon,
     Region,
     _looks_like_bounds,
@@ -2011,7 +2012,7 @@ class Session:
         points,
         pressure: float = 0.55,
         width: float = 0.0026,
-        smooth: bool = True,
+        smooth: bool | None = None,
         note: str = "",
     ) -> StrokeRecord:
         """Draw a graphite line under the paint. Not a stroke, and not counted as one.
@@ -2028,17 +2029,28 @@ class Session:
         the single clearest tell that nobody was looking at masses.
 
         Args:
-            points: normalised (x, y) points. One point makes a tick.
+            points: normalised (x, y) points -- one point makes a tick -- or a shape:
+                a ``Polygon``, a ``Region`` or anything a place is read from, drawn as
+                its own closed outline with its corners where they are.
             pressure: 0..1. Darkens the line and pushes it further into the tooth.
             width: line width as a fraction of the canvas long side.
-            smooth: fit a spline through the points.
+            smooth: fit a spline through the points. It passes through every point and
+                rounds every corner, and bows every side of a closed outline outward --
+                a box drawn through its corners comes out a pot. Left out, a list of
+                points is splined and a shape is not.
             note: recorded in the log.
 
         Example::
 
             s.pencil([s.pt("chin"), s.pt("jaw"), s.pt("ear")])
+            s.pencil(plinth)               # a shape: its outline, corners kept
             s.look()                       # is the drawing right before any paint?
         """
+        outline = _outline_of(points, "pencil")
+        if outline is not None:
+            points = outline
+        if smooth is None:
+            smooth = outline is None
         self._snapshot()
         try:
             index = self._index_base + len(self.history.records)
@@ -2184,10 +2196,12 @@ class Session:
         two it named weakest.
 
         This is the same mechanism along a path. It touches no paint, no wetness and
-        no graphite channel: :meth:`look` draws it over the render, ``look(sketch=False)``
-        leaves it out with the drawing, and :meth:`export` never sees it, so the
-        arrangement drawn at step 1 is still there at step 7 and out of the picture
-        at the end. It is not a stroke and is not charged.
+        no graphite channel: :meth:`look` draws it over the render -- a graphite line
+        on a light casing, so that one of its two tones stands off whatever the paint
+        under it has become -- ``look(sketch=False)`` leaves it out with the drawing,
+        and :meth:`export` never sees it, so the arrangement drawn at step 1 is still
+        there at step 7 and out of the picture at the end. It is not a stroke and is
+        not charged.
 
         Use :meth:`pencil` for a drawing that *should* go under the paint and show
         through it -- the underdrawing is part of the painting, and this is not.
@@ -2197,7 +2211,9 @@ class Session:
         overlay together the way redrawing an arrangement wants.
 
         Args:
-            points: normalised (x, y) points. One point is a dot.
+            points: normalised (x, y) points -- one point is a dot -- or a shape: a
+                ``Polygon``, a ``Region`` or anything a place is read from, drawn as
+                its own closed outline with its corners where they are.
             note: a short label drawn beside the line's first point.
 
         Returns:
@@ -2207,9 +2223,12 @@ class Session:
 
             for shelf in (0.38, 0.55, 0.72):
                 s.guide([(0.05, shelf), (0.95, shelf - 0.04)], note="bench")
+            s.guide(plinth, note="plinth")  # a shape: the outline it will be filled to
             s.look()                        # still there after the masses go on
         """
-        pts = np.atleast_2d(np.asarray(points, dtype=np.float64))
+        outline = _outline_of(points, "guide")
+        pts = np.atleast_2d(np.asarray(points if outline is None else outline,
+                                       dtype=np.float64))
         if pts.size == 0 or pts.shape[1] != 2:
             raise ValueError(
                 f"guide() needs at least one point, as (x, y) pairs -- "
@@ -2252,9 +2271,48 @@ class Session:
         """
         return self.canvas.width / self.canvas.height
 
+    def px(self, x, y=None) -> tuple[float, float]:
+        """A pixel of this canvas as the fractions every call takes: ``(x/width, y/height)``.
+
+        Draw in pixels where pixels keep a drawing honest -- a face is judged in its
+        proportions -- and hand the place to anything that takes one. A pair handed
+        whole, ``s.px((300, 266))``, is read the same way::
+
+            eye = s.px(342, 283)
+            jaw = polygon([s.px(262, 330), s.px(338, 330), s.px(300, 372)])
+            head, eye = group(head, eye).scaled(1.3, about=s.px(300, 266))
+
+        Two radii are measured along the two axes as a point is, so they convert the
+        same way: ``ellipse(p, *s.px(30, 22))`` is 30 pixels across and 22 down on any
+        canvas. **One number is not a length here**, because a length is two different
+        numbers of pixels across and down on a canvas that is not square: a length in
+        pixels is :meth:`px_size` for a ``size=``, and ``s.circle(p, px=r)`` for a
+        round shape.
+        """
+        if y is None:
+            if not _looks_like_point(x):
+                raise TypeError(
+                    f"s.px() takes a pixel's x and y, and got {x!r} alone. A length in "
+                    f"pixels is a size, s.px_size({x!r}), for size= and width=; a round "
+                    f"shape takes its radius in pixels itself, s.circle(p, px={x!r})."
+                )
+            x, y = x
+        return (float(x) / self.canvas.width, float(y) / self.canvas.height)
+
+    def px_size(self, r: float) -> float:
+        """A length in pixels as a size: a fraction of the canvas's long side.
+
+        What ``size=`` on a brush, ``width=`` on the pencil and ``feather=`` are
+        measured in, whichever way the brush travels -- so ``s.px_size(40)`` is one
+        size on a canvas lying down and on one standing up. It is not a shape's
+        radius: :meth:`circle` takes pixels itself (``px=``), and two radii go through
+        :meth:`px`.
+        """
+        return float(r) / max(self.canvas.width, self.canvas.height)
+
     def circle(self, place, r: float | None = None, wobble: float = 0.0,
                points: int = 15, seed: int = 0, rotate: float = 0.0,
-               steps: int = 48, name: str = "") -> Polygon:
+               steps: int = 48, name: str = "", px: float | None = None) -> Polygon:
         """A mass that is round on *this* canvas, not merely round in coordinates.
 
         ``ellipse(p, 0.1, 0.1)`` is an oval on any canvas that is not square, because
@@ -2265,6 +2323,7 @@ class Session:
             s.circle((0.42, 0.55), 0.09)                 # a round lobe
             s.circle(cell("D5"))                         # the biggest circle that fits
             s.circle((0.42, 0.55), 0.09, wobble=0.25)    # round, but nobody drew it
+            s.circle(s.px(300, 266), px=25)              # 25 pixels in radius
 
         Args:
             place: a point ``(x, y)``, or a region to sit inside.
@@ -2279,11 +2338,20 @@ class Session:
             rotate: degrees, clockwise. Only visible on a wobbled outline.
             steps: how many points an unwobbled outline gets.
             name: shows up in the log.
+            px: the radius in pixels, in place of ``r``. The place is still a place:
+                ``s.circle(s.px(300, 266), px=25)``.
 
         Returns:
             A :class:`~easel.regions.Polygon`, as :func:`~easel.regions.ellipse` and
             :func:`~easel.regions.blob` return.
         """
+        if px is not None:
+            if r is not None:
+                raise ValueError(
+                    f"circle() takes its radius once: r={r!r} as a fraction of the "
+                    f"width, or px={px!r} in pixels, not both."
+                )
+            r = float(px) / self.canvas.width
         if wobble:
             return blob(place, r, wobble=wobble, points=points, seed=seed,
                         rotate=rotate, name=name, aspect=self.aspect)
@@ -8759,6 +8827,25 @@ def _segment_inside(p, q, bounds) -> tuple[float, float] | None:
         if t0 > t1:
             return None
     return (t0, t1)
+
+
+def _outline_of(value, verb: str) -> list[tuple[float, float]] | None:
+    """A shape's closed outline, for ``guide()`` and ``pencil()`` -- or ``None``.
+
+    ``None`` is a list of points, drawn as it always was. Anything else a place is read
+    from -- a ``Polygon``, a ``Region``, a name, a cell, a span, four numbers -- is drawn
+    as its own outline, closed, with its corners where they are: the Bell-Warden's
+    painter could not hand its plinth over, and the spline through ``plinth.closed``
+    drew a box as a pot.
+    """
+    if isinstance(value, Group):
+        raise TypeError(
+            f"{verb}() draws one outline, and a group is {len(value)} parts: draw each "
+            f"-- for part in g: s.{verb}(part)"
+        )
+    if isinstance(value, (Polygon, Region, str)) or _looks_like_bounds(value):
+        return [(float(x), float(y)) for x, y in polygon(value).closed]
+    return None
 
 
 def _erase_from_lines(lines, place) -> list[list[tuple[float, float]]]:
