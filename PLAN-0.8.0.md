@@ -32,7 +32,10 @@ strokes that laid nothing. 4, 9 and 10 wait for step 2's sheets. **And a second 
 arrived the same morning** -- *Wenna Brask*, by a second session that began from the first
 painter's notes -- with its own verdict; the owner filed it the same way and folded its
 verdict into this round (section 3b, and every row marked *added 2026-09-26*), in a PR on
-top of step 1's. See [`NOTES-step1.md`](NOTES-step1.md). Nothing under `src/` has
+top of step 1's -- and **its answers came back the same day too**
+([`answers.md`](paintings/Claude/wenna_brask/answers.md), re-measured): they decide A5, H1,
+I1 and E4's form, withdraw three of its sentences, and find the flour its why names never
+landed. See [`NOTES-step1.md`](NOTES-step1.md). Nothing under `src/` has
 changed. Every number in section 3 was measured on this machine on the 0.7.0 engine, from
 the painter's own session file (`bell.easel`, 292 records, 27 pass reports), its prelude
 and its seven pass scripts; three of the painter's claims changed shape under that
@@ -216,11 +219,11 @@ of the file's saved reports come back word for word.
 | W1 | **Drawing precise shapes in `0..1` coordinates on a canvas that is not square** -- *the most useful code I wrote was my own: a pixel helper `P()` and a `T()` that scaled the first drawing up by 1.3*; asks for a drawing unit and a way to move or scale a group of shapes | O | Confirmed. Its prelude draws in pixels through `P()` and scales the first head `1.3` times about a point with `T()`. The units table states the trap and `aspect=` answers it for one shape; nothing moves or scales several shapes about one point. The first verdict's headline, again. | **4A5** |
 | W2 | **Cost only as a total**: the figure pass at 135, then 101, then 99 | O | Confirmed; the first verdict's row 3 on a second painting. | **4C** |
 | W3 | **A finding that cannot be traced to its marks**: *4 small marks … around (0.55, 0.37)* | O | Confirmed: the closing checklist names a place and a count, no index, note or line; the pass's own report named no place at all. | **4H1** |
-| W4 | **A low-key picture with a small light is misread**: *no clear light, nothing above 0.42*; *lantern reads 0.49 averages in the iron straps* | M | Confirmed, and **the median does not rescue it**: the lantern reads `0.491` by its mean, `0.506` by its median, `0.58` at its 90th percentile and `0.71` at its brightest, against `0.76` -- its iron is most of its place, the median's own failure the first painter named. The picture's top twentieth is `0.42`, with `1.4%` of the canvas above `0.60`. | **4E1, 4E2, 4E4** |
+| W4 | **A low-key picture with a small light is misread**: *no clear light, nothing above 0.42*; *lantern reads 0.49 averages in the iron straps* | M | Confirmed, and **the median does not rescue it**: the lantern reads `0.491` by its mean, `0.506` by its median, `0.58` at its 90th percentile and `0.71` at its brightest, against `0.76` -- its iron is most of its place, the median's own failure the first painter named. The picture's top twentieth is `0.42`, with `1.4%` of the canvas above `0.60`.  *Its answers: the face is the lightest mass by every reading (median `0.584`, `0.620` at the 95th), which its plan never named, and the lantern's `0.76` was a mixture's value -- its panes' middle third reads `0.58`.* | **4E1, 4E2, 4E4** |
 | W5 | **No lettering**: the pack's next pictures need text | O | Confirmed: no verb lays a letter; a stroke along a hand-typed path is the only way. | **4I1** |
 | W6 | **`easel timelapse --scale` takes only whole numbers** | M | Confirmed, and it is the name: `--scale` is *the long side in pixels*, an integer, on `timelapse` and `look` alike, and reads as a factor. | **4H3** |
 | W7 | **A pass can silently overwrite a prelude's name**: its `H` replaced the canvas height, and `P()` divided by a dict | M | Confirmed: two rehearsals raised on it, and nothing is said when a pass rebinds a name the prelude bound. | **4H2** |
-| W8 | **Turn *failed twice, go back to the drawing* into a notice** -- *I broke that rule on the fist with the rule in front of me* | R | Its fist was laid over by five passes before a different drawing worked. **0.7.0's round considered a repainted-passage count and dropped it**: the log cannot tell a passage failing from a subject being built. A second painter asking, with a case. | **4H4**; section 5, row 6 |
+| W8 | **Turn *failed twice, go back to the drawing* into a notice** -- ~~*I broke that rule on the fist with the rule in front of me*~~ *withdrawn by the painter in its answers: it went back upstream at the second failure each time, and its first redraw kept the view* | R | Its fist was laid over by five passes before a different drawing worked. **0.7.0's round considered a repainted-passage count and dropped it**: the log cannot tell a passage failing from a subject being built. A second painter asking, with a case -- and its answers measure one: four passes laid paint on the fist and four on the face, so passes cannot tell them apart, while masses laid over the painter's own earlier marks can (two on the fist, none elsewhere), and would have spoken exactly when the rule did. | **4H4**; section 5, row 6 |
 | W9 | **A glow verb for lamps and windows** | O | The lamp's light on the wall took seven rehearsals -- fourteen rings of an inward scumble showed as rings, eighteen tripped `inward-comb` and left a dark rim, films wide enough to spread spread too thin and `to_value` refused -- before three soft round-tip strokes of paint made the pool. The Bell-Warden's glow showed its rings too. | **4I2** |
 | W10 | **Volume**: *over 2,000 lines before the first stroke*, and links to chase mid-task | M | `PAINTER.md` and `RECIPES.md` whole, `REFERENCE.md` to line 500: about 20,500 words. The first verdict's row 6 again. | **4F1** |
 | W11 | **`paintings/` isn't in the pip package** though the guide sends painters there | O | Confirmed: `PAINTER.md` line 23 and `RECIPES.md` line 965 link to it, and the wheel ships six documents and no painting. | **4F5** |
@@ -228,13 +231,19 @@ of the file's saved reports come back word for word.
 | W13 | **The Bell-Warden's lighting does not paint a face** -- three stacked profiles and a striped kerchief; *A mass built of planes* with the terminator as the shared edge did -- and **where the terminator goes**: a head turned toward a lamp lights more than half its visible face | O | Confirmed from its versions: the figure's first rehearsal is the shifted copies on a face, and its second the terminator run beside the profile, a strip. Its prelude's fix is a `terminator` path shared by the lit plane and the half-tone -- B2's helper, written by hand. **This contradicts B1 as written, for any surface turned toward the light.** | **4B1, 4B4** |
 | W14 | **The gaps**: a light's glow on a wall; a hand, *four-finger failure twice but never a fix*; lettering; units for `ribbon` width and `blob` radius | O | In part: no recipe for a light's pool, a hand holding something, or writing; no units row for a ribbon's width or a blob's radii. ~~Never a fix~~: the four-finger failure is told about seven times and its fix once, as a principle, with no recipe. | **4F7, 4F8, 4I** |
 | W15 | **A one-page quickstart of the 20 calls a painting uses** | R | The first painter's answers found the same gap: the card names none of the six calls its scripts leaned on most. | **4F1** |
-| W16 | **The docs' example budget of 300, taken for a portrait that wanted 450** | R | The card's example session is `Session(1024, 768, ..., budget=300)`. | **4F9** |
+| W16 | **The docs' example budget of 300**, ~~taken for a portrait that wanted 450~~ *(the 450 withdrawn by the painter: the budget never bound, 38 unspent)* | R | The card's example session is `Session(1024, 768, ..., budget=300)`, and its shell section says `300` too. | **4F9** |
+| W17 | *From its answers, measured*: **the flour never landed** -- 11 of 262 charged strokes laid no paint, the eight flour strokes among them, laid with a small bristle at loads of `0.12` to `0.25` | M | Confirmed: records 173, 193, 219, 220, 237, 240, 258-262, `4.2%` of the strokes; the flour's finger stroke laid again lays nothing at `0.22`, a trace at `0.35`, paint from `0.5` up. The first painter's ninth engine item, a second time, with a second cause the engine can name. | **4D** (rewritten) |
+| W18 | *From its answers*: **the log names a colour by hex where the palette names it** (`#9e6c57` for `lip`) | R | Confirmed: the record keeps the colour, not the slot. | **4H1** |
+| W19 | *From its answers*: **an edge shared with an outline, typed by hand** -- `T()`'s outputs worked out and typed where `polygon(face.closed[i:j] + terminator)` would take the edge from the face | R | 38 distinct decimal pairs in its prelude invert through `T()` to whole pixels (its count, 32). The recipes slice `.closed` for a smudge and never for a plane. | **4B4** |
 
 **Found while filing it**: its drawing ran only on a scratch canvas, never on the painting
 (the guides-vanish workaround, carried from the first painter's memory), so its drawing
-pass is left out of the rebuild; and its fist and face show the upstream rule failing *with
-the rule in front of me* -- the first painter credited that rule with saving its picture,
-and the second broke it knowingly.
+pass is left out of the rebuild. ~~And its fist and face show the upstream rule failing
+*with the rule in front of me* -- the first painter credited that rule with saving its
+picture, and the second broke it knowingly.~~ *Corrected by its answers: it followed the
+rule at the second failure each time, and the move did not go far enough -- the redraw
+kept the view.* **Its answers found two more things** (W17, W18): the flour its why names
+never landed, and its log names a colour by hex where the palette names it.
 
 ---
 
@@ -385,6 +394,13 @@ and make every recipe's numbers wrong for the painter who set it.
 - *Step 2*: the corpus's own helpers of this kind -- how many preludes define a
   pixel-to-fraction function or scale a set of shapes by hand -- and W-Q1 and W-Q2 for the
   painter.
+- *Decided by the second painter (W-Q1, W-Q2, 2026-09-26)*: **the helper, yes** -- it
+  would have replaced its `P()` everywhere -- **but not `s.px(r)` as a bare length**: a
+  fraction of the long side is a size's unit, and `ellipse` and `blob` take a radius per
+  axis in coordinate units, so `blob(p, s.px(25), s.px(25))` is an oval on a canvas that
+  is not square. So the length says it is a size (`s.px_size(r)`), and the round shapes
+  take pixels themselves (`s.circle(p, px=25)`, `ellipse(..., px=True)`). **The group,
+  yes**, and its whole use in this painting was one scale by `1.3` about a point.
 
 ### B. Light on a form: the terminator, not the feather
 
@@ -447,6 +463,10 @@ smear and a bruise, at about `0.22` as form.
 - *Step 2*: both structures laid on the second painter's own face at its size -- the
   versions in `versions/` are the failures -- and the terminator's place as a share of the
   visible form, for the ratio.
+- *From the second painter's answers (W19)*: the recipe takes the shared edge **from the
+  outline itself** -- `polygon(form.closed[i:j] + terminator)` -- as *A smudge* already
+  slices `.closed`; its painter typed that edge's points by hand, dozens of them, for want
+  of the one sentence.
 
 ### C. What a pass costs, call by call
 
@@ -506,8 +526,12 @@ on purpose. Step 2's `--wet` becomes `--short`: every hand-laid mark's landed sh
 the corpus, and the cause the engine could name. **Whether a stroke that lands nothing is
 charged** is step 2's too, and narrow: dropping it from the log would renumber every later
 record, which rule 7 forbids, so the candidates are saying so, and keeping its place in the
-log while it stops counting against the budget. *The text below is the candidate as it was
-first written.*
+log while it stops counting against the budget. **A second painting gives it a second case
+and a second cause** (W17): the flour its why names never landed -- eight strokes of a small
+bristle at loads of `0.12` to `0.25`, where it lays nothing under about `0.5` -- with the
+nostril, the catchlight and the flame's core, `4.2%` of its strokes. The fact names the
+cause the engine can see: here the load, for the brush's size. *The text below is the
+candidate as it was first written.*
 
 Row 4, and the painter's fourth suggestion. **The candidate is a fact at the call, measured
 after the mark as `glaze-far` is** -- the damage rather than the wetness: a mark laid by
@@ -652,6 +676,15 @@ about one place -- and answers it by saying what each line measures.
   and its 90th and 95th percentiles, pass by pass; how often a named light is under a
   twentieth of the canvas; and question W-Q5 for the second painter and a follow-up for
   the first, since this revisits its answer.
+- *Decided by the second painter (W-Q5, 2026-09-26)*: **if it is built, the 95th
+  percentile inside the named place, not its brightest pixel** -- a stray highlight is one
+  pixel, and on its canvas that pixel was the face's -- **printed beside the whole**:
+  *lantern 0.49 as a place, 0.59 at its brightest twentieth*. **But its own case was a
+  wrong plan, not a wrong reading**: the face is the lightest thing in the picture by every
+  reading, it should be, and the plan never named it; the lantern's `0.76` was a mixture's
+  value, where its panes read `0.58`. So the documentation's half of E4 is the rule the
+  why already implies: **plan the place the why names, and plan a light at the value its
+  place will read, not the value its mixture was mixed at**.
 
 ### F. The documentation
 
@@ -687,6 +720,18 @@ the CLI's help, the server's `guide` tool -- moves with it, which is 0.7.0's ste
   14, `s.dry` 10, `clip=` 8, `.shifted` 4, `.inset` 3 -- and **`clip=` appears nowhere in
   `PAINTER.md`**, where half its lighting came from. For the method the card carried it;
   for the vocabulary it did not.
+- *And the second painter's twenty (W-Q7, 2026-09-26)*, counted from its scripts --
+  `opacity=` 97 uses, `pressure=` 86, `s.stroke` 84, `p.at_value` 54, `note=` 51, `clip=`
+  41 -- of which the card names none of `at_value`, `clip=`, `pressure`, `opacity`,
+  `sample`, `mix_many` or `note=`, and **`clip=`, `sample` and `mix_many` appear nowhere in
+  `PAINTER.md`**. Its list for a first page: `s.stroke`; `s.block_in` with `solid=`,
+  `direction=` and `edge="hard"`; `clip=`; `s.glaze`; `s.dab`, and that a round dab under
+  about `0.007` lands next to nothing; `s.dry`; `pressure=`; `opacity=`; `load=`, and that a
+  small bristle under about `0.5` lays nothing; `tip_wobble=`; `note=`; `p.at_value`;
+  `p.mix` and `p.mix_many`; `p.value_of`; `polygon`, `blob` and `roughen`, with slices of
+  `.closed`; `s.look` with `values=` and `region=`; `s.sample`; `s.plan`; `easel run
+  --rehearse`; and `easel log`, for what landed nothing, with `easel check`. F1's line for
+  the card is chosen from it and from the first painter's six.
 
 **F2. Tables where a paragraph is a list.** `REFERENCE.md`'s `report()` paragraph becomes
 two tables -- the ten rules, each with when it fires, the number it uses and what it says;
@@ -744,18 +789,26 @@ grepped.
 **F9. The example's budget, said to be the example's** (W16). The card's example session
 keeps `budget=300`, and one clause beside it says a budget is the painter's to set from
 the picture -- a figure at the size of the canvas wants more than a landscape of big masses
--- because a worked example is an instruction.
+-- because a worked example is an instruction. *Its painter's answer (W-Q7)*: it typed
+`300` without a thought, from the card, its shell section and its memory of the first
+painting; the budget never bound (38 unspent), so the clause would have changed the number
+and not the painting -- and is still worth its line, for the painter who runs out.
 
 ### H. What the check says, and where -- *added 2026-09-26*
 
 The second verdict's points about the tool's own messages.
 
-**H1. A finding names its marks** (W3). Every post-pass finding that counts marks names
+**H1. A finding names its marks** (W3, W18). Every post-pass finding that counts marks names
 them: the calls they came from, by script line where `_one_call` knew it -- the same site
 C records -- and the log indexes. *4 small marks … around (0.55, 0.37)* becomes *4 small
 marks at `p05_face.py:58`, `:62`, `:64` and `:72` (records 174, 176, 177 and 179), around
 (0.55, 0.37)* -- the mouth's four soft marks, found here by hand from the file. Output
-only; beside the log.
+only; beside the log. *Decided by the second painter (W-Q3)*: **the script line with its
+function** -- `p05_face.py:58 (lay_mouth)` -- the name it thinks in; the note cannot tell
+them apart (184 of its 262 marks say `subject`). And **the log line names a colour by its
+palette slot** where it has one -- *`lip`*, not *`#9e6c57`* -- which means the record
+keeps the slot's name beside the colour: a new key on the record, read with `.get`,
+beside the log and not in the index, so nothing rebuilds differently.
 
 **H2. A pass that rebinds a prelude's name is told** (W7). `run_scripts` notes the names
 the prelude binds; after the pass it says, once, which of them the pass bound again --
@@ -775,7 +828,12 @@ Step 2 counts, over the corpus, the passes that lay marks over one place -- the 
 five, the Bell-Warden's head, the handover's headland -- against the subjects built in as
 many; **it is built only if a count separates them**, and then as a fact with the number,
 not a rule. Otherwise the decline stands with a second painter's case beside it (section
-5, row 6).
+5, row 6). *Decided by the second painter (W-Q6)*: **count masses laid over the painter's
+own earlier marks in one place, rehearsals included, and speak at the second** -- passes
+cannot tell its fist (four) from its face (four); masses over earlier marks can (two, and
+none elsewhere). On its painting that count would have spoken at the redraw, when the rule
+already had, so it adds a number, not a decision, and **is built only if the corpus
+separates**.
 
 ### I. Lettering, and a lamp's light -- *added 2026-09-26*
 
@@ -785,6 +843,16 @@ recipe first: letters as strokes along a stroke font's paths -- one path a lette
 `s.write(text, place, ...)`, only if step 2 shows the recipe's cost or its look is not
 good enough, and then laying strokes through the same calls, so it touches nothing a
 rebuild lays. Question W-Q4 asks what the painter needs written.
+*Decided by the second painter (W-Q4, 2026-09-26)*: **a helper that returns paths, not a
+verb that lays paint** -- `letter_paths(text, place, cap=, slant=, seed=)`, a
+single-stroke font shipped as data, its paths placed, slanted and varied, laid with
+`s.stroke` or `s.pencil` as any path is, the way `ribbon` returns a shape. It found the
+font is the part a painter gets wrong: its own `G` came out a `∂`, the arc run the wrong
+way round. Its measurements: capitals 32 px tall read at the size the pack's app shows a
+handout; a letter costs about 1.5 strokes, so a fifty-letter note is about 75 strokes, a
+quarter of a 300 budget; and letters laid along even paths read as type -- a hand wants a
+slant, a baseline that drifts, pressure through each stroke, and no two letters alike,
+which is what `seed=` is for.
 
 **I2. A lamp's light on a wall** (W9). A recipe (F8's *A light's pool on a surface*), not a
 verb: the painter's own fix worked, and a verb for one kind of light would be the first
@@ -884,6 +952,33 @@ painting.
 | W-Q5 | Your lantern read `0.49` against `0.76` because its iron is most of its place. Should `lightest:` read a named light by its brightest part while `plan:` reads the place as a whole -- or would you rather have planned the panes as a place of their own? | W4 | E4 |
 | W-Q6 | A notice for a place laid over again and again: counted in passes or in marks, after how many -- and would it have stopped you at the fist? | W8 | whether H4 is ever built |
 | W-Q7 | Would one clause saying the example's budget of `300` is the example's, not a rule, have changed yours? And which calls did your painting actually lean on -- your *twenty*? | W15, W16 | F9, and F1's line for the card |
+
+**Answered by the second painter, 2026-09-26**, in
+[`answers.md`](paintings/Claude/wenna_brask/answers.md), measured with the three scripts
+in its `probes/` and re-measured here: **W-Q1** -- the helper, which would have replaced
+its `P()` in all of about 360 places, but **`s.px(r)` as a fraction of the long side is a
+size's unit, not a shape's radius**: `blob(p, s.px(25), s.px(25))` comes out an oval on a
+canvas that is not square, so the helper says so in its name, or shapes take pixels
+themselves (`s.circle(p, px=25)`) (A5); **W-Q2** -- yes, its `T()` is exactly one scale by
+`1.3` about a point, and the time went elsewhere: an edge shared with the face typed by
+hand, where a slice of `.closed` would have taken it (A5, B4); **W-Q3** -- **the script
+line with its function**, and the log's colour named by its palette slot (H1); **W-Q4** --
+two pictures need writing, a note of about fifty letters in a hand and a sketch map's
+labels; capitals 32 px tall read at the size the pack's app shows a handout, at about 1.5
+strokes a letter; the probe's letters read as type, and **the recipe needs its font as
+data** -- a helper that returns a single-stroke font's paths placed, slanted and varied,
+`letter_paths(text, place, cap=, slant=, seed=)`, laid by `s.stroke` or `s.pencil` (I1);
+**W-Q5** -- **neither reading would have helped, because its plan was wrong**: the face is
+the lightest thing in the picture by every reading and should be, and it would rather have
+planned the panes at the value it painted them and planned the face; if `lightest:` reads a
+light by its brightest part, **the 95th percentile inside the place, printed beside the
+whole** (E4); **W-Q6** -- count masses laid over the painter's own earlier marks,
+rehearsals included, and speak at the second; on its painting that singles out the fist,
+but it would have spoken exactly when the rule did, so **build it only if the corpus
+separates** (H4); **W-Q7** -- the clause is still worth its line, though its budget never
+bound, and **its twenty calls**, counted from its scripts (F1, F9). Its answers also found
+the flour that never landed (W17) and withdrew three of its own sentences: the rule broken
+on the fist, the fist too large, and *450 would have suited it*.
 
 **For the owner**, on the second painting -- **answered 2026-09-26, all four the
 recommended option**: O4, filed as the first was, with the pack's details left out -- the

@@ -10,7 +10,7 @@ This file is the register: **what was wrong, and what was done about it.**
 
 **One round is open, from two painters against 0.7.0, at the top**: the Bell-Warden —
 **9 engine items and 4 documentation items** — and Wenna Brask, painted the next morning
-by a second session — **9 engine items and 7 documentation items**, several of them the
+by a second session — **11 engine items and 8 documentation items**, several of them the
 first's again — none of them acted on yet, and both acted on in 0.8.0. They are written
 where every open round before them has been written, and will be folded in where they
 stand rather than moved once they are acted on. Below them is the lighthouse handover — one painter against
@@ -58,7 +58,7 @@ changed rather than that it worked.
 | The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
 | The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | 6 | 4 |
 | The Bell-Warden — a stone figure on a plinth, 280 of 300, `paintings/Claude/bell_warden/`, the first painting against 0.7.0, from the package, as sample art for another of the owner's projects | 9 | 4 |
-| Wenna Brask — a woman by a lantern at dusk, 262 of 300, `paintings/Claude/wenna_brask/`, the second against 0.7.0, for the same pack, by a second session that began from the first painter's notes | 9 | 7 |
+| Wenna Brask — a woman by a lantern at dusk, 262 of 300, `paintings/Claude/wenna_brask/`, the second against 0.7.0, for the same pack, by a second session that began from the first painter's notes | 11 | 8 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -238,7 +238,7 @@ and credits the card, which still says *every painter so far has painted boxes*.
 
 ## Wenna Brask: a second painter against 0.7.0
 
-**OPEN.** Nine engine items and seven documentation items, from a second
+**OPEN.** Eleven engine items and eight documentation items, from a second
 `claude-opus-5-5` session at max effort, which painted *a mother who has not slept* by a
 lantern at dusk for the same pack the morning after the Bell-Warden, **262 of 300
 strokes**, and gave its verdict when the owner asked. The right-hand column is empty
@@ -250,7 +250,11 @@ two are one painter's lesson and a second painter's experience of it, and its ro
 where they repeat. Its session's transcript was read as the first's was: every rehearsed
 version is recovered in [`versions/`](paintings/Claude/wenna_brask/versions/README.md), and
 every one of its file's 31 saved reports comes back word for word. **Kind** as above.
-**Two claims changed shape under checking and are struck through where they stand.**
+**Two claims changed shape under checking, and the painter withdrew two more when it
+answered; all four are struck through where they stand.** Its answers, measured on its own
+file with the three scripts beside them, are
+[`answers.md`](paintings/Claude/wenna_brask/answers.md) — re-measured here, and holding;
+they add two engine items and one documentation item, the last rows of each table.
 
 ### The engine
 
@@ -259,12 +263,17 @@ every one of its file's 31 saved reports comes back word for word. **Kind** as a
 | **Drawing precise shapes in `0..1` coordinates on a canvas that is not square** — *the most useful code I wrote was my own: a pixel helper `P()` and a `T()` that scaled the first drawing up by 1.3*. Confirmed: its prelude draws every shape in pixels on the 768×1024 canvas and divides through `P()`, and scales the first head by `1.3` about a point of its own with `T()`. The units table already says the trap — *the first two rows are not the same unit* — and `ellipse(..., aspect=s.aspect)` answers it for one shape; nothing moves or scales a group of shapes together. The Bell-Warden's headline, *drawing a complex shape as coordinates*, again, from a painter that had read it. | O | |
 | **Cost is invisible until after a rehearsal, and then only as a total**: the figure pass came back at 135 strokes, *and I had to guess which masses ate them*. The Bell-Warden's third row again, on a second painting: 135, then 101, then 99, over three rehearsals of one pass. | O | |
 | **A finding that cannot be traced to its marks**: the closing checklist's *4 small marks with a round tip at tip_wobble=0 sit together around (0.55, 0.37)* never said which marks. Confirmed: the line names a place and a count, and no log index, note or script line — and the same rule, over each pass, named no place at all (7, 7 and 6 marks on the face's pass). | O | |
-| **A low-key picture with a small light is misread**: *no clear light, nothing above 0.42* on every report — *a percentile can't see a lamp* — and *lantern reads 0.49 averages in the iron straps*. Confirmed, and **this is where the median fails**: the lantern's place reads `0.491` by its mean, `0.506` by its median, `0.58` at its 90th percentile and `0.71` at its brightest pixel, against its planned `0.76`, because its iron is most of its pixels — the failure the first painter named for the median, a detail covering more than half its place. And the picture's top twentieth reads `0.42` with `1.4%` of the canvas above `0.60`: a lamp that small is under the percentile the `values:` line reads. | M | |
+| **A low-key picture with a small light is misread**: *no clear light, nothing above 0.42* on every report — *a percentile can't see a lamp* — and *lantern reads 0.49 averages in the iron straps*. Confirmed, and **this is where the median fails**: the lantern's place reads `0.491` by its mean, `0.506` by its median, `0.58` at its 90th percentile and `0.71` at its brightest pixel, against its planned `0.76`, because its iron is most of its pixels — the failure the first painter named for the median, a detail covering more than half its place. And the picture's top twentieth reads `0.42` with `1.4%` of the canvas above `0.60`: a lamp that small is under the percentile the `values:` line reads. **Its answers go
+further: the face is the lightest mass in the picture** by every reading — median `0.584`,
+`0.620` at the 95th percentile — which its plan never named, and the lantern's `0.76` was
+a mixture's value, not a place's: its panes' middle third reads `0.58`. | M | |
 | **No lettering**: the next two pictures the painter listed for the pack both need text. Confirmed: no verb lays a letter, and a stroke path is the only way to write one. | O | |
 | **`easel timelapse --scale` takes only whole numbers.** Confirmed, and it is the name rather than the number: `--scale` is *the long side in pixels*, an integer by design, on `timelapse` and on `look` alike, and a painter reads *scale* as a factor. | M | |
 | **A pass can silently overwrite a name the prelude defined**: its `H`, a dict of shared arguments, replaced the prelude's canvas height, and `P()` then divided by a dict. Confirmed: two rehearsals of the fist raised on it, and the pass and the prelude share one namespace, with nothing said when a pass rebinds a prelude's name. | M | |
-| **Turn *failed twice, go back to the drawing* into a notice** — *the log can see one region being repainted. I broke that rule on the fist with the rule in front of me.* Its fist was laid over by five passes — the figure's, the hand's, its own, the finish's and the cloth's — before a different drawing worked. **A repainted-passage count was considered and dropped in 0.7.0's round** because the log cannot tell a passage failing from a subject being built; this is a second painter asking for it, with a case. | R | |
+| **Turn *failed twice, go back to the drawing* into a notice** — *the log can see one region being repainted.* ~~*I broke that rule on the fist with the rule in front of me.*~~ **Withdrawn by the painter**: its transcript shows it went back upstream at the second failure each time — it redrew the fist, then changed the idea — and the first redraw kept the view. Four passes laid paint on the fist, and four on the face, so a count of passes cannot tell them apart; a count of masses laid over its own earlier marks can — two on the fist, none anywhere else — and would have spoken at the redraw, when the rule already had. **A repainted-passage count was considered and dropped in 0.7.0's round** because the log cannot tell a passage failing from a subject being built; this painting gives it a case and no reason to build it. | R | |
 | **A glow verb for lamps and windows.** The lamp's light on the wall took seven rehearsals: fourteen rings of an inward scumble showed as rings, eighteen tripped `inward-comb` and left a dark rim like a knot in wood, and films wide enough to spread spread too thin — `glaze(to_value=)` refused the value as out of reach — before three soft round-tip strokes of paint made the pool. The Bell-Warden's glow showed its rings too, and was softened with four films afterwards. | O | |
+| **The flour never landed** — from its answers, measured: *11 of the 262 charged strokes laid no paint* — every one of its eight flour strokes, laid with a small bristle at loads of `0.12` to `0.25`, and the nostril's dab, the catchlight and the flame's core — `4.2%` of the strokes, and the flour its why names. Laid again at other loads, the flour's finger stroke lays nothing at `0.22`, a trace at `0.35` and paint from `0.5` up; *the flour is faint but there*, it wrote at the time, of a knitted hem. **The Bell-Warden's ninth engine row again**, on a second painting, with a second cause the engine can name: a load too low for a brush that small. Nothing in any of the 32 saved reports said so. | M | |
+| **The log names a colour by its hex where the palette names it** — *`#174 stroke round_soft #9e6c57 41 dabs 269 paint -- subject` … gives a hex colour where my palette says `lip`*. Confirmed: the log line prints the record's colour, and the palette slot it was mixed into is not on the record. | R | |
 
 ### The documentation
 
@@ -276,7 +285,8 @@ every one of its file's 31 saved reports comes back word for word. **Kind** as a
 | **The gaps are where most of my rehearsals went**: a light's glow on a nearby wall; a hand — *the docs show the four-finger failure twice but never a fix*; lettering; and units for `ribbon` width and `blob` radius. Confirmed in part: no recipe lays a light's pool on a surface, holds something in a hand, or writes; the units table has no row for a ribbon's width or a blob's radii. ~~Never a fix~~ for the hand: `PAINTER.md` tells the four-finger failure about seven times, and its fix once, as a principle — *a cupped hand seen from the front is a cluster coming toward you* — with no recipe. | O | |
 | **The Bell-Warden's lighting does not paint a face** — from its notes. Copies of the silhouette shifted away from the light stack three profiles inside a face turned toward the lamp, like cut paper, and stripe the kerchief ([`face_profiles.png`](paintings/Claude/wenna_brask/evidence/face_profiles.png)); *A mass built of planes*, with the terminator as the edge its half-tone and lit planes share, did. **And where the terminator goes**: a head turned toward a lamp lights its whole front plane, more than half of the face seen in three-quarter view — laid beside the profile, it made a strip ([`face_strip.png`](paintings/Claude/wenna_brask/evidence/face_strip.png)). | O | |
 | **A one-page quickstart of the 20 calls a painting actually uses.** The Bell-Warden's answers found the same gap from the other side: the card names none of the six calls its scripts leaned on most. | R | |
-| **The docs' example budget of 300, taken for a portrait that wanted 450.** The card's own example session is `Session(1024, 768, ..., budget=300)`: a worked example is an instruction. | R | |
+| **The docs' example budget of 300**, taken without a thought, ~~for a portrait that wanted 450~~. The card's own example session is `Session(1024, 768, ..., budget=300)`, and its shell section says `300` too: a worked example is an instruction. **The 450 is withdrawn by the painter**: the budget never bound — it stopped with 38 unspent, on the passage, not the count. The clause saying the example's number is the example's is still worth its line, it says, for the painter who runs out. | R | |
+| **An edge shared with an outline, typed by hand** — from its answers: coordinate pairs in its prelude that are `T()`'s outputs, worked out and typed — 32 by its count; 38 distinct decimal pairs, 46 in all, invert through `T()` to whole pixels here — because its planes share an edge with the face; `polygon(face.closed[i:j] + terminator)` would have taken that edge from the face itself, as the recipes already do for a smudge, `mass.closed[3:5]`, *and I did not think of it for a plane*. One sentence in *A mass built of planes* would carry it. | R | |
 
 ### What the check cannot see
 

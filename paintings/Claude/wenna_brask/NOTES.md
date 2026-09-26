@@ -20,7 +20,11 @@ counted as *over 2,000 lines*. It never opened `PAINTING.md`, `CALIBRATION.md` o
 drawing in pixels through `P()` and `T()`, and the `s.plan(...)` — then `p02_setting.py` to
 `p12_crown.py` in order. **`p01_draw.py` is not part of the rebuild**: the drawing was
 judged on a scratch canvas with a light ground, and never run on this painting's own
-session. [`verdict.md`](verdict.md) is the painter's own review, written after the export.
+session. [`verdict.md`](verdict.md) is the painter's own review, written after the export,
+and [`answers.md`](answers.md) its answers to the questions put to it after the filing
+([`questions-step1.md`](questions-step1.md)), measured with the three scripts in
+[`probes/`](probes) — each run from that folder against the painting's session file one
+level up, which is rebuilt as below.
 [`reports.txt`](reports.txt) is every block `easel run` printed after a pass, as the
 session file kept them — 32, rehearsals included. [`versions/`](versions/README.md) holds
 the first drawing and the versions of five passes that were rehearsed and thrown away,
@@ -65,8 +69,9 @@ rectangle; `38` of 300 unspent; `plan:` *4 of 5 places inside 0.10; lantern -0.2
 
 ## The painter's notes
 
-What follows is the painter's own `NOTES.md`, verbatim but for its headings, which are set
-here as bold lines, and where marked.
+What follows is the painter's own `NOTES.md` as it stood on 2026-09-26, after it answered
+the questions and added a section of corrections at its end — verbatim but for its
+headings, which are set here as bold lines, and where marked.
 
 > *[The painter's title, its picture, and a paragraph saying where the picture sits in the
 > pack's list, who she is in the pack, and where its copy goes are left out here, at the
@@ -167,6 +172,25 @@ here as bold lines, and where marked.
 >   instead.
 > - `draft.easel` (the drawing judged on a light ground) and `swatch.easel` are scratch,
 >   kept in `exercises/`.
+>
+> **Corrected after filing (2026-09-26)**
+>
+> Measured while answering the owner's questions; the evidence is in [answers.md](answers.md).
+> The text above is left as it was filed.
+>
+> - **There is no flour in the picture.** All eight flour strokes laid no paint (`easel log`:
+>   *NO PAINT LANDED*), because a small bristle lays nothing below a load of about 0.5 and
+>   mine were laid at 0.12–0.25. The nostril, the catchlight and the flame's core landed
+>   nothing either, and the far iris next to nothing. After every pass, read `easel log` for
+>   *NO PAINT LANDED*.
+> - **The lightest mass is the face, not the lantern.** It is lighter by the mean, the median
+>   and every high percentile. *Lightest: the lantern, as planned* was true only of the
+>   planned places, and I never planned the face. The flame, mixed at 0.93, reads 0.71 at
+>   best.
+> - **The upstream rule was followed on the fist,** at the second failure each time: I redrew
+>   it, then changed the idea. The first redraw kept the view, a fist from the front.
+> - **The fist was about the right size**: 0.52 of the face's height. *Half again too large*
+>   was eyeballed and wrong. The fault was the view.
 
 ## What happened when it was filed
 
@@ -223,6 +247,24 @@ Everything under this heading is the filer's, not the painter's.
   own failure that painter named, a detail covering more than half its place. And **a
   percentile cannot see a lamp**: the picture's top twentieth reads `0.42`, while `1.4%` of
   the canvas lies above `0.60`.
+- **What its answers found, re-measured here** ([`answers.md`](answers.md)). Its two probes
+  on the painting, run again on a copy of its folder, print its tables exactly, and its
+  counts hold. **The flour never landed**: 11 of the 262 charged strokes laid under one unit
+  of paint — the eight flour strokes, records 193, 219, 220 and 258 to 262, at loads of
+  `0.12` to `0.25`, and the nostril's dab (173), the catchlight (237) and the flame's core
+  (240) — `4.2%` of the strokes and every mark of the flour the why names. Laid again at
+  other loads, the flour's finger stroke lays nothing at `0.22`, a trace at `0.35` and
+  paint from `0.5` up (`probes/flour_probe.py`). **The face is the lightest mass**, by every
+  reading — median `0.584` against the lantern's `0.506`, `0.620` against `0.588` at the
+  95th percentile, `0.718` against `0.714` at the brightest pixel — so the plan's
+  *lightest: the lantern* held only among the places it planned, and it never planned the
+  face (`probes/light_stats.py`). And three of its own sentences are withdrawn by it: the
+  fist was not too large (132 px across, `0.52` of the face's height), the upstream rule
+  was followed on it at the second failure each time, and *450 would have suited it* — the
+  budget never bound. Its scripts lean on `opacity=` 97 times, `pressure=` 86 and
+  `s.stroke` 84, and the card names none of `at_value`, `clip=`, `pressure`, `opacity`,
+  `sample`, `mix_many` or `note=`; `clip=`, `sample` and `mix_many` are nowhere in
+  `PAINTER.md` at all.
 - **The model was `claude-opus-5-5` at max effort**, by the session's own metadata, on
   every turn of it; Windows, Python 3.14, PowerShell as its shell.
 - **Its nouns, for the guide's grep**: *lantern*, *lamp*, *mill*, *door*, *gable*, *wall*,

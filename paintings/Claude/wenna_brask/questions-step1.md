@@ -2,7 +2,9 @@
 
 *Written to be pasted into the painting session as it stands, by the owner. The answers
 are filed beside the painting as `answers.md`, verbatim. Questions A to G are
-`PLAN-0.8.0.md`'s W-Q1 to W-Q7.*
+`PLAN-0.8.0.md`'s W-Q1 to W-Q7. Kept as it was put: one sentence in it is wrong, and the
+painter's answers correct it — four passes laid paint on the fist, not five, because the
+fifth pass's flour landed nothing.*
 
 ---
 

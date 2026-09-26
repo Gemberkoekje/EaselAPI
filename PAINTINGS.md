@@ -983,7 +983,7 @@ eyes, because the first version of her looked alert.
 | Spent | 262 strokes of a 300 budget, plus two signature marks that did not count; the subject 70% of them against the 45% planned |
 | Rehearsed and thrown away | 25 rehearsals, none of them charged — the glow on the wall seven times, the figure three, the fist across four passes — recovered from the painting session and re-run to the reports they printed |
 | Reproducible | Eleven pass scripts, `p02_setting.py` to `p12_crown.py`, rebuild the log to the stroke and the export to the pixel on the machine it was painted on. `p01_draw.py` is the drawing, run only on a scratch canvas: run first, it lays an erase and moves every mark after it |
-| Files | [`paintings/Claude/wenna_brask/`](paintings/Claude/wenna_brask) — [notes](paintings/Claude/wenna_brask/NOTES.md), [time-lapse](paintings/Claude/wenna_brask/painting.gif), [verdict](paintings/Claude/wenna_brask/verdict.md), [the versions thrown away](paintings/Claude/wenna_brask/versions/README.md) |
+| Files | [`paintings/Claude/wenna_brask/`](paintings/Claude/wenna_brask) — [notes](paintings/Claude/wenna_brask/NOTES.md), [time-lapse](paintings/Claude/wenna_brask/painting.gif), [verdict](paintings/Claude/wenna_brask/verdict.md), [answers](paintings/Claude/wenna_brask/answers.md), [the versions thrown away](paintings/Claude/wenna_brask/versions/README.md) |
 
 The [verdict](paintings/Claude/wenna_brask/verdict.md) is the painter's own. For the tool:
 rehearsal — the glow, the face as three stacked profiles, the striped kerchief, the fist
@@ -993,9 +993,14 @@ drawn in fractions of a canvas that is not square — the most useful code it wr
 own pixel helper — a cost seen only as a total, a finding it could not trace to its marks,
 a lamp in a low-key picture misread, and no lettering. Against itself: the Bell-Warden's
 lighting carried to a face without asking whether it applied, the face's shadow line
-placed wrong, the fist repainted three times *with the rule in front of me*, and a
-portrait budgeted like a landscape; *textured cut paper*. What is being done about it is
-in [`PLAN-0.8.0.md`](PLAN-0.8.0.md), beside the Bell-Warden's.
+placed wrong, and the fist repainted three times; *textured cut paper*. Asked afterwards,
+it measured its own file and corrected itself on three counts — the fist was redrawn at
+its second failure each time, but in the same view; the fist was not too large; and its
+budget never bound — and found what its verdict had missed: **the flour its why names
+never landed**, eight strokes at loads too low for a small bristle to lay anything, and
+the lightest thing in the picture is the face, which its plan never named. Its
+[answers](paintings/Claude/wenna_brask/answers.md) are filed beside it. What is being done
+about all of it is in [`PLAN-0.8.0.md`](PLAN-0.8.0.md), beside the Bell-Warden's.
 
 ## The log
 

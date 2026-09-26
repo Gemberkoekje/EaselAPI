@@ -3423,3 +3423,38 @@ of the whole place finds the lit panes, and by every one of them it misses by `0
 more. The picture's top twentieth, which the `values:` line reads, is `0.42`; its top
 hundredth `0.61`; and `1.4%` of the canvas is above `0.60` -- the lamp, its glow and the
 lit face, too little of the canvas for a percentile of a twentieth to see.
+
+**What its answers measured, re-measured here.** The painter answered its questions with
+three scripts on its own file, filed in `paintings/Claude/wenna_brask/probes/`; run again
+on a copy of its folder, the two that read the painting print its tables exactly.
+
+- **Eleven strokes laid no paint**, `4.2%` of the 262 charged -- records 173 (a
+  `round_hard` dab at `0.006`, the nostril), 237 (`0.0025`, the catchlight), 240 (`0.004`,
+  the flame's core), and all eight of the flour's, 193, 219, 220 and 258 to 262, a
+  `bristle` at `0.009` to `0.024` loaded `0.12` to `0.25`. The far iris, a dab at `0.006`,
+  laid `2.1` units.
+- **The flour's finger stroke, laid again at other loads** on copies of the finished
+  canvas:
+
+| load | at size `0.012` | at size `0.03` |
+|---|---|---|
+| `0.22` | nothing | nothing |
+| `0.35` | `1` unit | `4` |
+| `0.5` | `9` | `72` |
+| `0.7` | `58` | `416` |
+| `0.9` | `133` | `734` |
+
+- **The face against the lantern**, read on the values view:
+
+| place | pixels | mean | median | 90th | 95th | 99th | brightest |
+|---|---|---|---|---|---|---|---|
+| the lantern, as planned | 9,073 | `0.486` | `0.506` | `0.580` | `0.588` | `0.639` | `0.714` |
+| its panes, inside the edge straps | 7,244 | `0.525` | `0.522` | `0.580` | `0.592` | `0.643` | `0.714` |
+| the panes' middle third | 1,775 | `0.577` | `0.573` | `0.624` | `0.639` | `0.655` | `0.714` |
+| the face, whole | 26,094 | `0.505` | `0.584` | `0.620` | `0.620` | `0.639` | `0.718` |
+| the fist, as redrawn | 10,944 | `0.302` | `0.267` | `0.443` | `0.447` | `0.573` | `0.690` |
+
+  The face is the lightest mass by every reading, its mean included. The lantern's mean
+  here, `0.486`, is `0.005` under the `0.491` above because the two masks differ: the
+  table above reads the plan's own mask of the place, 8,880 pixels, and the painter's probe
+  draws the polygon itself, 9,073.

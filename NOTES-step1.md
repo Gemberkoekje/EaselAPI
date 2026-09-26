@@ -196,6 +196,34 @@ follow-up for the first painter.
   (`s.plan(ground="buried")` in the eighth), so a session replayed from the finished file
   carries a plan the earlier passes never had.
 
+## Part three: the second painter's answers, and the merge
+
+**#88 merged** as `d23305b` (a squash). #89, built on #88's branch, then conflicted with
+`main`: it carried #88's two original commits under its own. Fixed the way this repository
+has fixed a stacked branch after a squash merge before — `git rebase --onto origin/main
+b5e5ee9 file-wenna-brask`, after checking the squash's tree equals #88's tip — and pushed
+with `--force-with-lease`; #89 is one commit on `main` and mergeable.
+
+**The second painter's answers** came back the same day, measured with three scripts of its
+own, filed with them as `paintings/Claude/wenna_brask/answers.md` and `probes/`. Re-measured:
+its two canvas probes, run on a copy of its folder, print its tables exactly; its list of
+the eleven strokes that laid no paint, its call counts and its reading of the card hold.
+**One number does not**: it counts 32 hand-typed `T()` outputs in its prelude, and 38
+distinct decimal pairs (46 in all) invert through `T()` to whole pixels here.
+
+What they changed: **the flour never landed** (W17 — a second case, and a second cause, for
+D as rewritten: a small bristle lays nothing under a load of about `0.5`); **the face is the
+lightest mass**, and the lantern's `0.76` was a mixture's value — E4 keeps its reading
+(the 95th percentile inside the named place, printed beside the whole) and gains its
+documentation half, *plan the place the why names*; **three of its sentences withdrawn**
+(the rule broken on the fist, the fist too large, *450 would have suited it*), struck in
+`SUGGESTIONS.md` and the plan; **its decisions**: `s.px()` yes but not a bare `s.px(r)` for
+a radius (A5), the script line with its function and a palette slot's name in the log
+(H1, W18), a helper returning a single-stroke font's paths, not a verb (I1), masses over
+earlier marks as H4's count, built only if the corpus separates, and its twenty calls for
+the card (F1). `SUGGESTIONS.md`'s Wenna round is now 11 engine and 8 documentation items.
+Its notes gained a section of corrections at their end; the filed quote carries it.
+
 ## File map
 
 | File | Change |
