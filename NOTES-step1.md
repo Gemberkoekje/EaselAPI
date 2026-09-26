@@ -140,11 +140,68 @@ painter withdrew `into-wet` as written, and asks instead for a fact at the call 
 mark that lands far short of its own value, whatever the cause, and for the strokes that
 landed nothing on C's line. Section 5's first row is settled: the decline stands.
 
+## Part two: Wenna Brask, a second painting (its own PR, on top)
+
+The same morning a second `claude-opus-5-5` session in the same project of the owner's —
+asked to choose the pack's pictures, which it did in a list of its own — painted the first
+of them and gave its verdict. The owner chose, all four the recommended option: file it with
+the pack's details out; fold its verdict into this round; the first painter's answers into
+step 1's PR and this painting on top; `verdict.md` only.
+
+**What was measured, as for the first**:
+
+- **Rebuild**: `p02_setting.py` to `p12_crown.py` in their numbering — 281 records, 262
+  spent, export 0 pixels off, 43 s. **`p01_draw.py` is left out**: it ran only on a
+  scratch `draft.easel` with a light ground (the guides-vanish workaround, carried from the
+  first painter's memory) and begins `s.erase()`, which lays a record. The corpus probe's
+  `order` lays it the same way; its passes open at the reports' own `at`s.
+- **Versions**: its transcript's 53 changes (Write, Edit, two PowerShell `-replace |
+  Set-Content`) replay to the painter's folder, byte-order marks aside
+  (`scratchpad/reconstruct_wenna.py`); every one of 31 saved reports reproduces word for
+  word (`verify_wenna.py`), fourteen of them with the plan as it then stood (the eighth
+  pass declared `ground="buried"`), and the five runs with none raise again. Nine versions
+  and the first drawing are filed; their command lines were run and print their reports
+  exactly, and the drawing redraws to the pixel.
+- **What it read**: `PAINTER.md` and `RECIPES.md` whole, `REFERENCE.md` to line 500 —
+  20,546 words — after the first painter's memory note, the Bell-Warden's notes and six of
+  its passes. **Not an independent painter**: where it repeats the first verdict, it may be
+  the first painter's lesson.
+- **Its claims**: confirmed, mostly. Two changed shape: `cost()` and `cost_line()` are in
+  the card (line 58), and the four-finger failure's fix is stated once, as a principle.
+  **The lantern is the median's failure**: `0.491` mean, `0.506` median, `0.58` p90, `0.71`
+  brightest, against `0.76`, because its iron is most of the place — so E2's median, which
+  the first painter chose, does not rescue it (E4, new). The checklist's untraceable *4
+  small marks … around (0.55, 0.37)* are records 174, 176, 177 and 179, the mouth's soft
+  marks at `p05_face.py:58`, `:62`, `:64`, `:72`.
+
+**What the plan gained**: section 3b (sixteen rows, W1-W16, each with what checking found);
+a second suggestion table; **A5** (`s.px()` and a group), **B1 scoped and B4** (*A head
+turned toward a light* — the shifted copies stack profiles in a face), **E4** (the named
+light read by its brightest part), **F5-F9** (working links to `paintings/`, versions and
+prices in the loop, the units table finished, a light's pool and a closed hand as recipes,
+the example's budget), **H** (a finding names its marks; a pass that rebinds a prelude name
+is told; `--scale` under `1` as a factor; a repainted-place count measured before anything
+is built), and **I** (lettering and a lamp's pool, recipes first). Section 5's sixth row
+reopens 0.7.0's declined repainted-passage count as a question. Section 6 gains W-Q1 to
+W-Q7, in [`questions-step1.md`](paintings/Claude/wenna_brask/questions-step1.md), and one
+follow-up for the first painter.
+
+**Gotchas from this part**:
+
+- **PowerShell 5.1's `Set-Content -Encoding utf8` writes a byte-order mark**; two of its
+  passes carry one. 0.7.0 reads them (#84); the filing strips it.
+- **The prelude's docstring named her place in the pack**; it names her instead. A
+  docstring lays nothing, so the rebuild is unchanged.
+- **A report can be reproduced only with the plan as it stood**: a pass script may declare
+  (`s.plan(ground="buried")` in the eighth), so a session replayed from the finished file
+  carries a plan the earlier passes never had.
+
 ## File map
 
 | File | Change |
 |---|---|
 | `paintings/Claude/bell_warden/**` | new: the painting, as above; `answers.md` added the same day |
+| `paintings/Claude/wenna_brask/**` | new, in the second PR: the second painting, filed the same way |
 | `PAINTINGS.md` | the section; four passages mention it; a count |
 | `SUGGESTIONS.md` | the round, open; the opening's counts and state |
 | `CALIBRATION.md` | *The bell-warden's round*, a stub |
@@ -156,10 +213,11 @@ landed nothing on C's line. Section 5's first row is settled: the decline stands
 
 ## Next
 
-- **A second painting**, *Wenna Brask*, was painted against 0.7.0 the same morning by
-  another session, with the first painter's notes and scripts in hand, and gave its own
-  verdict. The owner chose to file it with the pack's details out and fold its verdict
-  into this round: a second PR, on top of this branch.
+- **The second painter's questions**, `paintings/Claude/wenna_brask/questions-step1.md`:
+  the owner pastes them into its session, and the answers are filed as `answers.md` there.
+- **The owner's to confirm**: the plan proposes that this round takes the two verdicts it
+  has, and that a third painting against 0.7.0 is filed and recorded but planned on after
+  0.8.0 is cut (section 8).
 - **Step 2**: `scripts/probe_bell_session.py`. Its `--claims` rebuilds from these files
   and adds where a round dab stops landing. `--short` (D, rewritten) takes every
   hand-laid mark's shortfall and the two subject-pass versions that read the head at

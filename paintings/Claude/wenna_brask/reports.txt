@@ -1,0 +1,308 @@
+262 strokes, seed 23, 768x1024
+32 pass reports saved, oldest first:
+
+rehearsed p02_setting.py, from record 0:
+  check over this pass, 40 marks: nothing to report
+    plan: 3 of 5 places inside 0.10; lantern -0.54; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.22 -- 0.22 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+rehearsed p02_setting.py, from record 0:
+  at the call, 1 thing said:
+    - inward-comb: scumble(direction='inward', n=18) on a patch 0.123 deep lays its rings with a bristle 0.0205 wide, under the 0.025 where a comb is four streaks with gaps rather than a brush. The brush is 3 x depth / n, so more rings on a patch this shallow buy a narrower brush and not finer banding: this one carries 15 rings before the comb goes under the floor. Drop to n=15.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 44 marks: 1 thing to look at
+    - 18 marks with a bristle under size=0.025 at a load over 0.6: a comb that small is four streaks with gaps, not a brush. round_hard reads at that size; a small solid plane wants flat at pressure='even'.
+    plan: 3 of 5 places inside 0.10; lantern -0.55; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.21 -- 0.23 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+rehearsed p02_setting.py, from record 0:
+  check over this pass, 29 marks: nothing to report
+    plan: 3 of 5 places inside 0.10; lantern -0.52; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.24 -- 0.21 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+rehearsed p02_setting.py, from record 0:
+  check over this pass, 29 marks: nothing to report
+    plan: 3 of 5 places inside 0.10; lantern -0.50; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.26 -- 0.18 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+rehearsed p02_setting.py, from record 0:
+  check over this pass, 29 marks: nothing to report
+    plan: 3 of 5 places inside 0.10; lantern -0.47; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.29 -- 0.15 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+painted p02_setting.py, from record 0:
+  check over this pass, 29 marks: nothing to report
+    plan: 3 of 5 places inside 0.10; lantern -0.47; B7 +0.28
+    lightest: B7 reads 0.44 and lantern, the plan's own light, 0.29 -- 0.15 under
+    values: 0.15-0.45 of a box that reaches 0.13-0.96, clusters at 0.16, 0.30, 0.42; no clear light -- nothing above 0.45, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 7.50% of the canvas is still bare ground
+
+rehearsed p03_figure.py, from record 31:
+  check over this pass, 135 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.47
+    lightest: A4 reads 0.39 and lantern, the plan's own light, 0.29 -- 0.10 under
+    subject: 112 of 164 marks so far (68%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.16, 0.28, 0.42; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 66% of edges are under 2.5 px wide, median 2.0 px
+    ground: 0.05% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p03_figure.py, from record 31:
+  at the call, 1 thing said:
+    - holes: holes: 4.27% of this solid 'flat' mass came back bare -- the ground showing through it, at 0.21 of value between the two, which is enough to read. solid= sets load and load_falloff and closes the gaps along a pass, not the ones a comb leaves across it: a denser pass, a 'flat' or 'knife', or crossed passes close these.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 101 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.47
+    lightest: A4 reads 0.39 and lantern, the plan's own light, 0.29 -- 0.10 under
+    subject: 81 of 130 marks so far (62%), against 45% planned
+    values: 0.15-0.39 of a box that reaches 0.13-0.96, clusters at 0.16, 0.29, 0.41; no clear light -- nothing above 0.39, and the box's own middle is 0.54
+    edges: 64% of edges are under 2.5 px wide, median 2.0 px
+    ground: 0.38% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p03_figure.py, from record 31:
+  check over this pass, 99 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.47
+    lightest: A4 reads 0.39 and lantern, the plan's own light, 0.29 -- 0.10 under
+    subject: 79 of 128 marks so far (62%), against 45% planned
+    values: 0.15-0.40 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 61% of edges are under 2.5 px wide, median 2.0 px
+    ground: 0.26% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+painted p03_figure.py, from record 31:
+  check over this pass, 99 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.47
+    lightest: A4 reads 0.39 and lantern, the plan's own light, 0.29 -- 0.10 under
+    subject: 79 of 128 marks so far (62%), against 45% planned
+    values: 0.15-0.40 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 61% of edges are under 2.5 px wide, median 2.0 px
+    ground: 0.26% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p04_lantern.py, from record 130:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.087 from what it lands on in hue and chroma (Oklab), and moved the value 0.076: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 28 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 102 of 156 marks so far (65%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.33, 0.58; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 56% of edges are under 2.5 px wide, median 2.2 px
+    ground: 0.26% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+painted p04_lantern.py, from record 130:
+  at the call, 1 thing said:
+    - glaze-far: this film was mixed 0.085 from what it lands on in hue and chroma (Oklab), and moved the value 0.073: that far off, a film does not tint the passage, it lays a colour of its own over it. Mix it close to what it lands on -- s.palette.mix(field, film, ...) -- because a lower opacity is the same colour, fainter.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 29 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 102 of 157 marks so far (65%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.33, 0.58; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 57% of edges are under 2.5 px wide, median 2.2 px
+    ground: 0.26% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p05_face.py, from record 161:
+  check over this pass, 25 marks: 1 thing to look at
+    - 7 small marks with a round tip at tip_wobble=0: that is one disc printed 7 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 127 of 182 marks so far (70%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 52% of edges are under 2.5 px wide, median 2.4 px
+    ground: 0.28% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p05_face.py, from record 161:
+  check over this pass, 25 marks: 1 thing to look at
+    - 7 small marks with a round tip at tip_wobble=0: that is one disc printed 7 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 127 of 182 marks so far (70%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 53% of edges are under 2.5 px wide, median 2.3 px
+    ground: 0.27% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+painted p05_face.py, from record 161:
+  check over this pass, 25 marks: 1 thing to look at
+    - 6 small marks with a round tip at tip_wobble=0: that is one disc printed 6 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 127 of 182 marks so far (70%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 53% of edges are under 2.5 px wide, median 2.3 px
+    ground: 0.27% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p06_hand_cloth.py, from record 186:
+  check over this pass, 22 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 144 of 204 marks so far (71%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.26% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p06_hand_cloth.py, from record 186:
+  check over this pass, 8 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 129 of 190 marks so far (68%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.27% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+painted p06_hand_cloth.py, from record 186:
+  check over this pass, 8 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 129 of 190 marks so far (68%), against 45% planned
+    values: 0.15-0.41 of a box that reaches 0.13-0.96, clusters at 0.17, 0.31, 0.46; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 50% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.27% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p07_fist.py, from record 194:
+  check over this pass, 26 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 155 of 216 marks so far (72%), against 45% planned
+    values: 0.15-0.43 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.43, and the box's own middle is 0.54
+    edges: 51% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.08% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+painted p07_fist.py, from record 194:
+  check over this pass, 26 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 155 of 216 marks so far (72%), against 45% planned
+    values: 0.15-0.43 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.43, and the box's own middle is 0.54
+    edges: 51% of edges are under 2.5 px wide, median 2.5 px
+    ground: 0.08% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+
+rehearsed p08_finish.py, from record 221:
+  at the call, 1 thing said:
+    - glaze-far: this film moved the passage under it by 0.120 in value, over its own footprint: past 0.08 a film stops shifting a mass and lays a new one. Aim it at the value the passage should read afterwards (to_value=), or lay the change as paint.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 20 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 164 of 236 marks so far (69%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.11% of the canvas is still bare ground -- buried, as the plan says
+
+painted p08_finish.py, from record 221:
+  at the call, 1 thing said:
+    - glaze-far: this film moved the passage under it by 0.120 in value, over its own footprint: past 0.08 a film stops shifting a mass and lays a new one. Aim it at the value the passage should read afterwards (to_value=), or lay the change as paint.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 19 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 163 of 235 marks so far (69%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.11% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p09_cloth_in_hand.py, from record 244:
+  check over this pass, 22 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 185 of 257 marks so far (72%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.11% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p09_cloth_in_hand.py, from record 244:
+  check over this pass, 12 marks: 1 thing to look at
+    - 12 of 12 long marks run within 6 degrees of 169 degrees, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 175 of 247 marks so far (71%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.08% of the canvas is still bare ground -- buried, as the plan says
+
+painted p09_cloth_in_hand.py, from record 244:
+  check over this pass, 12 marks: 1 thing to look at
+    - 12 of 12 long marks run within 6 degrees of 169 degrees, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 175 of 247 marks so far (71%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.08% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p10_flour_and_folds.py, from record 257:
+  check over this pass, 8 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 178 of 255 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.08% of the canvas is still bare ground -- buried, as the plan says
+
+painted p10_flour_and_folds.py, from record 257:
+  check over this pass, 8 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 178 of 255 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.08% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p11_last.py, from record 266:
+  check over this pass, 7 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 182 of 260 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 49% of edges are under 2.5 px wide, median 2.6 px
+    ground: 0.09% of the canvas is still bare ground -- buried, as the plan says
+
+painted p11_last.py, from record 266:
+  check over this pass, 8 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 183 of 261 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 47% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed p12_crown.py, from record 278:
+  check over this pass, 1 mark: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 184 of 262 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 47% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+painted p12_crown.py, from record 278:
+  check over this pass, 1 mark: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 184 of 262 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 47% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says
+
+rehearsed noop.py, from record 281:
+  check over this pass, 0 marks: nothing to report
+    plan: 4 of 5 places inside 0.10; lantern -0.27
+    lightest: lantern reads 0.49, the lightest of the 5 places planned
+    subject: 184 of 262 marks so far (70%), against 45% planned
+    values: 0.15-0.42 of a box that reaches 0.13-0.96, clusters at 0.17, 0.30, 0.45; no clear light -- nothing above 0.42, and the box's own middle is 0.54
+    edges: 47% of edges are under 2.5 px wide, median 2.7 px
+    ground: 0.06% of the canvas is still bare ground -- buried, as the plan says

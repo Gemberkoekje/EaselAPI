@@ -205,6 +205,16 @@ CORPUS = [
                     "p04_gargoyle.py", "p05_details.py", "p06_finish.py", "p07_glow.py"),
              session=dict(width=1024, height=768, texture="linen",
                           ground="umber_wash", seed=11, budget=300)),
+    # A second painter against 0.7.0, the next morning, with the first one's notes and
+    # scripts in hand. Its drawing ran only on a scratch canvas and begins with an erase,
+    # which lays a record, so the rebuild leaves it out: the rest, in their numbering.
+    Painting("wenna", "Claude/wenna_brask", spent=262,
+             order=("p02_setting.py", "p03_figure.py", "p04_lantern.py", "p05_face.py",
+                    "p06_hand_cloth.py", "p07_fist.py", "p08_finish.py",
+                    "p09_cloth_in_hand.py", "p10_flour_and_folds.py", "p11_last.py",
+                    "p12_crown.py"),
+             session=dict(width=768, height=1024, texture="linen",
+                          ground="umber_wash", seed=23, budget=300)),
     # The 0.5.0 cohort. Three of the seven wrote one script rather than passes.
     Painting("bigpickle", "BigPickle_blind/sunset_landscape", cohort=True, spent=50,
              driver="sunset_paint.py"),

@@ -34,7 +34,9 @@ arrived at their convention on its own.
   the rule satisfied twice over — no painter could be steered by a noun in a worked
   example, and none of them picked the brief either. The Bell-Warden is the same case
   from outside the project: its subject was set by the content pack it was painted for,
-  and handed to its painter. The heron's second attempt is the
+  and handed to its painter. Wenna Brask's painter chose its subject from that pack, in a
+  list of its pictures it wrote at the owner's request before it opened the guide — though
+  not before it had read the Bell-Warden's notes. The heron's second attempt is the
   one deliberate exception: the subject was chosen under the rule the first time and then
   repainted on purpose, by the same painter, to find out what reading the rest of the
   files was worth. Two painters have since chosen *near* neighbours independently — a
@@ -79,7 +81,11 @@ arrived at their convention on its own.
   two sections, `REFERENCE.md` short of its notices and twelve of `RECIPES.md`'s entries
   — about 21,000 words of the documents, measured from its own session — and never
   opened `PAINTING.md`, `CALIBRATION.md` or `DIAGNOSIS.md`; it ran `easel demo mistakes`
-  and all nine exercises, and had no checkout and no earlier painting. So where they
+  and all nine exercises, and had no checkout and no earlier painting. Wenna Brask's
+  painter, the next morning, read `PAINTER.md` and `RECIPES.md` whole and `REFERENCE.md`
+  short of its notices, about 20,500 words, and did the exercises — but began with the
+  first painter's memory of the Bell-Warden and read its notes and six of its passes, so it
+  is the first painter here to start from another's painting of the same round. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -90,7 +96,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the twenty-three do not make
+  itself**, in its own `Reproducible` row below, and seven of the twenty-four do not make
   it. What holds everywhere is that a *saved* painting opens as it was painted, because
   the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
   randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
@@ -113,7 +119,9 @@ beside it says**, so the example is winning. If you are numbering passes, name t
 second one — `p4_redraw.py` — before you need it. `bell_warden` shows the cost of not
 naming it: it redrew at exactly the right moment, after the room and the plinth and
 before the creature, by running `p01_draw.py` again — so its scripts rebuild the picture
-only in the order its saved reports record, and its section says which.
+only in the order its saved reports record, and its section says which. `wenna_brask`
+went the other way: it drew only on a scratch canvas with a light ground, because guides
+vanish over dark paint, and never drew on its painting at all.
 
 **There is a second way round it, and `hands_beans` is the one that took it.** It drew
 its whole arrangement with `s.guide()` rather than the pencil — graphite on the *view*
@@ -954,6 +962,41 @@ a hard edge* — with stiff anatomy, and give-aways too small to be seen across 
 the engine does not yet help with, *drawing a complex shape as coordinates*, and what is
 being done about it is [`PLAN-0.8.0.md`](PLAN-0.8.0.md).
 
+## A mother who has not slept, by a lantern at dusk
+
+![A woman in a dark shawl and a red-brown kerchief at dusk, head and shoulders, turned
+three-quarter toward a horn lantern that hangs from an iron bracket on a dark wall at the
+right; the lamp lights her face and the hand clutching her shawl, and a cool blue sky is
+behind her head](paintings/Claude/wenna_brask/painting.png)
+
+The second painting made against 0.7.0, the morning after the first, by a second
+`claude-opus-5-5` session at max effort, as sample art for the same pack — and not a fresh
+painter: it began with the first painter's memory of the Bell-Warden, and read its notes
+and scripts before painting. *She has to read as a mother who has not slept: the lantern
+finds her face and her floury hands, and everything else is dusk* is the sentence it wrote
+into `s.plan(why=...)`, and read back at the end it brought her upper lids down over her
+eyes, because the first version of her looked alert.
+
+| | |
+|---|---|
+| Canvas | 768×1024, linen, `umber_wash` ground, seed 23 — the first tall picture here |
+| Spent | 262 strokes of a 300 budget, plus two signature marks that did not count; the subject 70% of them against the 45% planned |
+| Rehearsed and thrown away | 25 rehearsals, none of them charged — the glow on the wall seven times, the figure three, the fist across four passes — recovered from the painting session and re-run to the reports they printed |
+| Reproducible | Eleven pass scripts, `p02_setting.py` to `p12_crown.py`, rebuild the log to the stroke and the export to the pixel on the machine it was painted on. `p01_draw.py` is the drawing, run only on a scratch canvas: run first, it lays an erase and moves every mark after it |
+| Files | [`paintings/Claude/wenna_brask/`](paintings/Claude/wenna_brask) — [notes](paintings/Claude/wenna_brask/NOTES.md), [time-lapse](paintings/Claude/wenna_brask/painting.gif), [verdict](paintings/Claude/wenna_brask/verdict.md), [the versions thrown away](paintings/Claude/wenna_brask/versions/README.md) |
+
+The [verdict](paintings/Claude/wenna_brask/verdict.md) is the painter's own. For the tool:
+rehearsal — the glow, the face as three stacked profiles, the striped kerchief, the fist
+as a bun and the cloth round it each *cost a look instead of 20 to 100 strokes* — notices
+specific enough to act on, mixing to a value, and the why read back. Against it: shapes
+drawn in fractions of a canvas that is not square — the most useful code it wrote was its
+own pixel helper — a cost seen only as a total, a finding it could not trace to its marks,
+a lamp in a low-key picture misread, and no lettering. Against itself: the Bell-Warden's
+lighting carried to a face without asking whether it applied, the face's shadow line
+placed wrong, the fist repainted three times *with the rule in front of me*, and a
+portrait budgeted like a landscape; *textured cut paper*. What is being done about it is
+in [`PLAN-0.8.0.md`](PLAN-0.8.0.md), beside the Bell-Warden's.
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -1014,7 +1057,9 @@ golden-image tests in CI.
   patched with brushwork rather than redrawn, and stopped with 129 of 300 unspent,
   partly — its painter says — from caution rather than judgement; and the Bell-Warden
   names a creature that reads as a vinyl toy rather than weathered stone, with stiff
-  anatomy and give-aways too small to be seen across a room. Both herons name the same unfinished thing, which is the point of having
+  anatomy and give-aways too small to be seen across a room; and Wenna Brask names a hand
+  that reads only in context, a shawl that is half the picture with little in it, and a
+  face whose half-tone band is *like the rim of a mask*. Both herons name the same unfinished thing, which is the point of having
   two of them: a bird's body that is a smooth pebble where it should be built of planes,
   abandoned once for want of the recipe and once with the recipe open.
 

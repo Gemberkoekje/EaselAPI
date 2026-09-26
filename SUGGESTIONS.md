@@ -1,17 +1,19 @@
 # What the painters asked for, and what was done
 
-Twenty-two sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — twenty-three paintings, because the ninth painted its
+Twenty-three sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — twenty-four paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: the Bell-Warden, at the top** — one painter against 0.7.0, **9
-engine items and 4 documentation items**, none of them acted on yet. It is written where
-every open round before it has been written, and will be folded in where it stands rather
-than moved once it is acted on. Below it is the lighthouse handover — one painter against
+**One round is open, from two painters against 0.7.0, at the top**: the Bell-Warden —
+**9 engine items and 4 documentation items** — and Wenna Brask, painted the next morning
+by a second session — **9 engine items and 7 documentation items**, several of them the
+first's again — none of them acted on yet, and both acted on in 0.8.0. They are written
+where every open round before them has been written, and will be folded in where they
+stand rather than moved once they are acted on. Below them is the lighthouse handover — one painter against
 0.6.0, **6 engine items and 4 documentation items** — and every item in it is done, in
 0.7.0, folded in where it was filed rather than moved, as every open round before it was.
 Below that is the 0.5.0 cohort — seven painters that
@@ -56,6 +58,7 @@ changed rather than that it worked.
 | The 0.5.0 cohort — seven painters that are not Claude, one picture each, told to install the package and paint and nothing about what to read: `paintings/{GPT,GLM,Deepseek,Gemini,Grok,Kimi,BigPickle_blind}/` | 32 | 6 |
 | The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | 6 | 4 |
 | The Bell-Warden — a stone figure on a plinth, 280 of 300, `paintings/Claude/bell_warden/`, the first painting against 0.7.0, from the package, as sample art for another of the owner's projects | 9 | 4 |
+| Wenna Brask — a woman by a lantern at dusk, 262 of 300, `paintings/Claude/wenna_brask/`, the second against 0.7.0, for the same pack, by a second session that began from the first painter's notes | 9 | 7 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -99,6 +102,14 @@ disagree, it may be the context talking.
   body 0.6.0 split the guide into and the first to stop short of reading everything, so
   it is the first data point on where a painter told where to start actually stops —
   and the first painter to say which of the text it would move.
+- **Wenna Brask's painter** read `PAINTER.md` and `RECIPES.md` whole and `REFERENCE.md`
+  short of its notices — about 20,500 words, measured — but **began from the first
+  painter's memory of the Bell-Warden and read its notes and six of its passes** before
+  it painted. It is the first painter on this page to start from another's painting of the
+  same round, so its agreement with the Bell-Warden's verdict is not independent: where it
+  repeats one, it may be the first painter's lesson talking. Where it contradicts one — the
+  Bell-Warden's lighting on a face — it is the only kind of evidence a lesson carried over
+  can give.
 
 ---
 
@@ -222,6 +233,69 @@ and credits the card, which still says *every painter so far has painted boxes*.
   calls a crescent's two points *the horns*, a sentence older than the painting. The
   guide's no-nouns grep has no committed list — `LESSONS.md` describes it as a check run
   by hand — so this painting's nouns are recorded in its notes for the next one.
+
+---
+
+## Wenna Brask: a second painter against 0.7.0
+
+**OPEN.** Nine engine items and seven documentation items, from a second
+`claude-opus-5-5` session at max effort, which painted *a mother who has not slept* by a
+lantern at dusk for the same pack the morning after the Bell-Warden, **262 of 300
+strokes**, and gave its verdict when the owner asked. The right-hand column is empty
+because nothing has been done yet; the owner folded this verdict into the same round, so
+the candidates are in [`PLAN-0.8.0.md`](PLAN-0.8.0.md) beside the first painter's.
+**It is not an independent painter** — it began from the first painter's memory of the
+Bell-Warden and read its notes and scripts — so where it repeats the first verdict the
+two are one painter's lesson and a second painter's experience of it, and its rows say
+where they repeat. Its session's transcript was read as the first's was: every rehearsed
+version is recovered in [`versions/`](paintings/Claude/wenna_brask/versions/README.md), and
+every one of its file's 31 saved reports comes back word for word. **Kind** as above.
+**Two claims changed shape under checking and are struck through where they stand.**
+
+### The engine
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Drawing precise shapes in `0..1` coordinates on a canvas that is not square** — *the most useful code I wrote was my own: a pixel helper `P()` and a `T()` that scaled the first drawing up by 1.3*. Confirmed: its prelude draws every shape in pixels on the 768×1024 canvas and divides through `P()`, and scales the first head by `1.3` about a point of its own with `T()`. The units table already says the trap — *the first two rows are not the same unit* — and `ellipse(..., aspect=s.aspect)` answers it for one shape; nothing moves or scales a group of shapes together. The Bell-Warden's headline, *drawing a complex shape as coordinates*, again, from a painter that had read it. | O | |
+| **Cost is invisible until after a rehearsal, and then only as a total**: the figure pass came back at 135 strokes, *and I had to guess which masses ate them*. The Bell-Warden's third row again, on a second painting: 135, then 101, then 99, over three rehearsals of one pass. | O | |
+| **A finding that cannot be traced to its marks**: the closing checklist's *4 small marks with a round tip at tip_wobble=0 sit together around (0.55, 0.37)* never said which marks. Confirmed: the line names a place and a count, and no log index, note or script line — and the same rule, over each pass, named no place at all (7, 7 and 6 marks on the face's pass). | O | |
+| **A low-key picture with a small light is misread**: *no clear light, nothing above 0.42* on every report — *a percentile can't see a lamp* — and *lantern reads 0.49 averages in the iron straps*. Confirmed, and **this is where the median fails**: the lantern's place reads `0.491` by its mean, `0.506` by its median, `0.58` at its 90th percentile and `0.71` at its brightest pixel, against its planned `0.76`, because its iron is most of its pixels — the failure the first painter named for the median, a detail covering more than half its place. And the picture's top twentieth reads `0.42` with `1.4%` of the canvas above `0.60`: a lamp that small is under the percentile the `values:` line reads. | M | |
+| **No lettering**: the next two pictures the painter listed for the pack both need text. Confirmed: no verb lays a letter, and a stroke path is the only way to write one. | O | |
+| **`easel timelapse --scale` takes only whole numbers.** Confirmed, and it is the name rather than the number: `--scale` is *the long side in pixels*, an integer by design, on `timelapse` and on `look` alike, and a painter reads *scale* as a factor. | M | |
+| **A pass can silently overwrite a name the prelude defined**: its `H`, a dict of shared arguments, replaced the prelude's canvas height, and `P()` then divided by a dict. Confirmed: two rehearsals of the fist raised on it, and the pass and the prelude share one namespace, with nothing said when a pass rebinds a prelude's name. | M | |
+| **Turn *failed twice, go back to the drawing* into a notice** — *the log can see one region being repainted. I broke that rule on the fist with the rule in front of me.* Its fist was laid over by five passes — the figure's, the hand's, its own, the finish's and the cloth's — before a different drawing worked. **A repainted-passage count was considered and dropped in 0.7.0's round** because the log cannot tell a passage failing from a subject being built; this is a second painter asking for it, with a case. | R | |
+| **A glow verb for lamps and windows.** The lamp's light on the wall took seven rehearsals: fourteen rings of an inward scumble showed as rings, eighteen tripped `inward-comb` and left a dark rim like a knot in wood, and films wide enough to spread spread too thin — `glaze(to_value=)` refused the value as out of reach — before three soft round-tip strokes of paint made the pool. The Bell-Warden's glow showed its rings too, and was softened with four films afterwards. | O | |
+
+### The documentation
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Volume**: *over 2,000 lines before the first stroke*; stating each rule once and linking to it everywhere *means chasing links mid-task*. Measured: `PAINTER.md` (754 lines) and `RECIPES.md` (973) whole and `REFERENCE.md` to line 500, about 20,500 words. The Bell-Warden's first documentation row again. | M | |
+| **`paintings/` isn't in the pip package**, though `PAINTER.md` and `RECIPES.md` both send a painter there for worked examples. Confirmed: `PAINTER.md` line 23 and `RECIPES.md` line 965 link to it, and the wheel ships the six documents and no painting. | O | |
+| ~~**`rehearse_each` and `cost_line` appear only in `REFERENCE.md`**; `PAINTER.md`'s loop never mentions them, so I never used them.~~ **Half right.** `rehearse_each`, and `--alternatives` beside it, are in `REFERENCE.md` and `PAINTING.md` and not in the card or the recipes; but `cost()` and `cost_line()` are in the card, at line 58 — as the price of a plan, which a pass written as functions is not. | O | |
+| **The gaps are where most of my rehearsals went**: a light's glow on a nearby wall; a hand — *the docs show the four-finger failure twice but never a fix*; lettering; and units for `ribbon` width and `blob` radius. Confirmed in part: no recipe lays a light's pool on a surface, holds something in a hand, or writes; the units table has no row for a ribbon's width or a blob's radii. ~~Never a fix~~ for the hand: `PAINTER.md` tells the four-finger failure about seven times, and its fix once, as a principle — *a cupped hand seen from the front is a cluster coming toward you* — with no recipe. | O | |
+| **The Bell-Warden's lighting does not paint a face** — from its notes. Copies of the silhouette shifted away from the light stack three profiles inside a face turned toward the lamp, like cut paper, and stripe the kerchief ([`face_profiles.png`](paintings/Claude/wenna_brask/evidence/face_profiles.png)); *A mass built of planes*, with the terminator as the edge its half-tone and lit planes share, did. **And where the terminator goes**: a head turned toward a lamp lights its whole front plane, more than half of the face seen in three-quarter view — laid beside the profile, it made a strip ([`face_strip.png`](paintings/Claude/wenna_brask/evidence/face_strip.png)). | O | |
+| **A one-page quickstart of the 20 calls a painting actually uses.** The Bell-Warden's answers found the same gap from the other side: the card names none of the six calls its scripts leaned on most. | R | |
+| **The docs' example budget of 300, taken for a portrait that wanted 450.** The card's own example session is `Session(1024, 768, ..., budget=300)`: a worked example is an instruction. | R | |
+
+### What the check cannot see
+
+Not items: **the picture** — *it works as a mood piece* and *doesn't work as a painting*:
+a face that is *a lit mask*, hard-edged all round, with an even band down its shadow
+side; a hand that reads only in context; half the canvas a flat dark shawl; *textured cut
+paper* — and **a dark picture for a projector**, which the painter would check on the
+real one before painting more in the same key. `edges:` read 47% under 2.5 px at the end.
+
+### What worked, recorded because a finding is still true afterwards
+
+Rehearsal again — five passages caught before they were paid for; notices *specific
+enough to act on* — `inward-comb`'s ring count, `at_value` refusing a dark the box cannot
+reach and naming the lowest one it can, `glaze(to_value=)` saying how far a film could go;
+mixing to a value; the prelude, the pass scripts and the replayable log, *repairs are just
+re-runs*; and **the why read back at the end, which changed the picture**: it is why her
+lids came down. In the documentation: `PAINTER.md`'s shape, *What you are bad at*, which
+*predicted me exactly, including the fist*, and *A mass built of planes*, which rescued
+the face. `boxes:` read 0 of 22.
 
 ---
 
