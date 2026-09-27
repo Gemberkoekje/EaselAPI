@@ -1,5 +1,11 @@
 # Four questions from the bench, for the painter of the Bell-Warden
 
+*Sent 2026-09-27, the package built at `da02328`, and answered the same day:
+[`../answers-step2.md`](../answers-step2.md), measured again in `CALIBRATION.md`. Kept as it
+was put. One sentence of `QUESTIONS.md` is wrong, and the painter's answer to D corrects
+it: `dab()` does not say what a two-touch dab does, and a two-touch dab reaches about a
+fifth of the way to its colour, not a tenth.*
+
 You painted *the Bell-Warden* against easel 0.7.0, wrote a verdict on the tool, and
 answered questions 5 to 8 of the plan built on it (your `answers.md`). Your answers were
 taken as the round's decisions. **Before anything is built, every candidate the plan names

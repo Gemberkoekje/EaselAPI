@@ -146,4 +146,89 @@ back.
   check's canvas; F7's rows are measured here; B4's ratio is *about three quarters*.
 - **The owner's to confirm, still**: the plan proposes that this round takes the two
   verdicts it has, and that a third painting against 0.7.0 is recorded but planned after
-  0.8.0 (section 8).
+  0.8.0 (section 8). *Answered 2026-09-27 (O8): new paintings are painted on 0.8.0.*
+
+---
+
+## The painter's answers, 2026-09-27
+
+**To understand this, read the painter's
+[`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md), then `CALIBRATION.md`'s
+*The painter's answers to the package, measured again*, then the plan's status line and its
+section 6.**
+
+Branch: `file-bell-answers-step2`, off `main` at `da02328` (step 3, #91).
+
+The package was never sent after this step. The owner asked for it on 2026-09-27, and it was
+built again from `main` at `da02328` -- only `numbers/CALIBRATION-the-bell-wardens-round.md`
+and `scripts/probe_bell_session.py` differ from the 26th's build, by step 3's additions; the
+blind and labelled sheets are the same bytes -- and unpacked beside the painting, for the
+owner to point the painting session at. The painter answered the same day.
+
+| Question | Its answer | What it decides |
+|---|---|---|
+| 4a | 192 px; two cells read otherwise than the bench | A3's default size |
+| 4b | G blind, then E once it had read the 35 grounds; the notes' boxes pile up | A1 as built; the boxes kept apart, in step 4 |
+| 4c | the plan's places and the masses laid so far; a clip as part of a place; `easel run --thumbnail` | A3's signature, and a second way in, in step 6 |
+| 4d | never the drawing over a thumbnail; no look of the drawing alone | 4G declined |
+| 9a, 9b | F, the join; a soft brush held hard is held hard; B3's sentence says what to do, and *fur* | B1 to B3 |
+| 10a, 10b | P, blind; a darker dark, yes, with a hue it cannot name | E3 recorded, not built |
+| D | name them after the pass; `dab()` lacks its two-touch figure | D as both a fact and a line; F3 |
+| 5f | the 95th percentile for `lightest:`, beside the median | E4, as the second painter asked |
+
+**Measured again (`--answers`), and holding**: B against C, 18, 4, 42 and 9 pixels over
+12/255; Q's darkest `0.140` and its 5th to 95th percentile `0.160` to `0.349`, P's 12.5% under
+`0.14`, the plinth's side `0.266` in both; every place reading in 5f; the script lines it
+cites; that `dab()` gives one touch and three; that neither painter ran `easel log` while
+painting -- the Bell-Warden's session names it first on 2026-09-26 at 09:27 UTC, in the
+pasted questions, and Wenna Brask's first runs it at 11:44 UTC that day, answering; and the
+saved reports' silence, 27 and 32 of them. **Not holding**, both reasoned: the line D asks for
+speaks on 14.7% of painted passes, not one in ten; and a floor at `0.07` leaves room for three
+planned values `0.10` apart under `0.35`, not four.
+
+**Found measuring them**: `dab()`'s one touch, *about a quarter of the way*, reaches a tenth,
+at the brightest pixel as at the median, from 7 px to 25 -- a sentence written 2026-09-10
+(#6); the notes' boxes overlap on 8 of the Bell-Warden's 17 and 6 of Wenna Brask's 25; and
+under `feather=0.012` the band just inside the outline is nearly three times as grainy as
+painted, which the rise *across* the outline could not see.
+
+### Decisions and gotchas
+
+**1. E3 is not built this round, and the painter's yes is recorded.** The question said the
+plan proposes no black this round and asked only whether a hue was wrong; the painter agreed
+the hue is right and named no pigment. What it wanted is met without one: the `0.13` it asked
+for is burnt umber alone, and P's `0.10` accents are a supplied dark, and `at_value`'s new
+error names both.
+
+**2. D is built as both**: the fact at the call for a round dab under its cliff, which met the
+four conditions, and the line after the pass for every mark that landed nothing. The
+painter's own example line names the spark as well; the fact says it as it happens.
+
+**3. The second painter needs no question D.** The flour was the reason to put D to it, and
+the first painter answered D with the flour as its case.
+
+**4. The package's `KEY.md` is in this repository**, and so are the step notes that name every
+letter, so a painter that opens the repository during Part 1 reads the key. The owner's
+message said not to, and this painter did not. A later package could keep its key out of the
+repository until the answers are in.
+
+**5. `values_of_rgb` returns values in `0..1`, and the terminator bench's crops are the
+export's pixels at the canvas's size**, so a shape's mask lines up with them through the
+crop's own box -- `TERMINATOR_BOXES`, now a module constant both benches read.
+
+### File map
+
+| File | What changed |
+|---|---|
+| `paintings/Claude/bell_warden/answers-step2.md` | new: the painter's answers, verbatim |
+| `paintings/Claude/bell_warden/questions-step2/README.md` | when it was sent, and the one wrong sentence |
+| `scripts/probe_bell_session.py` | `--answers`; `TERMINATOR_BOXES` |
+| `CALIBRATION.md` | *The painter's answers to the package, measured again*; one sentence on `dab()`; the index row |
+| `PLAN-0.8.0.md` | the status; A1, A3, A5, B, D, E3, E4, F3 and G; section 6's answers, O8 and O9; sections 7, 8 and 9 |
+| `SUGGESTIONS.md`, `PAINTINGS.md` | the answers named; the guide row's 4b |
+| `NOTES-step2.md`, `NOTES-step3.md` | this section; step 3's decisions 1 and 6 settled |
+
+### Next
+
+**Step 4**: C, H1, H2 and H3 -- and two small things from the answers, a guide note's box moved
+off the boxes already drawn, and the error a one-number `s.px(r)` raises naming the oval.
