@@ -53,7 +53,7 @@ far_plane = polygon([P(-1.4, 0.0, 6.0), P(-1.4, 2.1, 6.0), P(1.4, 2.1, 6.0), P(1
 side = polygon([P(1.4, 0.0, 6.0), P(1.4, 2.1, 6.0), P(1.4, 2.1, 1.3), P(1.4, 0.0, 1.3)])
 ledge = polygon([P(0.5, 0.85, 1.2), P(1.35, 0.85, 1.2), P(1.35, 0.85, 4.2), P(0.5, 0.85, 4.2)])
 for shape in (far_plane, side, ledge):
-    s.pencil(shape.closed, pressure=0.5, smooth=False)
+    s.pencil(shape, pressure=0.5)
 s.look(grid=True)                               # move the eye, the length, the frame; look again
 ```
 

@@ -34,6 +34,7 @@ from easel import (
     brush,
     cell,
     ellipse,
+    group,
     hull,
     polygon,
     ribbon,
@@ -6470,3 +6471,253 @@ def test_a_script_and_a_prelude_saved_with_a_bom_still_run(tmp_path):
                       encoding="utf-8")
     assert main(["run", str(session), str(script)]) == 0
     assert Session.load(session).stroke_count > laid
+
+
+# -- 0.8.0 A1: a drawing that reads over any paint --------------------------------------
+def _value_of(rgb8) -> np.ndarray:
+    """The values view's number for each pixel: sRGB-encoded luminance, ``0..1``."""
+    from easel.color import linear_to_srgb, luminance, srgb_to_linear
+
+    return linear_to_srgb(luminance(srgb_to_linear(np.asarray(rgb8, np.float32) / 255.0)))
+
+
+def _banded(tmp_path, values=(0.08, 0.50, 0.93)):
+    """A small canvas set to flat bands of grey, left to right: a field, not paint."""
+    from easel.color import srgb_to_linear
+
+    s = make(tmp_path)
+    w, n = s.canvas.width, len(values)
+    for i, v in enumerate(values):
+        s.canvas.rgb[:, i * w // n:(i + 1) * w // n] = srgb_to_linear(np.float32(v))
+    s.canvas.wetness[...] = 0.0
+    return s
+
+
+def test_a_guide_reads_over_dark_paint_mid_grey_and_a_light_ground(tmp_path):
+    """The Bell-Warden's painter drew its second drawing with `guide()` over the room it
+    had painted, could not see it, and judged its silhouettes on a throwaway canvas with
+    a light ground instead. The line was one pixel of graphite at three quarters: over
+    that room, 96% of its pixels stepped the value by under `0.05`. It is a light casing
+    under a graphite core now, and one of the two tones stands off whatever is under it
+    -- the plan's target, benched over 35 grounds, is no pixel of the line under a step
+    of `0.25` in both of its tones. Its note sits in a dark box, as a landmark's does."""
+    from easel.look import _GUIDE_COLOR
+
+    s = _banded(tmp_path)
+    s.guide([(0.03, 0.30), (0.97, 0.36)])        # across all three
+    s.guide([(0.16, 0.10), (0.18, 0.90)])        # down the dark band
+    s.guide([(0.50, 0.12), (0.52, 0.88)])        # the mid-grey
+    s.guide([(0.84, 0.10), (0.83, 0.90)])        # the light
+    s.guide([(0.70, 0.62), (0.80, 0.64)], note="ledge")
+    view = np.asarray(s.look_image(scale=None), dtype=np.uint8)
+    bare = np.asarray(s.look_image(scale=None, sketch=False), dtype=np.uint8)
+
+    step = np.abs(_value_of(view) - _value_of(bare))
+    h, w = step.shape
+    padded = np.pad(step, 1)
+    near = np.max([padded[1 + dy:1 + dy + h, 1 + dx:1 + dx + w]
+                   for dy in (-1, 0, 1) for dx in (-1, 0, 1)], axis=0)
+    core = np.all(view == np.asarray(_GUIDE_COLOR, np.uint8), axis=2)
+    for band in (slice(0, w // 3), slice(w // 3, 2 * w // 3), slice(2 * w // 3, w)):
+        assert int(core[:, band].sum()) > 150, "the line is not there to measure"
+    worst = float(near[core].min())
+    assert worst >= 0.25, f"a pixel of the line steps the value by only {worst:.3f}"
+
+    # The note: a box, dark where the light ground was, rather than graphite letters.
+    x, y = int(0.70 * w), int(0.62 * h)
+    box = _value_of(view[y - 12:y, x + 3:x + 36])
+    assert float((box < 0.3).mean()) > 0.6, "the note is not in a box"
+
+
+# -- 0.8.0 A2: a shape handed to the drawing is drawn as its outline --------------------
+_BOX = [(0.20, 0.30), (0.70, 0.30), (0.70, 0.80), (0.20, 0.80)]
+
+
+def test_a_shape_handed_to_the_pencil_keeps_its_corners(tmp_path):
+    """The Bell-Warden's drawing check drew its plinth, a box, as a rounded pot:
+    `pencil()` fits a spline through the points it is given, which passes through every
+    corner and bows every side of a closed outline outward -- and a shape could not be
+    handed over at all, so the painter passed `shape.closed`, as the straight-edge
+    recipe does with `smooth=False`. A shape is drawn as its own outline now: the record
+    carries the outline's points and `smooth=False`, and lays what the explicit call
+    lays, to the pixel."""
+    box = polygon(_BOX, name="box")
+    s = make(tmp_path)
+    record = s.pencil(box, pressure=0.6)
+    assert np.allclose(record.points, box.closed)
+    assert record.params["smooth"] is False
+    explicit = make(tmp_path)
+    explicit.pencil(box.closed, pressure=0.6, smooth=False)
+    assert np.array_equal(s.canvas.sketch, explicit.canvas.sketch)
+
+    # The same outline as a list of points is splined, as it always was -- and its
+    # graphite lands well outside the box.
+    splined = make(tmp_path)
+    assert splined.pencil(box.closed, pressure=0.6).params["smooth"] is True
+    grown = box.inset(-0.012).mask(320, 240)
+    assert float(s.canvas.sketch[~grown].max()) < 0.02
+    assert float(splined.canvas.sketch[~grown].max()) > 0.2
+
+
+def test_a_region_a_cell_and_a_rectangle_are_drawn_as_their_four_sides(tmp_path):
+    """Anything a place is read from: a `Region`, a cell's name, four numbers."""
+    def sides(r):
+        return [(r.x0, r.y0), (r.x1, r.y0), (r.x1, r.y1), (r.x0, r.y1), (r.x0, r.y0)]
+
+    s = make(tmp_path)
+    r = Region(0.1, 0.2, 0.4, 0.5)
+    for place, want in ((r, r), ("D4", cell("D4")), ((0.1, 0.2, 0.4, 0.5), r)):
+        record = s.pencil(place)
+        assert np.allclose(record.points, sides(want))
+        assert record.params["smooth"] is False
+    assert s.guide(cell("D4"), note="d4") == sides(cell("D4"))
+    assert s.guides[-1] == {"points": sides(cell("D4")), "note": "d4"}
+
+
+def test_a_list_of_points_is_still_splined_and_a_shape_can_still_ask_for_it(tmp_path):
+    """`smooth` did not move for a list of points: a curve through a few points wants the
+    spline. Left out, a shape keeps its corners; asked for, it gets the spline."""
+    s = make(tmp_path)
+    assert s.pencil([(0.1, 0.1), (0.5, 0.3), (0.9, 0.1)]).params["smooth"] is True
+    assert s.pencil([(0.1, 0.5), (0.9, 0.5)], smooth=False).params["smooth"] is False
+    assert s.pencil(polygon(_BOX), smooth=True).params["smooth"] is True
+
+
+def test_a_drawn_shape_is_a_pencil_line_like_any_other(tmp_path):
+    """It is recorded as its outline's points, so `sketch_lines()`, `erase(place)`, the
+    session file and a rebuild all treat it as the line it is."""
+    box = polygon(_BOX)
+    s = make(tmp_path)
+    s.pencil(box)
+    s.guide(box, note="box")
+    assert np.allclose(s.sketch_lines()[0], box.closed)
+    back = Session.load(s.save(tmp_path / "p.easel"))
+    assert np.array_equal(back.replay().canvas.sketch, s.canvas.sketch)
+
+    s.erase(Region(0.0, 0.0, 0.45, 1.0))
+    kept = s.sketch_lines() + [g["points"] for g in s.guides]
+    assert s.sketch_lines() and s.guides
+    assert min(x for line in kept for x, _ in line) >= 0.45 - 1e-6
+
+
+def test_a_group_handed_to_the_drawing_is_told_to_draw_each_part(tmp_path):
+    """A group is several outlines, and a pencil line is one record -- and it is several
+    places, so a call that takes one place says so rather than failing on a float."""
+    s = make(tmp_path)
+    parts = group(polygon(_BOX), cell("B2"))
+    for draw in (s.guide, s.pencil):
+        with pytest.raises(TypeError, match="for part in"):
+            draw(parts)
+    with pytest.raises(TypeError, match="several places, not one"):
+        s.block_in(parts, "flat", "burnt_umber")
+    assert not s.history.records and not s.guides
+
+
+# -- 0.8.0 A5: drawing in pixels, and a group moved as one ------------------------------
+def _standing(tmp_path, **kw):
+    """The second painter's canvas: 768 wide and 1024 high."""
+    kw.setdefault("timelapse", False)
+    return Session(768, 1024, texture="linen", ground="toned_grey", seed=7,
+                   out_dir=tmp_path, **kw)
+
+
+def _extent(shape, w: int, h: int) -> tuple[int, int]:
+    ys, xs = np.nonzero(shape.mask(w, h))
+    return int(xs.max() - xs.min() + 1), int(ys.max() - ys.min() + 1)
+
+
+def test_px_is_a_pixel_as_the_fractions_every_call_takes(tmp_path):
+    """The second painter drew its whole figure in pixels through a helper of its own,
+    `P(x, y) = (x / W, y / H)` with the canvas's size typed into it, 358 times."""
+    s = _standing(tmp_path)
+    assert s.px(300, 266) == (300 / 768, 266 / 1024)
+    assert s.px((300, 266)) == s.px(300, 266)
+    assert s.px(np.array([300, 266])) == s.px(300, 266)
+    with pytest.raises(TypeError, match=r"px_size.*px="):
+        s.px(25)
+
+
+def test_px_size_is_one_size_whichever_way_the_canvas_stands(tmp_path):
+    """A size is a fraction of the long side, so a number of pixels is one size on a
+    canvas lying down and on one standing up -- and a stroke laid at it at full
+    pressure is that many pixels thick on both."""
+    wide = Session(1024, 768, texture="linen", ground="toned_grey", seed=7,
+                   out_dir=tmp_path, timelapse=False)
+    tall = _standing(tmp_path)
+    assert wide.px_size(40) == tall.px_size(40) == 40 / 1024
+
+    for s in (wide, tall):
+        before = s.canvas.rgb.copy()
+        s.stroke([(0.3, 0.5), (0.7, 0.5)], "round_hard", "burnt_umber",
+                 size=s.px_size(40), pressure="even")
+        moved = np.abs(s.canvas.rgb - before).max(axis=2) > 0.01
+        rows = np.nonzero(moved[:, s.canvas.width // 2])[0]
+        assert abs(int(rows.max() - rows.min() + 1) - 40) <= 1
+
+
+def test_a_circle_in_pixels_is_round_on_a_canvas_standing_up(tmp_path):
+    """`blob(p, s.px(25), s.px(25))` was the trap the painter named: two radii in the
+    coordinates' units are an oval on a canvas that is not square. `s.circle(p, px=25)`
+    is fifty pixels across both ways, and an oval in pixels is two radii through
+    `s.px`, since two radii are measured along the two axes as a point is."""
+    s = _standing(tmp_path)
+    w, h = _extent(s.circle(s.px(300, 400), px=25), 768, 1024)
+    assert abs(w - 50) <= 2 and abs(h - 50) <= 2
+    w, h = _extent(ellipse(s.px(300, 400), *s.px(30, 22)), 768, 1024)
+    assert abs(w - 60) <= 2 and abs(h - 44) <= 2
+    lobe = s.circle(s.px(300, 400), px=25, wobble=0.2, seed=3)
+    assert len(lobe.points) == 15, "wobble= still makes a blob"
+    with pytest.raises(ValueError, match="once"):
+        s.circle((0.5, 0.5), 0.1, px=25)
+
+
+def test_a_group_scales_about_the_point_the_painter_named(tmp_path):
+    """The second painter's `T()` -- `(300 + 1.3(x - 300), 146 + 1.3(y - 146) - 36)` --
+    is one scale by `1.3` about the pixel `(300, 266)`, done by hand to a head's worth of
+    shapes and to the eyes' centres. A group does it to all of them at once."""
+    s = _standing(tmp_path)
+
+    def T(x, y):
+        return (300 + (x - 300) * 1.3, 146 + (y - 146) * 1.3 - 36)
+
+    head_px = [(262, 150), (338, 150), (352, 260), (300, 330), (250, 262)]
+    head = polygon([s.px(x, y) for x, y in head_px], name="head")
+    brow = Region(*s.px(270, 190), *s.px(330, 205))
+    eye = s.px(342, 283)
+    big_head, big_brow, big_eye = group(head, brow, eye).scaled(1.3, about=s.px(300, 266))
+    assert np.allclose(big_head.points, [s.px(*T(x, y)) for x, y in head_px])
+    assert big_head.name == "head"
+    assert np.allclose(big_brow.bounds, [*s.px(*T(270, 190)), *s.px(*T(330, 205))])
+    assert np.allclose(big_eye, s.px(*T(342, 283)))
+
+
+def test_a_group_shifts_as_one_and_gives_its_parts_back():
+    a, b, p = polygon(_BOX), cell("B2"), (0.4, 0.4)
+    g = group(a, b, p)
+    assert len(g) == 3 and g.shapes == (a, b, p) and list(g) == [a, b, p]
+    moved = g.shifted(0.05, -0.02)
+    assert np.allclose(moved.shapes[0].points, a.shifted(0.05, -0.02).points)
+    assert moved.shapes[1] == b.shifted(0.05, -0.02)
+    assert moved.shapes[2] == pytest.approx((0.45, 0.38))
+
+    # Scaled with no point named, about the middle of the box round all of them.
+    x0, y0, x1, y1 = g.bounds
+    middle = ((x0 + x1) / 2, (y0 + y1) / 2)
+    assert g.center == pytest.approx(middle)
+    assert np.allclose(g.scaled(0.5).shapes[0].points, a.scaled(0.5, about=middle).points)
+    assert group([a, b]).shapes == (a, b), "one sequence of them is taken too"
+    assert group("D4").shapes == (cell("D4"),), "and anything a place is read from"
+    with pytest.raises(ValueError, match="at least one"):
+        group()
+
+
+def test_a_shape_scaled_about_a_point_or_about_its_own_middle():
+    """`scaled(f)` is what it was; `about=` names the point that stays put."""
+    a = polygon(_BOX)
+    assert a.scaled(0.5, about=None).points == a.scaled(0.5).points
+    r = Region(0.2, 0.2, 0.4, 0.4)
+    assert r.scaled(0.5, about=None) == r.scaled(0.5)
+    assert r.scaled(2.0, about=(0.2, 0.2)).bounds == pytest.approx((0.2, 0.2, 0.6, 0.6))
+    assert np.allclose(a.scaled(2.0, about=a).points, a.scaled(2.0).points)
+    grown = a.scaled(1.5, about=(0.2, 0.3))
+    assert grown.points[0] == pytest.approx((0.2, 0.3)), "the named point stays put"

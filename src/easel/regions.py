@@ -27,7 +27,8 @@ import numpy as np
 __all__ = ["Region", "region", "cell", "span", "thirds", "golden", "horizon", "below",
            "above", "left_of", "right_of", "between", "REGION_NAMES", "GRID_COLS",
            "GRID_ROWS", "as_region", "as_place",
-           "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen"]
+           "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen",
+           "Group", "group"]
 
 #: Columns of the ``look(grid=True)`` overlay, left to right.
 GRID_COLS = "ABCDEFGH"
@@ -151,9 +152,18 @@ class Region:
             lo_y, hi_y = mid - Region.MIN_EXTENT * 0.5, mid + Region.MIN_EXTENT * 0.5
         return Region(_c(lo_x), _c(lo_y), _c(hi_x), _c(hi_y), self.name)
 
-    def scaled(self, factor: float) -> Region:
-        """Grow or shrink about the centre. ``scaled(0.5)`` is half the size."""
+    def scaled(self, factor: float, about=None) -> Region:
+        """Grow or shrink about the centre. ``scaled(0.5)`` is half the size.
+
+        ``about`` is the point that stays put instead -- a point, or a place whose
+        middle it is -- which is how :func:`group` scales every part of a drawing about
+        one point, so the parts keep their places relative to each other.
+        """
         cx, cy = self.center
+        if about is not None:
+            ax, ay = _point_of(about)
+            f = max(float(factor), 1e-4)
+            cx, cy = ax + (cx - ax) * f, ay + (cy - ay) * f
         hw = max(self.width * factor * 0.5, Region.MIN_EXTENT * 0.5)
         hh = max(self.height * factor * 0.5, Region.MIN_EXTENT * 0.5)
         return Region(_c(cx - hw), _c(cy - hh), _c(cx + hw), _c(cy + hh), self.name)
@@ -355,6 +365,11 @@ def as_region(value) -> Region:
         # A shape crops, measures and dries as the rectangle around it wherever the
         # caller only knows about rectangles. Use :func:`as_place` to keep the shape.
         return value.box
+    if isinstance(value, Group):
+        raise TypeError(
+            f"A group is several places, not one: {value!r}. Hand over its parts one "
+            f"at a time -- for part in g: ... -- or the box round all of them, g.bounds."
+        )
     if isinstance(value, str):
         text = value.strip()
         if ":" in text:
@@ -478,8 +493,11 @@ class Polygon:
     def closed(self) -> list[tuple[float, float]]:
         """The outline with the first point repeated: a path that comes back round.
 
-        This is what to hand :meth:`~easel.session.Session.pencil` to draw the
-        silhouette, or :meth:`~easel.session.Session.preview` to look at it.
+        A stretch of it, ``closed[3:5]``, is a path along the silhouette -- for a
+        smudge, or the edge a plane shares with it. To draw the silhouette itself,
+        hand the shape to :meth:`~easel.session.Session.pencil` or
+        :meth:`~easel.session.Session.guide` whole: a list of points handed to the
+        pencil is splined, which rounds every corner.
         """
         return [*self.points, self.points[0]]
 
@@ -792,13 +810,21 @@ class Polygon:
         return Polygon(tuple((float(x), float(y)) for x, y in pts),
                        name=self.name, traced=self.traced)
 
-    def scaled(self, factor: float) -> Polygon:
-        """Grow or shrink about the centroid. ``scaled(0.5)`` is half the size."""
+    def scaled(self, factor: float, about=None) -> Polygon:
+        """Grow or shrink about the centroid. ``scaled(0.5)`` is half the size.
+
+        ``about`` is the point that stays put instead -- a point, or a place whose
+        middle it is -- as :meth:`Region.scaled` takes it.
+        """
         f = max(float(factor), 1e-4)
-        cx, cy = self.center
+        cx, cy = self.center if about is None else _point_of(about)
         pts = [(cx + (x - cx) * f, cy + (y - cy) * f) for x, y in self.points]
         made = _try_polygon(np.asarray(pts, dtype=np.float64), self.name, self.traced)
-        return made if made is not None else self._sliver()
+        if made is not None:
+            return made
+        # Too small to be a shape: a sliver, where the shape's middle went.
+        ox, oy = self.center
+        return self._sliver().shifted((cx + (ox - cx) * f) - ox, (cy + (oy - cy) * f) - oy)
 
     def shifted(self, dx: float = 0.0, dy: float = 0.0) -> Polygon:
         """Move the shape without changing it."""
@@ -840,7 +866,7 @@ def polygon(points, name: str = "") -> Polygon:
     Landmarks are the natural source -- the corners of a mass are exactly what
     :meth:`~easel.session.Session.mark` is for::
 
-        s.polygon([s.pt("top"), s.pt("right"), s.pt("foot"), s.pt("left")])
+        polygon([s.pt("top"), s.pt("right"), s.pt("foot"), s.pt("left")])
 
     A region, or the name of one, becomes its own four corners, which is how a
     rectangle gets treated as one shape among others.
@@ -866,7 +892,9 @@ def ellipse(place, rx: float | None = None, ry: float | None = None,
         place: a point ``(x, y)``, or any region -- the ellipse is inscribed in it.
         rx, ry: radii. One on its own sets both, so a single radius is a circle on
             a square canvas wherever the shape is placed; give neither and they
-            default to half the place's width and height.
+            default to half the place's width and height. ``rx`` is a fraction of
+            the width and ``ry`` of the height, as a point's two numbers are, so two
+            radii in pixels are ``*s.px(rx, ry)``.
         rotate: degrees, clockwise.
         steps: how many points the outline gets.
         name: shows up in the log.
@@ -899,7 +927,7 @@ def blob(place, radius: float | None = None, ry: float | None = None,
 
     ``aspect`` is the canvas's width over its height, as on :func:`ellipse`: given,
     one radius is round in pixels rather than round in coordinates.
-    ``s.blob(...)`` passes it for you.
+    ``s.circle(..., wobble=0.22)`` passes it for you.
     """
     cx, cy, dx, dy = _centre_and_radii(place, radius, ry, aspect)
     n = max(6, int(points))
@@ -1228,7 +1256,100 @@ def _calm_of(calm, points: np.ndarray, amp: float, ux: float, uy: float) -> np.n
     return np.clip(nearest / reach, 0.0, 1.0)
 
 
+# -- several shapes moved as one --------------------------------------------------------
+@dataclass(frozen=True)
+class Group:
+    """Several shapes moved as one: shifted together, or scaled about one point.
+
+    A drawing made of parts is redrawn by moving the parts, and a part moved on its own
+    leaves its neighbours where they were. Build one with :func:`group`. ``shifted()``
+    and ``scaled()`` move every part the same way and hand back a group, and a group
+    unpacks into its parts, in the order they were given::
+
+        head, jaw, eye = group(head, jaw, eye).scaled(1.3, about=s.px(300, 266))
+
+    A point among them -- a landmark, the middle of something still to be drawn --
+    moves with the shapes and comes back a point, and a group among them comes back a
+    group. A group is not a place: block in, hold and draw its parts one at a time.
+    """
+
+    shapes: tuple
+
+    @property
+    def bounds(self) -> tuple[float, float, float, float]:
+        """The rectangle round every part, as ``(x0, y0, x1, y1)``."""
+        boxes = [(*p, *p) if _looks_like_point(p) else p.bounds for p in self.shapes]
+        return (min(b[0] for b in boxes), min(b[1] for b in boxes),
+                max(b[2] for b in boxes), max(b[3] for b in boxes))
+
+    @property
+    def center(self) -> tuple[float, float]:
+        """The middle of :attr:`bounds`: what :meth:`scaled` keeps still unless told."""
+        x0, y0, x1, y1 = self.bounds
+        return ((x0 + x1) * 0.5, (y0 + y1) * 0.5)
+
+    def shifted(self, dx: float = 0.0, dy: float = 0.0) -> Group:
+        """Move every part by the same amount."""
+        return Group(tuple((float(p[0]) + float(dx), float(p[1]) + float(dy))
+                           if _looks_like_point(p) else p.shifted(dx, dy)
+                           for p in self.shapes))
+
+    def scaled(self, factor: float, about=None) -> Group:
+        """Grow or shrink every part about one point: ``about``, or the group's middle.
+
+        ``about`` is a point, or a place whose middle it is. Every part is scaled about
+        that same point, so the parts keep their places relative to each other -- what
+        scaling each about its own middle would not do.
+        """
+        ax, ay = self.center if about is None else _point_of(about)
+        f = max(float(factor), 1e-4)
+        return Group(tuple((ax + (float(p[0]) - ax) * f, ay + (float(p[1]) - ay) * f)
+                           if _looks_like_point(p) else p.scaled(factor, about=(ax, ay))
+                           for p in self.shapes))
+
+    def __iter__(self):
+        return iter(self.shapes)
+
+    def __len__(self) -> int:
+        return len(self.shapes)
+
+    def __getitem__(self, index):
+        return self.shapes[index]
+
+    def __repr__(self) -> str:
+        x0, y0, x1, y1 = self.bounds
+        return f"Group({len(self.shapes)} parts, {x0:.3f}, {y0:.3f}, {x1:.3f}, {y1:.3f})"
+
+
+def group(*shapes) -> Group:
+    """Several shapes, and points, to move as one. See :class:`Group`.
+
+    Each is a shape, a region or anything a place is read from, a point ``(x, y)``, or
+    another group; a single sequence of them is taken too, as :func:`union` takes one::
+
+        head, jaw = group(head, jaw).shifted(0.02, 0.0)
+    """
+    if len(shapes) == 1 and not isinstance(shapes[0], (Polygon, Region, str, Group)) \
+            and not _looks_like_bounds(shapes[0]) and not _looks_like_point(shapes[0]):
+        shapes = tuple(shapes[0])
+    if not shapes:
+        raise ValueError("A group holds at least one shape: group(head, jaw, eye).")
+    return Group(tuple(p if isinstance(p, Group)
+                       else (float(p[0]), float(p[1])) if _looks_like_point(p)
+                       else as_place(p)
+                       for p in shapes))
+
+
 # -- shape internals ---------------------------------------------------------------
+def _point_of(value) -> tuple[float, float]:
+    """A point, or the middle of a place or a group: what a shape is scaled about."""
+    if _looks_like_point(value):
+        return float(value[0]), float(value[1])
+    if isinstance(value, Group):
+        return value.center
+    return as_place(value).center
+
+
 def _grow_max(values: np.ndarray, reach: int) -> np.ndarray:
     """Each cell's largest neighbour within ``reach`` cells either way, the cell included.
 

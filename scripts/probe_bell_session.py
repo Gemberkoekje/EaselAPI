@@ -547,7 +547,7 @@ def probe_guides_claim(rb: Rebuilt) -> None:
                        ("after the room (p02)", _look_rgb(rb.after["p02_room.py"])),
                        ("finished", _look_rgb(rb.session))):
         for what, overlay in (("lines", lines), ("lines and notes", guides)):
-            drawn = np.asarray(LOOK_MODULE._draw_guides(_frame(rgb, aspect), overlay))
+            drawn = np.asarray(draw_07(_frame(rgb, aspect), overlay))
             steps = guide_steps(rgb, drawn)
             print(f"  {label:<22} {what:<16} {len(guides)} guides, {steps.size:5d} px: "
                   f"median step {np.median(steps):.3f}, {(steps < 0.05).mean():4.0%} "
@@ -903,6 +903,36 @@ CASING = (236, 236, 232)
 NOTE_BOX, NOTE_INK = LOOK_MODULE._PANEL_LABEL_BG, LOOK_MODULE._PANEL_LABEL_INK
 #: The plan's target: no guide pixel under this step in value in one of its tones.
 READS = 0.25
+#: 0.7.0's guide ink: the graphite at 190 of 255.
+OLD_ALPHA = 190
+
+
+def draw_07(frame, guides) -> Image.Image:
+    """0.7.0's ``_draw_guides``, kept here since step 3 replaced it in the engine.
+
+    One pixel of graphite at three quarters, its note in the same ink: the line the
+    painter could not see over its room, row 1's claim, and the bench's ``today`` --
+    which the blind package shows as F, so it has to stay the line the painter had
+    rather than become whatever the engine draws now.
+    """
+    base = frame.img.convert("RGBA")
+    overlay = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
+    ink = tuple(GRAPHITE) + (OLD_ALPHA,)
+    for guide in guides:
+        pts = [frame.to_px(float(x), float(y)) for x, y in guide.get("points", ())]
+        if not pts:
+            continue
+        if len(pts) == 1:
+            x, y = pts[0]
+            draw.ellipse([x - 2, y - 2, x + 2, y + 2], fill=ink)
+        else:
+            draw.line(pts, fill=ink, width=1, joint="curve")
+        note = str(guide.get("note") or "")
+        if note:
+            x, y = pts[0]
+            draw.text((x + 4, y - 11), note, fill=ink)
+    return Image.alpha_composite(base, overlay).convert("RGB")
 
 
 def _paths(frame, guides):
@@ -937,7 +967,7 @@ def _note_layer(size, frame, guides, boxed: bool) -> Image.Image:
                            fill=tuple(NOTE_BOX) + (235,))
             draw.text((x + 4, y - 12), note, fill=tuple(NOTE_INK) + (255,))
         else:
-            draw.text((x + 4, y - 11), note, fill=tuple(GRAPHITE) + (LOOK_MODULE._GUIDE_ALPHA,))
+            draw.text((x + 4, y - 11), note, fill=tuple(GRAPHITE) + (OLD_ALPHA,))
     return overlay
 
 
@@ -945,11 +975,12 @@ def draw_candidate(kind: str, rgb: np.ndarray, guides: list, aspect: float,
                    notes: bool = True) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """One guide candidate over an image: ``(drawn, core pixels, casing pixels)``.
 
-    ``today`` is the engine's own ``_draw_guides``. ``casing`` lays a light line three
-    pixels wide under a one-pixel graphite core, and ``casing 150`` the same casing at
-    150 of 255; ``ink`` draws the one-pixel line in graphite where what is under it is
-    lighter than ``0.45`` and in the casing's colour where it is darker. Every
-    candidate but ``today`` boxes its notes, as a landmark's name is boxed.
+    ``today`` is 0.7.0's ``_draw_guides``, :func:`draw_07`. ``casing`` lays a light line
+    three pixels wide under a one-pixel graphite core, and ``casing 150`` the same
+    casing at 150 of 255 -- the engine's line since step 3; ``ink`` draws the one-pixel
+    line in graphite where what is under it is lighter than ``0.45`` and in the
+    casing's colour where it is darker. Every candidate but ``today`` boxes its notes,
+    as a landmark's name is boxed.
     """
     base = Image.fromarray(rgb).convert("RGBA")
     frame = LOOK_MODULE._Frame(base, None, aspect)
@@ -959,8 +990,8 @@ def draw_candidate(kind: str, rgb: np.ndarray, guides: list, aspect: float,
     core = np.asarray(_line_layer(size, frame, bare, 1, GRAPHITE, 255))[..., 3] > 0
     casing = np.zeros_like(core)
     if kind == "today":
-        drawn = np.asarray(LOOK_MODULE._draw_guides(LOOK_MODULE._Frame(Image.fromarray(rgb),
-                                                                       None, aspect), shown))
+        drawn = np.asarray(draw_07(LOOK_MODULE._Frame(Image.fromarray(rgb), None, aspect),
+                                   shown))
         return drawn, core, casing
     out = base
     if kind.startswith("casing"):
@@ -1047,6 +1078,15 @@ def probe_guides(rb: Rebuilt, wb: Rebuilt | None) -> None:
     print("  over all of them, the share of line pixels under the target: "
           + "; ".join(f"{k} median {np.median(v):.0%}, worst {max(v):.0%}"
                       for k, v in worst.items()))
+    alpha = LOOK_MODULE._GUIDE_CASING_ALPHA
+    built = "casing" if alpha == 255 else f"casing {alpha}"
+    same = [np.array_equal(
+                np.asarray(LOOK_MODULE._draw_guides(_frame(rgb, rgb.shape[1] / rgb.shape[0]),
+                                                    guides)),
+                draw_candidate(built, rgb, guides, rgb.shape[1] / rgb.shape[0])[0])
+            for _, rgb in grounds + pictures]
+    print(f"  the engine's line since step 3 is the {built!r} candidate, notes and all, to "
+          f"the pixel over {sum(same)} of {len(same)} of them")
     box = (0.18, 0.03, 0.72, 0.80)
     (OUT / "guides").mkdir(parents=True, exist_ok=True)
     for label, rgb in (("bell_after_room", _look_rgb(rb.after["p02_room.py"])),

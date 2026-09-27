@@ -37,7 +37,51 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
-Nothing yet.
+### Guides that read on any ground, a shape handed to the drawing, and drawing in pixels
+
+Step 3 of the bell-warden's round (`PLAN-0.8.0.md`, workstreams A1, A2 and A5). Two
+painters against 0.7.0 drew their subjects as coordinates. The first could not see its
+drawing over the room it had painted, judged its silhouettes on a throwaway light canvas
+instead, and got a box back as a pot from its drawing check; the second drew its whole
+figure in pixels through a helper of its own and scaled its first head up by hand.
+
+- **A guide reads over any paint.** `look()` draws every `s.guide()` as a light casing
+  three pixels wide under the one-pixel graphite line — every casing before any core, so
+  no line's casing covers another's graphite — and puts its note in a dark box, as a
+  landmark's name is. Over the room the painter drew on, 96% of the old line stepped the
+  value by under `0.05`; over 35 grounds — every ground preset, a flat mid-grey, both
+  paintings of the round and every committed picture — no pixel of the new one steps by
+  under `0.25` in both of its tones, where the old one left a median 88%. The casing is
+  at 150 of 255, where it gives way to the paint most. An opaque casing met the target
+  too and is the louder of the two; which of them the painter would judge a silhouette on
+  is its question 4b, not yet answered. Only the view changes: not the canvas, not the
+  log, not an export, and `look(sketch=False)` still hides the drawing.
+- **A shape handed to `guide()` or `pencil()` is drawn as its outline, corners kept** — a
+  `Polygon`, a `Region`, or anything a place is read from: `"D4"`, `"C3:F6"`, four
+  numbers. Both calls raised on one before. The pencil's record carries the outline's
+  points and `smooth=False`, so it replays as drawn, and `sketch_lines()` and
+  `erase(place)` treat it as any other line. **A list of points is splined as it always
+  was**: `smooth=` left out now means splined for points and not for a shape, and passed
+  either way it is kept. The docstrings and `REFERENCE.md` say what the spline does to a
+  corner, and `RECIPES.md`'s straight-edge recipe draws its planes with
+  `s.pencil(shape, pressure=0.5)`.
+- **Drawing in pixels.** `s.px(x, y)` is a pixel's place, `(x / width, y / height)`, and a
+  pair handed whole reads the same. `s.px_size(r)` is a length in pixels as a size — `r`
+  over the long side, the unit of `size=`, `width=` and `feather=` — and
+  `s.circle(p, px=r)` a round shape `r` pixels in radius on any canvas. Two radii convert
+  as a point does, so an oval in pixels is `ellipse(p, *s.px(rx, ry))`. `s.px(25)` raises
+  and names both, because one number of pixels is a different length across and down on
+  a canvas that is not square — the trap the painter named, `blob(p, s.px(25), s.px(25))`.
+- **A group moves shapes as one.** `group(a, b, ...)` holds shapes, regions, points and
+  other groups; `.shifted(dx, dy)` and `.scaled(f, about=)` move every part about one
+  point, and a group unpacks into its parts. The painter's `T()`, a scale by `1.3` about
+  the pixel `(300, 266)`, is `group(...).scaled(1.3, about=s.px(300, 266))`.
+  `Polygon.scaled()` and `Region.scaled()` take `about=` too, and left off it scale about
+  their own middle as before. A group is not a place, and `block_in()`, `guide()` and
+  `pencil()` say so when handed one.
+
+Nothing a mark lays changes, and no saved painting rebuilds differently: both drawing
+calls raised on a shape before, so no log holds such a record.
 
 ## [0.7.0] — 2026-09-25
 
