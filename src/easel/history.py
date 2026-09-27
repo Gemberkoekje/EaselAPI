@@ -170,8 +170,12 @@ class History:
             bits = [f"#{r.index:03d}", r.kind]
             if r.brush:
                 bits.append(r.brush)
-            if r.color_hex:
-                bits.append(r.color_hex)
+            # The colour by the name the palette gives it -- the painter's own slot, or
+            # the pigment -- where the mark was laid with one: `lip` reads, `#9e6c57`
+            # has to be looked up. A mark saved before 0.8.0 has only its hex.
+            named = (r.params or {}).get("color_name")
+            if named or r.color_hex:
+                bits.append(str(named or r.color_hex))
             if r.dabs:
                 bits.append(f"{r.dabs} dabs")
             if r.kind not in History.UNPAINTED_KINDS and r.dabs:

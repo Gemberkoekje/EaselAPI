@@ -59,8 +59,8 @@ _GUIDE_CASING_WIDTH = 3
 #: committed picture -- it leaves no pixel of the line under a step of 0.25 in value
 #: in both of its tones, where the one-pixel line before it left a median 88%
 #: (``CALIBRATION.md``, *The bell-warden's round*). At 150 it gives way to the paint
-#: most, and opaque is the louder of the two; which of them a painter judges a
-#: silhouette on is put to the painter who asked (``PLAN-0.8.0.md``, question 4b).
+#: most, and opaque is the louder of the two; the painter who asked for it, shown both
+#: blind and then the bench's numbers, would judge a silhouette on this one (question 4b).
 _GUIDE_CASING_ALPHA = 150
 _PREVIEW_BAND = (60, 220, 255)
 _PREVIEW_LINE = (0, 40, 60)
@@ -377,8 +377,9 @@ def _draw_guides(frame: _Frame, guides: list) -> Image.Image:
     drawing on a throwaway light canvas instead. So each line is a light casing with
     the graphite down its middle, every casing laid before any core so that no line's
     casing covers another's graphite, and a note sits in a dark box, as a landmark's
-    name does. ``mark()`` puts a cross and a name on a point; this is the same
-    mechanism along a path.
+    name does -- moved off the boxes already drawn where two would meet
+    (:func:`_place_notes`). ``mark()`` puts a cross and a name on a point; this is the
+    same mechanism along a path.
     """
     base = frame.img.convert("RGBA")
     paths = []
@@ -391,13 +392,69 @@ def _draw_guides(frame: _Frame, guides: list) -> Image.Image:
     out = Image.alpha_composite(out, _guide_layer(base.size, paths, 1, _GUIDE_COLOR, 255))
     notes = Image.new("RGBA", base.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(notes)
-    for pts, note in paths:
-        if note:
-            x, y = pts[0]
-            draw.rectangle([x + 2, y - 13, x + 7 + 6 * len(note), y + 1],
-                           fill=_PANEL_LABEL_BG + (235,))
-            draw.text((x + 4, y - 12), note, fill=_PANEL_LABEL_INK + (255,))
+    for note, (x0, y0, x1, y1), (x, y), moved in _place_notes(paths, base.size):
+        if moved:
+            # A leader back to where the guide begins, dark under light like the box,
+            # so it reads over any paint.
+            nearest = (min(max(x, x0), x1), min(max(y, y0), y1))
+            draw.line([(x, y), nearest], fill=_PANEL_LABEL_BG + (235,), width=3)
+            draw.line([(x, y), nearest], fill=_PANEL_LABEL_INK + (255,), width=1)
+        draw.rectangle([x0, y0, x1, y1], fill=_PANEL_LABEL_BG + (235,))
+        draw.text((x0 + 2, y0 + 1), note, fill=_PANEL_LABEL_INK + (255,))
     return Image.alpha_composite(out, notes).convert("RGB")
+
+
+#: A note's box: 14 pixels high, and 5 plus 6 a character wide, as the label font
+#: draws it; the rows a box steps away by when the four corners of its guide's first
+#: point are taken, and how many it may step before it gives up and overlaps.
+_NOTE_HEIGHT = 14
+_NOTE_STEP = 15
+_NOTE_ROWS = 8
+
+
+def _place_notes(paths, size) -> list[tuple[str, tuple, tuple, bool]]:
+    """Where each guide's note goes: ``(note, box, first point, moved)``, in drawing order.
+
+    Up and to the right of the guide's first point, as it always was -- unless a note
+    already placed is there. Then the first of the point's other three corners, and
+    then the same four a row further out at a time, that overlaps no box placed so far
+    and stays in the view; ``moved`` says it left the point's corners, and a leader is
+    drawn back to it. The Bell-Warden's drawing laid 8 of its 17 notes under or over
+    another -- its four wing fingers began at one point, so only the last could be read
+    -- and Wenna Brask's 6 of 25. A note whose guide begins outside the view is left
+    where it was: moved into the view, it would point at nothing there.
+    """
+    width, height = size
+    placed: list[tuple[str, tuple, tuple, bool]] = []
+    for pts, note in paths:
+        if not note:
+            continue
+        x, y = pts[0]
+        wide = 5 + 6 * len(note)
+        right, left = x + 2, x - 2 - wide
+        up, down = y - (_NOTE_HEIGHT - 1), y + 1
+        corners = [(right, up), (right, down), (left, up), (left, down)]
+        spots = [(corner, False) for corner in corners]
+        for row in range(1, _NOTE_ROWS + 1):
+            shift = row * _NOTE_STEP
+            spots += [((right, up - shift), True), ((right, down + shift), True),
+                      ((left, up - shift), True), ((left, down + shift), True)]
+        boxes = [((bx, by, bx + wide, by + _NOTE_HEIGHT), moved)
+                 for (bx, by), moved in spots]
+        chosen = boxes[0]
+        if 0 <= x < width and 0 <= y < height:
+            free = [(box, moved) for box, moved in boxes
+                    if not any(_overlap(box, other) for _, other, _, _ in placed)]
+            inside = [(box, moved) for box, moved in free
+                      if box[0] >= 0 and box[1] >= 0 and box[2] <= width and box[3] <= height]
+            chosen = (inside or free or boxes)[0]
+        placed.append((note, chosen[0], (x, y), chosen[1]))
+    return placed
+
+
+def _overlap(a: tuple, b: tuple) -> bool:
+    """Whether two boxes ``(x0, y0, x1, y1)`` share any area."""
+    return min(a[2], b[2]) > max(a[0], b[0]) and min(a[3], b[3]) > max(a[1], b[1])
 
 
 def _guide_layer(size, paths, width: int, colour, alpha: int) -> Image.Image:

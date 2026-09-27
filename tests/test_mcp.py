@@ -627,6 +627,20 @@ def test_run_keeps_what_it_handed_back_rehearsals_included(call, painting):
     assert "painted <script>" not in log.text
 
 
+def test_run_hands_back_what_each_call_cost(call, painting):
+    """0.8.0's C through the wire: under the total, the calls dearer than one stroke,
+    each at the line of the script that made it -- `<script>` for a script sent as
+    text -- and kept with the report."""
+    stack = ("s.block_in(Region(0.1, 0.1, 0.9, 0.5), 'flat', 'ochre', size=0.04)\n"
+             "s.block_in(Region(0.1, 0.6, 0.9, 0.7), 'flat', 'ochre', size=0.04)\n")
+    reply = call("run", session=painting, rehearse=True, script=stack)
+    lines = reply.text.splitlines()
+    assert lines[0].startswith("Rehearsed <script>")
+    assert re.match(r"  dearest: \d+ block_in at <script>:1(, \d+ at :2)? -- \d+ of the \d+$",
+                    lines[1])
+    assert lines[1].strip() in Session.load(painting).reports()[-1].text
+
+
 def test_run_hands_back_the_look_it_rehearsed(call, painting):
     """A rehearsal is for looking at, and the path its text ends in is no use to a
     client that cannot open a file: the look comes back beside it, as the looking

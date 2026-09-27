@@ -15,6 +15,7 @@ import inspect
 import json
 import math
 import os
+import sys
 import tempfile
 import warnings
 import zipfile
@@ -252,6 +253,12 @@ class Session:
         # Whether that call was handed a rectangle rather than a shape -- the
         # ``boxes:`` line's own input. See :meth:`_one_call`.
         self._call_boxed = False
+        # Where the call in progress was made -- the painter's own line -- and where
+        # every mark this session has laid was made, by the mark's index in the log.
+        # Beside the log and never in it, and never saved: a line in a script is this
+        # process's to know. See :class:`_CallSite` and :meth:`_dearest_line`.
+        self._call_site: _CallSite | None = None
+        self._sites: dict[int, _CallSite] = {}
         # Marks charged before this session's own log began: zero for a painting,
         # and the painting's own count on a rehearsal copy, so that ``spent`` and
         # ``remaining`` inside a rehearsed pass are the painting's numbers.
@@ -495,6 +502,9 @@ class Session:
                 # paint behind and say nothing, so the stack is dropped and undo()
                 # rebuilds from the log, which is exact.
                 self.history.invalidate_snapshots()
+            # The name the colour goes by, for `easel log` to print where it printed a
+            # hex: the painter's own slot, or the pigment. A smudge lays no colour.
+            named = "" if b.smudge >= 1.0 else _colour_named(self.palette, color, col)
             record = self.history.add(
                 StrokeRecord(
                     index=index,
@@ -519,7 +529,10 @@ class Session:
                                          **({"via": self._call_verb} if self._call_verb
                                             else {}),
                                          **({"boxed": True} if self._call_boxed
-                                            else {})),
+                                            else {}),
+                                         # Read with `.get`, and by nothing that lays
+                                         # paint: a rebuild ignores it.
+                                         **({"color_name": named} if named else {})),
                 )
             )
         except Exception:
@@ -530,6 +543,11 @@ class Session:
             # undoing nothing.
             self.history.discard_snapshot()
             raise
+        # Where it was laid from: the mass call's line, found once when the call
+        # began, or this mark's own. Beside the log, by the mark's index.
+        site = self._call_site if self._stream_mark is not None else _painter_site()
+        if site is not None:
+            self._sites[record.index] = site
         self._auto_frame()
         if film is not None:
             # One frame deeper when it came through `glaze()`, so the warning points
@@ -2291,10 +2309,16 @@ class Session:
         """
         if y is None:
             if not _looks_like_point(x):
+                # One number reads as a length, and a length has three homes here. The
+                # error named two until 0.8.0, and sent an oval to `px_size` -- which
+                # draws one silently on any canvas that is not square.
                 raise TypeError(
-                    f"s.px() takes a pixel's x and y, and got {x!r} alone. A length in "
-                    f"pixels is a size, s.px_size({x!r}), for size= and width=; a round "
-                    f"shape takes its radius in pixels itself, s.circle(p, px={x!r})."
+                    f"s.px() takes a pixel's x and y, and got {x!r} alone: {x!r} pixels "
+                    f"is a different share of the canvas across and down unless it is "
+                    f"square. A brush's size=, the pencil's width= and feather= are "
+                    f"sizes, s.px_size({x!r}); a round shape takes its radius in pixels "
+                    f"itself, s.circle(p, px={x!r}); and an oval in pixels is its two "
+                    f"radii through this call, ellipse(p, *s.px(rx, ry))."
                 )
             x, y = x
         return (float(x) / self.canvas.width, float(y) / self.canvas.height)
@@ -3212,6 +3236,10 @@ class Session:
         trial._stream_mark = None
         trial._call_verb = ""
         trial._call_boxed = False
+        # A copy: the painting's marks keep the lines they were laid from -- a finding
+        # on the rehearsal may count them -- and what the copy lays is its own.
+        trial._call_site = None
+        trial._sites = dict(self._sites)
         trial._spent_base = self.spent
         # The log behind that count, for the rules that read across passes. Same
         # marks, kept as records rather than as a number; concatenated rather than
@@ -4102,6 +4130,11 @@ class Session:
           lines that print on every pass are the design, and whether a longer block
           gets skimmed is for a painter's run to show.
 
+        **A finding that counts marks names them**, on a line under it: the script lines
+        they were laid from and their records in the log (:meth:`_marks_named`). A
+        count with no names sent a painter to its log by hand to find the four marks of a
+        mouth.
+
         **What this cannot see is a composition**, and it says ``nothing to report`` to
         a dead one. Every rule here is about a mark, because a mark is what the log
         holds. One painting's largest mistake was its first arrangement -- it made the
@@ -4173,7 +4206,7 @@ class Session:
         findings = _pass_findings(
             marks, earlier, self.canvas,
             banding=None if since is None else self._banding_wanted(paid),
-            bands=self._plan.bands, whole=since is None,
+            bands=self._plan.bands, whole=since is None, named=self._marks_named,
         )
         # One reading of the canvas for everything below that looks at it. A counted
         # copy has laid no paint on the canvas it borrowed, so it takes none.
@@ -4185,7 +4218,10 @@ class Session:
             found = _buried(opened[1], view, list(self._prior) + list(records[:start]),
                             records[start:], self.canvas)
             if found is not None:
-                findings.append(_buried_line(*found))
+                buried, showing, what, details = found
+                # The details the pass buried, which are what to lay again.
+                findings.append(f"{_buried_line(buried, showing, what)}\n"
+                                f"    {self._marks_named(details)}")
         scope = "this pass" if since is not None else "the painting"
         head = f"check over {scope}, {len(marks)} mark{'s' if len(marks) != 1 else ''}: "
         if findings:
@@ -4230,6 +4266,131 @@ class Session:
         if not self._counting:
             self._opened = (here, self.canvas.values(sketch=False).astype(np.float32) / 255.0)
         return here
+
+    def _calls_in(self, records) -> list[tuple[_CallSite | None, list[StrokeRecord]]]:
+        """``records`` as the calls that laid them, in order: each call's site, and its marks.
+
+        A call is the run of records sharing one :class:`_CallSite` -- a mass's passes,
+        or a mark laid by hand. A record laid in another process has no site, and is
+        grouped as the log alone groups it (:func:`_call_of`).
+        """
+        calls: list[tuple[_CallSite | None, list[StrokeRecord]]] = []
+        last = None
+        for r in records:
+            site = self._sites.get(r.index)
+            key = ("site", id(site)) if site is not None else ("log", _call_of(r))
+            if calls and key == last:
+                calls[-1][1].append(r)
+            else:
+                calls.append((site, [r]))
+            last = key
+        return calls
+
+    def _dearest_line(self, since: int = 0) -> str:
+        """What a pass cost, call by call: its dearest calls, by the painter's own line.
+
+        The Bell-Warden's subject pass came back from five rehearsals at 85 to 113
+        strokes, each headed by one total, and nothing said which of its twelve calls had
+        grown -- the log held the answer, four ``block_in``s laying 79 of the 102, and
+        ``cost()`` takes a plan, which a pass written as functions is not. So under the
+        total ``easel run`` and the server's ``run`` print the calls dearer than one
+        stroke, dearest first, up to :data:`_DEAREST_CALLS` and none once
+        :data:`_DEAREST_SHARE` of the pass is named: each with its strokes, its verb and
+        the line it was called from, the script named once per run of it and the
+        function once per run of calls from it, and the strokes of it that laid no
+        paint -- the painter's own choice of all four (question 8)::
+
+            dearest: 23 block_in at p04_gargoyle.py:40 (lay_body, 2 landing nothing),
+              22 at :38, 20 at :36, 14 at :18 (lay_wing) -- 79 of the 102
+
+        ``since`` is the log index the pass began at. ``""`` for a pass no call of which
+        cost more than a stroke: a mark laid by hand is one, and is never listed. A
+        counted copy lays no paint, so it says nothing of what landed. Beside the log and
+        never in it: the sites are this process's (:class:`_CallSite`), and the line is
+        kept only as the text of the pass's saved report.
+        """
+        records = self.history.records[max(0, int(since)):]
+        paid = History.paid_marks(records)
+        charged = {id(r) for r in paid}
+        costly = []
+        for site, marks in self._calls_in(records):
+            spent = [r for r in marks if id(r) in charged]
+            if len(spent) > 1:
+                nothing = (0 if self._counting
+                           else sum(1 for r in spent if r.paint < _LANDED_PAINT))
+                costly.append((len(spent), nothing, site, marks))
+        # Dearest first, and a tie in the order the calls were made.
+        costly.sort(key=lambda call: -call[0])
+        named, summed = [], 0
+        for call in costly:
+            if len(named) == _DEAREST_CALLS or summed >= _DEAREST_SHARE * len(paid):
+                break
+            named.append(call)
+            summed += call[0]
+        if not named:
+            return ""
+        parts = []
+        last: tuple = (None, None, None)
+        for spent, nothing, site, marks in named:
+            if site is None:
+                # Laid in another process: the log's own numbers are all there are.
+                verb, file, func = str(marks[0].params.get("via") or ""), None, None
+                at = f"records {marks[0].index}-{marks[-1].index}"
+            else:
+                verb, file, func = site.verb, site.file, site.func
+                at = f"{file}:{site.line}" if file != last[0] else f":{site.line}"
+            said = [func] if func != last[1] and func not in (None, "", "<module>") else []
+            if nothing:
+                said.append(f"{nothing} landing nothing")
+            parts.append(f"{spent}{f' {verb}' if verb != last[2] else ''} at {at}"
+                         + (f" ({', '.join(said)})" if said else ""))
+            last = (file, func, verb)
+        return f"dearest: {', '.join(parts)} -- {summed} of the {len(paid)}"
+
+    def _marks_named(self, records) -> str:
+        """Which marks a finding counted: the lines they were laid from, and their records.
+
+        *4 small marks with a round tip ... sit together around (0.55, 0.37)* sent the
+        second painter to its log by hand to find the mouth's four marks. Every finding
+        that counts marks names them now, under its own line: the calls they came from,
+        as the dearest line names calls -- the script once per run of it, the function
+        once per run of calls from it -- and the log's records, which ``easel log``
+        lists::
+
+            laid at p05_face.py:58 (lay_mouth), :62, :64, :72 (lay_modelling)
+              -- records 174, 176, 177, 179
+
+        A line that made several of the calls -- a loop's -- says how many. A mark laid
+        in another process -- a painting loaded from its file and checked whole -- has
+        its record and no line, which only the process that ran the script knew. At most
+        :data:`_NAMED_CALLS` lines and :data:`_NAMED_RUNS` runs of records are written
+        out, and how many more there are.
+        """
+        marks = sorted(records, key=lambda r: r.index)
+        if not marks:
+            return ""
+        # The calls, by the line they were made from: a loop makes its calls on one
+        # line, and a line is what the painter opens.
+        lines: dict[tuple[str, int, str], set[int]] = {}
+        for r in marks:
+            site = self._sites.get(r.index)
+            if site is not None:
+                lines.setdefault((site.file, site.line, site.func), set()).add(id(site))
+        numbers = _index_runs([r.index for r in marks], _NAMED_RUNS)
+        if not lines:
+            return f"records {numbers}"
+        parts = []
+        last: tuple = (None, None)
+        for (file, line, func), calls in list(lines.items())[:_NAMED_CALLS]:
+            said = [func] if func != last[1] and func not in ("", "<module>") else []
+            if len(calls) > 1:
+                said.append(f"{len(calls)} calls")
+            parts.append((f"{file}:{line}" if file != last[0] else f":{line}")
+                         + (f" ({', '.join(said)})" if said else ""))
+            last = (file, func)
+        more = len(lines) - _NAMED_CALLS
+        where = ", ".join(parts) + (f" and {more} more" if more > 0 else "")
+        return f"laid at {where} -- records {numbers}"
 
     def checklist(self, subject_share: float | None = None) -> str:
         """The closing checklist, answered: every measured line with its number.
@@ -4305,7 +4466,8 @@ class Session:
         # says everything it has about the painting -- and `whole` is what keeps two
         # rules about a pass from adding the painting up (finding 12).
         findings = _pass_findings(marks, 0, self.canvas, banding=None,
-                                  bands=self._plan.bands, whole=True)
+                                  bands=self._plan.bands, whole=True,
+                                  named=self._marks_named)
         lines += [f"  - {line}" for line in findings]
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
@@ -4557,10 +4719,10 @@ class Session:
         """What each pass was told after it ran, oldest first -- rehearsals included.
 
         Every ``easel run`` and every MCP ``run`` keeps the block it prints after a
-        pass: what was said at the calls, then the post-pass check. **A rehearsed or
-        counted pass keeps its block too**, flagged as such, though it commits nothing
-        else -- because that is where a pass gets changed, and so where a check that
-        misfires is seen and then rewritten away. Twice a painter watched *graded
+        pass: its dearest calls, what was said at the calls, then the post-pass check.
+        **A rehearsed or counted pass keeps its block too**, flagged as such, though it
+        commits nothing else -- because that is where a pass gets changed, and so where
+        a check that misfires is seen and then rewritten away. Twice a painter watched *graded
         passage laid too narrow* fire on marks that were not a passage, both times in
         a rehearsal, and nothing in the file could show it afterwards.
 
@@ -4931,6 +5093,10 @@ class Session:
                 s._stream_mark = None
                 s._call_verb = ""
                 s._call_boxed = False
+                # A file keeps no call sites: the lines its marks were laid from were
+                # the process's that laid them. Marks laid from here on have them.
+                s._call_site = None
+                s._sites = {}
                 s._spent_base = 0
                 s._prior = []
                 s._counting = False
@@ -5138,7 +5304,8 @@ class Session:
             # The record's own account of the stream and of the call that laid it,
             # carried over verbatim: a replay never draws the wander, so what its
             # own marks would record is the seed, which is nowhere the painting was.
-            for key in ("rng", "via", "boxed"):
+            # The colour's name too: a replay is handed the colour, not the name.
+            for key in ("rng", "via", "boxed", "color_name"):
                 if key in record.params:
                     made.params[key] = record.params[key]
                 else:
@@ -5181,6 +5348,12 @@ class Session:
         undone mark rather than before it. Taken once, here, before the first draw,
         it is right for every record the call makes. Nested calls -- the contour of
         a clean block-in, ``cover``'s dry and fill -- share the outermost mark.
+
+        **And where the call was made**: the painter's own line, found once here for
+        every record the call makes (:class:`_CallSite`), which is what lets a pass say
+        what each of its calls cost (:meth:`_dearest_line`) and a finding say which
+        marks it counted. Kept beside the log, never in it. A replay's marks are the
+        painting's own, laid again, and were made nowhere a painter could look.
         """
         if self._stream_mark is not None:
             yield
@@ -5188,12 +5361,14 @@ class Session:
         self._stream_mark = _stream_of(self.rng)
         self._call_verb = verb
         self._call_boxed = isinstance(place, Region) if place is not None else False
+        self._call_site = None if verb == "replay" else _painter_site(verb)
         try:
             yield
         finally:
             self._stream_mark = None
             self._call_verb = ""
             self._call_boxed = False
+            self._call_site = None
 
     def _stream_state(self) -> dict:
         """The generator's state to record on a mark: the call's, or now."""
@@ -7261,6 +7436,21 @@ _REPORT_DISC_RADIUS = 0.06      # ...and over a whole painting, discs this close
 # *loaded* comb, which is a solid plane laid with the wrong tip. A check a painter
 # learns to skip costs the other five rules their credibility.
 
+#: What a pass says it cost, call by call (:meth:`Session._dearest_line`): the calls
+#: dearer than one stroke, dearest first, at most this many...
+_DEAREST_CALLS = 4
+#: ...and no more once this share of the pass is named. The Bell-Warden's painter chose
+#: both (question 8): a fixed three named 71% of its room's pass and 64% of its
+#: subject's, and over the corpus's 331 painted passes the rule names a median 76%.
+_DEAREST_SHARE = 0.75
+#: A mark that laid under this much paint laid nothing: ``easel log``'s *NO PAINT
+#: LANDED*, and what the dearest line counts as *landing nothing*.
+_LANDED_PAINT = 1.0
+#: A finding names at most this many of the lines its marks were laid from, and this
+#: many runs of their records, and says how many more.
+_NAMED_CALLS = 6
+_NAMED_RUNS = 8
+
 
 def _mark_length_and_angle(r: StrokeRecord, canvas) -> tuple[float, float]:
     """A mark's chord in the brush's unit (the long side), and its angle mod 180."""
@@ -7333,6 +7523,88 @@ def _call_of(r: StrokeRecord):
     return (via, state.get("state"), state.get("inc"))
 
 
+class _CallSite:
+    """Where one painting call was made: the painter's own line, and what it called.
+
+    ``file`` is the script's name -- a pass, the prelude it ran after, a painter's own
+    module -- and ``line`` and ``func`` the line and the function the call was made
+    from, ``"<module>"`` at a script's top level. ``verb`` is what the call was: the
+    mass verb (``block_in``, ``cover``...), or for a mark laid by hand the engine
+    method the painter's line called (``stroke``, ``dab``, ``glaze``, ``paint``).
+
+    Kept beside the log and never in it -- :attr:`Session._sites`, by each mark's
+    index -- and never saved: which line of which script laid a mark is known to the
+    process that ran the script, and a file read back later has only its records.
+    **Compared by identity**: every mark of one call shares one, and two calls made
+    from one line of a loop are two.
+    """
+
+    __slots__ = ("verb", "file", "line", "func")
+
+    def __init__(self, verb: str, file: str, line: int, func: str) -> None:
+        self.verb = verb
+        self.file = file
+        self.line = line
+        self.func = func
+
+
+def _painter_site(verb: str = "") -> _CallSite:
+    """The call in progress, as the painter made it: the first frame outside the engine.
+
+    Walked out from here through the engine's own frames, and through ``contextlib``'s,
+    which :meth:`Session._one_call` adds, to the painter's line: its pass, or the
+    prelude it ran after -- ``easel run`` compiles each under its own name, so a call
+    made inside a helper the prelude defines is found at the helper's line, with the
+    helper's name. ``verb`` is what the call is when the caller knows it, as a mass
+    does; left empty, it is the outermost public method of the engine the painter's
+    line called.
+    """
+    frame = sys._getframe(1)
+    called = ""
+    while frame is not None:
+        module = frame.f_globals.get("__name__", "")
+        if module == "easel" or module.startswith("easel."):
+            name = frame.f_code.co_name
+            if not name.startswith(("_", "<")):
+                called = name
+        elif module != "contextlib":
+            code = frame.f_code
+            return _CallSite(verb or called, os.path.basename(code.co_filename),
+                             int(frame.f_lineno), code.co_name)
+        frame = frame.f_back
+    return _CallSite(verb or called, "", 0, "")
+
+
+def _index_runs(indices, most: int) -> str:
+    """Log indices as a mass's passes read: ``174, 176, 177, 190-209`` -- at most ``most``
+    runs written out, and how many records more."""
+    runs: list[list[int]] = []
+    for i in sorted({int(i) for i in indices}):
+        if runs and i == runs[-1][1] + 1:
+            runs[-1][1] = i
+        else:
+            runs.append([i, i])
+    shown = []
+    for a, b in runs[:most]:
+        shown.append(f"{a}" if a == b else f"{a}, {b}" if b == a + 1 else f"{a}-{b}")
+    more = sum(b - a + 1 for a, b in runs[most:])
+    return ", ".join(shown) + (f" and {more} more" if more else "")
+
+
+def _colour_named(palette: Palette, color, col: np.ndarray) -> str:
+    """The name a mark's colour goes by on the palette, for the log to print, or ``""``.
+
+    A name the painter gave -- a slot of its own mixing, or a pigment -- is kept as the
+    palette reads it. A colour handed over as numbers is named when it is exactly one
+    slot's, which is what ``palette["lip"]`` hands over. A hex, or numbers no slot
+    holds, have no name but themselves.
+    """
+    if isinstance(color, str):
+        return "" if color.startswith("#") else color.lower().replace(" ", "_")
+    held = [name for name, rgb in palette.slots.items() if np.array_equal(rgb, col)]
+    return held[0] if len(held) == 1 else ""
+
+
 def _angle_name(degrees: float) -> str:
     if degrees < _REPORT_ANGLE_DEG or degrees > 180.0 - _REPORT_ANGLE_DEG:
         return "horizontal"
@@ -7390,7 +7662,7 @@ _REPORT_BAND_TURNS = 1
 _REPORT_BAND_COLOURS = 3
 
 
-def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
+def _graded_band(long_marks, canvas) -> tuple[int, float, float, float, list] | None:
     """The largest stack of parallel, stepping-coloured marks whose brush is too narrow.
 
     ``scumble`` has picked its own brush from its own step since 0.2.0 and says so
@@ -7403,7 +7675,7 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
     chosen by hand, tapers 4.2 to **1.7** steps and wobbles ``0.072`` -- twice as
     rough, same canvas, same painter, same pass structure.
 
-    Returns ``(count, step, narrowest brush, brushes per step)`` or ``None``.
+    Returns ``(count, step, narrowest brush, brushes per step, the marks)`` or ``None``.
 
     The conditions are narrow on purpose, because a check a painter learns to skip
     costs the other rules their credibility:
@@ -7484,7 +7756,7 @@ def _graded_band(long_marks, canvas) -> tuple[int, float, float, float] | None:
     per_step = brush / step
     if not _REPORT_BAND_FLOOR <= per_step < _LINEAR_MIN_STEPS:
         return None
-    return len(run), step, brush, per_step
+    return len(run), step, brush, per_step, [r for _, r in run]
 
 
 def _longest_run(across) -> list[tuple[float, StrokeRecord]]:
@@ -7630,10 +7902,11 @@ _DAISY_GAP = 90.0
 _DAISY_WINDOW = 12
 
 
-def _daisy(marks: list[StrokeRecord], canvas) -> tuple[int, float, tuple[float, float]] | None:
+def _daisy(marks: list[StrokeRecord],
+           canvas) -> tuple[int, float, tuple[float, float], list] | None:
     """The widest set of hand-laid marks leaving one point in every direction, or ``None``.
 
-    Returns ``(count, widest gap in degrees, hub)``. The hub is where two consecutive
+    Returns ``(count, widest gap in degrees, hub, the marks)``. The hub is where two consecutive
     marks' lines meet -- a daisy or a sunburst is laid by one loop over angles -- and a
     mark near them counts if its line runs through the hub (within a sixth of its own
     length), it points away from it, and it starts within its own length of it, so a
@@ -7642,7 +7915,7 @@ def _daisy(marks: list[StrokeRecord], canvas) -> tuple[int, float, tuple[float, 
     """
     w1, h1 = max(canvas.width - 1, 1), max(canvas.height - 1, 1)
     long = float(canvas.long_side)
-    starts, ends, lengths = [], [], []
+    starts, ends, lengths, lines = [], [], [], []
     for r in marks:
         if r.params.get("via") or r.kind == "smudge" or len(r.points) < 2:
             continue
@@ -7653,6 +7926,7 @@ def _daisy(marks: list[StrokeRecord], canvas) -> tuple[int, float, tuple[float, 
             starts.append(p[0])
             ends.append(p[-1])
             lengths.append(length)
+            lines.append(r)
     n = len(lengths)
     if n < _DAISY_MARKS:
         return None
@@ -7682,7 +7956,8 @@ def _daisy(marks: list[StrokeRecord], canvas) -> tuple[int, float, tuple[float, 
         angles = np.sort(np.mod(np.degrees(np.arctan2(out[:, 1], out[:, 0])), 360.0))
         gap = float(np.diff(np.concatenate([angles, angles[:1] + 360.0])).max())
         if best is None or (count, -gap) > (best[0], -best[1]):
-            best = (count, gap, (float(hub[0]) / w1, float(hub[1]) / h1))
+            best = (count, gap, (float(hub[0]) / w1, float(hub[1]) / h1),
+                    [r for r, kept in zip(lines[lo:hi], ok, strict=True) if kept])
     return best
 
 
@@ -7745,7 +8020,7 @@ def _loop_runs(marks: list[StrokeRecord], canvas) -> list[dict]:
         if spacing <= _LOOP_SPACING and straight <= _LOOP_STRAIGHT and (
                 spread <= _LOOP_LENGTH or ramp):
             found.append(dict(count=len(run), brush=run[0].brush, length=float(lengths.mean()),
-                              spacing=spacing, ramp=ramp))
+                              spacing=spacing, ramp=ramp, marks=run))
     return found
 
 
@@ -7799,9 +8074,9 @@ def _to_path(pts: np.ndarray, path: np.ndarray) -> np.ndarray:
 
 
 def _buried(opened: np.ndarray, now: np.ndarray, earlier: list[StrokeRecord],
-            laid: list[StrokeRecord], canvas) -> tuple[int, int, str] | None:
-    """Earlier details a film or a mass took out of sight: ``(buried, showing, what)``,
-    ``what`` naming the layers that did it (``a film``, ``a scumble``...).
+            laid: list[StrokeRecord], canvas) -> tuple[int, int, str, list] | None:
+    """Earlier details a film or a mass took out of sight: ``(buried, showing, what,
+    the details)``, ``what`` naming the layers that did it (``a film``, ``a scumble``...).
 
     ``opened`` and ``now`` are the values view as the pass began and as it ended.
     ``earlier`` is every mark before the pass, ``laid`` the records the pass made. A
@@ -7840,6 +8115,7 @@ def _buried(opened: np.ndarray, now: np.ndarray, earlier: list[StrokeRecord],
         return None
     showing = buried = 0
     kinds: set[str] = set()
+    lost: list[StrokeRecord] = []
     for r in earlier:
         if r.params.get("via") or r.kind in History.UNPAINTED_KINDS or not r.points:
             continue
@@ -7863,10 +8139,11 @@ def _buried(opened: np.ndarray, now: np.ndarray, earlier: list[StrokeRecord],
             if float((_to_path(pts, path) <= reach).mean()) >= 0.5:
                 buried += 1
                 kinds.add(what)
+                lost.append(r)
                 break
     if buried < _BURIED_MARKS:
         return None
-    return buried, showing, " and ".join(sorted(kinds))
+    return buried, showing, " and ".join(sorted(kinds)), lost
 
 
 def _small_combs(marks: list[StrokeRecord]) -> list[StrokeRecord]:
@@ -7936,13 +8213,22 @@ def _disc_groups(discs: list[StrokeRecord], canvas,
         largest first, placed at the mean of its marks as canvas fractions -- the
         ``(x, y)`` every place in the engine is given in.
     """
+    return [(count, at) for count, at, _ in _disc_group_marks(discs, canvas, radius)]
+
+
+def _disc_group_marks(discs: list[StrokeRecord], canvas,
+                      radius: float = _REPORT_DISC_RADIUS) -> list[tuple[int, tuple, list]]:
+    """:func:`_disc_groups` with each group's own marks: ``(count, (x, y), marks)``,
+    which is what a finding names when it says where the discs sit together."""
     long = float(canvas.long_side)
     middles = []
+    placed = []
     for r in discs:
         pts = np.asarray(r.points, dtype=np.float64).reshape(-1, 2)
         if len(pts):
             middles.append((0.5 * (pts[:, 0].min() + pts[:, 0].max()),
                             0.5 * (pts[:, 1].min() + pts[:, 1].max())))
+            placed.append(r)
     if not middles:
         return []
     at = np.asarray(middles, dtype=np.float64)
@@ -7963,13 +8249,15 @@ def _disc_groups(discs: list[StrokeRecord], canvas,
     members: dict[int, list[int]] = {}
     for i in range(len(at)):
         members.setdefault(find(i), []).append(i)
-    found = [(len(group), (float(at[group, 0].mean()), float(at[group, 1].mean())))
+    found = [(len(group), (float(at[group, 0].mean()), float(at[group, 1].mean())),
+              [placed[i] for i in group])
              for group in members.values() if len(group) >= _REPORT_ROUND_MARKS]
     return sorted(found, key=lambda one: -one[0])
 
 
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
-                   banding=None, bands: str = "", whole: bool = False) -> list[str]:
+                   banding=None, bands: str = "", whole: bool = False,
+                   named=None) -> list[str]:
     """The lines :meth:`Session.report` prints, one per rule that fired.
 
     ``banding`` decides whether the stack-of-bars line is worth printing this time,
@@ -7996,10 +8284,20 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
     signature out, and says where they are: a lamp, a moon and a glint laid in three
     passes are three marks, not one disc printed three times. Every other rule reads the
     whole painting as it always has.
+
+    ``named`` names the marks a finding counted -- :meth:`Session._marks_named`, whose
+    line goes under the finding's own. Every rule that counts marks hands it the marks
+    it counted; the one that counts every mark of the pass, one brush at one size, has
+    nothing to point at that the pass is not. Left off, a finding is its line alone.
     """
     out: list[str] = []
     if not marks:
         return out
+
+    def found(line: str, counted) -> None:
+        said = named(list(counted)) if named is not None and counted else ""
+        out.append(f"{line}\n    {said}" if said else line)
+
     calls = {_call_of(r) for r in marks}
 
     # One brush at one size, across two or more calls.
@@ -8045,53 +8343,58 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
                            f"the picture cross them at {_REPORT_CROSSING_DEG:.0f} "
                            f"degrees or more"
                            if crossings else "nothing crosses them yet")
-                out.append(
+                found(
                     f"bands declared as the subject: {len(best)} long marks run within "
                     f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, and "
-                    f"{crossed}."
+                    f"{crossed}.",
+                    (r for r, _ in best),
                 )
             else:
-                out.append(
+                found(
                     f"{len(best)} of {len(long_marks)} long marks run within "
                     f"{_REPORT_ANGLE_DEG:.0f} degrees of {_angle_name(centre)}, from "
                     f"{len({_call_of(r) for r, _ in best})} calls: a stack of bars "
                     f"unless the subject runs that way. Vary direction= between "
                     f"passes, or sweep each mass along its own axis. Say "
                     f"s.plan(bands='subject') if it does, and this line will count "
-                    f"what crosses them instead."
+                    f"what crosses them instead.",
+                    (r for r, _ in best),
                 )
 
     # A hand-laid graded passage whose brush is too narrow for its own step.
     band = _graded_band(long_marks, canvas)
     if band is not None:
-        count, step, brush, steps = band
-        out.append(
+        count, step, brush, steps, laid = band
+        found(
             f"{count} marks at stepping colours run parallel {step:.3f} apart, and the "
             f"narrowest brush laying them is {brush:.3g} -- {steps:.1f} of that step. "
             f"Under {_LINEAR_MIN_STEPS:.0f} the passes stop overlapping and a graded "
             f"passage comes back as bars. Use about three steps "
             f"(size={_LINEAR_STEPS * step:.3g} here), or hand the passage to scumble(), "
-            f"which sizes its own brush from its own step."
+            f"which sizes its own brush from its own step.",
+            laid,
         )
 
     # A bristle too small to be a brush. A pass's rule and not a painting's: what it
     # asks for is a brush for the next marks.
     small_comb = [] if whole else _small_combs(marks)
     if len(small_comb) >= 3:
-        out.append(
+        found(
             f"{len(small_comb)} marks with a bristle under size={_REPORT_SMALL_BRISTLE} "
             f"at a load over {_REPORT_STARVED_LOAD}: a comb that small is four streaks "
             f"with gaps, not a brush. round_hard reads at that size; a small solid "
-            f"plane wants flat at pressure='even'."
+            f"plane wants flat at pressure='even'.",
+            small_comb,
         )
 
     # Detail before the masses are down.
     small = [r for r in marks if float(r.params.get("size", 1.0)) < _REPORT_SMALL_MARK]
     if earlier + len(marks) <= _REPORT_EARLY_MARKS and len(small) >= _REPORT_EARLY_COUNT:
-        out.append(
+        found(
             f"{len(small)} marks under size={_REPORT_SMALL_MARK} inside the painting's "
             f"first {_REPORT_EARLY_MARKS}: detail before the masses are down. A good "
-            f"painting is mostly big statements."
+            f"painting is mostly big statements.",
+            small,
         )
 
     # A round tip printing its own outline, over and over.
@@ -8103,27 +8406,32 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
     if whole:
         # Over a painting only the discs seen together are one disc printed over and
         # over, and a signature is lettering, which the budget waives as well.
-        groups = _disc_groups([r for r in discs if not History.is_signature(r)], canvas)
+        groups = _disc_group_marks([r for r in discs if not History.is_signature(r)],
+                                   canvas)
         if len(groups) == 1:
-            (count, (x, y)), = groups
-            out.append(
+            (count, (x, y), members), = groups
+            found(
                 f"{count} small marks with a round tip at tip_wobble=0 sit together "
                 f"around ({x:.2f}, {y:.2f}): that is one disc printed {count} times. "
-                f"{remedy}"
+                f"{remedy}",
+                members,
             )
         elif groups:
             places = ", ".join(f"{count} around ({x:.2f}, {y:.2f})"
-                               for count, (x, y) in groups[:3])
+                               for count, (x, y), _ in groups[:3])
             more = f", and {len(groups) - 3} more" if len(groups) > 3 else ""
-            out.append(
-                f"{sum(count for count, _ in groups)} small marks with a round tip at "
+            found(
+                f"{sum(count for count, _, _ in groups)} small marks with a round tip at "
                 f"tip_wobble=0 sit together in {len(groups)} places -- {places}{more}: "
-                f"each is one disc printed over and over. {remedy}"
+                f"each is one disc printed over and over. {remedy}",
+                # The places the line names, so the marks under it are those.
+                [r for _, _, members in groups[:3] for r in members],
             )
     elif len(discs) >= _REPORT_ROUND_MARKS:
-        out.append(
+        found(
             f"{len(discs)} small marks with a round tip at tip_wobble=0: that is one "
-            f"disc printed {len(discs)} times. {remedy}"
+            f"disc printed {len(discs)} times. {remedy}",
+            discs,
         )
 
     # A pressure list asking a chisel for a width.
@@ -8141,24 +8449,26 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
             tapered.append(r)
     if tapered:
         tips = sorted({str(r.params.get("tip")) for r in tapered})
-        out.append(
+        found(
             f"{len(tapered)} short mark{'s' if len(tapered) != 1 else ''} with a "
             f"pressure list on a {'/'.join(tips)} tip: pressure changes a chisel's "
             f"paint, not its width, so these are rectangles with a lighter end. A "
-            f"mark that tapers wants round_hard or liner."
+            f"mark that tapers wants round_hard or liner.",
+            tapered,
         )
 
     # A daisy: hand-laid marks leaving one point in every direction.
     daisy = _daisy(marks, canvas)
     if daisy is not None and daisy[1] <= _DAISY_GAP:
-        count, gap, (hx, hy) = daisy
-        out.append(
+        count, gap, (hx, hy), petals = daisy
+        found(
             f"{count} hand-laid marks leave one point, at ({hx:.2f}, {hy:.2f}), in every "
             f"direction -- no gap between them wider than {gap:.0f} degrees: a daisy, or "
             f"a wagon wheel, which is what strokes radiating from a centre draw unless "
             f"the subject radiates. A patch light in the middle is "
             f"scumble(direction=\"inward\"); light in the air is a few films along its "
-            f"axis."
+            f"axis.",
+            petals,
         )
 
     # A loop's signature: one length, one spacing, no clumps and no holes.
@@ -8168,11 +8478,12 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
         more = (f" (and {len(runs) - 1} more run{'s' if len(runs) > 2 else ''} like it)"
                 if len(runs) > 1 else "")
         size = "stepping in length" if run["ramp"] else f"all {run['length']:.3f} long"
-        out.append(
+        found(
             f"{run['count']} {run['brush']} marks laid one after another, {size}, evenly "
             f"spaced on a line -- the gaps vary {run['spacing']:.0%}{more}: a loop's "
             f"signature, one length and one spacing with no clumps and no holes. Vary the "
-            f"lengths and the gaps by hand, or let one mark carry the passage."
+            f"lengths and the gaps by hand, or let one mark carry the passage.",
+            run["marks"],
         )
     return out
 

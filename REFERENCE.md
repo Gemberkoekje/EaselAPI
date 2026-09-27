@@ -402,7 +402,9 @@ s.prepare("ref.jpg", level="coarse", min_share=0.004, path=)
 s.log(last=10)                                  # last=10_000 for the whole record.
                                                 # Log records, as undo(n) and
                                                 # replay(upto=) count: a dry or a
-                                                # pencil line is one and is free
+                                                # pencil line is one and is free. A
+                                                # colour is named as the palette names
+                                                # it -- your slot, or the pigment
 s.export("painting.png", impasto=True, sketch=True)
 s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None, from_log=False)
                                                 # from_log rebuilds the frames by
@@ -460,7 +462,11 @@ length (or a strict ramp of lengths), evenly spaced on a line and further apart 
 their own width; and **details a layer buried**, earlier small or `subject` marks
 showing as the pass opened that a glaze or a mass's passes left at under half their
 contrast. That one needs the canvas as the pass opened, which `easel run` keeps, and so
-does the `report()` before it in a script that reports after every pass. Under those,
+does the `report()` before it in a script that reports after every pass. **A finding that
+counts marks names them**, on a line under it: the script lines they were laid from, as
+the dearest calls are named — *laid at p05.py:58 (lay_accents), :62, :72 (lay_edges) --
+records 174, 176, 179* — or only the records, for marks laid in another process, since
+which line laid a mark is known to the process that ran the script. Under those,
 the standing lines, which are measurements rather than findings: the subject's share of
 the marks so far, wherever a mark is noted `subject`,
 against `subject_share` if given; `values:`, the 5th to 95th percentile of the values
@@ -555,6 +561,7 @@ painting broke the comb floor twenty-eight times and was right every time.
 | `jitter-beads` | fact | `jitter=` a multiple of its default, which comes out as width: a chain of beads rather than a line | `PAINTING.md`, *Per-stroke overrides* |
 | `older-engine` | fact | a session file saved by an earlier Easel, with marks in its log that a fix since then lays differently: an undo, a replay or a film rebuilt from it will not match the canvas there | `CALIBRATION.md`, *The log, undo, and the stream* |
 | `plan-pairs` | fact | two places a plan puts closer than `0.10` meet on the canvas, so one will read as the other exactly where they join | `CALIBRATION.md`, *The plan a painter declares* |
+| `prelude-rebind` | fact | a pass binds again a name its prelude bound, to something else: from there to the end of the pass the prelude's value is gone | `REFERENCE.md`, *The session, and the shell* |
 | `round-fringe` | fact | a round tip blocking in a feature lays about half again the shape's area, and the fringe is the silhouette | `CALIBRATION.md`, *A clean edge on a narrow mass* |
 | `sample-split` | fact | `sample()` averaged two masses, so the value it returns is a measurement of neither | `PAINTING.md`, *Colour* |
 | `scumble-bars` | fact | a banded scumble whose passes do not overlap: bars with the ground showing between them | `CALIBRATION.md`, *The band, and the brush that closes its joins* |
@@ -627,7 +634,7 @@ s.save(path)       Session.load(path)
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--alternatives] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
-                   [--no-sketch] [--no-marks]
+                   [--no-sketch] [--no-marks] [--scale 512]
 easel mark p.easel top_l 0.335 0.315
 easel plan p.easel [--why "..."] [--value 'A1:H3=0.70' ...] [--lightest A1:H3]
                    [--subject-share 0.4] [--bands subject] [--ground buried] [--clear]
@@ -650,7 +657,10 @@ in scope and no imports needed. A `prelude.py` beside the session file runs firs
 same scope, so helpers, mixtures and landmarks survive between passes — and it is where
 `s.plan(...)` goes, declared once for the painting rather than once per pass. `easel new`
 writes one holding the call, unless there is already one there or `--no-prelude` says not
-to.
+to. **One scope means one set of names**: a pass that binds a name the prelude bound, to
+something else — `H = dict(...)` over the prelude's canvas height — has replaced it for
+the rest of the pass, and is told so before it runs (`prelude-rebind`), naming both lines.
+Binding the same thing again, `p = s.palette` in every pass, says nothing.
 
 Several scripts run in the order given, each in its own scope with the prelude in front
 of it — the same painting as running them one at a time, and with `--rehearse` they go
@@ -666,9 +676,23 @@ It implies `--rehearse`; with `--count` each is priced and no sheet is laid; a s
 holds at most twelve. `s.rehearse_each()` is the same from Python and `run` with
 `alternatives` through the MCP server.
 
-After every pass, rehearsed or committed, `run` prints the budget line and then the
-post-pass check over that pass; `--check` runs it over the whole painting instead, and
-`easel log --check` does the same without painting anything.
+After every pass, rehearsed, counted or committed, `run` prints the budget line and then
+the post-pass check over that pass; `--check` runs it over the whole painting instead, and
+`easel log --check` does the same without painting anything. **Under the budget line, the
+pass's dearest calls**, whenever a call cost more than one stroke — a mark laid by hand is
+one, and is never listed:
+
+```text
+Rehearsed p04.py: 102 strokes of the 210 left. Nothing committed.
+  dearest: 23 block_in at p04.py:40 (lay_mass, 2 landing nothing), 22 at :38, 20 at :36, 14 at :18 (lay_side) -- 79 of the 102
+```
+
+Dearest first, up to four and none once three quarters of the pass is named; each call's
+strokes, its verb and the script line it was made from, the script once per run of it and
+the function once per run of calls from it; and the strokes of it that laid no paint, which
+a counted pass cannot know. A call made inside a helper is named at the helper's line. It is
+said per version under `--alternatives`, through the MCP server's `run`, and kept in the
+pass's saved report.
 
 `easel check` is the **closing** checklist rather than the post-pass one: the same
 measured lines plus `boxes:` and `unspent:`, and then the three questions nothing can
@@ -681,6 +705,10 @@ stroke and none of it is laid, so a helper that calls a dozen verbs has a price 
 check in about a thirtieth of the time and there is no look to write.
 `s.scratch(count_only=True)` is the same thing from Python and `run(count=True)` through
 the MCP server. Rehearse when the question is what it looks like.
+
+`--scale` on `look` and `timelapse` is **the long side in pixels** — `--scale 240` — and a
+number under 1, which no count of pixels can be, is a share of the canvas's own long side:
+`--scale 0.5` is half of it. `look --scale 0` is the canvas at its own size.
 
 **The `.easel` file keeps everything but the time-lapse.** The frames were more than half
 of a painting's file, for a film made once, at the end, so a session loaded from a file

@@ -53,9 +53,10 @@ figure in pixels through a helper of its own and scaled its first head up by han
   paintings of the round and every committed picture — no pixel of the new one steps by
   under `0.25` in both of its tones, where the old one left a median 88%. The casing is
   at 150 of 255, where it gives way to the paint most. An opaque casing met the target
-  too and is the louder of the two; which of them the painter would judge a silhouette on
-  is its question 4b, not yet answered. Only the view changes: not the canvas, not the
-  log, not an export, and `look(sketch=False)` still hides the drawing.
+  too and is the louder of the two; the painter, shown both blind and then the bench's
+  numbers, would judge a silhouette on the one at 150 (its question 4b). Only the view
+  changes: not the canvas, not the log, not an export, and `look(sketch=False)` still
+  hides the drawing.
 - **A shape handed to `guide()` or `pencil()` is drawn as its outline, corners kept** — a
   `Polygon`, a `Region`, or anything a place is read from: `"D4"`, `"C3:F6"`, four
   numbers. Both calls raised on one before. The pencil's record carries the outline's
@@ -67,11 +68,12 @@ figure in pixels through a helper of its own and scaled its first head up by han
   `s.pencil(shape, pressure=0.5)`.
 - **Drawing in pixels.** `s.px(x, y)` is a pixel's place, `(x / width, y / height)`, and a
   pair handed whole reads the same. `s.px_size(r)` is a length in pixels as a size — `r`
-  over the long side, the unit of `size=`, `width=` and `feather=` — and
-  `s.circle(p, px=r)` a round shape `r` pixels in radius on any canvas. Two radii convert
-  as a point does, so an oval in pixels is `ellipse(p, *s.px(rx, ry))`. `s.px(25)` raises
-  and names both, because one number of pixels is a different length across and down on
-  a canvas that is not square — the trap the painter named, `blob(p, s.px(25), s.px(25))`.
+  over the long side, the unit of a brush's `size=`, the pencil's `width=` and `feather=`
+  — and `s.circle(p, px=r)` a round shape `r` pixels in radius on any canvas. Two radii
+  convert as a point does, so an oval in pixels is `ellipse(p, *s.px(rx, ry))`. `s.px(25)`
+  raises and names all three, because one number of pixels is a different length across
+  and down on a canvas that is not square — the trap the painter named,
+  `blob(p, s.px(25), s.px(25))`.
 - **A group moves shapes as one.** `group(a, b, ...)` holds shapes, regions, points and
   other groups; `.shifted(dx, dy)` and `.scaled(f, about=)` move every part about one
   point, and a group unpacks into its parts. The painter's `T()`, a scale by `1.3` about
@@ -82,6 +84,64 @@ figure in pixels through a helper of its own and scaled its first head up by han
 
 Nothing a mark lays changes, and no saved painting rebuilds differently: both drawing
 calls raised on a shape before, so no log holds such a record.
+
+### What each call cost, which marks a finding counted, and a prelude's name bound again
+
+Step 4 of the bell-warden's round (`PLAN-0.8.0.md`, workstreams C, H1, H2 and H3, and two
+small things the painters' answers found). Both painters' passes came back from rehearsal
+with one total — the Bell-Warden's subject pass at 85 to 113 strokes over five, Wenna
+Brask's figure at 135, 101 and 99 — and neither could tell which call had grown; the log
+knew. And a finding counted marks it did not name, a log line printed a hex where the
+palette said `lip`, and a pass replaced a name its prelude bound without a word.
+
+- **Under the total, the pass's dearest calls.** After every pass — rehearsed, counted
+  and committed — `easel run` prints under its budget line the calls that cost more than
+  one stroke, dearest first, up to four and none once three quarters of the pass is
+  named: each call's strokes, its verb and the line of the script that made it, the
+  script once per run of it, the function once per run of calls from it, and the strokes
+  of it that laid no paint. The painter chose every part of that (its question 8). Its
+  subject pass, rebuilt, says
+  `dearest: 23 block_in at p04_gargoyle.py:40 (lay_body, 2 landing nothing), 22 at :38, 20 at :36, 14 at :18 (lay_wing) -- 79 of the 102`.
+  A mark laid by hand is one stroke and never listed, so a pass of them prints no such
+  line; a counted pass lays no paint and says nothing of what landed. The same per
+  version under `--alternatives`, through the MCP server's `run`, and in the pass's saved
+  report. Rebuilt, both paintings print the line the round's bench composed, pass for
+  pass, and over the corpus it is that line on 140 of 143 passes: the other three call
+  the planning `rehearse()`, whose copy's marks the bench counted as the pass's and the
+  engine, reading the painting's own log, does not.
+- **A finding names the marks it counted**, on a line under it: the script lines they
+  were laid from, named as the dearest calls are, and their records in the log —
+  `laid at p05_face.py:58 (lay_mouth), :62, :64, :72 (lay_modelling) -- records 174, 176, 177, 179`,
+  a loop's line once with how many calls it made. `easel check`, which reads a painting
+  in another process, names the records alone.
+- **`easel log` names a colour as the palette does** — the painter's own slot, or the
+  pigment — where it printed a hex: `lip`, not `#9e6c57`. The record keeps the name in a
+  new key beside the colour, read with `.get`; a rebuild ignores it, and a mark saved
+  before has only its hex.
+- **A pass that binds a prelude's name again, to something else, is told** before it
+  runs (`prelude-rebind`, a fact), naming the name and both lines: from there to the end
+  of the pass the prelude's value is gone. Wenna Brask's `H`, a dict of shared arguments,
+  replaced the prelude's canvas height and two rehearsals raised on it. Binding the same
+  thing again — `p = s.palette` in twelve of one painting's passes — says nothing: over
+  the corpus's 284 passes run after a prelude it speaks on none.
+- **`--scale` says what it is**, on `look` and `timelapse`: the long side in pixels, in
+  its help's first words and in `REFERENCE.md`, and a number under 1 — which the second
+  painter typed, and no count of pixels can be — a share of the canvas's own long side:
+  `--scale 0.5` is half.
+- **A guide's note moves off the notes already drawn**: up and to the right of where its
+  guide begins as before, unless a box is there — then another corner of that point, then
+  a row further out with a leader back. 8 of the Bell-Warden's 17 notes and 6 of Wenna
+  Brask's 25 lay under or over another; none do now.
+- **`s.px(25)` names every home a length has**: a brush's `size=`, the pencil's `width=`
+  and `feather=` through `s.px_size`, a round shape through `s.circle(p, px=)`, and an
+  oval as its two radii, `ellipse(p, *s.px(rx, ry))`. It named two, and sent an oval to
+  `px_size`, which draws one silently on any canvas that is not square. The oval stays a
+  call to `s.px`, which the owner left to whatever reads best to a painter that is a
+  language model.
+
+Nothing a mark lays changes, and no saved painting rebuilds differently. Where a call was
+made is found once per call, from the painter's own frame, and kept beside the log for
+the process that ran the script — never saved, and never in a record.
 
 ## [0.7.0] — 2026-09-25
 

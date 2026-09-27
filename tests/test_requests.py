@@ -6721,3 +6721,328 @@ def test_a_shape_scaled_about_a_point_or_about_its_own_middle():
     assert np.allclose(a.scaled(2.0, about=a).points, a.scaled(2.0).points)
     grown = a.scaled(1.5, about=(0.2, 0.3))
     assert grown.points[0] == pytest.approx((0.2, 0.3)), "the named point stays put"
+
+
+# -- 0.8.0 C: what a pass cost, call by call -------------------------------------------
+#
+# The Bell-Warden's subject pass came back from five rehearsals at 85 to 113 strokes,
+# each headed by one total; the log knew that four `block_in`s laid 79 of the 102, and
+# nothing said so. The line under the total names them, as its painter chose (question
+# 8): after every pass, the function once per run of calls from it and every call's
+# line, up to four calls and none once three quarters of the pass is named, and the
+# strokes of each that laid nothing.
+_BODY_PASS = '''\
+def lay_body():
+    s.block_in(Region(0.10, 0.05, 0.90, 0.40), "flat", "burnt_umber", size=0.05)
+    s.block_in(Region(0.10, 0.45, 0.60, 0.65), "flat", "ultramarine", size=0.05)
+    s.block_in(Region(0.10, 0.70, 0.40, 0.78), "flat", "yellow_ochre", size=0.05)
+
+
+lay_body()
+s.stroke([(0.2, 0.9), (0.7, 0.92)], "bristle", "burnt_umber", size=0.02)
+s.block_in(Region(0.65, 0.45, 0.95, 0.52), "bristle", "burnt_umber", size=0.04)
+'''
+
+
+def _new_painting(tmp_path, budget: int = 300) -> Path:
+    """A session file with no prelude beside it, and its looks under the test's own."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--no-prelude", "--out-dir",
+                 str(tmp_path / "out"), "--budget", str(budget)]) == 0
+    return session
+
+
+def _calls_by_log(records) -> list[list]:
+    """The records as the log alone groups them into calls, in the order made."""
+    from easel.session import _call_of
+
+    calls: list[list] = []
+    for r in records:
+        if calls and _call_of(r) == _call_of(calls[-1][-1]):
+            calls[-1].append(r)
+        else:
+            calls.append([r])
+    return calls
+
+
+def test_a_pass_says_which_of_its_calls_cost_it_most(tmp_path, capsys):
+    session = _new_painting(tmp_path)
+    script = tmp_path / "body.py"
+    script.write_text(_BODY_PASS, encoding="utf-8")
+    capsys.readouterr()
+
+    assert main(["run", str(session), str(script)]) == 0
+    out = capsys.readouterr().out.splitlines()
+    head = next(i for i, line in enumerate(out) if line.startswith("Ran body.py"))
+    dearest = out[head + 1]
+    assert dearest.startswith("  dearest: "), "the line goes under the total"
+
+    # Four masses, in the order made: lines 2, 3 and 4 in lay_body, then line 9.
+    calls = _calls_by_log(Session.load(session).history.records)
+    masses = [(len(c), line) for c, line in zip([c for c in calls if len(c) > 1],
+                                                (2, 3, 4, 9), strict=True)]
+    total = sum(len(c) for c in calls)
+    named, summed = [], 0
+    for cost, line in sorted(masses, key=lambda m: -m[0]):
+        if len(named) == 4 or summed >= 0.75 * total:
+            break
+        named.append((cost, line))
+        summed += cost
+    said = re.findall(r"(\d+)(?: block_in)? at (?:body\.py)?:(\d+)", dearest)
+    assert [(int(n), int(line)) for n, line in said] == named
+    assert dearest.endswith(f"-- {summed} of the {total}")
+    assert "block_in at body.py:" in dearest, "the verb and the script, once"
+    assert dearest.count("(lay_body)") == 1, "the function once per run of its calls"
+
+
+def test_the_line_stops_at_four_calls_or_three_quarters(tmp_path):
+    """Six masses of falling size: never more than four named, and none past the call
+    that brings the named share to three quarters."""
+    s = make(tmp_path, budget=300)
+    for i, height in enumerate((0.15, 0.12, 0.09, 0.06, 0.04, 0.03)):
+        s.block_in(Region(0.05, 0.02 + 0.16 * i, 0.95, 0.02 + 0.16 * i + height),
+                   "flat", "burnt_umber", size=0.03)
+    line = s._dearest_line(0)
+    counts = [int(n) for n in re.findall(r"(\d+)(?: block_in)? at ", line)]
+    total = s.history.stroke_count
+    assert 1 <= len(counts) <= 4 and counts == sorted(counts, reverse=True)
+    assert sum(counts[:-1]) < 0.75 * total
+    assert len(counts) == 4 or sum(counts) >= 0.75 * total
+    assert line.endswith(f"-- {sum(counts)} of the {total}")
+
+
+def test_a_pass_of_marks_laid_by_hand_has_no_such_line(tmp_path, capsys):
+    """A mark laid by hand is one stroke, and never dearer than one."""
+    session = _new_painting(tmp_path)
+    script = tmp_path / "marks.py"
+    script.write_text("for i in range(6):\n"
+                      "    s.stroke([(0.1, 0.1 + 0.1 * i), (0.8, 0.12 + 0.1 * i)],"
+                      " 'bristle', 'burnt_umber', size=0.03)\n", encoding="utf-8")
+    assert main(["run", str(session), str(script), "--rehearse"]) == 0
+    assert "dearest:" not in capsys.readouterr().out
+
+
+def test_the_line_counts_the_strokes_of_a_call_that_laid_nothing(tmp_path, capsys):
+    """Twelve of the Bell-Warden's strokes were passes of clipped masses that fell
+    outside what held them: paid for, and laying nothing. A counted pass lays no paint,
+    so it says nothing of what landed."""
+    session = _new_painting(tmp_path)
+    script = tmp_path / "held.py"
+    script.write_text('s.block_in(Region(0.1, 0.1, 0.9, 0.9), "flat", "burnt_umber", '
+                      'size=0.05, clip=Region(0.1, 0.1, 0.9, 0.45))\n', encoding="utf-8")
+    capsys.readouterr()
+    assert main(["run", str(session), str(script)]) == 0
+    out = capsys.readouterr().out
+    records = Session.load(session).history.records
+    nothing = sum(1 for r in records if r.paint < 1.0)
+    assert nothing > 2
+    assert (f"dearest: {len(records)} block_in at held.py:1 ({nothing} landing nothing) "
+            f"-- {len(records)} of the {len(records)}") in out
+
+    assert main(["run", str(session), str(script), "--count"]) == 0
+    counted = capsys.readouterr().out
+    assert "dearest: " in counted and "landing nothing" not in counted
+
+
+def test_the_line_is_said_for_every_version_and_kept_with_the_report(tmp_path, capsys):
+    """After every pass: rehearsed, counted and committed -- each version of
+    `--alternatives` its own -- and the saved report keeps it, since the committed
+    report is the one kept and a painter who never rehearses sees only that one."""
+    session = _new_painting(tmp_path)
+    one, two = tmp_path / "one.py", tmp_path / "two.py"
+    one.write_text('s.block_in("D5", "flat", "burnt_umber", size=0.04)\n', encoding="utf-8")
+    two.write_text('\ns.block_in("C3:E5", "flat", "burnt_umber", size=0.04)\n',
+                   encoding="utf-8")
+    assert main(["run", str(session), str(one), str(two), "--alternatives"]) == 0
+    out = capsys.readouterr().out
+    assert re.search(r"dearest: \d+ block_in at one\.py:1 --", out)
+    assert re.search(r"dearest: \d+ block_in at two\.py:2 --", out)
+    assert main(["run", str(session), str(one)]) == 0
+    kept = Session.load(session).reports()
+    assert [r.mode for r in kept] == ["rehearsed", "rehearsed", "painted"]
+    assert all("dearest: " in r.text for r in kept)
+
+
+def test_where_a_call_was_made_stays_beside_the_log(tmp_path):
+    """Nothing new may touch the log or the stream: the same marks laid from other
+    lines log the same records, byte for byte, and a file keeps no lines at all."""
+    a, b = make(tmp_path), make(tmp_path)
+    a.block_in("D5", "flat", "burnt_umber", size=0.04)
+    a.dab(0.3, 0.3, "round_hard", "yellow_ochre", size=0.01)
+    for s in (b,):
+        s.block_in("D5", "flat", "burnt_umber", size=0.04)
+    b.dab(0.3, 0.3, "round_hard", "yellow_ochre", size=0.01)
+    assert a.history.to_json() == b.history.to_json()
+    assert a.rng.bit_generator.state == b.rng.bit_generator.state
+    assert a._sites and not Session.load(a.save(tmp_path / "a.easel"))._sites
+
+
+# -- 0.8.0 H1: a finding names its marks -----------------------------------------------
+_MOUTH_PASS = '''\
+def lay_mouth():
+    s.dab(0.40, 0.50, "round_hard", "burnt_umber", size=0.006)
+    s.dab(0.42, 0.51, "round_hard", "burnt_umber", size=0.006)
+    s.dab(0.44, 0.50, "round_hard", "burnt_umber", size=0.006)
+
+
+def lay_modelling():
+    s.dab(0.46, 0.52, "round_hard", "burnt_umber", size=0.006)
+
+
+lay_mouth()
+lay_modelling()
+'''
+
+
+def test_a_finding_names_the_marks_it_counted(tmp_path, capsys):
+    """*4 small marks ... around (0.55, 0.37)* sent the second painter to its log by hand
+    to find the mouth's four marks. What it asked for is the script's line with the
+    function (W-Q3), and the records beside it."""
+    session = _new_painting(tmp_path)
+    script = tmp_path / "face.py"
+    script.write_text(_MOUTH_PASS, encoding="utf-8")
+    capsys.readouterr()
+    assert main(["run", str(session), str(script)]) == 0
+    out = capsys.readouterr().out.splitlines()
+    at = next(i for i, line in enumerate(out) if "one disc printed 4 times" in line)
+    assert out[at + 1] == ("    laid at face.py:2 (lay_mouth), :3, :4, :8 (lay_modelling) "
+                           "-- records 0-3")
+
+    # Checked whole in another process, the lines are gone and the records are not.
+    assert main(["check", str(session)]) == 0
+    out = capsys.readouterr().out.splitlines()
+    at = next(i for i, line in enumerate(out) if "sit together around" in line)
+    assert out[at + 1] == "    records 0-3"
+
+
+def test_a_loops_calls_are_named_by_their_one_line(tmp_path):
+    s = make(tmp_path)
+    for i in range(4):
+        s.dab(0.40 + 0.02 * i, 0.5, "round_hard", "burnt_umber", size=0.006)
+    here = test_a_loops_calls_are_named_by_their_one_line.__code__.co_firstlineno + 3
+    assert (f"    laid at test_requests.py:{here} "
+            f"(test_a_loops_calls_are_named_by_their_one_line, 4 calls) -- records 0-3"
+            in s.report(since=0))
+
+
+def test_the_log_names_a_colour_by_the_name_the_palette_gives_it(tmp_path):
+    """`#174 stroke round_soft #9e6c57 41 dabs 269 paint -- subject` -- *it gives a hex
+    colour where my palette says `lip`*. The record keeps the name beside the colour,
+    read with `.get`, and a rebuild ignores it."""
+    s = make(tmp_path)
+    s.palette["lip"] = s.palette.mix("burnt_umber", "cadmium_red", 0.3)
+    line = [(0.2, 0.3), (0.6, 0.32)]
+    s.stroke(line, "round_soft", "lip")                       # the slot, by name
+    s.stroke(line, "round_soft", s.palette["lip"])            # the slot's own numbers
+    s.stroke(line, "round_soft", "ultramarine")               # a pigment
+    s.stroke(line, "round_soft", "#336699")                   # a hex has no other name
+    s.smudge(line)                                            # and a smudge lays none
+    lines = s.log(5).splitlines()
+    assert " lip " in lines[0] and " lip " in lines[1]
+    assert " ultramarine " in lines[2] and " #336699 " in lines[3]
+    assert "titanium_white" not in lines[4]
+    assert s.history.records[0].params["color_name"] == "lip"
+    back = Session.load(s.save(tmp_path / "p.easel"))
+    assert back.log(5) == s.log(5)
+    rebuilt = back.replay()
+    assert rebuilt.log(5) == s.log(5)
+    assert np.array_equal(rebuilt.canvas.rgb, back.canvas.rgb)
+
+
+# -- 0.8.0 H2: a pass that binds a prelude's name again --------------------------------
+def test_a_pass_that_binds_a_prelude_name_again_is_told(tmp_path, capsys):
+    """The second painter's `H`, a dict of shared arguments, replaced the prelude's
+    canvas height, and its pixel helper then divided by a dict: two rehearsals raised on
+    it, and nothing said why. Said before the pass runs, so a pass that raises on it is
+    told; a fact, not a refusal."""
+    session = _new_painting(tmp_path)
+    (tmp_path / "prelude.py").write_text(
+        "W, H = 768, 1024\n\n\ndef P(x, y):\n    return (x / W, y / H)\n", encoding="utf-8")
+    script = tmp_path / "fist.py"
+    script.write_text('H = dict(note="subject")\n'
+                      's.stroke([P(100, 100), P(300, 120)], "bristle", "burnt_umber")\n',
+                      encoding="utf-8")
+    capsys.readouterr()
+    assert main(["run", str(session), str(script), "--rehearse"]) == 1
+    err = capsys.readouterr().err
+    assert "prelude-rebind" in err and "TypeError" in err
+    assert "fist.py binds H again at line 1, which prelude.py bound at line 1" in err
+
+
+def test_binding_the_same_thing_again_says_nothing(tmp_path, capsys):
+    """Of the corpus's 284 passes run after a prelude, 20 bind one of its names: 17 to
+    the same thing -- one painting's `p = s.palette` in twelve passes, a re-import -- and
+    3 to a loop's variable the prelude's own loop left bound. None is told."""
+    session = _new_painting(tmp_path)
+    (tmp_path / "prelude.py").write_text(
+        "p = s.palette\nfrom easel import polygon\nW, H = 768, 1024\n"
+        "for x in range(3):\n    pass\n", encoding="utf-8")
+    script = tmp_path / "pass.py"
+    script.write_text("p = s.palette\nfrom easel import polygon, ellipse\nW = 768\n"
+                      "for x in (0.2, 0.4):\n"
+                      "    s.stroke([(x, 0.3), (x + 0.1, 0.3)], 'bristle', 'burnt_umber')\n",
+                      encoding="utf-8")
+    capsys.readouterr()
+    assert main(["run", str(session), str(script), "--rehearse"]) == 0
+    assert "prelude-rebind" not in capsys.readouterr().out
+
+
+# -- 0.8.0 H3: --scale said for what it is ---------------------------------------------
+def test_scale_under_one_is_a_share_of_the_canvas(tmp_path, capsys):
+    """`--scale` is the long side in pixels, and says so first; a number under 1, which
+    no pixel count can be, is the share of the canvas's own that the painter meant."""
+    from easel.cli import build_parser
+
+    session = _new_painting(tmp_path)
+    script = tmp_path / "pass.py"
+    script.write_text("s.stroke([(0.1, 0.5), (0.9, 0.5)], 'bristle', 'burnt_umber')\n",
+                      encoding="utf-8")
+    assert main(["run", str(session), str(script)]) == 0
+    capsys.readouterr()
+    for scale, size in (("0.5", (160, 120)), ("200", (200, 150))):
+        assert main(["look", str(session), "--scale", scale]) == 0
+        assert Image.open(capsys.readouterr().out.strip().splitlines()[-1]).size == size
+    gif = tmp_path / "film.gif"
+    assert main(["timelapse", str(session), str(gif), "--scale", "0.25", "--from-log"]) == 0
+    assert Image.open(gif).size == (80, 60)
+
+    sub = next(a for a in build_parser()._actions if getattr(a, "choices", None))
+    for verb in ("look", "timelapse"):
+        option = next(a for a in sub.choices[verb]._actions if "--scale" in a.option_strings)
+        assert option.help.startswith("the long side in pixels")
+
+
+# -- 0.8.0 A1: a note's box moved off the boxes already drawn ---------------------------
+def test_notes_that_begin_at_one_point_are_moved_off_each_other(tmp_path):
+    """The Bell-Warden's four wing fingers began at one point, and their notes lay in
+    one place, so only the last could be read -- 8 of its 17 notes lay under or over
+    another. A note goes where it always went unless a box is already there."""
+    from easel.look import _overlap, _place_notes
+
+    paths = [([(160.0, 120.0), (200.0 + 8 * i, 60.0)], f"finger {i + 1}") for i in range(6)]
+    paths.append(([(40.0, 200.0), (80.0, 180.0)], "far"))
+    placed = _place_notes(paths, (320, 240))
+    boxes = [box for _, box, _, _ in placed]
+    assert not any(_overlap(a, b) for i, a in enumerate(boxes) for b in boxes[i + 1:])
+    assert boxes[0] == (162.0, 107.0, 162.0 + 5 + 6 * 8, 121.0), "the first where it was"
+    assert boxes[-1] == (42.0, 187.0, 42.0 + 5 + 6 * 3, 201.0), "and a lone one too"
+    assert [moved for *_, moved in placed] == [False] * 4 + [True] * 2 + [False]
+
+    s = make(tmp_path)
+    for i in range(6):
+        s.guide([(0.5, 0.5), (0.62 + 0.02 * i, 0.25)], note=f"finger {i + 1}")
+    assert np.asarray(s.look_image(scale=None)).shape == (240, 320, 3)
+
+
+# -- 0.8.0 A5: one number to s.px() names every home a length has ----------------------
+def test_one_number_to_px_names_the_oval_and_the_pencils_width(tmp_path):
+    """The error named `px_size` *for size= and width=* and no oval, which is the road to
+    `ellipse(p, s.px_size(30), s.px_size(22))` -- an oval on any canvas that is not
+    square, silently -- and to a ribbon's width, which is not a size."""
+    s = _standing(tmp_path)
+    with pytest.raises(TypeError) as raised:
+        s.px(25)
+    said = str(raised.value)
+    for home in ("s.px_size(25)", "the pencil's width=", "s.circle(p, px=25)",
+                 "ellipse(p, *s.px(rx, ry))"):
+        assert home in said

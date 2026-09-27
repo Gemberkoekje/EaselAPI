@@ -157,6 +157,7 @@ class PassReport:
     ``scripts`` is what ran, as the pass named it. ``mode`` is one of :data:`MODES`.
     ``at`` is the log index the pass began at, in the painting's own numbering, so
     ``s.replay(upto=at)`` is the canvas it opened on. ``text`` is the block itself:
+    since 0.8.0 the pass's dearest calls, when a call cost more than one stroke, then
     what was said at the calls, and then the check.
     """
 
@@ -511,6 +512,13 @@ NOTICES: dict[str, NoticeSpec] = {
             "since then lays differently: an undo, a replay or a film rebuilt from it will "
             "not match the canvas there",
             "calibration", "## The log, undo, and the stream",
+        ),
+        # -- the shell -------------------------------------------------------------------
+        _spec(
+            "prelude-rebind", "fact",
+            "a pass binds again a name its prelude bound, to something else: from there to "
+            "the end of the pass the prelude's value is gone",
+            "reference", "## The session, and the shell",
         ),
     )
 }
