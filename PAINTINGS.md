@@ -948,7 +948,7 @@ laid over them.
 | Spent | 280 strokes of a 300 budget, the subject 61% of them against the 45% planned |
 | Rehearsed and thrown away | 19 rehearsals, none of them charged — five versions of the creature's pass before the one committed, each recovered from the painting session and re-run to the report it printed |
 | Reproducible | Seven pass scripts rebuild the log to the stroke, and the export to the pixel on the machine it was painted on — **in the order its saved reports record**: the drawing, the room, the plinth, the drawing again, then the rest. In numbered order the same 280 marks land, and 12.4% of the pixels move, because the drawing's second run lays a record |
-| Files | [`paintings/Claude/bell_warden/`](paintings/Claude/bell_warden) — [notes](paintings/Claude/bell_warden/NOTES.md), [time-lapse](paintings/Claude/bell_warden/painting.gif), [verdict](paintings/Claude/bell_warden/verdict.md), [answers](paintings/Claude/bell_warden/answers.md), [the versions thrown away](paintings/Claude/bell_warden/versions/README.md) |
+| Files | [`paintings/Claude/bell_warden/`](paintings/Claude/bell_warden) — [notes](paintings/Claude/bell_warden/NOTES.md), [time-lapse](paintings/Claude/bell_warden/painting.gif), [verdict](paintings/Claude/bell_warden/verdict.md), [answers](paintings/Claude/bell_warden/answers.md), [answers to step 2](paintings/Claude/bell_warden/answers-step2.md), [the versions thrown away](paintings/Claude/bell_warden/versions/README.md) |
 
 The [verdict](paintings/Claude/bell_warden/verdict.md) is the painter's own. For the
 tool: rehearsal — *all four failed versions of the creature cost nothing* — notices that

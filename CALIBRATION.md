@@ -63,7 +63,7 @@ their own sessions rather than measurements of the engine.
 | Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
 | What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
 | What the lighthouse handover's round measured: an edge that is not a step, a dry brush that streaks, the graded rule's misfires, the file | *The lighthouse handover's round* |
-| What the bell-warden's round measured: guides on any ground, the arrangement flat and small, the terminator, what a pass costs call by call, marks that land short or nothing, a key, what a place reads, the floor, a named light, a place laid over, rings, drawing units | *The bell-warden's round* |
+| What the bell-warden's round measured: guides on any ground, the arrangement flat and small, the terminator, what a pass costs call by call, marks that land short or nothing, a key, what a place reads, the floor, a named light, a place laid over, rings, drawing units, and the painter's answers to the package measured again | *The bell-warden's round* |
 
 ---
 
@@ -3285,7 +3285,7 @@ and its flags cut it down.
 candidates on every ground, the painter's arrangements flat at four sizes, its subject's
 pass laid seven ways, and its painting with the darks re-laid under the box's floor. Three
 of the round's questions -- 4, 9 and 10 -- are the eye's, and went to the painter with those
-sheets.
+sheets; its answers came back on 2026-09-27, and the last section here measures them again.
 
 ### The painting, rebuilt
 
@@ -3514,8 +3514,9 @@ one unit of paint is what `easel log` calls *NO PAINT LANDED*.
 **The cliff is in pixels, not in the fraction of the long side a size is given in**: at
 1440 the same dab lands at a size a third smaller. A dab at `tip_wobble=0.7` lands where one
 at `0` does. A one-touch dab never reads more than about a tenth of the way to its colour at
-any size -- it is a light touch by design, which is what the guide says -- and a two-touch
-dab a fifth. A short stroke of the claw lights' shape, `0.015` long, pressure `[1.0, 0.2]`,
+any size -- it is a light touch by design, which is what the guide says, though `dab()`
+puts the figure at a quarter (*The painter's answers to the package*, below) -- and a
+two-touch dab a fifth. A short stroke of the claw lights' shape, `0.015` long, pressure `[1.0, 0.2]`,
 `opacity=0.85`, lands at every size from 2 px, but reads halfway to its value only from
 `0.0060` (6.1 px) with a `round_hard` and at no size to 12 px with a `round_soft`.
 
@@ -3937,3 +3938,100 @@ stroke laid at `size=s.px_size(40)` and `pressure="even"` is 40 px thick on 1024
 768x1024; `s.circle(p, px=25)` is 50 px across both ways on 768x1024, and
 `ellipse(p, *s.px(30, 22))` 60 by 44. The units table's rows for a ribbon's width and a
 blob's radii are F7's, in step 9.
+
+### The painter's answers to the package, measured again
+
+`--answers`, from the sheets `--terminator` and `--floor` leave, the corpus replay, a flat
+field and both paintings' own drawings. The painter answered questions 4, 9, 10, D and 5f on
+2026-09-27 ([`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md)): **every
+number it measured comes back here, and two of its reasoned figures do not** (the last
+paragraph).
+
+**9a, B against C**, as the painter counted them -- pixels that differ by more than 12/255 in
+any channel:
+
+| canvas | crop | pixels | differ by more than 12/255 | largest step |
+|---|---|---|---|---|
+| 1024x768 | the creature | 553x591 | 18 | 17 |
+| | the chest, twice | 452x462 | 4 | 15 |
+| 1440x960 | the creature | 777x740 | 42 | 19 |
+| | the chest, twice | 634x576 | 9 | 15 |
+
+**9a, the outline**, which the rise across the silhouette -- `0.5` px under `feather=0.012`
+and as painted alike -- does not see. Each pixel's distance from the median of the five by
+five round it, in the three pixels just inside the silhouette, the three just outside, and
+deeper in; and the share of the inside band more than `0.06` off:
+
+| candidate | 1024x768: inside | specks | outside | deeper in | 1440x960: inside | specks |
+|---|---|---|---|---|---|---|
+| the smudge (D) | `0.0071` | 2.7% | `0.0030` | `0.0014` | `0.0091` | 4.2% |
+| as painted (C) | `0.0076` | 4.2% | `0.0028` | `0.0015` | `0.0103` | 6.1% |
+| the soft copies (B) | `0.0077` | 4.2% | `0.0028` | `0.0015` | `0.0104` | 6.0% |
+| the copies ragged (G) | `0.0093` | 4.7% | `0.0028` | `0.0014` | `0.0103` | 5.3% |
+| the join (F) | `0.0096` | 4.4% | `0.0028` | `0.0019` | `0.0118` | 6.1% |
+| `feather=0.03` (E) | `0.0135` | 7.2% | `0.0026` | `0.0080` | `0.0178` | 10.0% |
+| `feather=0.012` (A) | `0.0205` | **11.6%** | `0.0026` | `0.0037` | `0.0236` | **13.8%** |
+
+The narrow feather puts its speckle on the outline, nearly three times the painted grain,
+where the wide one spreads deeper in; outside the silhouette nothing moves. The painter read
+both as fur.
+
+**10a, Q and P**, in the values view at 8 bits:
+
+| | darkest | 5th percentile | 95th | under `0.14` | under `0.15` |
+|---|---|---|---|---|---|
+| Q, the painting | `0.140` | `0.160` | `0.349` | 0% | 0.5% |
+| P, its darks to `0.07` | `0.092` | `0.128` | `0.349` | 12.5% | 24.7% |
+
+The planned places' medians, Q then P: the wall (`G1:H3`) `0.176` and `0.156`, the floor
+`0.169` and `0.145`, and every place planned above `0.20` the same in both -- the plinth's
+side `0.266`. The painter's own boxes are not in its answer, so their readings are its own;
+its wall and floor, `0.175` and `0.169` in Q and `0.148` and `0.144` in P, sit within `0.01`
+of the plan's.
+
+**5f, the lightest place at every pass end**, from the corpus replay:
+
+| pass | by its median | by its 95th percentile | by its brightest pixel | the 95th clear of the next |
+|---|---|---|---|---|
+| `p02_room.py` | head top `0.296` | head top `0.307` | `G1:H3` `0.315` | `+0.004` (glow) |
+| `p03_plinth.py`, the drawing again | plinth top `0.504` | plinth top `0.528` | plinth top `0.575` | `+0.103` (plinth front) |
+| `p04_gargoyle.py` | plinth top `0.503` | plinth top `0.528` | glow `0.595` | `+0.029` (head top) |
+| `p05_details.py` to `p07_glow.py` | head top `0.606` | head top `0.630` | glow `0.699` | `+0.102` (plinth top) |
+
+**D, how often a line naming what landed nothing would speak**: a painted pass with a charged
+stroke that carried under one unit of paint.
+
+| what landed nothing | marks | passes | of the corpus's 341 painted |
+|---|---|---|---|
+| a mark laid by hand | 130 | 48 | 14.1% |
+| a mass call's strokes | 12 | 2 | 0.6% |
+| **either: the line speaks** | 142 | **50** | **14.7%** |
+| ...with a round dab under its cliff left to the fact at the call | | 40 | 11.7% |
+
+In 15 of the 24 paintings; on 3 of the Bell-Warden's 7 passes (the subject's, the details',
+the finish) and 5 of Wenna Brask's 11 (the face, the hand and cloth, the fist, the finish,
+the flour).
+
+**D, what a round dab's touches reach**: a light (`#f2e2a0`) on a flat dark field, twelve
+`round_hard` dabs a size at 1024x768 -- the way from the field to the colour, at the median of
+the pixels a dab moved and at the brightest of them:
+
+| `press` | 7 px | 12 px | 25 px |
+|---|---|---|---|
+| 1 | `0.09` / `0.09` | `0.09` / `0.10` | `0.09` / `0.10` |
+| 2 | `0.16` / `0.19` | `0.19` / `0.19` | `0.19` / `0.19` |
+| 3 | `0.75` / `0.84` | `0.78` / `0.85` | `0.77` / `0.86` |
+
+`dab()`'s docstring puts one touch at *about a quarter of the way to its colour*, and gives no
+figure for two.
+
+**4b, the notes**: each note's box sits up and right of its guide's first point, and no room is
+made for another. On the Bell-Warden's drawing **8 of its 17 notes lie under or over
+another** -- the plinth's top and front, the head's top and cheek, and the four wing fingers',
+drawn in one place -- and on Wenna Brask's 6 of 25: the fist and the thumb, the cap and the
+ring, and its two tails.
+
+**The two reasoned figures that do not hold.** The line D asks for would speak on 14.7% of the
+corpus's painted passes, not the one in ten the painter took from the starved bristles alone.
+And between `0.07` and `0.35` there is room for three planned values `0.10` apart, as between
+`0.13` and `0.35`, not four: a fourth needs a top at `0.37`.

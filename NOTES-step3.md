@@ -40,7 +40,8 @@ opaque one the loudest -- a white line with a dark core on a dark canvas, a doub
 grey. The pick is the painter's, so it is one constant, `look._GUIDE_CASING_ALPHA`, and
 `test_a_guide_reads_over_dark_paint_mid_grey_and_a_light_ground` passes at 150 and at 255.
 If 4b comes back opaque: the constant, the CHANGELOG line, the `SUGGESTIONS.md` row and the
-plan's A1 note.
+plan's A1 note. *Settled 2026-09-27: 4b came back E, the casing at 150, so nothing changes -- see the
+answers' section of `NOTES-step2.md`.*
 
 **2. The engine's line is the bench's candidate, to the pixel, and the bench keeps 0.7.0's.**
 `_draw_guides` makes the same PIL calls in the same order as the probe's `draw_candidate(
@@ -79,7 +80,8 @@ pixels across and `ry` down, on any canvas (60 by 44 for `30, 22`, measured). Th
 the module's, with a different default for one radius, or a `px=` on `ellipse` taking the
 canvas's size; both are more to know than a helper already there. **This is the call most
 worth the owner's look**: the plan wrote `ellipse(..., px=True)`, and the painter asked
-only for `s.circle(p, px=25)`.
+only for `s.circle(p, px=25)`. *Settled 2026-09-27 (O9): whichever makes more sense for an
+LLM -- kept, and in step 4 the error a one-number `s.px(r)` raises names the oval form.*
 
 **7. The group holds points.** The plan says *holding shapes*; the painter's `T()` also
 moved the eyes' centres with the head (`far_eye = P(*T(388, 280))` in its prelude), so a
@@ -137,5 +139,6 @@ a helper that returns numbers. The MCP server and the CLI are unchanged.
 
 - **The first painter's answers** to 4, 9, 10, D and 5f, filed as
   `paintings/Claude/bell_warden/answers-step2.md` and re-measured. 4b settles the casing
-  (decision 1); 4a, 4c and 4d the thumbnail.
+  (decision 1); 4a, 4c and 4d the thumbnail. *Done 2026-09-27: see the answers' section of
+  `NOTES-step2.md`.*
 - **Step 4**: C, the dearest calls, with H1, H2 and H3 -- none of which waits on the answers.

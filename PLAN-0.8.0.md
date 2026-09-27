@@ -14,19 +14,35 @@ guide is drawn in), `Session.guide` and `Session.pencil` in `src/easel/session.p
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 3 (A1, A2 and A5) is built on branch `claude/v0-8-0-plan-yqm1vt`, 2026-09-26,
-off `main` at `41eb63b`** -- step 2 merged as
+**Status: the first painter's answers to the step-2 package are filed, re-measured, on
+branch `file-bell-answers-step2`, 2026-09-27, off `main` at `da02328`** -- step 3 merged as
+[#91](https://github.com/Gemberkoekje/EaselAPI/pull/91). The package went to the painter
+that morning and came back the same day
+([`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md)): every number it
+measured holds when measured again (`probe_bell_session.py --answers`, `CALIBRATION.md`),
+and two of its reasoned figures do not, marked where they stand. **They decide what was
+left**: 4b, the casing at 150 as built, and the notes' boxes kept off each other (A1); the
+thumbnail at 192 px, with no argument the plan's places and the masses laid so far, a clip
+as part of a place, and a second door, `easel run --thumbnail`, for the pass about to be
+rehearsed (A3); the join, and a feather said as what it reads as, fur (B); a darker dark,
+yes, with a hue -- recorded, not built this round (E3); D, a line after the pass naming
+every mark that landed nothing (D); and 5f, the first painter moving to the second's reading
+of a named light, its 95th percentile beside its median (E4). They also found that `dab()`
+says nothing of two touches and overstates one (D, F3). **And the owner answered two
+questions** (O8, O9): new paintings are painted on 0.8.0, so this round takes the two
+verdicts it has; and an oval in pixels stays `ellipse(p, *s.px(rx, ry))`, with the error a
+one-number `s.px(r)` raises naming it. **Nothing waits on a painter now**; step 4 is next.
+
+*Step 3 (A1, A2 and A5) was built on branch `claude/v0-8-0-plan-yqm1vt`, 2026-09-26, off
+`main` at `41eb63b`* -- step 2 merged as
 [#90](https://github.com/Gemberkoekje/EaselAPI/pull/90). As step 2 decided them: `look()`
 draws a guide as a graphite line on a light casing, with its note in a box -- the casing at
-150 of 255 until the painter's question 4b comes back; `guide()` and `pencil()` take a shape
+150 of 255 until the painter's question 4b came back; `guide()` and `pencil()` take a shape
 and draw its outline, corners kept; and `s.px()`, `s.px_size()`, `s.circle(px=)` and
 `group()`. Nothing a mark lays changes. Two things the plan did not say are marked where they
 stand: the server has no `guide` or `pencil` tool to change, and `ellipse(..., px=True)`
 cannot be built as written -- a module function has no canvas to count pixels on -- so an
-oval in pixels is two radii through `s.px`. See [`NOTES-step3.md`](NOTES-step3.md). **The
-painter's answers to questions 4, 9, 10, D and 5f have not come back**: step 4 does not
-wait on them, nor does step 5 but for E4, which waits on 5f; the thumbnail (step 6) waits on
-4, the recipes of step 7 on 9, and D (step 8) on D.
+oval in pixels is two radii through `s.px`. See [`NOTES-step3.md`](NOTES-step3.md).
 
 *Step 2 (measure) was built on branch `measure-bell-round`, 2026-09-26, off `main` at
 `a180395` -- step 1 merged as [#88](https://github.com/Gemberkoekje/EaselAPI/pull/88) and
@@ -349,6 +365,18 @@ still hides the drawing with the pencil.
   blind package's F stay the line the painter had. Over flat greys the smallest step at any
   pixel of the line is `0.261`, at `0.49`. If 4b comes back opaque, it is one constant,
   `look._GUIDE_CASING_ALPHA`, and its test holds either way.
+- *The painter's answer (4b, 2026-09-27): E, the casing at 150 -- built as it stands.*
+  Blind, it ranked G first, then E, H and F: G's single line sat on one pixel on both of its
+  sheets, neither of which crosses G's switch. Once it had read the bench's 35 grounds it
+  moved to E, since G leaves its whole line under a step of `0.25` on burnt sienna -- *the
+  drawing gone again, the failure this round set out to fix*. H outweighs the paint on a
+  dark canvas; F is gone on one. **And the notes**: in E, G and H their boxes pile up where
+  the drawing is densest -- *head top* over *cheek* -- and cover the outline there. Measured
+  on both drawings (`--answers`), **8 of the Bell-Warden's 17 notes lie under or over
+  another** -- the four wing fingers' in one place, so only *finger 4* can be read -- and 6
+  of Wenna Brask's 25: a box goes up and right of its guide's first point, and no room is
+  made for any other. So a note's box moves off the boxes already drawn; the view only, in
+  step 4.
 
 **A2. A shape handed to `guide()` or `pencil()` is drawn as its outline, corners kept.**
 `s.guide(plinth, note="plinth")` and `s.pencil(plinth)` take a shape -- a `Polygon`, a
@@ -405,6 +433,25 @@ in the *planning verbs leave nothing behind* pattern. The same through the serve
   places, and this painting's plan names no mass of its creature** -- the thumbnail of the
   plan is a room and a plinth -- so the build asks the painter whether no argument should
   draw the masses laid so far too. The drawing over a thumbnail buries it.
+- *Decided by the painter (4a, 4c, 4d, 2026-09-27).* **192 px when no size is given** --
+  its blind pick and the bench's, the smallest at which the ears, the islands and the band
+  all read; it reads two cells otherwise than the bench did (the islands only as specks at
+  96, the band weakly at 128). **With no argument, the plan's places and the masses the
+  painting has laid** -- the plan's alone drew *everything that did not fail*, and it expects
+  most plans not to name a subject's inner masses. **A clip is part of a place**: its
+  lighting is three copies of the body held to it, which drawn unclipped spill outside the
+  silhouette, and shapes cannot intersect (`Polygon` has no such method), so a value can be
+  a pair, `{rim_in: ("mid_c", body)}`, as `block_in` takes `clip=`. **Never the drawing over
+  a thumbnail** -- at 256 px seventeen cased outlines outweigh the masses -- and **no look of
+  the drawing alone** (4G, declined): its throwaway canvas was for guides it could not see,
+  and *does this silhouette read?* is `thumbnail({shape: dark})`'s question. **And the door
+  it would have used every pass: `easel run pass.py --thumbnail`** -- the pass counted, not
+  painted, each mass call's place drawn flat at its colour's value, clipped as the call
+  clips, over the canvas so far. That is how the bench drew 4a's sheets from its passes
+  (`record_masses`), and the picture that would have shown the cat, the piebald and the arch
+  before a rehearsal of 85 to 113 marks each. Built with the verb in step 6, on `easel run`
+  and the server's `run`; a pass that samples a colour off its own masses reads the canvas
+  so far, as the bench's did (`NOTES-step2.md`, gotcha 7).
 
 **A4. A recipe for a silhouette built from parts, and an exercise that judges one.** A new
 recipe, *A silhouette built from parts*, under *Before the first stroke*: the largest mass
@@ -486,6 +533,14 @@ and make every recipe's numbers wrong for the painter who set it.
   `Polygon.scaled()` and `Region.scaled()` take `about=` beside their old path. `s.px(r)`
   with one number raises and names `px_size` and `px=`. Not built: a `px` form of a
   ribbon's width, which nobody decided.
+- *The owner's answer (O9, 2026-09-27): whichever makes more sense for an LLM.* **Kept as
+  built**: one helper converts a place and two radii alike, because both are measured along
+  the two axes; `ellipse()` has no canvas to count on; and a second `ellipse` in other units
+  is the ambiguity a painter trips on. What does change is the error a one-number `s.px(r)`
+  raises. It sends a length to `s.px_size` *for size= and width=* and names no oval, which
+  is the road to `ellipse(p, s.px_size(30), s.px_size(22))` -- an oval on any canvas that is
+  not square, and silent -- and to a ribbon's `width`, which is not a size (F7). It names
+  `ellipse(p, *s.px(rx, ry))`, and the pencil's `width=` by its name: step 4.
 
 ### B. Light on a form: the terminator, not the feather
 
@@ -537,6 +592,22 @@ not built, because at any width a wider feather is speckle (row 9).
   4 px, `0.010` about 9, `0.016` about 15 -- and past `opacity=0.6` barely matters; a shift
   of `0.016` of the long side, the painter's own, leaves a rim the join can turn. A join run
   ending against the silhouette leaves a blot: the recipe tapers its ends.
+- *Decided by the painter (9a, 9b, 2026-09-27): the join.* Blind, at both sizes, **F
+  first** -- *the only one where the light turns* -- then as painted and the soft copies,
+  tied and the same picture (18 pixels of the crop differ by more than 12/255, re-measured);
+  then the smudge, the ragged copies, and the two feathers last, **furred**. By name: the
+  recipe as B1 writes it, its join runs tapered at both ends; its *Goes wrong as* the
+  painter's own three versions -- the islands, the band, the cut-out; and one line, **a soft
+  brush held hard is held hard**. **B3's sentence is half of what it needed**: it says what
+  not to do, so it says what to do too -- *to soften a terminator, lay a join along it* --
+  and what the break reads as at the painting's size: fur. **Measured where the bench had
+  not looked**: the rise *across* the silhouette reads `0.5` px under `feather=0.012` as it
+  does as painted, but in the three pixels just inside the silhouette 11.6% of pixels sit
+  more than `0.06` off their neighbours' median, against 4.2% as painted -- 13.8% against
+  6.1% at 1440x960 -- more than under `0.03`, whose break spreads deeper in; outside the
+  silhouette nothing moves. The shade copy's feathered edge lies on the outline and opens
+  specks of the lit layer along it. And the join's terraces read as chisel facets at 1:1 on
+  stone; on skin, *can't tell* (B4).
 
 *Added 2026-09-26, row W13.* **B1 is scoped, and B gains a fourth recipe.** The second
 painter carried B1's structure to a face turned toward the lamp and got three profiles
@@ -669,7 +740,30 @@ case left**: the two subject-pass versions that laid the head's plane in the pas
 body read it at `0.595` and `0.567` laid wet and `0.591` and `0.563` dried first, with
 `0.014` and `0.005` of wetness under it. A dab that lands but
 short -- the ember, `1.6` units at `press=2`, reading a tenth of its way -- is a light touch
-by design, as `dab()` says: a two-touch dab reads a fifth of the way at any size to 12 px.
+by design, ~~as `dab()` says~~: a two-touch dab reads a fifth of the way at any size to 12 px
+*-- which `dab()` does not say (the painter's D, below)*.
+
+*Decided by the painter (D, 2026-09-27)*: **name them, after the pass**, only when the pass
+laid one -- which marks, at which lines, and the cause the engine can see; marks laid by
+hand by name, a mass call's by count: *landed nothing: the dab at p06_finish.py:39 (a round
+tip under its cliff at press=1); 6 passes of the block_in at p05_details.py:12 (outside its
+clip)*. The dearest line cannot say it, since it never lists a mark laid by hand, and every
+mark that carried a picture's reason and landed nothing was laid by hand -- the spark, and
+the second painting's flour. Nor does `easel log`: neither painter ran it while painting
+(both sessions' transcripts), and neither painting's saved reports -- 27 and 32 -- mention a
+mark that landed nothing. It will not be the next *no clear light*, the painter holds,
+because it speaks only when a mark did nothing, which no painter means. Re-measured
+(`--answers`), **the line speaks on 50 of the corpus's 341 painted passes, 14.7%**, in 15 of
+its 24 paintings -- not the one in ten the painter reckoned from the starved bristles alone
+-- and on 11.7% if a round dab under its cliff is left to the fact at the call; on 3 of the
+Bell-Warden's 7 passes and 5 of Wenna Brask's 11, every pass that laid flour among them. So
+D is built as both: the fact at the call for a round dab under its cliff, and the line after
+the pass. **And `dab()`'s docstring**, which the painter read and this plan misquoted: it
+gives one touch and three, never two, and its one touch -- *about a quarter of the way to
+its colour*, written 2026-09-10 ([#6](https://github.com/Gemberkoekje/EaselAPI/pull/6)) --
+measures a tenth, at the median and at the brightest pixel alike, from 7 px to 25; two
+touches reach a fifth, three about four fifths (`--answers`). It gives all three (F3). The
+recipe that says *`press=1` and `press=2` are whispers* is one the painter did not read.
 
 Row 4, and the painter's fourth suggestion. **The candidate is a fact at the call, measured
 after the mark as `glaze-far` is** -- the damage rather than the wetness: a mark laid by
@@ -816,6 +910,20 @@ and the owner's follow-up on it.
   stay `0.01` apart (`0.17`-`0.18`, then `0.15`-`0.16`); what a darker dark separates is
   only what was already apart -- its room's mixtures, `0.15` to `0.21`, would have run `0.11`
   to `0.21`. The room lacked a plan with its darks apart, not a pigment.
+- *The painter's answer (10a, 10b, 2026-09-27): a darker dark, yes -- with a hue, and not
+  this round.* Blind, **P**: the undercroft darker and deeper, the plinth's cast shadow a
+  shape of its own that holds the plinth down, the figure further out -- chosen against its
+  own picture, which it could tell (Q holds nothing under `0.14`, re-measured; P, 12.5% of
+  its canvas). It would have used such a dark first for the cast shadow, then the accents,
+  not the room's masses; **a deeper masstone of one of the box's darks, not a neutral black,
+  is right**, and which, it cannot tell. It agrees with the bench that its room wanted its
+  darks planned apart: P stretches the gaps between them 1.3 to 2 times and opens none to
+  `0.10` (the plan's own wall and floor sit `0.007` apart in Q, `0.011` in P). *Re-measured,
+  one figure of its reasoning does not hold*: between `0.07` and `0.35` there is room for
+  three planned values `0.10` apart, as between `0.13` and `0.35`, not four -- a fourth
+  needs a top at `0.37`. So E3 stands as written: `at_value` names burnt umber alone for the
+  `0.13` it wanted, and a supplied dark with its value for P's `0.10`; and the yes is the
+  first ask for a dark below the box, recorded for the next round.
 
 **E4. The light a plan names, read where it is** -- *added 2026-09-26*, row W4. The second
 painting's lamp is the case E1 and E2 do not reach. Its place is mostly iron, so the
@@ -855,6 +963,19 @@ about one place -- and answers it by saying what each line measures.
   by `0.17` to `0.28` at its 95th percentile. Read at its 95th, no plan's `lightest:`
   verdict changes; the number printed does (Wenna Brask's lantern `0.51` by its median,
   `0.59` at its 95th). The first painter's follow-up is question 5f.
+- *Decided by both painters (5f, 2026-09-27).* The first painter moves to the second's
+  reading: **the median for `plan:`, and for `lightest:` the 95th percentile, printed
+  beside it** -- *head top 0.61 as a place, 0.63 at its brightest twentieth*. Its reason for
+  the median in question 5 was the mean on `plan:`, which printed a miss beside a
+  `lightest:` reading `0.63`; with the median on `plan:` the two lines agree on the place,
+  and the light stands beside it, where the difference explains itself. On its painting no
+  verdict moves, re-measured: the lightest place by the 95th is the median's at every pass
+  end -- the head's top after the room (`0.307`; `0.296` by its median), the plinth's top
+  after the plinth and the subject (`0.528`; `0.504`, `0.503`), the head's top from the
+  details pass on (`0.630`; `0.606`), `0.102` clear of the next. **Not the brightest
+  pixel**: from the subject's pass on, the glow's brightest is the head's own highlight,
+  `0.699`, and after the room the wall's. Where the lit part is under a twentieth of its
+  place, the plan names the light itself, and the split clause says so. E4 waits on nothing.
 
 ### F. The documentation
 
@@ -919,6 +1040,9 @@ single pigment* today (E3). `LESSONS.md`'s count of re-measured claims -- left s
 And the closing checklist's third question gains the size the picture will be seen at --
 *is that reason still in the picture, looked at small?*, with `s.look(scale=256)` beside it
 -- which is row 12's answer, in the one place the tool already asks about the reason.
+*And one the painter's answers found (D, 2026-09-27)*: `dab()`'s docstring puts one touch
+at *about a quarter of the way to its colour*, which measures a tenth, and leaves out two
+touches, which reach a fifth; it gives all three, three about four fifths.
 
 **F4. The record.** `SUGGESTIONS.md` opens the round; `LESSONS.md`'s protocol gains its
 data points -- what the second painter against the card and body read, a `boxes:` line at
@@ -1071,7 +1195,9 @@ three soft strokes of paint.
   so there is nothing for it to carry.
 - **Moving `pencil()`'s `smooth` default.** A2 says why.
 - **A look of the drawing alone on a plain ground**, full size -- the painter's throwaway
-  canvas as a flag. Not proposed until A1 has been seen; asked in question 4.
+  canvas as a flag. Not proposed until A1 has been seen; asked in question 4. *Declined by
+  the painter (4d, 2026-09-27): the throwaway canvas was for guides it could not see, and
+  the question it was answering is the thumbnail's.*
 - **The rest of what 0.7.0 left open** stays where it is written: the smudge as a plan
   entry (no painter has asked), the three things left alone, and the stacked masses the
   graded rule still tells.
@@ -1140,6 +1266,22 @@ a pass laid that landed nothing.* *One follow-up goes to it with the second batc
 revisits its answer to question 5 for a light whose lit part is under a tenth of its place
 -- would it keep the median for `lightest:` there too?
 
+**Answered by the painter, 2026-09-27**, in
+[`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md) -- Part 1 blind, as the
+package asked, with two things it says were not: it had read this plan's candidate lists in
+step 1, and it knew its own painting between P and Q. Every number it measured was measured
+again here (`probe_bell_session.py --answers`) and holds; two of its reasoned figures do not,
+and are marked where they stand (D, E3). **4** -- 192 px; with no argument, the plan's places
+and the masses laid so far; a clip as part of a place; never the drawing over a thumbnail,
+and no look of the drawing alone; and `easel run --thumbnail`, the pass before it is
+rehearsed (A3) -- and **4b, E**, the casing at 150 as built, with the notes' boxes kept off
+each other (A1). **9** -- the join, blind and by name; a soft brush held hard is held hard;
+and B3's sentence says what to do and what a feather reads as, fur (B). **10** -- P, blind;
+a darker dark, yes, first for the cast shadow, and with a hue, which it cannot name; and the
+room wanted its darks planned apart (E3). **D** -- name them after the pass, hand marks by
+name and mass calls by count; and `dab()` gives its two-touch figure (D, F3). **5f** -- the
+second painter's reading: the 95th percentile for `lightest:`, beside the median (E4).
+
 **For the second painter** -- *added 2026-09-26*, by the same ruling, through the owner,
 as [`questions-step1.md`](paintings/Claude/wenna_brask/questions-step1.md) beside its
 painting.
@@ -1197,6 +1339,8 @@ posted.
 | O1 | Which model painted it, and at what effort? | the handover's was read off its session's metadata, and every section of `PAINTINGS.md` says it. **Answered from the metadata: `claude-opus-5-5` at max effort, on every turn.** |
 | O2 | Is the painting filed here -- scripts, looks, and the notes' account of the pack it was made for -- or filed with the pack's details left out, or not at all? | it was made for another of your projects; step 1 waits on it. **Answered 2026-09-26: filed, with the pack's details left out** -- the notes' paragraph naming the pack and where its copy goes, its catalogue entry, and the WebP copy. |
 | O3 | The painter asked whether to write its report up in the painting's folder or as issues here, posted under your account. This plan files it as `verdict.md` in the painting's folder, as every round's has been, and posts nothing. | posting in public is yours to decide. **Answered 2026-09-26: `verdict.md` only; nothing is posted.** And the painter's questions go through the owner, who pastes them into the painting session: questions 5 to 8 with step 1 ([`questions-step1.md`](paintings/Claude/bell_warden/questions-step1.md)), 4, 9 and 10 after step 2, as a blind package. |
+| O8 | A third painting against 0.7.0: recorded, and planned on only after 0.8.0 is cut (section 8)? | the round's scope. **Answered 2026-09-27: new paintings are painted on 0.8.0** -- there is no third against 0.7.0, and this round takes the two verdicts it has. |
+| O9 | `ellipse(..., px=True)` cannot be built (A5, step 3), so an oval in pixels is `ellipse(p, *s.px(rx, ry))`. Keep it, or build another form? | the plan named a form the step could not build. **Answered 2026-09-27: whichever makes more sense for an LLM** -- kept, and the error a one-number `s.px(r)` raises names it (A5). |
 
 ---
 
@@ -1257,12 +1401,16 @@ and cut*.
 3. **A1 and A2**: guides that read on any ground; a shape handed to `guide()` and
    `pencil()`. Small, certain, one PR. *With A5 -- `s.px()` and a group -- after W-Q1 and
    W-Q2.* *Built 2026-09-26, A1's casing at 150 until question 4b: see
-   [`NOTES-step3.md`](NOTES-step3.md).*
+   [`NOTES-step3.md`](NOTES-step3.md). 4b came back E, 2026-09-27: the casing stays.*
 4. **C**: the dearest calls. *With H1, which names a finding's marks from the same record
-   of each call's site, and H2 and H3, which are small.*
+   of each call's site, and H2 and H3, which are small.* *And two small things the
+   painter's answers and the owner's found: a guide note's box moved off the boxes already
+   drawn (A1), and the error a one-number `s.px(r)` raises naming the oval (A5).*
 5. **E**: the key and the place reading, after questions 5 and 6, and `at_value`'s error at
-   the floor. *And E4, after W-Q5 and the first painter's follow-up.*
-6. **A3**: the thumbnail, after question 4, with its server tool.
+   the floor. *And E4, after W-Q5 and the first painter's follow-up -- both answered, so E4
+   waits on nothing.*
+6. **A3**: the thumbnail, after question 4, with its server tool. *As question 4 decided
+   it, with `easel run --thumbnail` for the pass about to be rehearsed.*
 7. **A4 and B**: the two recipes with their demos, the terminator helper, exercise 10,
    `union()` in `PAINTING.md`, and `feather=` said for what it is -- with `ribbon()`'s
    widths only if the recipe's bench needs them. *And B1 scoped, B4's recipe for a form
@@ -1271,7 +1419,9 @@ and cut*.
 8. **D**: ~~`into-wet`, on its four conditions -- or the decline recorded with its new data
    point~~ *as rewritten: a mark that lands short, and the strokes that land nothing, on the
    same four conditions. And H4, only if step 2's count separates a failing passage from a
-   subject built in as many passes.*
+   subject built in as many passes.* *As question D decided it: the fact at the call for a
+   round dab under its cliff, and a line after the pass naming every mark that landed
+   nothing.*
 9. **F**: `PAINTER.md` moved and its budget lowered, `REFERENCE.md`'s tables, the claims
    that stopped being true, the checklist's size, *F5 to F9,* and the record -- last, because it moves
    text that every earlier step touched. `check_guide_blocks.py` green,
@@ -1299,7 +1449,7 @@ and cut*.
 | The dearest line is noise on a pass of hand-laid marks. | Said only when a call cost more than one stroke. |
 | The decisions are one painter's. | Where an answer meets the corpus -- the guide blocks, the other plan, the goldens -- the corpus wins; where the painter has no evidence, the bench decides. |
 | The second painter's agreement is counted as a second opinion, when it is the first painter's lesson. | Every row of 3b says where it repeats the first verdict; only its contradiction (W13) and its own measurements weigh on their own. |
-| The round grows with every picture the pack still wants. | *Proposed, and the owner's to confirm*: this round takes the two verdicts it has; a third painting against 0.7.0 is filed and recorded, and planned on after 0.8.0 is cut. |
+| The round grows with every picture the pack still wants. | ~~*Proposed, and the owner's to confirm*: this round takes the two verdicts it has; a third painting against 0.7.0 is filed and recorded, and planned on after 0.8.0 is cut.~~ *Answered by the owner, 2026-09-27 (O8): new paintings are painted on 0.8.0, so this round takes the two verdicts it has, and no third against 0.7.0 comes into it.* |
 | A lettering verb pulls the engine toward drawing type. | A recipe first, laying letters as strokes through the calls a painter already has; a verb only if the recipe is too dear, and then through the same calls. |
 
 ---
@@ -1308,14 +1458,14 @@ and cut*.
 
 | File | Change |
 |---|---|
-| `src/easel/look.py` | the guide's casing and boxed note; the thumbnail's render |
-| `src/easel/session.py` | `thumbnail()`; `guide()` and `pencil()` taking a shape; the call tally in `_one_call`; the place reading; `into-wet`, if built |
+| `src/easel/look.py` | the guide's casing and boxed note, *the notes' boxes kept off each other*; the thumbnail's render |
+| `src/easel/session.py` | `thumbnail()`; `guide()` and `pencil()` taking a shape; the call tally in `_one_call`; the place reading; ~~`into-wet`, if built~~ *the fact at the call for a round dab under its cliff, the line naming every mark that landed nothing, and `dab()`'s three touches (D)* |
 | `src/easel/plan.py`, `checklist.py`, `measure.py` | `key=`; the median reading; `values_line` under a key; `compare_plan` reading a place as the plan does |
 | `src/easel/palette.py` | `at_value`'s error at the floor; the floor said one way in its docstrings |
 | `src/easel/regions.py` | the terminator helper; `ribbon()`'s widths, if needed |
-| `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)* |
-| `src/easel/notices.py`, `docs.py` | `into-wet`'s code and passage, if built; `FRONT_PAGE_WORDS` lowered |
-| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
+| `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
+| `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
+| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |

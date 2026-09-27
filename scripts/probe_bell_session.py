@@ -41,14 +41,16 @@ It does four things:
     python scripts/probe_bell_session.py --rebind     # 4H2: prelude names a pass rebinds
     python scripts/probe_bell_session.py --rings      # 4I2: an inward scumble's rings
     python scripts/probe_bell_session.py --units      # 4A5 and F7: pixel helpers, and units
+    python scripts/probe_bell_session.py --answers    # the painter's step-2 answers, again
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
-The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint`` and
-``--place`` -- share one replay of every committed painting, about half an hour, kept in
-``out/bell/corpus.pkl`` and read back until ``--fresh`` asks for another. ``--claims`` also
-measures where a round dab, a short stroke and a starved bristle stop landing paint;
-``--thumbnail`` draws A4's member that swells and narrows; ``--short`` runs its candidate
-over the guide's own code blocks.
+The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
+``--place`` and ``--answers`` -- share one replay of every committed painting, about half an
+hour, kept in ``out/bell/corpus.pkl`` and read back until ``--fresh`` asks for another.
+``--claims`` also measures where a round dab, a short stroke and a starved bristle stop
+landing paint; ``--thumbnail`` draws A4's member that swells and narrows; ``--short`` runs
+its candidate over the guide's own code blocks. ``--answers`` reads the sheets
+``--terminator`` and ``--floor`` leave, so it runs after them.
 """
 
 from __future__ import annotations
@@ -1528,6 +1530,10 @@ def _outline_runs(shape: Polygon) -> list[list[tuple[float, float]]]:
     return [[(float(x), float(y)) for x, y in shape.closed]]
 
 
+#: The two crops row 9's sheets are cut at, in canvas units: the creature, and its chest.
+TERMINATOR_BOXES = {"whole": (0.18, 0.03, 0.72, 0.80), "chest": (0.24, 0.32, 0.46, 0.62)}
+
+
 def lay_terminator_kinds(rb: Rebuilt, label: str = "p04_gargoyle.py",
                          kinds=TERMINATOR_KINDS) -> dict[str, tuple[Session, list[str], int]]:
     """Each candidate laid on the canvas the subject's pass opened on."""
@@ -1549,7 +1555,7 @@ def probe_terminator(rb: Rebuilt, wb: Rebuilt | None) -> None:
     body = scope["body"]
     rim_in, mid_in = body.shifted(0.010, 0.016), body.shifted(0.026, 0.040)
     rb1440 = rebuild("bell", upto="p01_draw.py (again)", width=1440, height=960)
-    boxes = {"whole": (0.18, 0.03, 0.72, 0.80), "chest": (0.24, 0.32, 0.46, 0.62)}
+    boxes = TERMINATOR_BOXES
     (OUT / "terminator").mkdir(parents=True, exist_ok=True)
     for size, built in (("1024x768", rb), ("1440x960", rb1440)):
         laid = lay_terminator_kinds(built)
@@ -3044,6 +3050,201 @@ def probe_shape_units() -> None:
     print("  a brush's size=0.05 is 51 px on either canvas: a fraction of the long side")
 
 
+# -- the painter's answers to the step-2 package, re-measured ---------------------------
+
+def _way(reading: float, field: float, own: float) -> float:
+    """How far a reading got from the field toward a mark's own value."""
+    return (reading - field) / (own - field) if abs(own - field) > 1e-6 else float("nan")
+
+
+def note_boxes(guides: list[dict], width: int, height: int) -> list[tuple[str, tuple]]:
+    """Every guide note's box on a full-canvas look, as ``look._draw_guides`` draws it.
+
+    The box sits up and to the right of the guide's first point, six pixels a character,
+    with no room made for any other: the arithmetic is ``_draw_guides``'s own.
+    """
+    out = []
+    for guide in guides:
+        note, pts = str(guide.get("note") or ""), guide.get("points") or ()
+        if note and pts:
+            x, y = float(pts[0][0]) * width, float(pts[0][1]) * height
+            out.append((note, (x + 2, y - 13, x + 7 + 6 * len(note), y + 1)))
+    return out
+
+
+def _box_overlap(a: tuple, b: tuple) -> float:
+    return (max(0.0, min(a[2], b[2]) - max(a[0], b[0]))
+            * max(0.0, min(a[3], b[3]) - max(a[1], b[1])))
+
+
+def outline_grain(rgb: np.ndarray, inside: np.ndarray, reach: int = 3,
+                  over: float = 0.06) -> dict[str, float]:
+    """The grain in a band ``reach`` pixels either side of a silhouette, in values.
+
+    Each pixel against the median of the five by five round it: a speckle along the
+    outline shows as pixels far off their neighbours' median, which a rise measured
+    *across* the outline (:func:`rise_widths`) does not see.
+    """
+    v = values_of_rgb(rgb).astype(np.float64)
+    grey = Image.fromarray(np.clip(v * 255.0 + 0.5, 0, 255).astype(np.uint8))
+    off = np.abs(v - np.asarray(grey.filter(ImageFilter.MedianFilter(5)),
+                                dtype=np.float64) / 255.0)
+    held = Image.fromarray((inside * 255).astype(np.uint8))
+    core = np.asarray(held.filter(ImageFilter.MinFilter(2 * reach + 1))) > 0
+    near = np.asarray(held.filter(ImageFilter.MaxFilter(2 * reach + 1))) > 0
+    bands = {"inner": inside & ~core, "outer": near & ~inside, "deeper": core}
+    out = {}
+    for name, band in bands.items():
+        out[name] = float(off[band].mean())
+        out[f"{name} specks"] = float((off[band] > over).mean())
+    return out
+
+
+def probe_answers(data: CorpusData) -> None:
+    """The painter's answers to 4, 9, 10, D and 5f: every number it measured, again.
+
+    Read from what the other benches keep -- the sheets under ``out/bell/`` and the
+    corpus replay -- except the dab touches, laid here on a flat field, and the note
+    boxes, from both paintings' own drawings.
+    """
+    heading("answers 9a: B (soft copies) against C (as painted), pixel by pixel")
+    folder = OUT / "terminator"
+    if not (folder / "as_painted_1024x768_whole.png").exists():
+        print("  no sheets: run --terminator first")
+    else:
+        rows = []
+        for size in ("1024x768", "1440x960"):
+            for key in ("whole", "chest"):
+                b, c = (np.asarray(Image.open(folder / f"{_slug(k)}_{size}_{key}.png")
+                                   .convert("RGB"), dtype=np.int16)
+                        for k in ("soft copies", "as painted"))
+                step = np.abs(b - c).max(axis=2)
+                rows.append([size, key, f"{c.shape[1]}x{c.shape[0]}", int((step > 12).sum()),
+                             int(step.max())])
+        print(table(rows, ["canvas", "crop", "px", "differ by more than 12/255",
+                           "largest step"]))
+        heading("answers 9a: the grain along the silhouette, 3 px either side of it")
+        body = scope_of("bell")["body"]
+        x0, y0, x1, y1 = TERMINATOR_BOXES["whole"]
+        for size in ("1024x768", "1440x960"):
+            w, h = (int(n) for n in size.split("x"))
+            inside = body.mask(w, h)[int(y0 * h):int(y1 * h), int(x0 * w):int(x1 * w)]
+            rows = []
+            for name, _ in TERMINATOR_KINDS:
+                rgb = np.asarray(Image.open(folder / f"{_slug(name)}_{size}_whole.png")
+                                 .convert("RGB"))
+                g = outline_grain(rgb, inside)
+                rows.append([name, f"{g['inner']:.4f}", f"{g['inner specks']:.1%}",
+                             f"{g['outer']:.4f}", f"{g['outer specks']:.1%}",
+                             f"{g['deeper']:.4f}"])
+            print(f"  {size}: a pixel's distance from its 5x5 median, and the share over 0.06")
+            print(table(sorted(rows, key=lambda r: float(r[1])),
+                        ["candidate", "inside", "specks", "outside", "specks", "deeper in"]))
+
+    heading("answers 10a: your painting (Q) and the darks under the floor (P)")
+    floor = OUT / "floor"
+    if not (floor / "bell_as_painted.png").exists():
+        print("  no pictures: run --floor first")
+    else:
+        view = {}
+        for letter, name in (("Q", "as painted"), ("P", "to 0.07")):
+            rgb = np.asarray(Image.open(floor / f"bell_{_slug(name)}.png").convert("RGB"))
+            view[letter] = values_of_rgb(rgb).astype(np.float64)
+        rows = [[k, f"{v.min():.3f}", f"{np.percentile(v, 5):.3f}", f"{np.percentile(v, 95):.3f}",
+                 f"{(v < 0.14).mean():.1%}", f"{(v < 0.15).mean():.1%}"] for k, v in view.items()]
+        print(table(rows, ["", "darkest", "p5", "p95", "under 0.14", "under 0.15"]))
+        plan = scope_of("bell")["s"]._plan
+        h, w = view["Q"].shape
+        rows = [[p.name, f"{p.value:.2f}", f"{np.median(view['Q'][p.outline.mask(w, h)]):.3f}",
+                 f"{np.median(view['P'][p.outline.mask(w, h)]):.3f}"] for p in plan.values]
+        print(table(rows, ["planned place", "planned", "Q median", "P median"]))
+
+    heading("answers 5f: the Bell-Warden's places at every pass end -- the lightest each way")
+    rows = []
+    for p in data.passes:
+        if p["painting"] != "bell" or p["spent"] == 0 or not p["places"]:
+            continue
+        top = {how: max(p["places"], key=lambda x: x[how]) for how in ("median", "p95", "max")}
+        runner = max((x for x in p["places"] if x["name"] != top["p95"]["name"]),
+                     key=lambda x: x["p95"])
+        rows.append([p["pass"][:22], *(f"{top[how]['name']} {top[how][how]:.3f}"
+                                       for how in ("median", "p95", "max")),
+                     f"{top['p95']['p95'] - runner['p95']:+.3f} ({runner['name']})"])
+    print(table(rows, ["pass", "lightest by median", "by p95", "by its brightest pixel",
+                       "p95 clear of the next"]))
+
+    heading("answers D: how often a line naming the marks that landed nothing would speak")
+    painted = {(p["painting"], p["pass"]) for p in data.passes if p["spent"] > 0}
+    told = {"a hand mark": set(), "a mass call's strokes": set(), "past the dab's fact": set()}
+    counts = {"a hand mark": 0, "a mass call's strokes": 0}
+    for c in data.calls:
+        key = (c["painting"], c["pass"])
+        if key not in painted or not c["nothing"]:
+            continue
+        hand = c.get("hand")
+        kind = "a hand mark" if hand and hand["kind"] == "stroke" else "a mass call's strokes"
+        told[kind].add(key)
+        counts[kind] += c["nothing"]
+        at_call = (kind == "a hand mark" and hand["points"] == 1
+                   and hand["tip"] in ("round_hard", "round_soft", "liner")
+                   and hand["px"] < DAB_CLIFF.get(hand["press"], 2.5))
+        if not at_call:
+            told["past the dab's fact"].add(key)
+    either = told["a hand mark"] | told["a mass call's strokes"]
+    rows = [[kind, counts.get(kind, "-"), len(keys), f"{len(keys) / len(painted):.1%}"]
+            for kind, keys in told.items() if kind != "past the dab's fact"]
+    rows.append(["either: the line speaks", counts["a hand mark"] + counts["a mass call's strokes"],
+                 len(either), f"{len(either) / len(painted):.1%}"])
+    rest = told["past the dab's fact"]
+    rows.append(["...leaving a round dab under its cliff to the fact at the call", "-",
+                 len(rest), f"{len(rest) / len(painted):.1%}"])
+    print(table(rows, ["what landed nothing", "marks", "passes", f"of {len(painted)}"]))
+    print(f"  in {len({k[0] for k in either})} of {len({k[0] for k in painted})} paintings")
+    for who in ("bell", "wenna"):
+        mine = sorted(k[1] for k in either if k[0] == who)
+        print(f"  {who}: {len(mine)} of {sum(1 for k in painted if k[0] == who)} passes -- "
+              + ", ".join(mine))
+
+    heading("answers D: what one, two and three touches of a round dab reach")
+    light, dark = "#f2e2a0", "#2a2622"
+    rows = []
+    for press in (1, 2, 3):
+        row = [press]
+        for size in (0.007, 0.012, 0.024):
+            s = _field_session(1024, 768, dark)
+            own = s.palette.value_of(light)
+            field = float(_local_values(s, _window(s, 0.5, 0.5)).mean())
+            middle, brightest = [], []
+            with quiet():
+                for i in range(12):
+                    x, y = 0.1 + 0.8 * (i % 6) / 5.0, 0.3 + 0.4 * (i // 6)
+                    box = _window(s, x, y)
+                    before = _local_values(s, box)
+                    s.dab(x, y, "round_hard", light, size=size, press=press)
+                    after = _local_values(s, box)
+                    moved = np.abs(after - before) > 0.02
+                    if moved.any():
+                        middle.append(float(np.median(after[moved])))
+                        brightest.append(float(after[moved].max()))
+            row.append(f"{_way(float(np.median(middle)), field, own):.2f} / "
+                       f"{_way(float(np.median(brightest)), field, own):.2f}")
+        rows.append(row)
+    print("  a light (#f2e2a0) on a flat dark field, twelve dabs a size at 1024x768: the way")
+    print("  from the field to the colour, at the median and at the brightest moved pixel")
+    print(table(rows, ["press", "7 px", "12 px", "25 px"]))
+
+    heading("answers 4b: guide notes whose boxes overlap, on both drawings")
+    for painting in ("bell", "wenna"):
+        s = new_session(painting)
+        run_pass(s, FOLDERS[painting] / "p01_draw.py", FOLDERS[painting] / "prelude.py")
+        boxes = note_boxes([dict(g) for g in s.guides], s.canvas.width, s.canvas.height)
+        pairs = [(i, j) for i in range(len(boxes)) for j in range(i + 1, len(boxes))
+                 if _box_overlap(boxes[i][1], boxes[j][1]) > 0]
+        hit = {k for pair in pairs for k in pair}
+        print(f"  {painting}: {len(boxes)} notes, {len(hit)} of them under or over another -- "
+              + "; ".join(f"{boxes[i][0]} / {boxes[j][0]}" for i, j in pairs))
+
+
 # -- main -------------------------------------------------------------------------------
 
 BENCHES = (
@@ -3061,9 +3262,10 @@ BENCHES = (
     ("repaint", "4H4: masses laid over earlier marks, place by place"),
     ("rings", "4I2: an inward scumble's rings, ring count by ring count"),
     ("units", "4A5: the corpus's own pixel helpers and hand-moved groups"),
+    ("answers", "the painter's answers to 4, 9, 10, D and 5f, re-measured"),
 )
 _NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint"}
-_NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint"}
+_NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -3119,6 +3321,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_rings()
     if "units" in run:
         probe_units()
+    if "answers" in run:
+        probe_answers(data)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")
