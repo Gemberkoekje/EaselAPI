@@ -23,7 +23,9 @@ and `easel log` a colour by the name the palette gives it (H1); a pass told, bef
 when it binds a name its prelude bound (H2); `--scale` said for what it is, and read under 1
 as a share (H3); a guide's note moved off the notes already drawn (A1); and the error a
 one-number `s.px(r)` raises naming the oval (A5). Nothing a mark lays changes. **Measured
-as built**: the engine's line is the bench's word for word on every pass of both paintings,
+as built**: the engine's line is the bench's word for word on every pass of both paintings
+and on 140 of the corpus's 143 that print one -- the other three are passes that call
+`s.rehearse(plan)`, whose copy's marks the bench counted and the engine rightly does not --
 no note of either drawing lies under or over another, and `prelude-rebind` speaks on none
 of the corpus's 284 passes run after a prelude. See
 [`NOTES-step4.md`](NOTES-step4.md). **Nothing waits on a painter**; step 5 (E) is next.
@@ -720,7 +722,11 @@ saved only as the report's text.
   (`Session._sites`); `Session._dearest_line` groups a pass's records by call and says the
   line, and `cli.pass_block` puts it under the total in `easel run`, per version under
   `--alternatives`, in the MCP server's `run` and in the saved report. Rebuilt with no
-  watcher, both paintings print the bench's line on every pass (8 of 8, 11 of 11). **A call
+  watcher, both paintings print the bench's line on every pass (8 of 8, 11 of 11); replayed,
+  the corpus prints it word for word on 140 of the 143 passes that print one. **The other
+  three are the bench's miscount**: each calls `s.rehearse(plan)`, which lays the plan on a
+  copy, and the bench's watcher -- wrapping the class -- counted the copy's `block_in` as
+  the pass's own, where the engine reads the painting's log (`CALIBRATION.md`). **A call
   made inside a helper stays named at the helper's line** -- step 2's
   decision 2 left it to the build: the Bell-Warden's three dearest calls are three lines of
   one helper called once, which the pass's own line would have named as one; 19 of the

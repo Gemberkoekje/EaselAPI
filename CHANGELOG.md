@@ -106,7 +106,9 @@ palette said `lip`, and a pass replaced a name its prelude bound without a word.
   line; a counted pass lays no paint and says nothing of what landed. The same per
   version under `--alternatives`, through the MCP server's `run`, and in the pass's saved
   report. Rebuilt, both paintings print the line the round's bench composed, pass for
-  pass.
+  pass, and over the corpus it is that line on 140 of 143 passes: the other three call
+  the planning `rehearse()`, whose copy's marks the bench counted as the pass's and the
+  engine, reading the painting's own log, does not.
 - **A finding names the marks it counted**, on a line under it: the script lines they
   were laid from, named as the dearest calls are, and their records in the log —
   `laid at p05_face.py:58 (lay_mouth), :62, :64, :72 (lay_modelling) -- records 174, 176, 177, 179`,

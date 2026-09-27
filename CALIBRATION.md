@@ -3705,7 +3705,16 @@ The subject's pass, as the line would have said it:
 
 **Built in step 4, and it says exactly that** (`--built`). Rebuilt with no watcher -- so the
 engine finds the painter's line where `easel run` would -- both paintings print the bench's
-line on every pass, 8 of 8 and 11 of 11. Wenna Brask's figure pass, the one
+line on every pass, 8 of 8 and 11 of 11; replayed, the corpus's 375 passes print one
+or the other on 143, and **the engine's is the bench's word for word on 140**. The other
+three are one painting's -- the pears' `p9_rehearse_pear.py`, `p10_rehearse_pear.py` and
+`p11_pears12.py` -- and each calls `s.rehearse(plan)`, which lays the plan on a copy: the
+bench's watcher wraps the class, so it counted the copy's `block_in` as the pass's own
+(*12 block_in at p9_rehearse_pear.py:10 -- 12 of the 14*), where the engine reads the
+painting's log, which the copy never touched. The engine prints nothing on the first two
+and leaves the rehearsal's 13 strokes out of the third, *23 of the 31* -- the 31 marks
+the pass laid of its own. The bench's own figures above count those three passes as it saw
+them. Wenna Brask's figure pass, the one
 that came back at 135, 101 and 99, says *dearest: 13 block_in at p03_figure.py:16
 (lay_shawl), 10 at :11 (lay_neck), 9 at :45 (lay_face), 9 at :48 -- 41 of the 99*: four
 calls name under half of it. Of the 143 lines, 19 name a helper in the prelude at the

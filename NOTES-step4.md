@@ -70,9 +70,19 @@ line names where the verb was called, as the bench did and as the painter chose 
 bench's example; 19 of the corpus's 143 lines name a prelude's helper, and 21 name two calls
 at one line, most of them a loop's.
 
-**4. The line's total is the pass's charged marks**, `History.paid_marks` over the pass,
-which is the number the rehearsal's head line prints; the bench summed every mark of paint.
-They differ only where a pass lays a signature, which no pass of either painting did.
+**4. The line counts the painting's own log, and nothing else.** Its total is the pass's
+charged marks, `History.paid_marks` over the pass, which is the number the rehearsal's head
+line prints; the bench summed every mark of paint, which differs only where a pass lays a
+signature, and no pass of either painting did. **And the corpus found the bench's one
+miscount**: over the replay the engine's line is the bench's word for word on 140 of the
+143 passes where either prints one, and the other three -- the pears' `p9_rehearse_pear.py`,
+`p10_rehearse_pear.py` and `p11_pears12.py` -- each call `s.rehearse(plan)`, which lays the
+plan on a copy. The bench's watcher wraps the class, so it saw the copy's `block_in` and
+counted it as the pass's; the engine never sees it, because the copy's marks are in the
+copy's log. So the engine prints nothing on the first two, whose own calls are a stroke
+each, and *23 of the 31* on the third, which laid 31 marks of its own -- where the bench
+said *36 of the 48*. Step 2's figures for the line (43% of painted passes, a median 76% named)
+count those three passes as the bench saw them; the difference is three lines of 143.
 
 **5. The line goes under the total, as the first line of the pass's block** -- so it is in
 every saved report's text -- and not in `report()`. A painter at a Python prompt calls
