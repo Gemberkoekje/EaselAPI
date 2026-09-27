@@ -17,6 +17,7 @@ imports of its own.
 from __future__ import annotations
 
 import argparse
+import ast
 import sys
 import traceback
 import warnings
@@ -37,13 +38,35 @@ from easel.session import _MAX_PANELS, Session, _panel_label, _panel_scale
 from easel.texture import TEXTURES
 
 __all__ = ["main", "build_parser", "parse_size", "reference_text", "run_script",
-           "run_scripts", "run_alternatives", "ScriptResult", "Alternative",
+           "run_scripts", "run_alternatives", "pass_block", "ScriptResult", "Alternative",
            "Alternatives"]
 
 _REGION_HELP = (
     "a named region (" + ", ".join(REGION_NAMES) + "), a grid cell like D4, "
     "or a span like C3:F6"
 )
+
+#: What ``--scale`` is, in its first words. A painter reads *scale* as a factor, and the
+#: second painter of the bell-warden's round tried ``--scale 0.5`` on ``timelapse`` and
+#: was refused: the option is the long side in pixels, which is what a look is sized by.
+#: So it still is, and a number under 1 -- which no pixel count can be -- is read the way
+#: it was meant, as a share of the canvas's own long side.
+_SCALE_HELP = ("the long side in pixels, 240 -- or under 1, a share of the canvas's own "
+               "long side: 0.5 is half")
+
+
+def _scale_px(value: float | None, session: Session) -> int | None:
+    """``--scale`` as pixels: the number itself, or under 1 that share of the canvas's
+    long side. ``None`` for none given; ``0`` stays ``0``, which means *full* to ``look``."""
+    if value is None:
+        return None
+    number = float(value)
+    if number < 0:
+        raise ValueError(f"--scale is the long side in pixels, or under 1 a share of the "
+                         f"canvas's; {value:g} is neither.")
+    if 0 < number < 1:
+        return max(1, int(round(number * max(session.size))))
+    return int(round(number))
 
 
 def parse_size(text: str) -> tuple[int, int]:
@@ -158,7 +181,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_look.add_argument("--region", default=None, help=_REGION_HELP)
     p_look.add_argument("--reference", type=Path, default=None, help="show a reference alongside")
     p_look.add_argument("--diff", action="store_true", help="tint what changed since last look")
-    p_look.add_argument("--scale", type=int, default=None, help="long-side pixels (0 for full)")
+    p_look.add_argument("--scale", type=float, default=None, metavar="PX",
+                        help=_SCALE_HELP + " -- 0 for the canvas's own size")
     p_look.add_argument("--no-sketch", action="store_true",
                         help="hide the drawing: the pencil the paint has not covered, "
                              "and the guides s.guide() drew on the view")
@@ -214,9 +238,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_tl.add_argument("--fps", type=float, default=8.0)
     p_tl.add_argument("--every", type=int, default=1,
                       help="keep every nth frame (GIF only); the last frame is always kept")
-    p_tl.add_argument("--scale", type=int, default=None,
-                      help="long side in pixels (GIF only); shrinks the frames, which "
-                           "are made at the session's frame size")
+    p_tl.add_argument("--scale", type=float, default=None, metavar="PX",
+                      help=_SCALE_HELP + " (GIF only); shrinks the frames, which are "
+                           "made at the session's frame size")
     p_tl.add_argument("--from-log", action="store_true",
                       help="build the frames at --scale rather than at the session's "
                            "frame size, the canvas's own when --scale is left off. "
@@ -519,7 +543,8 @@ def _dispatch(args) -> int:
         return _cmd_run(session, args)
 
     if args.command == "look":
-        scale = None if args.scale == 0 else args.scale
+        px = _scale_px(args.scale, session)
+        scale = None if px == 0 else px
         path = session.look(
             grid="fine" if args.fine else args.grid,
             values=args.values,
@@ -573,7 +598,7 @@ def _dispatch(args) -> int:
                   f"records: a full repaint.", file=sys.stderr)
         path = (session.contact_sheet(out) if sheet
                 else session.timelapse_gif(out, fps=args.fps, every=args.every,
-                                           scale=args.scale,
+                                           scale=_scale_px(args.scale, session),
                                            from_log=args.from_log))
         print(path)
         return 0
@@ -771,6 +796,108 @@ class ScriptResult:
         return f"{self.report}\n\n{self.trace}".rstrip() if self.trace else self.report
 
 
+def _top_level_names(source: str) -> dict[str, tuple[int, str, str]]:
+    """The names a script binds at its top level: ``{name: (line, what to, how)}``.
+
+    Top level only -- a name bound inside a function is the function's -- but through
+    the ``if``, ``for``, ``with``, ``try`` and ``match`` blocks a script runs at the top.
+    ``what`` is what the name is bound to, as source, which is how two bindings of one
+    name are told to bind the same thing: the value it is given -- element by element
+    when a tuple is unpacked from a tuple -- a whole ``def``, or the one name an import
+    brings in; ``""`` for a loop's or a ``with``'s variable, which is never the same
+    thing twice. ``how`` is ``assign``, ``def``, ``import``, ``loop`` or ``with``. The
+    first binding of a name is the one kept. A script that does not parse binds nothing
+    here, and says so where it is compiled.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return {}
+    found: dict[str, tuple[int, str, str]] = {}
+
+    def target(node, value, line: int, how: str, whole: str) -> None:
+        """``node`` bound to the expression ``value``, or to ``whole`` when there is none."""
+        if isinstance(node, ast.Name):
+            found.setdefault(node.id, (line, whole if value is None else ast.unparse(value),
+                                       how))
+        elif isinstance(node, (ast.Tuple, ast.List)):
+            paired = (isinstance(value, (ast.Tuple, ast.List))
+                      and len(value.elts) == len(node.elts)
+                      and not any(isinstance(e, ast.Starred)
+                                  for e in [*node.elts, *value.elts]))
+            for i, elt in enumerate(node.elts):
+                target(elt, value.elts[i] if paired else None, line, how, whole)
+        elif isinstance(node, ast.Starred):
+            target(node.value, None, line, how, whole)
+
+    def walk(body) -> None:
+        for node in body:
+            if isinstance(node, ast.Assign):
+                for one in node.targets:
+                    target(one, node.value, node.lineno, "assign", ast.unparse(node))
+            elif isinstance(node, ast.AnnAssign) and node.value is not None:
+                target(node.target, node.value, node.lineno, "assign", ast.unparse(node))
+            elif isinstance(node, ast.AugAssign):
+                # `H += 1` is the name bound to something new, whatever it held.
+                target(node.target, None, node.lineno, "assign", ast.unparse(node))
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                found.setdefault(node.name, (node.lineno, ast.unparse(node), "def"))
+            elif isinstance(node, (ast.Import, ast.ImportFrom)):
+                source_of = (f"from {'.' * node.level}{node.module or ''} import "
+                             if isinstance(node, ast.ImportFrom) else "import ")
+                for alias in node.names:
+                    found.setdefault(alias.asname or alias.name.split(".")[0],
+                                     (node.lineno, source_of + alias.name, "import"))
+            elif isinstance(node, (ast.For, ast.AsyncFor)):
+                target(node.target, None, node.lineno, "loop", "")
+                walk(node.body)
+                walk(node.orelse)
+            elif isinstance(node, (ast.With, ast.AsyncWith)):
+                for item in node.items:
+                    if item.optional_vars is not None:
+                        target(item.optional_vars, None, node.lineno, "with", "")
+                walk(node.body)
+            elif isinstance(node, (ast.If, ast.While)):
+                walk(node.body)
+                walk(node.orelse)
+            elif isinstance(node, (ast.Try, ast.TryStar)):
+                walk(node.body)
+                for handler in node.handlers:
+                    walk(handler.body)
+                walk(node.orelse)
+                walk(node.finalbody)
+            elif isinstance(node, ast.Match):
+                for case in node.cases:
+                    walk(case.body)
+
+    walk(tree.body)
+    return found
+
+
+def _rebound(prelude: str, source: str) -> list[tuple[str, int, int]]:
+    """The names a pass binds again that its prelude bound, to something else.
+
+    ``(name, the pass's line, the prelude's line)``, in the pass's order. Only a name the
+    prelude bound by assignment, definition or import: a loop's variable the prelude's
+    own loop left bound is nobody's. And only bound to something else -- the same
+    statement, the same ``def``, the same name imported again is the same thing, which
+    is what twelve of one painting's passes did with ``p = s.palette``.
+    """
+    mine = {name: kept for name, kept in _top_level_names(prelude).items()
+            if kept[2] in ("assign", "def", "import")}
+    if not mine:
+        return []
+    out = [(name, line, mine[name][0])
+           for name, (line, what, _) in _top_level_names(source).items()
+           if name in mine and (not what or what != mine[name][1])]
+    return sorted(out, key=lambda one: one[1])
+
+
+def _said_as_list(items: list[str]) -> str:
+    """``a``, ``a and b``, ``a, b and c``."""
+    return items[0] if len(items) == 1 else f"{', '.join(items[:-1])} and {items[-1]}"
+
+
 def run_script(session: Session, source: str, name: str,
                prelude: str = "", prelude_name: str = "prelude.py") -> ScriptResult:
     """Execute a painting script with the session and the public API in scope.
@@ -835,6 +962,31 @@ def run_script(session: Session, source: str, name: str,
         return ScriptResult(1, f"easel: {name} does not parse",
                             traceback.format_exc(), save=False)
 
+    # A pass and its prelude share one scope, so a name the pass binds again replaces
+    # the prelude's for the rest of the pass, silently -- the second painter's `H`, a
+    # dict of shared arguments, replaced the canvas height its pixel helper divided by,
+    # and two rehearsals raised on it. Said before the pass runs, so a pass that raises
+    # because of it is told why; a fact, not a refusal, since rebinding is a painter's
+    # right. Read off the two scripts' text, as the bench counted it: of the corpus's
+    # 284 passes run after a prelude, it speaks on none.
+    rebound = _rebound(prelude, source) if prelude else []
+    if rebound:
+        before = Path(prelude_name).name
+        names = [one[0] for one in rebound]
+        if len(rebound) == 1:
+            (bound, line, theirs), = rebound
+            said = (f"{short} binds {bound} again at line {line}, which {before} bound at "
+                    f"line {theirs}: from there to the end of this pass {bound} is the "
+                    f"pass's, and the prelude's is gone")
+        else:
+            said = (f"{short} binds {_said_as_list(names)} again (lines "
+                    f"{_said_as_list([str(one[1]) for one in rebound])}), which {before} "
+                    f"bound (lines {_said_as_list([str(one[2]) for one in rebound])}): "
+                    f"from there to the end of this pass each is the pass's, and the "
+                    f"prelude's is gone")
+        session._notify("prelude-rebind",
+                        f"{said} -- a name of its own keeps both.", stacklevel=2)
+
     try:
         exec(code, namespace)  # noqa: S102 - running the painter's own script is the point
     except SystemExit as exc:
@@ -857,6 +1009,20 @@ def run_script(session: Session, source: str, name: str,
     if session.budget is None:
         return ScriptResult(0, f"Ran {short}: {session.stroke_count} strokes total.")
     return ScriptResult(0, f"Ran {short}: {session.budget_line()}.")
+
+
+def pass_block(target: Session, since: int, said, check: str) -> str:
+    """What a pass is told after it ran, as ``easel run`` prints it and its report keeps it.
+
+    Its dearest calls first, under the line that says what the pass cost in total --
+    which call ate the strokes is the rest of that line's answer -- then what the calls
+    said, then the post-pass check (:func:`easel.notices.block`). One place, because the
+    shell, a version under ``--alternatives`` and the server's ``run`` all print it, and
+    a pass run any of those ways is told the same words.
+    """
+    dearest = target._dearest_line(since)
+    block = notices.block(said, check)
+    return f"  {dearest}\n{block}" if dearest else block
 
 
 def run_scripts(session: Session, scripts, prelude: str = "",
@@ -1008,7 +1174,7 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
                                   result.trace.rstrip()) if part)))
             continue
         check = target.report() if whole else target.report(since=before)
-        block = notices.block(said, check)
+        block = pass_block(target, before, said, check)
         laid = target.history.stroke_count
         cost = f"{laid} strokes" if left is None else f"{laid} strokes of the {left} left"
         if count_only:
@@ -1117,7 +1283,7 @@ def _cmd_run(session: Session, args) -> int:
     # changed for free.
     check = target.report() if args.check else target.report(since=before)
     said = target.notices(since=told)
-    block = notices.block(said, check)
+    block = pass_block(target, before, said, check)
 
     def failed() -> None:
         """A pass that raised still laid marks and still said things.

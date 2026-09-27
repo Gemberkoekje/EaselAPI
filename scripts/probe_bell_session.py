@@ -42,6 +42,7 @@ It does four things:
     python scripts/probe_bell_session.py --rings      # 4I2: an inward scumble's rings
     python scripts/probe_bell_session.py --units      # 4A5 and F7: pixel helpers, and units
     python scripts/probe_bell_session.py --answers    # the painter's step-2 answers, again
+    python scripts/probe_bell_session.py --built      # step 4: the engine's line, checked
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
@@ -50,7 +51,9 @@ hour, kept in ``out/bell/corpus.pkl`` and read back until ``--fresh`` asks for a
 ``--claims`` also measures where a round dab, a short stroke and a starved bristle stop
 landing paint; ``--thumbnail`` draws A4's member that swells and narrows; ``--short`` runs
 its candidate over the guide's own code blocks. ``--answers`` reads the sheets
-``--terminator`` and ``--floor`` leave, so it runs after them.
+``--terminator`` and ``--floor`` leave, so it runs after them. ``--built`` checks what step
+4 built against what this bench measured: the dearest line on both paintings rebuilt with
+no watcher, and over the whole corpus replayed again -- twenty minutes or so, kept nowhere.
 """
 
 from __future__ import annotations
@@ -153,6 +156,10 @@ class Rebuilt:
     calls: list[Call] = field(default_factory=list)
     fresh: Session | None = None                          # the canvas before any pass
     seconds: float = 0.0
+    #: What ``easel run`` prints under each pass's total since step 4 -- read only from
+    #: a rebuild run without the probe's watcher, whose wrappers sit where the painter's
+    #: line would be (``rebuild(watch=False)``).
+    dearest: dict[str, str] = field(default_factory=dict)
 
     def opened(self, label: str) -> Session:
         """A copy of the canvas the pass ``label`` opened on, to lay something else on."""
@@ -334,7 +341,7 @@ def run_source(session: Session, source: str, name: str, prelude: str = "",
 
 
 def rebuild(painting: str = "bell", upto: str | None = None, keep: bool = True,
-            order: tuple[str, ...] | None = None, **canvas) -> Rebuilt:
+            order: tuple[str, ...] | None = None, watch: bool = True, **canvas) -> Rebuilt:
     """A painting from its committed passes, through the CLI's own ``run_script``.
 
     Each pass opens as ``easel run`` opens one, runs in a fresh scope with the prelude
@@ -343,6 +350,8 @@ def rebuild(painting: str = "bell", upto: str | None = None, keep: bool = True,
     copy is kept after every pass (:meth:`Session.scratch`), seeded as the next marks of
     the painting: what a bench lays on it is what the painter would have laid there.
     ``order`` overrides the recorded order, which is how the numbered order is tried.
+    ``watch=False`` leaves the probe's own record of every call out, so the engine finds
+    the painter's line where ``easel run`` would -- ``dearest`` and the findings' names.
     """
     folder = FOLDERS[painting]
     prelude = folder / "prelude.py"
@@ -351,7 +360,7 @@ def rebuild(painting: str = "bell", upto: str | None = None, keep: bool = True,
     out = Rebuilt(name=painting, session=session, fresh=session.scratch())
     current = [""]
     source = prelude.read_text(encoding="utf-8-sig")
-    with quiet(), watching(out.calls, current):
+    with quiet(), (watching(out.calls, current) if watch else contextlib.nullcontext()):
         for name in order or ORDERS[painting]:
             label = f"{name} (again)" if name in out.labels else name
             current[0] = label
@@ -365,6 +374,7 @@ def rebuild(painting: str = "bell", upto: str | None = None, keep: bool = True,
                 raise RuntimeError(f"{name} failed to rebuild: {result.report}\n"
                                    f"{result.trace}")
             out.said[label] = session.report(since=start).splitlines()
+            out.dearest[label] = session._dearest_line(start)
             if keep:
                 out.after[label] = session.scratch()
             if label == upto:
@@ -1082,13 +1092,18 @@ def probe_guides(rb: Rebuilt, wb: Rebuilt | None) -> None:
                       for k, v in worst.items()))
     alpha = LOOK_MODULE._GUIDE_CASING_ALPHA
     built = "casing" if alpha == 255 else f"casing {alpha}"
+    # The line alone: since step 4 the engine moves a note off the boxes already drawn,
+    # and 8 of this drawing's 17 lay under or over another (`--answers`, 4b), so the
+    # candidates' notes -- the sheets the painter was shown -- stay where they were.
+    bare = [dict(g, note="") for g in guides]
     same = [np.array_equal(
                 np.asarray(LOOK_MODULE._draw_guides(_frame(rgb, rgb.shape[1] / rgb.shape[0]),
-                                                    guides)),
-                draw_candidate(built, rgb, guides, rgb.shape[1] / rgb.shape[0])[0])
+                                                    bare)),
+                draw_candidate(built, rgb, bare, rgb.shape[1] / rgb.shape[0], notes=False)[0])
             for _, rgb in grounds + pictures]
-    print(f"  the engine's line since step 3 is the {built!r} candidate, notes and all, to "
-          f"the pixel over {sum(same)} of {len(same)} of them")
+    print(f"  the engine's line since step 3 is the {built!r} candidate, to the pixel over "
+          f"{sum(same)} of {len(same)} of them -- the notes aside: step 4 moves a note off "
+          f"the boxes already drawn (--answers)")
     box = (0.18, 0.03, 0.72, 0.80)
     (OUT / "guides").mkdir(parents=True, exist_ok=True)
     for label, rgb in (("bell_after_room", _look_rgb(rb.after["p02_room.py"])),
@@ -3243,6 +3258,173 @@ def probe_answers(data: CorpusData) -> None:
         hit = {k for pair in pairs for k in pair}
         print(f"  {painting}: {len(boxes)} notes, {len(hit)} of them under or over another -- "
               + "; ".join(f"{boxes[i][0]} / {boxes[j][0]}" for i, j in pairs))
+        placed = engine_note_boxes(s)
+        moved = sum(1 for *_, off in placed if off)
+        met = {one for i in range(len(placed)) for k in range(i + 1, len(placed))
+               if LOOK_MODULE._overlap(placed[i][1], placed[k][1]) for one in (i, k)}
+        shifted = sum(1 for p in placed if p[1] != p[4])
+        print(f"    as the engine places them since step 4, at a look's size: {len(met)} "
+              f"under or over another; {shifted} moved from where they sat, {moved} of "
+              f"those a row or more out, with a leader back")
+
+
+def engine_note_boxes(s: Session) -> list[tuple]:
+    """Each guide note as ``look._draw_guides`` places it on a full-canvas look since step
+    4: ``(note, box, first point, moved, the box it had before)``."""
+    img = s.look_image(sketch=False)
+    frame = _frame(np.asarray(img), s.canvas.width / s.canvas.height)
+    paths = [([frame.to_px(float(x), float(y)) for x, y in g.get("points", ())],
+              str(g.get("note") or "")) for g in s.guides]
+    paths = [(pts, note) for pts, note in paths if pts]
+    placed = LOOK_MODULE._place_notes(paths, frame.img.size)
+    return [(note, box, at, moved,
+             (at[0] + 2, at[1] - 13, at[0] + 7 + 6 * len(note), at[1] + 1))
+            for note, box, at, moved in placed]
+
+
+# -- step 4, as built: the engine's lines against the bench's ---------------------------
+
+class BuiltWatcher(SiteWatcher):
+    """The corpus replayed once more, each pass's dearest line kept twice: as the engine
+    prints it since step 4, and as :func:`dearest_line` composed it from the calls the
+    bench watched -- which is what step 2's numbers and the painter's question 8 were."""
+
+    #: ``(painting, pass, the engine's line, the bench's line)`` for every pass closed
+    #: while this class is the watcher: ``cohort.replay`` makes the instance.
+    kept: list[tuple[str, str, str, str]] = []
+
+    def __init__(self, *args, **kw) -> None:
+        super().__init__(*args, **kw)
+        self.pass_calls: list[dict] = []
+
+    def _judge(self, call, session) -> None:
+        records = session.history.records[call.first:call.first + call.count]
+        paid = [r for r in records if r.kind not in UNPAINTED]
+        file, line, func = call.site
+        self.pass_calls.append({"verb": call.verb, "file": file, "line": line, "func": func,
+                                "paid": len(paid),
+                                "nothing": sum(1 for r in paid if r.paint < LANDED)})
+        call.before = None
+        call.wet = None
+
+    def _judge_pass(self, done, session) -> None:
+        BuiltWatcher.kept.append((self.replay.painting.name, done.name,
+                                  session._dearest_line(done.start),
+                                  dearest_line(*dearest(self.pass_calls))))
+        self.pass_calls = []
+        self.opened = None
+
+
+def _site_past_probes(verb: str = ""):
+    """The engine's ``_painter_site``, stepping past this harness's own wrappers.
+
+    The corpus watcher wraps every verb, so its wrapper sits between the painter's line
+    and the engine -- where the engine would stop. This walk steps past the probes'
+    modules as the bench's own did, and is otherwise the engine's: what the replay then
+    checks is the grouping, the counting and the words; the walk itself is checked on
+    both paintings, rebuilt with no watcher at all.
+    """
+    frame = sys._getframe(1)
+    called = ""
+    while frame is not None:
+        module = frame.f_globals.get("__name__", "")
+        if module == "easel" or module.startswith("easel."):
+            name = frame.f_code.co_name
+            if not name.startswith(("_", "<")):
+                called = name
+        elif module != "contextlib" and not module.startswith("probe_"):
+            code = frame.f_code
+            return session_module._CallSite(verb or called, os.path.basename(code.co_filename),
+                                            int(frame.f_lineno), code.co_name)
+        frame = frame.f_back
+    return session_module._CallSite(verb or called, "", 0, "")
+
+
+def replay_built() -> list[tuple[str, str, str, str]]:
+    """Every committed painting rebuilt, each pass's line kept twice (:class:`BuiltWatcher`).
+
+    With nothing kept of the canvas: a line is read off the log. Twenty minutes or so.
+    """
+    BuiltWatcher.kept = []
+    saved_watcher, saved_site = cohort.Watcher, session_module._painter_site
+    cohort.Watcher = BuiltWatcher
+    session_module._painter_site = _site_past_probes
+    try:
+        for entry in cohort.CORPUS:
+            started = time.time()
+            rep = cohort.replay(entry, keep_canvas=False)
+            print(f"  {entry.name:<12} {len(rep.passes):3d} passes, "
+                  f"{time.time() - started:5.0f} s"
+                  + (f"  [{rep.error}]" if rep.error else ""), flush=True)
+    finally:
+        cohort.Watcher, session_module._painter_site = saved_watcher, saved_site
+    return list(BuiltWatcher.kept)
+
+
+def probe_built(rb: Rebuilt, wb: Rebuilt) -> None:
+    """Step 4 as built: the dearest line, a finding's names and a rebound prelude name.
+
+    The line on both paintings rebuilt with no watcher -- where the engine finds the
+    painter's line exactly as ``easel run`` does -- against the bench's line from the same
+    passes watched (``rb``, ``wb``); then over the whole corpus, replayed; the findings'
+    names on both paintings' passes; and ``prelude-rebind`` over the corpus's scripts.
+    """
+    heading("step 4, C: the engine's dearest line against the bench's, both paintings")
+    for watched in (rb, wb):
+        plain = rebuild(watched.name, keep=False, watch=False)
+        same = 0
+        for label in watched.labels:
+            calls = [vars(c) for c in watched.calls if c.run == label]
+            bench = dearest_line(*dearest(calls))
+            engine = plain.dearest[label]
+            same += engine == bench
+            if engine != bench:
+                print(f"  DIFFERS {watched.name} {label}:\n    engine: {engine}\n"
+                      f"    bench:  {bench}")
+        print(f"  {watched.name}: the same on {same} of {len(watched.labels)} passes")
+        for label in watched.labels:
+            if plain.dearest[label]:
+                print(f"    {label}: {plain.dearest[label]}")
+        heading(f"step 4, H1: {watched.name}'s findings with the marks they counted")
+        for label in watched.labels:
+            said = plain.said[label]
+            for i, line in enumerate(said):
+                if line.startswith("    ") and i and said[i - 1].startswith("  - "):
+                    print(f"  {label}: {said[i - 1][4:90]}...\n  {' ' * len(label)}  "
+                          f"{line.strip()}")
+
+    heading("step 4, C: the engine's dearest line against the bench's, over the corpus")
+    lines = replay_built()
+    painted = [row for row in lines if row[2] or row[3]]
+    same = [row for row in painted if row[2] == row[3]]
+    print(f"  {len(lines)} passes closed; a line on {len(painted)}; the engine's the "
+          f"bench's word for word on {len(same)} of them")
+    for painting, name, engine, bench in painted:
+        if engine != bench:
+            print(f"  DIFFERS {painting} {name}:\n    engine: {engine}\n    bench:  {bench}")
+
+    heading("step 4, H2: prelude-rebind over the corpus's scripts, as the engine reads them")
+    from easel.cli import _rebound
+    passes = spoke = 0
+    for entry in cohort.CORPUS:
+        prelude = entry.folder / "prelude.py"
+        if entry.driver or not prelude.exists():
+            continue
+        source = prelude.read_text(encoding="utf-8-sig")
+        for name in dict.fromkeys(entry.passes):
+            passes += 1
+            spoke += bool(_rebound(source, (entry.folder / name).read_text(encoding="utf-8-sig")))
+    versions = told = 0
+    for painting in ("bell", "wenna"):
+        folder = FOLDERS[painting]
+        for script, prelude, _ in VERSION_RUNS[painting]:
+            versions += 1
+            source = (folder / "versions" / prelude if prelude
+                      else folder / "prelude.py").read_text(encoding="utf-8-sig")
+            told += bool(_rebound(source, (folder / "versions" / script)
+                                  .read_text(encoding="utf-8-sig")))
+    print(f"  committed passes run after a prelude: {passes}, told on {spoke}; filed "
+          f"rehearsals: {versions}, told on {told}")
 
 
 # -- main -------------------------------------------------------------------------------
@@ -3263,8 +3445,9 @@ BENCHES = (
     ("rings", "4I2: an inward scumble's rings, ring count by ring count"),
     ("units", "4A5: the corpus's own pixel helpers and hand-moved groups"),
     ("answers", "the painter's answers to 4, 9, 10, D and 5f, re-measured"),
+    ("built", "step 4 as built: the engine's dearest line against the bench's, corpus-wide"),
 )
-_NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint"}
+_NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built"}
 _NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers"}
 
 
@@ -3323,6 +3506,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_units()
     if "answers" in run:
         probe_answers(data)
+    if "built" in run:
+        probe_built(rb, wb)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")

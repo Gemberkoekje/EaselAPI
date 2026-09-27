@@ -3703,6 +3703,14 @@ The subject's pass, as the line would have said it:
 *dearest: 23 block_in at p04_gargoyle.py:40 (lay_body, 2 landing nothing), 22 at :38, 20 at
 :36, 14 at :18 (lay_wing) -- 79 of the 102*.
 
+**Built in step 4, and it says exactly that** (`--built`). Rebuilt with no watcher -- so the
+engine finds the painter's line where `easel run` would -- both paintings print the bench's
+line on every pass, 8 of 8 and 11 of 11. Wenna Brask's figure pass, the one
+that came back at 135, 101 and 99, says *dearest: 13 block_in at p03_figure.py:16
+(lay_shawl), 10 at :11 (lay_neck), 9 at :45 (lay_face), 9 at :48 -- 41 of the 99*: four
+calls name under half of it. Of the 143 lines, 19 name a helper in the prelude at the
+helper's line and 21 name two calls at one line, most of them a loop's.
+
 **Over the whole corpus, 142 of 6,219 charged strokes (2.3%) laid under one unit of paint**:
 65 starved `bristle` strokes, 42 two-touch round dabs of about 5 px (the misty forest's), 12
 passes of three clipped `block_in`s (the Bell-Warden's), and a tail of small marks.
@@ -3863,6 +3871,12 @@ handover's `import random`) and 3 to a loop's variable the prelude's own loop ha
 (the handover's `x` and `y`). **Bound again to something else, where the prelude bound it by
 assignment, definition or import: none.** Wenna Brask's `H`, which a dict replaced, was in
 rehearsals that raised on it and are not filed.
+
+**Built in step 4 as `prelude-rebind`**, read by the engine's own parse (`cli._rebound`) --
+a little finer than the bench's, comparing a whole `def`, an import name by name and a
+tuple unpacked from a tuple element by element -- over the same scripts: told on none of
+the 284 passes, and none of the 17 filed rehearsals. On the prelude's `W, H = 768, 1024`
+and a pass's `H = dict(...)` it names both lines, and on a pass's `W = 768` nothing.
 
 ### A place laid over and over
 
@@ -4029,7 +4043,11 @@ figure for two.
 made for another. On the Bell-Warden's drawing **8 of its 17 notes lie under or over
 another** -- the plinth's top and front, the head's top and cheek, and the four wing fingers',
 drawn in one place -- and on Wenna Brask's 6 of 25: the fist and the thumb, the cap and the
-ring, and its two tails.
+ring, and its two tails. *Built in step 4*: a box goes where it went unless one is already
+there, and then to another corner of the same point or a row further out, with a leader
+back -- and at a look's size none of either drawing's notes lies under or over another:
+6 of the Bell-Warden's moved and 4 of Wenna Brask's, each to another corner of the point
+its guide begins at, none a row further out.
 
 **The two reasoned figures that do not hold.** The line D asks for would speak on 14.7% of the
 corpus's painted passes, not the one in ten the painter took from the starved bristles alone.

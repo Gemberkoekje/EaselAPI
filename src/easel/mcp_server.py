@@ -55,7 +55,13 @@ from easel import docs as _docs
 from easel import notices as _notices
 from easel import regions as _regions
 from easel.brush import Brush
-from easel.cli import parse_size, reference_text, run_alternatives, run_script
+from easel.cli import (
+    parse_size,
+    pass_block,
+    reference_text,
+    run_alternatives,
+    run_script,
+)
 from easel.look import DEFAULT_LOOK_SIZE
 from easel.notices import EaselWarning
 from easel.regions import Region, as_place
@@ -636,6 +642,11 @@ def build_server() -> MCPServer:
         work. A script that raises comes back with its traceback and the stroke
         count that survived.
 
+        After a pass comes what it cost, and under that the calls that cost it most, by
+        the line of the script that made them -- `<script>:12` for a script sent as
+        text; then what the calls said, and the post-pass check, whose findings name
+        the marks they counted.
+
         Args:
             session: the .easel file to paint into.
             script: the Python to run, as text.
@@ -718,7 +729,7 @@ def build_server() -> MCPServer:
         # "the tool warns you" was false here for everything except this check.
         check = target.report(since=before)
         said = target.notices(since=told)
-        block = _notices.block(said, check)
+        block = pass_block(target, before, said, check)
         short = Path(name).name
         # Every answer is a list, because a rehearsal's look and a sheet of alternatives
         # come back as pictures: a tool the SDK is told answers in text has its answer

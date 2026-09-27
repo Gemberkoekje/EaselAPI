@@ -14,8 +14,22 @@ guide is drawn in), `Session.guide` and `Session.pencil` in `src/easel/session.p
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: the first painter's answers to the step-2 package are filed, re-measured, on
-branch `file-bell-answers-step2`, 2026-09-27, off `main` at `da02328`** -- step 3 merged as
+**Status: step 4 is built -- C, H1, H2 and H3, with A1's notes and A5's error -- on branch
+`dearest-calls-and-named-marks`, 2026-09-27, off `main` at `25e80c9`** -- the first
+painter's answers merged as [#92](https://github.com/Gemberkoekje/EaselAPI/pull/92). As the
+painters decided them: under every pass's total, its dearest calls by the line that made
+them, with the strokes of each that laid nothing (C); a finding naming the marks it counted,
+and `easel log` a colour by the name the palette gives it (H1); a pass told, before it runs,
+when it binds a name its prelude bound (H2); `--scale` said for what it is, and read under 1
+as a share (H3); a guide's note moved off the notes already drawn (A1); and the error a
+one-number `s.px(r)` raises naming the oval (A5). Nothing a mark lays changes. **Measured
+as built**: the engine's line is the bench's word for word on every pass of both paintings,
+no note of either drawing lies under or over another, and `prelude-rebind` speaks on none
+of the corpus's 284 passes run after a prelude. See
+[`NOTES-step4.md`](NOTES-step4.md). **Nothing waits on a painter**; step 5 (E) is next.
+
+*The first painter's answers to the step-2 package were filed, re-measured, on branch
+`file-bell-answers-step2`, 2026-09-27, off `main` at `da02328`* -- step 3 merged as
 [#91](https://github.com/Gemberkoekje/EaselAPI/pull/91). The package went to the painter
 that morning and came back the same day
 ([`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md)): every number it
@@ -31,7 +45,7 @@ of a named light, its 95th percentile beside its median (E4). They also found th
 says nothing of two touches and overstates one (D, F3). **And the owner answered two
 questions** (O8, O9): new paintings are painted on 0.8.0, so this round takes the two
 verdicts it has; and an oval in pixels stays `ellipse(p, *s.px(rx, ry))`, with the error a
-one-number `s.px(r)` raises naming it. **Nothing waits on a painter now**; step 4 is next.
+one-number `s.px(r)` raises naming it. Nothing waited on a painter after it.
 
 *Step 3 (A1, A2 and A5) was built on branch `claude/v0-8-0-plan-yqm1vt`, 2026-09-26, off
 `main` at `41eb63b`* -- step 2 merged as
@@ -377,6 +391,15 @@ still hides the drawing with the pencil.
   of Wenna Brask's 25: a box goes up and right of its guide's first point, and no room is
   made for any other. So a note's box moves off the boxes already drawn; the view only, in
   step 4.
+- *Step 4 (2026-09-27): built.* A note goes where it always went -- up and right of its
+  guide's first point -- unless a box is already there; then the first of that point's
+  other three corners, then the four a row further out at a time, with a leader back, that
+  meets no box and stays in the view (`look._place_notes`). A drawing whose notes never met
+  draws as before, to the pixel. On both paintings' drawings, at a look's size, **no note
+  lies under or over another** (`--answers`): 6 of the Bell-Warden's 17 moved and 4 of
+  Wenna Brask's 25, each to another corner of the point its guide begins at. The bench's candidates keep their notes where
+  they were, since those are the sheets the painter was shown, so its check that the engine
+  draws the `casing 150` candidate is now of the line with the notes left aside.
 
 **A2. A shape handed to `guide()` or `pencil()` is drawn as its outline, corners kept.**
 `s.guide(plinth, note="plinth")` and `s.pencil(plinth)` take a shape -- a `Polygon`, a
@@ -541,6 +564,11 @@ and make every recipe's numbers wrong for the painter who set it.
   is the road to `ellipse(p, s.px_size(30), s.px_size(22))` -- an oval on any canvas that is
   not square, and silent -- and to a ribbon's `width`, which is not a size (F7). It names
   `ellipse(p, *s.px(rx, ry))`, and the pencil's `width=` by its name: step 4.
+- *Step 4 (2026-09-27): built.* `s.px(25)` now says one number of pixels is a different
+  share across and down, and names every home a length has: a brush's `size=`, the pencil's
+  `width=` and `feather=` through `s.px_size(25)`; a round shape through
+  `s.circle(p, px=25)`; an oval as its two radii, `ellipse(p, *s.px(rx, ry))`. A ribbon's
+  width it leaves to F7's row, since nothing converts one.
 
 ### B. Light on a form: the terminator, not the feather
 
@@ -685,6 +713,19 @@ saved only as the report's text.
   named at the helper's line in `prelude.py`, with the helper's name. The subject's pass
   would have read *dearest: 23 block_in at p04_gargoyle.py:40 (lay_body, 2 landing
   nothing), 22 at :38, 20 at :36, 14 at :18 (lay_wing) -- 79 of the 102*.
+- *Step 4 (2026-09-27): built as decided*, and it says that line of the subject's pass, to
+  the character. `_one_call` finds the painter's line once per mass call -- the first frame
+  outside the engine and `contextlib` -- and `stroke()` once per mark laid by hand, and the
+  session keeps it by each mark's index, beside the log and never saved
+  (`Session._sites`); `Session._dearest_line` groups a pass's records by call and says the
+  line, and `cli.pass_block` puts it under the total in `easel run`, per version under
+  `--alternatives`, in the MCP server's `run` and in the saved report. Rebuilt with no
+  watcher, both paintings print the bench's line on every pass (8 of 8, 11 of 11). **A call
+  made inside a helper stays named at the helper's line** -- step 2's
+  decision 2 left it to the build: the Bell-Warden's three dearest calls are three lines of
+  one helper called once, which the pass's own line would have named as one; 19 of the
+  corpus's 143 lines name a prelude's helper, and 21 name two calls at one line, most of
+  them a loop's.
 
 ### D. ~~A light laid into wet paint -- built only on evidence~~ A mark that lands short, and strokes that land nothing
 
@@ -1108,7 +1149,17 @@ function** -- `p05_face.py:58 (lay_mouth)` -- the name it thinks in; the note ca
 them apart (184 of its 262 marks say `subject`). And **the log line names a colour by its
 palette slot** where it has one -- *`lip`*, not *`#9e6c57`* -- which means the record
 keeps the slot's name beside the colour: a new key on the record, read with `.get`,
-beside the log and not in the index, so nothing rebuilds differently.
+beside the log and not in the index, so nothing rebuilds differently. *Step 4
+(2026-09-27): built as decided.* Every rule that counts marks hands the ones it counted to
+`Session._marks_named`, whose line goes under the finding: *laid at p05_face.py:21
+(lay_sockets), :23, :58 (lay_mouth), :62, :64, :72 (lay_modelling) -- records 162, 163,
+174, 176, 177, 179* on the second painter's face pass, rebuilt -- its six discs, the
+mouth's four among them. A loop's line is named once with how many calls it made, and a
+mark laid in another process -- `easel check` reading a file -- by its record alone. The
+one rule that counts every mark of a pass, one brush at one size, names none. And
+`params["color_name"]`: the name a stroke's colour was given, or the one slot whose colour
+it is exactly, which `easel log` prints in place of the hex; a replay carries it over, and a
+smudge, which lays no colour, has none.
 
 **H2. A pass that rebinds a prelude's name is told** (W7). `run_scripts` notes the names
 the prelude binds; after the pass it says, once, which of them the pass bound again --
@@ -1120,11 +1171,22 @@ passes run after a prelude bind a name it bound -- 17 to the same thing (the pie
 left bound. Said only when the name was the prelude's by assignment, definition or import,
 and the pass bound it to something else, it would speak on none of them -- and on the
 second painter's `H`, which was in rehearsals that raised on it and are not filed.
+*Step 4 (2026-09-27): built*, as `prelude-rebind`, a fact, said as the pass starts rather
+than after it, so a pass that raises on the rebinding -- as both of the fist's rehearsals
+did -- is told why. `cli._rebound` reads the two scripts' text as the bench did, a little
+finer: *something else* compares a whole `def`, an import name by name, and a tuple
+unpacked from a tuple element by element, where the bench counted any `def` of a name
+the same and any unpacked name different. Over the corpus's 284 passes and the 17 filed
+rehearsals it speaks on none, as the bench's count did.
 
 **H3. `--scale` said for what it is** (W6). The option stays the long side in pixels,
 because a pixel count is what a look is sized by; its help and `REFERENCE.md` say so in
 the option's first words, and a value under `1` is read as a factor of the canvas's long
-side, which is what the painter meant and what no pixel count can be.
+side, which is what the painter meant and what no pixel count can be. *Step 4
+(2026-09-27): built*, on `look` and `timelapse` alike: `--scale 0.5` is half the canvas's
+long side, and `look --scale 0` is still the canvas at its own size. The server's `look`
+and `timelapse` tools take a whole number of pixels, and say so in their schemas; they
+are left as they are.
 
 **H4. A place laid over and over: measured, not built** (W8). The second painter asked for
 the upstream rule as a notice; 0.7.0's round considered a repainted-passage count and
@@ -1405,7 +1467,9 @@ and cut*.
 4. **C**: the dearest calls. *With H1, which names a finding's marks from the same record
    of each call's site, and H2 and H3, which are small.* *And two small things the
    painter's answers and the owner's found: a guide note's box moved off the boxes already
-   drawn (A1), and the error a one-number `s.px(r)` raises naming the oval (A5).*
+   drawn (A1), and the error a one-number `s.px(r)` raises naming the oval (A5).* *Built
+   2026-09-27, with H1's colour named in the log: see [`NOTES-step4.md`](NOTES-step4.md),
+   and `probe_bell_session.py --built` for the engine's line against the bench's.*
 5. **E**: the key and the place reading, after questions 5 and 6, and `at_value`'s error at
    the floor. *And E4, after W-Q5 and the first painter's follow-up -- both answered, so E4
    waits on nothing.*
@@ -1470,6 +1534,7 @@ and cut*.
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |
 | `src/easel/regions.py`, `session.py`, `cli.py`, `checklist.py` | *for the second verdict*: `s.px()` and a group (A5); a finding's marks (H1); the prelude-name fact (H2); `--scale` read as a factor under `1` (H3); `lightest:` read by the named light's brightest part (E4) |
+| `src/easel/history.py`, `notices.py` | *step 4*: the log line's colour by its palette name (H1); `prelude-rebind` registered (H2) |
 | `.gitignore` | `paintings/**/looks/`, where this painting's passes write their looks (step 1) |
 | `PAINTER.md`, `RECIPES.md`, `PAINTING.md`, `REFERENCE.md` | F1 to F3; the two recipes and exercise 10; `union()`; `feather=` said for what it is; the tables |
 | `CALIBRATION.md`, `LESSONS.md`, `SUGGESTIONS.md`, `PAINTINGS.md`, `CHANGELOG.md`, `README.md`, `llms.txt` | the round's numbers, the moved text, the record, and the cut |
