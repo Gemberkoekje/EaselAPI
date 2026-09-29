@@ -367,6 +367,10 @@ Textures: `smooth`, `linen`, `rough`.
 s.look(grid=, values=, region=, reference=, diff=, scale=, sketch=, marks=, impasto=,
        path=)                                   # the last three are on unless turned off;
                                                 # sketch=False hides the guides as well
+s.thumbnail(places=None, size=192, path=)       # the arrangement, flat and small:
+                                                # {place: value or colour}, a pair
+                                                # (value, clip) held inside the clip; left
+                                                # off, the plan's places and every mass laid
 s.preview(plan, reference=, region=, grid=, values=, scale=, path=)   # where a mark goes
 s.rehearse(plan, reference=, region=, grid=, values=, scale=, path=, vary=)
                                                 # what it looks like -- and with
@@ -434,12 +438,31 @@ painting, so the one chosen off the sheet lands as its panel shows it. Every pan
 labelled with its version — a function's name, a plan's place in the list, or
 `labels=` — and the strokes it laid.
 
+**`s.thumbnail()` is the arrangement before any of it is paid for** — the notan, where a
+silhouette reads or does not. Each place is filled flat at its value, or at a colour's
+value, in the order given, later over earlier, on the ground's own value, in greyscale,
+192 pixels on its long side unless `size=` says otherwise. A pair holds a place inside a
+clip, as a mass's `clip=` holds its paint — `{rim: ("lit", body)}` fills only where the
+two agree — and a list of places holds it inside all of them. **Left off, it draws the
+plan's places, and over them every mass the painting has laid**: each `block_in`,
+`cover`, `scumble` and `sweep` at its colour's value — a passage halfway between its two
+— held as it was held, in the order laid, read off the log, whose first record of every
+mass call keeps the place it filled. A mark, a film and the drawing are not masses and are
+not in it. A mass laid by a release before 0.8.0 kept no place and is left out, and the
+shell and the server say how many. Free, as a preview is: nothing painted, logged or
+charged, and the stream untouched.
+
+```python
+s.thumbnail({body: 0.12})                        # does the silhouette read?
+s.thumbnail({body: "shade", rim: ("lit", body)}, size=128)
+```
+
 Looks are written to `out_dir` and numbered `look_001.png`, `preview_001.png`,
-`compare_001.png`, `rehearse_001.png` upward — each kind counting on its own, and each
-taking the next free name **in the directory** rather than the next number in the
-session. So two sessions sharing an `out_dir` do not write over each other, and a
-painting reopened between `easel run` calls carries on where the directory left off.
-Pass `path=` to name a file yourself.
+`compare_001.png`, `rehearse_001.png`, `thumbnail_001.png` upward — each kind counting
+on its own, and each taking the next free name **in the directory** rather than the next
+number in the session. So two sessions sharing an `out_dir` do not write over each
+other, and a painting reopened between `easel run` calls carries on where the directory
+left off. Pass `path=` to name a file yourself.
 
 `report()` is the check `easel run` prints beside the budget line after every pass: ten
 rules read off the log and the canvas — one brush at one size for a whole pass of two or
@@ -634,7 +657,7 @@ s.save(path)       Session.load(path)
 
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
-easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--alternatives] [--prelude other.py] [--no-prelude] [--check]
+easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--alternatives] [--thumbnail] [--prelude other.py] [--no-prelude] [--check]
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
                    [--no-sketch] [--no-marks] [--scale 512]
 easel mark p.easel top_l 0.335 0.315
@@ -708,6 +731,21 @@ check in about a thirtieth of the time and there is no look to write.
 `s.scratch(count_only=True)` is the same thing from Python and `run(count=True)` through
 the MCP server. Rehearse when the question is what it looks like.
 
+`--thumbnail` counts the pass as `--count` does and draws **the arrangement it would
+leave**: `s.thumbnail()` with no argument on the copy, the pass's masses flat over the
+painting's and over the plan's places, as `thumbnail_NNN.png` —
+
+```text
+Thumbnail of the plan's 7 places and 14 masses laid, 6 of them by this pass, at 192 px: out/thumbnail_004.png
+```
+
+It is the look for *does this pass's arrangement read*, taken before a mark of the pass
+is rendered: `0.15` s for one painter's subject pass, whose rehearsal takes `7.9`. With
+`--rehearse` the copy is painted and looked at as well; with `--alternatives` each
+version is counted and the sheet is their thumbnails, side by side, each labelled under
+its panel. `run(thumbnail=True)` through the MCP server; from Python, the pass laid on
+`s.scratch(count_only=True)` and that copy's `thumbnail()`.
+
 `--scale` on `look` and `timelapse` is **the long side in pixels** — `--scale 240` — and a
 number under 1, which no count of pixels can be, is a share of the canvas's own long side:
 `--scale 0.5` is half of it. `look --scale 0` is the canvas at its own size.
@@ -729,14 +767,14 @@ the release that saved it.
 
 If your client speaks MCP, the same verbs are there as tools, and the difference worth
 having is that **the looking tools hand you the picture**: `look`, `preview`,
-`rehearse`, `compare` and `prepare` return their PNG beside the path they wrote it to,
-so looking every five to fifteen strokes costs one call instead of a call and a file
-read. Marks are still made by `run`, which takes the script as text — the same Python
-the guide teaches, with `s` and the whole API already in scope — and **what it
-rehearses comes back inline too**: with `rehearse`, the copy's look beside the path it
-was written to, and as `alternatives`, several versions of one pass, rehearsed each on
-a copy of its own and handed back side by side in one sheet. `preview`, `rehearse` and
-`cost` each hand back the Python that paints the plan they checked; paste that into
+`rehearse`, `thumbnail`, `compare` and `prepare` return their PNG beside the path they
+wrote it to, so looking every five to fifteen strokes costs one call instead of a call
+and a file read. Marks are still made by `run`, which takes the script as text — the
+same Python the guide teaches, with `s` and the whole API already in scope — and **what
+it rehearses comes back inline too**: with `rehearse`, the copy's look beside the path
+it was written to, and as `alternatives`, several versions of one pass, rehearsed each
+on a copy of its own and handed back side by side in one sheet. `preview`, `rehearse`
+and `cost` each hand back the Python that paints the plan they checked; paste that into
 `run` rather than retyping it, because a plan retyped between checking and painting
 drifts.
 
@@ -763,6 +801,11 @@ glaze verb's brush and opacity, as under *Looking, planning, measuring*.
 {"shape": {"blob": "D5", "radius": 0.12, "seed": 3},
  "brush": "bristle", "color": "dark", "size": 0.05, "direction": "axis"}
 ```
+
+`thumbnail` takes its places as `plan` takes its `values` — `{"C3:F6": 0.30, "A1:H3":
+"sky"}` — or as a list of `[place, value]` pairs, which is how a shape goes in, since a
+JSON key is a string: `[[{"blob": "D5", "radius": 0.12}, 0.15]]`. A value is a number or
+a colour, and `[value, clip]` holds a place inside a clip, as in Python.
 
 The server is `easel-mcp`, or `python -m easel.mcp_server` when the scripts directory
 is not on `PATH`. It needs one extra: `pip install easel-paint[mcp]`. The `guide` tool

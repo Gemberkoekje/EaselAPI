@@ -43,6 +43,8 @@ It does four things:
     python scripts/probe_bell_session.py --units      # 4A5 and F7: pixel helpers, and units
     python scripts/probe_bell_session.py --answers    # the painter's step-2 answers, again
     python scripts/probe_bell_session.py --built      # step 4: the engine's line, checked
+    python scripts/probe_bell_session.py --declared   # step 5: the plan's lines, checked
+    python scripts/probe_bell_session.py --thumbnailed  # step 6: the thumbnail, checked
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
@@ -54,6 +56,9 @@ its candidate over the guide's own code blocks. ``--answers`` reads the sheets
 ``--terminator`` and ``--floor`` leave, so it runs after them. ``--built`` checks what step
 4 built against what this bench measured: the dearest line on both paintings rebuilt with
 no watcher, and over the whole corpus replayed again -- twenty minutes or so, kept nowhere.
+``--declared`` does the same for step 5's plan lines, and ``--thumbnailed`` for step 6's
+thumbnail: the painter's arrangements counted as ``easel run --thumbnail`` counts a pass,
+against the prototype its question 4 was answered on.
 """
 
 from __future__ import annotations
@@ -1229,10 +1234,10 @@ def _bell_runs(p04: Path | None = None, p04_prelude: Path | None = None,
     return runs
 
 
-def thumbnail_sets() -> dict[str, tuple[list[tuple], str]]:
-    """The painter's own arrangements, as the masses each version laid, in order."""
+def thumbnail_runs() -> dict[str, tuple[list[tuple[str, Path, Path]], str]]:
+    """The passes that lay each of the painter's arrangements, and what each one was."""
     versions = BELL / "versions"
-    sets = {
+    return {
         "union": (_bell_runs(), "the first drawing: a union() of eight parts"),
         "cat": (_bell_runs(versions / "p04_v1_cat.py", versions / "prelude_cat.py"),
                 "the cat: 32 points and a tail, lit planes on the shadow"),
@@ -1243,12 +1248,16 @@ def thumbnail_sets() -> dict[str, tuple[list[tuple], str]]:
         "final": (_bell_runs(BELL / "p04_gargoyle.py", None, BELL / "p05_details.py"),
                   "as committed, with the details pass's masses"),
     }
+
+
+def thumbnail_sets() -> dict[str, tuple[list[tuple], str]]:
+    """The painter's own arrangements, as the masses each version laid, in order."""
     out = {}
-    for name, (runs, what) in sets.items():
+    for name, (runs, what) in thumbnail_runs().items():
         masses = record_masses(runs)
         entries = [(m.place, m.value, m.holds) for m in masses]
         if name == "union":
-            scope = scope_of("bell", versions / "prelude_union.py")
+            scope = scope_of("bell", BELL / "versions" / "prelude_union.py")
             entries.append((scope["body"], 0.36, ()))
         out[name] = (entries, what)
     return out
@@ -3510,6 +3519,118 @@ def probe_declared(rb: Rebuilt, wb: Rebuilt, data: CorpusData) -> None:
         print(f"  {painting}: " + "; ".join(counts))
 
 
+# -- step 6 as built: the thumbnail -----------------------------------------------------
+
+def _outline_points(place) -> list[tuple[float, float]]:
+    """A place the bench recorded, as the outline the engine keeps: a rectangle's corners."""
+    shape = place if isinstance(place, Polygon) else polygon(place)
+    return [(float(x), float(y)) for x, y in shape.points]
+
+
+def probe_thumbnailed(rb: Rebuilt, wb: Rebuilt) -> None:
+    """Step 6 as built: the engine's thumbnail against the prototype the painter judged.
+
+    For each of the painter's arrangements but the first drawing's -- whose creature the
+    bench added by hand, since no pass laid it -- its passes counted on a copy, as
+    ``easel run --thumbnail`` counts one, and the masses the engine reads off the copy's
+    log (``Session._laid_masses``) held against the bench's ``record_masses`` entry by
+    entry; then both drawn at 192 px, the engine's by ``render_thumbnail`` and the bench's
+    by the prototype. Then the door itself on the subject pass, on the canvas that pass
+    opened on, timed beside a rehearsal of it; and on both paintings rebuilt, every mass
+    call keeping its place.
+    """
+    from easel.look import THUMBNAIL_SIZE, render_thumbnail
+
+    heading("step 6, A3: the engine's masses and thumbnails against the bench's")
+    w, h = CANVASES["bell"]["width"], CANVASES["bell"]["height"]
+    ground = new_session("bell").palette.value_of(GROUNDS[CANVASES["bell"]["ground"]])
+    grounds = []
+    for name in sorted(GROUNDS):
+        s = Session(64, 48, ground=name, timelapse=False, out_dir=OUT / "scratch")
+        grounds.append(abs(s._colour_value(s.ground) - s.palette.value_of(GROUNDS[name])))
+    print(f"  the ground a thumbnail is filled on, the engine's against the bench's, over "
+          f"all {len(grounds)} grounds: off by at most {max(grounds):.1e}")
+    rows, panels = [], []
+    for name, (runs, what) in thumbnail_runs().items():
+        if name == "union":
+            continue
+        bench = record_masses(runs)
+        copy = new_session("bell").scratch(count_only=True)
+        with quiet():
+            for label, script, prelude in runs:
+                result = run_script(copy, script.read_text(encoding="utf-8-sig"), str(script),
+                                    prelude=prelude.read_text(encoding="utf-8-sig"),
+                                    prelude_name="prelude.py")
+                if result.code:
+                    raise RuntimeError(f"{label}: {result.report}\n{result.trace}")
+        layers, unplaced, _ = copy._laid_masses()
+        same_places = sum(list(layer[0].points) == _outline_points(m.place)
+                          for layer, m in zip(layers, bench, strict=False))
+        # The log's clip for a mass laid `edge="hard"` names its own outline first; the
+        # bench kept only what `clip=` was handed. The same pixels either way.
+        same_holds = sum([list(o.points) for o in layer[2] if o.points != layer[0].points]
+                         == [list(o.points) for o in m.holds]
+                         for layer, m in zip(layers, bench, strict=False))
+        worst = max((abs(layer[1] - m.value) for layer, m in zip(layers, bench, strict=False)),
+                    default=0.0)
+        engine = np.asarray(render_thumbnail(layers, w, h, ground, THUMBNAIL_SIZE), np.int16)
+        prototype = np.asarray(thumbnail([(m.place, m.value, m.holds) for m in bench],
+                                         w, h, ground, THUMBNAIL_SIZE), np.int16)
+        moved = np.abs(engine - prototype)
+        rows.append([name, f"{len(layers)} / {len(bench)}", unplaced,
+                     f"{same_places}/{len(bench)}", f"{same_holds}/{len(bench)}",
+                     f"{worst:.1e}", int((moved > 0).sum()), int(moved.max()), what])
+        drawn = copy._thumbnail()
+        panels.append((name, drawn.image.convert("RGB")))
+    print(table(rows, ["version", "masses engine / bench", "unplaced", "same outline",
+                       "same holds", "value off by", "px differ at 192", "by at most",
+                       "what it was"]))
+    print(f"  the engine's own, the plan's places under the masses: "
+          f"{save_sheet(panels, 'thumbnail_engine.png')}")
+
+    heading("step 6, A3: the door on the subject pass, against a rehearsal of it")
+    label = "p04_gargoyle.py"
+    script = BELL / label
+    prelude = (BELL / "prelude.py").read_text(encoding="utf-8-sig")
+    source = script.read_text(encoding="utf-8-sig")
+    for kind in ("--thumbnail", "--rehearse"):
+        seconds = []
+        for _ in range(3):
+            copy = rb.opened(label).scratch(count_only=kind == "--thumbnail")
+            started = time.perf_counter()
+            with quiet():
+                before = copy._open_pass()
+                result = run_script(copy, source, str(script), prelude=prelude,
+                                    prelude_name="prelude.py")
+            if result.code:
+                raise RuntimeError(f"{label}: {result.report}\n{result.trace}")
+            if kind == "--thumbnail":
+                drawn = copy._thumbnail(since=before)
+            else:
+                copy.look_image(scale=1024)
+            seconds.append(time.perf_counter() - started)
+        if kind == "--thumbnail":
+            path = OUT / "thumbnails" / "door_p04.png"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            drawn.image.save(path)
+            print(f"  {drawn.line(path)}")
+        print(f"  {kind}: {copy.history.stroke_count} strokes worked out and the picture "
+              f"drawn in {float(np.median(seconds)):.2f} s, the median of three "
+              f"({min(seconds):.2f} to {max(seconds):.2f})")
+
+    heading("step 6, A3: every mass call keeps its place, both paintings rebuilt")
+    for built in (rb, wb):
+        last = built.after[built.labels[-1]]
+        layers, unplaced, _ = last._laid_masses()
+        calls = {session_module._call_of(r) for r in last._prior + last.history.records
+                 if r.params.get("via")}
+        drawn = last._thumbnail()
+        path = OUT / "thumbnails" / f"engine_{built.name}_final.png"
+        drawn.image.save(path)
+        print(f"  {built.name}: {len(calls)} mass calls, {len(layers)} kept their place, "
+              f"{unplaced} did not; {drawn.line(path)}")
+
+
 BENCHES = (
     ("claims", "section 3 and 3b re-measured, and where marks stop landing"),
     ("guides", "4A1: the guide candidates over every ground"),
@@ -3528,9 +3649,10 @@ BENCHES = (
     ("answers", "the painter's answers to 4, 9, 10, D and 5f, re-measured"),
     ("built", "step 4 as built: the engine's dearest line against the bench's, corpus-wide"),
     ("declared", "step 5 as built: the key, the median and the named light, as the engine says them"),
+    ("thumbnailed", "step 6 as built: the engine's thumbnail against the prototype, and the door"),
 )
 _NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built",
-                  "declared"}
+                  "declared", "thumbnailed"}
 _NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers",
                  "declared"}
 
@@ -3594,6 +3716,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_built(rb, wb)
     if "declared" in run:
         probe_declared(rb, wb, data)
+    if "thumbnailed" in run:
+        probe_thumbnailed(rb, wb)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")

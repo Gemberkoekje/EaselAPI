@@ -108,8 +108,8 @@ def test_every_cli_verb_is_a_tool(server):
     verbs = set(sub.choices)
     tools = {t.name for t in asyncio.run(server.list_tools())}
     assert verbs <= tools, f"CLI verbs with no tool: {sorted(verbs - tools)}"
-    # And what it adds beyond them: the three questions about a mark not yet made.
-    assert tools - verbs == {"preview", "rehearse", "cost"}
+    # And what it adds beyond them: the four questions about marks not yet made.
+    assert tools - verbs == {"preview", "rehearse", "cost", "thumbnail"}
 
 
 def test_the_reference_is_the_one_the_cli_prints(call, capsys):
@@ -154,7 +154,8 @@ def test_the_readme_counts_the_tools_this_server_has(server):
     tools = asyncio.run(server.list_tools())
     words = dict(enumerate(
         "zero one two three four five six seven eight nine ten eleven twelve thirteen "
-        "fourteen fifteen sixteen seventeen eighteen nineteen twenty".split()))
+        "fourteen fifteen sixteen seventeen eighteen nineteen twenty twenty-one "
+        "twenty-two".split()))
     said = f"{words[len(tools)].capitalize()} tools: the {words[len(sub.choices)]} CLI verbs"
     assert said in readme, f"the README does not say {said!r}"
 
@@ -427,6 +428,8 @@ def test_planning_does_not_spend_the_stream(tmp_path, call):
             call("cost", session=session, plan=plan)
             call("preview", session=session, plan=plan)
             call("rehearse", session=session, plan=plan)
+            call("thumbnail", session=session, places=[[plan["shape"], 0.2]])
+            call("run", session=session, script=mass, thumbnail=True)
         call("run", session=session, script=mass)
         out = str(tmp_path / f"{name}.png")
         call("export", session=session, output=out)
@@ -679,6 +682,55 @@ def test_run_rehearses_versions_side_by_side_and_hands_the_sheet_back(call, pain
 
     with pytest.raises(ToolError, match="in place of script"):
         call("run", session=painting, script=dark, alternatives=[blue])
+
+
+def test_the_thumbnail_tool_reads_places_as_the_plan_does_and_hands_back_the_picture(
+        call, painting):
+    """0.8.0 A3 through the wire: an object's keys are places as `plan` reads its own,
+    and a list of pairs takes a shape, which a JSON key cannot be. A value is a number or
+    a colour, `[value, clip]` holds a place inside a clip, and nothing is painted."""
+    before = Session.load(painting).history.to_json()
+    reply = call("thumbnail", session=painting, places={"A1:H4": 0.80, "D5": "burnt_umber"})
+    assert reply.text.startswith("Thumbnail of 2 places, at 192 px: ")
+    img = np.asarray(reply.picture, dtype=np.float32) / 255.0
+    assert img.shape == (144, 192)
+    assert float(img[20, 20]) == pytest.approx(0.80, abs=1 / 255 + 1e-6)
+
+    body = {"blob": "D5", "radius": 0.12, "seed": 3}
+    held = call("thumbnail", session=painting, size=96, places=[
+        [body, 0.15],
+        [{"ellipse": [0.45, 0.55], "rx": 0.10, "ry": 0.08}, ["titanium_white", body]]])
+    assert held.picture.size == (96, 72)
+
+    # With no places, the plan's and every mass laid -- and this painting has neither.
+    plain = call("thumbnail", session=painting)
+    assert plain.text.startswith("Thumbnail of the ground alone: no place planned, and no "
+                                 "mass laid, at 192 px: ")
+    assert Session.load(painting).history.to_json() == before
+
+    with pytest.raises(ToolError, match=r"is not a \[place, value\] pair"):
+        call("thumbnail", session=painting, places=[["C3:F6"]])
+
+
+def test_run_with_a_thumbnail_counts_the_pass_and_hands_its_arrangement_back(
+        call, painting):
+    """`easel run --thumbnail` through the wire: counted rather than painted, and the
+    arrangement it would leave handed back as a picture -- with the look as well when it
+    is rehearsed, and as one sheet for versions of a pass."""
+    mass = "s.block_in(blob(cell('D5'), 0.14, seed=3), 'bristle', 'burnt_umber', size=0.05)"
+    counted = call("run", session=painting, script=mass, thumbnail=True)
+    assert "Counted <script>" in counted.text
+    assert "Thumbnail of 1 mass laid, by this pass, at 192 px: " in counted.text
+    assert counted.picture.size == (192, 144)
+    assert Session.load(painting).stroke_count == 1       # the fixture's mark, and no more
+
+    rehearsed = call("run", session=painting, script=mass, thumbnail=True, rehearse=True)
+    assert "Rehearsed <script>" in rehearsed.text and len(rehearsed.images) == 2
+
+    versions = call("run", session=painting, thumbnail=True,
+                    alternatives=[mass, mass.replace("0.14", "0.08")])
+    assert "side by side" in versions.text and "thumbnail_" in versions.text
+    assert len(versions.images) == 1
 
 
 def test_look_takes_the_landmarks_off(call, painting):

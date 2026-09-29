@@ -1572,13 +1572,15 @@ def test_the_planning_verbs_change_nothing_laid_after_them(tmp_path):
          "values": lambda: s.look(values=True), "preview": lambda: s.preview(plan),
          "rehearse": lambda: s.rehearse(plan), "cost": lambda: s.cost(plan),
          "compare": lambda: s.compare({"all": 0.3}),
+         "thumbnail": lambda: (s.thumbnail(), s.thumbnail({"D5": ("titanium_white",
+                                                                  "C4:E6")})),
          "pencil": lambda: s.pencil([(0.1, 0.1), (0.9, 0.9)]),
          "dry": lambda: s.dry()}[pre]()
         s.stroke([(0.1, 0.5), (0.9, 0.5)], "bristle", "burnt_umber", size=0.08)
         return np.array(s.canvas.rgb)
 
     base = build("none")
-    for verb in ("look", "values", "preview", "rehearse", "cost", "compare"):
+    for verb in ("look", "values", "preview", "rehearse", "cost", "compare", "thumbnail"):
         assert np.array_equal(build(verb), base), f"{verb}() changed the stroke after it"
     for verb in ("pencil", "dry"):
         assert not np.array_equal(build(verb), base), f"{verb}() is logged: it should shift"
@@ -7320,3 +7322,273 @@ def test_at_value_under_its_default_dark_names_the_darks_the_box_does_reach():
     darker = Palette({**PIGMENTS, "lamp_black": "#141414"})
     with pytest.raises(ValueError, match="the darkest pigment in this box is 'lamp_black'"):
         darker.at_value("burnt_sienna", 0.11)
+
+
+# -- 0.8.0 A3: the arrangement, flat and small ------------------------------------------
+def _grey(image) -> np.ndarray:
+    """A thumbnail -- a path or a picture -- as the values it was drawn at, ``0..1``."""
+    img = image if isinstance(image, Image.Image) else Image.open(image)
+    return np.asarray(img, dtype=np.float32) / 255.0
+
+
+def _at(img: np.ndarray, x: float, y: float) -> float:
+    """What a thumbnail reads at a place given in the canvas's own fractions."""
+    h, w = img.shape[:2]
+    return float(img[int(y * h), int(x * w)])
+
+
+_ONE_STEP = 1 / 255 + 1e-6
+
+
+def test_a_thumbnail_is_each_place_flat_at_its_value_later_over_earlier(tmp_path):
+    """The Bell-Warden's painter asked first for *a free silhouette and value thumbnail
+    at drawing time -- the painter's classic notan*. Its cat's ears, its piebald's islands
+    and its arch each cost a rehearsal of 85 to 113 marks to see, and each was plain in a
+    flat render of the shapes that made them: a value or a colour's value for each
+    place, in the order given, on the ground's own value, 192 px on the long side."""
+    s = make(tmp_path)
+    body = ellipse((0.50, 0.55), 0.30, 0.25, name="body")
+    lit = ellipse((0.42, 0.45), 0.10, 0.08, name="lit")
+    path = s.thumbnail({body: 0.12, lit: "titanium_white"})
+    assert path == tmp_path / "thumbnail_001.png"
+    img = _grey(path)
+    assert img.shape == (144, 192)                         # 320x240, brought to 192
+    assert _at(img, 0.04, 0.05) == pytest.approx(s.palette.value_of(s.ground), abs=_ONE_STEP)
+    assert _at(img, 0.66, 0.66) == pytest.approx(0.12, abs=_ONE_STEP)
+    white = s.palette.value_of("titanium_white")
+    assert _at(img, 0.42, 0.45) == pytest.approx(white, abs=_ONE_STEP)
+
+    # Later over earlier: the same two the other way round, and the light is under.
+    img = _grey(s.thumbnail({lit: "titanium_white", body: 0.12}, size=96))
+    assert img.shape == (72, 96)
+    assert _at(img, 0.42, 0.45) == pytest.approx(0.12, abs=_ONE_STEP)
+
+
+def test_a_pair_holds_a_place_inside_a_clip_as_a_mass_is_held(tmp_path):
+    """Question 4c: the painter's lighting was three copies of the body, each shifted
+    off it and held to it with `clip=body`, and drawn unclipped they spill past the
+    silhouette into a picture it never painted. So a value can be a pair, as `block_in`
+    takes `clip=`, and a list of places holds it inside all of them."""
+    s = make(tmp_path)
+    body = ellipse((0.50, 0.55), 0.30, 0.25)
+    copy = body.shifted(-0.12, -0.12)
+    ground, white = s.palette.value_of(s.ground), s.palette.value_of("titanium_white")
+    img = _grey(s.thumbnail({body: 0.12, copy: ("titanium_white", body)}))
+    assert _at(img, 0.40, 0.45) == pytest.approx(white, abs=_ONE_STEP)    # in both
+    assert _at(img, 0.20, 0.30) == pytest.approx(ground, abs=_ONE_STEP)   # the copy only
+    assert _at(img, 0.72, 0.70) == pytest.approx(0.12, abs=_ONE_STEP)     # the body only
+
+    left = Region(0.0, 0.0, 0.40, 1.0)
+    img = _grey(s.thumbnail({body: 0.12, copy: (0.90, [body, left])}))
+    assert _at(img, 0.33, 0.45) == pytest.approx(0.90, abs=_ONE_STEP)
+    assert _at(img, 0.47, 0.45) == pytest.approx(0.12, abs=_ONE_STEP)
+
+
+def test_a_thumbnail_takes_nothing_from_the_painting_and_refuses_a_value_in_words(
+        tmp_path):
+    """Free, as a preview is: nothing painted, logged or charged, and the stream where it
+    stood -- beside the planning verbs in the test that holds a stroke laid after each
+    of them to the stroke laid with none."""
+    s = make(tmp_path)
+    s.block_in(cell("D5"), "flat", "burnt_umber", size=0.06)
+    log, stream, rgb = s.history.to_json(), s.rng.bit_generator.state, s.canvas.rgb.copy()
+    s.thumbnail()
+    s.thumbnail({cell("D5"): ("titanium_white", "C4:E6")}, size=64)
+    assert s.history.to_json() == log and s.rng.bit_generator.state == stream
+    assert np.array_equal(s.canvas.rgb, rgb)
+
+    with pytest.raises(ValueError, match=r"a value runs 0\.\.1"):
+        s.thumbnail({cell("D5"): 1.5})
+    with pytest.raises(ValueError, match="is not a place"):
+        s.thumbnail({cell("D5"): (0.3, 0.5)})
+    with pytest.raises(TypeError, match=r"takes \{place: value\}"):
+        s.thumbnail([cell("D5")])
+    with pytest.raises(ValueError, match="long side in pixels"):
+        s.thumbnail(size=0)
+
+
+def test_with_no_argument_it_is_the_plan_and_every_mass_laid_in_any_process(tmp_path):
+    """Question 4c: the plan's places alone drew *everything that did not fail* -- a
+    room, a plinth and a sliver of head, since the plan named no mass of the creature,
+    as most plans will not. So the plan's places, and over them every mass the painting
+    has laid at its colour's value, held as it was held, in the order laid: read off the
+    log, whose first record of each mass call keeps its place, so a pass painted in
+    another process is in it. A mark and a film are not masses."""
+    s = make(tmp_path)
+    s.plan(values={span("A1", "H3"): 0.70, span("A6", "H8"): 0.30})
+    body = ellipse((0.50, 0.55), 0.20, 0.16)
+    s.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)
+    s.block_in(body, "bristle", "dark", size=0.04, direction="axis")
+    s.block_in(body.shifted(-0.06, -0.06), "flat", "titanium_white", size=0.03, clip=body)
+    kept = len(s.history.records)
+    s.scumble(span("A7", "H8"), "burnt_umber", "yellow_ochre", n=4)
+    s.stroke([(0.05, 0.96), (0.95, 0.96)], "bristle", "cadmium_red")
+    s.glaze([(0.60, 0.08), (0.95, 0.08)], "ultramarine")
+    s.save(tmp_path / "p.easel")
+    back = Session.load(tmp_path / "p.easel")
+
+    drawn = back._thumbnail()
+    assert drawn.what == "the plan's 2 places and 3 masses laid, at 192 px"
+    assert drawn.note == ""
+    img, p = _grey(drawn.image), back.palette
+    assert _at(img, 0.85, 0.20) == pytest.approx(0.70, abs=_ONE_STEP)      # planned
+    assert _at(img, 0.10, 0.69) == pytest.approx(0.30, abs=_ONE_STEP)      # planned
+    assert _at(img, 0.62, 0.62) == pytest.approx(p.value_of("dark"), abs=_ONE_STEP)
+    assert _at(img, 0.46, 0.50) == pytest.approx(p.value_of("titanium_white"),
+                                                 abs=_ONE_STEP)
+    assert _at(img, 0.27, 0.44) == pytest.approx(p.value_of(back.ground), abs=_ONE_STEP)
+    passage = (p.value_of("burnt_umber") + p.value_of("yellow_ochre")) / 2
+    assert _at(img, 0.20, 0.88) == pytest.approx(passage, abs=_ONE_STEP)
+
+    # What the log no longer holds is no longer drawn: a rebuild short of the passage.
+    assert back.replay(upto=kept)._thumbnail().what == \
+        "the plan's 2 places and 2 masses laid, at 192 px"
+    # And a counted copy draws the painting's masses under its own, as the door does.
+    copy = back.scratch(count_only=True)
+    copy.block_in(span("A1", "B2"), "flat", "burnt_umber", size=0.05)
+    assert copy._thumbnail().what == "the plan's 2 places and 4 masses laid, at 192 px"
+
+
+def test_a_mass_keeps_its_place_on_its_first_record_beside_the_stream(tmp_path):
+    """The step-2 package told the painter *the log knows* the masses laid so far; it
+    knew their passes, and never the place a mass was filling. The first record of each
+    mass call keeps it now, with the value its colour reads -- read with `.get`, and by
+    nothing that lays paint, like `boxed`. A burial's is its first mark, not the dry
+    before it; a sweep's place is the ground `preview` draws it covering; and a rebuild,
+    which is what every undo from the shell is, carries it as it carries the stream."""
+    s = make(tmp_path)
+    body = ellipse((0.50, 0.50), 0.20, 0.15)
+    laid = s.block_in(body, "bristle", "burnt_umber", size=0.05)
+    first = laid[0].params["mass"]
+    assert first == {"place": [[float(x), float(y)] for x, y in body.points],
+                     "value": pytest.approx(s.palette.value_of("burnt_umber"))}
+    assert not any("mass" in r.params for r in laid[1:])
+    boxed = s.block_in(span("A1", "B2"), "flat", "titanium_white", size=0.05)
+    assert len(boxed[0].params["mass"]["place"]) == 4               # its four corners
+
+    before = len(s.history.records)
+    s.cover(span("F1", "G2"), "yellow_ochre")
+    dry, *buried = s.history.records[before:]
+    assert dry.kind == "dry" and "mass" not in dry.params
+    assert buried[0].params["via"] == "cover" and "mass" in buried[0].params
+    assert not any("mass" in r.params for r in buried[1:])
+
+    swept = s.sweep([(0.10, 0.80), (0.90, 0.80)], "bristle", "burnt_umber",
+                    into="down", depth=0.10)
+    ring = swept[0].params["mass"]["place"]
+    assert min(y for _, y in ring) == pytest.approx(0.80, abs=1e-6)
+    assert max(y for _, y in ring) == pytest.approx(0.90, abs=1e-6)
+
+    again = s.replay()
+    assert [r.params.get("mass") for r in again.history.records] == \
+        [r.params.get("mass") for r in s.history.records]
+    assert np.array_equal(again.canvas.rgb, s.canvas.rgb)
+
+
+def test_a_mass_laid_before_its_place_was_kept_is_said_and_not_drawn(tmp_path):
+    """A painting begun on an older release has masses in its log with no place to draw
+    them by. Counted and said, under the line, rather than drawn as bare ground."""
+    s = make(tmp_path)
+    s.block_in(cell("D5"), "flat", "burnt_umber", size=0.06)
+    s.block_in(cell("E5"), "flat", "burnt_umber", size=0.06)
+    for r in s.history.records:
+        r.params.pop("mass", None)
+    s.block_in(cell("F5"), "flat", "titanium_white", size=0.06)
+    drawn = s._thumbnail()
+    assert drawn.what == "1 mass laid, at 192 px"
+    assert drawn.note == ("2 masses laid before 0.8.0 kept no place in the log, and are "
+                          "not in it.")
+    assert drawn.line("t.png") == f"Thumbnail of {drawn.what}: t.png\n  {drawn.note}"
+
+
+def _thumbnail_painting(tmp_path):
+    """A painting with a plan and a band laid, a prelude, and a pass that lays a body."""
+    session = tmp_path / "p.easel"
+    assert main(["new", str(session), "--size", "320x240", "--ground", "toned_grey",
+                 "--budget", "300", "--out-dir", str(tmp_path / "out"),
+                 "--no-prelude"]) == 0
+    (tmp_path / "prelude.py").write_text(
+        's.plan(values={"A6:H8": 0.30})\n'
+        'body = ellipse((0.50, 0.50), 0.20, 0.16)\n'
+        's.palette["dark"] = s.palette.mix("ultramarine", "burnt_umber", 0.45)\n')
+    band = tmp_path / "band.py"
+    band.write_text('s.block_in("A1:H3", "flat", "titanium_white", size=0.06)\n')
+    assert main(["run", str(session), str(band)]) == 0
+    body = tmp_path / "body.py"
+    body.write_text('s.block_in(body, "bristle", "dark", size=0.04, direction="axis")\n'
+                    's.block_in(body.shifted(-0.05, -0.05), "flat", "yellow_ochre", '
+                    'size=0.03, clip=body)\n')
+    return session, body
+
+
+def test_easel_run_thumbnail_counts_the_pass_and_draws_it_over_the_paintings(
+        tmp_path, capsys):
+    """Question 4c: *the moment I needed it was before a pass, not after one* -- each of
+    the three failures was a pass script, and each cost a rehearsal's render to see. So
+    `easel run --thumbnail` counts the pass rather than painting it and draws, with no
+    argument, the arrangement it would leave: its masses flat over the painting's, over
+    the plan's places. Nothing is committed, and the check is kept as a count's is."""
+    session, body = _thumbnail_painting(tmp_path)
+    before = Session.load(session)
+    capsys.readouterr()
+    assert main(["run", str(session), str(body), "--thumbnail"]) == 0
+    out = capsys.readouterr().out
+    assert "Counted body.py:" in out and "Nothing painted, nothing committed." in out
+    line = next(one for one in out.splitlines() if one.startswith("Thumbnail of"))
+    assert line.startswith("Thumbnail of the plan's 1 place and 3 masses laid, 2 of them "
+                           "by this pass, at 192 px: ")
+    img = _grey(line.rsplit(": ", 1)[1])
+    after = Session.load(session)
+    p = after.palette
+    assert _at(img, 0.60, 0.60) == pytest.approx(p.value_of("dark"), abs=_ONE_STEP)
+    assert _at(img, 0.42, 0.42) == pytest.approx(p.value_of("yellow_ochre"), abs=_ONE_STEP)
+    assert _at(img, 0.10, 0.10) == pytest.approx(p.value_of("titanium_white"),
+                                                 abs=_ONE_STEP)
+    assert _at(img, 0.10, 0.90) == pytest.approx(0.30, abs=_ONE_STEP)
+
+    assert after.history.to_json() == before.history.to_json()
+    assert [r.mode for r in after.reports()][-1] == "counted"
+
+    # Asked with --rehearse as well, the copy is painted and looked at too.
+    assert main(["run", str(session), str(body), "--rehearse", "--thumbnail"]) == 0
+    out = capsys.readouterr().out
+    assert "Rehearsed body.py:" in out and "rehearse_001.png" in out
+    assert "Thumbnail of the plan's 1 place and 3 masses laid" in out
+
+    # Two passes on one copy are said as two.
+    floor = tmp_path / "floor.py"
+    floor.write_text('s.block_in("A7:H8", "flat", "burnt_umber", size=0.06)\n')
+    assert main(["run", str(session), str(body), str(floor), "--thumbnail"]) == 0
+    assert ("Thumbnail of the plan's 1 place and 4 masses laid, 3 of them by these "
+            "passes, at 192 px: ") in capsys.readouterr().out
+
+
+def test_versions_of_a_pass_lay_their_thumbnails_side_by_side(tmp_path, capsys):
+    """The cat, the piebald and the arch were three versions of one pass. Under
+    `--alternatives`, `--thumbnail` counts each and lays their thumbnails in one sheet,
+    labelled under each panel, where a label over it would cover the arrangement."""
+    session, body = _thumbnail_painting(tmp_path)
+    plain = tmp_path / "plain.py"
+    plain.write_text('s.block_in(body, "bristle", "dark", size=0.04, direction="axis")\n')
+    capsys.readouterr()
+    assert main(["run", str(session), str(body), str(plain), "--alternatives",
+                 "--thumbnail"]) == 0
+    out = capsys.readouterr().out
+    assert "Counted body.py (1 of 2)" in out and "Counted plain.py (2 of 2)" in out
+    sheet_line = out.strip().splitlines()[-1]
+    assert sheet_line.startswith("body.py and plain.py side by side: ")
+    sheet = Path(sheet_line.rsplit(": ", 1)[1])
+    assert sheet.name == "thumbnail_001.png"
+
+    painting = Session.load(session)
+    one = _grey(painting._thumbnail().image)
+    h, w = one.shape
+    sheet_img = np.asarray(Image.open(sheet).convert("L"), dtype=np.float32) / 255.0
+    # The second panel is the plain version: the body with no ochre copy on it, and its
+    # bottom rows -- where a label drawn over the panel would sit -- still the floor.
+    # Both labels are narrower than a panel, so a cell is a panel wide.
+    x = 12 + w + 12
+    panel = sheet_img[12:12 + h, x:x + w]
+    assert _at(panel, 0.42, 0.42) == pytest.approx(painting.palette.value_of("dark"),
+                                                   abs=_ONE_STEP)
+    assert float(panel[h - 2, 4]) == pytest.approx(0.30, abs=_ONE_STEP)
