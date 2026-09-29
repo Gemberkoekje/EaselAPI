@@ -18,23 +18,22 @@ from._
 2026-09-29, off `main` at `0391074`** -- step 5 merged as
 [#94](https://github.com/Gemberkoekje/EaselAPI/pull/94). As the painter decided it
 (question 4): `s.thumbnail({place: value})`, each place flat at its value or its colour's,
-192 px on the long side, a pair `(value, clip)` held inside the clip; with no argument
-the plan's places and every mass the painting has laid; never the drawing over it, and no
-look of the drawing alone; and **`easel run pass.py --thumbnail`**, the pass counted and
-its masses drawn over the painting's -- through the server as a `thumbnail` tool and
+192 px on the long side, a pair `(value, clip)` held inside the clip; with no argument the
+plan's places and every mass the painting has laid; never the drawing over it, and no look
+of the drawing alone; and **`easel run pass.py --thumbnail`**, the pass counted and its
+masses drawn over the painting's -- through the server as a `thumbnail` tool and
 `run(thumbnail=true)`. **One thing the plan did not say**: the step-2 package told the
 painter *the log knows* the masses laid so far, and it knew their passes and never the
 place a mass was filling -- so the first record of each mass call now keeps its place and
-value, beside the stream as `boxed` is, and a mass laid before 0.8.0 is counted, not drawn.
-And beside the door, `--alternatives --thumbnail` lays each version's thumbnail in one
-sheet, labelled under each panel rather than over it. Nothing a mark lays changes.
-**Measured as built**
-(`probe_bell_session.py --thumbnailed`): each of the painter's six arrangements, counted
-as the door counts a pass, is the bench's masses entry for entry and draws, at 192 px, the
-prototype's thumbnail to the pixel; the door takes `0.15` s on the subject's pass, whose
-rehearsal takes `7.9`; and every mass call of both paintings, rebuilt, keeps
-its place. See [`NOTES-step6.md`](NOTES-step6.md). **Nothing waits on a painter**; step 7
-(A4 and B, the recipes) is next.
+value, beside the stream as `boxed` is, and a mass laid before 0.8.0 is counted, not
+drawn. And beside the door, `--alternatives --thumbnail` lays each version's thumbnail in
+one sheet, labelled under each panel rather than over it. Nothing a mark lays changes.
+**Measured as built** (`probe_bell_session.py --thumbnailed`): each of the painter's six
+arrangements, counted as the door counts a pass, is the bench's masses entry for entry and
+draws, at 192 px, the prototype's thumbnail to the pixel; the door takes `0.15` s on the
+subject's pass, whose rehearsal takes `7.9`; and every mass call of both paintings,
+rebuilt, keeps its place. See [`NOTES-step6.md`](NOTES-step6.md). **Nothing waits on a
+painter**; step 7 (A4 and B, the recipes) is next.
 
 *Step 5 was built -- E1, E2, E3's error and E4 -- on branch
 `declared-key-and-place-medians`, 2026-09-29, off `main` at `8f7a1da`* -- step 4 merged as

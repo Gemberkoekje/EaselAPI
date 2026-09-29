@@ -46,7 +46,7 @@ argument should draw *the masses the painting has laid so far, say, which the lo
 and the log knew every pass of a mass and never the place it was filling (`boxed`, since
 0.6.0, is the one bit of it that was kept). Drawn from the passes instead, a ragged mass's
 footprint is its place widened by half a brush all round, three thumbnail pixels at 192 for
-a brush of `0.03`, and a mass laid at `density` under 1 comes out striped: not the flat
+a brush of `0.03`, and a mass laid at `density` under 1 would come out striped: not the flat
 place the painter judged. So each mass call's first record carries the place it was handed
 and the value its colour reads, as `params["mass"]`, beside the stream -- read with `.get`,
 by nothing that lays paint, carried by a rebuild the way `rng`, `via`, `boxed` and
@@ -56,9 +56,9 @@ cost is the file: one outline and a number per mass call.
 
 **2. A place kept as its outline.** A rectangle is kept as its four corners and masked by
 pixel centres, as every shape is; the bench masked a `Region` as `int(x * width)` columns,
-which can differ by one column at the canvas's size. Neither painting's arrangements has a
-rectangle among its masses, so the bench's parity does not test it; at 192 px a column is
-under a fifth of a pixel.
+which can differ by one column at the canvas's size. None of the six arrangements the
+bench drew has a rectangle among its masses, so its parity does not test one; at 192 px a
+column is under a fifth of a pixel.
 
 **3. The plan under the masses.** The plan is what the painter wrote down before the first
 mark, so it is the first layer and every mass lies over it: where a mass has been laid the
@@ -67,14 +67,17 @@ of a finished painting would be its plan.
 
 **4. The door counts.** *The pass is counted, not painted* -- the painter's words -- so
 `--thumbnail` is `--count` with a picture. A painter who also says `--rehearse` gets the
-paint as well: the look and the thumbnail, both written. Under `--alternatives` there is no
-way to tell `--rehearse` asked from `--rehearse` implied, so each version is counted and the
-sheet is thumbnails; a sheet of looks is `--alternatives` without it.
+paint as well: the look and the thumbnail, both written. Under `--alternatives` a sheet
+holds one picture per version, so `--thumbnail` makes it a sheet of thumbnails and counts
+every version -- two sheets for one run would be two answers to one question; a sheet of
+looks is `--alternatives` without it, and `--rehearse` beside them changes nothing, as it
+never has under `--alternatives`.
 
 **5. Labels under the panels.** A panel label is 13 pixels high over the panel's bottom
-left, which on a thumbnail 144 pixels high lies across the bottom tenth of the arrangement
--- the floor, in the painter's picture. `label_sheet(below=True)` gives each cell room under its panel and widens
-a cell to its label; every other sheet is laid as it was.
+left, which on a thumbnail 144 pixels high lies across the bottom tenth of the
+arrangement -- the floor, in the painter's picture. `label_sheet(below=True)` gives each
+cell room under its panel and widens a cell to its label; every other sheet is laid as
+it was.
 
 **6. The server's pairs.** A JSON key is a string, so an object's keys can only be the
 places `plan` reads -- names, cells, spans -- and a shape, which is what *does this
@@ -94,11 +97,12 @@ bench's was (`NOTES-step2.md`, gotcha 7).
 **8. Older masses, said.** A mass laid by a release before 0.8.0 has no place; it is left
 out, and the shell and the server say how many on a line of their own under the
 thumbnail's. The Python verb returns a path and says nothing; its docstring says so. Every
-painting from here on is painted on 0.8.0 (O8), so this is the lighthouse-era file reopened.
+painting from here on is painted on 0.8.0 (O8), so this is a painting from an earlier round,
+reopened.
 
 **9. Nothing new speaks at the call.** An empty thumbnail -- no plan, no mass -- draws the
-ground and says so (*the ground alone: no place planned, and no mass laid*), rather than
-raising in the middle of a pass. A value outside `0..1`, a clip that is not a place, a list
+ground, and the shell and the server say so (*the ground alone: no place planned, and no
+mass laid*), rather than raising in the middle of a pass. A value outside `0..1`, a clip that is not a place, a list
 where a dict belongs and a size under 1 are refused in words.
 
 **10. On this machine.** As before: `PYTHONPATH=src`, and the probes from inside

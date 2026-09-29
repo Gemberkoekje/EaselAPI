@@ -2691,10 +2691,10 @@ class Session:
 
         **From the shell, before a pass is paid for**: ``easel run p.easel pass.py
         --thumbnail`` counts the pass instead of painting it, and draws this with no
-        argument over what it would lay -- the pass's masses over the painting's -- in
-        a second, where a rehearsal renders every mark. A mass laid by a release before
-        0.8.0 kept no place in the log and is not drawn; the shell and the server say
-        how many.
+        argument over what it would lay -- the pass's masses over the painting's -- in a
+        fraction of a second, where a rehearsal renders every mark. A mass laid by a
+        release before 0.8.0 kept no place in the log and is not drawn; the shell and the
+        server say how many.
 
         Example::
 
