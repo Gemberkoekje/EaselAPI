@@ -71,7 +71,7 @@ import sys
 import tempfile
 import time
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import numpy as np
@@ -3429,6 +3429,85 @@ def probe_built(rb: Rebuilt, wb: Rebuilt) -> None:
 
 # -- main -------------------------------------------------------------------------------
 
+
+# -- step 5 as built: the key, the median and the named light --------------------------
+
+def probe_declared(rb: Rebuilt, wb: Rebuilt, data: CorpusData) -> None:
+    """Step 5 as built: what the engine's plan lines say against what step 2's bench read.
+
+    On both paintings, pass by pass: every planned place read by the engine
+    (``Planned.reading``) against the bench's ``readings()`` of the same pixels; the
+    ``plan:`` and ``lightest:`` lines ``easel run`` printed; and the ``values:`` line the
+    engine would print under ``key="low"``. Then over the corpus: the key's clause on
+    every pass of the pictures that finish low-key, and the ``plan:`` line's count by the
+    median, from the replay's own readings.
+    """
+    from easel.checklist import _key_clause, values_line
+
+    heading("step 5, E2 and E4: the engine's readings against the bench's, both paintings")
+    for built in (rb, wb):
+        worst = 0.0
+        rows = []
+        for label in built.labels:
+            s = built.after[label]
+            plan = s._plan
+            if not (plan.values or plan.lightest is not None) or not s.stroke_count:
+                continue
+            view = s._value_view()
+            h, w = view.shape
+            named = list(plan.values)
+            if plan.lightest is not None and plan.lightest.name not in {p.name for p in named}:
+                named.append(plan.lightest)
+            for p in named:
+                engine = p.reading(view)
+                bench = readings(view[p.outline.mask(w, h)])
+                worst = max(worst, abs(engine.median - bench["median"]),
+                            abs(engine.brightest - bench["p95"]),
+                            abs(engine.darker + engine.lighter - bench["split"]))
+            said = [x.strip() for x in built.said[label]
+                    if x.strip().startswith(("plan:", "lightest:"))]
+            flat = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+            reach = (s.palette.darkest_value, s.palette.lightest_value)
+            key_line = values_line(flat, reach=reach, key="low",
+                                   light=replace(plan, key="low").light_reading(flat))
+            rows.append((label, said, key_line))
+        print(f"  {built.name}: every place's median, 95th and split as the bench reads "
+              f"them, largest difference {worst:.2e}")
+        for label, said, key_line in rows:
+            print(f"    {label}")
+            for line in said:
+                print(f"      {line}")
+            print(f"      under key='low': {key_line.split('; ', 1)[1]}")
+
+    heading("step 5, E1: the key's clause over the corpus's low-key pictures")
+    painted = [p for p in data.passes if p["spent"] > 0 and not p["error"]]
+    last = {}
+    for p in painted:
+        last[p["painting"]] = values_reading(p["flat"], p["reach"])
+    rows = []
+    for name in [k for k, r in last.items() if r["verdict"] == "no clear light"]:
+        mine = [values_reading(p["flat"], p["reach"]) for p in painted if p["painting"] == name]
+        said = [_key_clause("low", r["low"], r["high"], r["middle"]) for r in mine]
+        left = [c for c in said if "has risen" in c]
+        rows.append([name, len(mine), len(mine) - len(left), len(left),
+                     re.search(r"risen to (\d\.\d\d)", left[0]).group(1) if left else "-"])
+    print(table(rows, ["low-key picture", "passes", "kept", "left", "first rise to"]))
+    print(f"  over them: {sum(r[2] for r in rows)} kept, {sum(r[3] for r in rows)} left, "
+          f"of {sum(r[1] for r in rows)} passes")
+
+    heading("step 5, E2: the plan line by the median, and the split clause, over the plans")
+    for painting in sorted({p["painting"] for p in data.passes if p["places"]}):
+        counts = []
+        for p in data.passes:
+            if p["painting"] != painting or p["spent"] == 0 or not p["places"]:
+                continue
+            planned_ = [x for x in p["places"] if x["value"] is not None]
+            inside = sum(abs(x["median"] - x["value"]) <= 0.10 for x in planned_)
+            split = [x["name"] for x in p["places"] if x["split"] >= 0.10]
+            counts.append(f"{inside}/{len(planned_)}" + (f" ({', '.join(split)})" if split else ""))
+        print(f"  {painting}: " + "; ".join(counts))
+
+
 BENCHES = (
     ("claims", "section 3 and 3b re-measured, and where marks stop landing"),
     ("guides", "4A1: the guide candidates over every ground"),
@@ -3446,9 +3525,12 @@ BENCHES = (
     ("units", "4A5: the corpus's own pixel helpers and hand-moved groups"),
     ("answers", "the painter's answers to 4, 9, 10, D and 5f, re-measured"),
     ("built", "step 4 as built: the engine's dearest line against the bench's, corpus-wide"),
+    ("declared", "step 5 as built: the key, the median and the named light, as the engine says them"),
 )
-_NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built"}
-_NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers"}
+_NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built",
+                  "declared"}
+_NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers",
+                 "declared"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -3508,6 +3590,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_answers(data)
     if "built" in run:
         probe_built(rb, wb)
+    if "declared" in run:
+        probe_declared(rb, wb, data)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")

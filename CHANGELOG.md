@@ -143,6 +143,46 @@ Nothing a mark lays changes, and no saved painting rebuilds differently. Where a
 made is found once per call, from the painter's own frame, and kept beside the log for
 the process that ran the script — never saved, and never in a record.
 
+### A declared key, a place read by what most of it reads, and a light read as a light
+
+Step 5 of the bell-warden's round (`PLAN-0.8.0.md`, workstream E). The Bell-Warden's
+`values:` line said *no clear light* on 25 of its 27 reports, of a picture its notes call
+low-key by design; its `plan:` line called the head's top a miss, `-0.14`, because the
+eye is in it; and `at_value` told it `0.13` was out of reach, so it took the box's floor to
+be `0.14`. Wenna Brask's lantern read `0.49` against a planned `0.76`, because its iron is
+most of its place.
+
+- **`s.plan(key="low")`, or `"high"`.** A declaration in `bands=` and `ground=`'s pattern,
+  saved with the plan: under it the `values:` line says *low-key, as the plan says --
+  nothing above 0.35, under the box's middle 0.54*, and once the top twentieth rises past
+  that middle, by how much the picture has left its key. The clusters are printed and not
+  judged — a key compresses the range, and a fixed `0.10` would call 61 of the corpus's 74
+  low-key passes one mass. With `lightest=` named, the line asks whether that light stands
+  clear of the rest: its brightest twentieth against the picture's top twentieth, by
+  `0.10`. Over the corpus's seven low-key pictures it is silent on 72 of their 74 passes;
+  the other two are the pier's, whose top twentieth rose past its key. `easel plan
+  --key`, `key` on the server's `plan`, and a line in the prelude `easel new` writes.
+- **A place reads what most of it reads**: its median, not its mean — on the `plan:` and
+  `lightest:` lines and in `compare()` handed a value plan, so an eye inside a planned
+  plane no longer moves what the plane reads. The Bell-Warden's head top reads `0.61`,
+  the lightest of its places, as planned. **A split place says so** on a line that
+  already names it: a tenth of it or more, more than `0.15` from its own median —
+  *24% of it darker by more than 0.15*. `compare()` against a photograph keeps its cells'
+  means.
+- **The named light is read twice**: `lightest: head top reads 0.61 as a place, 0.63 at
+  its brightest twentieth`. The 95th percentile beside the median, as both painters
+  asked; the places are still ranked by their medians, and on both paintings no verdict
+  moves.
+- **`at_value` says where the floor is.** Under its default dark, the ultramarine-umber
+  mix at `0.137`, the error names the darks the box does reach — `dark="burnt_umber"` at
+  `0.128`, warm, and seven parts umber to three of ultramarine at `0.132`, the most
+  neutral — and under `0.128`, a colour of the painter's own with its value. It never
+  switches darks by itself. `darkest_value` says `0.128` in `REFERENCE.md`.
+
+Nothing a mark lays changes, and no saved painting rebuilds differently. A painting whose
+plan names places may read its places differently after a pass than it did — the median
+where the mean was — and a plan saved before has no key.
+
 ## [0.7.0] — 2026-09-25
 
 **Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with

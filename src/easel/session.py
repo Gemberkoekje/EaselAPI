@@ -4590,7 +4590,8 @@ class Session:
             without = self.canvas.values(sketch=False)
         view = without.astype(np.float32) / 255.0
         reach = (self.palette.darkest_value, self.palette.lightest_value)
-        lines = [checklist.values_line(view, reach=reach),
+        lines = [checklist.values_line(view, reach=reach, key=self._plan.key,
+                                       light=self._plan.light_reading(view)),
                  checklist.edges_line(view),
                  self._ground_line()]
         if self.canvas.has_sketch:
@@ -4755,7 +4756,7 @@ class Session:
 
     # -- what the painter says before painting -----------------------------------
     def plan(self, why=None, values=None, lightest=None, subject_share=None,
-             bands=None, ground=None, clear: bool = False) -> Plan:
+             bands=None, ground=None, key=None, clear: bool = False) -> Plan:
         """Write the plan down where the engine can see it. Returns it; print it.
 
         The guide has always asked a painter to settle these before the first mark,
@@ -4769,7 +4770,8 @@ class Session:
                    lightest=lamp,
                    subject_share=0.40,
                    bands="subject",
-                   ground="buried")
+                   ground="buried",
+                   key="low")
 
         Args:
             why: what the picture is for, in a sentence. Nothing measures it;
@@ -4778,12 +4780,18 @@ class Session:
             values: ``{place: value}``, the same dict :meth:`compare` takes -- so a
                 plan written here can be handed to ``compare()`` unchanged. The
                 post-pass check then carries a ``plan:`` line saying how many places
-                are painted as promised, and registering it prices the **pairs**: two
-                places planned closer than ``0.10`` read as one where they meet, and
-                this is the one moment that question is free to ask.
+                are painted as promised -- each read by its **median**, what most of
+                it reads, so an eye inside a planned plane does not move what the
+                plane reads; a place split between two values says so -- and
+                registering it prices the **pairs**: two places planned closer than
+                ``0.10`` read as one where they meet, and this is the one moment that
+                question is free to ask.
             lightest: the place meant to be the lightest thing in the picture. The
                 check ranks the plan's places and says when something else has taken
-                the light -- one painting reached stroke 217 before it had any.
+                the light -- one painting reached stroke 217 before it had any -- and
+                reads the named place twice, as a place and at its brightest
+                twentieth, because a light is often a small bright part of a place
+                that is mostly something else.
             subject_share: the share of the budget the subject gets, 0..1. The
                 ``subject:`` line then always carries *against N% planned*, which
                 needed ``report(subject_share=)`` by hand before -- and neither
@@ -4797,6 +4805,12 @@ class Session:
                 picture covers its ground on purpose, which is what a graded field
                 edge to edge does. The ground line then prints its number without
                 asking for some back.
+            key: ``"low"`` -- this picture lives under the box's middle on purpose
+                -- or ``"high"``, over it. The ``values:`` line then stops saying *no
+                clear light* (or *dark*) and says instead whether the picture has
+                kept its key, and by how much it has left it; it prints its clusters
+                without judging their gaps, and asks whether the ``lightest`` place,
+                if one is named, stands clear of the rest.
 
             clear: start from nothing rather than from the plan already declared, so
                 this call is the whole of it.
@@ -4817,7 +4831,7 @@ class Session:
         """
         wanted = build_plan(why=why, values=values, lightest=lightest,
                             subject_share=subject_share, bands=bands, ground=ground,
-                            onto=None if clear else self._plan)
+                            key=key, onto=None if clear else self._plan)
         # Here rather than in `easel.plan`, because whether a place is anywhere on the
         # painting is a question about this canvas. `compare()` asks it of the same dict
         # and says the same thing; without it the check would print a `nan` after every

@@ -195,17 +195,23 @@ class Palette:
                 it managed, because silently handing back a colour at the wrong value
                 is exactly the failure this exists to stop -- a painter who asks for
                 ``0.30`` and is given ``0.41`` does not find out until
-                :meth:`~easel.session.Session.compare` says so, a mass later.
+                :meth:`~easel.session.Session.compare` says so, a mass later. Under
+                the default dark the error names the darks the box does reach --
+                ``dark="burnt_umber"`` at ``0.128`` -- and, under that, a colour of
+                your own with its value.
         """
         target = float(target)
         base_v = self.value_of(base)
         if abs(target - base_v) < 1e-4:
             return np.asarray(self._resolve(base), dtype=np.float32)
 
+        chose_dark = dark is not None
         if dark is None:
             dark = self.mix("ultramarine", "burnt_umber", 0.5)
         toward = light if target > base_v else dark
         reach = self.value_of(toward)
+        if target < base_v and target < reach and not chose_dark:
+            raise ValueError(self._under_the_default_dark(base, base_v, target, reach))
         if (target > base_v and target > reach) or (target < base_v and target < reach):
             raise ValueError(
                 f"value {target:.3f} is out of reach: {self.hex(base)} reads "
@@ -226,6 +232,42 @@ class Palette:
             else:
                 hi = mid
         return self.mix(base, toward, (lo + hi) * 0.5)
+
+    def _under_the_default_dark(self, base, base_v: float, target: float,
+                                reach: float) -> str:
+        """What :meth:`at_value` says when a target is under its default dark.
+
+        The default dark, ultramarine and umber half and half, stops at ``0.137``, and
+        the box itself goes lower: burnt umber alone lays ``0.128``. A painter who
+        asked for ``0.13`` was told only that the mix could not reach it, and took the
+        floor to be ``0.14`` (the Bell-Warden, row 13). So the error names what the box
+        does reach and how, and -- under the box's own floor -- the one way below it,
+        a colour of the painter's own, with its value. It never switches darks by
+        itself: a colour handed back in a hue nobody asked for is the silent failure
+        this method raises to prevent. The numbers are read off this palette, so a
+        slot or a pigment that changes them changes the sentence.
+        """
+        umber = self.value_of("burnt_umber")
+        neutral = self.mix("ultramarine", "burnt_umber", 0.7)
+        head = (f"value {target:.3f} is out of reach of the default dark: "
+                f"{self.hex(base)} reads {base_v:.3f}, and at_value() lowers a colour with ultramarine and "
+                f"burnt umber half and half, which stops at {reach:.3f}.")
+        if target >= self.darkest_value:
+            neutral_v = self.value_of(neutral)
+            short = "" if neutral_v <= target else f", which stops short of {target:.3f}"
+            return (f"{head} The box goes lower, and which dark is yours to choose: "
+                    f"dark='burnt_umber' lays {umber:.3f}, warm, and "
+                    f"dark=p.mix('ultramarine', 'burnt_umber', 0.7) -- seven parts "
+                    f"umber to three of ultramarine -- {neutral_v:.3f}, the most "
+                    f"neutral near-black it mixes{short}.")
+        grey = int(round(float(np.clip(target, 0.0, 1.0)) * 255))
+        supplied = f"#{grey:02x}{grey:02x}{grey:02x}"
+        return (f"{head} Nothing in this box lays under {self.darkest_value:.3f} -- "
+                f"burnt umber alone, dark='burnt_umber'. A darker value is a colour of "
+                f"your own: {supplied!r} reads {self.value_of(supplied):.3f}, to hand "
+                f"to the brush as it is, or pass one darker still as dark= to mix "
+                f"toward. A dark with a hue in it -- a little red or blue in those "
+                f"channels -- stays alive where a neutral one goes dead.")
 
     # -- inspection --------------------------------------------------------------
     def hex(self, color) -> str:

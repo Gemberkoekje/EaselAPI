@@ -14,8 +14,25 @@ guide is drawn in), `Session.guide` and `Session.pencil` in `src/easel/session.p
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 4 is built -- C, H1, H2 and H3, with A1's notes and A5's error -- on branch
-`dearest-calls-and-named-marks`, 2026-09-27, off `main` at `25e80c9`** -- the first
+**Status: step 5 is built -- E1, E2, E3's error and E4 -- on branch
+`declared-key-and-place-medians`, 2026-09-29, off `main` at `8f7a1da`** -- step 4 merged as
+[#93](https://github.com/Gemberkoekje/EaselAPI/pull/93). As the painters decided them:
+`s.plan(key="low")` or `"high"`, under which the `values:` line says whether the picture has
+kept its key and prints its clusters without judging them (E1); every planned place read by
+its median, on `plan:`, `lightest:` and `compare()` handed a plan, a split place saying so
+on a line that names it (E2); `at_value`'s error under its default dark naming the darks the
+box does reach, and a colour of the painter's own under the floor (E3); and the named light
+read at its brightest twentieth beside its median, and under a key asked whether it stands
+clear of the rest (E4). Nothing a mark lays changes. **Measured as built**
+(`probe_bell_session.py --declared`): every place of both plans reads, at every pass end,
+what step 2's bench read of the same pixels, to `3.5e-18`; the key's clause says *kept* on
+72 of the corpus's 74 low-key passes and speaks on the pier's two; and the lines are the
+ones the painters were shown -- *head top reads 0.61 as a place, 0.63 at its brightest
+twentieth*, *lantern reads 0.51 as a place, 0.59*. See [`NOTES-step5.md`](NOTES-step5.md).
+**Nothing waits on a painter**; step 6 (A3, the thumbnail) is next.
+
+*Step 4 was built -- C, H1, H2 and H3, with A1's notes and A5's error -- on branch
+`dearest-calls-and-named-marks`, 2026-09-27, off `main` at `25e80c9`* -- the first
 painter's answers merged as [#92](https://github.com/Gemberkoekje/EaselAPI/pull/92). As the
 painters decided them: under every pass's total, its dearest calls by the line that made
 them, with the strokes of each that laid nothing (C); a finding naming the marks it counted,
@@ -28,7 +45,7 @@ and on 140 of the corpus's 143 that print one -- the other three are passes that
 `s.rehearse(plan)`, whose copy's marks the bench counted and the engine rightly does not --
 no note of either drawing lies under or over another, and `prelude-rebind` speaks on none
 of the corpus's 284 passes run after a prelude. See
-[`NOTES-step4.md`](NOTES-step4.md). **Nothing waits on a painter**; step 5 (E) is next.
+[`NOTES-step4.md`](NOTES-step4.md).
 
 *The first painter's answers to the step-2 package were filed, re-measured, on branch
 `file-bell-answers-step2`, 2026-09-27, off `main` at `da02328`* -- step 3 merged as
@@ -879,6 +896,12 @@ plan --key low`, `key` on the server's `plan`, the `easel new` prelude, and a ro
   to `0.73`, past its key. Their closest two clusters sit a median `0.078` apart against
   `0.141` on every other pass, so a fixed `0.10` would judge 61 of the 74 as one mass, and a
   gap scaled to the picture's range (about `0.027`) judges none: no threshold yet.
+- *Built in step 5 (2026-09-29), as decided.* `KEY_WORDS`, `plan(key=)`, `easel plan --key`,
+  `key` on the server's `plan` and a line in the prelude scaffold; `values_line(key=,
+  light=)`. Kept: *low-key, as the plan says -- nothing above 0.35, under the box's middle
+  0.54*; left: *the plan says low-key, and its top twentieth has risen to 0.73, 0.19 over
+  the box's middle*. `"high"` the same on the bottom twentieth. Re-counted through the
+  engine's clause: kept on 72 of the 74 passes, the pier's two left.
 
 **E2. A place reads what most of it reads.** One reading for every planned place --
 `plan:`, `lightest:`, and `compare(s.plan())` or any `{place: value}` handed to
@@ -920,6 +943,13 @@ photograph keeps its cells and their means: that is a different question.
   way to a light detail at 10% and the 75th at 30%. The split marks 4 of the 19 planned
   places, each with something inside it, and 31% of places drawn at random -- which straddle
   two masses as often as not, what the clause is for.
+- *Built in step 5 (2026-09-29), as decided.* `PlaceReading` and `read_place` in `plan.py`
+  -- the median, the 95th percentile, and the shares further than `0.15` below and above
+  the median -- read by `plan:`, `lightest:` and `compare_plan`. The split is said at a
+  tenth, in brackets after a miss on `plan:` (*lantern -0.25 (10% of it darker by more than
+  0.15)*) and after the verdict on `lightest:`. `plan:` names only the places it misses, so
+  the plinth's top, split from the subject's pass on, is never printed: the clause rides
+  on a line that already names the place, as decided.
 
 **E3. The floor, said as it is -- and a black, as a question with a measurement.** Row 13,
 and the owner's follow-up on it.
@@ -971,6 +1001,13 @@ and the owner's follow-up on it.
   needs a top at `0.37`. So E3 stands as written: `at_value` names burnt umber alone for the
   `0.13` it wanted, and a supplied dark with its value for P's `0.10`; and the yes is the
   first ask for a dark below the box, recorded for the next round.
+- *Built in step 5 (2026-09-29): `at_value`'s error.* Under the default dark it names
+  `dark="burnt_umber"` at `0.128` and `p.mix("ultramarine", "burnt_umber", 0.7)` at `0.132`,
+  saying which falls short of the target; under `0.128`, a grey at the target's value as the
+  colour of the painter's own it would need, and that a hue keeps it alive. It still says
+  *out of reach*, which an older test and any painter's `except` may match. The floor said
+  one way in every document waits for F3; `REFERENCE.md`'s `darkest_value` comment says
+  `0.128` now.
 
 **E4. The light a plan names, read where it is** -- *added 2026-09-26*, row W4. The second
 painting's lamp is the case E1 and E2 do not reach. Its place is mostly iron, so the
@@ -1023,6 +1060,15 @@ about one place -- and answers it by saying what each line measures.
   pixel**: from the subject's pass on, the glow's brightest is the head's own highlight,
   `0.699`, and after the room the wall's. Where the lit part is under a twentieth of its
   place, the plan names the light itself, and the split clause says so. E4 waits on nothing.
+- *Built in step 5 (2026-09-29).* `lightest:` ranks by the median and prints the named
+  light twice -- *head top reads 0.61 as a place, 0.63 at its brightest twentieth, the lightest
+  of the 7 places planned; 24% of it darker by more than 0.15*. **And the `values:` line's
+  half, under a key**: the named light's brightest twentieth against the picture's top
+  twentieth, clear at `0.10` -- *lantern stands clear, 0.59 at its brightest twentieth, 0.17
+  over the picture's top twentieth*. The painters decided the `lightest:` line's form, not
+  this clause; it is the proposal's own, built with the key because both read one view. On
+  the Bell-Warden it says the head's top does not stand clear on the room's and the
+  plinth's passes, before the subject was laid -- true, and said under a key only.
 
 ### F. The documentation
 
@@ -1478,7 +1524,8 @@ and cut*.
    and `probe_bell_session.py --built` for the engine's line against the bench's.*
 5. **E**: the key and the place reading, after questions 5 and 6, and `at_value`'s error at
    the floor. *And E4, after W-Q5 and the first painter's follow-up -- both answered, so E4
-   waits on nothing.*
+   waits on nothing.* *Built 2026-09-29: see [`NOTES-step5.md`](NOTES-step5.md), and
+   `probe_bell_session.py --declared` for the engine's lines against the bench's.*
 6. **A3**: the thumbnail, after question 4, with its server tool. *As question 4 decided
    it, with `easel run --thumbnail` for the pass about to be rehearsed.*
 7. **A4 and B**: the two recipes with their demos, the terminator helper, exercise 10,
@@ -1535,7 +1582,7 @@ and cut*.
 | `src/easel/regions.py` | the terminator helper; `ribbon()`'s widths, if needed |
 | `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
 | `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
-| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
+| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |

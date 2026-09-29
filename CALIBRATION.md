@@ -4062,3 +4062,31 @@ its guide begins at, none a row further out.
 corpus's painted passes, not the one in ten the painter took from the starved bristles alone.
 And between `0.07` and `0.35` there is room for three planned values `0.10` apart, as between
 `0.13` and `0.35`, not four: a fourth needs a top at `0.37`.
+
+### The key, the median and the named light, as built
+
+*Step 5, `probe_bell_session.py --declared`: both paintings rebuilt, and the corpus replay
+read back.* Every planned place of both plans, read by the engine at every pass end, reads
+what the bench read of the same pixels -- its median, its 95th percentile and its split --
+to `3.5e-18`. So the lines `easel run` now prints are step 2's numbers:
+
+| | the Bell-Warden | Wenna Brask |
+|---|---|---|
+| `plan:`, by the median, pass by pass | 3, 6, 6, 6, then 7 of 7 from the details pass on | 3, then 4 of 5 |
+| `lightest:` at the finish | *head top reads 0.61 as a place, 0.63 at its brightest twentieth, the lightest of the 7 places planned; 24% of it darker by more than 0.15* | *lantern reads 0.51 as a place, 0.59 at its brightest twentieth, the lightest of the 5 places planned; 10% of it darker by more than 0.15* |
+| the split clause, on a line that names the place | the head's top, from the details pass on (the eye) | the lantern, from its own pass on, on both lines |
+| `values:` under `key="low"` | kept on all 7 passes; the head's top stands clear from the subject's pass on (`0.13`, then `0.28` over the top twentieth) and not before it -- on the room and the plinth it is the room | kept on all 11; the lantern stands clear from its own pass on, by `0.16`-`0.18` |
+
+Over the corpus's seven pictures that finish low-key, the key's clause says *kept* on **72
+of their 74 passes** and speaks on two, both the pier's, as step 2 counted: its masses'
+pass, whose top twentieth rose to `0.73`, `0.19` over the box's middle, and its beams',
+at `0.58`. The split
+clause marks the plinth's top on the Bell-Warden's plan from the subject's pass on (its
+feet), and the lantern on the handover's and Wenna Brask's; `plan:` names only the places
+it misses, so the plinth's is never printed.
+
+**`at_value` at the floor**: the default dark, ultramarine and burnt umber half and half,
+reads `0.137`; burnt umber alone `0.128`, the box's floor; seven parts umber to three of
+ultramarine `0.132`, at the lowest chroma of the mix (`0.008`, against `0.019` half and
+half). A target between the floor and `0.137` is told the two; one under the floor is told
+a colour of its own, as a grey at the target's value -- `'#171717'` reads `0.090`.
