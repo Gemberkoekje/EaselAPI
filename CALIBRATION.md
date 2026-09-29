@@ -4139,3 +4139,38 @@ strokes worked out and the picture drawn in `0.15` s, where the same pass rehear
 painted on a copy and looked at -- takes `7.9` s: each the median of three on this
 machine, the rehearsals `7.1` to `7.9`, about fifty times the door. **Every mass call
 keeps its place**: 17 of 17 on the Bell-Warden rebuilt and 22 of 22 on Wenna Brask.
+
+### The recipes, as built
+
+`--recipes`, step 7. **`terminator()` is the bench's helper**: on the Bell-Warden's two
+copies and the abstract form shifted `0.008` to `0.032`, the engine returns the same runs,
+point for point -- 5 and 4 runs of the painter's copies, 4 or 5 of the form's.
+
+*A silhouette lit from one side*, its block as `RECIPES.md` writes it, laid at 1024x768 on
+a field at `0.18` and measured as the bench measured the painter's pass (the 10-to-90%
+step, in pixels, the median along each line):
+
+| version | strokes | lit to half | half to shade | silhouette | said at the call |
+|---|---|---|---|---|---|
+| as written, join tapered | 118 | 9.0 | 10.0 | 0.5 | -- |
+| the join even | 118 | 9.0 | 10.0 | 0.5 | -- |
+| no join | 108 | 0.5 | 1.0 | 0.5 | -- |
+
+The taper leaves the turn's width where it was; what it changes is the blot where a run
+ends against a waist of the silhouette, which is looked at, not measured
+(`out/bell/recipe_lit_side.png`).
+
+*A form turned toward the light*, laid: **81% of the form lit at 400x300, 84% at
+1024x768**, 80% and 82% of a row at the median -- the three quarters to four fifths the
+second painter's face measured (74%, 81% of a row).
+
+`letter_paths()`: the font is 74 characters and a space, 1 to 3 strokes each, **1.54 on
+average**; a note of 45 letters is 76 strokes, worked out in under 10 ms with a seed or
+without.
+
+**`holes`, measured where the paint was let land.** Counted both ways at every solid mass:
+both paintings, 15 and 20 masses (4 and 6 held with `clip=`), said nothing either way; the
+corpus's 24 paintings, 196 solid masses, 12 of them held, said it on 2 either way. **The
+fix moves nothing already painted**: the one case it answers is the lit-side recipe's own
+shade copy, on a ground `0.25` or more from it.
+
