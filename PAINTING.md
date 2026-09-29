@@ -605,9 +605,10 @@ makes nine looks tellable apart afterwards. `marks=False` and `sketch=False` —
 picture: a landmark label sitting on the focal point is not something you stop seeing. Use `values=True` far more often than feels
 necessary, and `diff=True` after a pass to confirm you changed what you meant to and
 nothing else. When a mark seems to
-have gone missing, `s.log()` says how much paint each one laid and prints `NO PAINT
-LANDED` for one that changed nothing — usually an opacity of zero, or a glaze into
-paint that is still wet.
+have gone missing, the check after the pass has named it already — `landed nothing:`,
+with the line that laid it — and `s.log()` says how much paint each mark laid, `NO PAINT
+LANDED` for one that changed nothing: most often a bristle loaded under `0.5`, a round
+dab under the size its press lands from, or a pass that fell outside its clip.
 
 ---
 

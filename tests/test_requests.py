@@ -7715,3 +7715,167 @@ def test_the_fonts_curves_run_the_way_the_letter_does():
         assert pts[0][0] > 0.6 * advance and pts[0][1] < 0.5    # begins upper right
     g = np.asarray(GLYPHS["G"][1][0])
     assert 0.3 < g[-1][0] < 0.7 and 0.45 < g[-1][1] < 0.65      # the bar, inward
+
+
+# -- 0.8.0 D: a mark that lands nothing, said as it lands and named after the pass --------
+def test_a_dab_under_its_cliff_that_laid_nothing_says_so_as_it_lands(tmp_path):
+    """The Bell-Warden's spark was a `round_hard` dab of 2.9 pixels at one touch: it
+    changed two pixels, `easel log` called it *NO PAINT LANDED*, and nothing at the call
+    said a word. A round dab has a cliff, and it is in pixels: at one touch it lands every
+    time only from about 6.5 px. Three touches, or the size the call names, land."""
+    s = make(tmp_path)
+    here = test_a_dab_under_its_cliff_that_laid_nothing_says_so_as_it_lands.__code__
+    with pytest.warns(UserWarning, match="this dab laid no paint") as caught:
+        spark = s.dab(0.30, 0.30, "round_hard", "titanium_white", size=0.009, tip_wobble=0.7)
+    assert spark.paint < 1.0
+    (said,) = s.notices()
+    assert said.code == "dab-blank" and said.kind == "fact"
+    assert ("a one-touch round_hard dab lands every time only from about 6.5 px, and this "
+            "one is 2.9 px (size=0.009) on this canvas. Press it three times (press=3), "
+            "which lands from about 2.5 px, or lay it at size=0.0204 or over.") in said.text
+    assert caught[0].filename == __file__
+    assert caught[0].lineno == here.co_firstlineno + 8, "it points at the painter's line"
+
+    for x in (0.4, 0.5, 0.6):                     # three touches land at the spark's wobble
+        assert s.dab(x, 0.30, "round_hard", "titanium_white", size=0.009, press=3,
+                     tip_wobble=0.7).paint >= 1.0
+    assert s.dab(0.70, 0.30, "round_hard", "titanium_white", size=0.0204).paint >= 1.0
+    assert len(s.notices()) == 1
+
+
+def test_the_fact_is_measured_on_the_dab_not_predicted_from_its_size(tmp_path):
+    """Under its cliff a dab lands some of the time: between 5.9 and 6.4 px, under a
+    `round_hard`'s 6.5, some carry a unit of paint and some do not. *This dab laid no
+    paint* said of one that did would be false, so it is said of exactly the ones that
+    did not."""
+    s = make(tmp_path)
+    landed = blank = 0
+    for i, px in enumerate(np.arange(5.9, 6.45, 0.05)):
+        for row in (0.2, 0.7):
+            told = len(s.notices())
+            mark = s.dab(0.05 + 0.08 * i, row, "round_hard", "titanium_white", size=px / 320)
+            said = [n.code for n in s.notices(since=told)]
+            assert said == ([] if mark.paint >= 1.0 else ["dab-blank"])
+            landed += mark.paint >= 1.0
+            blank += mark.paint < 1.0
+    assert landed and blank
+
+
+def test_only_a_dab_laid_by_hand_at_the_default_taper_is_told(tmp_path):
+    """A replay lays the same dab again, a counted copy lays no paint to measure, and a dab
+    given a pressure of its own lands from other sizes than the ones measured -- so none of
+    them is told at the call. The last is still named after the pass, with no cause."""
+    s = make(tmp_path)
+    s.dab(0.30, 0.30, "round_hard", "titanium_white", size=0.009)
+    assert [n.code for n in s.notices()] == ["dab-blank"]
+    assert s.replay().notices() == []
+    copy = s.scratch(count_only=True)
+    copy.dab(0.30, 0.50, "round_hard", "titanium_white", size=0.009)
+    assert "dab-blank" not in [n.code for n in copy.notices()]
+    assert "landed nothing" not in copy.report(since=0)
+
+    before = len(s.history.records)
+    even = s.dab(0.50, 0.50, "round_hard", "titanium_white", size=1.5 / 320, pressure="even")
+    assert even.paint < 1.0
+    assert [n.code for n in s.notices()] == ["dab-blank"]
+    here = test_only_a_dab_laid_by_hand_at_the_default_taper_is_told.__code__.co_firstlineno
+    assert (f"  landed nothing: the dab at test_requests.py:{here + 14}\n"
+            in s.report(since=before) + "\n")
+
+
+_NOTHING_PASS = '''\
+s.dab(0.30, 0.30, "round_hard", "titanium_white", size=0.009)
+for i in range(3):
+    s.stroke([(0.1, 0.5 + 0.05 * i), (0.16, 0.52 + 0.05 * i)], "bristle", "titanium_white",
+             size=0.03, load=0.2, opacity=0.6)
+s.block_in(Region(0.1, 0.1, 0.9, 0.9), "flat", "burnt_umber", size=0.05,
+           clip=Region(0.1, 0.1, 0.9, 0.45))
+s.dab(0.60, 0.20, "round_hard", "titanium_white", size=0.03, press=3)
+'''
+
+
+def test_the_check_names_every_mark_that_landed_nothing(tmp_path, capsys):
+    """Neither painter of the round ran `easel log` while painting, and the dearest line
+    lists no mark laid by hand -- where the spark and the flour both were. So the check
+    says it after the pass, as the painter decided: hand marks by the line that laid them,
+    a mass call's by count, each with the cause its record can show, and nothing when every
+    mark landed. A counted pass lays no paint and says none of it; checked in another
+    process, the lines are gone and the records are not."""
+    session = _new_painting(tmp_path)
+    script = tmp_path / "nothing.py"
+    script.write_text(_NOTHING_PASS, encoding="utf-8")
+    capsys.readouterr()
+    assert main(["run", str(session), str(script)]) == 0
+    out = capsys.readouterr().out
+    records = Session.load(session).history.records
+    empty = [r for r in records if r.paint < 1.0]
+    passes = [r for r in empty if r.params.get("via") == "block_in"]
+    assert [r.index for r in empty[:4]] == [0, 1, 2, 3] and passes
+    assert records[-1].paint >= 1.0                            # three touches landed
+    line = (f"  landed nothing: the dab at nothing.py:1 (a round tip under its cliff at "
+            f"press=1); 3 strokes at :3 (a starved bristle, load=0.2); {len(passes)} passes "
+            f"of the block_in at :5 (outside its clip)")
+    assert line + "\n" in out
+    check = out[out.index("check over this pass"):]
+    assert check.splitlines()[1] == line, "first of the lines under the findings"
+    assert line in Session.load(session).reports()[-1].text
+
+    assert main(["run", str(session), str(script), "--count"]) == 0
+    assert "landed nothing" not in capsys.readouterr().out
+    lands = tmp_path / "lands.py"
+    lands.write_text('s.dab(0.60, 0.20, "round_hard", "titanium_white", size=0.03, press=3)\n',
+                     encoding="utf-8")
+    assert main(["run", str(session), str(lands)]) == 0
+    assert "landed nothing" not in capsys.readouterr().out
+
+    assert main(["check", str(session)]) == 0
+    runs = f"{passes[0].index}-{passes[-1].index}"
+    assert (f"  landed nothing: the dab at record 0 (a round tip under its cliff at press=1); "
+            f"3 strokes at records 1-3 (a starved bristle, load=0.2); {len(passes)} passes of "
+            f"the block_in at records {runs} (outside its clip)") in capsys.readouterr().out
+
+
+def test_what_dab_says_of_its_touches_is_what_they_reach(tmp_path):
+    """`dab()` put one touch at *about a quarter of the way to its colour*, a figure
+    measured on white at a size no accent is laid at: a light on a dark passage reaches a
+    tenth, two touches a fifth, three about four fifths."""
+    s = Session(400, 300, texture="linen", ground="umber_wash", seed=11, timelapse=False,
+                out_dir=tmp_path)
+    s.canvas.rgb[...] = s._resolve_color("#2a2622")
+    s.canvas.wetness[...] = 0.0
+    own = s.palette.value_of("#f2e2a0")
+    reached = {}
+    for press in (1, 2, 3):
+        ways = []
+        for i in range(6):
+            x, y = 0.12 + 0.15 * i, 0.2 + 0.3 * (press - 1)
+            before = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+            s.dab(x, y, "round_hard", "#f2e2a0", size=0.03, press=press)
+            after = s.canvas.values(sketch=False).astype(np.float32) / 255.0
+            moved = np.abs(after - before) > 0.02
+            field = float(np.median(before[moved]))
+            ways.append((float(np.median(after[moved])) - field) / (own - field))
+        reached[press] = float(np.median(ways))
+    assert 0.06 <= reached[1] <= 0.14
+    assert 0.14 <= reached[2] <= 0.26
+    assert 0.70 <= reached[3] <= 0.88
+
+
+def test_what_landed_nothing_is_said_beside_the_log(tmp_path, monkeypatch):
+    """Nothing new may touch the log or the stream: the same marks laid with the fact
+    silenced log the same records, byte for byte, and leave the stream where it was."""
+    import easel.session as session_module
+
+    def lay(s):
+        s.dab(0.30, 0.30, "round_hard", "titanium_white", size=0.009)
+        s.block_in(Region(0.1, 0.1, 0.9, 0.9), "flat", "burnt_umber", size=0.05,
+                   clip=Region(0.1, 0.1, 0.9, 0.45))
+        s.report(since=0)
+
+    told, quiet = make(tmp_path), make(tmp_path)
+    lay(told)
+    monkeypatch.setattr(session_module, "_check_dab_blank", lambda *a, **k: None)
+    lay(quiet)
+    assert [n.code for n in told.notices()] == ["dab-blank"] and quiet.notices() == []
+    assert told.history.to_json() == quiet.history.to_json()
+    assert told.rng.bit_generator.state == quiet.rng.bit_generator.state

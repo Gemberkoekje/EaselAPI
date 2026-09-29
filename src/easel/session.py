@@ -559,6 +559,11 @@ class Session:
         if site is not None:
             self._sites[record.index] = site
         self._auto_frame()
+        if self._stream_mark is None and not self._counting:
+            # A dab laid by hand that laid no paint says so as it lands, with its size in
+            # pixels at its press: the one cause of landing nothing the call can name and
+            # mend. A pass of a mass, a replay and a counted copy never reach it.
+            _check_dab_blank(self, record, b, stamps, pressure)
         if film is not None:
             # One frame deeper when it came through `glaze()`, so the warning points
             # at the painter's line either way.
@@ -572,11 +577,20 @@ class Session:
 
         ``press`` is how many times the brush is set down on the same spot, in one
         mark: one stroke in the log, one against the budget. One touch is a light
-        one -- it lands about a quarter of the way to its colour, at about half the
-        brush's width, because a lone dab is the *start* of the default ``taper``
-        and a round tip's width follows its pressure. Three stamps press through
-        full pressure in the middle one, so a catchlight lands at the size asked
-        for and reads as light rather than as a smudge of it.
+        one, because a lone dab is the *start* of the default ``taper`` and a round
+        tip's width follows its pressure: it lands at about half the brush's width,
+        and a light laid on a dark passage reaches **about a tenth** of the way to
+        its colour. **Two touches reach about a fifth.** Three press through full
+        pressure in the middle one, so a catchlight lands at the size asked for and
+        reaches **about four fifths** of the way -- light, rather than a smudge of
+        it. White on a mid ground goes further at every count, about a fifth, two
+        fifths and nine tenths; the fractions are the same from about 12 px up.
+
+        **Under a size in pixels a one-touch or two-touch dab lays no paint at all**,
+        and is charged for it: a ``round_hard`` lands every time only from about
+        6.5 px at one touch and 5.5 at two, a ``round_soft`` from 7.5 and 5.75. Three
+        touches land every time from 2.5 px -- a ``round_hard`` with its tip left round
+        at every size. When a dab laid nothing, the call says so (``dab-blank``).
 
         Example::
 
@@ -4280,6 +4294,13 @@ class Session:
           by the passes of a mass. It reads the canvas as the pass opened, which
           ``easel run`` keeps and so does the report before, for a script that reports
           after every pass; like the plan's lines, it is left off a counted copy;
+        - **the marks that landed nothing**, first of the lines under the findings and
+          only when the pass laid one: each mark that carried under a unit of paint --
+          *NO PAINT LANDED* in ``easel log`` -- named by the line that laid it, a mass
+          call's by how many of its passes, with the cause its record can show
+          (:meth:`_landed_nothing_line`). A measurement rather than a finding, since no
+          painter lays a mark meaning it to land nothing; left off a counted copy, whose
+          marks lay none;
         - **what the plan promised**, for a painting that declared one: how many of
           its places are painted within ``0.10`` of the value they were promised, each
           read by its median, and whether the place meant to be lightest is the
@@ -4413,6 +4434,14 @@ class Session:
         else:
             head += "nothing to report"
         lines = [head] + [f"  - {line}" for line in findings]
+        # The marks that laid no paint, first of the standing lines: read off the log and
+        # exact, and about strokes already paid for. Over the painting, the painting behind
+        # a rehearsal copy as well. A counted copy's marks carry no paint, so it says none.
+        if not self._counting:
+            laid = records[start:] if since is not None else list(self._prior) + list(records)
+            nothing = self._landed_nothing_line(laid)
+            if nothing:
+                lines.append(f"  {nothing}")
         # The lines the plan itself asked for, before the two standing ones: they are
         # measurements of what the painter said they would do, so they read first. Gated
         # exactly as the ground line below is -- they read the canvas, so a counted copy
@@ -4581,6 +4610,83 @@ class Session:
         where = ", ".join(parts) + (f" and {more} more" if more > 0 else "")
         return f"laid at {where} -- records {numbers}"
 
+    def _landed_nothing_line(self, records) -> str:
+        """Every mark of ``records`` that laid no paint: named, counted, and why, if it can say.
+
+        Neither painter of the Bell-Warden's round ran ``easel log`` while painting, and
+        neither painting's saved reports -- 27 and 32 of them -- mention a mark that laid
+        nothing: the first painting's spark, and the second's flour, which its reason
+        names, were paid for and never landed. The dearest line lists only calls dearer
+        than a stroke, and every mark that carried a picture's reason and landed nothing
+        was laid by hand. So the check says it after the pass, as its painter decided
+        (question D): **marks laid by hand by name, a mass call's by count**, at the lines
+        they were laid from, each with the cause its record can show::
+
+            landed nothing: the dab at p06_finish.py:39 (a round tip under its cliff at
+              press=1); 6 passes of the block_in at p05_details.py:12 (outside its clip)
+
+        A mark carrying under :data:`_LANDED_PAINT` is one ``easel log`` prints as *NO
+        PAINT LANDED*. The causes are asked in order (:func:`_nothing_cause`): half its
+        path or more outside what held it; a round dab under its cliff at its press; an
+        oriented tip under ``_CHISEL_MIN_PX``; a bristle loaded under
+        :data:`_STARVED_LOAD`. A mark none of them fits is named without one. Marks laid
+        by hand from one line one after another -- a loop's -- are said together. A mark
+        laid in another process has its record and no line, as a finding's names do. At
+        most :data:`_NAMED_CALLS` are written out, and how many marks more.
+
+        ``""`` when every mark landed. A counted copy lays no paint, so its marks carry
+        none, and the caller leaves it off one.
+        """
+        empty = [r for r in records
+                 if r.kind not in History.UNPAINTED_KINDS and r.paint < _LANDED_PAINT]
+        if not empty:
+            return ""
+        canvas = self.canvas
+        # [key, noun, site, marks, causes]: a mass call is one group whatever lines its
+        # passes share; marks laid by hand run together while their line, their noun and
+        # their cause do.
+        groups: list[list] = []
+        for site, call in self._calls_in(empty):
+            via = str(call[0].params.get("via") or "")
+            if via:
+                verb = site.verb if site is not None and site.verb else via
+                groups.append([("mass", id(call)), verb, site, list(call),
+                               [_nothing_cause(r, canvas) for r in call]])
+                continue
+            for r in call:
+                cause = _nothing_cause(r, canvas)
+                noun = "dab" if len(r.points) == 1 and r.kind == "stroke" else r.kind
+                where = (site.file, site.line) if site is not None else None
+                # A bristle's loads are said as a range, so they do not part a group.
+                key = ("hand", where, noun, cause[0],
+                       None if cause[0] == "starved" else cause[1])
+                if groups and groups[-1][0] == key:
+                    groups[-1][3].append(r)
+                    groups[-1][4].append(cause)
+                else:
+                    groups.append([key, noun, site, [r], [cause]])
+        parts: list[str] = []
+        last_file = None
+        for key, noun, site, marks, causes in groups[:_NAMED_CALLS]:
+            if site is not None:
+                at = f"{site.file}:{site.line}" if site.file != last_file else f":{site.line}"
+                last_file = site.file
+            else:
+                runs = _index_runs([r.index for r in marks], _NAMED_RUNS)
+                at = f"record{'s' if len(marks) > 1 else ''} {runs}"
+            if key[0] == "mass":
+                n = len(marks)
+                said = f"{n} pass{'es' if n != 1 else ''} of the {noun} at {at}"
+            elif len(marks) == 1:
+                said = f"the {noun} at {at}"
+            else:
+                said = f"{len(marks)} {noun}s at {at}"
+            why = _nothing_causes_said(causes)
+            parts.append(said + (f" ({why})" if why else ""))
+        more = sum(len(g[3]) for g in groups[_NAMED_CALLS:])
+        tail = f"; and {more} mark{'s' if more != 1 else ''} more" if more else ""
+        return "landed nothing: " + "; ".join(parts) + tail
+
     def checklist(self, subject_share: float | None = None) -> str:
         """The closing checklist, answered: every measured line with its number.
 
@@ -4658,6 +4764,12 @@ class Session:
                                   bands=self._plan.bands, whole=True,
                                   named=self._marks_named)
         lines += [f"  - {line}" for line in findings]
+        # Every mark of the painting that laid no paint, as `report()` says it over the
+        # painting: the same line, so the two never disagree about one mark.
+        if not self._counting:
+            nothing = self._landed_nothing_line(list(self._prior) + list(records))
+            if nothing:
+                lines.append(f"  {nothing}")
         plan_view = None
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
@@ -6461,9 +6573,11 @@ def _check_tip_pixels(session, b: Brush, canvas, stacklevel: int = 4) -> None:
     is the wrong unit: ``size`` is a fraction of the canvas long side, so ``0.008``
     is 2.4px on a 300px canvas -- already dead -- and 9.6px on a 1200px one, which
     is a perfectly good small brush. Measured on three canvas sizes, the cliff is at
-    four *pixels* on all of them. A round tip has no such cliff and is what to reach
-    for at this scale; ``liner`` is a ``round_hard`` at ``size=0.005`` for exactly
-    this reason and does not trip it.
+    four *pixels* on all of them. A round tip laid as a stroke has no such cliff -- its
+    dabs overlap and build -- and is what to reach for at this scale; ``liner`` is a
+    ``round_hard`` at ``size=0.005`` for exactly this reason and does not trip it.
+    Laid as **one dab** it has one, at its press, which :func:`_check_dab_blank` says
+    once the dab has landed.
     """
     if b.tip not in _CHISEL_TIPS:
         return
@@ -6479,6 +6593,68 @@ def _check_tip_pixels(session, b: Brush, canvas, stacklevel: int = 4) -> None:
         f"(or liner, which is one) at this scale, or size="
         f"{_CHISEL_MIN_PX / float(canvas.long_side):.4g} and up.",
         stacklevel=stacklevel,
+    )
+
+
+def _dab_cliff(tip: str, press: int) -> float | None:
+    """The size in pixels a round dab at the default taper lands every time from, or
+    ``None`` for a tip :data:`_DAB_CLIFF_PX` was not measured on. Past three touches,
+    the third's: a fourth and a fifth reach nearly the full pressure the third does."""
+    return _DAB_CLIFF_PX.get((tip, min(max(int(press), 1), 3)))
+
+
+def _size_for_px(px: float, canvas) -> float:
+    """The ``size`` that is ``px`` pixels across on ``canvas``, rounded up to the fourth
+    place, so a painter who types it is at or over the pixels and never a hair under."""
+    return math.ceil(px / float(canvas.long_side) * 1e4) / 1e4
+
+
+def _check_dab_blank(session, record: StrokeRecord, b: Brush, press: int, pressure) -> None:
+    """Say that a round dab laid by hand laid no paint, once it has landed, and why.
+
+    The Bell-Warden's spark -- the one thing its painting's reason needed from the eye --
+    was a ``round_hard`` dab of ``size=0.0028`` at ``press=1``, 2.9 pixels: it changed
+    two pixels, by at most 21 levels, and ``easel log`` listed it as *NO PAINT LANDED*,
+    where neither painter looked while painting. ``chisel-blank`` is the same fault for an
+    oriented tip, said at the call, and the docstring beside it said a round tip had no
+    such cliff. **It has one, and it is in pixels**: a lone touch is the start of the
+    default ``taper``, laid at about half its width and a quarter of its strength, and
+    under :data:`_DAB_CLIFF_PX` a one-touch or two-touch dab lays under a unit of paint --
+    some of the time, then under about a pixel less, every time -- on every canvas and
+    surface measured. Of the corpus's 57 hand-laid round dabs that landed nothing, 56
+    were under it.
+
+    **Measured on the mark, not predicted from its size**, as ``glaze-far`` is: under the
+    cliff some dabs do land, and saying *this dab laid no paint* of one that did would be
+    false. So it is said only of a dab that carried under :data:`_LANDED_PAINT`, laid by
+    hand -- not a pass of a mass, not a replay -- and under its cliff, which is the cause
+    the call can name and the one it has a fix for. Only at the default ``taper``, the
+    profile the cliff was measured at: a dab given a pressure of its own lands from other
+    sizes (``pressure="even"`` from 2.5 px), and a mark that lands nothing for another
+    reason is named after the pass (:meth:`Session._landed_nothing_line`).
+    """
+    if (record.kind != "stroke" or len(record.points) != 1
+            or record.paint >= _LANDED_PAINT
+            or not (isinstance(pressure, str) and pressure == "taper")):
+        return
+    cliff = _dab_cliff(b.tip, press)
+    canvas = session.canvas
+    px = b.size * float(canvas.long_side)
+    if cliff is None or px >= cliff:
+        return
+    touches = {1: "one-touch", 2: "two-touch"}.get(press, f"press={press}")
+    third = _dab_cliff(b.tip, 3)
+    if press < 3 and third is not None and px >= third:
+        fix = (f"Press it three times (press=3), which lands from about {third:g} px, or "
+               f"lay it at size={_size_for_px(cliff, canvas):.4g} or over.")
+    else:
+        fix = f"Lay it at size={_size_for_px(cliff, canvas):.4g} or over."
+    session._notify(
+        "dab-blank",
+        f"this dab laid no paint -- {record.paint:.2f} of a pixel's worth: a {touches} "
+        f"{b.tip} dab lands every time only from about {cliff:g} px, and this one is "
+        f"{px:.1f} px (size={b.size:.4g}) on this canvas. {fix} It is charged either way.",
+        stacklevel=_to_painter(),
     )
 
 #: Under this share of the canvas, :meth:`Session.report` says the ground has gone.
@@ -7698,8 +7874,28 @@ _DEAREST_CALLS = 4
 #: subject's, and over the corpus's 331 painted passes the rule names a median 76%.
 _DEAREST_SHARE = 0.75
 #: A mark that laid under this much paint laid nothing: ``easel log``'s *NO PAINT
-#: LANDED*, and what the dearest line counts as *landing nothing*.
+#: LANDED*, what the dearest line counts as *landing nothing*, and what the check's
+#: ``landed nothing:`` line and ``dab-blank`` name.
 _LANDED_PAINT = 1.0
+#: Where a round dab laid at the default ``taper`` lands every time, in pixels across,
+#: by its tip and how many times it is pressed (``CALIBRATION.md``, *Where a mark stops
+#: landing*): a lone touch is the start of the taper, laid at about half its width and a
+#: quarter of its strength, and a second touch is the same again, so under this
+#: size a dab lays less than a unit of paint -- first some of the time, then never. The
+#: same size in pixels on every canvas measured, 400 to 1440 wide, and on all three
+#: surfaces: a count of pixels, as ``_CHISEL_MIN_PX`` is. A third touch presses through
+#: full pressure: a ``round_hard`` lands at every size with its tip left round, and from
+#: 2.5 px at ``tip_wobble=0.7``, the wobble the Bell-Warden's spark was laid at. Each
+#: figure is the largest over every canvas, surface and wobble measured, so a dab at or
+#: over it lands on all of them. ``liner`` is a ``round_hard`` tip and lands from a
+#: quarter of a pixel less, so the tip's own figure holds for both.
+_DAB_CLIFF_PX = {("round_hard", 1): 6.5, ("round_hard", 2): 5.5, ("round_hard", 3): 2.5,
+                 ("round_soft", 1): 7.5, ("round_soft", 2): 5.75, ("round_soft", 3): 2.5}
+#: A ``bristle`` loaded under this lays next to nothing on a short stroke, whatever its
+#: size (``CALIBRATION.md``, *Where a mark stops landing*): the paint a small bristle
+#: laid rises ten to twelve times between ``0.35`` and ``0.5``. The second painter's
+#: own figure for its flour, which landed nothing at ``0.12`` to ``0.25``.
+_STARVED_LOAD = 0.5
 #: A finding names at most this many of the lines its marks were laid from, and this
 #: many runs of their records, and says how many more.
 _NAMED_CALLS = 6
@@ -7777,6 +7973,81 @@ def _call_of(r: StrokeRecord):
     return (via, state.get("state"), state.get("inc"))
 
 
+def _nothing_cause(r: StrokeRecord, canvas) -> tuple[str, object]:
+    """Why a mark that laid no paint laid none, as far as its own record can say.
+
+    ``(kind, detail)``, the causes asked in this order, the first that fits:
+
+    - ``("clip", None)`` -- half its path or more lies outside what held it, the way
+      twelve passes of the Bell-Warden's copies fell outside the body they were held to;
+    - ``("cliff", press)`` -- a round dab at the default taper under the size its press
+      lands from (:data:`_DAB_CLIFF_PX`), the spark;
+    - ``("chisel", tip)`` -- an oriented tip under ``_CHISEL_MIN_PX``, which lays nothing
+      at all (``chisel-blank``);
+    - ``("starved", load)`` -- a ``bristle`` loaded under :data:`_STARVED_LOAD`, the
+      second painter's flour;
+    - ``("", None)`` -- none of these, and the mark is still named.
+
+    Read off the record alone -- its points, its brush, its holds -- so it answers the
+    same for a mark laid in this process and one read back from a file.
+    """
+    params = r.params or {}
+    held = params.get("clip")
+    if held:
+        pts = np.asarray(r.points, dtype=np.float32).reshape(-1, 2)
+        if len(pts) >= 3 and params.get("smooth", True):
+            pts = catmull_rom(pts)
+        elif len(pts) == 2:
+            along = np.linspace(0.0, 1.0, 16, dtype=np.float32)[:, None]
+            pts = pts[0] + (pts[1] - pts[0]) * along
+        inside = np.ones(len(pts), dtype=bool)
+        for hold in _clips_from_params(held):
+            inside &= hold.inside(pts[:, 0], pts[:, 1])
+        if float(inside.mean()) <= 0.5:
+            return ("clip", None)
+    tip = str(params.get("tip", ""))
+    px = float(params.get("size", 0.0)) * float(canvas.long_side)
+    press = int(params.get("press", 1))
+    if len(r.points) == 1 and r.kind == "stroke" and r.pressure == "taper":
+        cliff = _dab_cliff(tip, press)
+        if cliff is not None and px < cliff:
+            return ("cliff", press)
+    if tip in _CHISEL_TIPS and px < _CHISEL_MIN_PX:
+        return ("chisel", tip)
+    load = float(params.get("load", 1.0))
+    if tip == "bristle" and load < _STARVED_LOAD:
+        return ("starved", load)
+    return ("", None)
+
+
+def _nothing_causes_said(causes) -> str:
+    """What the causes of a group of marks that laid nothing come to, in words.
+
+    One cause said plainly; a mass whose passes had more than one, or some none, says how
+    many passes each covers. A bristle's loads are one range.
+    """
+    said = [c for c in causes if c[0]]
+    if not said:
+        return ""
+    loads = [float(c[1]) for c in said if c[0] == "starved"]
+    counts: dict[str, int] = {}
+    for kind, detail in said:
+        if kind == "clip":
+            text = "outside its clip"
+        elif kind == "cliff":
+            text = f"a round tip under its cliff at press={detail}"
+        elif kind == "chisel":
+            text = f"a {detail} tip under {_CHISEL_MIN_PX:.0f} px"
+        else:
+            low, high = min(loads), max(loads)
+            text = (f"a starved bristle, load={low:g}" if low == high
+                    else f"a starved bristle, load {low:g} to {high:g}")
+        counts[text] = counts.get(text, 0) + 1
+    if len(counts) == 1 and len(said) == len(causes):
+        return next(iter(counts))
+    return ", ".join(f"{n} {text}" for text, n in counts.items())
+
+
 class _CallSite:
     """Where one painting call was made: the painter's own line, and what it called.
 
@@ -7827,6 +8098,25 @@ def _painter_site(verb: str = "") -> _CallSite:
                              int(frame.f_lineno), code.co_name)
         frame = frame.f_back
     return _CallSite(verb or called, "", 0, "")
+
+
+def _to_painter() -> int:
+    """The ``stacklevel`` a check hands :meth:`Session._notify` to point at the painter's line.
+
+    Counted out from the check that calls this, through the engine's frames and
+    ``contextlib``'s -- the walk :func:`_painter_site` makes -- so a warning about a mark
+    points at the line that laid it whichever way the mark came: ``s.dab()``,
+    ``s.stroke()`` with one point, or an entry of ``s.paint(plan)``.
+    """
+    frame = sys._getframe(2)
+    level = 2
+    while frame is not None:
+        module = frame.f_globals.get("__name__", "")
+        if not (module == "easel" or module.startswith("easel.") or module == "contextlib"):
+            return level
+        frame = frame.f_back
+        level += 1
+    return 2
 
 
 def _index_runs(indices, most: int) -> str:
