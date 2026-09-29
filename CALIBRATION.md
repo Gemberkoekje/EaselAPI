@@ -4100,3 +4100,36 @@ ten-thousandth of the least chroma the two mix to, `0.0075` at 72 parts in a hun
 target between the floor and `0.137` is told the two; one under the floor is told a colour
 of its own, as a grey at the target's value -- `'#171717'` reads `0.090`; and a box with a
 pigment darker than umber is told that pigment where umber falls short.
+
+### The thumbnail, as built
+
+*Step 6, `probe_bell_session.py --thumbnailed`: the painter's arrangements counted, and both
+paintings rebuilt.* Each of the six arrangements the bench drew for question 4 -- the
+room and the plinth, then one version of the subject's pass -- run on a counted copy as
+`easel run --thumbnail` runs a pass, and the masses the engine reads off that copy's log
+held against the ones the bench recorded from the same passes:
+
+| arrangement | masses, engine / bench | outline the same | holds the same | value off by | pixels that differ at 192 |
+|---|---|---|---|---|---|
+| the cat | 16 / 16 | 16 | 16 | 0 | 0 |
+| the piebald | 18 / 18 | 18 | 18 | 0 | 0 |
+| the arch | 15 / 15 | 15 | 15 | 0 | 0 |
+| the rim | 14 / 14 | 14 | 14 | 0 | 0 |
+| the bars | 14 / 14 | 14 | 14 | 0 | 0 |
+| as committed, with the details pass | 17 / 17 | 17 | 17 | 0 | 0 |
+
+So the thumbnail the engine draws of each is the one the painter answered question 4 on,
+to the pixel. *Holds the same* counts the clips besides a mass's own outline: the log's
+clip for a mass laid `edge="hard"` names its own outline first, which the bench left out,
+and a place held inside itself is the same pixels. The first drawing's arrangement is not
+among them -- its creature was the drawing's `union()`, which no pass laid, and the bench
+added it by hand. None of the six has a rectangle among its masses; the engine keeps one as
+its four corners and masks it by pixel centres, where the bench masked a `Region` by
+`int(x * width)`, which can differ by a column at the canvas's size.
+
+**The door, on the subject's pass**, on the canvas the pass opened on: *Thumbnail of the
+plan's 7 places and 14 masses laid, 6 of them by this pass, at 192 px*, the pass's 102
+strokes worked out and the picture drawn in `0.15` s, where the same pass rehearsed --
+painted on a copy and looked at -- takes `7.9` s: each the median of three on this
+machine, the rehearsals `7.1` to `7.9`, about fifty times the door. **Every mass call
+keeps its place**: 17 of 17 on the Bell-Warden rebuilt and 22 of 22 on Wenna Brask.

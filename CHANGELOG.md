@@ -193,6 +193,44 @@ Nothing a mark lays changes, and no saved painting rebuilds differently. A paint
 plan names places may read its places differently after a pass than it did — the median
 where the mean was — and a plan saved before has no key.
 
+### The arrangement, flat and small, before a mark of it is paid for
+
+Step 6 of the bell-warden's round (`PLAN-0.8.0.md`, workstream A3). The Bell-Warden's
+subject failed three times in paint — two matching peaks read as ears, lit planes laid
+as islands read as a piebald, a lit band round the body read as an arch — and each was a
+drawing failure that cost a rehearsal of 85 to 113 marks to see. Its first suggestion was
+*a free silhouette and value thumbnail at drawing time — the painter's classic notan*.
+
+- **`s.thumbnail({place: value})`**: each place filled flat at its value, or at a
+  colour's value, in the order given, later over earlier, on the ground's own value, in
+  greyscale, **192 pixels on its long side** — the smallest size at which all three of
+  that painter's failures read, and its own pick of four shown to it blind. A pair holds
+  a place inside a clip, as a mass's `clip=` holds its paint: `{rim: ("lit", body)}`, and
+  a list of places holds it inside all of them. Free, as `preview()` is: nothing
+  painted, logged or charged, and the stream untouched.
+- **With no argument, the plan's places and every mass the painting has laid** — each
+  `block_in`, `cover`, `scumble` and `sweep` at its colour's value, a passage halfway
+  between its two, held as it was held, in the order laid — as the painter chose, since a
+  plan names few of a subject's masses. To draw them the log keeps what it never kept: the
+  first record of every mass call carries the place it filled and the value its colour
+  reads, beside the stream and read by nothing that lays paint, like `boxed`. A rebuild
+  carries it, an older build never sees it, and a mass laid before 0.8.0 is left out of
+  the thumbnail and counted under its line.
+- **`easel run pass.py --thumbnail`**: the pass counted, not painted, and its masses
+  drawn over the painting's — *Thumbnail of the plan's 7 places and 14 masses laid, 6 of
+  them by this pass, at 192 px* — in `0.15` s on the Bell-Warden's subject pass, whose
+  rehearsal takes `7.9`. With `--rehearse` the copy is painted and looked at as well;
+  with `--alternatives` each version is counted and the sheet is their thumbnails side
+  by side, labelled under each panel rather than over it.
+- **Through the MCP server**: a `thumbnail` tool, whose places are read as `plan` reads
+  its values or handed as `[place, value]` pairs, which is how a shape goes in; and
+  `run(thumbnail=true)`. Twenty-one tools.
+
+Rebuilt from the painter's own passes, each of its six arrangements comes back as the
+masses the round's bench recorded, entry for entry, and draws to the pixel the thumbnail
+it answered question 4 on. Nothing a mark lays changes, and no saved painting rebuilds
+differently.
+
 ## [0.7.0] — 2026-09-25
 
 **Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with

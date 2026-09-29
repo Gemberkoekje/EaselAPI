@@ -29,10 +29,18 @@ from easel.canvas import Canvas
 from easel.color import linear_to_srgb, luminance, srgb_to_linear
 from easel.regions import GRID_COLS, GRID_ROWS, Region, as_region
 
-__all__ = ["render_look", "save_look", "load_reference", "DEFAULT_LOOK_SIZE", "MIN_CROP_SIZE"]
+__all__ = ["render_look", "render_thumbnail", "save_look", "load_reference",
+           "DEFAULT_LOOK_SIZE", "MIN_CROP_SIZE", "THUMBNAIL_SIZE"]
 
 #: Long-side pixel size a ``look()`` is downsampled to by default.
 DEFAULT_LOOK_SIZE = 1024
+
+#: The long side a thumbnail is drawn at when no size is given. The smallest of the four
+#: sizes the bell-warden's painter was shown blind at which all three of its failed
+#: arrangements read -- the two peaks as ears from 128, the lit planes as islands at
+#: every size, the band round the body only from 192 -- and its own pick
+#: (``CALIBRATION.md``, *The arrangement, flat and small*; its question 4a).
+THUMBNAIL_SIZE = 192
 
 _GRID_LINE = (255, 64, 64)
 #: A region crop smaller than this on its long side is enlarged to it. One grid
@@ -262,6 +270,29 @@ def _downsample(img: Image.Image, long_side: int) -> Image.Image:
         return img
     f = long_side / float(longest)
     return img.resize((max(1, int(round(w * f))), max(1, int(round(h * f)))), Image.LANCZOS)
+
+
+def render_thumbnail(layers, width: int, height: int, ground: float,
+                     size: int = THUMBNAIL_SIZE) -> Image.Image:
+    """The arrangement, flat and small: each place filled at its value, later over earlier.
+
+    ``layers`` is ``(outline, value, holds)`` in the order they are laid -- a
+    :class:`~easel.regions.Polygon`, a value ``0..1``, and the outlines the place is
+    held inside besides its own, as a mass call is held by ``clip=``. They are filled on
+    the ground's own value at the canvas's pixel size, in greyscale, and brought down to
+    ``size`` on the long side by the filter a look is brought down by, so an edge is
+    smoothed the way a look's is. No paint, no brush, no light: the notan, and nothing
+    else. The arithmetic is the round's bench's, which drew the sheets the painter chose
+    the size from.
+    """
+    img = np.full((int(height), int(width)), float(ground), dtype=np.float32)
+    for outline, value, holds in layers:
+        mask = outline.mask(width, height)
+        for hold in holds:
+            mask &= hold.mask(width, height)
+        img[mask] = float(value)
+    grey = Image.fromarray((np.clip(img, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8))
+    return _downsample(grey, int(size))
 
 
 def _draw_grid(frame: _Frame) -> Image.Image:
@@ -526,6 +557,15 @@ def _side_by_side(img: Image.Image, reference: Image.Image, gap: int = 12) -> Im
     return out
 
 
+#: A panel label's box: 13 pixels high, and 8 plus 6 a character wide in the default font.
+_LABEL_HEIGHT = 13
+
+
+def _label_width(text: str) -> int:
+    """How wide a panel label's box is for ``text``."""
+    return 8 + 6 * len(text)
+
+
 def _label_panel(img: Image.Image, x: int, width: int, text: str,
                  y: int | None = None) -> None:
     """Say which panel is which, bottom-left, out of the way of the grid labels.
@@ -534,13 +574,13 @@ def _label_panel(img: Image.Image, x: int, width: int, text: str,
     the image does; left out, it is the image's.
     """
     draw = ImageDraw.Draw(img)
-    y = (img.size[1] if y is None else int(y)) - 13
-    draw.rectangle([x, y, x + 8 + 6 * len(text), y + 13], fill=_PANEL_LABEL_BG)
+    y = (img.size[1] if y is None else int(y)) - _LABEL_HEIGHT
+    draw.rectangle([x, y, x + _label_width(text), y + _LABEL_HEIGHT], fill=_PANEL_LABEL_BG)
     draw.text((x + 4, y + 1), text, fill=_PANEL_LABEL_INK)
 
 
 def label_sheet(panels: list[tuple[str, Image.Image]], columns: int | None = None,
-                gap: int = 12) -> Image.Image:
+                gap: int = 12, below: bool = False) -> Image.Image:
     """Several renders of the same place in one image, each labelled with what it is.
 
     What a scrap of canvas is really for is comparison: the same mark at four sizes,
@@ -548,6 +588,11 @@ def label_sheet(panels: list[tuple[str, Image.Image]], columns: int | None = Non
     times. Panels are laid left to right in the order given, wrapped into rows, and
     each one carries its own setting in the corner the way the reference panel
     carries its name.
+
+    ``below`` puts each label under its panel instead, in a cell wide enough for it: a
+    thumbnail is 144 pixels high at 4:3, and a label over its corner would lie across the
+    bottom tenth of the arrangement it is there to show -- the floor, in the one it was
+    first laid for.
     """
     if not panels:
         raise ValueError("A sheet needs at least one panel.")
@@ -555,13 +600,18 @@ def label_sheet(panels: list[tuple[str, Image.Image]], columns: int | None = Non
     rows = (len(panels) + columns - 1) // columns
     cell_w = max(im.size[0] for _, im in panels)
     cell_h = max(im.size[1] for _, im in panels)
+    under = 0
+    if below:
+        cell_w = max(cell_w, *(_label_width(label) for label, _ in panels))
+        under = _LABEL_HEIGHT + 2
     out = Image.new("RGB", (columns * cell_w + gap * (columns + 1),
-                            rows * cell_h + gap * (rows + 1)), (24, 24, 24))
+                            rows * (cell_h + under) + gap * (rows + 1)), (24, 24, 24))
     for i, (label, im) in enumerate(panels):
         x = gap + (i % columns) * (cell_w + gap)
-        y = gap + (i // columns) * (cell_h + gap)
+        y = gap + (i // columns) * (cell_h + under + gap)
         out.paste(im, (x, y))
-        _label_panel(out, x, im.size[0], label, y=y + im.size[1])
+        _label_panel(out, x, im.size[0], label,
+                     y=y + im.size[1] + (under if below else 0))
     return out
 
 

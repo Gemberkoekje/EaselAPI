@@ -14,8 +14,30 @@ beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 5 is built -- E1, E2, E3's error and E4 -- on branch
-`declared-key-and-place-medians`, 2026-09-29, off `main` at `8f7a1da`** -- step 4 merged as
+**Status: step 6 is built -- A3, the thumbnail -- on branch `thumbnail-of-the-masses`,
+2026-09-29, off `main` at `0391074`** -- step 5 merged as
+[#94](https://github.com/Gemberkoekje/EaselAPI/pull/94). As the painter decided it
+(question 4): `s.thumbnail({place: value})`, each place flat at its value or its colour's,
+192 px on the long side, a pair `(value, clip)` held inside the clip; with no argument
+the plan's places and every mass the painting has laid; never the drawing over it, and no
+look of the drawing alone; and **`easel run pass.py --thumbnail`**, the pass counted and
+its masses drawn over the painting's -- through the server as a `thumbnail` tool and
+`run(thumbnail=true)`. **One thing the plan did not say**: the step-2 package told the
+painter *the log knows* the masses laid so far, and it knew their passes and never the
+place a mass was filling -- so the first record of each mass call now keeps its place and
+value, beside the stream as `boxed` is, and a mass laid before 0.8.0 is counted, not drawn.
+And beside the door, `--alternatives --thumbnail` lays each version's thumbnail in one
+sheet, labelled under each panel rather than over it. Nothing a mark lays changes.
+**Measured as built**
+(`probe_bell_session.py --thumbnailed`): each of the painter's six arrangements, counted
+as the door counts a pass, is the bench's masses entry for entry and draws, at 192 px, the
+prototype's thumbnail to the pixel; the door takes `0.15` s on the subject's pass, whose
+rehearsal takes `7.9`; and every mass call of both paintings, rebuilt, keeps
+its place. See [`NOTES-step6.md`](NOTES-step6.md). **Nothing waits on a painter**; step 7
+(A4 and B, the recipes) is next.
+
+*Step 5 was built -- E1, E2, E3's error and E4 -- on branch
+`declared-key-and-place-medians`, 2026-09-29, off `main` at `8f7a1da`* -- step 4 merged as
 [#93](https://github.com/Gemberkoekje/EaselAPI/pull/93). As the painters decided them:
 `s.plan(key="low")` or `"high"`, under which the `values:` line says whether the picture has
 kept its key and prints its clusters without judging them (E1); every planned place read by
@@ -35,7 +57,6 @@ said only for the named light and not for the place that took the light, a sum p
 under one side's word, the light's number read off a second view of the canvas, a key word
 this build does not know read as `"high"`, and a view `report()` kept for the next pass
 that had its graphite in -- that one since 0.6.0. See [`NOTES-step5.md`](NOTES-step5.md).
-**Nothing waits on a painter**; step 6 (A3, the thumbnail) is next.
 
 *Step 4 was built -- C, H1, H2 and H3, with A1's notes and A5's error -- on branch
 `dearest-calls-and-named-marks`, 2026-09-27, off `main` at `25e80c9`* -- the first
@@ -500,6 +521,24 @@ in the *planning verbs leave nothing behind* pattern. The same through the serve
   before a rehearsal of 85 to 113 marks each. Built with the verb in step 6, on `easel run`
   and the server's `run`; a pass that samples a colour off its own masses reads the canvas
   so far, as the bench's did (`NOTES-step2.md`, gotcha 7).
+- *Step 6 (2026-09-29): built as decided.* `s.thumbnail(places=None, size=None, path=None)`
+  in `session.py`, drawn by `look.render_thumbnail` with the bench's own arithmetic; `easel
+  run --thumbnail`, which counts the pass unless `--rehearse` asks for the paint as well;
+  `run(thumbnail=true)` and a `thumbnail` tool on the server, which takes a shape as a
+  `[place, value]` pair, since a JSON key is a string. **What the plan did not say**: *the
+  log knows* the masses laid so far -- the package's words -- was half true, since a mass
+  kept its passes and never its place, and a thumbnail drawn from the passes' footprint
+  would fatten every silhouette by half a brush. So the first record of each mass call
+  carries `params["mass"]`, its place's outline and its colour's value, beside the stream
+  as `boxed` is -- a rebuild carries it, nothing that lays paint reads it -- and a mass laid
+  before 0.8.0 is counted under the thumbnail's line and not drawn. **Also built**:
+  `--alternatives --thumbnail`, versions of a pass as one sheet of thumbnails, labelled
+  under each panel (`label_sheet(below=True)`), because a label over a panel 144 pixels
+  high lies across the bottom tenth of it. **Measured as built** (`--thumbnailed`): the six
+  arrangements the bench drew -- the cat, the piebald, the arch, the rim, the bars and the
+  committed pass -- are the bench's masses entry for entry, outlines and values exact,
+  and draw its thumbnails to the pixel; the door on the subject's pass takes `0.15` s
+  against `7.9` for its rehearsal, medians of three. See `NOTES-step6.md`.
 
 **A4. A recipe for a silhouette built from parts, and an exercise that judges one.** A new
 recipe, *A silhouette built from parts*, under *Before the first stroke*: the largest mass
@@ -1540,7 +1579,10 @@ and cut*.
    waits on nothing.* *Built 2026-09-29: see [`NOTES-step5.md`](NOTES-step5.md), and
    `probe_bell_session.py --declared` for the engine's lines against the bench's.*
 6. **A3**: the thumbnail, after question 4, with its server tool. *As question 4 decided
-   it, with `easel run --thumbnail` for the pass about to be rehearsed.*
+   it, with `easel run --thumbnail` for the pass about to be rehearsed.* *Built 2026-09-29,
+   with each mass call's place kept on its first record: see
+   [`NOTES-step6.md`](NOTES-step6.md), and `probe_bell_session.py --thumbnailed` for the
+   engine's thumbnail against the prototype.*
 7. **A4 and B**: the two recipes with their demos, the terminator helper, exercise 10,
    `union()` in `PAINTING.md`, and `feather=` said for what it is -- with `ribbon()`'s
    widths only if the recipe's bench needs them. *And B1 scoped, B4's recipe for a form
@@ -1588,14 +1630,14 @@ and cut*.
 
 | File | Change |
 |---|---|
-| `src/easel/look.py` | the guide's casing and boxed note, *the notes' boxes kept off each other*; the thumbnail's render |
-| `src/easel/session.py` | `thumbnail()`; `guide()` and `pencil()` taking a shape; the call tally in `_one_call`; the place reading; ~~`into-wet`, if built~~ *the fact at the call for a round dab under its cliff, the line naming every mark that landed nothing, and `dab()`'s three touches (D)* |
+| `src/easel/look.py` | the guide's casing and boxed note, *the notes' boxes kept off each other*; the thumbnail's render *(`render_thumbnail`, and `label_sheet(below=)` for a sheet of them)* |
+| `src/easel/session.py` | `thumbnail()` *(and each mass call's place and value on its first record, `params["mass"]`)*; `guide()` and `pencil()` taking a shape; the call tally in `_one_call`; the place reading; ~~`into-wet`, if built~~ *the fact at the call for a round dab under its cliff, the line naming every mark that landed nothing, and `dab()`'s three touches (D)* |
 | `src/easel/plan.py`, `checklist.py`, `measure.py` | `key=`; the median reading; `values_line` under a key; `compare_plan` reading a place as the plan does |
 | `src/easel/palette.py` | `at_value`'s error at the floor; the floor said one way in its docstrings |
 | `src/easel/regions.py` | the terminator helper; `ribbon()`'s widths, if needed |
 | `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
 | `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
-| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
+| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |

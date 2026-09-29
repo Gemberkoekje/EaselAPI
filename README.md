@@ -182,7 +182,7 @@ is, in about 1,500 words.
 | Passages and repairs | `scumble(band, a, b, n)` lays a soft passage as `n` overlapping passes stepping between two values — the thing a gradient tool would be for, as paint — and `direction="inward"` runs them round a patch instead of across it, for a value falling off from a centre. `cover(place, color)` buries a mistake with every clause of the correction recipe already set. `smudge(edge, ...)` loses an edge along its own shape: points, or a mass whose outline it walks. |
 | `look()` | Grid overlay, greyscale values, region crop, side-by-side, diff, landmarks, and a fine grid of labelled tenths inside a crop. |
 | Drawing | `pencil()` lays graphite under the paint, which covers it in proportion to what actually lands. Not counted as a stroke. |
-| Planning | `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the four touches the canvas. |
+| Planning | `thumbnail()` draws the arrangement flat and small — each place at its value, or with nothing handed to it the plan's places and every mass laid so far — which is where a silhouette reads or does not, and `easel run pass.py --thumbnail` draws it for a pass before a mark of the pass is paid for; `preview()` shows where a mark would go over both panels; `rehearse()` paints it on a copy and shows what it would look like; `cost()` says what it charges and `cost_line()` says *why*; `paint()` then paints that same plan, so no line of it is written twice. Only the last of the five touches the canvas. |
 | Measuring | `compare(reference)` gives the per-cell value of both and the difference, as a table and a heat map. `compare({place: value})` measures against your own written value plan instead, for painting with no reference at all — and names the pairs the plan itself puts within `0.10` of each other. `prepare(reference)` cuts the photograph into numbered masses. `palette.chroma_of` is *how coloured*, beside `value_of` for how light. |
 | The check | `report()` reads the guide's standing warnings off the log — one brush at one size for a whole pass, a stack of passes at one angle, a bristle too small to be a brush, detail before the masses, a pressure list asking a chisel for a width, the subject's share of the marks — and measures the canvas for the four that no log can hold: where the values sit and whether the picture has a clear light, how its edges divide between hard and soft, how much ground is left, how much graphite is still showing. `run` prints it beside the budget line after every pass, and a finding names the marks it counted, by the script line that laid them. |
 | At the call | Thirty notices, each carrying a code and the measurement behind it: paint about to land outside the place it was handed, pass ends about to step down a slope, a film past what a film is for, a smudge about to cross a boundary rather than follow it, a mass laid solid with a comb that cannot close. They reach the library, the shell and the MCP results alike, and `easel explain <code>` prints the passage that measured one. |
@@ -203,6 +203,7 @@ shell without holding a Python process open.
 ```bash
 easel new painting.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300
 easel run painting.easel first_pass.py
+easel run painting.easel first_pass.py --thumbnail  # its masses, flat and small, unpainted
 easel run painting.easel first_pass.py --rehearse   # against a copy, committing nothing
 easel run painting.easel p2_sea.py p3_rocks.py --rehearse   # ...both passes, one copy
 easel run painting.easel sky_a.py sky_b.py --alternatives   # ...two versions, side by side
@@ -262,11 +263,12 @@ is listed in the official MCP registry as `io.github.Gemberkoekje/easel`;
 [`server.json`](https://github.com/Gemberkoekje/EaselAPI/blob/main/server.json) at
 the repository root is what is published there.
 
-Twenty tools: the seventeen CLI verbs, plus `preview`, `rehearse` and `cost` — the
-three questions about a mark that has not been made yet. Marks are made by `run`,
-which takes the script as text, and `run(rehearse=true)` tries a whole pass against a
-copy and commits nothing; `run(alternatives=[...])` tries versions of one, each on a
-copy of its own, and hands them back side by side. A place is a name, a cell, a span,
+Twenty-one tools: the seventeen CLI verbs, plus `preview`, `rehearse`, `cost` and
+`thumbnail` — the four questions about marks that have not been made yet. Marks are
+made by `run`, which takes the script as text, and `run(rehearse=true)` tries a whole
+pass against a copy and commits nothing; `run(alternatives=[...])` tries versions of
+one, each on a copy of its own, and hands them back side by side; `run(thumbnail=true)`
+counts a pass and hands back its masses flat and small, before any of it is paid for. A place is a name, a cell, a span,
 a rectangle, an outline, or a shape builder like `{"blob": "D5", "radius": 0.12}`.
 
 `run` executes Python sent by its client, exactly as `easel run` does: launch it

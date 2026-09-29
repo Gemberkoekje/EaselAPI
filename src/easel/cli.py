@@ -38,8 +38,8 @@ from easel.session import _MAX_PANELS, Session, _panel_label, _panel_scale
 from easel.texture import TEXTURES
 
 __all__ = ["main", "build_parser", "parse_size", "reference_text", "run_script",
-           "run_scripts", "run_alternatives", "pass_block", "ScriptResult", "Alternative",
-           "Alternatives"]
+           "run_scripts", "run_alternatives", "pass_block", "thumbnail_line", "ScriptResult",
+           "Alternative", "Alternatives"]
 
 _REGION_HELP = (
     "a named region (" + ", ".join(REGION_NAMES) + "), a grid cell like D4, "
@@ -163,6 +163,14 @@ def build_parser() -> argparse.ArgumentParser:
                             "each one's check, and lay their looks side by side in one "
                             "sheet. Implies --rehearse; with --count, prices each and "
                             "lays no sheet")
+    p_run.add_argument("--thumbnail", action="store_true",
+                       help="see the arrangement before paying for it: count the pass "
+                            "rather than paint it, and draw every mass it calls flat at "
+                            "its colour's value, held as the call holds it, over the "
+                            "plan's places and the masses laid so far, 192 px on its "
+                            "long side. With --rehearse the copy is painted and looked "
+                            "at as well; with --alternatives each version is counted and "
+                            "the sheet is their thumbnails")
     p_run.add_argument("--prelude", type=Path, default=None,
                        help="run this file first, in the same scope (helpers, "
                             "mixtures, landmarks)")
@@ -1031,6 +1039,22 @@ def pass_block(target: Session, since: int, said, check: str) -> str:
     return f"  {dearest}\n{block}" if dearest else block
 
 
+def thumbnail_line(target: Session, since: int, passes: int = 1) -> tuple[Path, str]:
+    """Draw the thumbnail a pass run with ``--thumbnail`` is shown, and say what is in it.
+
+    Drawn with no argument on the copy the pass ran on, so its masses lie over the
+    painting's own, flat, in the order they would be laid -- the arrangement the pass
+    would leave, before a mark of it is paid for. ``since`` is where the pass began in
+    the copy's log, so the line can say how many masses are its own -- or theirs, for
+    ``passes`` run on one copy. One place, because the shell and the server's ``run``
+    both draw it.
+    """
+    drawn = target._thumbnail(since=since,
+                              by="this pass" if passes == 1 else "these passes")
+    path = save_look(drawn.image, target._next_free_path("thumbnail"))
+    return path, drawn.line(path)
+
+
 def run_scripts(session: Session, scripts, prelude: str = "",
                 prelude_name: str = "prelude.py") -> ScriptResult:
     """Run several painting scripts in order against one session.
@@ -1124,7 +1148,7 @@ class Alternatives:
 
 def run_alternatives(session: Session, scripts, prelude: str = "",
                      prelude_name: str = "prelude.py", count_only: bool = False,
-                     whole: bool = False) -> Alternatives:
+                     whole: bool = False, thumbnail: bool = False) -> Alternatives:
     """Rehearse versions of one pass, each on a copy of its own, and lay them side by side.
 
     ``scripts`` is a sequence of ``(source, name)`` pairs, as :func:`run_scripts` takes
@@ -1143,13 +1167,20 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
     is seeded as the next marks of the painting, so whichever is then run for real
     lands as its panel shows it.
 
+    **With ``thumbnail``, every version is counted and the sheet is their thumbnails**
+    (:meth:`Session.thumbnail`, with no argument, on each version's copy): the masses each
+    would lay, flat over the painting's, side by side at the thumbnail's own size --
+    three arrangements of one subject judged against each other in a second each,
+    before any of them is rehearsed.
+
     Nothing is written but the sheet: the caller saves ``session``, whose reports have
     grown by one for every version that ran.
     """
     pairs = list(scripts)
     if not pairs:  # pragma: no cover - argparse requires at least one
         raise ValueError("run_alternatives needs at least one script.")
-    if not count_only and len(pairs) > _MAX_PANELS:
+    counting = count_only or thumbnail
+    if (thumbnail or not count_only) and len(pairs) > _MAX_PANELS:
         raise ValueError(
             f"{len(pairs)} alternatives would be {len(pairs)} panels, past the "
             f"{_MAX_PANELS} a sheet can be compared at a glance. Rehearse them as two "
@@ -1164,7 +1195,7 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
     left = session.remaining
     tried: list[Alternative] = []
     for i, ((source, name), label) in enumerate(zip(pairs, names, strict=True), 1):
-        target = session.scratch(count_only=count_only)
+        target = session.scratch(count_only=counting)
         before = target._open_pass()
         told = len(target.notices())
         result = run_script(target, source, name, prelude=prelude,
@@ -1183,9 +1214,11 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
         block = pass_block(target, before, said, check)
         laid = target.history.stroke_count
         cost = f"{laid} strokes" if left is None else f"{laid} strokes of the {left} left"
-        if count_only:
+        if counting:
             head = f"Counted {which}: {cost}. Nothing painted, nothing committed."
-            panel = None
+            # A counted copy has no paint to look at; its masses are all a thumbnail needs.
+            panel = (target._thumbnail(since=before).image.convert("RGB") if thumbnail
+                     else None)
         else:
             head = f"Rehearsed {which}: {cost}. Nothing committed."
             # The view a rehearsal's own look is, at the size one panel of the sheet has.
@@ -1195,8 +1228,9 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
                                  laid, panel))
     shown = [(_panel_label(one.name, one.laid), one.panel)
              for one in tried if one.panel is not None]
-    sheet = (save_look(label_sheet(shown), session._look_path(None, "rehearse"))
-             if shown else None)
+    where = (session._next_free_path("thumbnail") if thumbnail
+             else session._look_path(None, "rehearse"))
+    sheet = save_look(label_sheet(shown, below=thumbnail), where) if shown else None
     return Alternatives(tuple(tried), sheet)
 
 
@@ -1242,7 +1276,7 @@ def _cmd_run(session: Session, args) -> int:
             tried = run_alternatives(
                 session, [(s.read_text(encoding="utf-8-sig"), str(s)) for s in scripts],
                 prelude=prelude, prelude_name=prelude_name or "prelude.py",
-                count_only=args.count, whole=args.check,
+                count_only=args.count, whole=args.check, thumbnail=args.thumbnail,
             )
         for one in tried.tried:
             # Flushed, so a version that raised is said in its place among the others.
@@ -1263,9 +1297,12 @@ def _cmd_run(session: Session, args) -> int:
     # scripts share the one copy, in order, so a pass is judged on the pass under it.
     # `--count` is the same copy with the pixel work skipped: the price and the check
     # in a fraction of the time, and nothing to look at. See `Session.scratch`.
-    rehearsing = args.rehearse or args.count
+    # `--thumbnail` counts too, unless `--rehearse` asks for the paint as well: the
+    # masses a counted pass calls are all a thumbnail is drawn from.
+    rehearsing = args.rehearse or args.count or args.thumbnail
+    counting = args.count or (args.thumbnail and not args.rehearse)
     names = ", ".join(s.name for s in scripts)
-    target = session.scratch(count_only=args.count) if rehearsing else session
+    target = session.scratch(count_only=counting) if rehearsing else session
     before = target._open_pass()
     told = len(target.notices())
 
@@ -1313,7 +1350,7 @@ def _cmd_run(session: Session, args) -> int:
             left = session.remaining
             cost = (f"{spent} strokes" if left is None
                     else f"{spent} strokes of the {left} left")
-            if args.count:
+            if counting:
                 # No look: a counted pass lays no paint, and a picture of the canvas
                 # it borrowed is a picture of the last pass, which is worse than none.
                 print(f"Counted {names}: {cost}. Nothing painted, nothing committed.")
@@ -1322,6 +1359,10 @@ def _cmd_run(session: Session, args) -> int:
                 print(f"Rehearsed {names}: {cost}. Nothing committed.")
                 print(block)
                 print(target.look(path=None))
+            if args.thumbnail:
+                # The arrangement the pass would leave, flat: its masses over the
+                # painting's, drawn from what the copy's log says each call filled.
+                print(thumbnail_line(target, before, len(scripts))[1])
             # What the check said is the one thing a rehearsal keeps, and it is kept
             # on the painting: the copy's canvas, log, palette, landmarks and guides
             # are thrown away with it, so writing the file back changes nothing else.

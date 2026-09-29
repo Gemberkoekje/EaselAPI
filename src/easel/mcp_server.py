@@ -61,8 +61,9 @@ from easel.cli import (
     reference_text,
     run_alternatives,
     run_script,
+    thumbnail_line,
 )
-from easel.look import DEFAULT_LOOK_SIZE
+from easel.look import DEFAULT_LOOK_SIZE, save_look
 from easel.notices import EaselWarning
 from easel.regions import Region, as_place
 from easel.session import PLAN_ACCEPTS, Session
@@ -244,6 +245,46 @@ def _calm(value):
 def _numbers(value) -> bool:
     """A point or a rectangle: a place written as numbers, not a list of places."""
     return all(isinstance(v, (int, float)) for v in value)
+
+
+def _thumbnail_pairs(places) -> list[tuple]:
+    """The ``thumbnail`` tool's places, as ``(place, value)`` pairs the engine reads.
+
+    An object's keys are places as ``plan`` reads its own -- names, cells and spans,
+    since a key is a string -- and a list of ``[place, value]`` pairs takes a place in
+    any of the forms :func:`_place` does, which is how a shape is handed over at all.
+    """
+    items = list(places.items()) if isinstance(places, dict) else list(places)
+    pairs = []
+    for item in items:
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            raise ValueError(
+                f"{item!r} is not a [place, value] pair. The thumbnail takes an object, "
+                f'{{"C3:F6": 0.30}}, or a list of pairs, [["C3:F6", 0.30], '
+                f'[{{"blob": "D5", "radius": 0.12}}, "dark"]].'
+            )
+        where, what = item
+        pairs.append((_place(where), _thumbnail_value(what)))
+    return pairs
+
+
+def _thumbnail_value(what):
+    """A thumbnail's value as it arrives: a number, a colour, or ``[value, clip]``.
+
+    Three numbers are a colour; two things are a value and the place it is held
+    inside, and a clip that is a list of names or shapes is all of them at once.
+    """
+    if not isinstance(what, (list, tuple)) or len(what) != 2:
+        return tuple(what) if isinstance(what, list) else what
+    value, clip = what
+    if isinstance(value, list):
+        value = tuple(value)
+    many = (isinstance(clip, (list, tuple)) and clip
+            and all(isinstance(one, (str, dict))
+                    or (isinstance(one, (list, tuple)) and one
+                        and isinstance(one[0], (list, tuple)))
+                    for one in clip))
+    return (value, [_place(one) for one in clip] if many else _place(clip))
 
 
 def _is_place_object(entry: dict) -> bool:
@@ -626,7 +667,8 @@ def build_server() -> MCPServer:
     def run(session: str, script: str = "", script_path: str = "",
             rehearse: bool = False, count: bool = False, prelude: str = "",
             prelude_path: str = "",
-            alternatives: list[str] | dict[str, str] | None = None) -> list:
+            alternatives: list[str] | dict[str, str] | None = None,
+            thumbnail: bool = False) -> list:
         """Paint: run a Python script against the session.
 
         This is where every mark is made. The script has `s` (the session),
@@ -679,6 +721,14 @@ def build_server() -> MCPServer:
                 `rehearse`; with `count`, prices each and lays no sheet. Each copy is
                 seeded as the next marks of the painting, so the version then run for
                 real lands as its panel shows it. At most twelve on a sheet.
+            thumbnail: see the arrangement before paying for it. The pass is counted
+                rather than painted -- painted on the copy as well if `rehearse` is
+                also set -- and every mass it calls is drawn flat at its colour's
+                value, held as the call holds it, over the plan's places and the
+                masses laid so far, 192 px on its long side: the `thumbnail` tool with
+                no places, as the painting would stand after this pass. With
+                `alternatives`, each version is counted and the sheet is their
+                thumbnails.
         """
         if prelude and prelude_path:
             raise ValueError(
@@ -700,7 +750,8 @@ def build_server() -> MCPServer:
             s = _load(session)
             tried = run_alternatives(
                 s, [(str(text), str(label)) for label, text in versions],
-                prelude=pre, prelude_name=pre_name, count_only=count)
+                prelude=pre, prelude_name=pre_name, count_only=count,
+                thumbnail=thumbnail)
             # What each version's check said is kept, as a rehearsal's is.
             if any(one.code == 0 for one in tried.tried):
                 s.save(session)
@@ -717,8 +768,9 @@ def build_server() -> MCPServer:
         source = Path(script_path).read_text(encoding="utf-8-sig") if script_path else script
 
         s = _load(session)
-        trying = rehearse or count
-        target = s.scratch(count_only=count) if trying else s
+        trying = rehearse or count or thumbnail
+        counting = count or (thumbnail and not rehearse)
+        target = s.scratch(count_only=counting) if trying else s
         before = target._open_pass()
         told = len(target.notices())
         result = run_script(target, source, name, prelude=pre, prelude_name=pre_name)
@@ -741,7 +793,7 @@ def build_server() -> MCPServer:
             laid = target.history.stroke_count      # the copy's own log: this pass
             cost = (f"{laid} strokes" if left is None
                     else f"{laid} strokes of the {left} left")
-            if count:
+            if counting:
                 answer = [f"Counted {short}: {cost}. Nothing painted, "
                           f"nothing committed.\n{block}"]
             else:
@@ -751,6 +803,10 @@ def build_server() -> MCPServer:
                 looked = target.look()
                 answer = [f"Rehearsed {short}: {cost}. Nothing committed.\n"
                           f"{block}\n{looked}", Image(path=str(looked))]
+            if thumbnail:
+                # And the arrangement, flat, beside it -- as `easel run --thumbnail`.
+                drawn, line = thumbnail_line(target, before)
+                answer = [f"{answer[0]}\n{line}", *answer[1:], Image(path=str(drawn))]
             # What the check said is the one thing a rehearsal keeps: on the
             # painting, as `easel run --rehearse` keeps it. See `Session.reports`.
             s._keep_report(target, short, before, block)
@@ -1367,6 +1423,43 @@ def build_server() -> MCPServer:
         # on a throwaway copy, so `Session._adopt_notices` carries them back here.
         return _join(_notices.block(s.notices(since=told)),
                      f"{total} stroke(s).{left} Paints as:\n\n{body}")
+
+    @server.tool()
+    @_tool
+    def thumbnail(session: str, places: dict[str, Any] | list[Any] | None = None,
+                  size: int | None = None, output: str = "") -> list:
+        """The arrangement, flat and small, before a mark: each place filled at its value.
+
+        A notan -- the picture as three or four flat values at the size of a postage
+        stamp -- which is where a silhouette reads or does not: two matching peaks read
+        as ears, lit planes laid apart read as islands, and each is plain here before a
+        rehearsal renders a mark. Places are filled in the order given, later over
+        earlier, on the ground's own value, in greyscale. Nothing is painted, logged or
+        charged. `run` with `thumbnail` draws the same, with no places, over a pass it
+        counts.
+
+        Returns the thumbnail, and the path it was written to.
+
+        Args:
+            session: the .easel file.
+            places: the places and their values, as `plan` reads its `values` --
+                `{"C3:F6": 0.30, "A1:H3": "sky"}` -- or a list of `[place, value]`
+                pairs, which takes a place in any form, a shape among them:
+                `[[{"blob": "D5", "radius": 0.12}, 0.15]]`. A value is 0..1, or a
+                colour read at its value: a slot, a pigment, a hex. `[value, clip]`
+                holds a place inside a clip, as a mass's `clip` holds its paint --
+                `["lit", {"blob": "D5", "radius": 0.12}]` -- and a list of places
+                inside all of them. Left off, the plan's places and every mass the
+                painting has laid, each at its colour's value and held as it was
+                held, in the order laid.
+            size: the long side in pixels, 192 when left off.
+            output: where to write the PNG.
+        """
+        s = _load(session)
+        drawn = s._thumbnail(None if places is None else _thumbnail_pairs(places), size)
+        path = save_look(drawn.image,
+                         Path(output) if output else s._next_free_path("thumbnail"))
+        return [drawn.line(path), Image(path=str(path))]
 
     return server
 

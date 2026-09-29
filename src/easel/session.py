@@ -43,9 +43,11 @@ from easel.color import (
 from easel.history import DEFAULT_FRAME_PX, History, StrokeRecord
 from easel.look import (
     DEFAULT_LOOK_SIZE,
+    THUMBNAIL_SIZE,
     label_sheet,
     load_reference,
     render_look,
+    render_thumbnail,
     save_look,
 )
 from easel.measure import (
@@ -59,7 +61,7 @@ from easel.measure import (
 from easel.notices import NOTICES, EaselWarning, Notice, PassReport, rebuild_moves, version_key
 from easel.notices import explain as notice_text
 from easel.palette import Palette
-from easel.plan import Plan
+from easel.plan import Plan, named_place
 from easel.plan import build as build_plan
 from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
@@ -253,6 +255,9 @@ class Session:
         # Whether that call was handed a rectangle rather than a shape -- the
         # ``boxes:`` line's own input. See :meth:`_one_call`.
         self._call_boxed = False
+        # The place that call is filling and the value its colour reads, until the
+        # call's first record carries them: the thumbnail's input. See :meth:`_one_call`.
+        self._call_mass: dict | None = None
         # Where the call in progress was made -- the painter's own line -- and where
         # every mark this session has laid was made, by the mark's index in the log.
         # Beside the log and never in it, and never saved: a line in a script is this
@@ -530,11 +535,16 @@ class Session:
                                             else {}),
                                          **({"boxed": True} if self._call_boxed
                                             else {}),
+                                         # The mass call's place and value, on its
+                                         # first record only. See `_one_call`.
+                                         **({"mass": self._call_mass}
+                                            if self._call_mass is not None else {}),
                                          # Read with `.get`, and by nothing that lays
                                          # paint: a rebuild ignores it.
                                          **({"color_name": named} if named else {})),
                 )
             )
+            self._call_mass = None
         except Exception:
             # A bad path (wrong shape, a NaN/Infinity point) is caught inside
             # paint_stroke *after* the snapshot above was pushed. Left in place,
@@ -1079,7 +1089,8 @@ class Session:
                 _check_mass_spill(self, place, fill, b, direction, density, overhang,
                                   held, stacklevel=3)
 
-        with self._one_call("block_in", place):
+        with self._one_call("block_in", place,
+                            mass=_mass_params(place, self._colour_value(color))):
             if dry_first:
                 self.dry(1.0, place)
             for pass_dir, path, flipped in self._block_in_paths(fill, b, direction,
@@ -1438,7 +1449,9 @@ class Session:
         depth, step, n_passes, cross = self._sweep_passes(b, depth, passes, cross, density)
 
         records: list[StrokeRecord] = []
-        with self._one_call("sweep"):
+        # The ground it covers, as `preview` draws it, is the place a sweep fills.
+        covered = polygon(_sweep_cover(edge, b.size, density, depth, into, closed))
+        with self._one_call("sweep", mass=_mass_params(covered, self._colour_value(color))):
             for kind, path, flipped in self._sweep_paths(edge, step, n_passes, depth,
                                                          cross, into, closed, wander):
                 records.append(
@@ -1677,7 +1690,8 @@ class Session:
                 f"at any opacity. Use 'flat', 'knife' or 'round_hard'.",
                 stacklevel=2,
             )
-        with self._one_call("cover", target):
+        with self._one_call("cover", target,
+                            mass=_mass_params(target, self._colour_value(color))):
             if dry_first:
                 self.dry(1.0, target)
             return self.block_in(
@@ -1885,7 +1899,8 @@ class Session:
 
         records: list[StrokeRecord] = []
         laid = 0
-        with self._one_call("scumble", place):
+        with self._one_call("scumble", place,
+                            mass=_mass_params(place, self._passage_value(color_a, color_b))):
             for path, flipped in paths:
                 t = laid / max(n - 1, 1)
                 records.append(self.stroke(
@@ -1993,7 +2008,8 @@ class Session:
         moving as it goes inward.
         """
         records: list[StrokeRecord] = []
-        with self._one_call("scumble", place):
+        with self._one_call("scumble", place,
+                            mass=_mass_params(place, self._passage_value(color_a, color_b))):
             for k, path, flipped in paths:
                 records.append(self.stroke(
                     path, brush=b,
@@ -2632,6 +2648,167 @@ class Session:
         )
         return save_look(img, self._look_path(path, "preview"))
 
+    def thumbnail(self, places=None, size: int | None = None,
+                  path: str | Path | None = None) -> Path:
+        """The arrangement, flat and small: each place filled at its value, before a mark.
+
+        A notan -- the picture as three or four flat values at the size of a postage
+        stamp -- which is where a silhouette reads or does not. Each place is filled at
+        its value in the order given, later over earlier, on the ground's own value, and
+        drawn in greyscale at ``size`` pixels on its long side. Nothing is painted,
+        logged or charged and the stream is not touched, so ask as often as it helps.
+
+        It is the look a painter takes first, and the one this engine did not have. One
+        painter's subject failed three times in paint -- two matching peaks read as
+        ears, lit planes laid as islands read as a piebald, a lit band round the body
+        read as an arch -- and each cost a rehearsal of 85 to 113 marks to see; drawn
+        flat at this size from the shapes that made them, all three are plain.
+        :meth:`preview` does not answer it: it draws a mass as a translucent band over
+        the canvas at full size, which says *where* the mass goes and not whether the
+        arrangement reads.
+
+        Args:
+            places: ``{place: value}`` -- a place as :meth:`plan` takes one, and a value
+                ``0..1`` or a colour it is read at: a slot like ``"stone_mid"``, a
+                pigment, a hex. **A pair holds the place inside a clip**, as a mass's
+                ``clip=`` holds its paint: ``{rim: ("lit", body)}`` fills only where
+                the rim and the body agree, so a copy of the body shifted off it for
+                its light stays inside the silhouette; a list of places holds it inside
+                all of them. **Left off, the plan's places and every mass the painting
+                has laid**: the plan's places at their planned values, and over them
+                each ``block_in``, ``cover``, ``scumble`` and ``sweep`` at its colour's
+                value -- a passage halfway between its two -- clipped as the call was
+                clipped, in the order laid. A plan names few of a subject's masses; the
+                log keeps every one. A mark or a film is not a mass and is not drawn,
+                and neither is the drawing: at this size its lines outweigh the masses.
+            size: the long side, in pixels. **192** when left off -- the smallest at
+                which that painter's three failures all read, and its own pick of four
+                sizes shown to it blind.
+            path: where to write. Defaults to ``out_dir/thumbnail_NNN.png``.
+
+        Returns:
+            The path the thumbnail was written to.
+
+        **From the shell, before a pass is paid for**: ``easel run p.easel pass.py
+        --thumbnail`` counts the pass instead of painting it, and draws this with no
+        argument over what it would lay -- the pass's masses over the painting's -- in
+        a second, where a rehearsal renders every mark. A mass laid by a release before
+        0.8.0 kept no place in the log and is not drawn; the shell and the server say
+        how many.
+
+        Example::
+
+            s.thumbnail({body: 0.12})                     # does the silhouette read?
+            s.thumbnail({body: "shade", rim: ("lit", body), wing: "shade"}, size=128)
+            s.thumbnail()                                 # the plan, and what is laid
+        """
+        if places is not None and not isinstance(places, dict):
+            raise TypeError(
+                f"thumbnail() takes {{place: value}} -- s.thumbnail({{body: 0.12}}) -- "
+                f"not {type(places).__name__}. Left off, it draws the plan's places and "
+                f"the masses laid."
+            )
+        drawn = self._thumbnail(places, size)
+        target = Path(path) if path is not None else self._next_free_path("thumbnail")
+        return save_look(drawn.image, target)
+
+    def _thumbnail(self, places=None, size: int | None = None,
+                   since: int | None = None, by: str = "this pass") -> _Drawn:
+        """:meth:`thumbnail`'s picture, and what is in it in words, for the shell and server.
+
+        ``since`` is where a pass began in this session's own log, so the words can say
+        how many of the masses are that pass's -- ``by`` names it, *these passes* when
+        several ran on one copy.
+        """
+        px = THUMBNAIL_SIZE if size is None else int(size)
+        if px < 1:
+            raise ValueError(
+                f"thumbnail(size={size!r}) is the long side in pixels -- 192 when left "
+                f"off, the size a flat arrangement is judged at."
+            )
+        note = ""
+        if places is None:
+            planned = [(p.outline, float(p.value), ()) for p in self._plan.values
+                       if p.value is not None]
+            masses, unplaced, fresh = self._laid_masses(since)
+            layers = planned + masses
+            what, note = _thumbnail_said(len(planned), len(masses), fresh, unplaced,
+                                         by if since is not None else "")
+        else:
+            layers = self._thumbnail_places(places)
+            what = f"{len(layers)} place{'' if len(layers) == 1 else 's'}"
+        image = render_thumbnail(layers, self.canvas.width, self.canvas.height,
+                                 self._colour_value(self.ground), px)
+        return _Drawn(image, f"{what}, at {max(image.size)} px", note)
+
+    def _thumbnail_places(self, places) -> list[tuple[Polygon, float, tuple]]:
+        """``{place: value}`` as a thumbnail's layers: each place, its value, its clips.
+
+        Or ``(place, value)`` pairs, which is how the server hands over a shape: a JSON
+        object's keys are strings.
+        """
+        layers = []
+        items = places.items() if isinstance(places, dict) else places
+        for i, (where, what) in enumerate(items):
+            name, outline = named_place(where, i)
+            holds: tuple[Polygon, ...] = ()
+            if isinstance(what, (tuple, list)) and len(what) == 2:
+                what, clip = what
+                try:
+                    holds = _as_outlines(clip)
+                except (TypeError, ValueError, KeyError) as exc:
+                    raise ValueError(
+                        f"The thumbnail holds {name!r} inside {clip!r}, which is not a "
+                        f"place. A pair is (value or colour, clip) -- {{rim: ('lit', "
+                        f"body)}} -- and the clip a place, or a list of places."
+                    ) from exc
+            if isinstance(what, (bool, np.bool_)):
+                raise ValueError(f"The thumbnail gives {name!r} {what!r}, which is no value.")
+            if isinstance(what, (int, float, np.integer, np.floating)):
+                value = float(what)
+                if not 0.0 <= value <= 1.0:
+                    raise ValueError(
+                        f"The thumbnail gives {name!r} a value of {value}, and a value "
+                        f"runs 0..1 the way palette.value_of() reports it -- or give a "
+                        f"colour, a slot like 'stone_mid', and it is read at its value."
+                    )
+            else:
+                value = self._colour_value(what)
+            layers.append((outline, value, holds))
+        return layers
+
+    def _laid_masses(self, since: int | None = None) -> tuple[list, int, int]:
+        """Every mass the painting has laid, in order, as a thumbnail's layers.
+
+        Read off the log, a rehearsal copy's painting under it included: the first
+        record of each mass call carries the place it filled and its value
+        (:meth:`_one_call`), and every record of a held mass carries its clip. Returns
+        the layers; how many mass calls kept no place, laid by a release before 0.8.0;
+        and how many of the layers were laid from ``since`` on in this session's own log.
+        """
+        layers: list[tuple[Polygon, float, tuple]] = []
+        unplaced = fresh = 0
+        seen: set = set()
+        own = len(self._prior)
+        for i, r in enumerate(self._prior + self.history.records):
+            if not r.params or r.params.get("via") not in _MASS_VIAS:
+                continue
+            call = _call_of(r)
+            if call in seen:
+                continue
+            seen.add(call)
+            kept = r.params.get("mass")
+            if not kept:
+                unplaced += 1
+                continue
+            clip = r.params.get("clip")
+            layers.append((polygon([(float(x), float(y)) for x, y in kept["place"]]),
+                           float(kept["value"]),
+                           _clips_from_params(clip) if clip else ()))
+            if since is not None and i >= own + since:
+                fresh += 1
+        return layers, unplaced, fresh
+
     def rehearse(
         self,
         strokes,
@@ -3236,6 +3413,7 @@ class Session:
         trial._stream_mark = None
         trial._call_verb = ""
         trial._call_boxed = False
+        trial._call_mass = None
         # A copy: the painting's marks keep the lines they were laid from -- a finding
         # on the rehearsal may count them -- and what the copy lays is its own.
         trial._call_site = None
@@ -5128,6 +5306,7 @@ class Session:
                 s._stream_mark = None
                 s._call_verb = ""
                 s._call_boxed = False
+                s._call_mass = None
                 # A file keeps no call sites: the lines its marks were laid from were
                 # the process's that laid them. Marks laid from here on have them.
                 s._call_site = None
@@ -5339,8 +5518,9 @@ class Session:
             # The record's own account of the stream and of the call that laid it,
             # carried over verbatim: a replay never draws the wander, so what its
             # own marks would record is the seed, which is nowhere the painting was.
-            # The colour's name too: a replay is handed the colour, not the name.
-            for key in ("rng", "via", "boxed", "color_name"):
+            # The colour's name too: a replay is handed the colour, not the name --
+            # and the place a mass filled, which a replay is never handed at all.
+            for key in ("rng", "via", "boxed", "color_name", "mass"):
                 if key in record.params:
                     made.params[key] = record.params[key]
                 else:
@@ -5359,7 +5539,7 @@ class Session:
 
     # -- internals --------------------------------------------------------------
     @contextmanager
-    def _one_call(self, verb: str = "", place=None):
+    def _one_call(self, verb: str = "", place=None, mass: dict | None = None):
         """Hold the generator's state for the length of one painting call.
 
         ``verb`` names the mass verb the call is, and rides on every record the call
@@ -5389,6 +5569,15 @@ class Session:
         what each of its calls cost (:meth:`_dearest_line`) and a finding say which
         marks it counted. Kept beside the log, never in it. A replay's marks are the
         painting's own, laid again, and were made nowhere a painter could look.
+
+        **And what a mass filled** -- ``mass``, from :func:`_mass_params`: the place the
+        call was handed and the value its colour reads, carried by the call's *first*
+        record only, as ``params["mass"]``. The log knew every pass of a mass and never
+        the place it was filling, so a thumbnail of the masses laid so far had nothing
+        to draw them from (:meth:`thumbnail`). Read with ``.get``, and by nothing that
+        lays paint, like ``boxed``: a rebuild ignores it and an older build never sees
+        it. The outermost call's, as for the stream -- a burial's block-in is the
+        burial's.
         """
         if self._stream_mark is not None:
             yield
@@ -5396,6 +5585,7 @@ class Session:
         self._stream_mark = _stream_of(self.rng)
         self._call_verb = verb
         self._call_boxed = isinstance(place, Region) if place is not None else False
+        self._call_mass = mass
         self._call_site = None if verb == "replay" else _painter_site(verb)
         try:
             yield
@@ -5403,6 +5593,7 @@ class Session:
             self._stream_mark = None
             self._call_verb = ""
             self._call_boxed = False
+            self._call_mass = None
             self._call_site = None
 
     def _stream_state(self) -> dict:
@@ -5505,6 +5696,18 @@ class Session:
         if isinstance(color, str) and not color.startswith("#"):
             return self.palette[color]
         return parse_color(color)
+
+    def _colour_value(self, color) -> float:
+        """How light a colour a call was handed reads: what a thumbnail fills its place at."""
+        return float(self.palette.value_of(self._resolve_color(color)))
+
+    def _passage_value(self, color_a, color_b) -> float:
+        """A passage's one value for a thumbnail: halfway between the two it steps between.
+
+        What the eye makes of a scumble at the size of a postage stamp, and what the
+        round's bench drew the painter's passages at.
+        """
+        return (self._colour_value(color_a) + self._colour_value(color_b)) / 2.0
 
     def __repr__(self) -> str:  # pragma: no cover - debugging aid
         return (
@@ -8925,6 +9128,66 @@ def _place_params(place) -> dict:
         return {"region": None, "shape": [[float(x), float(y)] for x, y in place.points],
                 "shape_name": place.name}
     return {"region": list(place.bounds)}
+
+
+#: The calls that fill a place and keep it for the thumbnail: every verb that opens
+#: :meth:`Session._one_call` with a mass. The same four as ``_BURYING_VIAS``, for another
+#: reason -- what a layer is, there; what a thumbnail draws, here.
+_MASS_VIAS = ("block_in", "cover", "scumble", "sweep")
+
+
+class _Drawn(NamedTuple):
+    """A thumbnail as drawn, and what is in it in words: what the shell and server print."""
+
+    image: Image.Image
+    what: str
+    note: str = ""
+
+    def line(self, path) -> str:
+        """``Thumbnail of <what>: <path>``, and under it what is not in it, if anything."""
+        head = f"Thumbnail of {self.what}: {path}"
+        return f"{head}\n  {self.note}" if self.note else head
+
+
+def _thumbnail_said(planned: int, masses: int, fresh: int, unplaced: int,
+                    by: str) -> tuple[str, str]:
+    """What a thumbnail drawn with no argument holds, in words, and what it leaves out.
+
+    ``the plan's 7 places and 23 masses laid, 12 of them by this pass`` -- the pass's
+    share only when there is a pass, ``by`` naming it -- and, whenever there are any, the
+    masses a release before 0.8.0 laid without keeping their place, which are not in the
+    picture.
+    """
+    parts = []
+    if planned:
+        parts.append(f"the plan's {planned} place{'' if planned == 1 else 's'}")
+    if masses:
+        laid = f"{masses} mass{'' if masses == 1 else 'es'} laid"
+        if by and masses == 1:
+            laid += f", by {by}" if fresh else f", before {by}"
+        elif by:
+            laid += f", {fresh or 'none'} of them by {by}"
+        parts.append(laid)
+    what = " and ".join(parts) if parts else "the ground alone: no place planned"
+    if not masses:
+        what += ", and no mass laid"
+    note = ""
+    if unplaced:
+        note = (f"{unplaced} mass{'' if unplaced == 1 else 'es'} laid before 0.8.0 kept no "
+                f"place in the log, and {'is' if unplaced == 1 else 'are'} not in it.")
+    return what, note
+
+
+def _mass_params(place, value: float) -> dict:
+    """What a mass call's first record keeps for the thumbnail: its place, and its value.
+
+    The place as the outline's own points, exact for the reason the log's points are, a
+    rectangle as its four corners; the value as :meth:`Palette.value_of` reads the colour
+    the call was handed. See :meth:`Session._one_call`.
+    """
+    outline = place if isinstance(place, Polygon) else polygon(place)
+    return {"place": [[float(x), float(y)] for x, y in outline.points],
+            "value": float(value)}
 
 
 def _place_from_params(params: dict):
