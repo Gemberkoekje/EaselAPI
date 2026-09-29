@@ -458,7 +458,7 @@ passes starts* in [`REFERENCE.md`](REFERENCE.md#where-a-stack-of-passes-starts).
 Almost nothing you want to paint is a box. There are two ways not to paint one, and
 they answer different questions.
 
-**When you can say what shape the mass is**, build it and fill it. Five ways to make
+**When you can say what shape the mass is**, build it and fill it. Six ways to make
 one, none of which needs you to invent coordinates:
 
 ```python
@@ -467,7 +467,12 @@ ellipse(span("C3", "E5"))                      # a round mass filling a run of c
 hull([s.pt("top_l"), s.pt("top_r"), s.pt("base")])   # the mass around your landmarks
 ribbon([(0.15, 0.8), (0.5, 0.55), (0.9, 0.62)], 0.18)   # a mass following a line
 polygon([(0.2, 0.9), (0.35, 0.4), (0.6, 0.5), (0.7, 0.95)])   # an outline you have
+union(ellipse((0.5, 0.6), 0.18, 0.14), ellipse((0.34, 0.46), 0.07))   # parts, one outline
 ```
+
+`union()` keeps the waist between parts that `hull()` would fill, so a silhouette can be
+a few named parts, moved one at a time until it reads (*A silhouette built from parts*
+in [`RECIPES.md`](RECIPES.md#a-silhouette-built-from-parts)).
 
 An outline built from a dozen points is a dozen straight sides, and laid hard it reads
 as a cut-out however its edge is painted, so **for anything nobody ruled — rock, a

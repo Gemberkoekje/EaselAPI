@@ -85,7 +85,8 @@ def preamble(out_dir: str | Path, timelapse: bool = True) -> str:
     """
     return (
         "from easel import Session, Region, region, cell, span, horizon, below, above\n"
-        "from easel import blob, ellipse, hull, ribbon, polygon, union\n"
+        "from easel import blob, ellipse, hull, ribbon, polygon, union, roughen, terminator\n"
+        "from easel import letter_paths\n"
         f"s = Session(400, 300, ground='toned_grey', seed=1, timelapse={bool(timelapse)}, "
         f"out_dir={str(out_dir)!r})\n"
         "p = s.palette\n"

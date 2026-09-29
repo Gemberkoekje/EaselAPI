@@ -136,7 +136,7 @@ See *MCP server* below.
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the guide written for you. It teaches the *workflow* —
 tone the ground, paint back to front, check values, refine, edges, highlights
 last — rather than listing functions, and it opens with *the first hour*: the whole
-method on one page, so the nine warm-up exercises come before anything else.
+method on one page, so the ten warm-up exercises come before anything else.
 
 **If you have already installed the package you do not need that link.** All six
 documents ship inside the wheel: `python -m easel guide` prints the first hour,

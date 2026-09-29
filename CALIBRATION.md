@@ -2115,7 +2115,13 @@ of apparent lightness that the number does not carry.
 **The drawing.** Seven of the first ten paintings drew no line at all and nine placed
 no landmark. The tenth drew its arrangement four times before paint, at a cost of
 nothing, and threw the first two away; the two passages it never drew were the two it
-named weakest at the end.
+named weakest at the end. One painting lost eighty strokes to four near-parallel members
+of one mass, a row the band count never reached. One painter redrew an arrangement three
+times, all three free, and all three changed the framing, a limb's angle and the size of
+a vessel; none asked whether the thing, seen from in front, was its parts laid out
+sideways or a cluster foreshortened toward the viewer, which it was. *Moved here from
+`PAINTER.md` in 0.8.0, where its painter judged the rules carry their own instruments:
+the recipe for a cluster of like parts, and the thumbnail.*
 
 **Reading.** Reading the guide, the reasons, the reference, the calibration file and
 two paintings' notes cost one session a few minutes and about thirty thousand tokens,

@@ -191,7 +191,7 @@ def _documented_calls() -> list[tuple[str, object]]:
             if not name.startswith("_") and callable(fn):
                 out.append((f"{prefix}{name}", fn))
     for name in ("polygon", "ellipse", "blob", "hull", "ribbon", "roughen", "union",
-                 "group", "cell", "span", "region", "horizon", "between", "thirds",
+                 "terminator", "letter_paths", "group", "cell", "span", "region", "horizon", "between", "thirds",
                  "golden"):
         out.append((name, getattr(easel, name)))
     return out

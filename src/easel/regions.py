@@ -28,7 +28,7 @@ __all__ = ["Region", "region", "cell", "span", "thirds", "golden", "horizon", "b
            "above", "left_of", "right_of", "between", "REGION_NAMES", "GRID_COLS",
            "GRID_ROWS", "as_region", "as_place",
            "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen",
-           "Group", "group"]
+           "terminator", "Group", "group"]
 
 #: Columns of the ``look(grid=True)`` overlay, left to right.
 GRID_COLS = "ABCDEFGH"
@@ -1254,6 +1254,110 @@ def _calm_of(calm, points: np.ndarray, amp: float, ux: float, uy: float) -> np.n
             gap = np.where(shape.inside(points[:, 0], points[:, 1]), 0.0, gap)
         nearest = np.minimum(nearest, gap)
     return np.clip(nearest / reach, 0.0, 1.0)
+
+
+def terminator(outline, inside, margin: float = 0.004, step: float = 0.002,
+               least: float = 0.02, aspect: float | None = None
+               ) -> list[list[tuple[float, float]]]:
+    """Where one outline runs inside another shape: the line a lit form turns on.
+
+    A silhouette lit from one side is laid as copies of itself shifted away from the
+    light, each held to the silhouette -- ``clip=body`` -- so the light is left as a
+    rim along every edge that faces it. Each copy's outline, where it lies inside the
+    silhouette, is a **terminator**: the line where one zone meets the next. Held
+    hard, the two zones meet at a step and the form reads as a cut-out; a stroke laid
+    along each run, at the value halfway between the zones, turns it::
+
+        body = union(ellipse((0.5, 0.56), 0.17, 0.21), ellipse((0.33, 0.36), 0.08))
+        mid = body.shifted(*s.px(12, 12))                  # away from a light up left
+        for run in terminator(mid, body, aspect=s.aspect):
+            s.stroke(run, "flat", p.mix("lit", "mid", 0.5), size=0.010, opacity=0.6,
+                     load=1.0, load_falloff=0.0, pressure="taper", clip=body)
+
+    What comes back is the runs, each a list of ``(x, y)`` points in order along the
+    outline -- laid with :meth:`~easel.session.Session.stroke` or drawn with
+    :meth:`~easel.session.Session.guide` as any path is. The part of the outline
+    lying outside the silhouette is the copy's own, which ``clip=`` cuts away, and
+    the part within ``margin`` of its edge would lay the join over the silhouette,
+    so neither is a terminator. An outline wholly inside comes back as one closed
+    run; one that never enters, as none.
+
+    Built from the bench a painter's shifted copies were measured on: a join along
+    each run took the step at each terminator from under a pixel to about ten and
+    left the silhouette a step.
+
+    Args:
+        outline: the shape whose outline is walked -- a shifted copy, most often --
+            or anything :func:`polygon` takes.
+        inside: the shape the runs have to lie inside: the silhouette.
+        margin: how far inside ``inside``'s edge a run has to stay, as a fraction
+            of the canvas's **long side**, like a brush's ``size``. The default is
+            about four pixels on a canvas 1024 wide.
+        step: how far apart along the outline the points come back, in the same
+            unit: about two pixels at 1024.
+        least: the shortest run kept, in the same unit. A stroke along anything
+            shorter is a dab, and at a join's size it lands as a blot.
+        aspect: the canvas's width over its height -- ``s.aspect`` -- so the three
+            distances are the same across as down. Left off, the canvas is taken as
+            square, and on a 4:3 canvas ``margin`` is a third wider across.
+
+    Returns:
+        A list of runs, each a list of ``(x, y)`` points; empty when no part of
+        the outline lies inside.
+    """
+    margin, step, least = float(margin), float(step), float(least)
+    for name, value in (("margin", margin), ("least", least)):
+        if not (math.isfinite(value) and value >= 0.0):
+            raise ValueError(f"terminator({name}={value!r}) is a distance, a fraction of "
+                             f"the long side like size, and cannot be below zero.")
+    if not (math.isfinite(step) and step > 0.0):
+        raise ValueError(f"terminator(step={step!r}) is how far apart the points come "
+                         f"back along the outline, and has to be above zero: 0.002 is "
+                         f"about two pixels at 1024.")
+    walked = polygon(outline)
+    body = polygon(inside)
+    a = 1.0 if aspect is None else float(aspect)
+    ux, uy = (1.0, 1.0 / a) if a >= 1.0 else (a, 1.0)
+
+    ring = np.asarray(walked.closed, dtype=np.float64)
+    dense: list[np.ndarray] = []
+    for p, q in zip(ring[:-1], ring[1:], strict=True):
+        n = max(1, int(math.ceil(math.hypot((q[0] - p[0]) * ux, (q[1] - p[1]) * uy)
+                                 / step)))
+        dense.extend(p + (q - p) * (i / n) for i in range(n))
+    pts = np.asarray(dense)
+
+    edge = np.asarray(body.closed, dtype=np.float64)
+    ax, ay = edge[:-1, 0] * ux, edge[:-1, 1] * uy
+    dx, dy = edge[1:, 0] * ux - ax, edge[1:, 1] * uy - ay
+    px, py = pts[:, 0:1] * ux, pts[:, 1:2] * uy
+    t = np.clip(((px - ax) * dx + (py - ay) * dy) / np.maximum(dx * dx + dy * dy, 1e-12),
+                0.0, 1.0)
+    gap = np.hypot(ax + t * dx - px, ay + t * dy - py).min(axis=1)
+    ok = body.inside(pts[:, 0], pts[:, 1]) & (gap > margin)
+
+    as_points = [(float(x), float(y)) for x, y in pts]
+    if ok.all():
+        return [as_points + [as_points[0]]]
+    if not ok.any():
+        return []
+    start = int(np.argmin(ok))                  # begin on a point that is out
+    runs: list[list[tuple[float, float]]] = []
+    current: list[tuple[float, float]] = []
+    for i in np.r_[start:len(pts), 0:start]:
+        if ok[i]:
+            current.append(as_points[i])
+        elif current:
+            runs.append(current)
+            current = []
+    if current:
+        runs.append(current)
+
+    def length(run: list[tuple[float, float]]) -> float:
+        xy = np.asarray(run) * (ux, uy)
+        return float(np.hypot(*np.diff(xy, axis=0).T).sum())
+
+    return [r for r in runs if len(r) >= 3 and length(r) >= least]
 
 
 # -- several shapes moved as one --------------------------------------------------------

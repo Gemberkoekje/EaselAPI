@@ -14,8 +14,26 @@ beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 6 is built -- A3, the thumbnail -- on branch `thumbnail-of-the-masses`,
-2026-09-29, off `main` at `0391074`** -- step 5 merged as
+**Status: step 7 is built -- A4 and B, with F8, I1 and I2 -- on branch
+`silhouettes-and-terminators`, 2026-09-29, off `main` at `c38a8a3`** -- step 6 merged as
+[#95](https://github.com/Gemberkoekje/EaselAPI/pull/95). Six recipes, as the painters
+decided them: *A silhouette built from parts*, ending in `s.thumbnail({shape: "dark"})`
+(A4); *A silhouette lit from one side*, with its join and where it stops (B1, B3), and
+*A form turned toward the light* (B4); *A light's pool on a surface* and *A small cluster
+of like parts gripping an edge* (F8); and *A line of lettering* (I1). **`terminator()`**,
+B2's helper, in `regions.py`, the bench's runs point for point; **`letter_paths()`**,
+the second painter's font shipped as data, a helper that lays nothing; exercise 10,
+*Three silhouettes*; `union()` in `PAINTING.md`; `feather=` said for what it is; and
+*A passage light in the middle* saying an inward scumble on a dark ground shows its rings
+(I2). **Two things the plan did not say**: the lit silhouette's own recipe found `holes`
+reading the ground past a `clip=` as holes, fixed -- the check measures where every hold
+let the paint land -- and exercise 10 needed room `PAINTER.md` did not have, paid for with
+the two anecdotes and two *every painter so far* the painter's question 7 dropped, ahead
+of F1's move. See [`NOTES-step7.md`](NOTES-step7.md). **Nothing waits on a painter**;
+step 8 (D) is next.
+
+*Step 6 was built -- A3, the thumbnail -- on branch `thumbnail-of-the-masses`,
+2026-09-29, off `main` at `0391074`* -- step 5 merged as
 [#94](https://github.com/Gemberkoekje/EaselAPI/pull/94). As the painter decided it
 (question 4): `s.thumbnail({place: value})`, each place flat at its value or its colour's,
 192 px on the long side, a pair `(value, clip)` held inside the clip; with no argument the
@@ -32,8 +50,7 @@ one sheet, labelled under each panel rather than over it. Nothing a mark lays ch
 arrangements, counted as the door counts a pass, is the bench's masses entry for entry and
 draws, at 192 px, the prototype's thumbnail to the pixel; the door takes `0.15` s on the
 subject's pass, whose rehearsal takes `7.9`; and every mass call of both paintings,
-rebuilt, keeps its place. See [`NOTES-step6.md`](NOTES-step6.md). **Nothing waits on a
-painter**; step 7 (A4 and B, the recipes) is next.
+rebuilt, keeps its place. See [`NOTES-step6.md`](NOTES-step6.md).
 
 *Step 5 was built -- E1, E2, E3's error and E4 -- on branch
 `declared-key-and-place-medians`, 2026-09-29, off `main` at `8f7a1da`* -- step 4 merged as
@@ -578,6 +595,17 @@ of ways to make a mass gains `union()` as its sixth.
   ribbons' joints. So the recipe's members are lobes, unioned and smoothed. And in the
   thumbnail the first drawing's union reads as the painter said, a small spiky blob beside
   the plinth; the typed polygons that replaced it read as a creature.
+- *Step 7 (2026-09-29): built as written.* *A silhouette built from parts*, under *Before
+  the first stroke*, its code abstract parts -- a tilted ellipse, a second overlapping it,
+  a member of three lobes unioned and smoothed, a ribbon that narrows -- ending in
+  `s.thumbnail({shape: "dark"})` and a block-in; its three rules in ratios; its demo a
+  matching pair of peaks on stick members, *nothing says so*. **What the typed polygon did
+  that the union did not**, read off both thumbnails: the union's eight parts were all
+  round or short and gathered round the middle one, with two matching peaks -- a clump;
+  the polygon was long along one axis and stood on members that reached the plinth. Not a
+  matter of notches: smoothed, the union keeps 16 turns sharper than 25 degrees, against
+  the polygon's 9. Exercise 10 lays one set of parts symmetric, turned and swelling, each
+  thumbnailed; `union()` is `PAINTING.md`'s sixth way. `ribbon(width=[...])` not built.
 
 **A5. Drawing in pixels, and a group moved as one** -- *added 2026-09-26*, row W1. **`s.px(x,
 y)`** returns the place of a pixel as the fractions every call takes -- `(x / width, y /
@@ -731,6 +759,22 @@ smear and a bruise, at about `0.22` as form.
   shifted copies 35%, the terminator beside the profile 24%, **the planes sharing the
   terminator as painted 74% -- 81% of a row, at the median**. The recipe's rule is a
   number: a form turned toward the light lights about three quarters of what is seen.
+- *Step 7 (2026-09-29): B1 to B4 built.* **B2 is `terminator(outline, inside, margin=,
+  step=, least=, aspect=)`** in `regions.py`, beside `roughen()`, returning runs of points;
+  on the painter's two copies and the abstract form at four shifts its runs are the
+  bench's, point for point (`--recipes`). **B1**, *A silhouette lit from one side*, under
+  *Surfaces*: the bench's abstract form, the copies at `(0.011, 0.015)` and two and a half
+  times as far, each zone's passes at a direction and size of its own (all along the axis,
+  the check calls three zones a stack of bars; at one size, one tool), and the join
+  `flat`, `size=0.010`, `opacity=0.6`, **`pressure="taper"`** -- an even stroke leaves a
+  blot where a run ends against the silhouette, the taper a smaller one. It says where it
+  stops (light from beside), and its demo is the cut-out. **B3** in three places: the
+  recipe, `REFERENCE.md`'s `feather` row and *A form that turns*. **B4**, *A form turned
+  toward the light*, under *Surfaces*: the shared edge a slice of `.closed`, the form marks
+  at `0.22`; laid, it lights 80% of its form. **Found by B1's own block**: `holes` measured
+  a solid mass over its shape alone, and the shade copy held to the silhouette read the
+  ground past the clip as a tenth of its mass in holes -- now measured where every hold
+  let the paint land (`_check_holes(clip=)`).
 
 ### C. What a pass costs, call by call
 
@@ -1229,6 +1273,12 @@ draw the view, not the object; the fingers as one mass coming toward the viewer,
 of what is held crossing them. The hand is the one of the two that is a subject rather
 than a shape, so it is written as *a small cluster of like parts gripping an edge*, and
 grepped.
+*Step 7 (2026-09-29): both built*, under *Light* and *Before the first stroke*. The pool
+is the second painter's own numbers -- sizes `0.40`, `0.26`, `0.15`, the surface's value
+plus a tenth, a sixth and a quarter, `round_soft`, `pressure="swell"` -- and its demo an
+inward scumble of 12 rings on a dark surface, *nothing says so*. The cluster takes the
+first painter's dropped anecdotes as its *Goes wrong as* in the abstract; `PAINTER.md`'s
+view bullet now points at it.
 
 **F9. The example's budget, said to be the example's** (W16). The card's example session
 keeps `budget=300`, and one clause beside it says a budget is the painter's to set from
@@ -1333,6 +1383,15 @@ handout; a letter costs about 1.5 strokes, so a fifty-letter note is about 75 st
 quarter of a 300 budget; and letters laid along even paths read as type -- a hand wants a
 slant, a baseline that drifts, pressure through each stroke, and no two letters alike,
 which is what `seed=` is for.
+*Step 7 (2026-09-29): built as decided.* `letter_paths(text, place, cap=0.04, slant=0,
+seed=None, aspect=None)` in a new `letters.py`: `GLYPHS`, a single-stroke font of 74
+characters and a space as data -- an advance and paths per character, arcs kept as their
+points -- checked by eye with capitals 35, 50 and 100 px tall, its `G` opening the right
+way; a `seed` varies each
+letter's size (4%), lean (2 degrees), points (a hundredth of a capital, a correlated walk)
+and baseline (a drift held to 6%). It lays nothing; *A line of lettering* lays it with
+`s.stroke`, `tip_wobble=0.35`. Laid alone on a fresh canvas the post-pass check says *one
+brush at one size* and *detail before the masses* about it, which the recipe names.
 
 **I2. A lamp's light on a wall** (W9). A recipe (F8's *A light's pool on a surface*), not a
 verb: the painter's own fix worked, and a verb for one kind of light would be the first
@@ -1345,6 +1404,7 @@ pool read as rings at every count from 4 to 20: more rings are finer and fainter
 gone, and `inward-comb` speaks only at the last. So *A passage light in the middle* says an
 inward scumble on a dark ground shows its rings, and the recipe for a light's pool is F8's
 three soft strokes of paint.
+*Step 7 (2026-09-29): said*, in *A passage light in the middle*'s *Goes wrong as*.
 
 ### G. Recorded and not built
 
@@ -1586,7 +1646,9 @@ and cut*.
    `union()` in `PAINTING.md`, and `feather=` said for what it is -- with `ribbon()`'s
    widths only if the recipe's bench needs them. *And B1 scoped, B4's recipe for a form
    turned toward the light, F8's two recipes, and I1 and I2 as recipes -- a lettering
-   verb only if step 2 and W-Q4 say the recipe will not do.*
+   verb only if step 2 and W-Q4 say the recipe will not do.*  *Built 2026-09-29,
+   with `terminator()` and `letter_paths()`, and `holes` measured where a hold let the paint
+   land: see [`NOTES-step7.md`](NOTES-step7.md), and `probe_bell_session.py --recipes`.*
 8. **D**: ~~`into-wet`, on its four conditions -- or the decline recorded with its new data
    point~~ *as rewritten: a mark that lands short, and the strokes that land nothing, on the
    same four conditions. And H4, only if step 2's count separates a failing passage from a
@@ -1633,7 +1695,8 @@ and cut*.
 | `src/easel/session.py` | `thumbnail()` *(and each mass call's place and value on its first record, `params["mass"]`)*; `guide()` and `pencil()` taking a shape; the call tally in `_one_call`; the place reading; ~~`into-wet`, if built~~ *the fact at the call for a round dab under its cliff, the line naming every mark that landed nothing, and `dab()`'s three touches (D)* |
 | `src/easel/plan.py`, `checklist.py`, `measure.py` | `key=`; the median reading; `values_line` under a key; `compare_plan` reading a place as the plan does |
 | `src/easel/palette.py` | `at_value`'s error at the floor; the floor said one way in its docstrings |
-| `src/easel/regions.py` | the terminator helper; `ribbon()`'s widths, if needed |
+| `src/easel/regions.py` | the terminator helper *(`terminator()`, step 7)*; ~~`ribbon()`'s widths, if needed~~ *not needed* |
+| `src/easel/letters.py` (new) | *`letter_paths()` and the font as data, `GLYPHS` (I1, step 7)* |
 | `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
 | `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
 | `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |

@@ -1131,7 +1131,7 @@ def build_server() -> MCPServer:
         Args:
             document: which of the six to return.
                 "guide" (PAINTER.md) -- the method: the loop, the order of work,
-                    the mistakes, nine warm-up exercises, the closing checklist.
+                    the mistakes, ten warm-up exercises, the closing checklist.
                     Required reading, and the only one that is.
                 "painting" (PAINTING.md) -- how the paint, the brushes and the
                     planning tools behave, and copying a photograph in its last

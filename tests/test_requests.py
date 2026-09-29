@@ -7592,3 +7592,126 @@ def test_versions_of_a_pass_lay_their_thumbnails_side_by_side(tmp_path, capsys):
     assert _at(panel, 0.42, 0.42) == pytest.approx(painting.palette.value_of("dark"),
                                                    abs=_ONE_STEP)
     assert float(panel[h - 2, 4]) == pytest.approx(0.30, abs=_ONE_STEP)
+
+
+# -- 0.8.0 B2: the terminator, where a lit form turns ------------------------------------
+def test_terminator_is_the_run_of_a_shifted_copy_inside_the_silhouette():
+    """A copy of a silhouette shifted away from the light and held to it leaves a lit
+    rim; the part of its outline inside the silhouette is the line the form turns on.
+    The bench measured a join along each run taking the step there from under a pixel
+    to about ten, so the helper has to give back exactly those runs: inside the body,
+    a margin off its edge, in order along the outline."""
+    from easel import terminator
+
+    body = union(ellipse((0.5, 0.55), 0.2, 0.25), ellipse((0.32, 0.36), 0.08, 0.09))
+    copy = body.shifted(0.02, 0.025)
+    runs = terminator(copy, body, aspect=4 / 3)
+    assert runs, "a shifted copy crosses into the silhouette"
+    ux, uy = 1.0, 0.75
+    edge = np.asarray(body.closed)
+    for run in runs:
+        pts = np.asarray(run)
+        assert body.inside(pts[:, 0], pts[:, 1]).all()
+        steps = np.hypot(np.diff(pts[:, 0]) * ux, np.diff(pts[:, 1]) * uy)
+        assert steps.max() <= 0.002 + 1e-9                     # in order, a step apart
+        near = min(np.hypot((edge[:, 0] - x) * ux, (edge[:, 1] - y) * uy).min()
+                   for x, y in run)
+        assert near > 0.004 - 0.002                             # a margin off the edge
+        assert steps.sum() >= 0.02                              # nothing shorter than least
+
+    # A copy wholly inside is one closed run; one that never enters is none.
+    whole = terminator(body.scaled(0.5), body, aspect=4 / 3)
+    assert len(whole) == 1 and whole[0][0] == whole[0][-1]
+    assert terminator(ellipse((0.06, 0.06), 0.03), body, aspect=4 / 3) == []
+    # A wider margin keeps the runs further in, so less of the outline comes back.
+    wide = terminator(copy, body, margin=0.02, aspect=4 / 3)
+    assert sum(len(r) for r in wide) < sum(len(r) for r in runs)
+    with pytest.raises(ValueError, match="above zero"):
+        terminator(copy, body, step=0)
+
+
+def test_a_mass_held_to_another_place_is_not_holes_where_the_hold_kept_it_off(tmp_path):
+    """`holes` measured a solid mass over its own shape alone. A copy of a silhouette
+    shifted away from the light and held to it with `clip=` leaves the part of itself
+    beyond the silhouette bare on purpose -- *A silhouette lit from one side* -- and read
+    that as a tenth of its mass in holes. It is measured where the paint was let land."""
+    s = make(tmp_path)
+    s.palette["lit"] = s.palette.at_value("yellow_ochre", 0.70)
+    s.palette["shade"] = s.palette.at_value("ultramarine", 0.20)
+    body = ellipse((0.5, 0.5), 0.25, 0.3)
+    s.block_in(body, "flat", "lit", size=0.05, solid=True, direction="axis", edge="hard")
+    s.block_in(body.shifted(0.06, 0.08), "flat", "shade", size=0.04, solid=True,
+               direction=20, edge="hard", clip=body, opacity=1.0, pressure="even")
+    assert "holes" not in [n.code for n in s.notices()]
+
+
+# -- 0.8.0 I1: lettering as paths ----------------------------------------------------------
+def test_letter_paths_places_a_single_stroke_font_and_lays_nothing(tmp_path):
+    """The second painter's decision: a helper that returns a font's paths, placed,
+    and no verb. Every character the font has draws; the paths start at the place, a
+    capital `cap` of the height tall and as wide in pixels as the font draws it; and
+    the list's length is the price, about one and a half strokes a letter."""
+    from easel import LETTERS, letter_paths
+    from easel.letters import GLYPHS
+
+    s = make(tmp_path)
+    before = s.stroke_count
+    paths = letter_paths(LETTERS, (0.05, 0.5), cap=0.05, aspect=s.aspect)
+    assert s.stroke_count == before                     # nothing laid
+    assert len(paths) == sum(len(p) for _, p in GLYPHS.values())
+    letters = [c for c in LETTERS if c != " "]
+    assert 1.0 <= len(paths) / len(letters) <= 2.0
+
+    one = letter_paths("H", (0.2, 0.6), cap=0.1, aspect=s.aspect)
+    pts = np.vstack([np.asarray(p) for p in one])
+    assert pts[:, 1].min() == pytest.approx(0.5) and pts[:, 1].max() == pytest.approx(0.6)
+    assert pts[:, 0].min() == pytest.approx(0.2)
+    wide_px = (pts[:, 0].max() - pts[:, 0].min()) * s.canvas.width
+    tall_px = 0.1 * s.canvas.height
+    assert wide_px / tall_px == pytest.approx(GLYPHS["H"][0], abs=0.01)
+    # A region is its bottom left, and its height the capital.
+    boxed = letter_paths("H", Region(0.2, 0.5, 0.6, 0.6), aspect=s.aspect)
+    assert np.allclose(np.vstack(boxed), pts)
+
+    for path in paths[:12]:
+        s.stroke(path, "round_hard", "burnt_umber", size=0.004, pressure="taper")
+    assert s.stroke_count == before + 12
+    with pytest.raises(ValueError, match="no letter for"):
+        letter_paths("naïve", (0.1, 0.5))
+
+
+def test_a_hand_is_a_seed_and_no_two_of_its_letters_are_alike():
+    """A line of the font as drawn reads as type; a hand wants a drifting baseline and
+    no two letters alike. Without a seed two copies of a letter are the same shape; with
+    one they differ, and the same seed is the same hand again."""
+    from easel import letter_paths
+
+    def two_es(seed):
+        first, second = letter_paths("e e", (0.1, 0.5), cap=0.1, seed=seed)
+        a, b = np.asarray(first), np.asarray(second)
+        return a - a[0], b - b[0]
+
+    a, b = two_es(None)
+    assert np.allclose(a, b)
+    a, b = two_es(7)
+    assert not np.allclose(a, b, atol=1e-4)
+    assert np.allclose(np.vstack(letter_paths("hand", (0.1, 0.5), seed=7)),
+                       np.vstack(letter_paths("hand", (0.1, 0.5), seed=7)))
+    slanted = np.vstack(letter_paths("l", (0.1, 0.5), cap=0.1, slant=20))
+    top, foot = slanted[np.argmin(slanted[:, 1])], slanted[np.argmax(slanted[:, 1])]
+    assert top[0] > foot[0]                                   # leaning forward
+
+
+def test_the_fonts_curves_run_the_way_the_letter_does():
+    """A painter's own `G` came out a `∂`, its arc run the wrong way round. The font's
+    open letters open to the right, where the reader expects them: the leftmost point of
+    `C`, `G` and `c` is on the left of the letter, and `G`'s bar ends inside it."""
+    from easel.letters import GLYPHS
+
+    for char in "CGc":
+        advance, paths = GLYPHS[char]
+        pts = np.asarray(paths[0])
+        assert pts[:, 0].min() < 0.05 * advance + 0.01
+        assert pts[0][0] > 0.6 * advance and pts[0][1] < 0.5    # begins upper right
+    g = np.asarray(GLYPHS["G"][1][0])
+    assert 0.3 < g[-1][0] < 0.7 and 0.45 < g[-1][1] < 0.65      # the bar, inward
