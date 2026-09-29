@@ -277,8 +277,8 @@ letters.
 place with `clip=` leaves its own shape outside that place bare on purpose, and the check
 measured the shape alone: the lit silhouette's shade copy, on a canvas where the ground
 differs from it, was told a tenth of its mass came back bare. It now measures where every
-hold let the paint land. It is said less often, never more, and nothing a mark lays
-changes.
+hold let the paint land. It is said less often, never more -- over the corpus's 196 solid
+masses, exactly where it was said before -- and nothing a mark lays changes.
 
 ## [0.7.0] — 2026-09-25
 

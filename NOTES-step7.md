@@ -33,7 +33,7 @@ decided them; this step writes them down as recipes, with the one helper each ne
 | **Said** | `feather=` in `REFERENCE.md`'s row, *A form that turns* and the lit-side recipe; the rings of an inward scumble on a dark ground in *A passage light in the middle*; `union()` as `PAINTING.md`'s sixth way; `terminator()` and `letter_paths()` in `REFERENCE.md`'s *Shapes* and the units table |
 | **Exercise 10** | *Three silhouettes* in `PAINTER.md`, now *Ten small exercises*; the README, `llms.txt` and the server's `guide` text say ten |
 | **The guide's preamble** | `demo.preamble` imports `roughen`, `terminator` and `letter_paths`, which a reader of the recipes has |
-| **The bench** | `probe_bell_session.py --recipes` |
+| **The bench** | `probe_bell_session.py --recipes`: the helper against the bench's (identical on six copies), the lit-side recipe's steps, the form turned toward the light lighting 81% and 84% of itself, the font's 1.54 strokes a character, and `holes` counted both ways |
 | **Tests** | `test_requests.py` *0.8.0 B2* (1), the holes fix (1), *0.8.0 I1* (3); `test_reference.py`'s shape list names the two helpers |
 
 ## Decisions and gotchas
@@ -44,7 +44,9 @@ mass came back bare*. The copy is held to the silhouette, so the part of it past
 silhouette is bare by design, and `_check_holes` measured the copy's shape alone. On the
 bench's dark field it never spoke, because the ground was within `0.25` of the shade --
 the contrast gate hid it. Fixed at the check, not routed round in the recipe: the
-measured interior is intersected with every `clip=` hold. It can only say less.
+measured interior is intersected with every `clip=` hold. It can only say less. Counted
+both ways over both paintings and the corpus's 196 solid masses, it says what it said
+before on every one (`--recipes`): the recipe's shade copy is the only case it answers.
 
 **2. The recipe's zones each run their own way.** All three along the axis, the check
 called them a stack of bars (*64 of 87 long marks within 6 degrees*); at one size, one
@@ -53,7 +55,9 @@ lays, and its paragraph says why.
 
 **3. The join tapers.** The painter asked for runs *tapered at both ends*; laid, an even
 join leaves a blot where a run ends at a waist of the silhouette, and `pressure="taper"`
-a smaller one. It does not change the turn's width.
+a smaller one. It does not change the turn's width: laid at 1024x768 the recipe's joins
+turn the step at each terminator from `0.5` and `1.0` px to `9.0` and `10.0` whether
+tapered or even, and leave the silhouette at `0.5`.
 
 **4. What the typed polygon did that the union did not.** The plan asked the recipe to
 say it. It is not the outline's notches -- smoothed, the painter's union keeps 16 turns

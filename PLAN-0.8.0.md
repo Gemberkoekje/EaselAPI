@@ -771,10 +771,13 @@ smear and a bruise, at about `0.22` as form.
   stops (light from beside), and its demo is the cut-out. **B3** in three places: the
   recipe, `REFERENCE.md`'s `feather` row and *A form that turns*. **B4**, *A form turned
   toward the light*, under *Surfaces*: the shared edge a slice of `.closed`, the form marks
-  at `0.22`; laid, it lights 80% of its form. **Found by B1's own block**: `holes` measured
+  at `0.22`; laid, it lights 81% of its form at 400x300 and 84% at 1024x768. **Found by B1's own block**: `holes` measured
   a solid mass over its shape alone, and the shade copy held to the silhouette read the
   ground past the clip as a tenth of its mass in holes -- now measured where every hold
-  let the paint land (`_check_holes(clip=)`).
+  let the paint land (`_check_holes(clip=)`) -- which, counted both ways over both
+  paintings and the corpus's 196 solid masses, says what it said before on every one.
+  The recipe's joins turn each terminator's step from `0.5` and `1.0` px to `9.0` and
+  `10.0`, tapered or even, the silhouette left at `0.5`.
 
 ### C. What a pass costs, call by call
 
