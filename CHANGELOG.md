@@ -280,6 +280,43 @@ differs from it, was told a tenth of its mass came back bare. It now measures wh
 hold let the paint land. It is said less often, never more -- over the corpus's 196 solid
 masses, exactly where it was said before -- and nothing a mark lays changes.
 
+### What landed nothing, said as it lands and named after the pass
+
+Step 8 of the bell-warden's round (`PLAN-0.8.0.md`, workstream D). Both paintings paid for
+marks that laid no paint: the Bell-Warden's spark, the one mark its reason needed from
+the eye, a round dab of 2.9 pixels that moved two; twelve passes of its shifted copies,
+which fell outside the body they were held to; and Wenna Brask's flour, eight strokes of a
+starved bristle in a picture whose reason names it. `easel log` printed *NO PAINT LANDED*
+for every one, and neither painter ran it while painting.
+
+- **`dab-blank`, said as a round dab lands.** A dab laid by hand at the default `taper`
+  that carried under one unit of paint, under the size its press lands from, is told so
+  with its size in pixels and the fix: *this dab laid no paint -- 0.19 of a pixel's
+  worth: a one-touch round_hard dab lands every time only from about 6.5 px, and this one
+  is 2.9 px (size=0.0028) on this canvas. Press it three times (press=3), which lands from
+  about 2.5 px, or lay it at size=0.0064 or over.* The cliff is in pixels and the same on
+  every canvas and surface measured: a `round_hard` lands every time from 6.5 px at one
+  touch and 5.5 at two, a `round_soft` from 7.5 and 5.75, and three touches from 2.5. It
+  is measured on the mark, since under the cliff some dabs land, and said only at the
+  taper the cliff was measured at. Thirty-two notices.
+- **`landed nothing:`, after any pass that laid such a mark.** The first of the check's
+  standing lines names every mark of the pass that carried under a unit of paint -- hand
+  marks by the line that laid them, a mass call's by how many of its passes -- with the
+  cause its record shows: half its path or more outside its clip, a round dab under its
+  cliff, an oriented tip under four pixels, a bristle loaded under `0.5`. The Bell-Warden's
+  details pass, rebuilt: *landed nothing: 6 passes of the block_in at p05_details.py:12
+  (outside its clip); 4 passes of the block_in at :14 (outside its clip)*. Over the whole
+  painting in `checklist()` and `easel check` too, by record where the lines are another
+  process's, and never after a counted pass. Over the corpus it speaks on 50 of 341
+  painted passes and names 142 marks -- 65 starved bristles, 56 dabs under their cliff, 13
+  outside their clip. A mark that laid nothing is still charged, and `REFERENCE.md` says so.
+- **`dab()` says what its touches reach**: about a tenth of the way to its colour for a
+  light laid on a dark passage, a fifth at two touches and about four fifths at three --
+  where it put one touch at *about a quarter* and gave nothing for two -- and where a dab
+  stops landing at all.
+
+Nothing a mark lays changes, and no saved painting rebuilds differently.
+
 ## [0.7.0] — 2026-09-25
 
 **Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with

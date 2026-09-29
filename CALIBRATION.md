@@ -1658,11 +1658,12 @@ one stroke, not two of different sizes.
 - A `round_hard` line keeps its width down to about three pixels of the long side
   (`size=0.003` on a 1200-wide canvas), at full strength.
 - **A single dab is a light touch.** A lone dab is the *start* of the default
-  `taper`, so its pressure is 0.28: it lands about a quarter of the way to its
-  colour and, since a round tip's width follows its pressure, at about half the
-  width asked for. `dab(press=n)` stamps the same spot n times inside one mark, with
-  the profile running across the stamps, so three of them press through full
-  pressure in the middle one. White at `size=0.06`, measured on three grounds:
+  `taper`, so its pressure is 0.28: it lands a fraction of the way to its colour --
+  a tenth for a light laid on a dark passage, a fifth for white on a mid ground --
+  and, since a round tip's width follows its pressure, at about half the width asked
+  for. `dab(press=n)` stamps the same spot n times inside one mark, with the profile
+  running across the stamps, so three of them press through full pressure in the
+  middle one. White at `size=0.06`, measured on three grounds:
 
   | stamps | on `toned_grey` | on `umber_wash` | on `warm_white` | width |
   |---|---|---|---|---|
@@ -1674,6 +1675,22 @@ one stroke, not two of different sizes.
   Fractions of the way from the ground to the colour. A catchlight is `press=3`,
   and it costs one stroke; three *separate* dabs reach 0.45 on `toned_grey` and
   cost three.
+
+  *Measured again for 0.8.0* (`probe_bell_session.py --landed`), at the median of the
+  pixels each dab moved, twelve `round_hard` dabs a size at 1024x768 -- the fractions
+  hold from about 12 px up, and turn on what the dab lands on more than on its size:
+
+  | stamps | a light on a flat dark field, 7 px / 12 to 61 px | white on `toned_grey` | white on `umber_wash` |
+  |---|---|---|---|
+  | 1 | `0.08` / `0.09` | `0.20` / `0.23` | `0.17` / `0.20` |
+  | 2 | `0.14` / `0.19` | `0.33` / `0.40` | `0.29` / `0.35` to `0.36` |
+  | 3 | `0.75` / `0.78` | `0.88` / `0.89` to `0.90` | `0.86` / `0.88` |
+
+  On `warm_white`, one and two touches of white move no pixel by `0.02`. So `dab()`
+  says a tenth, a fifth and about four fifths -- a light on a dark passage, which is
+  what an accent is -- where it said *about a quarter* for one touch and
+  nothing for two (the painter's D). And under a size in pixels a one-touch or
+  two-touch dab lays no paint at all: *Where a mark stops landing*.
 - **Scale a mark off the thing it describes, not off the canvas.** Inside a mass
   `0.3` of the canvas across, a plane within it wants about `size~0.015–0.025` and a
   detail within that plane `0.004–0.010`. Carrying "use a bigger brush than feels
@@ -3358,7 +3375,8 @@ fresh canvas the same spark dab carries `0.19` to `0.21` whatever its wobble, at
 about `0.2`, and at `0.0068` `1.05` to `1.64`. The claw lights lose `0.01` to `0.05` to the
 wet paint under them, as the moved pixels are read, and `0.27` to `0.31` to their size.
 Nothing at the call says so for a round tip: `chisel-blank` is for an oriented tip under
-four pixels, and a round tip is said to have no such cliff.
+four pixels, and a round tip is said to have no such cliff. Since step 8 the call says
+so for a round dab, as `dab-blank` (*Where a mark stops landing*, below).
 
 **Thirteen of the 280 strokes laid under `1.0`**: the spark, and twelve passes of three
 clipped `block_in`s -- records 163 and 164 of the 23 at `p04_gargoyle.py:40`; 214, 216,
@@ -3540,6 +3558,35 @@ A small `bristle` at the loads the flour was laid at, a stroke `0.30` across on 
 A cliff between `0.35` and `0.5` at every size -- ten to twelve times the paint -- which is
 the painter's *a small bristle under about 0.5 lays nothing*, for a stroke this long. The
 flour's own strokes were shorter, and laid under a unit.
+
+**Measured again for step 8, a quarter of a pixel apart** (`--landed`): twenty-four dabs a
+size from 1 px to 11, each preset at each press, on the guide check's 400x300, both
+paintings' canvases and 1440x960, all on `linen`, and at 1024x768 on `smooth` and `rough`
+as well. The size from which every dab lands:
+
+| preset | one touch | two touches | three touches | none lands under, at one and two |
+|---|---|---|---|---|
+| `round_hard` | **6.5 px** | **5.5 px** | every size; **2.5 px** at `tip_wobble=0.7` | 5.75 px; 4 to 5 |
+| `round_soft` | **7.5 px** | **5.75 px** | **2.5 px** | 6.5 px; 4.75 |
+| `liner` (a `round_hard` tip) | 6.25 px | 5.25 px | every size | 6.0 px; 4 to 5 |
+
+**The same pixels on every canvas and every surface**, 400 to 1440 wide -- a count of pixels
+as the oriented tip's four are. Step 2's grid stepped half a pixel at 1024 and three
+quarters at 1440 and began at 2 px, and its figures are its first steps at or over these.
+At one and two touches a wobbled tip, `0.35` or `0.7`, lands where a round one does; at
+three, a `round_hard` at `tip_wobble=0.7` lands every time only from 2.5 px, as a
+`round_soft` does. **It holds for the default `taper` only**: at one touch a dab laid at
+`pressure="even"` or `"dab"` lands every time from 2.5 px, and at `pressure=0.5` from 4.25
+to 4.5 -- the taper's first stamp is its lightest.
+
+**Built in step 8 as `dab-blank`**, a fact said once the dab has landed: a round dab laid by
+hand, at the default taper, that carried under one unit of paint and is under the size its
+tip lands from at its press -- one touch, two, or three and more, the largest figure over
+every canvas, surface and wobble -- in pixels on the canvas it was laid on. Measured on the
+mark rather than predicted from its size, because
+under the cliff some dabs land. It names the dab's size in pixels and the fix: three
+touches where they land at that size, and the `size` that is the cliff's pixels on this
+canvas. It speaks on no recommended block of the guide.
 
 ### A guide that reads on any ground
 
@@ -4040,6 +4087,29 @@ stroke that carried under one unit of paint.
 In 15 of the 24 paintings; on 3 of the Bell-Warden's 7 passes (the subject's, the details',
 the finish) and 5 of Wenna Brask's 11 (the face, the hand and cloth, the fist, the finish,
 the flour).
+
+**Built in step 8 as `landed nothing:`**, the first of the check's standing lines, and
+`dab-blank` beside it (`--landed`, the corpus replayed with the engine as built, its passes
+counted by name as step 2's were). The line speaks on **the same 50 passes, each naming the
+same count of marks**, and names the same 142:
+
+| the cause its record shows | marks | of them laid by hand |
+|---|---|---|
+| a `bristle` loaded under `0.5` | 65 | 65 |
+| a round dab under its cliff at its press | 56 | 56 |
+| half its path or more outside its clip | 13 | 1 |
+| none of the four -- named without one | 8 | 8 |
+
+The clip's are the Bell-Warden's twelve passes and Wenna Brask's nostril; the eight with no
+cause are four `flat`s, three `bristle`s and a `knife` at loads of `0.45` and up, five of
+them laid at a pressure list. The line runs a median 81 characters, 128 at the ninetieth
+percentile and 334 at the longest -- the first heron painting's last pass, seven starved
+strokes from its prelude's helpers. **`dab-blank` is said 56 times, on 10 passes of 8
+paintings (2.9%)**: every round dab under its cliff that laid nothing. The one round dab
+that laid nothing and is not told is the line's -- a two-touch dab of 6.1 px centred
+outside the clip it was held to. On the guide's 79 blocks the fact says nothing, and the
+line names two recipes' marks: *A mass built of planes*'s dry brush and three passes of *A
+silhouette lit from one side*'s far copy, which fall outside the body it is held to.
 
 **D, what a round dab's touches reach**: a light (`#f2e2a0`) on a flat dark field, twelve
 `round_hard` dabs a size at 1024x768 -- the way from the field to the colour, at the median of

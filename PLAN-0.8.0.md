@@ -14,8 +14,33 @@ beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 7 is built -- A4 and B, with F8, I1 and I2 -- on branch
-`silhouettes-and-terminators`, 2026-09-29, off `main` at `c38a8a3`** -- step 6 merged as
+**Status: step 8 is built -- D -- on branch `marks-that-landed-nothing`, 2026-09-29, off
+`main` at `e1dafa3`** -- step 7 merged as
+[#96](https://github.com/Gemberkoekje/EaselAPI/pull/96). As the painter decided it
+(question D): **`dab-blank`**, a fact said as a round dab lands, when one laid by hand
+carried under a unit of paint under the size its press lands from -- measured again a
+quarter of a pixel apart, `6.5` px at one touch and `5.5` at two for a `round_hard`, `7.5`
+and `5.75` for a `round_soft`, `2.5` at three touches, the same pixels on every canvas and
+surface, and at the default taper only; and **`landed nothing:`**, the first of the
+check's standing lines after any pass that laid a mark of nothing, hand marks by the line
+that laid them and a mass call's by its passes, each with the cause its record shows. And
+**`dab()`** gives its three touches -- a tenth, a fifth, about four fifths. Nothing a mark
+lays changes. **Measured as built** (`probe_bell_session.py --landed`): both paintings,
+rebuilt, say what their painters were shown and decided -- the finish *landed nothing: the
+dab at p06_finish.py:39 (a round tip under its cliff at press=1)*, word for word, and all
+eleven of Wenna Brask's, the flour by its loads -- on 3 and 5 of their passes, as step 2
+counted; over the corpus the line names the same 142 marks on the same 50 passes, 14.7% of
+its painted passes, and `dab-blank` is said 56 times on 10 of them, every round dab under
+its cliff that laid nothing; on the guide's 79 blocks the fact says nothing and the line
+names two recipes' marks. **Not in the plan**: the line is a standing line and not a
+finding -- a measurement no painter means to trip, and the demo check counts findings,
+where step 7's *A silhouette lit from one side* lays passes of its far copy outside the
+body; that recipe and *A mass built of planes*'s dry brush are F's. See
+[`NOTES-step8.md`](NOTES-step8.md).
+**Nothing waits on a painter**; step 9 (F) is next.
+
+*Step 7 was built -- A4 and B, with F8, I1 and I2 -- on branch
+`silhouettes-and-terminators`, 2026-09-29, off `main` at `c38a8a3`* -- step 6 merged as
 [#95](https://github.com/Gemberkoekje/EaselAPI/pull/95). Six recipes, as the painters
 decided them: *A silhouette built from parts*, ending in `s.thumbnail({shape: "dark"})`
 (A4); *A silhouette lit from one side*, with its join and where it stops (B1, B3), and
@@ -920,6 +945,37 @@ measures a tenth, at the median and at the brightest pixel alike, from 7 px to 2
 touches reach a fifth, three about four fifths (`--answers`). It gives all three (F3). The
 recipe that says *`press=1` and `press=2` are whispers* is one the painter did not read.
 
+*Step 8 (2026-09-29): built as decided* (`NOTES-step8.md`). **The fact is `dab-blank`**, a
+round dab laid by hand at the default taper that carried under a unit of paint, under the
+size its tip lands from at its press, told its pixels and the fix. Measured again for it a
+quarter of a pixel apart, on four canvases from 400 to 1440 wide and three surfaces, **the
+cliff is the same pixels everywhere**: a `round_hard` lands every time from `6.5` px at one
+touch and `5.5` at two, a `round_soft` from `7.5` and `5.75`, and both from `2.5` at three
+-- a `round_hard` at every size with its tip left round, and from `2.5` at the spark's own
+`tip_wobble=0.7`. These are step 2's figures read finer; the one set its corpus count used
+for every round tip (`6.5`, `5.6`, `2.5`) was the hard tip's, a pixel under the soft
+tip's one touch. It holds for the taper only (`pressure="even"` lands from `2.5`),
+so the fact speaks only there, and it is measured on the mark, since under the cliff some
+dabs land. **The line is `landed nothing:`**, first of the check's standing lines and only
+when a mark of the pass laid nothing, in `report()` and `checklist()` alike, by record in
+another process, never on a counted copy: hand marks by line -- a loop's together -- and a
+mass call's by its passes, each with the first cause its record shows of four, half its
+path outside its clip, a round dab under its cliff, an oriented tip under four pixels, a
+bristle loaded under `0.5`. **A standing line and not a finding**, which the plan left
+open: no painter means to trip it, the painter's own form is a standing line's, and the
+demo check counts findings -- where step 7's *A silhouette lit from one side* lays three
+passes of its far copy outside the body (two in its demo), as *A mass built of planes*'s
+dry brush lays nothing on the check's canvas: both recipes are F's. **The stroke stays
+charged**: the painter asked for it named, and a free stroke that laid nothing would be one
+the budget hides. `dab()` gives a tenth, a fifth and about four fifths for a light on a dark
+passage, and white on a mid ground a fifth, two fifths and nine tenths. **Measured as
+built** (`--landed`): replayed, the corpus's line names the same 142 marks on the same 50
+passes step 2 counted, each pass with the same count -- 65 starved bristles, 56 round dabs
+under their cliff, 13 marks outside their clip, and 8 whose records show none of the four,
+named without one -- and `dab-blank` is said 56 times on 10 passes of 8 paintings (2.9%),
+every round dab under its cliff that laid nothing; the 57th, centred outside its clip, is
+the line's.
+
 Row 4, and the painter's fourth suggestion. **The candidate is a fact at the call, measured
 after the mark as `glaze-far` is** -- the damage rather than the wetness: a mark laid by
 hand, meant to stand off what it lands on by more than `0.10`, that lands short of its own
@@ -1657,7 +1713,9 @@ and cut*.
    same four conditions. And H4, only if step 2's count separates a failing passage from a
    subject built in as many passes.* *As question D decided it: the fact at the call for a
    round dab under its cliff, and a line after the pass naming every mark that landed
-   nothing.*
+   nothing.* *Built 2026-09-29 -- `dab-blank`, `landed nothing:` and `dab()`'s three
+   touches; H4's decline stood from step 2: see [`NOTES-step8.md`](NOTES-step8.md), and
+   `probe_bell_session.py --landed`.*
 9. **F**: `PAINTER.md` moved and its budget lowered, `REFERENCE.md`'s tables, the claims
    that stopped being true, the checklist's size, *F5 to F9,* and the record -- last, because it moves
    text that every earlier step touched. `check_guide_blocks.py` green,
@@ -1702,7 +1760,7 @@ and cut*.
 | `src/easel/letters.py` (new) | *`letter_paths()` and the font as data, `GLYPHS` (I1, step 7)* |
 | `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
 | `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
-| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); exercise 4 marked as saying `into-wet`, if built |
+| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype; `--recipes` (step 7); `--landed` (step 8), the dab's cliff a quarter of a pixel apart and the fact and the line as built*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); ~~exercise 4 marked as saying `into-wet`, if built~~ *not built* |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |
