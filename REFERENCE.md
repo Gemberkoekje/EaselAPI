@@ -18,7 +18,7 @@ here without the rule beside it is how a painting comes out correct and dead.
 | Quantity | Unit |
 |---|---|
 | A coordinate `(x, y)` | `0..1`, origin **top-left**. `x` is a fraction of the **width**, `y` of the **height** |
-| `size` (brush), `feather`, `roughen()`'s `amp` and `step` | a fraction of the canvas's **long side**, whichever way the brush travels |
+| `size` (brush), `feather`, `roughen()`'s `amp` and `step`, `terminator()`'s `margin`, `step` and `least` | a fraction of the canvas's **long side**, whichever way the brush travels |
 | `depth`, `inset()`, `overhang` distance | normalised canvas units, the same as a coordinate |
 | An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture does not have to be converted: hand `direction=` the two points instead — `direction=((0.33, 0.01), (0.58, 0.29))` — and it does the `atan2` for you |
 | A value | `0..1`, the sRGB luminance `look(values=True)` shows and `palette.value_of` reports |
@@ -140,7 +140,7 @@ at the feather it was laid with — one saved before 0.7.0 at `0`.
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
 | `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
 | `clip` (every verb that lays paint) | `None` | a place — a shape, a region, a name, a run of points — outside which none of the call's paint lands. A **list** of places holds it inside all of them at once: the paint lands where they agree. `block_in(edge="hard")` is this same clip pointed at the mass's own outline |
-| `feather` (wherever `clip` or `edge="hard"` holds the paint) | `0.002` held, nothing otherwise | how far inside the outline the held edge breaks, as a fraction of the long side: two pixels at 1024, three at 1440, where it bites at the export's own pixels as it does at 1024, measured. Between the line and that depth the tooth decides; past the line nothing lands. `0` cuts it on the line. Refused on a call that holds nothing — a ragged edge is broken by its brush — except `0`, so a helper can pass it on every mark |
+| `feather` (wherever `clip` or `edge="hard"` holds the paint) | `0.002` held, nothing otherwise | how far inside the outline the held edge breaks, as a fraction of the long side: two pixels at 1024, three at 1440, where it bites at the export's own pixels as it does at 1024, measured. Between the line and that depth the tooth decides; past the line nothing lands. `0` cuts it on the line. **It breaks an edge against the tooth; it does not soften one** — every hold of the call, the silhouette's included, and wider than the default the break reads as fur: to soften a terminator, lay a join along it (`terminator()`). Refused on a call that holds nothing — a ragged edge is broken by its brush — except `0`, so a helper can pass it on every mark |
 | `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
@@ -273,6 +273,10 @@ ribbon(places, width, end_width=None, smooth=True, name="")   # a mass along a l
 roughen(shape, amp=0.006, step=0.008, seed=0, calm=None, aspect=None, name="")
                                        # an outline walked off its own line
 union(a, b, ..., resolution=1024, name="")     # one silhouette round overlapping shapes
+terminator(outline, inside, margin=0.004, step=0.002, least=0.02, aspect=None)
+                                       # the runs of one outline inside another: paths
+letter_paths(text, place, cap=0.04, slant=0, seed=None, aspect=None)
+                                       # a single-stroke font's paths, placed: paths
 s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="", px=None)
                                        # round in *pixels* on any canvas; px= is its
                                        # radius in pixels, in place of r
@@ -292,6 +296,22 @@ stands on the outline — a place, a point, a list of them, or a function `calm(
 returning `0` to `1` — and `aspect=s.aspect` makes a step the same distance across as
 down. Handed an open run of points rather than a shape, it roughens that stretch alone
 and keeps its two ends where they were, so the stretch still meets the rest.
+
+`terminator()` is where a lit form turns. For a silhouette laid as copies of itself
+shifted away from the light and held to it, each copy's outline, where it lies inside
+the silhouette and `margin` off its edge, is the line between two zones; it comes back
+as runs of points, and a stroke along each at the value halfway between the zones is
+the join — *A silhouette lit from one side* in [`RECIPES.md`](RECIPES.md). A run
+shorter than `least` is left out. `aspect=s.aspect` makes the three distances the same
+across as down.
+
+`letter_paths()` is lettering as paths: each letter one to three strokes of a
+single-stroke font, placed with its first baseline starting at `place` (a region's bottom
+left, `cap` its height), `cap` a capital's height as a fraction of the canvas's
+**height**, `slant` in degrees. `seed` is a hand — each letter's size, lean, points and
+baseline varied, the same seed the same hand — and `None` the font as drawn. Pass
+`aspect=s.aspect`. It lays nothing: `len()` of what comes back is the price in strokes,
+and `LETTERS` is every character it draws.
 
 `group()` is for a drawing made of parts, redrawn by moving the parts. `shifted()` and
 `scaled()` move every part the same way — `about` is the point that stays put, a point or

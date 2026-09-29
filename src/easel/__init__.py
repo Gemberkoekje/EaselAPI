@@ -42,6 +42,7 @@ from easel.color import (
     srgb_to_linear,
 )
 from easel.history import History, StrokeRecord
+from easel.letters import LETTERS, letter_paths
 from easel.look import load_reference, render_look
 from easel.measure import CellCompare, Comparison, compare_images
 from easel.notices import NOTICES, EaselWarning, Notice
@@ -71,6 +72,7 @@ from easel.regions import (
     right_of,
     roughen,
     span,
+    terminator,
     thirds,
     union,
 )
@@ -139,9 +141,12 @@ __all__ = [
     "hull",
     "ribbon",
     "roughen",
+    "terminator",
     "union",
     "Group",
     "group",
+    "letter_paths",
+    "LETTERS",
     # looking, measuring and reading the reference
     "render_look",
     "load_reference",

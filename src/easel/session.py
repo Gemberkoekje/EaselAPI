@@ -1121,7 +1121,7 @@ class Session:
         # its own recipe, so a burying pass would otherwise be the one solid mass
         # nobody measured -- and burying is exactly where a hole is worth knowing.
         if solid or (b.load >= 1.0 and b.load_falloff <= 0.0):
-            _check_holes(self, place, b, color, stacklevel=3)
+            _check_holes(self, place, b, color, clip=clip, stacklevel=3)
         return records
 
     def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
@@ -6351,7 +6351,19 @@ _HOLES_FLOOR = 0.005
 _HOLES_CONTRAST = 0.15
 
 
-def _check_holes(session, place, b: Brush, color, stacklevel: int = 1) -> None:
+def _interior_mask(session, place, inset: float) -> np.ndarray:
+    """A place's pixels at least ``inset`` in from its outline, as a mask of the canvas."""
+    inner = _clean_fill(place, inset)
+    mask = session.canvas._mask_of(inner)
+    if mask is None:
+        x0, y0, x1, y1 = session.canvas.region_px(inner)
+        mask = np.zeros((session.canvas.height, session.canvas.width), dtype=bool)
+        mask[y0:y1, x0:x1] = True
+    return mask
+
+
+def _check_holes(session, place, b: Brush, color, clip=None,
+                 stacklevel: int = 1) -> None:
     """What a mass laid solid actually came back with, measured (finding 2).
 
     Solid by ``solid=True`` or by a brush already carrying ``load=1.0,
@@ -6377,18 +6389,22 @@ def _check_holes(session, place, b: Brush, color, stacklevel: int = 1) -> None:
     makes it worth printing, and it is the reason B2's own ``3.16%`` on a dark ground
     does not print -- that number is burnt umber failing to register on near-black,
     not a hole anybody can see.
+
+    **And only where the paint was let land** (0.8.0): a mass held to another place
+    with ``clip=`` leaves the part of its own shape outside that place bare on purpose,
+    so the interior measured is the shape's and each hold's alike, both a brush in from
+    their outlines. Measured over the shape alone, a copy of a silhouette shifted away
+    from the light and held to it -- *A silhouette lit from one side* -- read the ground
+    beyond the silhouette as a tenth of its mass in holes.
     """
     if session._counting:
         # A counted copy borrowed the canvas and laid nothing on it: the paint this
         # call would have put down is not there to find holes in, so every pixel of
         # the shape would read bare and the line would be a lie about a real mass.
         return
-    inner = _clean_fill(place, b.size * 0.6)
-    mask = session.canvas._mask_of(inner)
-    if mask is None:
-        x0, y0, x1, y1 = session.canvas.region_px(inner)
-        mask = np.zeros((session.canvas.height, session.canvas.width), dtype=bool)
-        mask[y0:y1, x0:x1] = True
+    mask = _interior_mask(session, place, b.size * 0.6)
+    for hold in _as_outlines(clip):
+        mask &= _interior_mask(session, hold, b.size * 0.6)
     if int(mask.sum()) < 64:
         # Smaller than the brush that laid it: the inset has eaten the shape, which
         # `clean-small` is the notice for, and there is no interior left to measure.

@@ -1,7 +1,7 @@
 # Painting with Easel
 
 You are about to paint. Not draw, not render — paint. This file is the method: the
-loop, the order of work, the mistakes you will make, nine exercises, and a checklist.
+loop, the order of work, the mistakes you will make, ten exercises, and a checklist.
 Read *The first hour*, run `easel demo mistakes` and look at the sheet, paint the
 exercises at the end, and start. Come back here while you paint; open the other files
 when a situation calls for one, and when the tool says something you do not know the
@@ -106,8 +106,7 @@ them is what makes the check answer to your picture rather than to a default: th
 without asking for more, and `s.checklist()` quotes your sentence back at the end.
 Nothing else can ask for that sentence.
 
-**The six things you will get wrong.** Each has been made by every painter so far, so
-the fix is on the same row as the mistake.
+**The six things you will get wrong**, with the fix on the same row as the mistake.
 
 | The mistake | What it looks like | Do this instead | Where |
 |---|---|---|---|
@@ -133,7 +132,7 @@ third of the budget goes on what surrounds the subject, the last marks are about
 picture rather than a score, and the reason you chose the subject is still in it.
 
 **Now look at the six failures, painted** — `easel demo mistakes`, one sheet — **and
-paint the nine exercises** at the end of this file. Then start.
+paint the ten exercises** at the end of this file. Then start.
 
 **And before you lay a passage you have not laid before — a form that turns, a graded
 field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** This
@@ -197,18 +196,15 @@ Five things about the drawing:
   viewpoint or a thing that crosses them now, while it is graphite. **Count them
   inside the biggest mass as well, and count any row of like things**: four fingers
   and nine pots on a ledge are the same question at a smaller scale, and the mass
-  being one mass is what hides it. One painting lost eighty strokes to four
-  near-parallel fingers that the band count never reached.
+  being one mass is what hides it.
 - **Ask what the view is, not only what the arrangement is.** Everything around this
   step — the grid, the cells, `preview`, three silhouettes in one look — helps you
   move a mass rather than turn it, so the question has to be asked out loud: **what
-  is this thing's foreshortening?** One painter redrew an arrangement three times,
-  all three free, and all three were framing, limb angle and the size of a bowl; not
-  one of them asked whether a cupped hand seen from the front is four fingers laid
-  out sideways or a cluster foreshortened toward the viewer. It is the second. Draw
-  the view, not the object. (*A mass built of planes* in
-  [`RECIPES.md`](RECIPES.md#a-mass-built-of-planes) is the inside of a mass once the
-  view is settled; this is the question before it.)
+  is this thing's foreshortening?** Draw the view, not the object (*A small cluster
+  of like parts gripping an edge* in
+  [`RECIPES.md`](RECIPES.md#a-small-cluster-of-like-parts-gripping-an-edge)). (*A mass
+  built of planes* is the inside of a mass once the view is settled; this is the
+  question before it.)
 - **If the scene is built of straight edges that converge, write the projection before
   you draw anything.** You are reliable about sizes and unreliable about where they
   land (*A scene with straight edges* in
@@ -370,8 +366,7 @@ fraction of the canvas, not the mass's.
 
 ## What you are bad at, and what to do instead
 
-Be honest about these. They are specific to what you are, and every painter so far has
-made each of them after reading about it. The fix is beside each.
+Be honest about these. They are specific to what you are, and the fix is beside each.
 
 **You cannot reason in pixels.** You will misjudge absolute positions and you are
 reliable at *relationships*. Look with the grid on, say "the dark mass sits around D5
@@ -457,7 +452,7 @@ difference each is enough.
 
 ---
 
-## Nine small exercises
+## Ten small exercises
 
 **Nothing stops you skipping these, and this file has stopped calling them a gate**,
 because a rule nothing enforces is a preference and saying it louder does not change
@@ -468,7 +463,7 @@ of it. They take a minute each.
 
 Run them in one script if you like, but **give each `look()` a `path=`** — or run each
 in its own directory. Looks are numbered from what is already in `out_dir`, so nothing
-is overwritten; nine unnamed looks are still nine files to tell apart afterwards.
+is overwritten; ten unnamed looks are still ten files to tell apart afterwards.
 
 **1. A value scale.** Nine even steps from the darkest mix to white. Mix to a *value*,
 not to a ratio: white is much stronger than its share of the mixture, so ask for the
@@ -640,6 +635,22 @@ s.look()            # the hues beside each other, which the numbers cannot show
 ```
 
 `chroma_of` is *how coloured*, beside `value_of` for how light.
+
+**10. Three silhouettes.** One set of parts laid three ways, each thumbnailed. Write
+down what you expect each to read as *before* you look.
+
+```python
+from easel import Session, ellipse, ribbon, union
+
+s = Session(900, 600, ground="toned_grey", seed=10)
+big, top = ellipse((0.5, 0.6), 0.16, 0.13), ellipse((0.5, 0.44), 0.06, 0.08)
+members = [ribbon([(x, 0.64), (x, 0.9)], 0.03) for x in (0.42, 0.58)]
+turned = [top.shifted(-0.13, 0.04), members[0].shifted(-0.03, 0),
+          members[1].shifted(0.05, 0)]
+swell = ribbon([(0.40, 0.68), (0.35, 0.80), (0.37, 0.93)], 0.07, end_width=0.02)
+for parts in ([big, top, *members], [big, *turned], [big, turned[0], swell, turned[2]]):
+    print(s.thumbnail({union(*parts): "burnt_umber"}))     # free: a drawing's rehearsal
+```
 
 ---
 

@@ -231,6 +231,55 @@ masses the round's bench recorded, entry for entry, and draws to the pixel the t
 it answered question 4 on. Nothing a mark lays changes, and no saved painting rebuilds
 differently.
 
+### A silhouette from parts, the line a lit form turns on, and letters as paths
+
+Step 7 of the bell-warden's round (`PLAN-0.8.0.md`, workstreams A4, B, F8, I1 and I2).
+The hardest part of the Bell-Warden's session was drawing a silhouette from parts and
+lighting it; its light, copies of the silhouette shifted away from the lamp and held to
+it, was the right structure, and no recipe had it or its last step. The second painter
+carried that structure to a form facing the light and got its profiles stacked like cut
+paper, found three soft strokes where an inward scumble had left rings, and asked for
+letters.
+
+- **`terminator(outline, inside)`**, beside `roughen()`: the runs of one outline lying
+  inside another shape, a margin off its edge, as paths — for a copy of a silhouette
+  shifted away from the light and held to it, the line where one zone meets the next. One
+  stroke along each at the value halfway between the zones is the join, which took the
+  step there from under a pixel to about ten and left the silhouette a step. The
+  round's bench was its specification; the engine's runs are the bench's, point for
+  point.
+- **`letter_paths(text, place, cap=, slant=, seed=)`** — the second painter's decision,
+  a helper and not a verb: a single-stroke font shipped as data (`easel.letters.GLYPHS`,
+  capitals, lower case, figures and `.,'"-:;!?()/`), placed, and with a `seed` a hand —
+  each letter's size, lean, points and baseline varied, no two alike. It lays nothing:
+  each path is one stroke, laid with `s.stroke` or `s.pencil`, and `len()` is the price,
+  about one and a half strokes a letter.
+- **Six recipes**, under the no-nouns discipline: *A silhouette built from parts* (the
+  largest mass, a second overlapping it, members that narrow, `union()` and `roughen()`,
+  then `s.thumbnail({shape: "dark"})`), *A small cluster of like parts gripping an edge*,
+  *A silhouette lit from one side* (with its join, and where it stops), *A form turned
+  toward the light* (planes sharing one edge, taken from the outline; three quarters of
+  the form lit), *A light's pool on a surface*, and *A line of lettering*. Three new
+  demos — `easel demo` — each a failure only looking finds.
+- **`feather=` said for what it is**: it breaks a held edge against the tooth and does
+  not soften one — wider than its default, the break reads as fur. To soften a
+  terminator, lay a join along it. In `REFERENCE.md`'s row, *A form that turns* and the
+  new recipe.
+- **An inward scumble on a dark ground shows its rings at every count** — from 4 to 20,
+  finer and fainter and never gone — and *A passage light in the middle* now says so.
+- **Exercise 10, *Three silhouettes***: one set of parts laid three ways, each
+  thumbnailed, the painter writing down what it expects before it looks. `PAINTER.md`
+  pays for it with two anecdotes its painter judged its rules had outgrown, moved to
+  `CALIBRATION.md`, and two sentences saying *every painter so far*.
+- **`union()`** is the sixth way to make a mass in `PAINTING.md`.
+
+**Fixed: `holes` read the ground past a clip as holes.** A solid mass held to another
+place with `clip=` leaves its own shape outside that place bare on purpose, and the check
+measured the shape alone: the lit silhouette's shade copy, on a canvas where the ground
+differs from it, was told a tenth of its mass came back bare. It now measures where every
+hold let the paint land. It is said less often, never more -- over the corpus's 196 solid
+masses, exactly where it was said before -- and nothing a mark lays changes.
+
 ## [0.7.0] — 2026-09-25
 
 **Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with

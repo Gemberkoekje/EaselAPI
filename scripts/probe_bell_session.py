@@ -45,6 +45,7 @@ It does four things:
     python scripts/probe_bell_session.py --built      # step 4: the engine's line, checked
     python scripts/probe_bell_session.py --declared   # step 5: the plan's lines, checked
     python scripts/probe_bell_session.py --thumbnailed  # step 6: the thumbnail, checked
+    python scripts/probe_bell_session.py --recipes    # step 7: the recipes, measured
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
@@ -58,7 +59,9 @@ its candidate over the guide's own code blocks. ``--answers`` reads the sheets
 no watcher, and over the whole corpus replayed again -- twenty minutes or so, kept nowhere.
 ``--declared`` does the same for step 5's plan lines, and ``--thumbnailed`` for step 6's
 thumbnail: the painter's arrangements counted as ``easel run --thumbnail`` counts a pass,
-against the prototype its question 4 was answered on.
+against the prototype its question 4 was answered on. ``--recipes`` measures step 7's
+recipes as ``RECIPES.md`` writes them, and counts the holes check the old way and the new
+over both paintings and the corpus -- half an hour, most of it the corpus.
 """
 
 from __future__ import annotations
@@ -3631,6 +3634,166 @@ def probe_thumbnailed(rb: Rebuilt, wb: Rebuilt) -> None:
               f"{unplaced} did not; {drawn.line(path)}")
 
 
+def _recipe_block(heading_: str) -> str:
+    """A recipe's own block, as ``RECIPES.md`` writes it and ``easel demo`` lays it."""
+    from easel import demo
+
+    return next(r.recipe for r in demo.recipes() if r.heading == heading_)
+
+
+def _laid_recipe(block: str, width: int, height: int, field: float | None = None,
+                 edit=lambda src: src) -> tuple[Session, dict]:
+    """A recipe's block under the guide's preamble, on a canvas of the painters' size."""
+    from easel import demo
+
+    pre = demo.preamble(OUT / "scratch", timelapse=False).replace(
+        "Session(400, 300,", f"Session({width}, {height},")
+    field_src = ("" if field is None else
+                 f"s.block_in(Region(0, 0, 1, 1), 'flat', s.palette.at_value('dark', {field}),"
+                 f" size=0.12, solid=True, edge='hard', direction=5)\ns.dry()\n")
+    scope: dict = {}
+    with quiet():
+        exec(compile(pre + field_src + edit(block), "<recipe>", "exec"), scope)  # noqa: S102
+    return scope["s"], scope
+
+
+class _HoleCount:
+    """``_check_holes`` watched: whether each solid mass would have said so before 0.8.0,
+    measured over its own shape, and whether it says so now, measured where it landed."""
+
+    def __init__(self) -> None:
+        self.old: list[bool] = []
+        self.new: list[bool] = []
+        self.held: list[bool] = []
+        self.original = session_module._check_holes
+
+    def __enter__(self):
+        original = self.original
+
+        def both(session, place, b, color, clip=None, stacklevel=1):
+            said: list[str] = []
+            session._notify = lambda code, *a, **k: said.append(code)
+            try:
+                original(session, place, b, color, clip=None)
+            finally:
+                del session._notify
+            self.old.append(bool(said))
+            before = len(session.notices())
+            original(session, place, b, color, clip=clip, stacklevel=stacklevel + 1)
+            self.new.append(len(session.notices()) > before)
+            self.held.append(clip is not None)
+
+        session_module._check_holes = both
+        return self
+
+    def __exit__(self, *exc) -> None:
+        session_module._check_holes = self.original
+
+    def line(self) -> str:
+        n = len(self.old)
+        held = sum(self.held)
+        return (f"{n} solid masses ({held} held with clip=): `holes` said on "
+                f"{sum(self.old)} measured over the shape alone, {sum(self.new)} measured "
+                f"where the paint was let land; "
+                f"{sum(o and not w for o, w in zip(self.old, self.new, strict=True))} "
+                f"fewer, every one of them held")
+
+
+def probe_recipes(rb: Rebuilt, wb: Rebuilt, corpus_too: bool = True) -> None:
+    """Step 7 as built: the terminator against the bench's, the recipes' own numbers.
+
+    ``terminator()`` is held against the bench's helper run for run on the painter's
+    own copies and on the abstract form at four shifts; the recipes' blocks, as
+    ``RECIPES.md`` writes them, laid at 1024x768 -- *A silhouette lit from one side*
+    measured across its terminators with the join tapered, even and left out, and *A
+    form turned toward the light* by the share of the form it lights; the price of a
+    note in :func:`letter_paths`; and the holes check, which the lit silhouette's
+    copies found reading the ground past the clip as holes, counted on both paintings
+    and over the corpus the old way and the new.
+    """
+    heading("step 7, B2: terminator() against the bench's helper")
+    scope = scope_of("bell")
+    s = new_session("bell")
+    pairs = []
+    runs_src = (BELL / "p04_gargoyle.py").read_text(encoding="utf-8-sig")
+    for name in ("rim_in", "mid_in"):
+        # The two copies are the subject pass's own, built from the prelude's body.
+        match = re.search(rf"^{name} = (.+)$", runs_src, re.M)
+        pairs.append((name, eval(match.group(1), dict(scope)), scope["body"]))  # noqa: S307
+    body = _form_body()
+    for shift in (0.008, 0.016, 0.024, 0.032):
+        pairs.append((f"form, shift {shift}", body.shifted(*_shift_xy(shift, s)), body))
+    rows = []
+    for name, copy, inside in pairs:
+        bench = terminator(copy, inside, aspect=s.aspect)
+        built = easel.terminator(copy, inside, aspect=s.aspect)
+        rows.append([name, len(bench), len(built), sum(len(r) for r in built),
+                     "yes" if bench == built else "NO"])
+    print(table(rows, ["copy", "runs, bench", "runs, engine", "points", "identical"]))
+
+    heading("step 7, B1: the recipe's block at 1024x768, across its terminators")
+    block = _recipe_block("A silhouette lit from one side")
+    rows, panels = [], []
+    for name, edit in (("as written, join tapered", lambda src: src),
+                       ("join even", lambda src: src.replace('pressure="taper"',
+                                                             'pressure="even"')),
+                       ("no join", lambda src: src.split("for copy, a, b in")[0])):
+        laid, sc = _laid_recipe(block, 1024, 768, field=0.18, edit=edit)
+        view = plan_view(laid)
+        near = easel.terminator(sc["near"], sc["body"], aspect=laid.aspect)
+        far = easel.terminator(sc["far"], sc["body"], aspect=laid.aspect)
+        rows.append([name, laid.history.stroke_count,
+                     f"{np.median(rise_widths(view, near)):.1f}",
+                     f"{np.median(rise_widths(view, far)):.1f}",
+                     f"{np.median(rise_widths(view, _outline_runs(sc['body']))):.1f}",
+                     ", ".join(n.code for n in laid.notices()) or "--"])
+        panels.append((name, crop(laid, (0.22, 0.25, 0.62, 0.75))))
+    print(table(rows, ["version", "strokes", "lit to half", "half to shade", "silhouette",
+                       "said at the call"]))
+    print(f"  sheet: {save_sheet(panels, 'recipe_lit_side.png')}")
+
+    heading("step 7, B4: the recipe's block, the share of the form it lights")
+    block = _recipe_block("A form turned toward the light")
+    for w, h in ((400, 300), (1024, 768)):
+        laid, sc = _laid_recipe(block, w, h, field=0.30)
+        p = laid.palette
+        cut = (p.value_of("shadow") + p.value_of("light")) / 2.0
+        view = plan_view(laid)
+        mask = sc["form"].mask(w, h)
+        rows_lit = [float((view[y][mask[y]] >= cut).mean()) for y in range(h)
+                    if mask[y].sum() >= 8]
+        print(f"  {w}x{h}: {float(((view >= cut) & mask).sum() / mask.sum()):.0%} of the "
+              f"form lit, {np.median(rows_lit):.0%} of a row at the median; said "
+              f"{', '.join(n.code for n in laid.notices()) or 'nothing'}")
+
+    heading("step 7, I1: what a note costs in letter_paths()")
+    note = ("Meet me at the second bell. Bring the lamp, and come alone.")
+    letters = sum(c.isalnum() for c in note)
+    for seed in (None, 3):
+        started = time.perf_counter()
+        paths = easel.letter_paths(note, (0.08, 0.3), cap=32 / 1024, seed=seed,
+                                   aspect=768 / 1024)
+        took = time.perf_counter() - started
+        print(f"  seed {seed}: {letters} letters, {len(paths)} strokes "
+              f"({len(paths) / letters:.2f} a letter), worked out in {took * 1000:.1f} ms")
+    every = [c for c in easel.LETTERS if c != " "]
+    counts = [len(easel.letter_paths(c, (0.1, 0.5))) for c in every]
+    print(f"  the font: {len(every)} characters, {min(counts)} to {max(counts)} strokes "
+          f"each, {np.mean(counts):.2f} on average")
+
+    heading("step 7: `holes`, measured over the shape alone and where the paint landed")
+    for name in ("bell", "wenna"):
+        with _HoleCount() as count:
+            rebuild(name, keep=False, watch=False)
+        print(f"  {name}: {count.line()}")
+    if not corpus_too:
+        return
+    with _HoleCount() as count:
+        for entry in cohort.CORPUS:
+            cohort.replay(entry, keep_canvas=False)
+    print(f"  the corpus, {len(cohort.CORPUS)} paintings: {count.line()}")
+
+
 BENCHES = (
     ("claims", "section 3 and 3b re-measured, and where marks stop landing"),
     ("guides", "4A1: the guide candidates over every ground"),
@@ -3650,9 +3813,10 @@ BENCHES = (
     ("built", "step 4 as built: the engine's dearest line against the bench's, corpus-wide"),
     ("declared", "step 5 as built: the key, the median and the named light, as the engine says them"),
     ("thumbnailed", "step 6 as built: the engine's thumbnail against the prototype, and the door"),
+    ("recipes", "step 7 as built: terminator() against the bench, the recipes' own numbers"),
 )
 _NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built",
-                  "declared", "thumbnailed"}
+                  "declared", "thumbnailed", "recipes"}
 _NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers",
                  "declared"}
 
@@ -3718,6 +3882,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_declared(rb, wb, data)
     if "thumbnailed" in run:
         probe_thumbnailed(rb, wb)
+    if "recipes" in run:
+        probe_recipes(rb, wb)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")
