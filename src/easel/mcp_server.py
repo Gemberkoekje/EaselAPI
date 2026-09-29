@@ -1181,7 +1181,8 @@ def build_server() -> MCPServer:
     @_tool
     def plan(session: str, why: str = "", values: dict[str, float] | None = None,
              lightest: str = "", subject_share: float | None = None,
-             bands: str = "", ground: str = "", clear: bool = False) -> str:
+             bands: str = "", ground: str = "", key: str = "",
+             clear: bool = False) -> str:
         """Declare what this painting is for, and what the check should hold it to.
 
         Not to be confused with the `plan` **argument** of `cost`, `preview` and
@@ -1205,7 +1206,9 @@ def build_server() -> MCPServer:
                 is the question that is free to answer now and expensive later.
             lightest: the place meant to be the lightest thing in the picture. The
                 check ranks the plan's places and says when something else has taken
-                the light.
+                the light, and reads the named place twice: as a place, and at its
+                brightest twentieth. A place it names that is split -- a tenth of it
+                over 0.15 from its median -- says so.
             subject_share: the share of the budget the subject gets, 0..1. The
                 subject line then always carries *against N% planned*.
             bands: "subject" declares that this picture's subject really does run in
@@ -1214,6 +1217,11 @@ def build_server() -> MCPServer:
             ground: "showing", the default expectation, or "buried" -- this picture
                 covers its ground on purpose, as a graded field edge to edge does, so
                 the ground line stops asking for some back.
+            key: "low" -- this picture lives under the box's middle on purpose -- or
+                "high", over it. The values line then says whether the picture has
+                kept its key instead of *no clear light*, and prints its clusters
+                without judging them; under "low" it asks whether the lightest place
+                stands clear of everything else.
             clear: start from nothing rather than from what is already declared.
         """
         s = _load(session)
@@ -1225,6 +1233,7 @@ def build_server() -> MCPServer:
             subject_share=subject_share,
             bands=bands or None,
             ground=ground or None,
+            key=key or None,
             clear=clear,
         )
         s.save(session)

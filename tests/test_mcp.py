@@ -786,3 +786,7 @@ def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, 
     assert "a different sentence" in again.text and "bands: subject" in again.text
     assert Session.load(painting).plan().values, "the values were dropped"
     assert "no plan registered" in call("plan", session=painting, clear=True).text
+
+    # A key, as the other routes declare it (0.8.0 E1).
+    assert "key: low" in call("plan", session=painting, key="low").text
+    assert Session.load(painting).plan().key == "low"

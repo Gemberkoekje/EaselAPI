@@ -30,6 +30,9 @@ and :class:`Plan` is the rest of them.
   replaces the warning with the method's next question -- how much crosses them.
 * ``ground="buried"`` does the same for the bare-ground floor, which five of seven
   painters in one cohort accepted by hand.
+* ``key="low"`` -- or ``"high"`` -- does it for the ``values:`` line's *no clear
+  light*, which one low-key picture was told on 25 of its 27 reports. Declared, the
+  line asks instead whether the picture has kept its key.
 * ``why`` is the sentence the painting is for. Nothing measures it;
   :meth:`~easel.session.Session.checklist` quotes it back.
 
@@ -52,8 +55,9 @@ import numpy as np
 from easel.measure import VALUE_THRESHOLD
 from easel.regions import Polygon, as_place, polygon
 
-__all__ = ["Plan", "Planned", "BAND_WORDS", "GROUND_WORDS", "named_place",
-           "planned"]
+__all__ = ["Plan", "Planned", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
+           "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place", "planned",
+           "read_place"]
 
 #: What ``bands=`` accepts. ``"subject"`` declares that the picture's own subject runs
 #: in one direction, which is what the stack-of-bars warning concedes it cannot know.
@@ -63,6 +67,73 @@ BAND_WORDS = ("", "subject")
 #: closing checklist is written for; ``"buried"`` says this picture covers its ground
 #: on purpose, which is what a graded field edge to edge does.
 GROUND_WORDS = ("", "showing", "buried")
+
+#: What ``key=`` accepts. ``"low"`` says the picture lives under the box's middle on
+#: purpose and ``"high"`` over it, so the ``values:`` line stops saying *no clear
+#: light* (or *dark*) and asks whether the picture has kept the key it declared.
+KEY_WORDS = ("", "low", "high")
+
+#: A place reads as **split** when this share of it or more lies further than
+#: :data:`SPLIT_STEP` from its own median -- a planned plane with something else in
+#: it. Measured on the Bell-Warden's plan (`CALIBRATION.md`, *The bell-warden's
+#: round*): at a tenth and ``0.15`` it marks exactly two places over the whole
+#: painting, each for a reason -- the plinth's top, where the creature's feet stand
+#: (15%, then 18%), and the head's top, the eye (24%) -- and nothing else passes 7%.
+SPLIT_SHARE = 0.10
+SPLIT_STEP = 0.15
+
+
+@dataclass(frozen=True)
+class PlaceReading:
+    """What one planned place reads, as the plan's lines print it.
+
+    ``median`` is **the** reading -- what most of the place reads, so a detail inside
+    a planned plane does not move what the plane reads: the Bell-Warden's head top
+    read ``0.52`` by its mean, a miss, because its eye is in it, and reads ``0.61`` by
+    its median, the lightest of its places, as planned. A detail moves the median
+    under ``0.02`` up to 30% of its place and flips it past half, either way; which is
+    what ``darker`` and ``lighter`` are for.
+
+    ``brightest`` is the 95th percentile -- the place's brightest twentieth -- which
+    the ``lightest:`` line prints beside the median for the place named as the light:
+    a lamp is mostly iron, and a place's median cannot see its panes. Not the
+    brightest pixel, which is one stray highlight.
+
+    ``darker`` and ``lighter`` are the shares of the place further than
+    :data:`SPLIT_STEP` from its median, either side.
+    """
+
+    median: float
+    brightest: float
+    darker: float = 0.0
+    lighter: float = 0.0
+
+    @property
+    def split(self) -> bool:
+        """Whether a tenth of the place or more reads away from what most of it reads."""
+        return self.darker + self.lighter >= SPLIT_SHARE
+
+    def split_clause(self) -> str:
+        """``24% of it darker by more than 0.15``, or nothing for a place that is whole.
+
+        Each side is said with its own share, and a side that would print as ``0%`` is
+        left out -- so a place split a tenth one way and a trace the other says the
+        tenth, rather than a sum under the word for one side.
+        """
+        if not self.split:
+            return ""
+        sides = [(share, word) for share, word in ((self.darker, "darker"),
+                                                    (self.lighter, "lighter"))
+                 if f"{share:.0%}" != "0%"]
+        if len(sides) == 2:
+            return (f"{self.darker:.0%} of it darker and {self.lighter:.0%} lighter "
+                    f"by more than {SPLIT_STEP:.2f}")
+        share, word = sides[0]
+        return f"{share:.0%} of it {word} by more than {SPLIT_STEP:.2f}"
+
+    def said(self, reading: str) -> str:
+        """``reading``, with the split in brackets after it when the place is split."""
+        return f"{reading} ({self.split_clause()})" if self.split else reading
 
 
 @dataclass(frozen=True)
@@ -82,19 +153,19 @@ class Planned:
     outline: Polygon
     value: float | None = None
 
-    def mean_value(self, value_view: np.ndarray) -> float:
+    def reading(self, value_view: np.ndarray) -> PlaceReading:
         """What this place actually reads, over the canvas as it now stands.
 
         ``value_view`` is the whole canvas as values, 0..1, the way
         :func:`easel.measure.compare_plan` computes it -- passed in rather than taken,
         because every place in a plan reads the same view and building it per place is
-        the same arithmetic over and over.
+        the same arithmetic over and over. See :class:`PlaceReading` for why the median.
         """
         h, w = value_view.shape[:2]
         mask = self.outline.mask(w, h)
         if not mask.any():  # pragma: no cover - a place off-canvas raises at plan time
-            return float("nan")
-        return float(value_view[mask].mean())
+            return PlaceReading(float("nan"), float("nan"))
+        return read_place(value_view[mask])
 
     def to_json(self) -> dict:
         return {
@@ -113,6 +184,20 @@ class Planned:
         value = data.get("value")
         return cls(name=name, outline=polygon(points, name=name),
                    value=None if value is None else float(value))
+
+
+def read_place(pixels: np.ndarray) -> PlaceReading:
+    """A place's pixels as the plan reads them: its median, brightest twentieth and split.
+
+    One home for it, because ``compare()`` handed a value plan reads places the same
+    way the check does, and a place that read ``0.61`` on the ``plan:`` line and
+    ``0.52`` on the sheet would be two instruments.
+    """
+    x = np.asarray(pixels, dtype=np.float64).reshape(-1)
+    median = float(np.median(x))
+    return PlaceReading(median=median, brightest=float(np.percentile(x, 95)),
+                        darker=float((x < median - SPLIT_STEP).mean()),
+                        lighter=float((x > median + SPLIT_STEP).mean()))
 
 
 def named_place(where, index: int = 0) -> tuple[str, Polygon]:
@@ -191,12 +276,14 @@ class Plan:
     subject_share: float | None = None
     bands: str = ""
     ground: str = ""
+    key: str = ""
 
     @property
     def declared(self) -> bool:
         """Whether anything at all was declared. An empty plan is no plan."""
         return bool(self.why or self.values or self.lightest is not None
-                    or self.subject_share is not None or self.bands or self.ground)
+                    or self.subject_share is not None or self.bands or self.ground
+                    or self.key)
 
     def as_dict(self) -> dict:
         """The values as ``{place: value}``, which is what ``compare()`` takes.
@@ -213,24 +300,28 @@ class Plan:
                    threshold: float = VALUE_THRESHOLD) -> str:
         """One line: how many places are painted as promised, and which are not.
 
-            plan: 5 of 6 places inside 0.10; halo +0.14
+            plan: 5 of 6 places inside 0.10; halo +0.14 (18% of it lighter by more than 0.15)
 
         The signed number is the canvas minus the plan, so ``+`` is lighter than
-        promised. Worst first, three at most: the line is printed after every pass and
-        a line that runs to six places is one nobody finishes reading.
+        promised, and a place reads by its median (:class:`PlaceReading`). Worst first,
+        three at most: the line is printed after every pass and a line that runs to six
+        places is one nobody finishes reading. A place it names that is split says so
+        in brackets -- a miss that is half one value and half another is a different
+        repair from a miss that is all of one.
         """
         if not self.values:
             return ""
-        deltas = [(p, p.mean_value(value_view) - float(p.value)) for p in self.values
-                  if p.value is not None]
+        read = [(p, p.reading(value_view)) for p in self.values if p.value is not None]
+        deltas = [(p, got.median - float(p.value), got) for p, got in read]
         if not deltas:  # pragma: no cover - plan() refuses a values= entry with no value
             return ""
-        out = sorted((pair for pair in deltas if abs(pair[1]) > threshold),
-                     key=lambda pair: -abs(pair[1]))
+        out = sorted((row for row in deltas if abs(row[1]) > threshold),
+                     key=lambda row: -abs(row[1]))
         inside = len(deltas) - len(out)
         line = f"plan: {inside} of {len(deltas)} places inside {threshold:.2f}"
         if out:
-            shown = "; ".join(f"{p.name} {delta:+.2f}" for p, delta in out[:3])
+            shown = "; ".join(got.said(f"{p.name} {delta:+.2f}")
+                              for p, delta, got in out[:3])
             more = f"; and {len(out) - 3} more" if len(out) > 3 else ""
             line += f"; {shown}{more}"
         return line
@@ -238,13 +329,29 @@ class Plan:
     def lightest_line(self, value_view: np.ndarray) -> str:
         """One line: whether the place meant to be lightest is the lightest.
 
-            lightest: lamp reads 0.78, the lightest of the 4 places planned
-            lightest: horizon reads 0.61 and lamp, the plan's own light, 0.48 -- 0.13 under
+            lightest: lamp reads 0.78 as a place, 0.84 at its brightest twentieth, the lightest of the 4 places planned
+            lightest: horizon reads 0.61 and lamp, the plan's own light, 0.48 as a place (12% of it lighter by more than 0.15), 0.59 at its brightest twentieth -- 0.13 under
 
-        The candidates are the plan's own places. Ranking them is the cheapest
-        possible version of the question, and it is the version that can be answered
-        at all: what the *canvas* holds that is lightest is a pixel, and a pixel is not
-        a place.
+        The candidates are the plan's own places, ranked by what each reads as a place
+        -- its median, the reading the ``plan:`` line prints. Ranking them is the
+        cheapest possible version of the question, and it is the version that can be
+        answered at all: what the *canvas* holds that is lightest is a pixel, and a
+        pixel is not a place.
+
+        **The named light is read twice**: as a place, and at its brightest twentieth,
+        its 95th percentile, printed beside it. A light is often a small bright part of
+        a place that is mostly something else -- a lantern is iron and panes -- and the
+        median, rightly, reads the iron. The two numbers say two things about one place
+        and each says which; where they are far apart, the lit part wants planning as a
+        place of its own. Both painters of the 0.8.0 round asked for this form, and on
+        the Bell-Warden's plan it changes no verdict: the lightest place by the 95th is
+        the median's at every pass end.
+
+        **A place the line names that is split says so**, in brackets after what it
+        reads -- the named light, and the place that took the light from it. The
+        Bell-Warden's painter asked for exactly that: its plinth's top, split by the
+        creature's feet, while the line named it the lightest place, and the head's
+        top, split by the eye, after.
         """
         if self.lightest is None:
             return ""
@@ -255,15 +362,44 @@ class Plan:
             # quotes it -- but a line saying one place reads what it reads is not a
             # measurement of anything.
             return ""
-        read = {p.name: p.mean_value(value_view) for p in candidates}
-        mine = read[self.lightest.name]
-        top = max(candidates, key=lambda p: read[p.name])
+        read = {p.name: p.reading(value_view) for p in candidates}
+        light = read[self.lightest.name]
+        top = max(candidates, key=lambda p: read[p.name].median)
+        both = (f"{light.said(f'{light.median:.2f} as a place')}, "
+                f"{light.brightest:.2f} at its brightest twentieth")
         if top.name == self.lightest.name:
-            return (f"lightest: {self.lightest.name} reads {mine:.2f}, the lightest "
+            return (f"lightest: {self.lightest.name} reads {both}, the lightest "
                     f"of the {len(candidates)} places planned")
-        return (f"lightest: {top.name} reads {read[top.name]:.2f} and "
-                f"{self.lightest.name}, the plan's own light, {mine:.2f} -- "
-                f"{read[top.name] - mine:.2f} under")
+        other = read[top.name]
+        return (f"lightest: {top.name} reads {other.said(f'{other.median:.2f}')} and "
+                f"{self.lightest.name}, the plan's own light, {both} -- "
+                f"{other.median - light.median:.2f} under")
+
+    def light_reading(self, value_view: np.ndarray) -> tuple[str, float, float] | None:
+        """The named light against everything else, for the ``values:`` line.
+
+        ``(name, its brightest twentieth, the brightest twentieth of the canvas outside
+        it)``, read off the same view as :meth:`lightest_line`, so the light's number is
+        the one that line prints beside it. Only under ``key="low"``, where the
+        ``values:`` line asks whether the light stands clear of the rest -- the question
+        a low-key picture with a small light is really asking. A high-key picture's
+        light has no room above the rest to stand clear in, so there the question would
+        be answered *no* on every pass. ``None`` otherwise, or with no light named.
+
+        *The rest* is the canvas outside the light's place, so a light large enough to
+        be its own top twentieth is not measured against itself.
+        """
+        if self.key != "low" or self.lightest is None:
+            return None
+        h, w = value_view.shape[:2]
+        mask = self.lightest.outline.mask(w, h)
+        rest = value_view[~mask]
+        # A place off the canvas is refused at plan time; one that covers all of it
+        # leaves nothing to stand clear of, and the question is not asked.
+        if not mask.any() or not rest.size:
+            return None
+        return (self.lightest.name, read_place(value_view[mask]).brightest,
+                float(np.percentile(rest, 95)))
 
     # -- the pairs, asked on the empty canvas ------------------------------------
     def pairs(self, width: int, height: int, meet, threshold: float = VALUE_THRESHOLD):
@@ -312,6 +448,7 @@ class Plan:
             "subject_share": self.subject_share,
             "bands": self.bands,
             "ground": self.ground,
+            "key": self.key,
         }
 
     @classmethod
@@ -335,6 +472,9 @@ class Plan:
             subject_share=None if share is None else float(share),
             bands=str(data.get("bands", "")),
             ground=str(data.get("ground", "")),
+            # A word this build does not know is dropped, as an unknown field is: a
+            # key it cannot name would otherwise be read as one it can.
+            key=str(data.get("key", "")) if data.get("key", "") in KEY_WORDS else "",
         )
 
     def __str__(self) -> str:
@@ -354,11 +494,13 @@ class Plan:
             out.append(f"bands: {self.bands}")
         if self.ground:
             out.append(f"ground: {self.ground}")
+        if self.key:
+            out.append(f"key: {self.key}")
         return "\n".join(out)
 
 
 def build(why=None, values=None, lightest=None, subject_share=None,
-          bands=None, ground=None, onto: Plan | None = None) -> Plan:
+          bands=None, ground=None, key=None, onto: Plan | None = None) -> Plan:
     """A checked :class:`Plan`, or the one already registered with these fields changed.
 
     Every argument left off -- which is ``None``, not the empty version of itself --
@@ -401,4 +543,13 @@ def build(why=None, values=None, lightest=None, subject_share=None,
                 f"which is what a graded field edge to edge does on purpose."
             )
         fields["ground"] = str(ground)
+    if key is not None:
+        if key not in KEY_WORDS:
+            raise ValueError(
+                f"plan(key={key!r}) is 'low' -- the picture lives under the box's "
+                f"middle on purpose -- or 'high', over it. The values: line then asks "
+                f"whether the picture has kept its key instead of saying it has no "
+                f"clear light, or no clear dark."
+            )
+        fields["key"] = str(key)
     return replace(base, **fields) if fields else base

@@ -333,7 +333,8 @@ def compare_plan(
     Args:
         canvas_rgb: the painting, as an 8-bit RGB array.
         places: one ``(name, mask, target_value)`` per planned place. The mask is a
-            boolean array the same shape as the canvas.
+            boolean array the same shape as the canvas. A place reads by its median,
+            as the check's ``plan:`` line reads it.
         threshold: what counts as out.
         floor: the darkest value the palette reaches, as :func:`compare_images`.
 
@@ -353,7 +354,10 @@ def compare_plan(
                 f"in a value plan has to be somewhere on the painting."
             )
         ys, xs = np.nonzero(mask)
-        got = float(value[mask].mean())
+        # The median, as the check's `plan:` line reads a place: what most of it reads,
+        # so a detail inside a planned plane does not move what the plane reads. A
+        # photograph's cells keep their means -- that is a different question.
+        got = float(np.median(value[mask]))
         rows.append(name)
         cells.append(CellCompare(
             label=name.strip().upper(),

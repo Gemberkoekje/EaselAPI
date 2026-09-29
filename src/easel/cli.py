@@ -278,6 +278,11 @@ def build_parser() -> argparse.ArgumentParser:
                              "so the ground line stops asking for some back. 'showing' "
                              "is the default expectation, and '' takes the declaration "
                              "back, as it does for --bands")
+    p_plan.add_argument("--key", choices=["low", "high", ""], default=None,
+                        help="'low' says this picture lives under the box's middle on "
+                             "purpose, 'high' over it: the values line then says whether "
+                             "the picture has kept its key instead of 'no clear light'. "
+                             "'' takes the declaration back")
     p_plan.add_argument("--clear", action="store_true",
                         help="forget the plan entirely and start again")
 
@@ -652,6 +657,7 @@ whole painting rather than once per pass.
 #     subject_share=0.40,          # the share of the budget the subject gets
 #     # bands="subject",           # this picture's subject really does run one way
 #     # ground="buried",           # and it covers its ground on purpose
+#     # key="low",                 # and it lives under the box's middle on purpose
 # )
 '''
 
@@ -714,7 +720,7 @@ def _cmd_plan(session: Session, args) -> int:
         warnings.filterwarnings("ignore", category=EaselWarning)
         plan = session.plan(why=args.why, values=values, lightest=args.lightest,
                             subject_share=args.subject_share, bands=args.bands,
-                            ground=args.ground, clear=args.clear)
+                            ground=args.ground, key=args.key, clear=args.clear)
     # Always, as every other command here does. `easel plan p.easel` with nothing to
     # declare is a read and writes the file back unchanged; a declaration that was not
     # saved is the thing this whole command exists to stop.

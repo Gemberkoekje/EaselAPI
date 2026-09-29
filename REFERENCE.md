@@ -323,9 +323,10 @@ p.complement_grey(c, b, ratio=0.5)         # a lively neutral: a colour and its 
 p.tint(c, amount=0.3)   p.shade(c, amount=0.3)   p.desaturate(c, amount=0.3)
 p.at_value(base, 0.62, light="titanium_white", dark=None, steps=24)
                             # that colour, moved to that value, from either side
+                            # under the default dark's 0.137, the error names burnt umber's 0.128
 p.value_of(c)               # what look(values=True) will show
 p.chroma_of(c)              # how coloured: 0 for a grey, 0.20 for cadmium_red
-p.darkest_value             # about 0.13: the floor of the box
+p.darkest_value             # 0.128, burnt umber alone: the floor of the box
 ```
 
 A colour is a pigment name, a mixed slot's name, a `#rrggbb` string, an `(r, g, b)`
@@ -385,7 +386,7 @@ s.compare("ref.jpg", region=, threshold=0.10, near=0.01, path=)
 s.compare({place: value, ...})                  # ...against your own value plan, and
                                                 # the pairs it puts within 0.10: do they touch?
 s.compare(s.plan())                             # ...against the plan this session holds
-s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, clear=False)
+s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=, clear=False)
                                                 # what you decided before painting, where
                                                 # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
@@ -472,7 +473,7 @@ the marks so far, wherever a mark is noted `subject`,
 against `subject_share` if given; `values:`, the 5th to 95th percentile of the values
 view against what the palette reaches and the three clusters it splits into, which says
 so when the range stays on one side of the box's middle or two clusters sit under `0.10`
-apart; `edges:`, the share of the picture's edges under `2.5` px wide; `ground:`, what
+apart — or, under a declared `key=`, whether the picture has kept it; `edges:`, the share of the picture's edges under `2.5` px wide; `ground:`, what
 share of the canvas is **still bare ground**, which says so under `0.5%`; and `pencil:`,
 graphite still showing, left off once there is none. Their thresholds are under *The
 measurement lines, on the finished canvases* in `CALIBRATION.md`. All of them count the
@@ -500,11 +501,12 @@ subject runs that way* cannot tell whether the subject does, and the painter can
 
 | Declared | What the check does with it |
 |---|---|
-| `values={place: 0.70, ...}` | at registration, on the empty canvas, `plan-pairs` names the pairs planned within `0.10` **that meet**. After every pass: `plan: 5 of 6 places inside 0.10; halo +0.14`, the sign being the canvas minus the plan |
-| `lightest=place` | `lightest: lamp reads 0.78, the lightest of the 4 places planned` — or which place took the light instead, and by how much |
+| `values={place: 0.70, ...}` | at registration, on the empty canvas, `plan-pairs` names the pairs planned within `0.10` **that meet**. After every pass: `plan: 5 of 6 places inside 0.10; halo +0.14`, the sign being the canvas minus the plan. A place reads by its **median** — what most of it reads, so an eye inside a planned plane does not move what the plane reads — and a place the line names that has a tenth of itself or more over `0.15` from that median says so: `halo +0.14 (18% of it lighter by more than 0.15)`. `compare(s.plan())` reads places the same way |
+| `lightest=place` | `lightest: lamp reads 0.49 as a place, 0.59 at its brightest twentieth, the lightest of the 4 places planned` — or which place took the light instead, and by how much. A place the line names that is split says so in brackets, as on `plan:`: `lantern reads 0.51 as a place (10% of it darker by more than 0.15)`. The places are ranked by their medians; the named light is also read at its 95th percentile, because a light is often a small bright part of a place that is mostly something else. Where the two numbers are far apart, plan the lit part as a place of its own, at the value that place will read — not the value its mixture was mixed at |
 | `subject_share=0.40` | the `subject:` line always carries *against 40% planned*, with no `report(subject_share=)` to remember. It is the one declaration that was reachable before and unreachable from a shell |
 | `bands="subject"` | the stack-of-bars line stops warning and counts: *bands declared as the subject: 14 long marks run within 6 degrees of horizontal, and nothing crosses them yet* |
 | `ground="buried"` | the ground line prints its number and says *buried, as the plan says* instead of asking for some back |
+| `key="low"` or `"high"` | the `values:` line stops saying *no clear light* (or *no clear dark*) and says `low-key, as the plan says -- nothing above 0.35, under the box's middle 0.54` — or, once the top twentieth rises past the middle, by how much the picture has left its key. Its clusters are printed and not judged: a key compresses the range, and no gap has been measured for one yet. Under `"low"`, with `lightest=` named, it asks whether that light stands clear of everything else — the canvas outside its place: `lantern stands clear -- 0.59 at its brightest twentieth against 0.40 for everything else, 0.19 over`, or that it does not, under `0.10`. A high-key picture's light has no room above the rest to stand clear in, so there it is not asked |
 | `why="..."` | nothing measures it. It is quoted back at the end, which is the moment it is worth reading again |
 | nothing | nothing is said at the first stroke, and no line nags for a plan. What a declaration buys is the lines above; what it costs is writing it down |
 
@@ -513,7 +515,7 @@ declared in a `prelude.py` and the lightest place added from a pass; pass the em
 version of a field (`values={}`, `bands=""`) to clear it, or `clear=True` to start
 again. Re-registering the same plan says nothing the second time, which is what lets a
 `prelude.py` run before every pass without `plan-pairs` becoming a thing printed once a
-pass. From a shell it is `easel plan p.easel --value 'A1:H3=0.70' --bands subject`,
+pass. From a shell it is `easel plan p.easel --value 'A1:H3=0.70' --bands subject --key low`,
 whose places are names rather than shapes, and `easel new` writes a `prelude.py`
 holding the call.
 
