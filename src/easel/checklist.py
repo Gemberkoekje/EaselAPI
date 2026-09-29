@@ -101,7 +101,7 @@ def clusters(flat: np.ndarray, k: int = 3, rounds: int = 25) -> np.ndarray:
 
 
 def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
-                key: str = "", light: tuple[str, float] | None = None) -> str:
+                key: str = "", light: tuple[str, float, float] | None = None) -> str:
     """Where the picture's values sit, against what the box can reach.
 
     The checklist asks *does the greyscale view have a clear light, mid and dark*.
@@ -131,17 +131,21 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
     and the corpus's low-key pictures hold their closest two clusters a median
     ``0.078`` apart against ``0.141`` on every other pass, so a fixed ``0.10`` would call
     61 of their 74 passes one mass -- the next *no clear light* -- and no scaled gap has
-    been measured to replace it. With a light named in the plan, the line asks whether
-    it stands clear of the rest: its brightest twentieth against the canvas's top
-    twentieth, by :data:`~easel.measure.VALUE_THRESHOLD`. Every plan of the 0.8.0
-    round's named lights cleared it by ``0.17`` to ``0.28``.
+    been measured to replace it. Under ``"low"``, with a light named in the plan, the
+    line asks whether it stands clear of the rest: its brightest twentieth against the
+    brightest twentieth of the canvas outside it, by
+    :data:`~easel.measure.VALUE_THRESHOLD`. On both plans of the 0.8.0 round the named
+    light clears it by ``0.14`` to ``0.28`` from the pass that paints it on, and not
+    before.
 
     Args:
         view: the canvas as values, ``0..1``, graphite excluded.
         reach: what the palette can reach, darkest and lightest, for the *of a box
             that reaches* clause. Omitted, the clause is left off, and so is a key's.
-        key: the plan's ``key``, ``""``, ``"low"`` or ``"high"``.
-        light: the named light under a key, as ``(name, brightest twentieth)`` --
+        key: the plan's ``key``, ``""``, ``"low"`` or ``"high"``. Any other word is
+            no key.
+        light: the named light under ``key="low"``, as ``(name, its brightest
+            twentieth, the brightest twentieth of everything else)`` --
             :meth:`easel.plan.Plan.light_reading`.
 
     Returns:
@@ -163,8 +167,8 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
     # painter told *no clear light* when the picture is all light would stop reading
     # this line, which is exactly what `LESSONS.md` rule 2 is about.
     middle = None if reach is None else (reach[0] + reach[1]) / 2.0
-    if key:
-        return line + _key_clause(key, low, high, middle) + _light_clause(light, high)
+    if key in ("low", "high") and middle is not None:
+        return line + _key_clause(key, low, high, middle) + _light_clause(light)
     dark, unlit = (middle is not None and low > middle), (middle is not None
                                                           and high < middle)
     if middle is not None and (dark or unlit):
@@ -184,10 +188,8 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
     return line
 
 
-def _key_clause(key: str, low: float, high: float, middle: float | None) -> str:
+def _key_clause(key: str, low: float, high: float, middle: float) -> str:
     """What the ``values:`` line says of a declared key: kept, or left and by how much."""
-    if middle is None:
-        return ""
     if key == "low":
         if high < middle:
             return (f"; low-key, as the plan says -- nothing above {high:.2f}, under "
@@ -201,21 +203,26 @@ def _key_clause(key: str, low: float, high: float, middle: float | None) -> str:
             f"{low:.2f}, {middle - low:.2f} under the box's middle {middle:.2f}")
 
 
-def _light_clause(light: tuple[str, float] | None, high: float) -> str:
-    """Whether the plan's named light stands clear of the rest, under a key."""
+def _light_clause(light: tuple[str, float, float] | None) -> str:
+    """Whether the plan's named light stands clear of the rest, under ``key="low"``.
+
+    Both numbers are said, because the rest's is not the line's own top twentieth: it
+    is read outside the light's place, off the view the ``lightest:`` line reads.
+    """
     if light is None:
         return ""
-    name, bright = light
-    clear = bright - high
+    name, bright, rest = light
+    clear = bright - rest
+    said = (f"{bright:.2f} at its brightest twentieth against {rest:.2f} for "
+            f"everything else")
     if clear >= VALUE_THRESHOLD:
-        return (f"; {name} stands clear, {bright:.2f} at its brightest twentieth, "
-                f"{clear:.2f} over the picture's top twentieth")
+        return f"; {name} stands clear -- {said}, {clear:.2f} over"
+    if abs(clear) < 0.005:
+        return f"; {name} does not stand clear -- {said}, level with it"
     if clear >= 0:
-        return (f"; {name}, {bright:.2f} at its brightest twentieth, is only "
-                f"{clear:.2f} over the picture's top twentieth, under "
-                f"{VALUE_THRESHOLD:.2f}, so it does not stand clear")
-    return (f"; {name}, {bright:.2f} at its brightest twentieth, is {-clear:.2f} "
-            f"under the picture's top twentieth, so it does not stand clear")
+        return (f"; {name} does not stand clear -- {said}, {clear:.2f} over, under "
+                f"{VALUE_THRESHOLD:.2f}")
+    return f"; {name} does not stand clear -- {said}, {-clear:.2f} under"
 
 
 def edges_line(view: np.ndarray) -> str:

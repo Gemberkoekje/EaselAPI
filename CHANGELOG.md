@@ -157,27 +157,37 @@ most of its place.
   nothing above 0.35, under the box's middle 0.54*, and once the top twentieth rises past
   that middle, by how much the picture has left its key. The clusters are printed and not
   judged — a key compresses the range, and a fixed `0.10` would call 61 of the corpus's 74
-  low-key passes one mass. With `lightest=` named, the line asks whether that light stands
-  clear of the rest: its brightest twentieth against the picture's top twentieth, by
-  `0.10`. Over the corpus's seven low-key pictures it is silent on 72 of their 74 passes;
-  the other two are the pier's, whose top twentieth rose past its key. `easel plan
-  --key`, `key` on the server's `plan`, and a line in the prelude `easel new` writes.
+  low-key passes one mass. Under `"low"`, with `lightest=` named, the line asks whether
+  that light stands clear of everything else — its brightest twentieth against the
+  brightest twentieth of the canvas outside it, by `0.10`, both numbers said. A word the
+  build does not know, in a file a later one wrote, is no key. Over the corpus's seven
+  low-key pictures the line is silent on 72 of their 74 passes; the other two are the
+  pier's, whose top twentieth rose past its key. `easel plan --key`, `key` on the
+  server's `plan`, and a line in the prelude `easel new` writes.
 - **A place reads what most of it reads**: its median, not its mean — on the `plan:` and
   `lightest:` lines and in `compare()` handed a value plan, so an eye inside a planned
   plane no longer moves what the plane reads. The Bell-Warden's head top reads `0.61`,
   the lightest of its places, as planned. **A split place says so** on a line that
-  already names it: a tenth of it or more, more than `0.15` from its own median —
-  *24% of it darker by more than 0.15*. `compare()` against a photograph keeps its cells'
+  already names it — in brackets after what it reads, when a tenth of it or more sits
+  more than `0.15` from its own median: *head top reads 0.61 as a place (24% of it darker
+  by more than 0.15)*. On `lightest:` that is the named light and the place that took the
+  light from it, as the painter asked. `compare()` against a photograph keeps its cells'
   means.
-- **The named light is read twice**: `lightest: head top reads 0.61 as a place, 0.63 at
-  its brightest twentieth`. The 95th percentile beside the median, as both painters
-  asked; the places are still ranked by their medians, and on both paintings no verdict
-  moves.
+- **The named light is read twice**: `lightest: lantern reads 0.51 as a place (10% of it
+  darker by more than 0.15), 0.59 at its brightest twentieth`. The 95th percentile beside
+  the median, as both painters asked; the places are still ranked by their medians, and
+  on both paintings no verdict moves.
 - **`at_value` says where the floor is.** Under its default dark, the ultramarine-umber
   mix at `0.137`, the error names the darks the box does reach — `dark="burnt_umber"` at
   `0.128`, warm, and seven parts umber to three of ultramarine at `0.132`, the most
-  neutral — and under `0.128`, a colour of the painter's own with its value. It never
-  switches darks by itself. `darkest_value` says `0.128` in `REFERENCE.md`.
+  neutral — and under `0.128`, a colour of the painter's own with its value, or a darker
+  pigment the box holds. It never switches darks by itself. `darkest_value` says `0.128`
+  in `REFERENCE.md`.
+
+**Fixed**: a script that runs several passes and calls `report()` after each, with a plan
+declared, had the next pass's *details a layer buried* read against the canvas with its
+graphite in — the plan's view, which the report then kept in place of the canvas
+without it. It keeps the canvas without it, as `easel run` does. Since 0.6.0.
 
 Nothing a mark lays changes, and no saved painting rebuilds differently. A painting whose
 plan names places may read its places differently after a pass than it did — the median

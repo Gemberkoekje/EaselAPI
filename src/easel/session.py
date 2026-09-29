@@ -3638,7 +3638,10 @@ class Session:
 
         The keys are places (a name, a region, a shape) and the values are what
         :meth:`~easel.palette.Palette.value_of` reports, so a plan can be written
-        before a stroke is laid and checked after every mass.
+        before a stroke is laid and checked after every mass. Each place reads its
+        **median**, as the check's ``plan:`` line reads it, so a detail inside a
+        planned plane does not move what the plane reads; a photograph's cells keep
+        their means.
 
         **Two planned values closer than the threshold only matter where the two
         places meet**, and the sheet says which of them do. It used to ask -- three
@@ -4100,9 +4103,12 @@ class Session:
           ``easel run`` keeps and so does the report before, for a script that reports
           after every pass; like the plan's lines, it is left off a counted copy;
         - **what the plan promised**, for a painting that declared one: how many of
-          its places are painted within ``0.10`` of the value they were promised, and
-          whether the place meant to be lightest is the lightest of them. Both read
-          the canvas, so both are left off a counted copy;
+          its places are painted within ``0.10`` of the value they were promised, each
+          read by its median, and whether the place meant to be lightest is the
+          lightest of them -- the light read at its brightest twentieth too, and a
+          place either line names said to be split when a tenth of it sits over
+          ``0.15`` from its median. Both read the canvas, so both are left off a
+          counted copy;
         - **the subject's share** of the marks so far, whenever a mark is noted
           ``subject``, against ``subject_share`` -- the argument here, or the plan's
           own, the argument winning. The
@@ -4122,7 +4128,7 @@ class Session:
           to say;
         - **the values, the edges and the pencil**, the other three lines only the
           canvas can answer: where the picture's values sit against what the palette
-          reaches, how its edge length divides between hard and soft, and how much
+          reaches (or, under ``plan(key=)``, whether the picture has kept its key), how its edge length divides between hard and soft, and how much
           graphite still shows. Each is a number with its threshold said out loud,
           and :mod:`easel.checklist` holds each one's evidence. Printed after every
           pass like the ground line, and like it left off a counted copy. The noise
@@ -4177,7 +4183,7 @@ class Session:
 
             check over this pass, 9 marks: nothing to report
               plan: 5 of 6 places inside 0.10; halo +0.14
-              lightest: lamp reads 0.78, the lightest of the 6 places planned
+              lightest: lamp reads 0.78 as a place, 0.84 at its brightest twentieth, the lightest of the 6 places planned
               subject: 41 of 128 marks so far (32%), against 32% planned
               values: 0.21-0.84 of a box that reaches 0.13-0.96, clusters at 0.27, 0.49, 0.78; a clear light, mid and dark
               edges: 41% of edges are under 2.5 px wide, median 2.9 px
@@ -4233,11 +4239,16 @@ class Session:
         # measurements of what the painter said they would do, so they read first. Gated
         # exactly as the ground line below is -- they read the canvas, so a counted copy
         # has nothing of its own to read, and a painting with no paint on it yet would be
-        # told how far its plan is from the bare ground.
+        # told how far its plan is from the bare ground. The plan reads its own view --
+        # the canvas as `compare()` reads it -- under its own name: `view` is the canvas
+        # without its graphite, and it is what the next pass's buried details are read
+        # against.
+        plan_view = None
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
-            view = self._value_view()
-            for line in (self._plan.value_line(view), self._plan.lightest_line(view)):
+            plan_view = self._value_view()
+            for line in (self._plan.value_line(plan_view),
+                         self._plan.lightest_line(plan_view)):
                 if line:
                     lines.append(f"  {line}")
         subject = self._subject_line(paid, subject_share)
@@ -4247,7 +4258,7 @@ class Session:
             # A count-only copy has laid no paint on the canvas it borrowed, so the
             # honest answer is the one it started with and the useful one does not
             # exist. Every other line here comes off the log and is exact.
-            lines += [f"  {one}" for one in self._canvas_lines(without)]
+            lines += [f"  {one}" for one in self._canvas_lines(without, plan_view)]
             # And the canvas as it stands is the one the next pass opens on, for a
             # painter who runs passes in one script and calls this after each.
             self._opened = (len(records), view)
@@ -4469,17 +4480,19 @@ class Session:
                                   bands=self._plan.bands, whole=True,
                                   named=self._marks_named)
         lines += [f"  - {line}" for line in findings]
+        plan_view = None
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
-            view = self._value_view()
-            for line in (self._plan.value_line(view), self._plan.lightest_line(view)):
+            plan_view = self._value_view()
+            for line in (self._plan.value_line(plan_view),
+                         self._plan.lightest_line(plan_view)):
                 if line:
                     lines.append(f"  {line}")
         subject = self._subject_line(paid, subject_share)
         if subject:
             lines.append(f"  {subject}")
         if paid and not self._counting:
-            lines += [f"  {one}" for one in self._canvas_lines()]
+            lines += [f"  {one}" for one in self._canvas_lines(plan_view=plan_view)]
         lines.append(f"  {checklist.boxes_line(*checklist.mass_counts(records))}")
         lines.append(f"  {checklist.unspent_line(self.spent, self.budget)}")
         lines.append("")
@@ -4563,7 +4576,8 @@ class Session:
                 line += f" -- under {_GROUND_FLOOR:.1%}, and the checklist asks for some"
         return line
 
-    def _canvas_lines(self, without: np.ndarray | None = None) -> list[str]:
+    def _canvas_lines(self, without: np.ndarray | None = None,
+                      plan_view: np.ndarray | None = None) -> list[str]:
         """The standing measurements, off as few readings of the canvas as they need.
 
         `values:`, `edges:`, `ground:` and `pencil:` -- the four that can only be had
@@ -4585,13 +4599,20 @@ class Session:
         borrowed, so every number here would be the canvas's and not the pass's.
         ``without`` is the values view without graphite when the caller already has
         it -- :meth:`report` does, for the rule that reads what a pass covered.
+        ``plan_view`` is :meth:`_value_view` when the caller has read it for the plan's
+        lines: under ``plan(key="low")`` the ``values:`` line reads the named light off
+        it, so the light's number is the one the ``lightest:`` line printed above it.
         """
         if without is None:
             without = self.canvas.values(sketch=False)
         view = without.astype(np.float32) / 255.0
         reach = (self.palette.darkest_value, self.palette.lightest_value)
+        light = None
+        if self._plan.key == "low" and self._plan.lightest is not None:
+            light = self._plan.light_reading(
+                plan_view if plan_view is not None else self._value_view())
         lines = [checklist.values_line(view, reach=reach, key=self._plan.key,
-                                       light=self._plan.light_reading(view)),
+                                       light=light),
                  checklist.edges_line(view),
                  self._ground_line()]
         if self.canvas.has_sketch:
@@ -4809,8 +4830,8 @@ class Session:
                 -- or ``"high"``, over it. The ``values:`` line then stops saying *no
                 clear light* (or *dark*) and says instead whether the picture has
                 kept its key, and by how much it has left it; it prints its clusters
-                without judging their gaps, and asks whether the ``lightest`` place,
-                if one is named, stands clear of the rest.
+                without judging their gaps. Under ``"low"`` it also asks whether the
+                ``lightest`` place, if one is named, stands clear of everything else.
 
             clear: start from nothing rather than from the plan already declared, so
                 this call is the whole of it.

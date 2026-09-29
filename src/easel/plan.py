@@ -114,15 +114,26 @@ class PlaceReading:
         return self.darker + self.lighter >= SPLIT_SHARE
 
     def split_clause(self) -> str:
-        """``24% of it darker by more than 0.15``, or nothing for a place that is whole."""
+        """``24% of it darker by more than 0.15``, or nothing for a place that is whole.
+
+        Each side is said with its own share, and a side that would print as ``0%`` is
+        left out -- so a place split a tenth one way and a trace the other says the
+        tenth, rather than a sum under the word for one side.
+        """
         if not self.split:
             return ""
-        if self.darker >= 0.005 and self.lighter >= 0.005:
+        sides = [(share, word) for share, word in ((self.darker, "darker"),
+                                                    (self.lighter, "lighter"))
+                 if f"{share:.0%}" != "0%"]
+        if len(sides) == 2:
             return (f"{self.darker:.0%} of it darker and {self.lighter:.0%} lighter "
                     f"by more than {SPLIT_STEP:.2f}")
-        word = "darker" if self.darker >= self.lighter else "lighter"
-        return (f"{self.darker + self.lighter:.0%} of it {word} by more than "
-                f"{SPLIT_STEP:.2f}")
+        share, word = sides[0]
+        return f"{share:.0%} of it {word} by more than {SPLIT_STEP:.2f}"
+
+    def said(self, reading: str) -> str:
+        """``reading``, with the split in brackets after it when the place is split."""
+        return f"{reading} ({self.split_clause()})" if self.split else reading
 
 
 @dataclass(frozen=True)
@@ -300,12 +311,8 @@ class Plan:
         """
         if not self.values:
             return ""
-        deltas = []
-        for p in self.values:
-            if p.value is None:  # pragma: no cover - plan() refuses a values= entry with no value
-                continue
-            read = p.reading(value_view)
-            deltas.append((p, read.median - float(p.value), read))
+        read = [(p, p.reading(value_view)) for p in self.values if p.value is not None]
+        deltas = [(p, got.median - float(p.value), got) for p, got in read]
         if not deltas:  # pragma: no cover - plan() refuses a values= entry with no value
             return ""
         out = sorted((row for row in deltas if abs(row[1]) > threshold),
@@ -313,10 +320,8 @@ class Plan:
         inside = len(deltas) - len(out)
         line = f"plan: {inside} of {len(deltas)} places inside {threshold:.2f}"
         if out:
-            shown = "; ".join(
-                f"{p.name} {delta:+.2f}"
-                + (f" ({read.split_clause()})" if read.split else "")
-                for p, delta, read in out[:3])
+            shown = "; ".join(got.said(f"{p.name} {delta:+.2f}")
+                              for p, delta, got in out[:3])
             more = f"; and {len(out) - 3} more" if len(out) > 3 else ""
             line += f"; {shown}{more}"
         return line
@@ -325,7 +330,7 @@ class Plan:
         """One line: whether the place meant to be lightest is the lightest.
 
             lightest: lamp reads 0.78 as a place, 0.84 at its brightest twentieth, the lightest of the 4 places planned
-            lightest: horizon reads 0.61 and lamp, the plan's own light, 0.48 as a place, 0.59 at its brightest twentieth -- 0.13 under
+            lightest: horizon reads 0.61 and lamp, the plan's own light, 0.48 as a place (12% of it lighter by more than 0.15), 0.59 at its brightest twentieth -- 0.13 under
 
         The candidates are the plan's own places, ranked by what each reads as a place
         -- its median, the reading the ``plan:`` line prints. Ranking them is the
@@ -341,6 +346,12 @@ class Plan:
         place of its own. Both painters of the 0.8.0 round asked for this form, and on
         the Bell-Warden's plan it changes no verdict: the lightest place by the 95th is
         the median's at every pass end.
+
+        **A place the line names that is split says so**, in brackets after what it
+        reads -- the named light, and the place that took the light from it. The
+        Bell-Warden's painter asked for exactly that: its plinth's top, split by the
+        creature's feet, while the line named it the lightest place, and the head's
+        top, split by the eye, after.
         """
         if self.lightest is None:
             return ""
@@ -354,26 +365,41 @@ class Plan:
         read = {p.name: p.reading(value_view) for p in candidates}
         light = read[self.lightest.name]
         top = max(candidates, key=lambda p: read[p.name].median)
-        both = (f"{light.median:.2f} as a place, {light.brightest:.2f} at its "
-                f"brightest twentieth")
-        split = f"; {light.split_clause()}" if light.split else ""
+        both = (f"{light.said(f'{light.median:.2f} as a place')}, "
+                f"{light.brightest:.2f} at its brightest twentieth")
         if top.name == self.lightest.name:
             return (f"lightest: {self.lightest.name} reads {both}, the lightest "
-                    f"of the {len(candidates)} places planned{split}")
-        return (f"lightest: {top.name} reads {read[top.name].median:.2f} and "
+                    f"of the {len(candidates)} places planned")
+        other = read[top.name]
+        return (f"lightest: {top.name} reads {other.said(f'{other.median:.2f}')} and "
                 f"{self.lightest.name}, the plan's own light, {both} -- "
-                f"{read[top.name].median - light.median:.2f} under{split}")
+                f"{other.median - light.median:.2f} under")
 
-    def light_reading(self, value_view: np.ndarray) -> tuple[str, float] | None:
-        """The named light's name and brightest twentieth, for the ``values:`` line.
+    def light_reading(self, value_view: np.ndarray) -> tuple[str, float, float] | None:
+        """The named light against everything else, for the ``values:`` line.
 
-        Only under a declared key, where the ``values:`` line asks whether the light
-        stands clear of the rest of the picture -- the question a low-key picture with
-        a small light is really asking. ``None`` with no key or no light named.
+        ``(name, its brightest twentieth, the brightest twentieth of the canvas outside
+        it)``, read off the same view as :meth:`lightest_line`, so the light's number is
+        the one that line prints beside it. Only under ``key="low"``, where the
+        ``values:`` line asks whether the light stands clear of the rest -- the question
+        a low-key picture with a small light is really asking. A high-key picture's
+        light has no room above the rest to stand clear in, so there the question would
+        be answered *no* on every pass. ``None`` otherwise, or with no light named.
+
+        *The rest* is the canvas outside the light's place, so a light large enough to
+        be its own top twentieth is not measured against itself.
         """
-        if not self.key or self.lightest is None:
+        if self.key != "low" or self.lightest is None:
             return None
-        return self.lightest.name, self.lightest.reading(value_view).brightest
+        h, w = value_view.shape[:2]
+        mask = self.lightest.outline.mask(w, h)
+        rest = value_view[~mask]
+        # A place off the canvas is refused at plan time; one that covers all of it
+        # leaves nothing to stand clear of, and the question is not asked.
+        if not mask.any() or not rest.size:
+            return None
+        return (self.lightest.name, read_place(value_view[mask]).brightest,
+                float(np.percentile(rest, 95)))
 
     # -- the pairs, asked on the empty canvas ------------------------------------
     def pairs(self, width: int, height: int, meet, threshold: float = VALUE_THRESHOLD):
@@ -446,7 +472,9 @@ class Plan:
             subject_share=None if share is None else float(share),
             bands=str(data.get("bands", "")),
             ground=str(data.get("ground", "")),
-            key=str(data.get("key", "")),
+            # A word this build does not know is dropped, as an unknown field is: a
+            # key it cannot name would otherwise be read as one it can.
+            key=str(data.get("key", "")) if data.get("key", "") in KEY_WORDS else "",
         )
 
     def __str__(self) -> str:

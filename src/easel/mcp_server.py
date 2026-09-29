@@ -1207,7 +1207,8 @@ def build_server() -> MCPServer:
             lightest: the place meant to be the lightest thing in the picture. The
                 check ranks the plan's places and says when something else has taken
                 the light, and reads the named place twice: as a place, and at its
-                brightest twentieth.
+                brightest twentieth. A place it names that is split -- a tenth of it
+                over 0.15 from its median -- says so.
             subject_share: the share of the budget the subject gets, 0..1. The
                 subject line then always carries *against N% planned*.
             bands: "subject" declares that this picture's subject really does run in
@@ -1218,8 +1219,9 @@ def build_server() -> MCPServer:
                 the ground line stops asking for some back.
             key: "low" -- this picture lives under the box's middle on purpose -- or
                 "high", over it. The values line then says whether the picture has
-                kept its key instead of *no clear light*, prints its clusters without
-                judging them, and asks whether the lightest place stands clear.
+                kept its key instead of *no clear light*, and prints its clusters
+                without judging them; under "low" it asks whether the lightest place
+                stands clear of everything else.
             clear: start from nothing rather than from what is already declared.
         """
         s = _load(session)

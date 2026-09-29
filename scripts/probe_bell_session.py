@@ -3468,8 +3468,10 @@ def probe_declared(rb: Rebuilt, wb: Rebuilt, data: CorpusData) -> None:
                     if x.strip().startswith(("plan:", "lightest:"))]
             flat = s.canvas.values(sketch=False).astype(np.float32) / 255.0
             reach = (s.palette.darkest_value, s.palette.lightest_value)
+            # As `_canvas_lines` does: the light off the plan's view, the line off the
+            # canvas without its graphite.
             key_line = values_line(flat, reach=reach, key="low",
-                                   light=replace(plan, key="low").light_reading(flat))
+                                   light=replace(plan, key="low").light_reading(view))
             rows.append((label, said, key_line))
         print(f"  {built.name}: every place's median, 95th and split as the bench reads "
               f"them, largest difference {worst:.2e}")

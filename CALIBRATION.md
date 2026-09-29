@@ -4073,20 +4073,30 @@ to `3.5e-18`. So the lines `easel run` now prints are step 2's numbers:
 | | the Bell-Warden | Wenna Brask |
 |---|---|---|
 | `plan:`, by the median, pass by pass | 3, 6, 6, 6, then 7 of 7 from the details pass on | 3, then 4 of 5 |
-| `lightest:` at the finish | *head top reads 0.61 as a place, 0.63 at its brightest twentieth, the lightest of the 7 places planned; 24% of it darker by more than 0.15* | *lantern reads 0.51 as a place, 0.59 at its brightest twentieth, the lightest of the 5 places planned; 10% of it darker by more than 0.15* |
-| the split clause, on a line that names the place | the head's top, from the details pass on (the eye) | the lantern, from its own pass on, on both lines |
-| `values:` under `key="low"` | kept on all 7 passes; the head's top stands clear from the subject's pass on (`0.13`, then `0.28` over the top twentieth) and not before it -- on the room and the plinth it is the room | kept on all 11; the lantern stands clear from its own pass on, by `0.16`-`0.18` |
+| `lightest:` at the finish | *head top reads 0.61 as a place (24% of it darker by more than 0.15), 0.63 at its brightest twentieth, the lightest of the 7 places planned* | *lantern reads 0.51 as a place (10% of it darker by more than 0.15), 0.59 at its brightest twentieth, the lightest of the 5 places planned* |
+| the split, where a line names the place | the plinth's top on the subject's pass, while `lightest:` names it the lightest place (15%, the creature's feet), and the head's top from the details pass on (24%, the eye) -- where the painter said the clause would appear | the lantern from its own pass on, on both lines |
+| `values:` under `key="low"` | kept on all 7 passes. The head's top stands clear from the subject's pass on, `0.14` and then `0.28` over everything else; before it, on the room's and the plinth's passes, it is not painted yet, and the line says it does not | kept on all 11. The lantern stands clear from its own pass on, `0.18` to `0.19` over everything else |
 
 Over the corpus's seven pictures that finish low-key, the key's clause says *kept* on **72
 of their 74 passes** and speaks on two, both the pier's, as step 2 counted: its masses'
 pass, whose top twentieth rose to `0.73`, `0.19` over the box's middle, and its beams',
-at `0.58`. The split
-clause marks the plinth's top on the Bell-Warden's plan from the subject's pass on (its
-feet), and the lantern on the handover's and Wenna Brask's; `plan:` names only the places
-it misses, so the plinth's is never printed.
+at `0.58`. The split marks the plinth's top on the Bell-Warden's plan from the subject's
+pass on, but `lightest:` names it only on that pass and `plan:` never misses it, so it is
+said once; it marks the lantern of the handover's plan and of Wenna Brask's.
+
+**The light under a key, read as the `lightest:` line reads it.** Its brightest twentieth
+comes off the canvas as `compare()` reads it -- graphite in, each channel rounded to a byte
+before the value is taken -- and *everything else* is the canvas outside its place, off
+the same view. Read off the `values:` line's own canvas instead -- graphite out, the value
+rounded after -- the lantern of Wenna Brask's setting pass read `0.33` where `lightest:`
+printed `0.32` for it, and measured against the canvas's whole top twentieth, which holds
+the light, it cleared by `0.16` to `0.18` where it clears everything else by `0.18` to
+`0.19`.
 
 **`at_value` at the floor**: the default dark, ultramarine and burnt umber half and half,
 reads `0.137`; burnt umber alone `0.128`, the box's floor; seven parts umber to three of
-ultramarine `0.132`, at the lowest chroma of the mix (`0.008`, against `0.019` half and
-half). A target between the floor and `0.137` is told the two; one under the floor is told
-a colour of its own, as a grey at the target's value -- `'#171717'` reads `0.090`.
+ultramarine `0.132`, at a chroma of `0.0076`, against `0.019` half and half -- within a
+ten-thousandth of the least chroma the two mix to, `0.0075` at 72 parts in a hundred. A
+target between the floor and `0.137` is told the two; one under the floor is told a colour
+of its own, as a grey at the target's value -- `'#171717'` reads `0.090`; and a box with a
+pigment darker than umber is told that pigment where umber falls short.

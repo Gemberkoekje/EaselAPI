@@ -7081,27 +7081,73 @@ def test_a_declared_low_key_asks_whether_the_picture_kept_it(tmp_path):
     high[:40] = 0.30
     assert "its bottom twentieth has fallen to 0.30" in values_line(high, reach=reach,
                                                                    key="high")
+    # A word this build does not know is no key: the line judges as it always has.
+    assert values_line(low, reach=reach, key="mid") == values_line(low, reach=reach)
 
 
-def test_under_a_key_the_line_asks_whether_the_named_light_stands_clear(tmp_path):
+def test_under_a_low_key_the_line_asks_whether_the_named_light_stands_clear(tmp_path):
     """Wenna Brask's lamp: a low-key picture whose light is too small for a percentile
-    of a twentieth. Under a key, the named light's brightest twentieth is set against
-    the picture's top twentieth, by the threshold that separates two masses."""
+    of a twentieth. Under `key="low"` the named light's brightest twentieth is set
+    against the brightest twentieth of everything else, by the threshold that separates
+    two masses -- and both numbers are said, since neither is the line's own."""
     from easel.checklist import values_line
+    from easel.plan import build
 
     view = np.linspace(0.15, 0.40, 40000, dtype=np.float32).reshape(200, 200)
-    top = float(np.percentile(view.reshape(-1)[::17], 95))
-    said = values_line(view, reach=(0.13, 0.96), key="low", light=("lantern", 0.59))
-    assert f"lantern stands clear, 0.59 at its brightest twentieth, {0.59 - top:.2f}" in said
-    dim = values_line(view, reach=(0.13, 0.96), key="low", light=("lantern", top + 0.04))
-    assert "is only 0.04 over the picture's top twentieth, under 0.10" in dim
-    assert "lantern" not in values_line(view, reach=(0.13, 0.96), light=("lantern", 0.59)), \
-        "no key, no clause: the light is the lightest: line's business"
+    reach = (0.13, 0.96)
+    said = values_line(view, reach=reach, key="low", light=("lantern", 0.59, 0.42))
+    assert said.endswith("; lantern stands clear -- 0.59 at its brightest twentieth "
+                         "against 0.42 for everything else, 0.17 over"), said
+    dim = values_line(view, reach=reach, key="low", light=("lantern", 0.45, 0.42))
+    assert dim.endswith("lantern does not stand clear -- 0.45 at its brightest twentieth "
+                        "against 0.42 for everything else, 0.03 over, under 0.10"), dim
+    assert "0.05 under" in values_line(view, reach=reach, key="low",
+                                       light=("lantern", 0.37, 0.42))
+
+    # *Everything else* is the canvas outside the light: a light that is most of the
+    # picture's top twentieth is not measured against itself.
+    lantern = span("A1", "D4")
+    plan = build(values={lantern: 0.60}, lightest=lantern, key="low")
+    mask = plan.lightest.outline.mask(200, 200)
+    lit = np.full((200, 200), 0.20, dtype=np.float32)
+    lit[mask] = 0.70
+    name, bright, rest = plan.light_reading(lit)
+    assert (name, bright, rest) == ("A1:D4", pytest.approx(0.70), pytest.approx(0.20))
+    # Only under "low": a high-key light has no room above the rest to stand clear in.
+    assert build(lightest=lantern, key="high").light_reading(lit) is None
+    assert build(lightest=lantern).light_reading(lit) is None
+
+
+def test_the_light_on_the_values_line_is_the_light_on_the_lightest_line(tmp_path):
+    """The two lines read one place, so they print one number for it. The `lightest:`
+    line reads the canvas as `compare()` does -- graphite in, each channel rounded to a
+    byte before the value is taken -- and the `values:` line reads it without its
+    graphite, the value rounded after: on one painting of the round the lantern read
+    `0.32` on one line and `0.33` on the next. So the light is read off the plan's view,
+    here one the test hands the session, which the canvas itself cannot match."""
+    s = make(tmp_path)
+    lamp, room = span("C3", "D4"), span("A1", "H8")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(values={room: 0.20, lamp: 0.55}, lightest=lamp, key="low")
+        s.block_in(room, "flat", s.palette.at_value("burnt_umber", 0.20, light="white"),
+                   direction="axis")
+        s.block_in(lamp, "flat", s.palette.at_value("ochre", 0.60), direction="axis",
+                   edge="hard")
+    planned = np.full((240, 320), 0.20, dtype=np.float32)
+    planned[s.plan().lightest.outline.mask(320, 240)] = 0.77
+    s._value_view = lambda: planned
+    said = s.report(since=0)
+    assert "0.77 at its brightest twentieth, the lightest of the 2 places" in said, said
+    assert "C3:D4 stands clear -- 0.77 at its brightest twentieth against 0.20" in said, said
 
 
 def test_a_key_is_declared_saved_and_refused_by_any_other_word(tmp_path):
     """The plan's other declarations' pattern: a word from a short list, saved with the
-    plan, read back with `.get`, printed, and taken back with ''."""
+    plan, read back with `.get`, printed, and taken back with ''. A word this build does
+    not know, in a file some later build wrote, loads as no key."""
+    from easel.plan import Plan
+
     s = make(tmp_path)
     plan = s.plan(key="low")
     assert plan.key == "low" and "key: low" in str(plan)
@@ -7110,6 +7156,7 @@ def test_a_key_is_declared_saved_and_refused_by_any_other_word(tmp_path):
     s.save(tmp_path / "p.easel")
     assert Session.load(tmp_path / "p.easel").plan().key == "low"
     assert s.plan(key="").key == "" and not s.plan().declared
+    assert Plan.from_json({"key": "mid"}).key == ""
 
     session = tmp_path / "c.easel"
     assert main(["new", str(session), "--size", "320x240"]) == 0
@@ -7145,6 +7192,22 @@ def test_a_detail_inside_a_planned_place_does_not_move_what_it_reads(tmp_path):
     assert "of it darker by more than 0.15)" in line
 
 
+def test_a_split_says_each_side_with_its_own_share():
+    """A clause that printed the sum under one side's word would call a trace of the
+    other side part of it: *13% of it lighter* where 12% is."""
+    from easel.plan import PlaceReading
+
+    assert PlaceReading(0.5, 0.6, darker=0.24).split_clause() == \
+        "24% of it darker by more than 0.15"
+    assert PlaceReading(0.5, 0.6, darker=0.004, lighter=0.12).split_clause() == \
+        "12% of it lighter by more than 0.15"
+    assert PlaceReading(0.5, 0.6, darker=0.03, lighter=0.08).split_clause() == \
+        "3% of it darker and 8% lighter by more than 0.15"
+    assert PlaceReading(0.5, 0.6, darker=0.05, lighter=0.04).split_clause() == ""
+    assert PlaceReading(0.5, 0.6, darker=0.12).said("head top +0.02") == \
+        "head top +0.02 (12% of it darker by more than 0.15)"
+
+
 def test_compare_reads_a_planned_place_as_the_check_does(tmp_path):
     """`compare(s.plan())` and the check's `plan:` line are one instrument: a place that
     read `0.61` on one and `0.52` on the other would be two."""
@@ -7157,7 +7220,26 @@ def test_compare_reads_a_planned_place_as_the_check_does(tmp_path):
         s.block_in(span("A1", "B2"), "flat", "burnt_umber", direction="axis")
     view = s._value_view()
     got = s.compare(s.plan()).cells[0].canvas
-    assert got == pytest.approx(s.plan().values[0].reading(view).median, abs=0.01)
+    assert got == pytest.approx(s.plan().values[0].reading(view).median, abs=1e-6)
+    assert got != pytest.approx(float(view[s.plan().values[0].outline.mask(320, 240)].mean()),
+                                abs=0.01), "and it is not the mean"
+
+
+def test_a_report_keeps_the_canvas_without_its_graphite_for_the_next_pass(tmp_path):
+    """A painter who runs passes in one script and calls `report()` after each gets the
+    next pass's buried details read against the canvas as this one left it -- without
+    its graphite, as `easel run` keeps it. With a plan declared, the plan's own view,
+    graphite in, was kept instead."""
+    s = make(tmp_path)
+    upper = span("A1", "H4")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(values={upper: 0.90}, lightest=upper)
+        s.pencil([(0.1, 0.1), (0.9, 0.3)], pressure=1.0)
+        s.block_in(span("A5", "H8"), "flat", "burnt_umber", direction="axis")
+        s.report(since=0)
+    kept = s._opened[1]
+    assert np.array_equal(kept, s.canvas.values(sketch=False).astype(np.float32) / 255.0)
 
 
 # -- 0.8.0 E4: the named light, read as a place and as a light --------------------------
@@ -7176,14 +7258,33 @@ def test_the_named_light_is_read_as_a_place_and_at_its_brightest_twentieth(tmp_p
     panes = (xs % 10) < 1                                       # a tenth of it lit
     view[ys[panes], xs[panes]] = 0.80
     line = plan.lightest_line(view)
-    assert line.startswith("lightest: A1:D4 reads 0.45 as a place, 0.80 at its "
-                           "brightest twentieth, the lightest of the 2 places planned"), line
-    assert "10% of it lighter by more than 0.15" in line
+    assert line == ("lightest: A1:D4 reads 0.45 as a place (10% of it lighter by more "
+                    "than 0.15), 0.80 at its brightest twentieth, the lightest of the 2 "
+                    "places planned"), line
 
     view[:, :] = 0.70
     view[mask] = 0.45
     assert ("the plan's own light, 0.45 as a place, 0.45 at its brightest twentieth -- "
             "0.25 under") in plan.lightest_line(view)
+
+
+def test_the_place_that_took_the_light_says_it_is_split_too(tmp_path):
+    """The Bell-Warden's painter asked for the split on the `lightest:` line *for the
+    plinth's top while that line named it the lightest place* -- the creature's feet
+    stand in it -- *and for the head's top after*. Every place the line names."""
+    from easel.plan import build
+
+    head, plinth = span("A1", "D4"), span("E1", "H4")
+    plan = build(values={head: 0.66, plinth: 0.54}, lightest=head)
+    view = np.full((200, 200), 0.30, dtype=np.float32)
+    top = plan.values[1].outline.mask(200, 200)
+    ys, xs = np.nonzero(top)
+    view[top] = 0.52
+    feet = (xs % 6) == 0                                         # a sixth of it
+    view[ys[feet], xs[feet]] = 0.20
+    line = plan.lightest_line(view)
+    assert line.startswith("lightest: E1:H4 reads 0.52 (17% of it darker by more than "
+                           "0.15) and A1:D4, the plan's own light, 0.30 as a place, "), line
 
 
 # -- 0.8.0 E3: the floor, said as it is -------------------------------------------------
@@ -7192,11 +7293,13 @@ def test_at_value_under_its_default_dark_names_the_darks_the_box_does_reach():
     reach it -- so it took the floor to be `0.14`, where burnt umber alone lays `0.128`.
     The error names what the box reaches and how, and under the floor a colour of the
     painter's own with its value; it never switches darks by itself."""
+    from easel.palette import PIGMENTS
+
     p = Palette()
     with pytest.raises(ValueError) as raised:
         p.at_value("burnt_sienna", 0.13)
     said = str(raised.value)
-    assert "stops at 0.137" in said
+    assert "out of reach" in said and "stops at 0.137" in said
     assert "dark='burnt_umber' lays 0.128" in said
     assert "seven parts umber to three of ultramarine -- 0.132" in said
     assert "stops short of 0.130" in said
@@ -7206,9 +7309,14 @@ def test_at_value_under_its_default_dark_names_the_darks_the_box_does_reach():
     with pytest.raises(ValueError) as raised:
         p.at_value("burnt_sienna", 0.09)
     said = str(raised.value)
-    assert "Nothing in this box lays under 0.128" in said
+    assert "Nothing in this box lays under 0.128 -- burnt umber alone" in said
     assert "'#171717' reads 0.090" in said
 
     # A dark the painter chose is held to what it reaches, as before.
     with pytest.raises(ValueError, match="only gets to 0.128"):
         p.at_value("burnt_sienna", 0.09, dark="burnt_umber")
+
+    # A box with a pigment darker than umber names that one where umber falls short.
+    darker = Palette({**PIGMENTS, "lamp_black": "#141414"})
+    with pytest.raises(ValueError, match="the darkest pigment in this box is 'lamp_black'"):
+        darker.at_value("burnt_sienna", 0.11)

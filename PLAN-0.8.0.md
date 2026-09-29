@@ -7,9 +7,9 @@ painter's own [`verdict.md`](paintings/Claude/bell_warden/verdict.md) and the pa
 places in the engine most of this lands -- `_draw_guides` in `src/easel/look.py` (the ink a
 guide is drawn in), `Session.guide` and `Session.pencil` in `src/easel/session.py`,
 `Session._one_call` there and `_cmd_run` in `src/easel/cli.py` (what a pass says it cost),
-`Planned.mean_value` in `src/easel/plan.py` and `values_line` in `src/easel/checklist.py`
-(what the plan's lines read), and the wet blend in `Canvas.stamp` beside
-`_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
+`Planned.reading` (`mean_value` until step 5) in `src/easel/plan.py` and `values_line` in
+`src/easel/checklist.py` (what the plan's lines read), and the wet blend in `Canvas.stamp`
+beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 [`PLAN-0.7.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.7.0/PLAN-0.7.0.md), as
 tagged, is the round before this one and the shape most of the conventions here come
 from._
@@ -22,13 +22,19 @@ kept its key and prints its clusters without judging them (E1); every planned pl
 its median, on `plan:`, `lightest:` and `compare()` handed a plan, a split place saying so
 on a line that names it (E2); `at_value`'s error under its default dark naming the darks the
 box does reach, and a colour of the painter's own under the floor (E3); and the named light
-read at its brightest twentieth beside its median, and under a key asked whether it stands
-clear of the rest (E4). Nothing a mark lays changes. **Measured as built**
+read at its brightest twentieth beside its median, and under `key="low"` asked whether it
+stands clear of everything else (E4). Nothing a mark lays changes. **Measured as built**
 (`probe_bell_session.py --declared`): every place of both plans reads, at every pass end,
 what step 2's bench read of the same pixels, to `3.5e-18`; the key's clause says *kept* on
 72 of the corpus's 74 low-key passes and speaks on the pier's two; and the lines are the
-ones the painters were shown -- *head top reads 0.61 as a place, 0.63 at its brightest
-twentieth*, *lantern reads 0.51 as a place, 0.59*. See [`NOTES-step5.md`](NOTES-step5.md).
+ones the painters were shown -- *head top reads 0.61 as a place (24% of it darker by more
+than 0.15), 0.63 at its brightest twentieth*, *lantern reads 0.51 as a place (10% ...), 0.59*,
+and the plinth's top said split on the one pass `lightest:` names it, where its painter
+said it would be. **A second look at the build, the same day, found and fixed** a split
+said only for the named light and not for the place that took the light, a sum printed
+under one side's word, the light's number read off a second view of the canvas, a key word
+this build does not know read as `"high"`, and a view `report()` kept for the next pass
+that had its graphite in -- that one since 0.6.0. See [`NOTES-step5.md`](NOTES-step5.md).
 **Nothing waits on a painter**; step 6 (A3, the thumbnail) is next.
 
 *Step 4 was built -- C, H1, H2 and H3, with A1's notes and A5's error -- on branch
@@ -946,10 +952,13 @@ photograph keeps its cells and their means: that is a different question.
 - *Built in step 5 (2026-09-29), as decided.* `PlaceReading` and `read_place` in `plan.py`
   -- the median, the 95th percentile, and the shares further than `0.15` below and above
   the median -- read by `plan:`, `lightest:` and `compare_plan`. The split is said at a
-  tenth, in brackets after a miss on `plan:` (*lantern -0.25 (10% of it darker by more than
-  0.15)*) and after the verdict on `lightest:`. `plan:` names only the places it misses, so
-  the plinth's top, split from the subject's pass on, is never printed: the clause rides
-  on a line that already names the place, as decided.
+  tenth, in brackets after what a named place reads: after a miss on `plan:` (*lantern
+  -0.25 (10% of it darker by more than 0.15)*), and on `lightest:` after the named light's
+  reading and after the reading of a place that took the light from it -- the plinth's top
+  on the subject's pass, *plinth top reads 0.50 (15% of it darker by more than 0.15) and
+  head top, the plan's own light, 0.50 as a place*, which is where the painter said it
+  would appear. `plan:` never misses the plinth's top, so that pass is the one it is said
+  on.
 
 **E3. The floor, said as it is -- and a black, as a question with a measurement.** Row 13,
 and the owner's follow-up on it.
@@ -1004,7 +1013,8 @@ and the owner's follow-up on it.
 - *Built in step 5 (2026-09-29): `at_value`'s error.* Under the default dark it names
   `dark="burnt_umber"` at `0.128` and `p.mix("ultramarine", "burnt_umber", 0.7)` at `0.132`,
   saying which falls short of the target; under `0.128`, a grey at the target's value as the
-  colour of the painter's own it would need, and that a hue keeps it alive. It still says
+  colour of the painter's own it would need, and that a hue keeps it alive -- or, in a box
+  given a pigment darker than umber, that pigment. It still says
   *out of reach*, which an older test and any painter's `except` may match. The floor said
   one way in every document waits for F3; `REFERENCE.md`'s `darkest_value` comment says
   `0.128` now.
@@ -1061,14 +1071,17 @@ about one place -- and answers it by saying what each line measures.
   `0.699`, and after the room the wall's. Where the lit part is under a twentieth of its
   place, the plan names the light itself, and the split clause says so. E4 waits on nothing.
 - *Built in step 5 (2026-09-29).* `lightest:` ranks by the median and prints the named
-  light twice -- *head top reads 0.61 as a place, 0.63 at its brightest twentieth, the lightest
-  of the 7 places planned; 24% of it darker by more than 0.15*. **And the `values:` line's
-  half, under a key**: the named light's brightest twentieth against the picture's top
-  twentieth, clear at `0.10` -- *lantern stands clear, 0.59 at its brightest twentieth, 0.17
-  over the picture's top twentieth*. The painters decided the `lightest:` line's form, not
-  this clause; it is the proposal's own, built with the key because both read one view. On
-  the Bell-Warden it says the head's top does not stand clear on the room's and the
-  plinth's passes, before the subject was laid -- true, and said under a key only.
+  light twice -- *head top reads 0.61 as a place (24% of it darker by more than 0.15), 0.63
+  at its brightest twentieth, the lightest of the 7 places planned*. **And the `values:`
+  line's half, under `key="low"`**: the named light's brightest twentieth against the
+  brightest twentieth of the canvas outside it, both off the view `lightest:` reads, clear
+  at `0.10` -- *lantern stands clear -- 0.59 at its brightest twentieth against 0.40 for
+  everything else, 0.19 over*. The painters decided the `lightest:` line's form, not this
+  clause; it is the proposal's own, and E4 asks it of a low-key picture with a small
+  light, so it is asked under `"low"` only -- a high-key light has no room above the rest
+  to clear by `0.10`. On the Bell-Warden it says the head's top does not stand clear on the
+  room's and the plinth's passes, before the subject was laid -- true, and said under a
+  key only.
 
 ### F. The documentation
 

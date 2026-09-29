@@ -244,30 +244,37 @@ class Palette:
         does reach and how, and -- under the box's own floor -- the one way below it,
         a colour of the painter's own, with its value. It never switches darks by
         itself: a colour handed back in a hue nobody asked for is the silent failure
-        this method raises to prevent. The numbers are read off this palette, so a
-        slot or a pigment that changes them changes the sentence.
+        this method raises to prevent. The numbers are read off this palette's own
+        pigments, so a box given a darker one names that one where umber falls short.
         """
         umber = self.value_of("burnt_umber")
-        neutral = self.mix("ultramarine", "burnt_umber", 0.7)
+        darkest = min(sorted(set(self.pigment_names)), key=self.value_of)
+        floor = self.value_of(darkest)
         head = (f"value {target:.3f} is out of reach of the default dark: "
-                f"{self.hex(base)} reads {base_v:.3f}, and at_value() lowers a colour with ultramarine and "
-                f"burnt umber half and half, which stops at {reach:.3f}.")
-        if target >= self.darkest_value:
-            neutral_v = self.value_of(neutral)
-            short = "" if neutral_v <= target else f", which stops short of {target:.3f}"
+                f"{self.hex(base)} reads {base_v:.3f}, and at_value() lowers a colour "
+                f"with ultramarine and burnt umber half and half, which stops at "
+                f"{reach:.3f}.")
+        if target >= umber:
+            neutral = self.value_of(self.mix("ultramarine", "burnt_umber", 0.7))
+            short = "" if neutral <= target else f", which stops short of {target:.3f}"
             return (f"{head} The box goes lower, and which dark is yours to choose: "
                     f"dark='burnt_umber' lays {umber:.3f}, warm, and "
                     f"dark=p.mix('ultramarine', 'burnt_umber', 0.7) -- seven parts "
-                    f"umber to three of ultramarine -- {neutral_v:.3f}, the most "
+                    f"umber to three of ultramarine -- {neutral:.3f}, the most "
                     f"neutral near-black it mixes{short}.")
+        if target >= floor:
+            return (f"{head} Burnt umber alone stops at {umber:.3f}; the darkest "
+                    f"pigment in this box is {darkest!r}, at {floor:.3f}: "
+                    f"dark={darkest!r}.")
         grey = int(round(float(np.clip(target, 0.0, 1.0)) * 255))
         supplied = f"#{grey:02x}{grey:02x}{grey:02x}"
-        return (f"{head} Nothing in this box lays under {self.darkest_value:.3f} -- "
-                f"burnt umber alone, dark='burnt_umber'. A darker value is a colour of "
-                f"your own: {supplied!r} reads {self.value_of(supplied):.3f}, to hand "
-                f"to the brush as it is, or pass one darker still as dark= to mix "
-                f"toward. A dark with a hue in it -- a little red or blue in those "
-                f"channels -- stays alive where a neutral one goes dead.")
+        return (f"{head} Nothing in this box lays under {floor:.3f} -- "
+                f"{darkest.replace('_', ' ')} alone, dark={darkest!r}. A darker value "
+                f"is a colour of your own: "
+                f"{supplied!r} reads {self.value_of(supplied):.3f}, to hand to the "
+                f"brush as it is, or pass one darker still as dark= to mix toward. A "
+                f"dark with a hue in it -- a little red or blue in those channels -- "
+                f"stays alive where a neutral one goes dead.")
 
     # -- inspection --------------------------------------------------------------
     def hex(self, color) -> str:
