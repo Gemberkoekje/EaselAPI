@@ -91,6 +91,14 @@ FRONT_PAGE = "## The first hour"
 #: there means cutting the workflow, the exercises or *What you are bad at*, each of
 #: which a session has defended, and that is a design job with a measurement behind
 #: it rather than an edit.
+#:
+#: **Left where it was in 0.8.0**, whose plan meant to lower it behind a move. The
+#: move happened -- the file's account of itself and the stories its painter did not
+#: keep went to `LESSONS.md` and `CALIBRATION.md` -- and the room went, nearly word for
+#: word, on what the same round's two painters asked the file to say: the calls their
+#: scripts leaned on, the thumbnail, a tenth exercise. The file ended the size it
+#: began, so the ceiling is still a little over it, and it did its work on the way:
+#: nothing went in without something coming out.
 FRONT_PAGE_WORDS = 6_700
 
 #: The same, for the card -- `The first hour`, the section meant to be read alone and

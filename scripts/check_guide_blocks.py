@@ -25,6 +25,13 @@ printed as a note rather than failed on: it is `LESSONS.md`'s rule 2 asked of th
 post-pass check, and the answer is sometimes the rule's to change rather than the
 recipe's.
 
+**And a mark a recommended block pays for that lays no paint is said**, as a note: the
+check's own `landed nothing:` line over the block, since 0.8.0. Two recipes laid such
+marks when that line was built -- a dry brush starved below where a bristle lands, and
+a shifted copy's passes falling past the silhouette it is held to. The first was the
+recipe's to fix; the second is the recipe's structure, and its paragraph says what it
+costs.
+
 The guide is three files -- `PAINTER.md` is the method, `PAINTING.md` the reasons
 and `RECIPES.md` the procedures -- and all three are checked here, because a block
 is just as wrong in whichever of them it happens to sit.
@@ -160,6 +167,7 @@ def main() -> int:
     blocks = guide_blocks()
     ok = bad = skipped = 0
     noisy: list[tuple[int, str, str, str]] = []
+    unlanded: list[tuple[int, str, str]] = []
     for i, (doc, b) in enumerate(blocks, 1):
         head = b.strip().splitlines()[0][:60]
         where = f"{doc.removesuffix('.md').lower():<8}"
@@ -182,6 +190,17 @@ def main() -> int:
         for notice in getattr(scope.get("s"), "notices", list)():
             noisy.append((i, doc, notice.code, str(notice)))
             print(f"  {i:>3} {where} SAYS             {notice.code}")
+        # What the block paid for that laid no paint: the check's own standing line,
+        # over the block as one pass. A note and not a failure, as a demo's own notes
+        # are -- it is a measurement, and one recipe's copies reach past the shape
+        # they are held to by construction -- but a block that lays a mark of nothing
+        # teaches one, so it is said every time this runs.
+        session = scope.get("s")
+        nothing = (session._landed_nothing_line(session.history.records)
+                   if hasattr(session, "_landed_nothing_line") else "")
+        if nothing:
+            unlanded.append((i, doc, nothing))
+            print(f"  {i:>3} {where} note             {nothing}")
     print(f"\nok {ok}  failed {bad}  skipped {skipped}")
 
     if noisy:
@@ -191,6 +210,12 @@ def main() -> int:
             print(f"  block {n} ({doc}) {code}\n       {text}")
     else:
         print("no recommended block trips a notice")
+    if unlanded:
+        print(f"{len(unlanded)} recommended block(s) pay for a mark that lays no paint:")
+        for n, doc, text in unlanded:
+            print(f"  block {n} ({doc}) {text}")
+    else:
+        print("no recommended block pays for a mark that lays no paint")
 
     demos, wrong = check_demos()
     print(f"{demos - wrong} of {demos} demo blocks fail exactly the way they say"

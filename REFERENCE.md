@@ -20,6 +20,9 @@ here without the rule beside it is how a painting comes out correct and dead.
 | A coordinate `(x, y)` | `0..1`, origin **top-left**. `x` is a fraction of the **width**, `y` of the **height** |
 | `size` (brush), `feather`, `roughen()`'s `amp` and `step`, `terminator()`'s `margin`, `step` and `least` | a fraction of the canvas's **long side**, whichever way the brush travels |
 | `depth`, `inset()`, `overhang` distance | normalised canvas units, the same as a coordinate |
+| A radius of `ellipse()` or `blob()` — `rx`, `ry`, `radius` | as a coordinate: a fraction of the **width** across and of the **height** down. One radius sets both, which is an oval on a canvas that is not square — `ellipse(p, 0.05)` is 102 by 76 px at 1024x768 — unless `aspect=s.aspect` is passed, which measures both by the width: 102 by 102 |
+| A `ribbon()`'s `width` and `end_width` | as a coordinate, **across the ribbon's own line**: a fraction of the height where it runs level, of the width where it runs upright. `0.05` is 38 px across a level ribbon at 1024x768, 52 across an upright one and 45 at 45 degrees, so one ribbon changes width as it turns |
+| `s.circle()`'s `r` | a fraction of the **width**, and the shape is round in pixels; `px=` is the radius in pixels instead |
 | An angle | degrees **clockwise from the horizontal, in the `0..1` coordinates**; `y` runs *down*, so `90` is downward. Passes *run* along the angle and a stack *steps* across it. On a canvas that is not square the screen angle is flatter than the number: `direction=-23` lays passes at `-12°` on a 2:1 canvas and `-18°` on 4:3, and `45` runs at `37°` on 4:3. An angle read off the picture does not have to be converted: hand `direction=` the two points instead — `direction=((0.33, 0.01), (0.58, 0.29))` — and it does the `atan2` for you |
 | A value | `0..1`, the sRGB luminance `look(values=True)` shows and `palette.value_of` reports |
 | A colour | a pigment name, a palette slot you named, `"#rrggbb"`, or an `(r, g, b)` triple |
@@ -28,8 +31,10 @@ here without the rule beside it is how a painting comes out correct and dead.
 **The first two rows are not the same unit.** On a canvas that is not square, a step of
 `0.07` down is a different number of pixels from `0.07` across, while a brush at
 `size=0.07` is `0.07` of the long side both ways. A radius `r` in `x` is `r * width /
-height` in `y` — or use `s.circle(place, r)`, which is round in pixels, and
-`ellipse(..., aspect=s.aspect)`.
+height` in `y`. **What is round in pixels**: a brush, always; `s.circle(place, r)`,
+always; an `ellipse()` or a `blob()` given one radius and `aspect=s.aspect`, or its two
+radii through `s.px(rx, ry)`. A `ribbon()` has no such form: its width is whatever its
+line's direction makes it.
 
 **To draw in pixels**, `s.px(x, y)` is a pixel's place, `(x / width, y / height)`, and
 `s.px_size(r)` is a length in pixels as a size, `r` over the long side. A round shape
@@ -486,61 +491,53 @@ number in the session. So two sessions sharing an `out_dir` do not write over ea
 other, and a painting reopened between `easel run` calls carries on where the directory
 left off. Pass `path=` to name a file yourself.
 
-`report()` is the check `easel run` prints beside the budget line after every pass: ten
-rules read off the log and the canvas — one brush at one size for a whole pass of two or
-more calls; twelve or more long marks within six degrees of one angle, from two or more
-calls, **said once and again only when the picture has picked up a long mark 30 degrees
-off the bars it was said about** (`--check`, which is asked for rather than printed at
-you, says it whenever it is true); **a graded passage laid too narrow**, five or more
-long parallel marks at three or more colours, in one run with no gap wider than four
-brushes and **each laid over the next rather than beside it** — two neighbours sharing
-under 30% of the shorter one's reach along the stack break it, as glints do — their
-colours turning at most once, stepped further apart than half the narrowest brush
-laying them (a brush that lays no colour of its own is not counted); a
-bristle under `size=0.025` **at a load over `0.6`**, because below that the comb's gaps
-are the mark; eight or more marks under `size=0.02` inside the painting's first sixty; a
-pressure list on a short chisel mark; three or more small round-tip marks at
-`tip_wobble=0`, each short enough to be the tip's silhouette rather than a line;
-**a daisy**, five or more hand-laid marks at least twice as long as their brush is wide,
-leaving one point with no gap wider than 90 degrees in the circle of their directions;
-**a loop's signature**, six or more consecutive hand-laid marks of one brush at one
-length (or a strict ramp of lengths), evenly spaced on a line and further apart than
-their own width; and **details a layer buried**, earlier small or `subject` marks
-showing as the pass opened that a glaze or a mass's passes left at under half their
-contrast. That one needs the canvas as the pass opened, which `easel run` keeps, and so
-does the `report()` before it in a script that reports after every pass. **A finding that
-counts marks names them**, on a line under it: the script lines they were laid from, as
-the dearest calls are named — *laid at p05.py:58 (lay_accents), :62, :72 (lay_edges) --
-records 174, 176, 179* — or only the records, for marks laid in another process, since
-which line laid a mark is known to the process that ran the script. Under those,
-the standing lines, which are measurements rather than findings: **`landed nothing:`**,
-said only when a mark of the pass carried under one unit of paint -- *NO PAINT LANDED* in
-`easel log` -- each named by the line that laid it, a mass call's by how many of its
-passes, with the cause its record shows: half its path or more outside its clip, a round
-dab under the size its press lands from, an oriented tip under four pixels, a bristle
-loaded under `0.5` -- *landed nothing: the dab at p06.py:39 (a round tip under its cliff
-at press=1); 6 passes of the block_in at p05.py:12 (outside its clip)*; the subject's share of
-the marks so far, wherever a mark is noted `subject`,
-against `subject_share` if given; `values:`, the 5th to 95th percentile of the values
-view against what the palette reaches and the three clusters it splits into, which says
-so when the range stays on one side of the box's middle or two clusters sit under `0.10`
-apart — or, under a declared `key=`, whether the picture has kept it; `edges:`, the share of the picture's edges under `2.5` px wide; `ground:`, what
-share of the canvas is **still bare ground**, which says so under `0.5%`; and `pencil:`,
-graphite still showing, left off once there is none. Their thresholds are under *The
-measurement lines, on the finished canvases* in `CALIBRATION.md`. All of them count the
-painting behind a rehearsal copy, not the copy's own log, and everything read off the
-canvas is left off a counted copy, which has laid no paint of its own.
-`since=` is the log index the pass began at (`len(s.history.records)` before it);
-left off, the whole painting — which is also what `s.checklist()` and `easel check`
-read — and there two rules written for a pass are asked the painting's question
-instead: the small comb says nothing, since what it asks for is a brush for the next
-marks, and the discs count only where three or more sit within `0.06` of one another,
-a signature left out, with where each group is. Two more need the shape and fire at
-the call: a shaped `block_in` with `direction` left off costing over 2.5× its axis (or
-a sequence costing over 2.5× its own dearest angle), and a round tip blocking in a
-**feature** — a shape under a tenth of the canvas across — that is less than four of
-its brushes wide. Over that width the same brush is a mass with a soft silhouette,
-which is what a round tip is for.
+`report()` is the check `easel run` prints beside the budget line after every pass:
+**ten rules** read off the log and the canvas, and under them the **standing lines**,
+which are measurements rather than findings. A *long* mark is at least twice as long as
+its brush is wide, and a mark is *laid by hand* when no mass verb laid it.
+
+| It says | when |
+|---|---|
+| *one brush at one size for a whole pass reads as one tool* | every mark of a pass of `10` or more, from two or more calls, is one brush at one size |
+| *a stack of bars unless the subject runs that way* | `12` or more long marks lie within `6` degrees of one angle, from two or more calls, and are most of the pass's long marks, a `scumble` counting as one. **Said once, and again only when the picture has picked up a long mark `30` degrees off the bars it was said about**; `--check`, which is asked for rather than printed at you, says it whenever it is true |
+| *a graded passage comes back as bars* | `5` or more long parallel marks at `3` or more colours, in one run with no gap wider than `4` brushes and **each laid over the next rather than beside it** — two neighbours sharing under `30%` of the shorter one's reach along the stack break it, as glints do — their colours turning at most once, are stepped further apart than half the narrowest brush laying them. A brush that lays no colour of its own is not counted |
+| *a comb that small is four streaks with gaps, not a brush* | `3` or more marks are laid with a `bristle` under `size=0.025` **at a load over `0.6`**, because below that the comb's gaps are the mark. A pass's rule: over a whole painting it says nothing, since what it asks for is a brush for the next marks |
+| *detail before the masses are down* | `8` or more marks under `size=0.02` fall inside the painting's first `60` |
+| *pressure changes a chisel's paint, not its width* | a mark laid by hand with a `flat`, a `bristle` or a `knife` is given a pressure list and is no more than `4` times as long as it is wide |
+| *that is one disc printed 5 times* | `3` or more round-tip marks are laid by hand under `size=0.02` at `tip_wobble=0`, each no more than `7` times as long as it is wide: the tip's silhouette rather than a line. Over a whole painting, only where `3` or more sit within `0.06` of one another, a signature left out, with where each group is |
+| *a daisy, or a wagon wheel* | `5` or more long marks laid by hand leave one point with no gap wider than `90` degrees in the circle of their directions |
+| *a loop's signature* | `6` or more consecutive marks laid by hand, of one brush at one length or a strict ramp of lengths, are evenly spaced on a line and further apart than their own width |
+| *this pass took 4 earlier details out of sight* | `3` or more earlier small or `subject` marks, showing as the pass opened, are left at under half their contrast by a glaze or a mass's passes. It reads the canvas as the pass opened, which `easel run` keeps, and so does the `report()` before it in a script that reports after every pass |
+
+**A finding that counts marks names them**, on a line under it: the script lines they
+were laid from, as the dearest calls are named — *laid at p05.py:58 (lay_accents), :62,
+:72 (lay_edges) -- records 174, 176, 179* — or only the records, for marks laid in
+another process, since which line laid a mark is known to the process that ran the
+script.
+
+| Line | Measures | Said |
+|---|---|---|
+| `landed nothing:` | the marks that carried under one unit of paint — *NO PAINT LANDED* in `easel log` — each by the line that laid it, a mass call's by how many of its passes, with the cause its record shows: half its path or more outside its clip, a round dab under the size its press lands from, an oriented tip under four pixels, a bristle loaded under `0.5` | only when a pass laid one: *landed nothing: the dab at p06.py:39 (a round tip under its cliff at press=1); 6 passes of the block_in at p05.py:12 (outside its clip)* |
+| `plan:`, `lightest:` | the canvas against what the plan declared: *What the plan changes*, below | once a plan declares values, or a lightest place |
+| `subject:` | the subject's share of the marks so far, against `subject_share` if given | wherever a mark is noted `subject` |
+| `values:` | the 5th to 95th percentile of the values view against what the palette reaches, and the three clusters it splits into | after every pass; it says so when the range stays on one side of the box's middle or two clusters sit under `0.10` apart — or, under a declared `key=`, whether the picture has kept it |
+| `edges:` | the share of the picture's edges under `2.5` px wide | after every pass |
+| `ground:` | the share of the canvas that is **still bare ground** | after every pass; it says so under `0.5%` |
+| `pencil:` | graphite still showing | left off once there is none |
+| `boxes:`, `unspent:` | the masses laid in a rectangle, and what is left of the budget | in the closing checklist only |
+
+Their thresholds are under *The measurement lines, on the finished canvases* in
+`CALIBRATION.md`. All of them count the painting behind a rehearsal copy, not the copy's
+own log, and everything read off the canvas is left off a counted copy, which has laid
+no paint of its own.
+
+`since=` is the log index the pass began at (`len(s.history.records)` before it); left
+off, the whole painting, which is also what `s.checklist()` and `easel check` read. Two
+more rules need the shape and fire at the call: a shaped `block_in` with `direction` left
+off costing over 2.5× its axis (or a sequence costing over 2.5× its own dearest angle),
+and a round tip blocking in a **feature** — a shape under a tenth of the canvas across —
+that is less than four of its brushes wide. Over that width the same brush is a mass
+with a soft silhouette, which is what a round tip is for.
 
 ### What the plan changes
 

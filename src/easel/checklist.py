@@ -149,7 +149,7 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
             :meth:`easel.plan.Plan.light_reading`.
 
     Returns:
-        The line, e.g. ``values: 0.15-0.35 of a box that reaches 0.14-0.96, clusters
+        The line, e.g. ``values: 0.15-0.35 of a box that reaches 0.13-0.96, clusters
         at 0.19, 0.24, 0.29; no clear light -- ...``.
     """
     flat = np.asarray(view, dtype=np.float32).reshape(-1)[::17]

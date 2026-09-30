@@ -33,7 +33,7 @@ their own sessions rather than measurements of the engine.
 | The rule, as the guide states it | Measured under |
 |---|---|
 | Two masses closer than `0.10` in value read as one | *Values* |
-| The floor of the box is `0.14`, and more passes do not go lower | *What the box reaches* |
+| The floor of the box is `0.128`, burnt umber alone, and more passes do not go lower | *What the box reaches* |
 | Mix to a value, not a ratio; white is weaker than its share | *The value scale*, *Tinting and mixing* |
 | The engine lays the chroma it is given, never more | *Chroma: the engine lays what it is given* |
 | A mass reads the same in the view as in the paint | *The paint and the view of it* |
@@ -60,10 +60,10 @@ their own sessions rather than measurements of the engine.
 | A file opens as painted and rebuilds as the engine installed lays; its time-lapse is the log | *The log, undo, and the stream* |
 | What a mass costs, before the call | *Budget* |
 | A daisy leaves one point every way; a loop is one length at one spacing; a film or a mass takes what was showing | *What the check reads after a pass* |
-| Rehearsal counts, subject shares, the form window, the cast-shadow steps | *From the sessions* |
+| Rehearsal counts, subject shares, the form window, the cast-shadow steps, boxes | *From the sessions* |
 | What the 0.5.0 round measured: the corpus replay, the noise budget, the candidates | *The 0.5.0 cohort's round* |
 | What the lighthouse handover's round measured: an edge that is not a step, a dry brush that streaks, the graded rule's misfires, the file | *The lighthouse handover's round* |
-| What the bell-warden's round measured: guides on any ground, the arrangement flat and small, the terminator, what a pass costs call by call, marks that land short or nothing, a key, what a place reads, the floor, a named light, a place laid over, rings, drawing units, and the painter's answers to the package measured again | *The bell-warden's round* |
+| What the bell-warden's round measured: guides on any ground, the arrangement flat and small, the terminator, what a pass costs call by call, marks that land short or nothing, a key, what a place reads, the floor, a named light, a place laid over, rings, drawing units, the painter's answers to the package measured again, and what the documents say: the boxes line over the corpus, the calls the card names, what a painter reads | *The bell-warden's round* |
 
 ---
 
@@ -94,9 +94,10 @@ Each pigment, one flat pass on a toned grey ground, read off the exported PNG:
 | `lemon_yellow` | 0.83 |
 | `titanium_white` | 0.95 |
 
-**The floor is about `0.13`, and it is the pigments', not the model's.** Mixing never
-takes a channel below the darker of its two ingredients, so the swatches set it: this
-is the value of the darkest mixture the box can reach.
+**The floor is `0.128`, burnt umber alone, and it is the pigments', not the model's.**
+That is `palette.value_of("burnt_umber")` and `palette.darkest_value`, and the table's
+`0.13`. Mixing never takes a channel below the darker of its two ingredients, so the
+swatches set it: nothing the box mixes reads darker than its darkest pigment.
 
 **It is a much lower wall than it looks, because of what `0.10` means.** A cell passes
 within `0.10` of the reference, so **anything the reference puts at `0.03` or above is
@@ -114,15 +115,26 @@ supplies below it is laid as written -- a literal `#000000` renders as `#000000`
 Before M8b it did floor the answer, and the number quoted here was `0.10` on that
 basis.
 
-`mix("ultramarine", "burnt_umber", 0.5)` reads `0.14` (`#21232d`) and is the bottom
-of your range -- darker than any single pigment, because each channel takes the
-darker side from a different ingredient. Vary the ratio and it holds that value
-while swinging cool to warm: `0.3` is `#1f2434`, `0.7` is `#24231f`.
+`mix("ultramarine", "burnt_umber", 0.5)` reads `0.137` (`#21232d`): the box's neutral
+dark, the one `at_value` lowers a colour with, and **not the floor** -- umber alone is
+darker by a hundredth, and warm. Vary the ratio and it stays between `0.13` and `0.15`
+while swinging cool to warm: `0.3` is `#1e2539` at `0.146`, `0.7` is `#242124` at
+`0.132`, the most neutral near-black the box mixes (chroma `0.008`).
 
 Mixing still cannot go *below* the darkest ingredient in any one channel, so piling
-paint on does not help: eight dried passes of the darkest mix measure `0.129`
-against one pass at `0.133`, four rounds of glazing `0.132`. If a mass is not dark
-enough, mix it darker.
+paint on takes a mass to its mixture's own value and no further. A `flat` at
+`size=0.08` laid solid on `toned_grey` at 1024x768: burnt umber reads `0.153` after one
+pass -- a solid mass lands a little short of its mixture, *What a solid mass actually
+lands at* -- and `0.129` after eight passes dried between, or after one pass and four
+rounds of glazing; the half-and-half mix `0.161`, and then its own `0.137`. If a mass is
+not dark enough, mix it darker; under `0.128`, supply a colour of your own
+(`scripts/probe_bell_session.py --written`).
+
+*Until 0.8.0 this section, `PAINTER.md` and `PAINTING.md` put the floor at `0.14` and
+called the half-and-half mix darker than any single pigment, and `at_value` refused a
+target of `0.13` without naming umber: one painter took `0.14` for the bottom of the box
+and set its cast shadow there. The error names the darks now, and the documents say one
+number.*
 
 Before M6b these swatches were colour-chart brights rather than masstones --
 `burnt_umber` was `#4A3728` -- and the box floored at `0.23` with no mixture below
@@ -1776,7 +1788,7 @@ them at twice the price. `solid-comb` says this at the call, with the share and 
 prices, and moves no default: a comb is the right brush for foliage, cloth and
 anything with strands in it, and its holes only read where the ground is darker than
 the paint. Two painters reported them as *shaped block-in paths wandering apart*,
-which they are not — [`SUGGESTIONS.md`](SUGGESTIONS.md), B2.
+which they are not — [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md), B2.
 
 **The round tips repeat themselves, and `tip_wobble` is the same idea for them.** Two
 `dab(press=3)` marks at `size=0.05`, each silhouette cropped to its own box and laid
@@ -2140,6 +2152,15 @@ sideways or a cluster foreshortened toward the viewer, which it was. *Moved here
 `PAINTER.md` in 0.8.0, where its painter judged the rules carry their own instruments:
 the recipe for a cluster of like parts, and the thumbnail.*
 
+**Boxes.** The guide said *every painter so far has painted boxes*, and the first painter
+to read that sentence and lay none credited the card for it. Replayed, and counted as the
+closing checklist counts them, **13 of the 24 paintings laid a mass in a rectangle and 11
+laid none** — 41 of their 349 masses, a median painting 5% of its masses and the most
+48% — so the page says *over half* (*What the documents say, measured*, under the
+bell-warden's round). The twelve made before the guide was restructured laid 34 of their
+172 masses so, and eight of them had one; the twelve since laid 7 of 177, and five had
+one; the last three laid none, 0 of 10, 0 of 17 and 0 of 22.
+
 **Reading.** Reading the guide, the reasons, the reference, the calibration file and
 two paintings' notes cost one session a few minutes and about thirty thousand tokens,
 against far more spent looking at its own rehearsals.
@@ -2150,7 +2171,7 @@ against far more spent looking at its own rehearsals.
 
 Seven painters who are not Claude installed `easel-paint` 0.5.0 from the package, painted
 a picture each, and left a verdict on the tool. Acting on them is one round, and its
-measuring step is [`scripts/probe_cohort_session.py`](scripts/probe_cohort_session.py):
+measuring step is [`scripts/probe_cohort_session.py`](https://github.com/Gemberkoekje/EaselAPI/blob/main/scripts/probe_cohort_session.py):
 it rebuilds **every committed painting from its own pass scripts, pass by pass**,
 re-measures each claim the round is built on, and counts what each proposed check would
 cost in lines printed. Everything in this section is that script's output. Re-run it
@@ -2568,7 +2589,7 @@ The concentric rings on the wall right of GLM's monitor cost that session its on
 laid wet, then a block-in*), the round's first check, and the round's second. The calls
 are gone — the first takes of `pass1b.py` and `pass2.py` were overwritten and their
 marks undone — so what is left is seven frames from the painter's own working folder,
-committed under [`paintings/GLM/terminal_window/rings/`](paintings/GLM/terminal_window/rings/),
+committed under [`paintings/GLM/terminal_window/rings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings/GLM/terminal_window/rings/),
 and one thing nobody had noticed: **the patch is still in the prelude.** `halo =
 blob(span("C1","G6"))` sits beside the `halo2 = blob(span("C2","F4"))` that take three
 replaced it with, and the larger one overshoots the glass onto the wall exactly where
@@ -2601,7 +2622,7 @@ shows.
 One painter, `claude-opus-5-5`, installed `easel-paint` 0.6.0 from the package, painted a
 lighthouse at dusk in 171 of 300 strokes, and checked its claims before making them.
 Acting on its verdict is one round, and its measuring step is
-[`scripts/probe_handover_session.py`](scripts/probe_handover_session.py): it rebuilds
+[`scripts/probe_handover_session.py`](https://github.com/Gemberkoekje/EaselAPI/blob/main/scripts/probe_handover_session.py): it rebuilds
 the painting from its thirteen committed passes through the CLI's own `run_script`,
 keeps a rehearsal copy of the canvas after each pass, and benches every candidate of
 the round on the canvas the painter actually had -- each candidate patched in for one
@@ -2721,12 +2742,12 @@ headland with their `clip=` feathered, leaves the `edges:` line at `64%` for eve
 candidate and shows no rim of the mass beneath at four times on `edges_containment_x4.png`.
 
 **Read blind by the painter.** The four were put to the painter under letters, in an
-order it did not know ([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md),
+order it did not know ([`answers-step2.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/lighthouse_handover/answers-step2.md),
 10a). It ranked A2 at `0.002` first; A2 at `0.003` second, ragged on anything made and
 paint-like only on the plain rock outline; A1 third; today last, A1 and today nearly a
 tie at 1:1. And it measured the steep side of the mass on bare ground itself, in canvas
 pixels -- re-run here on the same sheet, to the hundredth
-([`verify/measure_ground_edges.py`](paintings/Claude/lighthouse_handover/verify/measure_ground_edges.py)):
+([`verify/measure_ground_edges.py`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/lighthouse_handover/verify/measure_ground_edges.py)):
 
 | | wander about a straight line (sd, px) | largest bite (px) | in-between pixels across the edge (median) |
 |---|---|---|---|
@@ -2895,7 +2916,7 @@ first surf, today's blue specks become strokes of foam under B2. B3 is today's d
 fainter.
 
 **Read blind by the painter**, the five under letters
-([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 12a): B2
+([`answers-step2.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/lighthouse_handover/answers-step2.md), 12a): B2
 first -- *streaks along the stroke, broken inside by the tooth, chunky and varied: a dry
 brush dragged* -- B1+B2 a close second, *combed more than dragged*, then B1, B3 and
 today, today plainly dirt. It could not tell the streaks from the extra paint by eye, and
@@ -3064,7 +3085,7 @@ each firing pass cropped as it left the canvas with the marks the rule counted d
 over it (`out/graded/`, from `probe_cohort_session.py --graded`). How each crop reads is
 **a reading, not a measurement**, and two readers are given: the bench's, and the
 painter's, made blind -- the crops shuffled and numbered, the gates' verdicts unseen
-([`answers-step2.md`](paintings/Claude/lighthouse_handover/answers-step2.md), 13a). T is a
+([`answers-step2.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/lighthouse_handover/answers-step2.md), 13a). T is a
 graded passage coming back as bars, F is not, ? can't tell.
 
 | pass | run | the bench read | the painter, blind | as it stands | median | overlap 30% | both | trimmed | trimmed, 10% |
@@ -3291,8 +3312,8 @@ One painter, `claude-opus-5-5`, installed `easel-paint` 0.7.0 from the package a
 a stone figure on a plinth that has to pass for a statue, in 280 of 300 strokes, as sample
 art for another of the owner's projects; a second session painted the next picture for the
 same pack the following morning. Acting on both verdicts is one round,
-[`PLAN-0.8.0.md`](PLAN-0.8.0.md), and its measuring step is
-[`scripts/probe_bell_session.py`](scripts/probe_bell_session.py): it rebuilds both paintings
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PLAN-0.8.0.md), and its measuring step is
+[`scripts/probe_bell_session.py`](https://github.com/Gemberkoekje/EaselAPI/blob/main/scripts/probe_bell_session.py): it rebuilds both paintings
 from their committed passes through the CLI's own `run_script` -- the Bell-Warden in the
 order its saved reports record -- keeps a copy of the canvas after each pass and every call's
 script line and function, and benches every candidate of the round on the canvas the painter
@@ -3350,7 +3371,7 @@ needs the plan as it stood: the room's first rehearsal ran before the prelude de
 file carries the finished plan's `ground="buried"` into it. What this round needs of
 them -- the first drawing, the eight rehearsed versions of the subject's and the details
 passes, and the drawing check -- is filed in
-[`versions/`](paintings/Claude/bell_warden/versions/README.md) with the command lines
+[`versions/`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/bell_warden/versions/README.md) with the command lines
 that run it; run from the shell, each version prints its saved report word for word,
 and each drawing redraws its picture to the pixel.
 
@@ -4012,14 +4033,16 @@ a fraction of the long side.
 **Built in step 3**: `s.px(x, y)` and `s.px_size(r)`, `s.circle(p, px=r)` and `group()`. A
 stroke laid at `size=s.px_size(40)` and `pressure="even"` is 40 px thick on 1024x768 and on
 768x1024; `s.circle(p, px=25)` is 50 px across both ways on 768x1024, and
-`ellipse(p, *s.px(30, 22))` 60 by 44. The units table's rows for a ribbon's width and a
-blob's radii are F7's, in step 9.
+`ellipse(p, *s.px(30, 22))` 60 by 44. **The units table's rows for a ribbon's width and a
+round shape's radii were written in step 9**, from the table above, with the sentence
+under them that says which shapes are round in pixels; `tests/test_reference.py` measures
+the masks again and holds the rows to them.
 
 ### The painter's answers to the package, measured again
 
 `--answers`, from the sheets `--terminator` and `--floor` leave, the corpus replay, a flat
 field and both paintings' own drawings. The painter answered questions 4, 9, 10, D and 5f on
-2026-09-27 ([`answers-step2.md`](paintings/Claude/bell_warden/answers-step2.md)): **every
+2026-09-27 ([`answers-step2.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/bell_warden/answers-step2.md)): **every
 number it measured comes back here, and two of its reasoned figures do not** (the last
 paragraph).
 
@@ -4243,4 +4266,141 @@ both paintings, 15 and 20 masses (4 and 6 held with `clip=`), said nothing eithe
 corpus's 24 paintings, 196 solid masses, 12 of them held, said it on 2 either way. **The
 fix moves nothing already painted**: the one case it answers is the lit-side recipe's own
 shade copy, on a ground `0.25` or more from it.
+
+### What the documents say, measured
+
+*Step 9, `probe_bell_session.py --written`.* The round's last step changed no mark. It
+changed what the documents say, and each thing they say now was measured first. **The
+floor** is under *What the box reaches*: `0.128`, burnt umber alone, with the half-and-half
+mix the neutral dark above it at `0.137`. **The units table's rows** are under *Drawing
+units*, above.
+
+**The guide's own blocks, under step 8's fact and line.** Laid on the guide check's canvas
+-- 400x300, `toned_grey`, seed 1 -- `dab-blank` is said on none of the 79 recommended
+blocks, and `landed nothing:` on one where it was two:
+
+| recipe | what laid nothing | 400x300 | 1024x768 |
+|---|---|---|---|
+| *A mass built of planes*: its dry brush as it was, a `bristle` at `size=0.03`, `load=0.35` | the stroke carried | `0.2` units of paint | `14.1` |
+| ...at `load=0.5`, as the recipe writes it now | | `12.1` | `215.8` |
+| *A silhouette lit from one side*, as written | passes of its far copy, outside the silhouette | 3 of its 102 strokes | the table below |
+
+**The lit silhouette's copies, over seeds.** A mass takes its passes' wander from the
+stream, so which pass of a shifted copy falls past the silhouette it is held to is the
+seed's to say, and one seed is an anecdote. The recipe's block laid under seeds 1 to 12 at
+400x300 and 1 to 4 at 1024x768, each on bare ground and on its demo's passage:
+
+| the far copy's passes | canvas | runs | strokes | lost, mean | runs losing none | most lost | runs told *a graded passage* |
+|---|---|---|---|---|---|---|---|
+| across the form, `direction=20`, as written | 400x300 | 24 | 102 | `3.79` | 0 | 5 | 0 |
+| | 1024x768 | 8 | 102 | `2.12` | 0 | 3 | 0 |
+| along the form, `direction=80` | 400x300 | 24 | 83 | `0.04` | 23 | 1 | 1 |
+| | 1024x768 | 8 | 83 | `0.00` | 8 | 0 | 1 |
+
+Along the form the copy takes nineteen strokes fewer and loses almost none. Its passes
+then lie beside the join strokes, and on seed 1 over the demo's passage, at both sizes,
+the check says *17 marks at stepping colours run parallel 0.014 apart, and the narrowest
+brush laying them is 0.01* -- the graded rule, reading a mass's passes and the join laid
+along them as one passage. That is the seed the guide check lays, and the recipe's own
+sentence is that its zones' passes run three ways. **So the recipe keeps its far copy
+across the form, and says what that costs**: two or three of its hundred strokes at a
+painting's size, which the check names.
+
+**The graded rule with a mass counted once** -- the one candidate benched for it
+(`probe_cohort_session.py --graded`, the gate `a mass once`: a `block_in`, a `sweep` or a
+`cover` kept as its first pass alone, a `scumble` whole). It says nothing of the recipe
+laid along the form. Over the corpus as it stands, 24 paintings and 356 painted passes,
+the engine's line fires on the seven passes it fired on at 0.7.0 and on none of the two new
+paintings'; the candidate fires on five of them:
+
+| pass | its run | the painter, blind | the engine | a mass once |
+|---|---|---|---|---|
+| `car_wash/p13_form.py` | 9 marks, 3 of them passes of one mass | ? | fires | fires, on 7 |
+| `sonnet/p3_beam.py` | 11, all of them passes of 5 masses | T | fires | -- |
+| `opus/p3_beam.py` | 6, none a mass's | T | fires | fires |
+| `heron2/pass11_last.py` | 6, none a mass's | F | fires | fires |
+| `pier/pass2_masses.py` | 10, all of them passes of 3 masses | F | fires | -- |
+| `pier/pass4_water.py` | 8, none a mass's | T | fires | fires |
+| `hands/pass22_bowl3.py` | 5, none a mass's | F | fires | fires |
+
+The painter's reading is 0.7.0's, made blind (*The graded rule's two misfires*). The
+candidate goes quiet on the pier's stacked fields, the kind of false positive the overlap
+break was said to leave -- and on the first beam, a gradient laid as five flat masses,
+which is the thing the rule is for. A count of masses cannot tell the two apart. **Not
+built**: the rule stands as 0.7.0 left it.
+
+**The `boxes:` line over the corpus**: every committed painting replayed, and its masses
+counted as the closing checklist counts them -- a mass call whose place was a rectangle.
+
+| made | paintings | with a mass in a rectangle | masses | in a rectangle |
+|---|---|---|---|---|
+| before the guide was restructured, the first twelve | 12 | 8 | 172 | 34, `20%` |
+| since: the pier, the hands, the cohort's seven, the handover, this round's two | 12 | 5 | 177 | 7, `4%` |
+| **all** | **24** | **13** | **349** | **41** |
+
+By painting, in the order they were made: the pears 10 of 21, the car wash 1 of 13, the
+dusk lighthouse 5 of 16, the laundromat 0 of 14, the three greenhouse lighthouses 3 of 22,
+4 of 19 and 6 of 17, the pool 0 of 8, the heron 1 of 8 and then 0 of 8, the winter
+greenhouse 0 of 13, the fogged glass 4 of 13; then the pier 1 of 11, the hands 0 of 8, the
+cohort's BigPickle 0 of 8, DeepSeek 2 of 7, Gemini 2 of 9, GLM 1 of 13, GPT 1 of 42, Grok 0
+of 12 and Kimi 0 of 18, the handover 0 of 10, the Bell-Warden 0 of 17 and Wenna Brask 0 of
+22. A painting's share runs from none to `48%`, the median `5%`. **Eleven laid none**, and
+eight of those were among the twenty-one filed when `PAINTER.md` first said *every painter
+so far has painted boxes*, in 0.6.0's round; it says *over half the paintings so far* now.
+The two halves differ in more than the guide -- the checklist has counted boxes since
+0.6.0, and seven of the second twelve are other models -- so the table says the rate did
+not rise, and not why it fell.
+
+**The calls two painters leaned on, and the card.** Counted in each painting's committed
+prelude and passes, as the painters counted them -- both counts come back exactly -- and
+*on the card* is the word standing in the card's own code, a block or a span:
+
+| call or argument | the Bell-Warden | Wenna Brask | on the card at 0.7.0 | now |
+|---|---|---|---|---|
+| `at_value` | 29 | 54 | -- | yes |
+| `edge=` | 14 | 21 | -- | yes |
+| `s.dry` | 10 | 17 | -- | yes |
+| `clip=` | 8 | 41 | -- | yes |
+| `.shifted` | 4 | 0 | -- | -- |
+| `.inset` | 3 | 0 | -- | -- |
+| `opacity=` | 46 | 97 | -- | yes |
+| `pressure=` | 43 | 86 | -- | yes |
+| `s.stroke` | 29 | 84 | yes | yes |
+| `note=` | 38 | 51 | -- | yes |
+| `p.mix` | 27 | 40 | yes | yes |
+| `tip_wobble=` | 14 | 31 | yes | yes |
+| `s.look` | 13 | 25 | yes | yes |
+| `load=` | 8 | 23 | -- | -- |
+| `direction=` | 17 | 23 | yes | yes |
+| `p.mix_many` | 8 | 22 | -- | -- |
+| `s.block_in` | 15 | 21 | yes | yes |
+| `solid=` | 15 | 21 | yes | yes |
+| `s.glaze` | 9 | 7 | yes | yes |
+| `s.dab` | 2 | 5 | yes | yes |
+| `s.sample` | 3 | 2 | -- | -- |
+
+**9 of the 21 at 0.7.0, 16 now.**
+
+**What a painter reads**, in words:
+
+| | at 0.7.0 | now |
+|---|---|---|
+| `PAINTER.md` | 6,655 | 6,680, under the same 6,700 |
+| ...its card | 1,369 | 1,369, under 1,400 |
+| ...short of *Sign it*, where the first painter stopped | 6,260 | 6,263 |
+| `RECIPES.md` | 7,823 | 10,815 |
+| `REFERENCE.md` | 8,904 | 11,242 |
+| ...short of its notices, where both stopped | 6,068 to 6,266 | 7,818 |
+| `PAINTING.md` | 7,498 | 7,644 |
+| **as the second painter read them**: the first two whole, the third to its notices | **20,546** | **25,313** |
+
+Out of `PAINTER.md` since 0.7.0 went about 490 words, and about 515 came in, by a diff of
+its words. The first page is the size it was to the word; **the three files a painter
+reads before a mark are 23% longer**, the round's six recipes and the reference's rows for
+its new calls.
+
+**Left as it stands**: `PAINTER.md`'s *the step most painters so far have skipped*, of the
+edges. From the replay, 17 of the 24 paintings laid a smudge, between one and five each,
+and the last three laid none -- which neither confirms the sentence nor refutes it, since
+an edge is also lost by paint laid across it, and the `edges:` line measures that.
 

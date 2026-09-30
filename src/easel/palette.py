@@ -327,16 +327,19 @@ class Palette:
 
     @property
     def darkest_value(self) -> float:
-        """The lowest value anything in this box reaches -- about ``0.13``.
+        """The lowest value anything in this box reaches -- ``0.128``, burnt umber alone.
 
         Mixing cannot go below it: this model never takes a channel under the darker
         of its two ingredients, so the darkest pigment is the floor, and piling on
         eight dried passes or four rounds of glazing lands within a hundredth of one
-        flat pass. What sets the number is therefore the swatches, and the swatches
-        are masstones, so the box now stops within a few hundredths of the engine's
-        own limit -- the ``0.01`` linear reflectance floor in :mod:`easel.color`, or
-        value ``0.10``. The rest of the gap is hue: a dark that is still blue, or
-        still brown, cannot sit on the floor in all three channels at once.
+        flat pass. The blue-umber mix :meth:`at_value` lowers a colour with sits just
+        above it, at ``0.137`` half and half, and between ``0.13`` and ``0.15`` as its
+        ratio swings from warm to cool: the neutral dark, not the floor. What sets
+        the number is therefore the swatches, and the swatches are masstones, so the
+        box now stops within a few hundredths of the engine's own limit -- the
+        ``0.01`` linear reflectance floor in :mod:`easel.color`, or value ``0.10``.
+        The rest of the gap is hue: a dark that is still blue, or still brown, cannot
+        sit on the floor in all three channels at once.
 
         It is no longer a number the painter has to paint around. It is here so that
         :meth:`~easel.session.Session.compare` can tell an honest miss from the few
@@ -355,7 +358,7 @@ class Palette:
         something lighter in a slot.
 
         The pair of them is what the ``values:`` line means by *a box that reaches
-        0.14-0.96*: a picture occupying a fifth of that range is flat against what
+        0.13-0.96*: a picture occupying a fifth of that range is flat against what
         it had available, and the painter should be told what was available rather
         than left to assume the range is 0 to 1. It never is -- paint is not light.
         """

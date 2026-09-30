@@ -188,7 +188,7 @@ is, in about 1,500 words.
 | At the call | Thirty-two notices, each carrying a code and the measurement behind it: paint about to land outside the place it was handed, pass ends about to step down a slope, a film past what a film is for, a smudge about to cross a boundary rather than follow it, a mass laid solid with a comb that cannot close. They reach the library, the shell and the MCP results alike, and `easel explain <code>` prints the passage that measured one. |
 | The closing checklist | `checklist()` — `easel check` — answers every line of the guide's closing checklist that has a number behind it, and then prints the three that nothing can measure as questions, with your own `why` quoted back. |
 | Budget | `Session(budget=300)` holds the split a painter is told to write down: `run` reports spent and remaining, and under it the pass's dearest calls by the line that made them; `cost` flags a plan that would eat a large share of what is left. Nothing is ever refused. |
-| The plan | `s.plan(why=, values=, lightest=, subject_share=, bands=, ground=)` holds the rest of what a painter is told to settle before the first mark, and the check measures the canvas against it rather than against generic advice — including two standing warnings a picture can declare its way out of, where the rule concedes something only the painter knows. Saved in the session file; `easel plan` from a shell. |
+| The plan | `s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=)` holds the rest of what a painter is told to settle before the first mark, and the check measures the canvas against it rather than against generic advice — including three standing lines a picture can declare its way out of, where the rule concedes something only the painter knows: bars that are the subject, a ground that is buried, a key that is low or high. Saved in the session file; `easel plan` from a shell. |
 | History | Every stroke logged as data. Undo, replay, GIF time-lapse, contact sheet. |
 
 Coordinates are always normalised `0.0–1.0` with the origin top-left. Raw pixels are
@@ -242,7 +242,7 @@ run first in the same scope, so helpers and mixtures survive between passes;
 
 The same verbs again, for a client that speaks MCP — and the difference worth
 having is that the looking tools hand back the picture rather than a path to it.
-`look`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline, as
+`look`, `thumbnail`, `preview`, `rehearse`, `compare` and `prepare` return their PNG inline, as
 `run` does when it rehearses a pass, so the loop the guide asks for (look every five
 to fifteen strokes) costs one call.
 
@@ -370,10 +370,10 @@ painting's log lays every mark again where it lay, and golden-image tests hold t
 the byte it holds on one machine: two builds of numpy can round a mixture differently in
 the seventh decimal, which moved 729 of one painting's 786,432 pixels by one level. It
 is laid by the engine installed, so a stroke an earlier version laid wrongly comes back
-fixed, and [`CHANGELOG.md`](CHANGELOG.md) names each such fix under its version. Whether the
+fixed, and [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) names each such fix under its version. Whether the
 committed *scripts* rebuild the canvas is a separate question and the answer is per
 painting — seven of the twenty-four say **Reproducible: not claimed** in their own table in
-[`PAINTINGS.md`](PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
+[`PAINTINGS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTINGS.md), usually because a drawing pass was rewritten and re-run,
 or `look` scripts ran as passes between the painting ones, and a mark's texture is
 seeded from its place in the log. Each painting's table says which of the two it
 claims; the older ones that claim the stronger one were checked by sha256, and the seven

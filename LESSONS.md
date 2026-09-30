@@ -67,6 +67,14 @@ moved the edges was the engine, which in 0.7.0 breaks every held edge against th
 where a line was printed and did not change what the painter did, the answer is in the
 engine, not in a louder line.
 
+**It arrived a second time, and the engine's answer was not enough on its own.** The
+first painter against that broken edge held every zone of its subject to a polygon; its
+`edges:` line read 48% to 61% from the subject's pass on and changed nothing, and it
+named the result *a vinyl toy*. The break roughens an edge; it does not turn a form.
+What the painter asked for was a procedure — a join laid along each terminator — and
+that is a recipe now, which is the section below this one arriving from the other side:
+a default is worth more than a warning, and neither is a method.
+
 ### A separate file of warnings is the fourth copy, and it does not work either
 
 Asked directly whether the warnings should be gathered into their own file for a painter
@@ -269,10 +277,17 @@ compared with each other.
 A painter reporting on its own painting is not a measurement. Every figure in the run
 write-ups was re-measured from the exported PNGs. They were mostly right and not entirely.
 
-**Thirty claims have now been re-measured before anything was built on them, and eight
-did not survive.** Three are recent — the `rough` ground that was not what a ripple
-metric was reading, the `size` threshold that turned out to be a pixel threshold, and
-the sampled spread whose two populations turned out to overlap. The first five are the
+**Ninety-four claims have now been re-measured before anything was built on them, and
+twenty-one did not survive.** The figure stood at thirty and eight from the hands
+session's round through two releases, and was counted again for 0.8.0: the 0.5.0
+cohort's round adds twenty-one — five claims and eighteen reported bugs, two of them
+both — and four reported mechanisms that died; the lighthouse handover's adds eleven,
+and two; and the two verdicts on 0.7.0 add thirty-two rows and seven, three of the
+Bell-Warden's and four of Wenna Brask's, two of which its painter withdrew itself when
+it was asked. Of the first eight, three were recent when this was first written — the
+`rough` ground that was not what a ripple metric was reading, the `size` threshold that
+turned out to be a pixel threshold, and the sampled spread whose two populations turned
+out to overlap. The other five are the
 ones with the clearest shape: the clean contour that was supposed to spill less than a ragged fill,
 the smudge said to fail on a slope (it fails on a *bend*), the rendered view said to lift
 a solid mass off its planned value (it does not move it at all), the boundary said
@@ -300,6 +315,22 @@ mechanism, and its three measured costs reproduced to the stroke. **Ask every ro
 label which half of each finding is measured and which is reasoned.** It costs the
 painter one clause, it tells the re-measurement where to look first, and a session that
 can draw the line is already doing the check's work.
+
+**And a measured number can be the tool's own line, read for something it does not
+measure.** Two of the Bell-Warden's three were numbers. *Highlights landed at `0.52`
+instead of `0.64` until I added `dry()`*: the `0.52` was the `lightest:` line's mean of
+a place with an eye inside it, the `0.64` the value its mixture was mixed at, and the
+`dry()` moved nothing — the rehearsal before it and the one after read the same, which
+its own session's transcript showed. *The box bottoms out near `0.14`*: that was
+`at_value`'s default dark, refusing `0.13` and naming nothing else, while burnt umber
+alone read `0.128`. Both numbers were read off the tool correctly and both were wrong
+about what they measured, which is *the measurement can be right and the instrument
+still wrong*, below, seen from the painter's side of the screen. **So a claim that
+quotes a line of the check is checked against what that line reads, before it is checked
+against the paint** — and the fix goes into the line: a place now reads its median and
+says when it is split, and the error names the darks the box does reach. The painter
+withdrew its own suggestion when shown, on a sentence worth keeping: a notice built on
+its number *would be the engine making my own misattribution for me*.
 
 So: **when a request names a mechanism, measure the mechanism and not the failure.** It
 is cheap — the five above cost an afternoon between them — and it changes what gets
@@ -426,6 +457,18 @@ the unprompted paintings before the human has.
   and broke them anyway, and rehearsals caught all three: *looking at rehearsals caught
   those, not reading*. Its instruction for whichever round does cut the documentation
   is the one to keep: **start with what the notices already say at the call.**
+- **Record where it stopped reading, and what it was handed.** The next two painters
+  against the same card each read about 21,000 words of the documents before a mark,
+  and neither read everything. The Bell-Warden stopped short of the end of every file
+  it opened — at line 700 of `PAINTER.md`, which left *Sign it* unread and its painting
+  unsigned — and is the first painter to say which of the text it would move, the
+  documents' account of themselves and the stories, and which of it worked. **And the
+  second began from the first's notes, which is a different measurement**: it carried
+  the first painter's workaround for guides it could not see and never drew on its own
+  painting, it carried a wet-paint lesson its author had already withdrawn, and where it
+  agrees with the first verdict it is one painter's lesson met twice. What a lesson
+  carried over can give is its contradiction: the first painter's lighting, tried on a
+  form that faces the light, stacked its profiles like cut paper.
 - **Stop running verbal naming probes.** Three attempts settled it: 0 of 8 sessions *name*
   water, 4 of 4 *paint* it. A verbal probe measures what a session says when interrupted.
   The finding they did produce is better than any tally — the estuary is not a subject
@@ -846,6 +889,75 @@ higher rate, the cut went too far and the row above says where the words went.
 card where to start, it read everything anyway (*a painter told where to start reads what
 it likes*, in the protocol above). One data point against the prediction's last clause.
 
+**The boxes half of that prediction has an answer, and it is no.** Replayed for 0.8.0
+and counted as the closing checklist counts them, the twelve paintings made before the
+restructure laid 34 of their 172 masses in a rectangle, and eight of the twelve had one;
+the twelve made since — the pier, the hands, the cohort's seven, the handover and the
+two painters of 0.8.0's round — laid 7 of 177, and five had one. The last three laid
+none: 0 of 10, 0 of 17 and 0 of 22. That is not one cause — the checklist has counted
+boxes since 0.6.0, and seven of the twelve are other models — but it is not a higher
+rate. The exercises have been counted for the last three only: five of the nine, then
+all nine twice.
+
+**And the replay caught the guide in a claim of its own.** The Bell-Warden laid no box
+and credited the card, which said *every painter so far has painted boxes*. Eleven of
+the twenty-four paintings laid none — and eight of the twenty-one that were filed on the
+day that sentence was written, in 0.6.0's round. It was false by the check's own count
+when it went in, and nobody had counted: *check the painters' numbers* holds for the
+guide's numbers about painters too. The page now says what the replay says, *over half*.
+
+**That painter was also the first to say which of the text it would move, and 0.8.0
+moved it.** Asked what the documentation had cost, it named *commentary on the documents
+themselves and painter anecdotes — a few anecdotes persuade; dozens cost context*; asked
+which persuaded, it kept three — the four treatments of one failing passage, told once
+where it had been told in five places with three morals; the picture finished without
+opening the other four files; and the pier, the one story about a failure no line
+catches. So `PAINTER.md` lost the sentences in which it described itself. They are true,
+and they are this file's to say rather than the method's:
+
+- *Every rule in these five files is stated once, in the file it belongs to, and linked
+  from everywhere else. A number quoted here is measured there. If a rule seems to be
+  missing from this file, it is in one of the others, on purpose.*
+- *This file is sufficient to finish a painting, which is a trap.*
+- *The card above is the whole of it. What follows is only what the card has no room
+  for: the mechanism behind each step, once each.*
+- Of the exercises: *nothing stops you skipping these, and this file has stopped calling
+  them a gate, because a rule nothing enforces is a preference and saying it louder does
+  not change that.*
+
+The stories it did not keep are in `CALIBRATION.md`'s *From the sessions*, labelled as
+reports; the framing *every painter so far* is gone from the three places it stood; and
+the six failures the card listed by name are the sheet `easel demo mistakes` paints,
+which names them itself. **And the card's instances of a row of like things went with
+them** — *four fingers, five pickets, a row of windows*, and *a cupped hand seen from
+the front is a cluster coming toward you, not four fingers laid out sideways*. They had
+stood on the first page since the hands session's round, three releases, with one
+painting's subject first in the list, which is the pattern *a worked example is an
+instruction* warns about. The card states the rule with no instance now; the body tells
+the story once, where its painter kept it, and the procedure is a recipe.
+
+**The file is no lighter for it, and its budget did not come down — which the plan said
+it would.** About five hundred words went out and about five hundred came in, every one
+of them something the same two painters asked the page to say: the calls their scripts
+leaned on most, of which the card named 9 of 21 and names 16 now; the thumbnail at step
+1 and a tenth exercise that uses it; versions and prices in the loop; the example's
+budget said to be the example's; the place a plan names, at the value it will read; and
+the size the closing question is asked at. 6,655 words at 0.7.0 and 6,680 now, under the
+same 6,700. That is the budget doing what it was built for — nothing went in without
+something coming out — and it is not the *leaner* the painter asked for.
+
+**And what a painter reads before the first mark grew by a quarter.** Read as the second
+painter read them — `PAINTER.md` and `RECIPES.md` whole, `REFERENCE.md` to its notices —
+20,546 words became 25,313, because every other answer of the round is a recipe or a row
+of the reference: six recipes, the facts of a dozen new calls and lines, and two tables
+that are longer than the paragraph they replace. Those are the files both painters read
+most of before a mark, though the first page says to open them when a situation calls
+for one. **A round that answers *it's long* by tidying one page and adding nearly five
+thousand words elsewhere has not answered it**, and the register says so on both
+painters' rows. What would is the handover painter's instruction, still untried: start
+from what the notices already say at the call, and cut what they have made redundant,
+with a measurement behind each cut.
+
 ## The milestones, as a key
 
 Source comments, test docstrings and `CALIBRATION.md` date things by milestone — *"before
@@ -875,12 +987,14 @@ the thing that exposes it.**
 ## Verifying a change
 
 ```bash
-pytest -q                              # 1604 passed with the mcp extra installed;
+pytest                                 # 1746 passed with the mcp extra installed;
                                        # the mcp and mixbox tests skip without theirs
+                                       # (`addopts` is already `-q`: a second one
+                                       # takes the summary line away)
 ruff check src tests scripts examples mcpb
 python scripts/check_guide_blocks.py   # every python block in the guide's three
-                                       # files runs (72 ok, 10 pseudo-code), the
-                                       # 19 demos fail as they say, and PAINTER.md
+                                       # files runs (79 ok, 10 pseudo-code), the
+                                       # 22 demos fail as they say, and PAINTER.md
                                        # is inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png
 python scripts/make_shape_sampler.py   # and at samples/shapes.png
