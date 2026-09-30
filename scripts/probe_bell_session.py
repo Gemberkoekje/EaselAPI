@@ -46,6 +46,7 @@ It does four things:
     python scripts/probe_bell_session.py --declared   # step 5: the plan's lines, checked
     python scripts/probe_bell_session.py --thumbnailed  # step 6: the thumbnail, checked
     python scripts/probe_bell_session.py --recipes    # step 7: the recipes, measured
+    python scripts/probe_bell_session.py --landed     # step 8: what landed nothing, said
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
@@ -61,7 +62,10 @@ no watcher, and over the whole corpus replayed again -- twenty minutes or so, ke
 thumbnail: the painter's arrangements counted as ``easel run --thumbnail`` counts a pass,
 against the prototype its question 4 was answered on. ``--recipes`` measures step 7's
 recipes as ``RECIPES.md`` writes them, and counts the holes check the old way and the new
-over both paintings and the corpus -- half an hour, most of it the corpus.
+over both paintings and the corpus -- half an hour, most of it the corpus. ``--landed``
+measures where a round dab stops landing a quarter of a pixel apart and what its touches
+reach, then says what step 8's fact and line say on both paintings, on the guide's blocks
+and over the corpus replayed again, against what step 2's replay counted.
 """
 
 from __future__ import annotations
@@ -168,6 +172,8 @@ class Rebuilt:
     #: a rebuild run without the probe's watcher, whose wrappers sit where the painter's
     #: line would be (``rebuild(watch=False)``).
     dearest: dict[str, str] = field(default_factory=dict)
+    #: What each pass's calls said, as the notices ``easel run`` prints above its check.
+    told: dict[str, list] = field(default_factory=dict)
 
     def opened(self, label: str) -> Session:
         """A copy of the canvas the pass ``label`` opened on, to lay something else on."""
@@ -376,11 +382,13 @@ def rebuild(painting: str = "bell", upto: str | None = None, keep: bool = True,
             start = session._open_pass()
             out.starts[label] = start
             path = folder / name
+            before = len(session.notices())
             result = run_script(session, path.read_text(encoding="utf-8-sig"), str(path),
                                 prelude=source, prelude_name="prelude.py")
             if result.code:
                 raise RuntimeError(f"{name} failed to rebuild: {result.report}\n"
                                    f"{result.trace}")
+            out.told[label] = session.notices(since=before)
             out.said[label] = session.report(since=start).splitlines()
             out.dearest[label] = session._dearest_line(start)
             if keep:
@@ -3794,6 +3802,357 @@ def probe_recipes(rb: Rebuilt, wb: Rebuilt, corpus_too: bool = True) -> None:
     print(f"  the corpus, {len(cohort.CORPUS)} paintings: {count.line()}")
 
 
+# -- step 8, D: a round dab under its cliff, and what landed nothing --------------------
+
+#: The round tips a dab is laid with, by the preset a painter names: ``liner`` is a
+#: ``round_hard`` tip at its own opacity and tooth, so it is measured as itself.
+CLIFF_BRUSHES = ("round_hard", "round_soft", "liner")
+#: The canvases the cliff is read on: the guide check's, the two paintings' and the
+#: size the landing grid of step 2 used for the other long side.
+CLIFF_CANVASES = ((400, 300), (1024, 768), (768, 1024), (1440, 960))
+#: Sizes in pixels, a quarter of a pixel apart, from where a dab is a pixel and a half
+#: (``_dabs`` never lays a smaller one) to past every cliff step 2 found.
+CLIFF_PX = tuple(round(1.0 + 0.25 * i, 2) for i in range(41))
+
+
+def landing_grid(width: int, height: int, brush: str, press: int = 1,
+                 texture: str = "linen", wobble: float = 0.0, pressure="taper",
+                 n: int = 24, sizes_px=CLIFF_PX) -> list[dict]:
+    """Every pixel size of one round dab laid ``n`` times on a flat field: what landed.
+
+    A light on a flat dark field, as step 2's grid, each size on a fresh copy and each
+    dab far enough from the others not to meet; ``landed`` is the share of the ``n``
+    that carried a unit of paint or more -- the unit ``easel log`` and the engine read a
+    mark that landed nothing by.
+    """
+    light, dark = "#f2e2a0", "#2a2622"
+    long = max(width, height)
+    out = []
+    for px in sizes_px:
+        s = _field_session(width, height, dark, texture)
+        paint = []
+        with quiet():
+            for i in range(n):
+                x = 0.08 + 0.84 * (i % 6) / 5.0
+                y = 0.15 + 0.7 * (i // 6) / max((n - 1) // 6, 1)
+                rec = s.dab(x, y, brush, light, size=px / long, press=press,
+                            tip_wobble=wobble, pressure=pressure)
+                paint.append(float(rec.paint))
+        out.append({"px": px, "size": px / long, "paint": float(np.median(paint)),
+                    "landed": sum(p >= LANDED for p in paint) / n})
+    return out
+
+
+def cliff_of(rows: list[dict]) -> tuple[float, float, float]:
+    """``(none under, half from, every from)``: the largest size at which no dab landed,
+    the smallest at which half did, and the smallest from which every dab at every
+    larger size did -- the cliff a fact can name."""
+    none = max((r["px"] for r in rows if r["landed"] == 0.0), default=0.0)
+    half = min((r["px"] for r in rows if r["landed"] >= 0.5), default=float("inf"))
+    every = float("inf")
+    for r in reversed(rows):
+        if r["landed"] < 1.0:
+            break
+        every = r["px"]
+    return none, half, every
+
+
+def probe_cliffs() -> dict[tuple[str, int], float]:
+    """Where a round dab stops landing, a quarter of a pixel apart: by preset and press,
+    on four canvases and three surfaces, with its tip wobbled and a pressure of its own.
+
+    Returns the cliff the engine's fact should carry for each tip and press: the
+    largest *every lands from* over every canvas, every surface and every wobble at the
+    default taper, so a dab at or over it lands on all of them.
+    """
+    heading("step 8, D: where a round dab stops landing, a quarter of a pixel apart")
+    rows, worst = [], {}
+    for brush in CLIFF_BRUSHES:
+        for press in (1, 2, 3):
+            for (w, h) in CLIFF_CANVASES:
+                for texture in (("linen", "smooth", "rough") if (w, h) == (1024, 768)
+                                else ("linen",)):
+                    none, half, every = cliff_of(landing_grid(w, h, brush, press, texture))
+                    rows.append([brush, press, f"{w}x{h}", texture, f"{none:.2f}",
+                                 f"{half:.2f}", f"{every:.2f}"])
+                    key = (brush, press)
+                    worst[key] = max(worst.get(key, 0.0), every)
+    print(table(rows, ["preset", "press", "canvas", "surface", "none under (px)",
+                       "half from", "every from"]))
+    print("  the cliff over every canvas and surface, by preset and press: "
+          + "; ".join(f"{b} press={p} {v:.2f} px" for (b, p), v in worst.items()))
+
+    heading("step 8, D: the same, with the tip wobbled and a pressure of its own")
+    rows = []
+    for brush in ("round_hard", "round_soft"):
+        for press in (1, 2, 3):
+            for wobble, pressure in ((0.35, "taper"), (0.7, "taper"), (0.0, "even"),
+                                     (0.0, 0.5), (0.0, "dab")):
+                none, half, every = cliff_of(landing_grid(1024, 768, brush, press,
+                                                          wobble=wobble, pressure=pressure))
+                rows.append([brush, press, wobble, str(pressure), f"{none:.2f}",
+                             f"{half:.2f}", f"{every:.2f}"])
+                if pressure == "taper":
+                    worst[(brush, press)] = max(worst[(brush, press)], every)
+    print(table(rows, ["preset", "press", "tip_wobble", "pressure", "none under (px)",
+                       "half from", "every from"]))
+    print("  with every wobble at the taper: "
+          + "; ".join(f"{b} press={p} {v:.2f} px" for (b, p), v in worst.items()))
+    return worst
+
+
+def probe_touches() -> None:
+    """What one, two and three touches of a round dab reach, for ``dab()``'s docstring.
+
+    The way from the field to the colour at the median of the pixels each dab moved,
+    at five sizes: on the flat dark field of step 2's answers bench, a light; and on the
+    three grounds *At the scale of a feature* measured white on at ``size=0.06``.
+    """
+    heading("step 8, D: what one, two and three touches reach, by size and ground")
+    cases = [("a light on a flat dark field", "#f2e2a0", "#2a2622", None)]
+    cases += [(f"white on {g}", "titanium_white", None, g)
+              for g in ("toned_grey", "umber_wash", "warm_white")]
+    sizes = (7, 12, 25, 50, 61)
+    for label, colour, field_colour, ground in cases:
+        rows = []
+        for press in (1, 2, 3):
+            row = [press]
+            for px in sizes:
+                if field_colour is not None:
+                    s = _field_session(1024, 768, field_colour)
+                else:
+                    s = Session(1024, 768, texture="linen", ground=ground, seed=11,
+                                timelapse=False, out_dir=OUT / "scratch")
+                own = s.palette.value_of(colour)
+                ways = []
+                with quiet():
+                    for i in range(12):
+                        x, y = 0.1 + 0.8 * (i % 6) / 5.0, 0.3 + 0.4 * (i // 6)
+                        box = _window(s, x, y, reach=48)
+                        before = _local_values(s, box)
+                        s.dab(x, y, "round_hard", colour, size=px / 1024, press=press)
+                        after = _local_values(s, box)
+                        moved = np.abs(after - before) > 0.02
+                        if moved.any():
+                            field_v = float(np.median(before[moved]))
+                            ways.append(_way(float(np.median(after[moved])), field_v, own))
+                row.append(f"{np.median(ways):.2f}" if ways else "--")
+            rows.append(row)
+        print(f"  {label}: the way to the colour at the median moved pixel, twelve dabs a size")
+        print(table(rows, ["press"] + [f"{px} px" for px in sizes], indent="    "))
+
+
+_ROUND = ("round_hard", "round_soft")
+
+
+def _landed_line(lines: list[str]) -> str:
+    """The ``landed nothing:`` line out of a check's lines, or ``""``."""
+    return next((x.strip() for x in lines if x.strip().startswith("landed nothing:")), "")
+
+
+class LandedWatcher(SiteWatcher):
+    """The corpus replayed with the engine as built: at every pass's end, its own line
+    for what landed nothing, what ``dab-blank`` said, and every mark that laid nothing
+    with the cause its record shows -- nothing read off the canvas per call."""
+
+    #: One dict per pass closed while this class is the watcher.
+    kept: list[dict] = []
+
+    def __init__(self, *args, **kw) -> None:
+        super().__init__(*args, **kw)
+        self.told_from: tuple[int, int] = (0, 0)       # (id of the session, notices seen)
+
+    def _judge(self, call, session) -> None:
+        call.before = None
+        call.wet = None
+
+    def _judge_pass(self, done, session) -> None:
+        records = session.history.records[done.start:done.end]
+        paid = [r for r in records if r.kind not in UNPAINTED]
+        seen = self.told_from[1] if self.told_from[0] == id(session) else 0
+        told = session.notices()[seen:]
+        self.told_from = (id(session), len(session.notices()))
+        empty = [r for r in paid if r.paint < LANDED]
+        LandedWatcher.kept.append({
+            "painting": self.replay.painting.name, "pass": done.name, "painted": bool(paid),
+            "line": session._landed_nothing_line(records),
+            "blank": [n.text for n in told if n.code == "dab-blank"],
+            "empty": [{"index": r.index, "hand": not r.params.get("via"),
+                       "cause": session_module._nothing_cause(r, session.canvas)[0],
+                       "round_dab": (len(r.points) == 1 and r.kind == "stroke"
+                                     and r.params.get("tip") in _ROUND),
+                       "px": float(r.params.get("size", 0.0)) * session.canvas.long_side,
+                       "press": int(r.params.get("press", 1)), "pressure": r.pressure,
+                       "tip": r.params.get("tip"), "load": r.params.get("load"),
+                       "brush": r.brush, "points": len(r.points), "kind": r.kind,
+                       "clip": "clip" in r.params, "paint": float(r.paint)}
+                      for r in empty]})
+        self.opened = None
+
+
+def replay_landed() -> list[dict]:
+    """Every committed painting rebuilt with :class:`LandedWatcher` -- twenty minutes or so.
+
+    The engine's own walk to the painter's line is patched to step past this harness's
+    wrappers, as :func:`replay_built` does, so the line names the painter's lines.
+    """
+    LandedWatcher.kept = []
+    saved_watcher, saved_site = cohort.Watcher, session_module._painter_site
+    cohort.Watcher = LandedWatcher
+    session_module._painter_site = _site_past_probes
+    try:
+        for entry in cohort.CORPUS:
+            started = time.time()
+            rep = cohort.replay(entry, keep_canvas=False)
+            print(f"  {entry.name:<12} {len(rep.passes):3d} passes, "
+                  f"{time.time() - started:5.0f} s"
+                  + (f"  [{rep.error}]" if rep.error else ""), flush=True)
+    finally:
+        cohort.Watcher, session_module._painter_site = saved_watcher, saved_site
+    return list(LandedWatcher.kept)
+
+
+def probe_landed_corpus(kept: list[dict], data: CorpusData | None) -> None:
+    """The line and the fact over the corpus as the engine says them, against step 2.
+
+    A painting written as one script is cut into passes by its numbered sections, and a
+    section is closed again each time the script comes back into it, so one pass can be
+    several entries of ``kept``: every count here is of passes by their name, as step 2's
+    were, and the lines of a pass that closed more than once are all its own.
+    """
+    painted = [k for k in kept if k["painted"]]
+    marks = [e for k in painted for e in k["empty"]]
+    keys = {(k["painting"], k["pass"]) for k in painted}
+    spoke = {(k["painting"], k["pass"]) for k in painted if k["line"]}
+    told_keys = {(k["painting"], k["pass"]) for k in painted if k["blank"]}
+    again = len(painted) - len(keys)
+    print(f"  {len(kept)} passes closed, {len(painted)} of them painted -- {len(keys)} by "
+          f"name ({again} closed again); the line speaks on {len(spoke)} "
+          f"({len(spoke) / max(len(keys), 1):.1%}), in {len({k[0] for k in spoke})} of "
+          f"{len({k[0] for k in keys})} paintings, naming {len(marks)} marks: "
+          f"{sum(e['hand'] for e in marks)} laid by hand, "
+          f"{sum(not e['hand'] for e in marks)} passes of mass calls")
+    if data is not None:
+        cumulative = {(p["painting"], p["pass"]) for p in data.passes if p["spent"] > 0}
+        print(f"  of step 2's {len(cumulative)} painted passes -- every pass closed once the "
+              f"painting had spent a stroke -- the line speaks on {len(spoke & cumulative)} "
+              f"({len(spoke & cumulative) / max(len(cumulative), 1):.1%})")
+    with (OUT / "landed.pkl").open("wb") as handle:
+        pickle.dump(kept, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    causes: dict[str, list[dict]] = {}
+    for e in marks:
+        causes.setdefault(e["cause"] or "(none it can name)", []).append(e)
+    print(table([[c, len(v), sum(x["hand"] for x in v)] for c, v in
+                 sorted(causes.items(), key=lambda kv: -len(kv[1]))],
+                ["cause", "marks", "of them by hand"]))
+    for e in causes.get("(none it can name)", [])[:20]:
+        print(f"    no cause: {e['brush']} ({e['tip']}) {e['kind']} of {e['points']} points, "
+              f"{e['px']:.1f} px, press={e['press']}, pressure={e['pressure']!r}, "
+              f"load={e['load']}, clip={e['clip']}, paint {e['paint']:.2f}")
+    lines = [k for k in painted if k["line"]]
+    lengths = [len(k["line"]) for k in lines]
+    if lengths:
+        print(f"  the line's length: median {np.median(lengths):.0f} characters, p90 "
+              f"{pct(lengths, 90):.0f}, longest {max(lengths)}")
+        for k in sorted(lines, key=lambda k: -len(k["line"]))[:3]:
+            print(f"    longest -- {k['painting']} {k['pass']}:\n      {k['line']}")
+
+    dabs = [e for e in marks if e["round_dab"]]
+    said = sum(len(k["blank"]) for k in painted)
+    print(f"  round dabs laid by hand that landed nothing: {len(dabs)}; `dab-blank` said "
+          f"{said} times, on {len(told_keys)} passes ({len(told_keys) / max(len(keys), 1):.1%}"
+          f"), in {len({k[0] for k in told_keys})} paintings")
+    for e in dabs:
+        if e["cause"] != "cliff":
+            print(f"    not told: {e['tip']} {e['px']:.1f} px at press={e['press']}, "
+                  f"pressure={e['pressure']!r}, clip={e['clip']} -- cause "
+                  f"{e['cause'] or 'none'}")
+    if data is None:
+        return
+    heading("step 8, D: the same passes, as step 2's bench counted them")
+    bench: dict[tuple[str, str], int] = {}
+    for c in data.calls:
+        if c["nothing"]:
+            bench[(c["painting"], c["pass"])] = bench.get((c["painting"], c["pass"]), 0) + c["nothing"]
+    built: dict[tuple[str, str], int] = {}
+    for k in painted:
+        if k["empty"]:
+            built[(k["painting"], k["pass"])] = (built.get((k["painting"], k["pass"]), 0)
+                                                 + len(k["empty"]))
+    same = sum(1 for key, n in built.items() if bench.get(key) == n)
+    print(f"  passes with a mark that landed nothing: bench {len(bench)}, engine {len(built)}; "
+          f"the same passes with the same count on {same}")
+    for key in sorted(set(bench) | set(built)):
+        if bench.get(key) != built.get(key):
+            print(f"    DIFFERS {key[0]} {key[1]}: bench {bench.get(key, 0)}, engine "
+                  f"{built.get(key, 0)}")
+
+
+def probe_landed_blocks() -> None:
+    """Rule 2: the fact and the line over every recommended block of the guide."""
+    heading("step 8, D: the guide's own blocks, laid: what the fact and the line say")
+    guide = cohort._import_script(ROOT / "scripts" / "check_guide_blocks.py")
+    ran = told = 0
+    for number, (doc, block) in enumerate(guide.guide_blocks(echo=False), 1):
+        if guide.is_pseudo_code(block):
+            continue
+        scope: dict = {}
+        with quiet():
+            try:
+                exec(compile(guide.PREAMBLE + guide.runnable(block), f"<block {number}>",  # noqa: S102
+                             "exec"), scope)
+            except Exception:                                   # noqa: BLE001, S112
+                continue
+        ran += 1
+        s = scope.get("s")
+        if s is None:
+            continue
+        blank = [n for n in s.notices() if n.code == "dab-blank"]
+        told += bool(blank)
+        line = s._landed_nothing_line(s.history.records)
+        if blank or line:
+            head = block.strip().splitlines()[0][:60]
+            print(f"  block {number} ({doc}), {head}\n    "
+                  + (f"dab-blank x{len(blank)}; " if blank else "") + (line or ""))
+    print(f"  {ran} blocks laid; `dab-blank` said on {told}")
+
+
+def probe_landed(data: CorpusData | None) -> None:
+    """Step 8 as built: the cliffs and touches measured again, the fact and the line on
+    both paintings rebuilt and over the corpus replayed, and the guide's blocks."""
+    worst = probe_cliffs()
+    rows = []
+    for tip in _ROUND:
+        for press in (1, 2, 3):
+            measured = max(worst[(tip, press)],
+                           worst.get(("liner", press), 0.0) if tip == "round_hard" else 0.0)
+            engine = session_module._DAB_CLIFF_PX[(tip, press)]
+            rows.append([tip, press, f"{measured:.2f}", f"{engine:.2f}",
+                         "same" if abs(measured - engine) < 1e-9 else "DIFFERS"])
+    print(table(rows, ["tip", "press", "every lands from, measured", "the engine's",
+                       "agree"]))
+    probe_touches()
+
+    heading("step 8, D: both paintings rebuilt, as `easel run` said each pass")
+    for name in ("bell", "wenna"):
+        built = rebuild(name, keep=False, watch=False)
+        spoke = 0
+        for label in built.labels:
+            line = _landed_line(built.said[label])
+            blank = [n.text for n in built.told[label] if n.code == "dab-blank"]
+            spoke += bool(line)
+            if line or blank:
+                print(f"  {name} {label}:")
+                for text in blank:
+                    print(f"    dab-blank: {text}")
+                if line:
+                    print(f"    {line}")
+        print(f"  {name}: the line on {spoke} of {len(built.labels)} passes")
+    probe_landed_blocks()
+    heading("step 8, D: over the corpus, replayed with the engine as built (twenty minutes)")
+    probe_landed_corpus(replay_landed(), data)
+
+
 BENCHES = (
     ("claims", "section 3 and 3b re-measured, and where marks stop landing"),
     ("guides", "4A1: the guide candidates over every ground"),
@@ -3814,11 +4173,12 @@ BENCHES = (
     ("declared", "step 5 as built: the key, the median and the named light, as the engine says them"),
     ("thumbnailed", "step 6 as built: the engine's thumbnail against the prototype, and the door"),
     ("recipes", "step 7 as built: terminator() against the bench, the recipes' own numbers"),
+    ("landed", "step 8 as built: the dab's cliff and touches, and what landed nothing"),
 )
 _NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built",
                   "declared", "thumbnailed", "recipes"}
 _NEEDS_CORPUS = {"cost", "short", "key", "place", "lamp", "repaint", "answers",
-                 "declared"}
+                 "declared", "landed"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -3884,6 +4244,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_thumbnailed(rb, wb)
     if "recipes" in run:
         probe_recipes(rb, wb)
+    if "landed" in run:
+        probe_landed(data)
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")

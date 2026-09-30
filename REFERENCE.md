@@ -50,7 +50,9 @@ the two axes as a point is, so an oval in pixels is `ellipse(p, *s.px(rx, ry))`.
 
 `s.stroke_count` is the tally, `s.spent` and `s.remaining` are it against a
 `Session(budget=...)`, and `s.budget_line()` prints both. The first five marks whose
-`note` contains `signature` are free; every one after that is charged. Inside a
+`note` contains `signature` are free; every one after that is charged. A mark that laid
+no paint is charged like one that did, and the check after the pass names it
+(`landed nothing:`, under *Looking, planning, measuring*). Inside a
 rehearsed pass — `s.scratch()`, or `easel run --rehearse` — all three **continue the
 painting's own numbers**; what the copy itself laid is `s.history.stroke_count`.
 
@@ -511,7 +513,13 @@ counts marks names them**, on a line under it: the script lines they were laid f
 the dearest calls are named — *laid at p05.py:58 (lay_accents), :62, :72 (lay_edges) --
 records 174, 176, 179* — or only the records, for marks laid in another process, since
 which line laid a mark is known to the process that ran the script. Under those,
-the standing lines, which are measurements rather than findings: the subject's share of
+the standing lines, which are measurements rather than findings: **`landed nothing:`**,
+said only when a mark of the pass carried under one unit of paint -- *NO PAINT LANDED* in
+`easel log` -- each named by the line that laid it, a mass call's by how many of its
+passes, with the cause its record shows: half its path or more outside its clip, a round
+dab under the size its press lands from, an oriented tip under four pixels, a bristle
+loaded under `0.5` -- *landed nothing: the dab at p06.py:39 (a round tip under its cliff
+at press=1); 6 passes of the block_in at p05.py:12 (outside its clip)*; the subject's share of
 the marks so far, wherever a mark is noted `subject`,
 against `subject_share` if given; `values:`, the 5th to 95th percentile of the values
 view against what the palette reaches and the three clusters it splits into, which says
@@ -597,6 +605,7 @@ painting broke the comb floor twenty-eight times and was right every time.
 | `solid-comb` | fact | a mass laid solid with a bristle: `solid=` closes the gaps along a pass and not the ones the comb leaves across it | `CALIBRATION.md`, *The holes a solid comb leaves* |
 | `holes` | fact | what a mass laid solid actually came back with: the share of its own interior still showing ground, measured, and only where that reads | `CALIBRATION.md`, *The holes a solid comb leaves* |
 | `cover-comb` | fact | `cover()` with a bristle does not bury: the comb leaves the old paint showing between the streaks at any opacity | `CALIBRATION.md`, *The bristle comb* |
+| `dab-blank` | fact | a round dab laid by hand under the size its press lands from, in pixels: it laid no paint, and is charged for it | `CALIBRATION.md`, *Where a mark stops landing* |
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
 | `foreign-out-dir` | fact | a loaded session file writes its looks somewhere that is neither the working directory nor beside the file | `REFERENCE.md`, *The session, and the shell* |

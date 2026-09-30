@@ -361,6 +361,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "calibration", "### What a solid mass actually lands at",
         ),
         _spec(
+            "dab-blank", "fact",
+            "a round dab laid by hand under the size its press lands from, in pixels: it "
+            "laid no paint, and is charged for it",
+            "calibration", "### Where a mark stops landing",
+        ),
+        _spec(
             "chisel-pressure", "fact",
             "a pressure list on a chisel tip changes the paint, not the width",
             "calibration", "## Pressure",
