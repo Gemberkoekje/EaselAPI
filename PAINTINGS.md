@@ -36,7 +36,10 @@ arrived at their convention on its own.
   from outside the project: its subject was set by the content pack it was painted for,
   and handed to its painter. Wenna Brask's painter chose its subject from that pack, in a
   list of its pictures it wrote at the owner's request before it opened the guide — though
-  not before it had read the Bell-Warden's notes. The heron's second attempt is the
+  not before it had read the Bell-Warden's notes. Uktarl's Room is the Bell-Warden's case
+  again: the owner set the subject, the rooms of one character in a published adventure,
+  and the painter chose the room and the moment from the campaign's notes before it opened
+  the guide. The heron's second attempt is the
   one deliberate exception: the subject was chosen under the rule the first time and then
   repainted on purpose, by the same painter, to find out what reading the rest of the
   files was worth. Two painters have since chosen *near* neighbours independently — a
@@ -85,7 +88,11 @@ arrived at their convention on its own.
   painter, the next morning, read `PAINTER.md` and `RECIPES.md` whole and `REFERENCE.md`
   short of its notices, about 20,500 words, and did the exercises — but began with the
   first painter's memory of the Bell-Warden and read its notes and six of its passes, so it
-  is the first painter here to start from another's painting of the same round. So where they
+  is the first painter here to start from another's painting of the same round. Uktarl's
+  Room's painter, the first against 0.8.0, began from both of theirs: its own memory note
+  from them, and, after `PAINTER.md`, their notes. It read `PAINTER.md`, `RECIPES.md` and
+  `REFERENCE.md` whole, and 0.8.0's changelog entry from the repository's checkout, about
+  33,600 words of the documents, and did the ten exercises. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -96,7 +103,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the twenty-four do not make
+  itself**, in its own `Reproducible` row below, and seven of the twenty-five do not make
   it. What holds everywhere is that a *saved* painting opens as it was painted, because
   the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
   randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
@@ -1008,6 +1015,46 @@ plan it was worked from is
 [`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as
 tagged, beside the Bell-Warden's.
 
+## Four vampires at cards under a carved sunrise
+
+![A dark stone room seen from its doorway: carved gold rays fan out across the far wall
+from behind the head of a pale man in a high red collar, who stands behind a round table
+holding a black cape out like a wing with its red lining lit. A candle on the table lights
+three more figures in costume, a woman in a long black wig at the left, a bald figure with
+pointed ears at the right and a hooded one nearest us, its back turned, and a carved
+mountain with small cave mouths runs behind them](paintings/Claude/uktarl_krannoc/painting.png)
+
+The first painting made against 0.8.0, the day it shipped, by `claude-opus-5-5` at max
+effort, as a handout for the owner's own tabletop campaign; the campaign's files are left
+out here. The owner set the subject, the rooms of one character in a published adventure,
+and the painter chose the room, the moment and the light: four bandits in vampire costume
+at cards, their leader risen to greet the party in front of a wall carved with a sunrise.
+*Four vampires at cards beneath a carved sunrise: its rays fan out from behind Uktarl's
+head like a saint's halo, and no real vampire would stand in it* is the sentence it wrote
+into `s.plan(why=...)`. Looked at small, the rays still meet behind his head.
+
+| | |
+|---|---|
+| Canvas | 1024×768, linen, ground `#54443a`, seed 31 |
+| Spent | 410 strokes of a 450 budget, the last 40 left on purpose; the subject — Uktarl alone — 28% of them against the 30% planned |
+| Rehearsed and thrown away | 26 rehearsals, none of them charged — the mountain at 129 strokes and then 38, the collar at 43 and then 9, the backlight three times — and a thumbnail before any paint, which caught the face lost in the glow behind it and a pair of ears that read as a cat's |
+| Reproducible | Seventeen pass scripts rebuild the log to the stroke, in their numbering, and the export to the pixel on the machine it was painted on. The drawing ran three times and lays no record |
+| Files | [`paintings/Claude/uktarl_krannoc/`](paintings/Claude/uktarl_krannoc) — [notes](paintings/Claude/uktarl_krannoc/NOTES.md), [time-lapse](paintings/Claude/uktarl_krannoc/painting.gif), [verdict](paintings/Claude/uktarl_krannoc/verdict.md), [the versions thrown away](paintings/Claude/uktarl_krannoc/versions/README.md) |
+
+The [verdict](paintings/Claude/uktarl_krannoc/verdict.md) is the painter's own. For the
+tool: the thumbnail, which it calls the most useful addition; rehearsal, with the lines
+that name each dear or wasted call by its script line; guides that stay readable; mixing
+to a value; and a clip-held flat stroke as a stencil, thirteen rays in thirteen strokes.
+Against it: no way to hold paint outside a shape, no edge between hard and ragged, habit
+warnings that misfire often enough that it stopped reading them, a rehearsal look it
+could not crop, no rotation or local frame, a budget planned as one number, and a dark
+picture with small lights told *no clear light* on every pass. Against itself: *it looks
+stencilled* — 43 of its 44 masses held hard, two edges lost — figures that are cut-out
+silhouettes with masks for faces, a relief more regular than carved, the first figure
+allowed to eat the budget, and a picture dark enough to go muddy on a projector. What is
+being done about it, in 0.9.0, is in [`SUGGESTIONS.md`](SUGGESTIONS.md) under *Uktarl's
+Room*, and the plan is [`PLAN-0.9.0.md`](PLAN-0.9.0.md).
+
 ## The log
 
 There is no separate provenance story here: the log **is** the painting.
@@ -1070,7 +1117,10 @@ golden-image tests in CI.
   names a creature that reads as a vinyl toy rather than weathered stone, with stiff
   anatomy and give-aways too small to be seen across a room; and Wenna Brask names a hand
   that reads only in context, a shawl that is half the picture with little in it, and a
-  face whose half-tone band is *like the rim of a mask*. Both herons name the same unfinished thing, which is the point of having
+  face whose half-tone band is *like the rim of a mask*; and Uktarl's Room names a hooded
+  figure that reads as the back of a bald head, a carved mountain that is a flat cut-out
+  away from the crags by its subject, and four faces that are masks, and stopped with 40
+  of 450 unspent because what was left wanted redrawing, not more marks. Both herons name the same unfinished thing, which is the point of having
   two of them: a bird's body that is a smooth pebble where it should be built of planes,
   abandoned once for want of the recipe and once with the recipe open.
 

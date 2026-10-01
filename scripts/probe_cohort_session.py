@@ -215,6 +215,12 @@ CORPUS = [
                     "p12_crown.py"),
              session=dict(width=768, height=1024, texture="linen",
                           ground="umber_wash", seed=23, budget=300)),
+    # The first painting made against 0.8.0, the day it shipped. Its passes rebuild the
+    # log to the stroke, and the export to the pixel on the machine it was painted on, in
+    # their numbering: the drawing ran three times, and a drawing of guides lays no record.
+    Painting("uktarl", "Claude/uktarl_krannoc", spent=410,
+             session=dict(width=1024, height=768, texture="linen",
+                          ground="#54443a", seed=31, budget=450)),
     # The 0.5.0 cohort. Three of the seven wrote one script rather than passes.
     Painting("bigpickle", "BigPickle_blind/sunset_landscape", cohort=True, spent=50,
              driver="sunset_paint.py"),

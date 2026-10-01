@@ -1,0 +1,500 @@
+410 strokes, seed 31, 1024x768
+46 pass reports saved, oldest first:
+
+painted p01_draw.py, from record 0:
+  check over this pass, 0 marks: nothing to report
+
+painted p01_draw.py, from record 0:
+  check over this pass, 0 marks: nothing to report
+
+painted t01_notan.py, from record 0:
+  check over this pass, 0 marks: nothing to report
+
+rehearsed p02_wall.py, from record 0:
+    dearest: 12 block_in at p02_wall.py:9 -- 12 of the 25
+  check over this pass, 25 marks: nothing to report
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.45; the lit relief by his hand -0.27 (22% of it lighter by more than 0.15); the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.23 as a place, 0.27 at its brightest twentieth -- 0.05 under
+    values: 0.23-0.40 of a box that reaches 0.13-0.96, clusters at 0.24, 0.27, 0.39; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 71% of edges are under 2.5 px wide, median 2.0 px
+    ground: 24.36% of the canvas is still bare ground
+
+painted p01_draw.py, p02_wall.py, from record 0:
+    dearest: 12 block_in at p02_wall.py:9 -- 12 of the 25
+  check over this pass, 25 marks: nothing to report
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.45; the lit relief by his hand -0.27 (22% of it lighter by more than 0.15); the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.23 as a place, 0.27 at its brightest twentieth -- 0.05 under
+    values: 0.23-0.40 of a box that reaches 0.13-0.96, clusters at 0.24, 0.27, 0.39; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 70% of edges are under 2.5 px wide, median 2.0 px
+    ground: 24.36% of the canvas is still bare ground
+
+rehearsed p03_mountain.py, from record 25:
+    dearest: 13 block_in at p03_mountain.py:8, 10 at :12, 10 at :12, 10 at :17 -- 43 of the 129
+  at the call, 1 thing said:
+    - clean-small (10 calls): block_in(edge='clean') at size=0.016 on left facet 0 0.041 across at its narrowest: the brush is 39% of that, so the half-brush inset keeps 39% of the shape to fill and the contour pass lays the rest as one chisel stroke, corners rounded off. Use a brush under a quarter of the shorter extent -- size=0.0103 here -- or leave the edge ragged.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 129 marks: 1 thing to look at
+    - 37 of 41 long marks run within 6 degrees of horizontal, from 8 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p03_mountain.py:8, :22 (7 calls) -- records 25-37, 126-149
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.38; the lit relief by his hand -0.27 (22% of it lighter by more than 0.15); the table top by the candle -0.22; and 2 more
+    lightest: Uktarl's face reads 0.30 as a place, 0.30 at its brightest twentieth, the lightest of the 7 places planned
+    values: 0.23-0.41 of a box that reaches 0.13-0.96, clusters at 0.24, 0.29, 0.38; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+    edges: 69% of edges are under 2.5 px wide, median 2.0 px
+    ground: 20.27% of the canvas is still bare ground
+
+rehearsed p03_mountain.py, from record 25:
+    dearest: 10 block_in at p03_mountain.py:9, 3 at :29, 3 at :29, 2 at :29 -- 18 of the 38
+  check over this pass, 38 marks: 1 thing to look at
+    - 23 of 38 long marks run within 6 degrees of horizontal, from 8 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p03_mountain.py:9, :29 (7 calls) -- records 25, 27-33, 43-49, 51-58
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.48; the lit relief by his hand -0.27 (22% of it lighter by more than 0.15); the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.20 as a place, 0.21 at its brightest twentieth -- 0.08 under
+    values: 0.20-0.40 of a box that reaches 0.13-0.96, clusters at 0.20, 0.25, 0.39; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 70% of edges are under 2.5 px wide, median 2.0 px
+    ground: 20.45% of the canvas is still bare ground
+
+painted p03_mountain.py, from record 25:
+    dearest: 10 block_in at p03_mountain.py:9, 3 at :29, 3 at :29, 2 at :29 -- 18 of the 38
+  check over this pass, 38 marks: 1 thing to look at
+    - 23 of 38 long marks run within 6 degrees of horizontal, from 8 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p03_mountain.py:9, :29 (7 calls) -- records 25, 27-33, 43-49, 51-58
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.48; the lit relief by his hand -0.27 (22% of it lighter by more than 0.15); the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.20 as a place, 0.21 at its brightest twentieth -- 0.08 under
+    values: 0.20-0.40 of a box that reaches 0.13-0.96, clusters at 0.20, 0.25, 0.39; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+    edges: 70% of edges are under 2.5 px wide, median 2.0 px
+    ground: 20.45% of the canvas is still bare ground
+
+rehearsed p04_lamplight.py, from record 63:
+  at the call, 1 thing said:
+    - glaze-far (2 calls): this film moved the passage under it by 0.090 in value, over its own footprint: past 0.08 a film stops shifting a mass and lays a new one. Aim it at the value the passage should read afterwards (to_value=), or lay the change as paint.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 18 marks: nothing to report
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.41; the lit relief by his hand -0.26; the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.01 under
+    values: 0.18-0.49 of a box that reaches 0.13-0.96, clusters at 0.20, 0.26, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 69% of edges are under 2.5 px wide, median 2.0 px
+    ground: 23.00% of the canvas is still bare ground
+
+painted p04_lamplight.py, from record 63:
+  at the call, 1 thing said:
+    - glaze-far (2 calls): this film moved the passage under it by 0.090 in value, over its own footprint: past 0.08 a film stops shifting a mass and lays a new one. Aim it at the value the passage should read afterwards (to_value=), or lay the change as paint.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 18 marks: nothing to report
+    plan: 2 of 7 places inside 0.10; Uktarl's face -0.41; the lit relief by his hand -0.26; the table top by the candle -0.22; and 2 more
+    lightest: the floor at the left reads 0.28 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.01 under
+    values: 0.18-0.49 of a box that reaches 0.13-0.96, clusters at 0.20, 0.26, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 69% of edges are under 2.5 px wide, median 2.0 px
+    ground: 23.00% of the canvas is still bare ground
+
+rehearsed p05_floor_tub.py, from record 84:
+    dearest: 9 block_in at p05_floor_tub.py:13, 5 at :9, 5 at :10 -- 19 of the 20
+  check over this pass, 20 marks: 1 thing to look at
+    - 20 of 20 long marks run within 6 degrees of horizontal, from 4 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p05_floor_tub.py:9, :10, :13, :18 -- records 84-93, 95-104
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30 (34% of it lighter by more than 0.15)
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    values: 0.16-0.49 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.47; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 65% of edges are under 2.5 px wide, median 2.0 px
+    ground: 7.81% of the canvas is still bare ground
+
+rehearsed p05_floor_tub.py, from record 84:
+    dearest: 12 block_in at p05_floor_tub.py:10 (4 landing nothing), 12 at :12 (5 landing nothing), 6 at :21 -- 30 of the 40
+  check over this pass, 40 marks: nothing to report
+    landed nothing: 4 passes of the block_in at p05_floor_tub.py:10 (outside its clip); 5 passes of the block_in at :12 (outside its clip)
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.31
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.18, 0.25, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 68% of edges are under 2.5 px wide, median 2.0 px
+    ground: 7.86% of the canvas is still bare ground
+
+rehearsed p05_floor_tub.py, from record 84:
+    dearest: 7 block_in at p05_floor_tub.py:10, 7 at :12, 6 at :21, 4 at :15 -- 24 of the 30
+  check over this pass, 30 marks: 1 thing to look at
+    - 15 of 22 long marks run within 6 degrees of horizontal, from 5 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p05_floor_tub.py:15, :18, :21, :23, :31 -- records 98-102, 104-112, 114
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.17, 0.24, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 68% of edges are under 2.5 px wide, median 2.0 px
+    ground: 7.97% of the canvas is still bare ground
+
+rehearsed p05_floor_tub.py, from record 84:
+    dearest: 7 block_in at p05_floor_tub.py:10, 7 at :12, 5 at :21, 4 at :15 -- 23 of the 29
+  check over this pass, 29 marks: nothing to report
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.16, 0.24, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 69% of edges are under 2.5 px wide, median 2.0 px
+    ground: 7.86% of the canvas is still bare ground
+
+painted p05_floor_tub.py, from record 84:
+    dearest: 7 block_in at p05_floor_tub.py:10, 7 at :12, 5 at :21, 4 at :15 -- 23 of the 29
+  check over this pass, 29 marks: nothing to report
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.16, 0.24, 0.48; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 69% of edges are under 2.5 px wide, median 2.0 px
+    ground: 7.86% of the canvas is still bare ground
+
+rehearsed p06_uktarl_body.py, from record 114:
+    dearest: 22 block_in at p06_uktarl_body.py:26, 21 at :29, 10 at :12, 8 at :9 -- 61 of the 85
+  check over this pass, 85 marks: nothing to report
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    subject: 85 of 195 marks so far (44%), against 30% planned
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 66% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.34% of the canvas is still bare ground
+
+rehearsed p06_uktarl_body.py, from record 114:
+    dearest: 10 block_in at p06_uktarl_body.py:12, 8 at :9, 8 at :22, 6 at :24 -- 32 of the 51
+  check over this pass, 51 marks: nothing to report
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    subject: 51 of 161 marks so far (32%), against 30% planned
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.16, 0.24, 0.49; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 67% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.34% of the canvas is still bare ground
+
+painted p06_uktarl_body.py, from record 114:
+    dearest: 10 block_in at p06_uktarl_body.py:12, 8 at :9, 8 at :22, 6 at :24 -- 32 of the 51
+  check over this pass, 51 marks: nothing to report
+    plan: 5 of 7 places inside 0.10; Uktarl's face -0.41; the table top by the candle -0.30
+    lightest: the lit gilding above his head reads 0.59 and Uktarl's face, the plan's own light, 0.27 as a place, 0.29 at its brightest twentieth -- 0.32 under
+    subject: 51 of 161 marks so far (32%), against 30% planned
+    values: 0.15-0.49 of a box that reaches 0.13-0.96, clusters at 0.16, 0.24, 0.49; no clear light -- nothing above 0.49, and the box's own middle is 0.54
+    edges: 67% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.34% of the canvas is still bare ground
+
+rehearsed p07_uktarl_head.py, from record 166:
+    dearest: 15 block_in at p07_uktarl_head.py:39, 8 at :15, 7 at :10, 3 at :13 -- 33 of the 45
+  check over this pass, 45 marks: 1 thing to look at
+    - 10 small marks with a round tip at tip_wobble=0: that is one disc printed 10 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p07_uktarl_head.py:23 (2 calls), :25 (2 calls), :28 (2 calls), :31, :33, :36 (2 calls) -- records 186-195
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.61 as a place (23% of it darker by more than 0.15), 0.68 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 96 of 206 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 65% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.12% of the canvas is still bare ground
+
+rehearsed p07_uktarl_head.py, look_head.py, from record 166:
+    dearest: 15 block_in at p07_uktarl_head.py:39, 8 at :15, 7 at :10, 3 at :13 -- 33 of the 45
+  check over this pass, 45 marks: 1 thing to look at
+    - 10 small marks with a round tip at tip_wobble=0: that is one disc printed 10 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p07_uktarl_head.py:23 (2 calls), :25 (2 calls), :28 (2 calls), :31, :33, :36 (2 calls) -- records 186-195
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.61 as a place (23% of it darker by more than 0.15), 0.68 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 96 of 206 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 65% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.12% of the canvas is still bare ground
+
+rehearsed p07_uktarl_head.py, look_head.py, from record 166:
+    dearest: 15 block_in at p07_uktarl_head.py:41, 7 at :10, 7 at :15, 7 at :21 (1 landing nothing) -- 36 of the 49
+  check over this pass, 49 marks: 1 thing to look at
+    - 8 small marks with a round tip at tip_wobble=0: that is one disc printed 8 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p07_uktarl_head.py:27 (2 calls), :31 (2 calls), :33, :35, :38 (2 calls) -- records 193-200
+    landed nothing: 1 pass of the block_in at p07_uktarl_head.py:21 (outside its clip)
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 100 of 210 marks so far (48%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 66% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.12% of the canvas is still bare ground
+
+painted p07_uktarl_head.py, from record 166:
+    dearest: 15 block_in at p07_uktarl_head.py:43, 7 at :10, 7 at :15, 7 at :21 (1 landing nothing) -- 36 of the 51
+  check over this pass, 51 marks: 1 thing to look at
+    - 10 small marks with a round tip at tip_wobble=0: that is one disc printed 10 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p07_uktarl_head.py:27 (2 calls), :31 (2 calls), :33 (2 calls), :35, :37, :40 (2 calls) -- records 193-202
+    landed nothing: 1 pass of the block_in at p07_uktarl_head.py:21 (outside its clip)
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 212 marks so far (48%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 66% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.12% of the canvas is still bare ground
+
+painted look_all.py, from record 219:
+  check over this pass, 0 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 212 marks so far (48%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.49; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 66% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.12% of the canvas is still bare ground
+
+rehearsed p08_backlight.py, look_all.py, from record 219:
+  check over this pass, 5 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 217 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 5.96% of the canvas is still bare ground
+
+rehearsed p08_backlight.py, look_all.py, from record 219:
+  check over this pass, 7 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 219 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.26, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 9.00% of the canvas is still bare ground
+
+rehearsed p08_backlight.py, look_all.py, from record 219:
+  check over this pass, 7 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 219 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 9.20% of the canvas is still bare ground
+
+painted p08_backlight.py, from record 219:
+  check over this pass, 7 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 219 marks so far (47%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 9.20% of the canvas is still bare ground
+
+rehearsed p09_doppelganger.py, from record 227:
+    dearest: 8 block_in at p09_doppelganger.py:9, 7 at :13, 6 at :15, 2 at :12 -- 23 of the 30
+  check over this pass, 30 marks: 2 things to look at
+    - 21 of 28 long marks run within 6 degrees of 96 degrees, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p09_doppelganger.py:9, :13, :15 -- records 227-234, 238-244, 246-251
+    - 5 small marks with a round tip at tip_wobble=0: that is one disc printed 5 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p09_doppelganger.py:19, :23 (2 calls), :25, :27 -- records 253-257
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 249 marks so far (41%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.21% of the canvas is still bare ground
+
+rehearsed p09_doppelganger.py, look_d.py, from record 227:
+    dearest: 8 block_in at p09_doppelganger.py:9, 7 at :13, 6 at :15, 2 at :12 -- 23 of the 30
+  check over this pass, 30 marks: 2 things to look at
+    - 21 of 28 long marks run within 6 degrees of 96 degrees, from 3 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p09_doppelganger.py:9, :13, :15 -- records 227-234, 238-244, 246-251
+    - 5 small marks with a round tip at tip_wobble=0: that is one disc printed 5 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p09_doppelganger.py:19, :23 (2 calls), :25, :27 -- records 253-257
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 249 marks so far (41%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.21% of the canvas is still bare ground
+
+painted p09_doppelganger.py, from record 227:
+    dearest: 12 block_in at p09_doppelganger.py:32, 8 at :9, 7 at :13, 6 at :15 -- 33 of the 43
+  check over this pass, 43 marks: 1 thing to look at
+    - 6 small marks with a round tip at tip_wobble=0: that is one disc printed 6 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p09_doppelganger.py:19, :23 (2 calls), :25, :27, :30 -- records 253-258
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.30
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 262 marks so far (39%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 63% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.18% of the canvas is still bare ground
+
+rehearsed p10_table.py, look_all.py, from record 271:
+    dearest: 5 block_in at p10_table.py:9 -- 5 of the 11
+  check over this pass, 11 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.20
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 273 marks so far (37%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 62% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.85% of the canvas is still bare ground
+
+painted p10_table.py, from record 271:
+    dearest: 5 block_in at p10_table.py:9 -- 5 of the 11
+  check over this pass, 11 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.20
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 273 marks so far (37%), against 30% planned
+    values: 0.15-0.50 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.50, and the box's own middle is 0.54
+    edges: 62% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.85% of the canvas is still bare ground
+
+rehearsed p11_left_bandit.py, look_a.py, from record 283:
+    dearest: 9 block_in at p11_left_bandit.py:12, 8 at :13, 7 at :16, 5 at :15 -- 29 of the 45
+  check over this pass, 45 marks: 2 things to look at
+    - 30 of 42 long marks run within 6 degrees of 99 degrees, from 6 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p11_left_bandit.py:12, :13, :16, :18, :20, :32 -- records 283-285, 287-299, 306-312, 314-319, 324
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p11_left_bandit.py:22, :26 (2 calls), :28 -- records 320-323
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.20
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 318 marks so far (32%), against 30% planned
+    values: 0.15-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 62% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.82% of the canvas is still bare ground
+
+painted p11_left_bandit.py, look_all.py, from record 283:
+    dearest: 7 block_in at p11_left_bandit.py:17, 6 at :12, 5 at :13, 5 at :19 -- 23 of the 36
+  check over this pass, 36 marks: 2 things to look at
+    - 25 of 33 long marks run within 6 degrees of 98 degrees, from 7 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p11_left_bandit.py:12, :13, :15, :17, :19, :21 and 1 more -- records 283-285, 287-293, 296-303, 305-310, 315
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p11_left_bandit.py:23, :27 (2 calls), :29 -- records 311-314
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.20
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 102 of 309 marks so far (33%), against 30% planned
+    values: 0.15-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.48; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 62% of edges are under 2.5 px wide, median 2.0 px
+    ground: 8.82% of the canvas is still bare ground
+
+rehearsed p12_card_game.py, look_table.py, from record 321:
+    dearest: 7 block_in at p12_card_game.py:10, 5 at :11 -- 12 of the 43
+  check over this pass, 43 marks: 2 things to look at
+    - 12 of 19 long marks run within 6 degrees of 101 degrees, from 2 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p12_card_game.py:10, :11 -- records 321-332
+    - 5 small marks with a round tip at tip_wobble=0: that is one disc printed 5 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p12_card_game.py:14, :22, :40, :44, :59 -- records 333, 336, 343, 347, 364
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 352 marks so far (29%), against 30% planned -- behind, if the subject is finished
+    values: 0.15-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.72% of the canvas is still bare ground
+
+painted p12_card_game.py, look_table.py, from record 321:
+    dearest: 7 block_in at p12_card_game.py:10, 5 at :11 -- 12 of the 41
+  check over this pass, 41 marks: 2 things to look at
+    - 12 of 19 long marks run within 6 degrees of 101 degrees, from 2 calls: a stack of bars unless the subject runs that way. Vary direction= between passes, or sweep each mass along its own axis. Say s.plan(bands='subject') if it does, and this line will count what crosses them instead.
+      laid at p12_card_game.py:10, :11 -- records 321-332
+    - 5 small marks with a round tip at tip_wobble=0: that is one disc printed 5 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p12_card_game.py:14, :22, :43, :47, :63 -- records 333, 336, 342, 345, 362
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 350 marks so far (29%), against 30% planned -- behind, if the subject is finished
+    values: 0.15-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.72% of the canvas is still bare ground
+
+rehearsed p13_near_bandit.py, look_all.py, from record 363:
+    dearest: 7 block_in at p13_near_bandit.py:10, 6 at :11, 5 at :14 -- 18 of the 22
+  check over this pass, 22 marks: 2 things to look at
+    - 10 marks at stepping colours run parallel 0.012 apart, and the narrowest brush laying them is 0.006 -- 0.5 of that step. Under 2 the passes stop overlapping and a graded passage comes back as bars. Use about three steps (size=0.0357 here), or hand the passage to scumble(), which sizes its own brush from its own step.
+      laid at p13_near_bandit.py:11, :14, :17 -- records 370-375, 378, 380, 381, 383
+    - this pass took 6 earlier details out of sight, of the 6 that were showing under it -- each left at under half the contrast it had with what is round it, and a block_in did it: a layer laid over near things is a mass at a depth. Lay it before them, or lay them again after it -- unless taking them out of sight was the point.
+      records 343, 344, 357-359, 361
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 372 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.32% of the canvas is still bare ground
+
+painted p13_near_bandit.py, from record 363:
+    dearest: 7 block_in at p13_near_bandit.py:10, 6 at :11, 5 at :14 -- 18 of the 22
+  check over this pass, 22 marks: 2 things to look at
+    - 10 marks at stepping colours run parallel 0.012 apart, and the narrowest brush laying them is 0.006 -- 0.5 of that step. Under 2 the passes stop overlapping and a graded passage comes back as bars. Use about three steps (size=0.0357 here), or hand the passage to scumble(), which sizes its own brush from its own step.
+      laid at p13_near_bandit.py:11, :14, :17 -- records 370-375, 378, 380, 381, 383
+    - this pass took 6 earlier details out of sight, of the 6 that were showing under it -- each left at under half the contrast it had with what is round it, and a block_in did it: a layer laid over near things is a mass at a depth. Lay it before them, or lay them again after it -- unless taking them out of sight was the point.
+      records 343, 344, 357-359, 361
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 372 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.32% of the canvas is still bare ground
+
+rehearsed p14_relief_details.py, look_relief.py, from record 386:
+  check over this pass, 14 marks: 1 thing to look at
+    - 3 small marks with a round tip at tip_wobble=0: that is one disc printed 3 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p14_relief_details.py:20 (3 calls) -- records 394-396
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 386 marks so far (27%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.21% of the canvas is still bare ground
+
+painted p14_relief_details.py, from record 386:
+  check over this pass, 13 marks: 1 thing to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p14_relief_details.py:16, :23 (3 calls) -- records 392-395
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 103 of 385 marks so far (27%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.51 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.51, and the box's own middle is 0.54
+    edges: 60% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.22% of the canvas is still bare ground
+
+rehearsed p15_light_edges.py, look_all.py, from record 399:
+  check over this pass, 10 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 107 of 395 marks so far (27%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.33% of the canvas is still bare ground
+
+painted p15_light_edges.py, from record 399:
+  check over this pass, 10 marks: nothing to report
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 107 of 395 marks so far (27%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.33% of the canvas is still bare ground
+
+rehearsed p16_hand_and_crags.py, look_hand.py, from record 410:
+  at the call, 1 thing said:
+    - chisel-pressure (6 calls): pressure=[1, 0.7, 0.2] on a flat tip changes the paint, not the width: a chisel keeps the width it was given, so this mark comes back a rectangle with a lighter end rather than a taper. A mark that tapers wants round_hard or liner, whose width follows pressure; a flat or knife wants a length.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 13 marks: 2 things to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p16_hand_and_crags.py:19 (3 calls), :22 -- records 411, 413, 415, 416
+    - 6 short marks with a pressure list on a flat tip: pressure changes a chisel's paint, not its width, so these are rectangles with a lighter end. A mark that tapers wants round_hard or liner.
+      laid at p16_hand_and_crags.py:31 (6 calls) -- records 417-422
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 114 of 408 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.50% of the canvas is still bare ground
+
+painted p16_hand_and_crags.py, look_all.py, from record 410:
+  at the call, 1 thing said:
+    - chisel-pressure (6 calls): pressure=[1, 0.7, 0.2] on a flat tip changes the paint, not the width: a chisel keeps the width it was given, so this mark comes back a rectangle with a lighter end rather than a taper. A mark that tapers wants round_hard or liner, whose width follows pressure; a flat or knife wants a length.
+    (easel explain <code> for the measurement behind any of these)
+  check over this pass, 13 marks: 2 things to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p16_hand_and_crags.py:19 (3 calls), :22 -- records 411, 413, 415, 416
+    - 6 short marks with a pressure list on a flat tip: pressure changes a chisel's paint, not its width, so these are rectangles with a lighter end. A mark that tapers wants round_hard or liner.
+      laid at p16_hand_and_crags.py:31 (6 calls) -- records 417-422
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 114 of 408 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.50% of the canvas is still bare ground
+
+rehearsed p17_finish.py, from record 423:
+  check over this pass, 6 marks: 1 thing to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p17_finish.py:18, :22 (3 calls) -- records 425-428
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 114 of 410 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.49% of the canvas is still bare ground
+
+painted p17_finish.py, from record 423:
+  check over this pass, 6 marks: 1 thing to look at
+    - 4 small marks with a round tip at tip_wobble=0: that is one disc printed 4 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+      laid at p17_finish.py:18, :22 (3 calls) -- records 425-428
+    plan: 6 of 7 places inside 0.10; the table top by the candle -0.18
+    lightest: Uktarl's face reads 0.65 as a place, 0.69 at its brightest twentieth, the lightest of the 7 places planned
+    subject: 114 of 410 marks so far (28%), against 30% planned -- behind, if the subject is finished
+    values: 0.14-0.52 of a box that reaches 0.13-0.96, clusters at 0.17, 0.25, 0.49; no clear light -- nothing above 0.52, and the box's own middle is 0.54
+    edges: 59% of edges are under 2.5 px wide, median 2.1 px
+    ground: 8.49% of the canvas is still bare ground

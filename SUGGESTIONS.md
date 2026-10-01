@@ -1,14 +1,17 @@
 # What the painters asked for, and what was done
 
-Twenty-three sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — twenty-four paintings, because the ninth painted its
+Twenty-four sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — twenty-five paintings, because the ninth painted its
 subject twice — a synthesis pass gathered the points more than one of them raised, and
 the repository's owner put two further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**No round is open.** The newest, at the top, is the bell-warden's round — two painters
+**One round is open: Uktarl's Room, at the top** — one painter against 0.8.0, **8 engine
+items and 4 documentation items**, none of them acted on yet. It is written where every
+open round before it has been written, and will be folded in where it stands once it is
+acted on. Below it is the bell-warden's round — two painters
 against 0.7.0: the Bell-Warden, **9 engine items and 4 documentation items**, and Wenna
 Brask, painted the next morning by a second session, **11 engine items and 8
 documentation items**, several of them the first's again — and every item in it is done,
@@ -64,6 +67,7 @@ changed rather than that it worked.
 | The lighthouse handover — a lighthouse at dusk, 171 of 300, `paintings/Claude/lighthouse_handover/`, the first painting against 0.6.0, from the package in a sandbox | 6 | 4 |
 | The Bell-Warden — a stone figure on a plinth, 280 of 300, `paintings/Claude/bell_warden/`, the first painting against 0.7.0, from the package, as sample art for another of the owner's projects | 9 | 4 |
 | Wenna Brask — a woman by a lantern at dusk, 262 of 300, `paintings/Claude/wenna_brask/`, the second against 0.7.0, for the same pack, by a second session that began from the first painter's notes | 11 | 8 |
+| Uktarl's Room — four figures in vampire costume at cards under a carved sunrise, 410 of 450, `paintings/Claude/uktarl_krannoc/`, the first against 0.8.0, as a handout for the owner's own campaign, by a session that began from the two earlier painters' notes | 8 | 4 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -115,6 +119,104 @@ disagree, it may be the context talking.
   repeats one, it may be the first painter's lesson talking. Where it contradicts one — the
   Bell-Warden's lighting on a face — it is the only kind of evidence a lesson carried over
   can give.
+- **Uktarl's Room's painter** began from both of theirs — its own memory note from the
+  two paintings, and, after `PAINTER.md`, their notes — and read `PAINTER.md`, `RECIPES.md`
+  and `REFERENCE.md` whole, and 0.8.0's changelog entry from the repository's checkout:
+  33,596 words of the documents before its first exercise, measured from its session.
+  It is the most-read painter against the split documents, and the fourth in four
+  rounds to say they are too long. Its agreement with the two before it is not
+  independent either.
+
+---
+
+## Uktarl's Room: one painter against 0.8.0
+
+**OPEN.** Eight engine items and four documentation items, from one painter —
+`claude-opus-5-5`, at max effort — which upgraded the owner's installed `easel-paint` to
+0.8.0 the day it shipped and painted four bandits in vampire costume at cards, their leader
+standing inside a carved sunrise, as a handout for the owner's own tabletop campaign,
+**410 of 450 strokes**. **The right-hand column of every table below is empty because
+nothing has been done yet.** The candidate answers and the measurements that will decide
+which survive are in [`PLAN-0.9.0.md`](PLAN-0.9.0.md); a row gets filled in when its PR
+lands, not before.
+
+**It is the first painting against 0.8.0**, and so the run that round asked for (*What the
+round left open*, at the end of Wenna Brask's section): it reached for the thumbnail
+before any paint and calls it the most useful addition, read `landed nothing:` on every
+pass, and never ran `--alternatives` or `--count`, never declared `key=`, and read the
+three files whole rather than starting from the card.
+
+**Its own session is the evidence.** The painting's passes rebuild its log exactly, and the
+transcript holds every version it rewrote; the three that carry the verdict's claims are
+recovered in [`versions/`](paintings/Claude/uktarl_krannoc/versions/README.md) and reprint
+their saved reports. **Kind** is assigned here, as for every round on this page — **M**
+measured by the painter, **O** observed, **R** reasoned. Every *what checking found* below
+was measured on 2026-10-01 on the checkout whose engine is `v0.8.0`'s. **Three claims
+changed shape under that checking**: the 21 discs, the mountain's 129 strokes, and the
+light a dark picture cannot satisfy, whose remedy already exists.
+
+**The decisions are the painter's**, by the owner's ruling since 0.7.0: the plan's first
+questions go to it through the owner, in
+[`questions-step1.md`](paintings/Claude/uktarl_krannoc/questions-step1.md).
+
+### The engine
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Paint cannot be held outside a shape.** `clip=` takes a place, or a list whose masks multiply, and nothing excludes. To light the relief round Uktarl after painting him, the painter typed three regions, 44 points, about 30 of them retyped from his outline; the first pair ended inside a soft stroke's reach and drew a vertical seam each side ([`backlight_seam.png`](paintings/Claude/uktarl_krannoc/evidence/backlight_seam.png), redrawn from the recovered version). It asked for `clip_out=`, `difference()` and `intersection()`. | O | |
+| **A held edge is hard or ragged, never soft**, so the picture reads as cut paper. Confirmed: 43 of its 44 masses are held, every one at the default feather; `edges:` read 70% under 2.5 px after the wall and 59% at the end; two edges were lost, a smudge each. Holding an edge costs nothing and losing one costs a smudge per stretch. It asked for `edge="soft", soft=<px>`, or a verb that loses any length of an outline, priced by length. 0.7.0 declined a blur on *every* edge by default; this asks for a softness chosen per call. | M | |
+| **Three habit warnings misfire**, often enough that it stopped reading them — and from the body's second rehearsal on, 29 of its 30 `easel run`s filtered the check's output down to the lines it named. ~~*"One disc printed" flagged 28 marks, 21 of them the eyes, brows and mouths of three faces*~~ **20 and 1**: the closing check's three named groups are the three faces' 20 marks and one ridge on the relief 56 px from an eye; the other 7 are the candle and the relief. The graded-passage line counted a hood, a face and a dark stroke, three masses at three values. The bars line fired on two laps at opposite ends of the table, 400 px apart; it reads angles and never asks whether the marks touch. It asked for the landed shapes compared, the bars' marks to share one mass, and a habit dismissed once per painting. | M, O | |
+| **A rehearsal's look cannot be cropped or cleaned**: `easel run --rehearse` has none of `easel look`'s `--region`, `--no-sketch`, `--no-marks`, `--scale`. Confirmed; 13 of its 26 rehearsals carried one of seven look scripts written for it. The label on the 48-px face was two: the guide's note, and a landmark left by the first drawing pass, which `unguide()` does not clear ([`labels_on_the_face.png`](paintings/Claude/uktarl_krannoc/evidence/labels_on_the_face.png)). | M | |
+| **No rotation and no local frame**: the same helper written three times, a head in its own radii, tilted and placed. Confirmed: shapes and groups scale and shift but do not rotate; `ellipse()` and `blob()` take `rotate=`. `hp()`, `dp()` and `ah()` are the same four lines with other constants. It asked for `.rotated(deg, about=)` and `frame(centre, rx, ry, tilt)`. | O | |
+| **The budget is planned as one number**: Uktarl had 102 marks before the other three figures began, and the last got 22. Confirmed. `subject:` read 47% and 48% against 30% from his head on, and the painter saw it six times — but as a share of the marks laid so far; of the budget he had 23%. It asked for `s.plan(shares={...})` keyed by `note=`, with spent against planned for each. | M | |
+| **Concave shapes are priced by the strip their passes sweep**: the V collar 43 strokes, about 10 as two flaps; the mountain's first pass 129. The collar is confirmed: the V costs 17 to 22 at any one direction, the flaps 3 and 4 along their lengths, and 8 of the black V's 14 passes come back in two pieces — the mechanism `CALIBRATION.md` measures under *Shaped masses (M8)*, whose remedy, `s.cost()`, the painter never ran. ~~*The mountain*~~ **The mountain's facets are convex**: laid across their length they cost 88, along their axes 31, and nothing at the call said so, because the direction notice speaks only when `direction=` is left off. It asked for a notice when a mass fills a small share of what its passes cover. | M | |
+| ~~***"No clear light" cannot be satisfied by a dark picture with small lights***, *since it isn't low-key by the definition*~~ **The remedy exists, and the picture qualifies.** Replayed with `plan(key="low")`, the line says *low-key, as the plan says* on every pass and, from the head's pass on, *Uktarl's face stands clear -- 0.69 at its brightest twentieth against 0.50 for everything else, 0.19 over*: the painter's own fix. Its top twentieth, `0.52`, is under the box's middle, `0.54`, which is the check's test; no document states that test. The third painter in two rounds to meet this line. | R | |
+
+### The documentation
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Volume**: about 90,000 words shipped, about 30,000 read before the first mark, and the rules used would fit on two pages; the 0.8.0 changelog entry alone runs to thousands of words. Measured: 90,369 words, 51,788 of them `CALIBRATION.md`; 33,596 printed before its first exercise — `PAINTER.md`, `RECIPES.md` and `REFERENCE.md` whole, 28,538, and the changelog entry from the checkout, 5,058 words as printed. It asked for a one-page card and a ten-line *what's new for a painter* atop each release entry. The fourth painter in four rounds. | M | |
+| **The instruction comes last**: qualifications, history and cross-references ahead of the rule. Confirmed on the row this painter needed: `REFERENCE.md`'s `key=` row opens with what the line stops saying and never says when a picture counts as low-key. It asked for the rule, then the number, then the history. | O | |
+| **The pixel advice contradicts itself**: `PAINTER.md` still says *you cannot reason in pixels* (line 380) while 0.8.0 adds `s.px()` (line 159). Two of the last three painters drew every shape in pixels through a helper; the Bell-Warden drew in fractions. *Absolute placement in an unseen picture is what fails, not pixels.* | O | |
+| **Missing recipes**: light round a figure already painted; a scene of several figures; a hollow thing seen low, where the near rim hides the bottom; a face lit from below, where the light line must sit at the brows. None is in `RECIPES.md`; the last two are a sentence each in *A hollow thing* and *A form turned toward the light*. | O | |
+
+### What the check cannot see
+
+Not items: **the picture** — *an illustration, not a painting*: stencilled, the figures cut-out
+silhouettes with masks for faces, the nearest bandit the back of a bald head, the rays
+mechanically regular and the mountain flat away from Uktarl, the dwarves pegs, a tub that
+reads only close up, a table that floats, and dark enough to go muddy on a projector. The
+check reads marks and measures the canvas, and does not judge an arrangement.
+
+### What worked, recorded because a finding is still true afterwards
+
+The painter defended these, and **nothing in this round touches them**: `s.thumbnail()`,
+which showed the face lost in the glow behind it and the ears reading as a cat's before a
+stroke; rehearse, then commit, with `dearest:`, `landed nothing:` and *out of sight* naming
+every dear or wasted call by its script line — *I never needed `undo`*; guides that stayed
+readable over paint; `at_value` and a swatch strip, which caught grey faces before they
+were painted; a clip-held flat stroke as a stencil, thirteen rays in thirteen strokes. In
+the documentation: `RECIPES.md`, three entries landing first time; the face recipe's
+structure, once adapted for light from below; `REFERENCE.md`'s tables and `PAINTER.md`'s
+order of work. `boxes:` read 0 of 44.
+
+### The painting, and what the painter owns
+
+- *It works as a table handout, not as a painting.*
+- **Its faults, all of which measure**: the first figure allowed to eat the budget (102 marks);
+  ten sliver facets where the recipe says three or four planes (88 strokes); six strokes of
+  coins and cards the nearest bandit then hid (the check said so after that pass); the
+  table top by the candle `0.18` darker than planned.
+
+### Found while filing, not by the painter
+
+- **A landmark outlived its drawing.** The first drawing pass marked the point the rays
+  leave, behind Uktarl's head; the pass that replaced it does not, and `s.unguide()` clears
+  guides, not landmarks. So every look after it drew `sun` across his forehead, and a
+  rebuild from the final scripts has no `sun` at all.
+- **The disc rule groups across passes and subjects**: the left bandit's group of five
+  holds a ridge laid on the relief eight passes earlier, linked to her eye 56 px away.
 
 ---
 
