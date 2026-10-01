@@ -401,9 +401,8 @@ and what is still open — **read it before changing the engine or the guide**, 
 is also where the rules about *how* the guide may change are written down.
 [`SUGGESTIONS.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/SUGGESTIONS.md) is the register of what twenty-three painters asked for
 after using the guide: what was wrong, and what was done about it, one pair of lines
-each. Everything on it is done — including the eight that were answered by measuring
-them and finding nothing to fix, which say so — except the round at the top, which is
-open and says so on every line.
+each. Everything on it is done — including the ten that were answered by measuring
+them and finding nothing to fix, which say so.
 [`CHANGELOG.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/CHANGELOG.md) is the
 same history cut by release rather than by painter: what changed in each version, which
 defaults moved, and what a script that leaves an argument off will paint differently

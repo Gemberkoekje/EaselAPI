@@ -8,18 +8,17 @@ greenhouse was painted before the fogged glass and filed after it, in its own se
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open, from two painters against 0.7.0, at the top**: the Bell-Warden —
-**9 engine items and 4 documentation items** — and Wenna Brask, painted the next morning
-by a second session — **11 engine items and 8 documentation items**, several of them the
-first's again — both acted on in 0.8.0, **and every row is now filled**: twenty engine
-items, two of them by declining to build, and twelve documentation items, of which the
-corpus's length — both painters' first row — is answered for one page and not for the
-corpus, as the rows say. The release is not cut. They are written
-where every open round before them has been written, and will be folded in where they
-stand rather than moved once they are acted on. Below them is the lighthouse handover — one painter against
-0.6.0, **6 engine items and 4 documentation items** — and every item in it is done, in
-0.7.0, folded in where it was filed rather than moved, as every open round before it was.
-Below that is the 0.5.0 cohort — seven painters that
+**No round is open.** The newest, at the top, is the bell-warden's round — two painters
+against 0.7.0: the Bell-Warden, **9 engine items and 4 documentation items**, and Wenna
+Brask, painted the next morning by a second session, **11 engine items and 8
+documentation items**, several of them the first's again — and every item in it is done,
+in 0.8.0: twenty engine items, two of them by declining to build, and twelve
+documentation items, of which the corpus's length — both painters' first row — is
+answered for one page and not for the corpus, as the rows say. They are folded in where
+they were filed rather than moved, as every open round before them was, and what the
+round left open is at the end of Wenna Brask's section. Below them is the lighthouse
+handover — one painter against 0.6.0, **6 engine items and 4 documentation items** — and
+every item in it is done, in 0.7.0. Below that is the 0.5.0 cohort — seven painters that
 are not Claude, one picture each, **32 engine items and 6 documentation items** — and
 every item in it is done, in 0.6.0. Everything below it is done too: 72 engine
 items and 90 documentation items, all of them — the eighth session's eight and the
@@ -121,14 +120,15 @@ disagree, it may be the context talking.
 
 ## The Bell-Warden: one painter against 0.7.0
 
-**OPEN.** Nine engine items and four documentation items, from one painter —
-`claude-opus-5-5`, at max effort — which installed `easel-paint` 0.7.0 from the package on
-the owner's machine and painted a stone figure on a plinth that *has to pass for a
-statue*, as sample art for a content pack in another of the owner's projects, **280 of
-300 strokes**. **A blank right-hand column below is an item nothing has been done about
-yet, and since the round's ninth step none is blank**; the section stays open until
-0.8.0 is cut. The candidate answers and the measurements that decided which survived are
-in [`PLAN-0.8.0.md`](PLAN-0.8.0.md); a row was filled in when its PR landed, not before.
+**Every item in this section is done, in 0.8.0** — nine engine items and four
+documentation items, from one painter — `claude-opus-5-5`, at max effort — which
+installed `easel-paint` 0.7.0 from the package on the owner's machine and painted a stone
+figure on a plinth that *has to pass for a statue*, as sample art for a content pack in
+another of the owner's projects, **280 of 300 strokes**. A row's right-hand column was
+filled in when its PR landed, and not before. The candidate answers, the decisions taken
+on them and the measurements that decided which survived are in
+[`PLAN-0.8.0.md`](PLAN-0.8.0.md), with the second painter's beside them; what the round
+left open is at the end of that painter's section, below.
 
 **It is the first fresh session to paint against 0.7.0**, and it answers two of the three
 things the handover's round said the next run should look for (*What the handover's round
@@ -254,13 +254,14 @@ sentence was written; the page says *over half the paintings so far* now.
 
 ## Wenna Brask: a second painter against 0.7.0
 
-**OPEN.** Eleven engine items and eight documentation items, from a second
-`claude-opus-5-5` session at max effort, which painted *a mother who has not slept* by a
-lantern at dusk for the same pack the morning after the Bell-Warden, **262 of 300
-strokes**, and gave its verdict when the owner asked. A blank right-hand column is an item
-nothing has been done about yet — none is, since the round's ninth step — and the owner
+**Every item in this section is done, in 0.8.0** — eleven engine items and eight
+documentation items, from a second `claude-opus-5-5` session at max effort, which painted
+*a mother who has not slept* by a lantern at dusk for the same pack the morning after the
+Bell-Warden, **262 of 300 strokes**, and gave its verdict when the owner asked. The owner
 folded this verdict into the same round, so the candidates are in
-[`PLAN-0.8.0.md`](PLAN-0.8.0.md) beside the first painter's.
+[`PLAN-0.8.0.md`](PLAN-0.8.0.md) beside the first painter's, and a row was filled in when
+its PR landed; what the round left open, for both painters, is at the end of this
+section.
 **It is not an independent painter** — it began from the first painter's memory of the
 Bell-Warden and read its notes and scripts — so where it repeats the first verdict the
 two are one painter's lesson and a second painter's experience of it, and its rows say
@@ -323,6 +324,72 @@ re-runs*; and **the why read back at the end, which changed the picture**: it is
 lids came down. In the documentation: `PAINTER.md`'s shape, *What you are bad at*, which
 *predicted me exactly, including the fist*, and *A mass built of planes*, which rescued
 the face. `boxes:` read 0 of 22.
+
+### What the round left open
+
+Recorded here, for both painters, because the plan and the step notes they were written
+in leave the repository once 0.8.0 is tagged. Everything else the round declined or put
+off is written where it was decided: `into-wet` and the repainted-place count in their
+rows above, the second in `CALIBRATION.md` too; the darker dark the first painter wanted,
+with a hue, in the floor row; the ember that landed short, which no threshold separates,
+in the Bell-Warden's last engine row; the corpus's length in both painters' first
+documentation rows and `LESSONS.md`'s *One home per rule*; the graded rule's benched
+gate, *a mass once*, and what the lit silhouette's far copy costs, in `CALIBRATION.md`;
+and every verb and page not built in the row that asked for it.
+
+- **What the next run should look for first.** By the owner's ruling of 2026-09-27, new
+  paintings are painted on 0.8.0 — the pack's next pictures, a note in a hand and a
+  sketch map's labels among them — and they are the first to meet this round's answers
+  unasked. Several of those answers were chosen from sheets by painters that have not
+  painted with them: the casing at 150, the join, the thumbnail's 192 px. So the run
+  should say whether it reached for `s.thumbnail()` or `easel run --thumbnail` at all —
+  the plan's own risk was a verb nobody reaches for, as `diagnose` has been — and for
+  `--alternatives` and `--count`, in the card's loop now, which the Bell-Warden never
+  ran; whether the card alone started its painting, now that it names 16 of the 21 calls
+  two painters leaned on (`.shifted`, `.inset`, `load=`, `mix_many` and `sample` are
+  still off it), and whether the three stories kept beside their rules persuaded;
+  whether `key=` stayed a declaration that buys a question rather than a switch that
+  buys silence; and whether `landed nothing:`, said on about one painted pass in seven
+  over the corpus, is read or skimmed. The first page's move is a hypothesis until then,
+  as every documentation item is.
+- **The join on skin, and lettering's findings.** The join's terraces read at 1:1 as
+  chisel facets on stone; on skin its painter *can't tell*, and the second painter, whose
+  face it would have been, was never asked. And no painting has laid lettering yet. *A
+  line of lettering* says the check's *one brush at one size* is about masses, not about
+  a line of writing; whether that finding, or *detail before the masses*, should know a
+  stroke laid along a glyph is for the round that has a painting that writes.
+- **Builds not made, each with what it would take.** A mass that skipped the passes
+  falling wholly outside its clip would save the lit silhouette's lost strokes and the
+  Bell-Warden's twelve, and would renumber every script that lays one: a default's move,
+  for a painter to decide with the corpus beside it. A darker dark would be a deeper
+  masstone of one of the box's darks, not a tube black, and would come with what it
+  moves — `darkest_value`, and with it every `values:` line's box, the middle a key is
+  judged against (`0.54`) and `compare()`'s unreachable split; which pigment, its painter
+  could not say. The dearest line is `easel run`'s and the server's and not `report()`'s, since
+  a cost line over a whole painting says nothing; `s._dearest_line(since)` is there if a
+  painter asks. And a notice for a zone held hard inside its own silhouette, which is what
+  made the Bell-Warden a cut-out, was considered and not proposed: its painter held the
+  zones hard knowingly and asked for a recipe, and the `edges:` line had already printed
+  48% to 61% at it, from the subject's pass on.
+- **Left as they were, on purpose.** One `feather=` for every hold of a call: a wider
+  feather is speckle at any width, so a feather per hold would carry nothing. The
+  server's `look` and `timelapse` keep an integer `scale`, which the SDK writes into
+  their schemas, so the share under 1 is the shell's. `at_value`'s error still begins
+  *out of reach*, since an older test matches it and a painter's code may. `dab()`'s
+  default stays one touch — a light touch is what one touch is for, and the call now
+  says when it laid nothing. And `easel run --thumbnail` draws a colour the pass mixes off
+  `s.sample()` at what the canvas held before the pass, since a counted copy lays no paint.
+- **The bench, and how the painters were asked.** `probe_bell_session.py` reads its
+  corpus replay, `out/bell/corpus.pkl`, back only under the engine version that wrote it,
+  so the first corpus flag run on 0.8.0 replays the corpus again, about half an hour, and
+  writes over step 2's replay, which `--landed` reads its counts against — copy it out
+  first to keep it. The blind package's `KEY.md`, and the step notes naming every letter,
+  sat in this repository while the painter answered; it did not open them, and said it
+  had read the plan's candidate lists. A later package could keep its key out of the
+  repository until the answers are in. And step 5, built at a lower effort setting, was
+  read again line by line the same day, against the painters' answers and the bench, and
+  the second look found five defects the suite had passed — one of them in `report()`
+  since 0.6.0.
 
 ---
 
@@ -485,7 +552,8 @@ of `PAINTINGS.md`'s rows in [#70](https://github.com/Gemberkoekje/EaselAPI/issue
   *thirty claims have now been re-measured before anything was built on them, and eight
   did not survive*, written for the hands session's — and was left as 0.6.0 left it:
   bringing it up to date means counting both rounds' claims again, the cohort's and this
-  one's.
+  one's. **Revisited in 0.8.0**: counted again, both rounds and the two verdicts on 0.7.0
+  with them — ninety-four claims, and twenty-one did not survive.
 
 ---
 

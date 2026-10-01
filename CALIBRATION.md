@@ -3322,8 +3322,9 @@ read one replay of every committed painting with this round's watcher -- the cor
 keeping each call's site, what each hand-laid mark landed at and a footprint of what each
 call painted -- kept in `out/bell/corpus.pkl` after the first run. Everything from
 *Section 3, re-measured* on is that script's output; re-run it rather than trusting the
-numbers here. The whole probe takes about fifty minutes, half an hour more the first time,
-and its flags cut it down.
+numbers here. Its step-2 benches take about fifty minutes, half an hour more the first
+time; each later step's flag adds its own, a few hours with all of them, and the flags cut
+it down.
 
 **What the numbers cannot decide, the probe renders**, into `out/bell/`: the guide
 candidates on every ground, the painter's arrangements flat at four sizes, its subject's
@@ -3635,10 +3636,10 @@ white line on a dark canvas and a double line on the grey; the translucent one r
 every ground and gives way to the paint most; the per-pixel ink reads as one clean line
 where it works and breaks where the paint crosses its switch.
 
-**Built in step 3 as the cased line at 150**, until the painter's pick between the two
-casings (question 4b) comes back: re-run after the build, the bench prints every number
-above again and finds the engine's `_draw_guides` the `casing 150` candidate, notes and
-all, **to the pixel over 35 of 35 grounds**. Its `today` is 0.7.0's line, kept in the probe
+**Built in step 3 as the cased line at 150**, and kept there when the painter's pick
+between the two casings (question 4b) came back, E, on 2026-09-27: re-run after the
+build, the bench prints every number above again and finds the engine's `_draw_guides`
+the `casing 150` candidate, notes and all, **to the pixel over 35 of 35 grounds**. Its `today` is 0.7.0's line, kept in the probe
 as `draw_07`, so the column and the blind package's F stay the line the painter had. On a
 flat band of each, the smallest step at any pixel of the line is `0.497` over a dark ground
 of `0.08`, `0.273` over a mid-grey of `0.50` and `0.70` over a light one of `0.93`, where

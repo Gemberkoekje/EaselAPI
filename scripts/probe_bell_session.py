@@ -26,7 +26,7 @@ It does four things:
    ground, the thumbnails at four sizes, the terminator candidates, and the darks re-laid
    under the floor -- the sheets the painters' questions 4, 9 and 10 are put with.
 
-    python scripts/probe_bell_session.py              # everything, about an hour
+    python scripts/probe_bell_session.py              # every flag below, a few hours
     python scripts/probe_bell_session.py --claims     # section 3 and 3b, re-measured
     python scripts/probe_bell_session.py --guides     # 4A1: the guide candidates
     python scripts/probe_bell_session.py --thumbnail  # 4A3: the painter's masses, flat
@@ -52,7 +52,10 @@ It does four things:
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
 ``--place`` and ``--answers`` -- share one replay of every committed painting, about half an
-hour, kept in ``out/bell/corpus.pkl`` and read back until ``--fresh`` asks for another.
+hour, kept in ``out/bell/corpus.pkl`` and read back until ``--fresh`` asks for another or
+the engine is a release other than the one that replayed it -- so the first corpus bench
+after a version bump replays it again and writes over the one kept, which ``--landed``
+reads its counts against: copy it out first to keep it.
 ``--claims`` also measures where a round dab, a short stroke and a starved bristle stop
 landing paint; ``--thumbnail`` draws A4's member that swells and narrows; ``--short`` runs
 its candidate over the guide's own code blocks. ``--answers`` reads the sheets
