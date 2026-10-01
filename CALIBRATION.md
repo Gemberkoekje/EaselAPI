@@ -4405,3 +4405,130 @@ edges. From the replay, 17 of the 24 paintings laid a smudge, between one and fi
 and the last three laid none -- which neither confirms the sentence nor refutes it, since
 an edge is also lost by paint laid across it, and the `edges:` line measures that.
 
+
+## Uktarl's Room's round
+
+One painter, `claude-opus-5-5`, upgraded the owner's installed `easel-paint` to 0.8.0 the
+day it shipped and painted four bandits in vampire costume at cards under a carved
+sunrise, in 410 of 450 strokes, as a handout for the owner's own campaign. Acting on its
+verdict is [`PLAN-0.9.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PLAN-0.9.0.md).
+What follows was measured while filing it, on 2026-10-01, on the checkout whose engine is
+`v0.8.0`'s, from the painter's session file, scripts and transcript. The round's own
+probe, step 2, is to come.
+
+### The painting, rebuilt
+
+429 records, **410 strokes spent**, in about 75 seconds through `easel run`, and 47 through
+the corpus probe: every record identical to the painter's file, and the export the
+painter's own PNG to the pixel, on the machine it was painted on. **In the numbering**: the
+drawing ran three times and the thumbnail once, and neither lays a record. The passes open
+at records 0, 25, 63, 84, 114, 166, 219, 227, 271, 283, 321, 363, 386, 399, 410 and 423.
+
+What the check printed after each committed pass, as the painter's file saved it:
+
+| pass | `edges:` under 2.5 px | `values:` | `subject:` |
+|---|---|---|---|
+| `p02_wall.py` to `p05_floor_tub.py` | 70% to 69% | `0.23`-`0.40` to `0.15`-`0.49` | -- |
+| `p06_uktarl_body.py` | 67% | `0.15`-`0.49` | 51 of 161 (32%) |
+| `p07_uktarl_head.py` | 66% | `0.15`-`0.50` | 102 of 212 (48%) |
+| `p08_backlight.py` to `p11_left_bandit.py` | 63% to 62% | `0.15`-`0.50` to `0.15`-`0.51` | 47% to 33% |
+| `p12_card_game.py` to `p17_finish.py` | 60% to 59% | `0.15`-`0.51` to `0.14`-`0.52` | 29% to 27%, and 28% at the end |
+
+Every one, and every rehearsal's, said *no clear light*: 43 of the file's 46 reports, all
+but the three before the first mark. From the head's pass on, `lightest:` read Uktarl's
+face at `0.65` as a place and `0.69` at its brightest twentieth, the lightest of the seven
+places planned.
+
+**One thing the rebuild does not have**: the landmark `sun`, which the first drawing pass
+marked behind Uktarl's head and the pass that replaced it does not. `s.unguide()` clears
+guides, not landmarks, so the painter's file kept it, and every look drew its label on the
+face.
+
+### The versions, recovered
+
+The painter's transcript holds every script it wrote and every edit to the prelude. Three
+versions carry the verdict's claims, and each, run on the canvas it was rehearsed on,
+prints its saved report word for word but for the script's name — and, on the mountain's,
+the plan's two lines, because the plan's places moved after it
+([`versions/`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/uktarl_krannoc/versions/README.md)):
+
+| version | strokes | from record |
+|---|---|---|
+| the mountain as ten facets on a mass | 129 | 25 |
+| the body, with the collar as two V-shaped masses | 85 | 114 |
+| the backlight, its regions ending at x = 290 and 812 | 7 | 219 |
+
+### What the closing check called discs
+
+`easel check` after `p15_light_edges.py` (record 409): *28 small marks with a round tip at
+tip_wobble=0 sit together in 5 places*. Every counted mark, by group:
+
+| group | marks | what they are |
+|---|---|---|
+| 10 at `(0.50, 0.45)` | 193-202 | Uktarl's eyes, the candle's catch-light in each, brows, the side of the nose, the mouth, two fangs |
+| 6 at `(0.73, 0.63)` | 253-258 | the doppelganger's ear's light, eyes, nose, mouth, a tooth |
+| 5 at `(0.19, 0.65)` | 42, 311-314 | the left bandit's neck shade, eyes and lips; and record 42, a ridge on the relief laid in the mountain's pass, 56 px from her eye |
+| 4 at `(0.54, 0.83)` | 333, 336, 362, 408 | the candle's holder, its flame, a ring on the table, the flame's white core |
+| 3 at `(0.40, 0.54)` | 392-394 | a dwarf's pick, two lit crags |
+
+Every face mark is a `round_hard` stroke 0.8 to 3.8 of its widths long, most with a
+pressure list, or a catch-light dab. At the end the line counted 33 in six places: the
+fan's pips and the thumb in `p16_hand_and_crags.py` add a sixth; the signature is left out,
+as the check leaves every signature out.
+
+### The light under a declared key
+
+The painting replayed pass by pass with `plan(key="low")` in place of no key. The `values:`
+line says *low-key, as the plan says* after every pass, and:
+
+| after | it says |
+|---|---|
+| `p02_wall.py` to `p06_uktarl_body.py` | *Uktarl's face does not stand clear* — `0.21` to `0.29` against `0.41` to `0.49`, before the face is painted |
+| `p07_uktarl_head.py` to `p11_left_bandit.py` | *Uktarl's face stands clear -- 0.69 at its brightest twentieth against 0.50 for everything else, 0.19 over* (`0.18` after the left bandit) |
+| `p12_card_game.py` to `p17_finish.py` | the same, `0.17` to `0.18` over |
+
+The picture's top twentieth ends at `0.52`, under the box's middle, `0.54`, which is the
+check's test for a low key.
+
+### What a mass was charged for its direction
+
+The collar, as the first body pass laid it and as two flaps, counted at every 15° on a
+1024×768 canvas at density `1.0`, the call's own:
+
+| shape | brush | strokes, 0° to 165° | as laid |
+|---|---|---|---|
+| the black V | `0.014` | 17 to 22 | 22, along its axis (-12°): 8 of its 14 passes in two pieces |
+| the red V | `0.010` | 19 to 26 | 21, at 90° |
+| the left flap | `0.014` | 3 to 13 | 3, along its length |
+| the right flap | `0.014` | 4 to 15 | 4, along its length |
+
+The mountain's ten facets, each a convex quadrilateral 30 to 42 px across at its
+narrowest, at `size=0.016` and `edge="clean"`: **88 strokes** with the passes along the
+line from each peak to its dip, as the painter laid them, and **31** along each facet's
+own axis, which is also the cheapest single direction for every facet. `clean-small`
+fired on all ten; nothing said what the direction cost. Laid ragged or held hard instead
+of clean, the painter's direction costs 119.
+
+### What it read
+
+Measured from the session's transcript: before its first exercise, 33,596 words of the
+documents were printed to it.
+
+| document | read | words |
+|---|---|---|
+| `PAINTER.md` | whole | 6,680 |
+| `RECIPES.md` | whole, in two reads | 10,832 |
+| `REFERENCE.md` | lines 1-820 of 841 | 11,026 |
+| `CHANGELOG.md`, from the repository's checkout | the `[0.8.0]` entry | 5,058 |
+
+Beside them it read its own memory note from the project's earlier paintings first (915
+words), and, between `PAINTER.md` and `RECIPES.md`, the Bell-Warden's and Wenna Brask's
+notes and the second's prelude (3,650). It never
+opened `PAINTING.md`, `CALIBRATION.md` or `DIAGNOSIS.md`. It ran `easel demo mistakes`,
+the ten exercises, 26 rehearsals and `easel check` twice. It never ran `cost()`,
+`cost_line()`, `--count`, `--alternatives`, `--thumbnail`, `explain`, `diagnose`,
+`preview()`, `compare()` or `undo`; it called `s.thumbnail()` from a script of its own.
+
+The six documents the package ships are 90,369 words: `CALIBRATION.md` 51,788,
+`REFERENCE.md` 11,242, `RECIPES.md` 10,822, `PAINTING.md` 7,644, `PAINTER.md` 6,680 and
+`DIAGNOSIS.md` 2,193.
