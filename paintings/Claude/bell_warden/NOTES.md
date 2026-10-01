@@ -194,11 +194,12 @@ Everything under this heading is the filer's, not the painter's.
   ahead of its planned share after every pass it was painted in, `53%` to `65%`.
 - **The verdict's measured claims, re-measured** — in full in `PLAN-0.8.0.md`, section 3.
   **Confirmed:** the guides vanish over dark paint (a guide is a one-pixel line of value
-  `0.23` at 75% alpha; over the finished canvas 69% of its pixels step the value by less
-  than `0.05`, on the bare ground none do); the pencil's spline rounds a closed outline,
-  and a shape cannot be handed to `pencil()` or `guide()` at all; the subject's pass
-  rehearsed at 85 to 113 marks, and the log can say which calls laid them (four
-  `block_in`s laid 79 of the committed 102); *no clear light* on 25 of 27 reports; the
+  `0.23` at 75% alpha; over the finished canvas ~~69%~~ *65%, re-measured by the round's
+  probe,* of its pixels step the value by less than `0.05`, on the bare ground none do);
+  the pencil's spline rounds a closed outline, and a shape cannot be handed to `pencil()`
+  or `guide()` at all; the subject's pass rehearsed at 85 to 113 marks, and the log can
+  say which calls laid them (four `block_in`s laid 79 of the committed 102); *no clear
+  light* on 25 of 27 reports; the
   head's top reads `0.524` by its mean and `0.606` by its median, with 14% of its pixels
   under `0.35`; the post-pass paragraph is 678 words. **Changed shape:** the highlights
   *at 0.52 instead of 0.64 until I added dry()* — the session shows the head's top

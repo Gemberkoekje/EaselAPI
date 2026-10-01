@@ -796,7 +796,9 @@ the synthesis across them, and **every item is now done** — seventy-two for th
 ninety for the documentation — each with a note saying what it became. The 0.5.0
 cohort's round is filed there too, seven painters that are not this model, and no row of
 it is blank either; nor is one of the lighthouse handover's, the first painting against
-0.6.0, whose ten items were done in 0.7.0.
+0.6.0, whose ten items were done in 0.7.0, or of the two paintings against 0.7.0, the
+Bell-Warden and Wenna Brask, whose thirty-two were done in 0.8.0 — two of them by
+declining to build.
 
 That is not the same as those items being *right*. Every engine change has a test and a
 measurement behind it; every guide change is a hypothesis until a fresh session paints

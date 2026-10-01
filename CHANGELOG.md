@@ -37,6 +37,54 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [0.8.0] — 2026-10-01
+
+**One round, and two painters: the first paintings against 0.7.0.** Two `claude-opus-5-5`
+sessions, at max effort, painted sample art for a content pack in another of the owner's
+projects with `easel-paint` 0.7.0 — *the Bell-Warden*, a stone figure on a plinth that
+has to pass for a statue, in 280 of 300 marks, and the next morning *Wenna Brask*, a
+woman by a lantern at dusk, in 262 — and each wrote a verdict on the tool, the
+documentation and its own picture. The second began from the first painter's notes, so
+where the two agree it is one lesson and not two opinions. Their twenty engine items and
+twelve documentation items are filed in `SUGGESTIONS.md` under each painting; the round
+was worked from `PLAN-0.8.0.md`, and its decisions are the painters' own answers, the
+second batch given blind against the round's measuring sheets (`answers.md` and
+`answers-step2.md` in `paintings/Claude/bell_warden/`, `answers.md` in
+`paintings/Claude/wenna_brask/`).
+
+**Its shape is a drawing the engine could not help with.** Both painters drew their
+subjects as coordinates — the first a 42-point polygon typed by hand, the second every
+shape in pixels through a helper of its own — and the first's three failures on the way
+were drawing failures that paint showed up, each costing a rehearsal of 85 to 113 marks
+to see. Its guides vanished over the room it had painted, and its pencil rounded a box
+into a pot. So most of the answers went to the drawing: a guide that reads on any ground,
+a shape drawn as its outline, places and lengths in pixels and shapes moved as a group,
+the arrangement drawn flat and small before a mark of it is paid for — `s.thumbnail()`,
+and `easel run --thumbnail` — and recipes for a silhouette built from parts and for the
+line a lit form turns on. The rest went to what the check says: what a pass cost, call by
+call; which marks a finding counted; a key declared for a dark picture; a place read by
+what most of it reads, and a named light by its brightest part; the box's floor said one
+way; and a mark that laid no paint, said as it lands and named after the pass — the
+Bell-Warden's spark and Wenna Brask's flour, both paid for and never there. Letters are
+laid as paths, and the guide's first page is its method alone. Both paintings were
+rebuilt to the pixel from their own sessions, every version their painters threw away
+recovered and re-run to the report it printed; every candidate was benched on them and
+over the corpus before any was built, and every line measured again as built.
+
+**No default moved, and nothing a mark lays changes**, so no saved painting rebuilds
+differently and `notices.REBUILDS` gains no row: a file saved by 0.7.0 has no fix to be
+told of as it opens. **One instrument changes what it prints**: a planned place reads its
+median where it read its mean, on `plan:` and `lightest:` and in `compare()` handed a
+plan, so the numbers those lines print move a little — the Bell-Warden's head top, a miss
+of `-0.14` by its mean, reads inside its plan (*A declared key, a place read by what most
+of it reads, and a light read as a light*). And 0.7.0 opens a file this release saves
+without a word, rebuilds its log to the same pixels, and keeps its records, its guides
+and its saved reports, read as 0.7.0 reads them — its places by their means, and no key;
+its save drops the plan's `key=` and any saved `dab-blank` or `prelude-rebind`, codes it
+does not know. Checked against the 0.7.0 wheel.
+
 ### Guides that read on any ground, a shape handed to the drawing, and drawing in pixels
 
 Step 3 of the bell-warden's round (`PLAN-0.8.0.md`, workstreams A1, A2 and A5). Two
@@ -2585,7 +2633,8 @@ two engine rounds they bought.
 - `easel` (the CLI), `easel-mcp` (the MCP server), and the guide:
   `PAINTER.md`, `REFERENCE.md`, `CALIBRATION.md`, `LESSONS.md`.
 
-[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/Gemberkoekje/EaselAPI/compare/v0.4.0...v0.5.0

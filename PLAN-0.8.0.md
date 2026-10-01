@@ -14,8 +14,30 @@ beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 9 is built -- F -- on branch `lighter-card-and-tables`, 2026-09-30, off
-`main` at `e7e74db`** -- step 8 merged as
+**Status: step 10's first part is built -- the cut, without the claim -- on branch
+`cut-0-8-0`, 2026-10-01, off `main` at `2b4d2ba`** -- step 9 merged as
+[#98](https://github.com/Gemberkoekje/EaselAPI/pull/98). The version is 0.8.0 in its four
+copies -- `pyproject.toml`, `easel.__version__` and both entries of `server.json` -- and
+`CHANGELOG.md` has `[0.8.0]` written and dated with no claim in it: the round's two
+painters and its shape; no default moved and nothing a mark lays changed, so
+`notices.REBUILDS` gains no row; the one instrument that prints differently, a place read
+by its median; and what 0.7.0 does with a file this release saves, checked against the
+0.7.0 wheel -- it opens it, rebuilds its log to the same pixels and keeps its records,
+guides and saved reports, and its save drops the plan's `key=` and the two codes it does
+not know, `dab-blank` and `prelude-rebind`. `SUGGESTIONS.md` closes the round -- both
+painters' sections done, in 0.8.0 -- and says what it left open, at the end of Wenna
+Brask's section; the README and `llms.txt` stop calling the register's top round open;
+and `LESSONS.md` counts the round among the done. Five sentences that went stale during
+the round say what is true now: `CALIBRATION.md`'s casing *until 4b comes back* and its
+probe's running time, the probe's own -- every flag is a few hours now, and a version bump
+replays its corpus again -- the Bell-Warden's filing notes' `69%`, and 0.7.0's line on the
+count of re-measured claims. **What is left is the tag, on the owner's word, and then the
+claim.** This file and the step notes stay through the tag, so
+`v0.8.0` carries them, and leave in the PR that adds the claim, which also points
+`CALIBRATION.md`'s link to this file at the tag.
+
+*Step 9 was built -- F -- on branch `lighter-card-and-tables`, 2026-09-30, off
+`main` at `e7e74db`* -- step 8 merged as
 [#97](https://github.com/Gemberkoekje/EaselAPI/pull/97). `PAINTER.md` lost its account of
 itself to `LESSONS.md`, the framing *every painter so far* and the card's instances of a
 row of like things, and gained the calls both painters' scripts leaned on -- of 21, the
@@ -1820,7 +1842,11 @@ and cut*.
 10. **Cut 0.8.0**: the version in `pyproject.toml`, `src/easel/__init__.py` and both
     entries of `server.json`; `CHANGELOG.md`'s entry without the claim; the tag on the
     owner's word; then the claim, which takes this file and the step notes out of the
-    repository and leaves what survives of them in `SUGGESTIONS.md`.
+    repository and leaves what survives of them in `SUGGESTIONS.md`. *The first is done,
+    2026-10-01: the version is 0.8.0 in all four copies, `[0.8.0]` is written and dated
+    with no claim in it, and `SUGGESTIONS.md` says what the round left open. The tag goes
+    on the commit that merges it; the claim comes after the tag, in the PR that deletes
+    this file and the step notes.*
 
 ---
 
