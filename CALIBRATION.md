@@ -3312,7 +3312,7 @@ One painter, `claude-opus-5-5`, installed `easel-paint` 0.7.0 from the package a
 a stone figure on a plinth that has to pass for a statue, in 280 of 300 strokes, as sample
 art for another of the owner's projects; a second session painted the next picture for the
 same pack the following morning. Acting on both verdicts is one round,
-[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PLAN-0.8.0.md), and its measuring step is
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md) at `v0.8.0`, and its measuring step is
 [`scripts/probe_bell_session.py`](https://github.com/Gemberkoekje/EaselAPI/blob/main/scripts/probe_bell_session.py): it rebuilds both paintings
 from their committed passes through the CLI's own `run_script` -- the Bell-Warden in the
 order its saved reports record -- keeps a copy of the canvas after each pass and every call's

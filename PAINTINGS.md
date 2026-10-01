@@ -959,8 +959,11 @@ by call, and a plan that cannot say a picture is low-key on purpose. Against its
 creature that reads as a vinyl toy rather than weathered stone — *I held every zone with
 a hard edge* — with stiff anatomy, and give-aways too small to be seen across a room. The
 `boxes:` line read **0 of 17**, which it credits to the card. Its headline is the step
-the engine does not yet help with, *drawing a complex shape as coordinates*, and what is
-being done about it is [`PLAN-0.8.0.md`](PLAN-0.8.0.md).
+the engine does not yet help with, *drawing a complex shape as coordinates*. What was
+done about all of it, in 0.8.0, is in [`SUGGESTIONS.md`](SUGGESTIONS.md) under *The
+Bell-Warden*, and the plan it was worked from is
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md),
+as tagged.
 
 ## A mother who has not slept, by a lantern at dusk
 
@@ -999,8 +1002,11 @@ its second failure each time, but in the same view; the fist was not too large; 
 budget never bound — and found what its verdict had missed: **the flour its why names
 never landed**, eight strokes at loads too low for a small bristle to lay anything, and
 the lightest thing in the picture is the face, which its plan never named. Its
-[answers](paintings/Claude/wenna_brask/answers.md) are filed beside it. What is being done
-about all of it is in [`PLAN-0.8.0.md`](PLAN-0.8.0.md), beside the Bell-Warden's.
+[answers](paintings/Claude/wenna_brask/answers.md) are filed beside it. What was done about
+all of it, in 0.8.0, is in [`SUGGESTIONS.md`](SUGGESTIONS.md) under *Wenna Brask*, and the
+plan it was worked from is
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as
+tagged, beside the Bell-Warden's.
 
 ## The log
 

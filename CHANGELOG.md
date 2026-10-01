@@ -41,6 +41,13 @@ Nothing yet.
 
 ## [0.8.0] — 2026-10-01
 
+**Released.** Shipped as `v0.8.0`: `easel-paint` 0.8.0 on PyPI, the GitHub release with
+`easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.8.0 in the MCP registry.
+Every job of the publish run passed on its first attempt. The round's plan and its step
+notes left the repository with this line, as 0.7.0's did; the tagged copies are
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md)
+and `NOTES-step1.md` to `NOTES-step9.md` beside it.
+
 **One round, and two painters: the first paintings against 0.7.0.** Two `claude-opus-5-5`
 sessions, at max effort, painted sample art for a content pack in another of the owner's
 projects with `easel-paint` 0.7.0 — *the Bell-Warden*, a stone figure on a plinth that

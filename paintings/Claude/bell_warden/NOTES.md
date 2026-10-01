@@ -12,7 +12,9 @@ from the installed wheel: about 22,300 words printed, which it counted as about 
 were not opened, and neither was the repository: it never saw `paintings/`. It ran
 `easel demo mistakes` and all nine of `PAINTER.md`'s exercises in one script
 ([`ex/exercises.py`](ex/exercises.py)). **It is the first painting made against 0.7.0**,
-and what it says about that release is read in [`PLAN-0.8.0.md`](../../../PLAN-0.8.0.md).
+and what it says about that release is read in
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as
+tagged at `v0.8.0`.
 
 **To understand this, start by reading [`prelude.py`](prelude.py)** — the mixtures, the
 room, the plinth's three planes, the 42-point silhouette and the planes the light finds on
@@ -192,7 +194,9 @@ Everything under this heading is the filer's, not the painter's.
   places inside 0.10; head top -0.14* at the end; `edges:` `36%` under 2.5 px after the
   room, `46%` after the plinth, `61%` after the subject and `48%` at the end; `subject:`
   ahead of its planned share after every pass it was painted in, `53%` to `65%`.
-- **The verdict's measured claims, re-measured** — in full in `PLAN-0.8.0.md`, section 3.
+- **The verdict's measured claims, re-measured** — in full in
+  [`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md),
+  section 3, as tagged.
   **Confirmed:** the guides vanish over dark paint (a guide is a one-pixel line of value
   `0.23` at 75% alpha; over the finished canvas ~~69%~~ *65%, re-measured by the round's
   probe,* of its pixels step the value by less than `0.05`, on the bare ground none do);
