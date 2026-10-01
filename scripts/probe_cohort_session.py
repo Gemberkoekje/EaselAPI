@@ -3036,6 +3036,14 @@ GATES = {
     # side by side not at all, so the looser break is 10%.
     "trimmed": {"judge": "trimmed", "overlap": 0.0},
     "trimmed, 10%": {"judge": "trimmed", "overlap": 0.10},
+    # Not 0.7.0's: PLAN-0.8.0.md's step 9 met the kind the break leaves -- a mass's
+    # passes with an accent along its edge -- on a recipe of its own, whose copies laid
+    # along the form put fifteen passes of one colour beside two join strokes. A mass is
+    # one colour however its passes are spaced, which is what the rule's third clause is
+    # for; this gate takes that at its word and counts a `block_in`, a `sweep` or a
+    # `cover` once, as the bars rule counts a `scumble`. A candidate, benched and not
+    # built.
+    "a mass once": {"judge": "narrowest", "overlap": 0.30, "once": True},
 }
 
 #: The gate the engine lays since step 7, which its own line is held to.
@@ -3088,8 +3096,31 @@ def _overlap(a: tuple[float, float], b: tuple[float, float]) -> float:
     return max(0.0, min(a[1], b[1]) - max(a[0], b[0])) / shorter
 
 
+#: The verbs whose passes are all one colour: a mass, which the candidate gate counts once.
+ONE_COLOUR_VIAS = ("block_in", "sweep", "cover")
+
+
+def one_per_mass(long_marks: list) -> list:
+    """Long marks with each mass call kept as its first pass alone.
+
+    A ``scumble`` is left whole: its passes step between two colours, which is the
+    graded passage the rule is about. A ``block_in``, a ``sweep`` and a ``cover`` lay
+    every pass in one colour.
+    """
+    seen = set()
+    out = []
+    for r, angle in long_marks:
+        if r.params and r.params.get("via") in ONE_COLOUR_VIAS:
+            key = session_module._call_of(r)
+            if key in seen:
+                continue
+            seen.add(key)
+        out.append((r, angle))
+    return out
+
+
 def graded_run(long_marks: list, canvas, judge: str = "narrowest",
-               overlap: float = 0.0) -> GradedRun | None:
+               overlap: float = 0.0, once: bool = False) -> GradedRun | None:
     """The engine's `_graded_band`, step for step, with the two clauses the plan proposed.
 
     ``judge`` is which brush the step is held against: ``"narrowest"``, as the engine
@@ -3099,12 +3130,16 @@ def graded_run(long_marks: list, canvas, judge: str = "narrowest",
     cover that share of the shorter one's reach *along* it -- a graded passage is laid
     stroke over stroke, and a ripple beside five glints is not. The engine breaks at
     ``0.30`` since step 7 (`_REPORT_BAND_OVERLAP`); ``0.0`` is the rule as 0.6.0 had it.
+    ``once`` counts each mass call's passes as one mark (:func:`one_per_mass`), the
+    candidate of the 0.8.0 round's step 9, which the engine does not lay.
     Returns the run whether or not it fires, so a crop can show what was counted;
     ``None`` where there is no run.
     """
     sm = session_module
     marks = [(r, a) for r, a in long_marks
              if float(r.params.get("smudge", 0.0) or 0.0) < 1.0]
+    if once:
+        marks = one_per_mass(marks)
     best: list = []
     for _, centre in marks:
         near = [(r, a) for r, a in marks
@@ -3256,14 +3291,20 @@ def report_graded(found: list, passes: int) -> None:
         agree = "" if fire.engine_said == fires(fire, BUILT) else \
             "   (the engine disagrees with the re-implementation)"
         print(f"  {fire.label:<44}{fire.marks:>6}  " + "  ".join(cells) + agree)
-        for name in ("0.6.0", BUILT):
+        for name in ("0.6.0", BUILT, "a mass once"):
             run = fire.verdicts.get(name)
             if run is None:
                 continue
             sizes = sorted(float(r.params.get("size", 0.0)) for r in run.marks)
+            # How much of the run is a mass's own passes: what the candidate gate folds.
+            of_masses = [r for r in run.marks
+                         if r.params and r.params.get("via") in ONE_COLOUR_VIAS]
+            masses = len({session_module._call_of(r) for r in of_masses})
             print(f"  {'':<44}  {name}: {len(run.marks)} marks, step {run.step:.3f}, "
                   f"sizes {sizes[0]:.3g}..{sizes[-1]:.3g}, median "
-                  f"{float(np.median(sizes)):.3g}, {run.per_step:.2f} of a step")
+                  f"{float(np.median(sizes)):.3g}, {run.per_step:.2f} of a step; "
+                  f"{len(of_masses)} of them passes of {masses} "
+                  f"mass{'es' if masses != 1 else ''}")
         if fire.crop:
             print(f"  {'':<44}  -> {fire.crop.relative_to(ROOT)}")
     for name in names:

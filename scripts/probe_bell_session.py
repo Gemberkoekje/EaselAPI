@@ -47,6 +47,7 @@ It does four things:
     python scripts/probe_bell_session.py --thumbnailed  # step 6: the thumbnail, checked
     python scripts/probe_bell_session.py --recipes    # step 7: the recipes, measured
     python scripts/probe_bell_session.py --landed     # step 8: what landed nothing, said
+    python scripts/probe_bell_session.py --written    # step 9: what the documents say
     python scripts/probe_bell_session.py --corpus     # the corpus replay alone, kept
 
 The corpus benches -- ``--short``, ``--cost``, ``--key``, ``--lamp``, ``--repaint``,
@@ -65,7 +66,13 @@ recipes as ``RECIPES.md`` writes them, and counts the holes check the old way an
 over both paintings and the corpus -- half an hour, most of it the corpus. ``--landed``
 measures where a round dab stops landing a quarter of a pixel apart and what its touches
 reach, then says what step 8's fact and line say on both paintings, on the guide's blocks
-and over the corpus replayed again, against what step 2's replay counted.
+and over the corpus replayed again, against what step 2's replay counted. ``--written``
+measures what step 9 wrote into the documents: the floor by ``value_of`` and as laid, a
+ribbon's width and a round shape's radii in pixels, the guide's blocks under step 8's
+line, the lit silhouette's copies over seeds, the calls two painters leaned on against
+the card, the documents' sizes against their signposts, and the ``boxes:`` line over the
+corpus replayed -- about thirty-five minutes, twenty of them that replay and most of
+the rest the recipe laid sixty-four times.
 """
 
 from __future__ import annotations
@@ -79,6 +86,7 @@ import math
 import os
 import pickle
 import re
+import subprocess
 import sys
 import tempfile
 import time
@@ -4088,9 +4096,9 @@ def probe_landed_corpus(kept: list[dict], data: CorpusData | None) -> None:
                   f"{built.get(key, 0)}")
 
 
-def probe_landed_blocks() -> None:
+def probe_landed_blocks(step: str = "step 8, D") -> None:
     """Rule 2: the fact and the line over every recommended block of the guide."""
-    heading("step 8, D: the guide's own blocks, laid: what the fact and the line say")
+    heading(f"{step}: the guide's own blocks, laid: what the fact and the line say")
     guide = cohort._import_script(ROOT / "scripts" / "check_guide_blocks.py")
     ran = told = 0
     for number, (doc, block) in enumerate(guide.guide_blocks(echo=False), 1):
@@ -4153,6 +4161,302 @@ def probe_landed(data: CorpusData | None) -> None:
     probe_landed_corpus(replay_landed(), data)
 
 
+# -- step 9, F: what the documents now say, measured ------------------------------------
+
+#: The calls the two painters' scripts leaned on, by their own counts -- the first
+#: painter's answer to question 7, the second's to W-Q7 -- as a name, the word a script
+#: or a page writes it with, and whether it is an argument or a call.
+VOCABULARY = (("at_value", "at_value", "call"), ("edge=", "edge", "arg"),
+              ("s.dry", "dry", "call"), ("clip=", "clip", "arg"),
+              (".shifted", "shifted", "call"), (".inset", "inset", "call"),
+              ("opacity=", "opacity", "arg"), ("pressure=", "pressure", "arg"),
+              ("s.stroke", "stroke", "call"), ("note=", "note", "arg"),
+              ("p.mix", "mix", "call"), ("tip_wobble=", "tip_wobble", "arg"),
+              ("s.look", "look", "call"), ("load=", "load", "arg"),
+              ("direction=", "direction", "arg"), ("p.mix_many", "mix_many", "call"),
+              ("s.block_in", "block_in", "call"), ("solid=", "solid", "arg"),
+              ("s.glaze", "glaze", "call"), ("s.dab", "dab", "call"),
+              ("s.sample", "sample", "call"))
+
+#: The seeds the lit silhouette's recipe is laid under, bare and on its demo's passage:
+#: a mass takes its passes' wander from the stream, so which pass of a shifted copy
+#: falls past the silhouette is the seed's to say, and one seed is an anecdote.
+RECIPE_SEEDS = tuple(range(1, 13))
+
+
+def _code_of(text: str) -> str:
+    """A page's code and nothing else: its fenced blocks and its inline spans, a span
+    that runs over a line break included."""
+    fence = r"```[a-z]*\n(.*?)```"
+    return "\n".join(re.findall(fence, text, re.S)
+                     + re.findall(r"`([^`]+)`", re.sub(fence, "", text, flags=re.S)))
+
+
+def _guide_at(tag: str) -> str | None:
+    """``PAINTER.md`` as a release tagged it, or ``None`` where the tag is not to hand."""
+    shown = subprocess.run(["git", "show", f"{tag}:PAINTER.md"], cwd=ROOT,  # noqa: S603, S607
+                           capture_output=True, text=True, encoding="utf-8", check=False)
+    return shown.stdout if shown.returncode == 0 else None
+
+
+def _card_of(text: str) -> str:
+    """*The first hour* of a ``PAINTER.md``, as ``easel guide`` prints it."""
+    from easel import docs
+
+    return docs.section("guide", docs.FRONT_PAGE, text)
+
+
+def probe_vocabulary() -> None:
+    """F1: the calls both painters leaned on, counted again, and which the card names.
+
+    Counted in the text of each painting's committed prelude and passes, as the painters
+    counted them; *named* is the word standing in the card's own code, a block or a
+    span. The card as 0.7.0 shipped it is read from the tag, so the two columns are the
+    page each painter had and the page this step leaves.
+    """
+    heading("step 9, F1: the calls two painters leaned on, and which the card names")
+    sources = {}
+    for name in ("bell", "wenna"):
+        files = [FOLDERS[name] / "prelude.py"] + sorted(
+            {FOLDERS[name] / label for label in ORDERS[name]})
+        sources[name] = "\n".join(f.read_text(encoding="utf-8-sig") for f in files)
+    now = _code_of(_card_of((ROOT / "PAINTER.md").read_text(encoding="utf-8")))
+    tagged = _guide_at("v0.7.0")
+    before = None if tagged is None else _code_of(_card_of(tagged))
+    rows = []
+    named_before = named_now = 0
+    for name, word, kind in VOCABULARY:
+        uses = rf"\b{word}\s*=" if kind == "arg" else rf"\b{word}\("
+        on_page = rf"(?<!\w){word}(?!\w)"
+        was = None if before is None else bool(re.search(on_page, before))
+        is_ = bool(re.search(on_page, now))
+        named_before += bool(was)
+        named_now += is_
+        rows.append([name, len(re.findall(uses, sources["bell"])),
+                     len(re.findall(uses, sources["wenna"])),
+                     "?" if was is None else ("yes" if was else "--"),
+                     "yes" if is_ else "--"])
+    print(table(rows, ["call or argument", "uses, the Bell-Warden", "uses, Wenna Brask",
+                       "on the card at 0.7.0", "on the card now"]))
+    print(f"  of these {len(VOCABULARY)}, the card named {named_before} at 0.7.0 and names "
+          f"{named_now} now")
+
+
+def probe_sizes() -> None:
+    """The documents' sizes in words, their two budgets, and what the signposts say."""
+    from easel import docs
+
+    heading("step 9, F1: the documents' sizes, and what their signposts say")
+    sizes = {}
+    for name, filename in docs.DOCUMENTS.items():
+        sizes[filename] = len(docs.read(name).split())
+    for filename in ("README.md", "llms.txt"):
+        sizes[filename] = len((ROOT / filename).read_text(encoding="utf-8").split())
+    guide = (ROOT / "PAINTER.md").read_text(encoding="utf-8")
+    card = len(_card_of(guide).split())
+    print(table([[k, v] for k, v in sizes.items()], ["document", "words"]))
+    print(f"  PAINTER.md {sizes['PAINTER.md']} of a budget of {docs.FRONT_PAGE_WORDS}; its "
+          f"card {card} of {docs.CARD_WORDS}")
+    tagged = _guide_at("v0.7.0")
+    if tagged is not None:
+        print(f"  at 0.7.0: PAINTER.md {len(tagged.split())} words, its card "
+              f"{len(_card_of(tagged).split())}")
+    # What the two painters read before a mark, as far as a heading says where each
+    # stopped: the first short of *Sign it* and of the reference's notices, the second
+    # both files whole and the reference to the same place (CALIBRATION.md, *What it
+    # read*: 6,260 and 6,266 words of those two files, and 20,546 of the three).
+    short = len(guide.split("\n## Sign it")[0].split())
+    reference = (ROOT / "REFERENCE.md").read_text(encoding="utf-8")
+    to_notices = len(reference.split("\n## What the tool will tell you")[0].split())
+    print(f"  PAINTER.md short of *Sign it*: {short} words (6,260 on 0.7.0); REFERENCE.md "
+          f"short of its notices: {to_notices} (6,068 to line 500, 6,266 to line 520)")
+    print(f"  read as the second painter read them -- PAINTER.md and RECIPES.md whole, "
+          f"REFERENCE.md to its notices: "
+          f"{sizes['PAINTER.md'] + sizes['RECIPES.md'] + to_notices} words "
+          f"(20,546 on 0.7.0)")
+    llms = (ROOT / "llms.txt").read_text(encoding="utf-8")
+    rows = []
+    for line in llms.splitlines():
+        found = re.match(r"- \[([^\]]+)\]\(", line)
+        said = re.search(r"~([\d,]+) words", line)
+        if found and said:
+            key = found.group(1) if found.group(1).endswith(".md") else f"{found.group(1)}.md"
+            claimed = int(said.group(1).replace(",", ""))
+            actual = sizes.get(key)
+            rows.append([key, claimed, actual if actual is not None else "?",
+                         "" if actual is None else f"{(claimed - actual) / actual:+.0%}"])
+    print(table(rows, ["llms.txt says of", "about", "it is", "off by"]))
+
+
+def _floor_laid(colour, passes: int = 1, glazes: int = 0) -> tuple[float, float]:
+    """A colour laid solid on ``toned_grey`` at 1024x768: its median in the values view
+    and in the export, relief and all, over the middle of the mass."""
+    s = Session(1024, 768, texture="linen", ground="toned_grey", seed=11, timelapse=False,
+                out_dir=OUT / "scratch")
+    place = Region(0.2, 0.2, 0.8, 0.8)
+    with quiet():
+        for n in range(passes):
+            if n:
+                s.dry()
+            s.block_in(place, "flat", colour, size=0.08, density=1.0, solid=True,
+                       opacity=1.0, pressure="even")
+        for _ in range(glazes):
+            s.dry()
+            for y in (0.26, 0.38, 0.50, 0.62, 0.74):
+                s.glaze([(0.2, y), (0.8, y)], colour, size=0.14)
+    h, w = s.canvas.height, s.canvas.width
+    box = (slice(int(0.35 * h), int(0.65 * h)), slice(int(0.35 * w), int(0.65 * w)))
+    export = values_of_rgb(s.canvas.to_srgb8(impasto=True))
+    return float(np.median(values(s)[box])), float(np.median(export[box]))
+
+
+def probe_floor_said() -> None:
+    """E3's half for the documents: the floor by ``value_of``, and as paint lays it.
+
+    ``PAINTER.md``, ``PAINTING.md``, ``CALIBRATION.md`` and ``palette.py`` said the floor
+    three ways -- *0.14*, *about 0.13*, and the half-and-half mix *darker than any single
+    pigment*. These are the numbers they say now.
+    """
+    heading("step 9, E3 and F3: the floor, as value_of reads it and as paint lays it")
+    p = Session(64, 48, timelapse=False, out_dir=OUT / "scratch").palette
+    print(f"  burnt umber alone: {p.value_of('burnt_umber'):.3f} ({p.hex('burnt_umber')}); "
+          f"darkest_value {p.darkest_value:.3f}, lightest_value {p.lightest_value:.3f}")
+    rows = []
+    for ratio in (0.3, 0.4, 0.5, 0.6, 0.7):
+        mixed = p.mix("ultramarine", "burnt_umber", ratio)
+        rows.append([f"{ratio:.1f}", f"{p.value_of(mixed):.3f}", p.hex(mixed),
+                     f"{p.chroma_of(mixed):.3f}"])
+    print(table(rows, ["mix(ultramarine, burnt_umber, ratio)", "value", "hex", "chroma"]))
+    half = p.mix("ultramarine", "burnt_umber", 0.5)
+    rows = []
+    for label, colour in (("burnt umber alone", "burnt_umber"), ("the half-and-half mix", half)):
+        for what, kw in (("one solid pass", {}), ("eight, dried between", {"passes": 8}),
+                         ("one pass and four rounds of glazing", {"glazes": 4})):
+            view, export = _floor_laid(colour, **kw)
+            rows.append([label, what, f"{view:.3f}", f"{export:.3f}"])
+    print(table(rows, ["colour", "laid as", "values view", "export"]))
+
+
+def _lit_recipe_lost(seed: int, passage: str, block: str, width: int = 400,
+                     height: int = 300) -> tuple[int, int, bool]:
+    """The lit silhouette's recipe laid under one seed: its strokes, how many of them
+    carried under a unit of paint, and whether the check called it a graded passage."""
+    from easel import demo
+
+    pre = (demo.preamble(OUT / "scratch", timelapse=False)
+           .replace("Session(400, 300,", f"Session({width}, {height},")
+           .replace("seed=1,", f"seed={seed},"))
+    scope: dict = {}
+    with quiet():
+        exec(compile(pre + passage, "<passage>", "exec"), scope)  # noqa: S102
+        s = scope["s"]
+        start = s._open_pass()
+        exec(compile(block, "<recipe>", "exec"), scope)  # noqa: S102
+        said = s.report(since=start)
+    paid = [r for r in s.history.records[start:] if r.kind not in UNPAINTED]
+    return (len(paid), sum(1 for r in paid if r.paint < LANDED),
+            cohort.GRADED_WORDS in said)
+
+
+#: The direction the lit silhouette's far copy is laid at along the form's own length,
+#: where a pass of it seldom falls past the silhouette: the middle of the plateau the
+#: bench found, 78 to 82 degrees for the recipe's form.
+ALONG_THE_FORM = "80"
+
+
+def probe_lit_passes() -> None:
+    """The lit silhouette's copies, over seeds: passes that fall past the silhouette.
+
+    A copy shifted away from the light reaches past the silhouette it is held to, and a
+    pass of it that falls wholly there is charged and lays nothing. Which pass that is
+    turns on the wander a mass takes from the stream, so the recipe's block is laid
+    under :data:`RECIPE_SEEDS`, bare and on its demo's passage: as the recipe writes it,
+    its far copy's passes across the form, and with them along it -- where almost none
+    is lost and the copy takes fewer, and where they lie beside the joins, so the check
+    is asked what it says of that.
+    """
+    from easel import demo
+
+    heading("step 9: the lit silhouette's copies, over seeds -- passes that land nothing")
+    block = _recipe_block("A silhouette lit from one side")
+    recipe = next(r for r in demo.recipes() if r.heading == "A silhouette lit from one side")
+    written = re.search(r'\(far, "shade", ([^,]+), ', block).group(1)
+    rows = []
+    for label, turn in ((f"as the recipe writes it, direction={written}", written),
+                        (f"along the form, direction={ALONG_THE_FORM}", ALONG_THE_FORM)):
+        src = block.replace(f'(far, "shade", {written}, ', f'(far, "shade", {turn}, ')
+        for w, h in ((400, 300), (1024, 768)):
+            lost, strokes, graded = [], [], 0
+            for seed in RECIPE_SEEDS[:len(RECIPE_SEEDS) if w == 400 else 4]:
+                for passage in ("", recipe.demo.passage):
+                    n, nothing, said = _lit_recipe_lost(seed, passage, src, w, h)
+                    lost.append(nothing)
+                    strokes.append(n)
+                    graded += said
+            rows.append([label, f"{w}x{h}", len(lost), int(np.median(strokes)),
+                         f"{np.mean(lost):.2f}", sum(1 for x in lost if x == 0), max(lost),
+                         graded])
+    print(table(rows, ["the far copy's passes", "canvas", "runs", "strokes", "lost, mean",
+                       "runs losing none", "most lost", "runs told *a graded passage*"]))
+
+
+def probe_boxes() -> list[dict]:
+    """F3: the ``boxes:`` line over the corpus -- which paintings laid a mass in a box.
+
+    ``PAINTER.md`` said *every painter so far has painted boxes*; the two painters of this
+    round laid none, 0 of 17 and 0 of 22. Every committed painting replayed, and its masses
+    counted as ``checklist()`` counts them: a call whose place was a rectangle, by the
+    ``boxed`` key its records carry.
+    """
+    from easel import checklist
+
+    heading("step 9, F3: the boxes line over the corpus, replayed (twenty minutes)")
+    kept = []
+    for entry in cohort.CORPUS:
+        started = time.time()
+        rep = cohort.replay(entry, keep_canvas=False)
+        if rep.session is None:
+            print(f"  {entry.name:<12} did not replay: {rep.error}", flush=True)
+            continue
+        boxed, masses = checklist.mass_counts(rep.session.history.records)
+        kept.append({"painting": entry.name, "boxed": boxed, "masses": masses,
+                     "cohort": entry.cohort})
+        print(f"  {entry.name:<12} {checklist.boxes_line(boxed, masses)}  "
+              f"({time.time() - started:.0f} s)", flush=True)
+    with (OUT / "boxes.pkl").open("wb") as handle:
+        pickle.dump(kept, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    with_masses = [k for k in kept if k["masses"]]
+    some = [k for k in with_masses if k["boxed"]]
+    shares = [k["boxed"] / k["masses"] for k in with_masses]
+    print(f"  {len(some)} of {len(with_masses)} paintings laid a mass in a rectangle, "
+          f"{len(with_masses) - len(some)} none: "
+          + ", ".join(k["painting"] for k in with_masses if not k["boxed"]))
+    print(f"  the share of a painting's masses laid in a rectangle: median "
+          f"{np.median(shares):.0%}, from {min(shares):.0%} to {max(shares):.0%}; of all "
+          f"{sum(k['masses'] for k in with_masses)} masses, "
+          f"{sum(k['boxed'] for k in with_masses)}")
+    return kept
+
+
+def probe_written(corpus_too: bool = True) -> None:
+    """Step 9 as written: what the documents now say, measured.
+
+    The floor the four files said three ways; F7's rows for a ribbon's width and a round
+    shape's radii; the guide's own blocks under step 8's fact and line, with the two
+    recipes that laid a mark of nothing as they are now; the lit silhouette's copies over
+    seeds; the calls two painters leaned on against the card; the documents' sizes against
+    their signposts; and the ``boxes:`` line over the corpus, which is the long part.
+    """
+    probe_floor_said()
+    probe_shape_units()
+    probe_landed_blocks("step 9")
+    probe_lit_passes()
+    probe_vocabulary()
+    probe_sizes()
+    if corpus_too:
+        probe_boxes()
+
+
 BENCHES = (
     ("claims", "section 3 and 3b re-measured, and where marks stop landing"),
     ("guides", "4A1: the guide candidates over every ground"),
@@ -4174,6 +4478,7 @@ BENCHES = (
     ("thumbnailed", "step 6 as built: the engine's thumbnail against the prototype, and the door"),
     ("recipes", "step 7 as built: terminator() against the bench, the recipes' own numbers"),
     ("landed", "step 8 as built: the dab's cliff and touches, and what landed nothing"),
+    ("written", "step 9 as written: the floor, the units, the recipes, the card, the boxes"),
 )
 _NEEDS_REBUILD = {"claims", "guides", "terminator", "short", "repaint", "built",
                   "declared", "thumbnailed", "recipes"}
@@ -4246,6 +4551,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_recipes(rb, wb)
     if "landed" in run:
         probe_landed(data)
+    if "written" in run:
+        probe_written()
     print("\nThe numbers above are the ones CALIBRATION.md quotes under *The bell-warden's "
           "round*;\nthe sheets under out/bell/ are what the painters' questions 4, 9 and 10 "
           "are put with.")

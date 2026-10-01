@@ -25,14 +25,14 @@ its passage, because a dead one is now a command that answers with an apology.
 
 | What you are looking at | Where |
 |---|---|
-| A mass that came out a rectangle when you built it as a shape | `PAINTER.md` -> *What you are bad at*; `PAINTING.md` -> *Masses that are not rectangles* |
+| A mass that came out a rectangle when you built it as a shape, or a silhouette that reads as a clump | `PAINTER.md` -> *What you are bad at*; `PAINTING.md` -> *Masses that are not rectangles*; `RECIPES.md` -> *A silhouette built from parts* |
 | A mottled field with the ground showing through in broken streaks along its passes, at `density=1.0` | `RECIPES.md` -> *A plane that is a plane* |
 | Faint striping across a large flat plane, and `opacity` will not remove it | `PAINTER.md` -> *2. Tone the ground*; `CALIBRATION.md` -> *`block_in`* |
 | A mass that has eaten a sawtooth out of the one beside it | `CALIBRATION.md` -> *`block_in`* |
 | A staircase along a boundary that is not parallel to the passes | `CALIBRATION.md` -> *The chisel staircase*; `PAINTING.md` -> *The shape each tool leaves behind* |
 | A clean edge that came back stringy, or that ate the corners | `CALIBRATION.md` -> *The contour of a clean edge*; `CALIBRATION.md` -> *A clean edge on a narrow mass* |
 | Slabs stuck on a smooth shape, or a woven surface where planes should be | `RECIPES.md` -> *A mass built of planes* |
-| Two flat stripes where a round form should have turned | `RECIPES.md` -> *A form that turns* |
+| Two flat stripes where a round form should have turned, or a lit form that reads as cut paper | `RECIPES.md` -> *A form that turns*; `RECIPES.md` -> *A silhouette lit from one side* |
 | A bare strip of ground along the canvas frame | `CALIBRATION.md` -> *`block_in`* |
 | A small mass that came back the colour of whatever it was laid over, or a solid mass that will not reach the value you mixed | `CALIBRATION.md` -> *What a solid mass actually lands at* |
 | A mass that shows its passes because you laid it with a round tip | `CALIBRATION.md` -> *`block_in`* |
@@ -44,7 +44,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | A wide soft passage that came out as three or four hard bars, or a venetian blind with gaps between the passes | `RECIPES.md` -> *A quiet gradient*; `CALIBRATION.md` -> *The band, and the brush that closes its joins* |
 | A band you laid by hand, stroke by stroke, that ribbed where a `scumble` of the same shape did not | `RECIPES.md` -> *A passage brightening toward one side* |
 | A sky, a far field or a sheet of water — a third of the canvas, graded — that reads as a stack of bands, or shows horizontal strata with streaks of bare ground in them | `RECIPES.md` -> *A graded field that is most of the picture* |
-| A glow with visible concentric rings, like a contour map | `CALIBRATION.md` -> *`scumble`* |
+| A glow with visible concentric rings, like a contour map | `CALIBRATION.md` -> *`scumble`*; `RECIPES.md` -> *A light's pool on a surface* |
 | A glow that came back a solid disc with a thin ramp round it, a daisy of petals radiating from a shared centre, or a rim with nothing in the middle | `RECIPES.md` -> *A passage light in the middle* |
 | A passage that will not go quiet however low you set `opacity` | `CALIBRATION.md` -> *Opacity does not make a passage quieter* |
 | A passage that bloomed past the outline at one end and is barely there at the other | `CALIBRATION.md` -> *The band across a wedge* |
@@ -111,7 +111,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | A correction that buried the fine marks standing on a mass | `RECIPES.md` -> *A repair under things that are standing on it* |
 | Something that has escaped the thing containing it | `RECIPES.md` -> *A hollow thing*; `PAINTER.md` -> *3. Paint from back to front* |
 | Three of a thing reading as three copies of one thing | `PAINTER.md` -> *What you are bad at* |
-| A row of like things inside one mass — fingers, pickets, pots — reading as a comb, or a thing drawn side-on when the view is end-on | `PAINTER.md` -> *1. Draw the arrangement in graphite* |
+| A row of like things inside one mass — fingers, pickets, pots — reading as a comb, or a thing drawn side-on when the view is end-on | `PAINTER.md` -> *1. Draw the arrangement in graphite*; `RECIPES.md` -> *A small cluster of like parts gripping an edge* |
 | A passage you have now repainted three or four times, each fix dearer than the last | `PAINTER.md` -> *What you are bad at, and what to do instead* |
 | A background of square patches, every edge parallel to the canvas | `PAINTING.md` -> *The angle of the mark* |
 | A scene of straight edges that reads as a diagram, every line the same weight and nothing lost | `RECIPES.md` -> *A scene with straight edges* |

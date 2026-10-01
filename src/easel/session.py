@@ -4746,7 +4746,8 @@ class Session:
               - Which passage would you apologise for? That is the one the marks
                 left are for, not the one you have most recently been enjoying.
               - You wrote: "a hot afternoon, and the light coming off the water".
-                Is that reason still in the picture?
+                Is that reason still in the picture, looked at small --
+                s.look(scale=256)?
         """
         records = self.history.records
         marks = [r for r in records if r.kind not in History.UNPAINTED_KINDS]
@@ -4801,7 +4802,10 @@ class Session:
 
         The third is the one nothing else can ask at all, and it is quoted rather
         than summarised: a reason read back in the painter's own words is the
-        instrument, and a reason the engine reworded would be the engine's.
+        instrument, and a reason the engine reworded would be the engine's. **It
+        carries a size** since 0.8.0: one painter answered it *yes, but only on close
+        inspection*, of give-aways a few pixels across, so the question names the look
+        that shows the picture small, which is where a reason has to read.
         """
         why = (self._plan.why or "").strip()
         return [
@@ -4809,7 +4813,8 @@ class Session:
             "the picture -- and is the lightest mass the one you planned to be?",
             "Which passage would you apologise for? That is the one the marks left "
             "are for, not the one you have most recently been enjoying.",
-            (f"You wrote: {why!r}. Is that reason still in the picture?" if why else
+            (f"You wrote: {why!r}. Is that reason still in the picture, looked at "
+             "small -- s.look(scale=256)?" if why else
              "You did not write down why you chose this subject, so nothing can read "
              "it back. s.plan(why=...) before the next painting: it is the one line "
              "here no measurement can replace."),

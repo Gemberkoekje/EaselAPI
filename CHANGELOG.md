@@ -317,6 +317,66 @@ for every one, and neither painter ran it while painting.
 
 Nothing a mark lays changes, and no saved painting rebuilds differently.
 
+### A first page that is only method, the check's rules as tables, and the floor said one way
+
+Step 9 of the bell-warden's round (`PLAN-0.8.0.md`, workstream F). Both painters called
+the documents long; the first said which of the text it would move — the documents'
+account of themselves, and stories — and named the one paragraph it could not parse, ten
+rules and their thresholds in a block. And the guide said two things that were no longer
+true and one number three ways.
+
+- **`PAINTER.md` is its method and not its own history.** The sentences in which the
+  file described itself are in `LESSONS.md`, the framing *every painter so far* is gone,
+  and the card's instances of a row of like things went with the stories its painter did
+  not keep. The room went on what the round's two painters asked the page to say. **The
+  calls a painting leans on**: `at_value` beside `mix`, `s.dry()`, a `s.stroke` with
+  `pressure=`, `opacity=` and `note=`, and one line for `edge="hard"` and `clip=` — of
+  the twenty-one calls and arguments the two paintings' scripts leaned on most, the card
+  named 9 and names 16. `s.thumbnail()` at step 1, `--alternatives` and `--count` in the
+  loop, and **the example's `budget=300` said to be the example's**. The file is the
+  size it was, and its budget stays at 6,700 words.
+- **`report()`'s ten rules and its standing lines are two tables** in `REFERENCE.md`:
+  each rule named by the words the check prints, with every number it gates on, and each
+  line with what it measures and when it is said. `PAINTER.md`'s account of the
+  checklist's lines points at them.
+- **The units table is finished.** A `ribbon()`'s width is across its own line — `0.05`
+  is 38 px across a level ribbon at 1024x768 and 52 across an upright one — and the
+  radius of an `ellipse()` or a `blob()` is a fraction of the width across and of the
+  height down, round in pixels only with `aspect=s.aspect` or through `s.px(rx, ry)`.
+- **The floor is `0.128`, burnt umber alone, in every document** and in the palette's
+  docstrings, which between them said `0.14`, *about 0.13*, and that a half-and-half mix
+  of ultramarine and umber was *darker than any single pigment*. That mix is the box's
+  neutral dark, at `0.137`.
+- **The closing checklist's third question carries a size**: *Is that reason still in
+  the picture, looked at small -- s.look(scale=256)?* — in `checklist()` and `easel
+  check`, and in `PAINTER.md`. The Bell-Warden's reason was in its picture *only on close
+  inspection*.
+- **Plan the place your `why` names, at the value the place will read**, not the value
+  its mixture was mixed at: `PAINTER.md`'s step 4, and *A light's pool on a surface* for
+  a light that is a small bright part of its place.
+- **Two claims put right.** *Every painter so far has painted boxes*: replayed, 13 of
+  the 24 paintings laid a mass in a rectangle, and the page says *over half*. *There are
+  no pixels anywhere in this API*: there is `s.px()`.
+- **Two recipes paid for marks that laid nothing**, which the last step's line found.
+  *A mass built of planes* lays its dry brush at `load=0.5`, where `0.35` carried a
+  fifth of a unit of paint at the size a recipe is tried at. *A silhouette lit from one
+  side* keeps its copies and says what they cost: two or three of its hundred strokes
+  fall past the silhouette, and the check names them.
+- **Links that open from the package.** `paintings/`, and every other link out of a
+  shipped document, goes to the repository by its address, and the README's two relative
+  links with them, since it is the page PyPI shows.
+- Four rows of `easel diagnose`'s symptom index point at the round's recipes; exercise 7
+  draws its triangle as a shape, corners kept; and `scripts/check_guide_blocks.py` names
+  every recommended block that pays for a mark that lays no paint.
+
+**The documents are not shorter.** What a painter reads before a first mark — the
+method, the recipes and the reference short of its notices — is about a quarter longer
+than 0.7.0's, because every other answer of this round is a recipe or a row of the
+reference. The first page was tidied; the corpus was not cut, and `LESSONS.md` says what
+cutting it would take.
+
+Nothing a mark lays changes, and no saved painting rebuilds differently.
+
 ## [0.7.0] — 2026-09-25
 
 **Released.** Shipped as `v0.7.0`: `easel-paint` 0.7.0 on PyPI, the GitHub release with

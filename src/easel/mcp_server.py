@@ -8,10 +8,10 @@ it back, so a painting can be worked on through the server, the shell and a Pyth
 script in any order.
 
 What the server adds is that **the looking tools hand back the image**. ``look``,
-``preview``, ``rehearse``, ``compare`` and ``prepare`` return their PNG inline
-beside the path they wrote it to, so the loop the guide asks for -- look every five
-to fifteen strokes -- costs one call instead of a call and a file read. ``run`` does
-the same for a pass it rehearses.
+``thumbnail``, ``preview``, ``rehearse``, ``compare`` and ``prepare`` return their
+PNG inline beside the path they wrote it to, so the loop the guide asks for -- look
+every five to fifteen strokes -- costs one call instead of a call and a file read.
+``run`` does the same for a pass it rehearses.
 
 It adds three tools the CLI has not got, and they are the three questions about a
 mark that has not been made yet: ``preview`` (where does it go), ``rehearse`` (what

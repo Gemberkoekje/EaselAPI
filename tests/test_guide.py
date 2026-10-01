@@ -11,6 +11,7 @@ now, told to read a file that is not there.
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 import tomllib
@@ -19,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from easel import guide
-from easel.cli import main
+from easel.cli import build_parser, main
 
 ROOT = Path(__file__).resolve().parents[1]
 WHEEL_INCLUDES = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))[
@@ -118,6 +119,37 @@ def test_the_card_is_held_to_a_budget_of_its_own() -> None:
     assert words <= guide.CARD_WORDS, (
         f"`The first hour` is {words} words, over its {guide.CARD_WORDS}-word budget "
         f"by {words - guide.CARD_WORDS}. Take a paragraph out rather than raising this."
+    )
+
+
+def _code(text: str) -> str:
+    """A page's code and nothing else: its fenced blocks and its inline spans.
+
+    A span may run over a line break, as the card's `s.plan(...)` does, so the fenced
+    blocks are taken out before the spans are read.
+    """
+    fence = r"```[a-z]*\n(.*?)```"
+    return "\n".join(re.findall(fence, text, re.S)
+                     + re.findall(r"`([^`]+)`", re.sub(fence, "", text, flags=re.S)))
+
+
+@pytest.mark.parametrize("call", [
+    "at_value", "clip", "edge", "dry", "pressure", "opacity", "note", "thumbnail",
+    "key", "--alternatives", "--count",
+])
+def test_the_card_names_the_calls_two_painters_leaned_on(call: str) -> None:
+    """The card carried the method and none of the vocabulary. Two painters against
+    0.7.0 counted what their scripts leaned on -- `at_value` 29 and 54 times, `clip=`
+    8 and 41, `opacity=` 97, `pressure=` 86, `note=` 51 -- and the first page named
+    none of them: `clip=`, half of one painting's lighting, appeared nowhere in
+    `PAINTER.md` at all. It names them in its own code now, where a painter who reads
+    a page's code blocks as the whole page will meet them; with the thumbnail at the
+    drawing, the key in the plan, and the two flags a rehearsal takes. A budget holds
+    the page's size, so nothing holds what is on it but this.
+    """
+    code = _code(guide.front_page())
+    assert re.search(rf"(?<![\w-]){re.escape(call)}(?!\w)", code), (
+        f"`The first hour` no longer names {call} in its code."
     )
 
 
@@ -231,3 +263,91 @@ def test_the_wheel_ships_both_import_names() -> None:
     assert sorted(packages) == ["src/easel", "src/easel_paint"]
     for package in packages:
         assert (ROOT / package / "__init__.py").is_file()
+
+
+# -- links that work from the package --------------------------------------------------
+#
+# The second painter against 0.7.0 was sent to `paintings/` by `PAINTER.md` and by
+# `RECIPES.md`, from a wheel that ships six documents and no painting. A relative link
+# is a promise that its target sits beside the file; read through `easel guide` nothing
+# sits beside it but the other five, and on the package's page nothing at all.
+
+_LINK = re.compile(r"\]\(([^)\s]+)\)")
+_FENCED = re.compile(r"```.*?```", re.S)
+
+
+def _link_targets(text: str) -> list[str]:
+    """Every link target of a page, its code left out: a call ends in `](` too."""
+    prose = re.sub(r"`[^`\n]*`", "", _FENCED.sub("", text))
+    return _LINK.findall(prose)
+
+
+def _relative(targets: list[str]) -> list[str]:
+    return sorted({t for t in targets
+                   if not t.startswith(("#", "http://", "https://", "mailto:"))})
+
+
+@pytest.mark.parametrize("name", sorted(guide.DOCUMENTS))
+def test_a_shipped_document_links_only_to_what_ships(name: str) -> None:
+    """A link to another shipped document resolves wherever the six are read together;
+    anything else -- a painting, a script, the record -- is the repository's, and is
+    written as the repository's own address."""
+    shipped = set(guide.DOCUMENTS.values())
+    text = guide.document_path(name).read_text(encoding="utf-8")
+    dead = [t for t in _relative(_link_targets(text)) if t.split("#")[0] not in shipped]
+    assert not dead, (
+        f"{guide.DOCUMENTS[name]} links to {', '.join(dead)}, which the wheel does not "
+        f"ship. Write the repository's address: "
+        f"https://github.com/Gemberkoekje/EaselAPI/blob/main/..."
+    )
+
+
+def test_the_package_description_links_nowhere_relative() -> None:
+    """`README.md` is the page PyPI shows, where no file sits beside it at all."""
+    text = (ROOT / "README.md").read_text(encoding="utf-8")
+    dead = _relative(_link_targets(text))
+    assert not dead, f"README.md links to {', '.join(dead)}, which PyPI cannot follow."
+
+
+# -- the sizes the signposts state -----------------------------------------------------
+#
+# 0.7.0 found six places saying the card was a thousand words or under when it was
+# 1,400, and `llms.txt` saying 3,600 of a file of 8,800; 0.8.0 found it saying 7,600 of
+# one of 10,800. A size written beside a link is read instead of the file, by a model
+# deciding what it can afford to open, and nothing held it to the file.
+
+def test_every_signpost_states_the_cards_size_as_its_ceiling() -> None:
+    """The card's size is said in six places, and the one that is a number -- its
+    ceiling -- is what the other five are held to."""
+    import inspect
+
+    from easel import mcp_server
+
+    said = f"about {guide.CARD_WORDS:,} words"
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    llms = " ".join((ROOT / "llms.txt").read_text(encoding="utf-8").split())
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    shell = " ".join(sub.choices["guide"].description.split())
+    server = " ".join(inspect.getsource(mcp_server).split())
+    assert " ".join(readme.split()).count(said) == 2
+    assert said in llms and said in shell and said in server
+    card = len(guide.front_page().split())
+    assert 0.9 * guide.CARD_WORDS <= card <= guide.CARD_WORDS
+
+
+def test_llms_txt_states_each_documents_size_within_a_tenth() -> None:
+    """`~6,700 words` beside a link is what a reader budgets by before opening it."""
+    sizes = {filename: len(guide.read(name).split())
+             for name, filename in guide.DOCUMENTS.items()}
+    sizes["README.md"] = len((ROOT / "README.md").read_text(encoding="utf-8").split())
+    stated = {}
+    for line in (ROOT / "llms.txt").read_text(encoding="utf-8").splitlines():
+        found = re.match(r"- \[([^\]]+)\]\(", line)
+        said = re.search(r"~([\d,]+) words", line)
+        if found and said:
+            key = found.group(1) if found.group(1).endswith(".md") else f"{found.group(1)}.md"
+            stated[key] = int(said.group(1).replace(",", ""))
+    assert {"README.md", "PAINTER.md", "RECIPES.md", "PAINTING.md", "REFERENCE.md"} <= set(stated)
+    off = {key: (said, sizes[key]) for key, said in stated.items()
+           if abs(said - sizes[key]) > 0.1 * sizes[key]}
+    assert not off, f"llms.txt states a size more than a tenth off: {off}"

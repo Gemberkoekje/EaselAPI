@@ -7879,3 +7879,92 @@ def test_what_landed_nothing_is_said_beside_the_log(tmp_path, monkeypatch):
     assert [n.code for n in told.notices()] == ["dab-blank"] and quiet.notices() == []
     assert told.history.to_json() == quiet.history.to_json()
     assert told.rng.bit_generator.state == quiet.rng.bit_generator.state
+
+
+# -- 0.8.0 F: what the documents say, held to what the engine does ----------------------
+def _laid_recipe(slug: str, out_dir) -> Session:
+    """A recipe's own block, laid on the canvas the guide's blocks are checked on."""
+    from easel import demo
+
+    recipe = next(r for r in demo.recipes() if r.slug == slug)
+    scope: dict = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        exec(compile(demo.preamble(out_dir, timelapse=False) + recipe.recipe,  # noqa: S102
+                     f"<{slug}>", "exec"), scope)
+    return scope["s"]
+
+
+def test_the_planes_recipe_pays_for_no_mark_that_lays_nothing(tmp_path):
+    """Step 8's line found it on the guide's own page: the recipe's dry brush was a small
+    `bristle` at `load=0.35`, which at the size a painter tries a recipe at carried a fifth
+    of a unit of paint -- charged, and laid nothing -- under the half load a comb that
+    small lands from. It is laid at `0.5`, and every mark of the recipe lands."""
+    s = _laid_recipe("a-mass-built-of-planes", tmp_path)
+    assert len(s.history.records) > 40
+    assert s._landed_nothing_line(s.history.records) == ""
+
+
+def test_the_lit_silhouettes_recipe_loses_the_passes_it_says_it_loses(tmp_path):
+    """The other recipe the line named, and the one that still pays: a copy shifted away
+    from the light reaches past the silhouette it is held to, and a pass of it that falls
+    wholly there is charged and lays nothing. The recipe says so, in the words the check
+    uses -- so what the check names is that and nothing else: passes of a `block_in`,
+    outside its clip, a handful of the hundred."""
+    from easel import docs
+
+    s = _laid_recipe("a-silhouette-lit-from-one-side", tmp_path)
+    line = s._landed_nothing_line(s.history.records)
+    found = re.fullmatch(r"landed nothing: (?:(\d+) pass(?:es)? of the block_in at \S+ "
+                         r"\(outside its clip\)(?:; )?)+", line)
+    assert found, line
+    lost = sum(int(n) for n in re.findall(r"(\d+) pass(?:es)? of", line))
+    paid = sum(1 for r in s.history.records if r.params.get("via") == "block_in")
+    assert 1 <= lost <= 6 and paid > 60
+    said = " ".join(docs.section("recipes", "## A silhouette lit from one side").split())
+    assert "a pass of it that falls wholly there is charged and lays nothing" in said
+    assert "passes of the block_in at ... (outside its clip)" in said
+
+
+def test_the_closing_question_asks_about_the_reason_at_a_size(tmp_path):
+    """Row 12: the Bell-Warden's give-aways were a few pixels across, and its answer to *is
+    that reason still in the picture?* was that it is, *but only on close inspection* --
+    the question worked, and it carried no size. It carries one: the picture looked at
+    small, with the call that shows it so, which writes a look 256 pixels on its long
+    side."""
+    from easel import docs
+
+    s = make(tmp_path, budget=100)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="the light coming off the water")
+        s.block_in(span("A1", "H4"), "flat", "cerulean", size=0.06)
+    said = s.checklist()
+    assert ("You wrote: 'the light coming off the water'. Is that reason still in the "
+            "picture, looked at small -- s.look(scale=256)?") in said
+    assert max(Image.open(s.look(scale=256)).size) == 256
+    page = " ".join(docs.section("guide", "## A checklist before you call it finished").split())
+    assert "Is that reason still in the picture, looked at small?" in page
+    assert "`s.look(scale=256)`" in page
+
+
+def test_the_floor_is_said_one_way_and_is_what_the_palette_reads():
+    """Row 13's other half. The documents put the box's floor three ways -- *the bottom of
+    the range at 0.14*, *the palette's floor of 0.14*, and a half-and-half mix *darker
+    than any single pigment* two paragraphs under a table that put burnt umber at `0.13`
+    -- and a painter took `0.14` for it. It is `0.128`, burnt umber alone, in every one of
+    them; the mix is the neutral dark above it."""
+    from easel import docs
+
+    p = Palette()
+    assert p.darkest_value == pytest.approx(0.128, abs=0.0005)
+    assert p.value_of("burnt_umber") == pytest.approx(p.darkest_value)
+    neutral = p.value_of(p.mix("ultramarine", "burnt_umber", 0.5))
+    assert 0.135 < neutral < 0.140 and neutral > p.darkest_value
+    for name in ("guide", "painting", "calibration"):
+        text = " ".join(docs.read(name).split())
+        assert "burnt umber alone, at `0.128`" in text or \
+               "`0.128`, burnt umber alone" in text, name
+        for old in ("the bottom of the range at `0.14`", "floor of `0.14`"):
+            assert old not in text, (name, old)
+    assert "0.128" in (Palette.darkest_value.__doc__ or "")

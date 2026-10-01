@@ -367,7 +367,11 @@ the half value, held to the silhouette with `clip=`; then a second, further off,
 shade. **The shift is the rim**: about `0.016` of the long side along the diagonal —
 `(0.011, 0.015)` on a 4:3 canvas, about 16 pixels at 1024 — and much under half that,
 the rim is thinner than the turn a join makes. Each zone's passes run their own way, so
-three zones are not a stack of bars.
+three zones are not a stack of bars. **A copy reaches past the silhouette on the side
+away from the light**, and a pass of it that falls wholly there is charged and lays
+nothing — two or three of this recipe's hundred strokes at a painting's size, which a
+rehearsal says twice: on its `dearest:` line, and after the pass as `landed nothing: 3
+passes of the block_in at ... (outside its clip)`.
 
 **Then the join, which is the step the recipe is for.** `terminator(copy, body)` is the
 part of a copy's outline lying inside the silhouette, a margin off its edge — the line
@@ -442,7 +446,7 @@ for face, colour, size, side in faces:                  # each along a side of i
 s.stroke([(0.27, 0.66), (0.32, 0.71), (0.40, 0.77)], "round_hard", "dark",
          size=0.014, opacity=0.9, pressure="taper")            # one crevice
 s.stroke([(0.14, 0.72), (0.26, 0.76)], "bristle", "pale",
-         size=0.03, load=0.35, opacity=0.6)                    # dry brush, for surface
+         size=0.03, load=0.5, opacity=0.6)                     # dry brush, for surface
 ```
 
 Three or four planes is enough; the planes carry the form and the crevices are
@@ -590,6 +594,14 @@ a value the surface can hold, warmer toward the middle. The soft round tip lays 
 these sizes where a glaze would lay a film too thin to reach its value past anything
 that will stand on it. The strokes are short and lie a little along the surface, so the
 pool is wider than it is tall on anything seen at a slant.
+
+**Plan the light itself as a place, at the value that place will read.** What gives a
+light is often a small bright part of a thing that is mostly something else, and a plan
+that names the whole thing is answered by the whole thing: one painter planned such a
+place at the `0.76` its light was mixed at, and it read `0.51`, its lit part `0.58`.
+Name the lit part in `s.plan(lightest=...)`, at the value it will read once it is laid;
+`lightest:` prints the place and its brightest twentieth, and where the two are far
+apart the plan has named too much.
 
 **Goes wrong as:** a target — the rings of an inward scumble on a dark ground, at any
 count; or a film too thin to reach its value, which reads as nothing once the light's
@@ -935,8 +947,10 @@ s.dab(0.62, 0.35, "round_hard", "pale", size=0.012, press=3)
 ```
 
 `press=3` stamps the same spot three times with the middle stamp at full pressure, and
-it is **one** mark against your budget. Use it for anything you actually want to land;
-`press=1` and `press=2` are whispers.
+it is **one** mark against your budget. Use it for anything you actually want to land:
+one touch of a light on a dark passage reaches a tenth of the way to its colour and two
+a fifth, and under about six pixels across either can lay nothing at all, which the call
+then says (`dab-blank`).
 
 **Goes wrong as:** several of them. One disc is a thing; five discs are the brush. If
 you want five, vary at least one thing per mark, or use the recipe above.
@@ -1260,7 +1274,8 @@ recipe already mixed — *What you are bad at* in
 ## Where these came from
 
 Every recipe above was taken out of a pass script of a painting in
-[`paintings/`](paintings), with the painter's own note on what it replaced; the two
+[`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings) — in the
+repository, not in the package — with the painter's own note on what it replaced; the two
 composition entries out of the notes rather than the scripts, which is why they are the
 least certain things here. Those scripts are the fuller version of this file: the calls
 in the order they were actually made, with the rehearsals that failed described in the

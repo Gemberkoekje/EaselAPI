@@ -458,3 +458,158 @@ def test_the_shell_says_records_for_undo_too():
     sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
     said = {c.dest: c.help for c in sub._choices_actions}
     assert "record" in said["undo"]
+
+
+# -- the check's two tables --------------------------------------------------------------
+#
+# `report()`'s rules were one paragraph of 678 words naming ten rules, five standing
+# lines and a dozen thresholds, and a painter said so: *a table would read far faster*.
+# A table is also something a test can hold. Every number a rule is gated on is written
+# as code in its row and read back here against the constant the engine gates on, so a
+# threshold that moves in `session.py` fails this file until the row says so -- which
+# the paragraph never could, and which is how three documents came to say *0.14* for a
+# floor the code put at `0.128`.
+
+def _table_rows(first_cell: str) -> dict[str, list[str]]:
+    """The rows of the table whose header starts with ``first_cell``, by first cell."""
+    lines = TEXT.splitlines()
+    start = next(i for i, ln in enumerate(lines) if ln.startswith(f"| {first_cell} |"))
+    rows = {}
+    for line in lines[start + 2:]:
+        if not line.startswith("|"):
+            break
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        rows[cells[0].strip("*`")] = cells
+    return rows
+
+
+#: The ten rules, by the words each one's line prints that do not change with the pass
+#: -- which is what its row is named by, and what a demo's *goes wrong* line quotes.
+RULE_WORDS = {
+    "one brush": "one brush at one size for a whole pass reads as one tool",
+    "bars": "a stack of bars unless the subject runs that way",
+    "graded": "a graded passage comes back as bars",
+    "comb": "a comb that small is four streaks with gaps, not a brush",
+    "detail": "detail before the masses are down",
+    "chisel": "pressure changes a chisel's paint, not its width",
+    "disc": "that is one disc printed",
+    "daisy": "a daisy, or a wagon wheel",
+    "loop": "a loop's signature",
+    "buried": "earlier details out of sight",
+}
+
+
+def _rule_thresholds() -> dict[str, list[str]]:
+    """Each rule, and the numbers its row has to carry as the engine holds them."""
+    from easel import session as sm
+
+    def n(value) -> str:
+        return f"`{value:g}`"
+
+    return {
+        "one brush": [n(sm._REPORT_MIN_MARKS)],
+        "bars": [n(sm._REPORT_ANGLE_MARKS), n(sm._REPORT_ANGLE_DEG),
+                 n(sm._REPORT_CROSSING_DEG)],
+        "graded": [n(sm._REPORT_BAND_MARKS), n(sm._REPORT_BAND_COLOURS),
+                   n(sm._REPORT_BAND_GAP), f"`{sm._REPORT_BAND_OVERLAP:.0%}`"],
+        "comb": [f"`size={sm._REPORT_SMALL_BRISTLE:g}`", n(sm._REPORT_STARVED_LOAD)],
+        "detail": [n(sm._REPORT_EARLY_COUNT), f"`size={sm._REPORT_SMALL_MARK:g}`",
+                   n(sm._REPORT_EARLY_MARKS)],
+        "chisel": [n(sm._SHORT_MARK_WIDTHS)],
+        "disc": [n(sm._REPORT_ROUND_MARKS), f"`size={sm._REPORT_SMALL_MARK:g}`",
+                 n(sm._ROUND_CAPSULE_WIDTHS), n(sm._REPORT_DISC_RADIUS)],
+        "daisy": [n(sm._DAISY_MARKS), n(sm._DAISY_GAP)],
+        "loop": [n(sm._LOOP_MARKS)],
+        "buried": [n(sm._BURIED_MARKS)],
+    }
+
+
+def _rule_row(rule: str) -> str:
+    """The row of the rules table whose first cell quotes ``rule``'s words."""
+    found = [" ".join(cells) for said, cells in _table_rows("It says").items()
+             if RULE_WORDS[rule] in said]
+    assert len(found) == 1, f"REFERENCE.md has {len(found)} rows quoting {RULE_WORDS[rule]!r}"
+    return found[0]
+
+
+def test_the_rules_table_has_a_row_for_each_of_the_ten_and_no_other():
+    """A guard on the guard, and on the page's own count: it says *ten rules*."""
+    assert set(RULE_WORDS) == set(_rule_thresholds())
+    rows = _table_rows("It says")
+    assert len(rows) == len(RULE_WORDS) == 10
+    for rule in RULE_WORDS:
+        _rule_row(rule)
+    assert "**ten rules**" in TEXT
+
+
+@pytest.mark.parametrize("rule", sorted(RULE_WORDS))
+def test_a_rules_row_carries_the_numbers_the_engine_gates_on(rule):
+    row = _rule_row(rule)
+    missing = [number for number in _rule_thresholds()[rule] if number not in row]
+    assert not missing, (
+        f"REFERENCE.md's row for *{RULE_WORDS[rule]}* does not carry "
+        f"{', '.join(missing)}, which is what `session.py` gates it on."
+    )
+
+
+@pytest.mark.parametrize("rule", sorted(RULE_WORDS))
+def test_a_rules_row_is_named_by_the_words_the_check_prints(rule):
+    """The first column is the check's own line, so a reworded finding fails here. Read
+    off the source with its adjacent string literals joined, which is what the engine
+    prints once the numbers are filled in."""
+    import inspect
+
+    from easel import session as sm
+
+    source = inspect.getsource(sm._pass_findings) + inspect.getsource(sm._buried_line)
+    printed = re.sub(r'"\s*\n\s*f?"', "", source)
+    assert RULE_WORDS[rule] in printed, f"the engine no longer prints {RULE_WORDS[rule]!r}"
+
+
+def test_the_standing_lines_table_names_every_line_the_check_prints(tmp_path):
+    """Every standing line a painting can be shown, made to speak on one small canvas:
+    a plan with a lightest place, a subject mark, graphite showing, a dab that lands
+    nothing, and a budget. The table is held to the lines, not the other way round --
+    a line the check gains has to gain a row."""
+    s = Session(320, 240, seed=5, timelapse=False, out_dir=tmp_path, budget=40)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.plan(why="the light", values={"A1:H4": 0.30, "A5:H8": 0.60}, lightest="A5:H8",
+               subject_share=0.4)
+        s.block_in(Region(0.0, 0.0, 1.0, 0.5), "flat", "burnt_umber", size=0.1, solid=True)
+        s.pencil([(0.1, 0.8), (0.9, 0.85)])
+        s.stroke([(0.3, 0.7), (0.6, 0.72)], "round_hard", "titanium_white", size=0.03,
+                 note="subject")
+        s.dab(0.5, 0.25, "round_hard", "titanium_white", size=0.005)
+        said = s.checklist()
+    printed = set(re.findall(r"^  ([a-z][a-z ]*:)", said, re.M))
+    assert {"landed nothing:", "plan:", "lightest:", "subject:", "values:", "edges:",
+            "ground:", "pencil:", "boxes:", "unspent:"} <= printed, said
+    named = {name for row in _table_rows("Line").values()
+             for name in re.findall(r"`([a-z][a-z ]*:)`", row[0])}
+    assert printed <= named, f"no row for {sorted(printed - named)}"
+
+
+# -- the units of a shape -----------------------------------------------------------------
+def test_the_units_table_says_what_a_ribbon_and_a_round_shape_measure():
+    """`ribbon(..., 0.05)` and `blob(p, 0.05)` had no row: a painter on a canvas that is
+    not square asked what unit a ribbon's width and a blob's radius are in, and the
+    answer is that a ribbon's width is a different number of pixels as the ribbon turns.
+    Measured off the masks, which is where the rows' own figures come from."""
+    from easel import ellipse, ribbon
+
+    w, h = 1024, 768
+    level = ribbon([(0.2, 0.5), (0.8, 0.5)], 0.05).mask(w, h)[:, w // 2].sum()
+    upright = ribbon([(0.5, 0.2), (0.5, 0.8)], 0.05).mask(w, h)[h // 2].sum()
+    assert (int(level), int(upright)) == (38, 52)
+    oval = ellipse((0.5, 0.5), 0.05).mask(w, h)
+    assert (int(oval[h // 2].sum()), int(oval[:, w // 2].sum())) == (102, 76)
+    round_ = ellipse((0.5, 0.5), 0.05, aspect=w / h).mask(w, h)
+    assert (int(round_[h // 2].sum()), int(round_[:, w // 2].sum())) == (102, 102)
+
+    units = TEXT.split("## Units, which is where the surprises are")[1].split("\n---")[0]
+    rows = [ln for ln in units.splitlines() if ln.startswith("|")]
+    ribbons = next(ln for ln in rows if "`ribbon()`" in ln)
+    radii = next(ln for ln in rows if "`ellipse()`" in ln and "`blob()`" in ln)
+    assert "38 px" in ribbons and "52" in ribbons and "`end_width`" in ribbons
+    assert "102 by 76" in radii and "102 by 102" in radii and "`aspect=s.aspect`" in radii

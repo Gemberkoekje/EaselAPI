@@ -14,8 +14,39 @@ beside `_check_glaze_far` in `session.py`. Then the newest `NOTES-step<N>.md`.
 tagged, is the round before this one and the shape most of the conventions here come
 from._
 
-**Status: step 8 is built -- D -- on branch `marks-that-landed-nothing`, 2026-09-29, off
-`main` at `e1dafa3`** -- step 7 merged as
+**Status: step 9 is built -- F -- on branch `lighter-card-and-tables`, 2026-09-30, off
+`main` at `e7e74db`** -- step 8 merged as
+[#97](https://github.com/Gemberkoekje/EaselAPI/pull/97). `PAINTER.md` lost its account of
+itself to `LESSONS.md`, the framing *every painter so far* and the card's instances of a
+row of like things, and gained the calls both painters' scripts leaned on -- of 21, the
+card named 9 and names 16 -- with `--alternatives` and `--count` in the loop and the
+example's budget said to be the example's (F1, F6, F9); `report()`'s ten rules and its
+standing lines are two tables, each row held to the engine's constants and words by a
+test (F2); the floor is `0.128`, burnt umber alone, in every document, the closing
+question carries a size, and *every painter so far has painted boxes* is *over half the
+paintings so far* (F3, E3); every link out of a shipped document goes to the repository
+(F5); the units table has its rows (F7); and *plan the place your why names, at the value
+it will read* is the guide's rule (E4). **Measured as written** (`probe_bell_session.py
+--written`): 13 of the corpus's 24 paintings laid a mass in a rectangle and 11 none, 8 of
+them before the sentence was written; both painters' counts of their calls come back
+exactly; and the guide's 79 blocks lay one mark of nothing where they laid two. **Three
+things the plan did not say.** *The budget did not come down*: about 490 words went out of
+`PAINTER.md` since 0.7.0 and about 515 came in, every one a line this round's painters
+asked for, so the file is 6,680 words where it was 6,655 and `FRONT_PAGE_WORDS` stays at
+6,700, the new size and a little room already. *What a painter reads before a mark is
+longer*: 25,313 words where it was 20,546, read as the second painter read them, the
+round's recipes and reference rows -- and the register says *it's long* is answered for a
+page and not for the corpus. *And one of the two recipes step 8's line named still pays*:
+the planes' dry brush lands at `load=0.5`, but the lit silhouette's far copy, laid along
+the form to lose no pass, lies beside the joins and is told *a graded passage* on the
+guide check's own seed -- so it keeps its passes across the form and says what they cost.
+The one gate benched for it, a mass's passes counted once, silences a beam the painter
+read blind as a passage coming back as bars; not built. See
+[`NOTES-step9.md`](NOTES-step9.md). **Nothing waits on a painter**; step 10, the cut, is
+next, and the tag is the owner's word.
+
+*Step 8 was built -- D -- on branch `marks-that-landed-nothing`, 2026-09-29, off
+`main` at `e1dafa3`* -- step 7 merged as
 [#96](https://github.com/Gemberkoekje/EaselAPI/pull/96). As the painter decided it
 (question D): **`dab-blank`**, a fact said as a round dab lands, when one laid by hand
 carried under a unit of paint under the size its press lands from -- measured again a
@@ -37,7 +68,6 @@ finding -- a measurement no painter means to trip, and the demo check counts fin
 where step 7's *A silhouette lit from one side* lays passes of its far copy outside the
 body; that recipe and *A mass built of planes*'s dry brush are F's. See
 [`NOTES-step8.md`](NOTES-step8.md).
-**Nothing waits on a painter**; step 9 (F) is next.
 
 *Step 7 was built -- A4 and B, with F8, I1 and I2 -- on branch
 `silhouettes-and-terminators`, 2026-09-29, off `main` at `c38a8a3`* -- step 6 merged as
@@ -1270,6 +1300,27 @@ the CLI's help, the server's `guide` tool -- moves with it, which is 0.7.0's ste
   `.closed`; `s.look` with `values=` and `region=`; `s.sample`; `s.plan`; `easel run
   --rehearse`; and `easel log`, for what landed nothing, with `easel check`. F1's line for
   the card is chosen from it and from the first painter's six.
+- *Step 9 (2026-09-30): moved, and the budget not lowered.* **Out**, each to a file that
+  keeps it: the file's four sentences about itself, quoted whole in `LESSONS.md`'s *One
+  home per rule*; the card's instances of a row of like things, with the stories step 7
+  moved; the six failures' names, which `easel demo mistakes` prints (`demo.MISTAKES`);
+  the ground line's paragraph, a row of F2's table; the look beside a reference, in
+  `PAINTING.md`'s *When to stop measuring*; and line 407's framing (F3). **In**:
+  `at_value` beside `mix` in the card's first block; `s.dry()` and a `s.stroke` with
+  `pressure=`, `opacity=` and `note=` in the order's own; one line for `edge="hard"` and
+  `clip=`; `key=` in the plan's signature; and A3's, F6's and F9's clauses. Of the 21
+  calls and arguments the two painters leaned on -- both their counts come back exactly
+  (`probe_bell_session.py --written`) -- the card named 9 and names 16; `.shifted`,
+  `.inset`, `load=`, `mix_many` and `sample` are not on it, and `union` joined the row
+  for boxes. **About 490 words went out of the file since 0.7.0 and about 515 came in**:
+  6,655 then and 6,680 now, the card 1,369 both times. So *the new size and a little
+  room* is where the budget already stood, 6,700, and it was left there; `docs.py` says
+  why. The signposts state the card's size as its ceiling -- *about 1,400 words* in the
+  README twice, `llms.txt`, the CLI's help and the server's `guide` tool -- and a test
+  holds each to `CARD_WORDS`, and `llms.txt`'s figure for every document to a tenth.
+  **What a painter reads before a mark is longer than at 0.7.0**, 25,313 words for
+  20,546 as the second painter read them: the painter's *leaner* is answered for the
+  first page and not for the corpus, and `LESSONS.md` and both painters' rows say so.
 
 **F2. Tables where a paragraph is a list.** `REFERENCE.md`'s `report()` paragraph becomes
 two tables -- the ten rules, each with when it fires, the number it uses and what it says;
@@ -1277,6 +1328,18 @@ and the five standing lines, each with what it measures and when it speaks -- an
 around them keeps only what is not a row. The same pass looks for any other paragraph that
 is a list in disguise and names what it turns; `PAINTER.md`'s account of the checklist's
 lines is the likeliest.
+*Step 9 (2026-09-30): built.* The paragraph had grown to 855 words with the round's own
+lines. It is a rules table of two columns -- *It says*, the check's own words for the
+rule, and *when*, with every number it gates on as a code span -- and a standing-lines
+table of three, the line, what it measures and when it is said, eight rows for the ten
+lines; H1's paragraph stands between them. A first draft with a column each for when, the
+number and the words ran to 1,321 words, and was cut to the two: 1,129 for the section.
+`tests/test_reference.py` builds each rule's numbers from `easel.session`'s constants and
+its name from the words `_pass_findings` prints, and lays a pass that prints every
+standing line, so a threshold or a line that moves breaks its row. The other paragraph
+that was a list is `PAINTER.md`'s account of the checklist's lines, which names the six
+and points at the table; `PAINTING.md`'s *After every pass* points there too. No other
+paragraph over two hundred words in the four files is a list in disguise.
 
 **F3. What is no longer true, and one question with a size in it.** *Every painter so far
 has painted boxes* and *each has been made by every painter so far* stopped being true with
@@ -1290,6 +1353,19 @@ And the closing checklist's third question gains the size the picture will be se
 *And one the painter's answers found (D, 2026-09-27)*: `dab()`'s docstring puts one touch
 at *about a quarter of the way to its colour*, which measures a tenth, and leaves out two
 touches, which reach a fifth; it gives all three, three about four fifths.
+*Step 9 (2026-09-30): said as they are.* The boxes sentence is *over half the paintings so
+far have boxes in them, and the checklist counts them*: replayed (`--written`), 13 of the
+24 laid a mass in a rectangle and 11 none, 41 of 349 masses -- and 8 of the 21 filed the
+day the old sentence went in, in 0.6.0's round, had laid none, so it was never true by the
+check's count. *Each has been made by every painter so far* and the third went in step 7.
+The floor is `0.128`, burnt umber alone, in `PAINTER.md`, `PAINTING.md`, `CALIBRATION.md`
+and `palette.py`, with the half-and-half mix the neutral dark above it at `0.137`;
+`LESSONS.md` counts 94 claims re-measured and 21 that did not survive; and the third
+question reads *Is that reason still in the picture, looked at small -- s.look(scale=256)?*
+in `checklist()` and in the guide. **Two more the step found**: *there are no pixels
+anywhere in this API*, where there is `s.px()`; and *a place … reports their average in a
+confident voice*, where it reads its median and says when it is split. `dab()`'s three
+touches were step 8's.
 
 **F4. The record.** `SUGGESTIONS.md` opens the round; `LESSONS.md`'s protocol gains its
 data points -- what the second painter against the card and body read, a `boxes:` line at
@@ -1307,11 +1383,17 @@ address, so they work from `easel guide` as they do on GitHub, and `llms.txt` an
 README already point there. Shipping the paintings in the wheel is not proposed: they are
 megabytes of pictures, and the decide-then-read rule wants them one step away, not in the
 package a painter reads first.
+*Step 9 (2026-09-30): built, and wider than the two links.* Every relative link out of a
+shipped document went to the repository's address -- `CALIBRATION.md`'s twelve, to scripts,
+paintings, the register and this plan -- and the README's two, since PyPI shows it;
+`tests/test_guide.py` holds each shipped document to linking only what ships beside it.
+**For the claim**: `CALIBRATION.md` links this file at `blob/main`, which the claim
+retargets to the tag, as 0.6.0's links were.
 
 **F6. Versions and prices in the loop** (W12). One clause in the card's *rehearse* step
 naming `--alternatives` for versions of a pass and `--count` for a price in seconds -- paid
 for by F1's move -- where today a painter meets them only in `REFERENCE.md` and
-`PAINTING.md`.
+`PAINTING.md`. *Step 9 (2026-09-30): built*, the clause as written.
 
 **F7. The units table, finished** (W14). Rows for a `ribbon`'s width and end width and a
 `blob`'s radii -- the long side, or the width and height -- measured from the code, not
@@ -1322,6 +1404,9 @@ an upright one, 45 at 45 degrees -- so it changes as the ribbon turns; `ellipse(
 and `blob(p, 0.05)` are 102 x 76 px, a fraction of the width across and the height down, and
 round in pixels only with `aspect=` (102 x 102); a brush's `size=0.05` is 51 px on either
 canvas.
+*Step 9 (2026-09-30): built*: three rows -- a round shape's radius, a ribbon's widths and
+`s.circle()`'s `r` -- and the sentence, which says a ribbon has no form that is round in
+pixels; `tests/test_reference.py` measures the masks again.
 
 **F8. Two more recipes** (W14), under the no-nouns discipline: ***A light's pool on a
 surface*** -- the second painter's fix, three soft round-tip strokes of paint, each smaller
@@ -1346,6 +1431,8 @@ the picture -- a figure at the size of the canvas wants more than a landscape of
 `300` without a thought, from the card, its shell section and its memory of the first
 painting; the budget never bound (38 unspent), so the clause would have changed the number
 and not the painting -- and is still worth its line, for the painter who runs out.
+*Step 9 (2026-09-30): built*: *the `budget=300` is this example's: set yours from the
+picture, more for one subject worked closely than for a few big masses.*
 
 ### H. What the check says, and where -- *added 2026-09-26*
 
@@ -1484,7 +1571,14 @@ three soft strokes of paint.
   the question it was answering is the thumbnail's.*
 - **The rest of what 0.7.0 left open** stays where it is written: the smudge as a plan
   entry (no painter has asked), the three things left alone, and the stacked masses the
-  graded rule still tells.
+  graded rule still tells. *Step 9 met that rule and benched one gate for it, since the
+  lit silhouette's recipe cannot lay its far copy along the form without being told a
+  graded passage: a mass's passes counted once (`probe_cohort_session.py --graded`, `a
+  mass once`). Over the corpus's 356 painted passes it fires on five of the engine's
+  seven -- quiet on the pier's stacked fields, which the painter read blind as no
+  passage, and on the first beam, a gradient laid as five flat masses, which it read as
+  one. A count of masses does not separate them. Not built; the recipe keeps its copies
+  across the form.*
 
 ---
 
@@ -1500,7 +1594,7 @@ them is a moved default.
 | 1 | **`wet-under`'s decline** | 0.6.0, ruled 2026-09-21: as a habit rule gated on wetness it fired on 22% of the corpus's passes and 8 guide blocks, and the fact line left of it rested on a reconstruction of a take its painter overwrote | reopened as a question, and built as `into-wet` only on the four conditions in 4D | **A different gate, and -- if it comes -- new evidence.** Wetness was no gate because the corpus lays opaque paint into wet on purpose (a median wetness of `0.09` under a mark, a tenth over `0.41`); the landed shortfall of a light meant to stand off its field is what a deliberate wet blend of close colours never reaches. And a painter has now reported the damage with numbers. | built only if it fires on a real case, on about one corpus pass in twenty or fewer, and on no guide block but a failure on purpose; otherwise the decline stands, with this round's data point beside it. *Settled 2026-09-26: **the decline stands.** The painter withdrew its suggestion as written: the one light in its painting that met wet paint lost `0.01` to `0.05` to it and five times that to its size. What replaces it, a mark that lands short whatever the cause, is 4D as rewritten, and reopens nothing. Step 2 found no case left: the two versions of the subject's pass that laid the head's plane in the pass with the body under it read it within `0.004` of the same versions laid on a dried canvas.* |
 | 2 | **What a planned place reads**: its mean, in `plan:`, `lightest:` and `compare()` against a value plan | 0.6.0's plan object, and `compare()` against a value plan, whose reading the plan's lines share | its median, or whichever reading step 2 and the painter choose. *The painter chose the median (question 5).* | the mean made a detail inside the plan's own lightest plane into a false miss (`-0.14`) on the one line a painter relies on most, and the only other painting with a plan keeps every verdict under the change | every number those lines print moves a little, so it is named in `CHANGELOG.md`; output only, nothing rebuilds differently; replayed over both plans pass by pass before it lands |
 | 3 | **The `values:` line judging every picture against the box's middle** | 0.6.0 -- the standing lines | judged against the key a plan declares, where it declares one | *no clear light* printed twenty-five times at a picture declared low-key on purpose -- the stack-of-bars history, which 0.6.0 answered for bars with `bands=` | a declaration, not a switch: the line still measures and says when the picture leaves its key; with no key declared, nothing changes |
-| 4 | **The weight of `PAINTER.md` -- *watch*, and nothing cut on one painter's word** | 0.7.0's G5, the handover painter's own ruling; and before it the tenth round's *one home per rule* | anecdotes and commentary on the documents moved to `LESSONS.md` and `CALIBRATION.md`; the budget lowered to the new size | the seventh painter to call the corpus long, and **the first to say which text** -- none of it a rule -- **and which text worked**; the tenth round had already found *the stories were most of the words, and they did not do what the corpus believed*; and 45 words under its budget, the file cannot take this round's exercise and clauses without it | a move, not a cut: every sentence lands in a file that keeps it; the painter says which anecdotes persuaded, and those stay; `check_guide_overlap.py` and the budget test hold the result; and it is a hypothesis until the next fresh session paints against it |
+| 4 | **The weight of `PAINTER.md` -- *watch*, and nothing cut on one painter's word** | 0.7.0's G5, the handover painter's own ruling; and before it the tenth round's *one home per rule* | anecdotes and commentary on the documents moved to `LESSONS.md` and `CALIBRATION.md`; the budget lowered to the new size | the seventh painter to call the corpus long, and **the first to say which text** -- none of it a rule -- **and which text worked**; the tenth round had already found *the stories were most of the words, and they did not do what the corpus believed*; and 45 words under its budget, the file cannot take this round's exercise and clauses without it | a move, not a cut: every sentence lands in a file that keeps it; the painter says which anecdotes persuaded, and those stay; `check_guide_overlap.py` and the budget test hold the result; and it is a hypothesis until the next fresh session paints against it. *Step 9, 2026-09-30: moved, every sentence to a file that keeps it, the three stories the painter kept staying beside their rules. **The budget was not lowered**: the move paid for this round's own lines nearly word for word, the file is 6,680 words where it was 6,655, and 6,700 is already its size and a little room.* |
 | 5 | **How a guide looks** | 0.5.0 -- `guide()`, drawn *thin, dark, the way a pencil line reads* | a graphite core on a light casing, its note in a box | over a dark picture the overlay is invisible -- ~~69%~~ *65%* of its pixels step under `0.05` over the finished canvas, *96% over the room the second drawing went on* -- which defeats the one thing it exists for, a drawing that paint cannot bury | the view only; `sketch=False` still hides it; the test that a guide survives the paint and stays out of the picture still holds. *And the second painter never drew on its painting at all, working round it from the first painter's memory -- the workaround the overlay made necessary, carried to a second picture.* |
 | 6 | **A repainted-passage count, declined** | 0.7.0's round, *What the check cannot see*: the headland took four passes and so did the tower, and the log cannot tell a passage failing from a subject being built | reopened as a question (4H4): measured over the corpus, and built as a fact with its number only if a count separates a failing passage from a subject built in as many passes | a second painter asks for it by name, with a case -- its fist was laid over by five passes -- and says it broke the rule it would enforce *with the rule in front of me*, which is `LESSONS.md`'s *warning is not method* seen from the painter's side | the count must separate the corpus's failing passages -- the fist, the Bell-Warden's head, the handover's headland -- from its subjects; if it does not, the decline stands, with this case beside it. *Settled by step 2, 2026-09-26: **the decline stands.** Counted over the corpus and both paintings' filed rehearsals, masses laid over the painter's own earlier marks find the fist and the night pool's water, and speak on the Bell-Warden's creature and the second painter's figure as they were being built; the Bell-Warden's head they see only after the rule had already sent the painter back twice, and the handover's headland not at all (4H4).* |
 
@@ -1720,7 +1814,9 @@ and cut*.
    that stopped being true, the checklist's size, *F5 to F9,* and the record -- last, because it moves
    text that every earlier step touched. `check_guide_blocks.py` green,
    `check_guide_overlap.py` clean, the no-nouns grep run, and every new example read end to
-   end.
+   end. *Built 2026-09-30, the budget left at 6,700 and the two recipes step 8's line
+   named looked at: see [`NOTES-step9.md`](NOTES-step9.md), and `probe_bell_session.py
+   --written` for what the documents now say, measured.*
 10. **Cut 0.8.0**: the version in `pyproject.toml`, `src/easel/__init__.py` and both
     entries of `server.json`; `CHANGELOG.md`'s entry without the claim; the tag on the
     owner's word; then the claim, which takes this file and the step notes out of the
@@ -1759,13 +1855,13 @@ and cut*.
 | `src/easel/regions.py` | the terminator helper *(`terminator()`, step 7)*; ~~`ribbon()`'s widths, if needed~~ *not needed* |
 | `src/easel/letters.py` (new) | *`letter_paths()` and the font as data, `GLYPHS` (I1, step 7)* |
 | `src/easel/cli.py`, `mcp_server.py` | the dearest line; `easel plan --key`; the prelude scaffold; `key`, `thumbnail`~~, and places for `guide` and `pencil` through the server~~ *(the server has no such tools: step 3)*; *`easel run --thumbnail` and `run(thumbnail=)` (A3)* |
-| `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` lowered |
-| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype; `--recipes` (step 7); `--landed` (step 8), the dab's cliff a quarter of a pixel apart and the fact and the line as built*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); ~~exercise 4 marked as saying `into-wet`, if built~~ *not built* |
+| `src/easel/notices.py`, `docs.py` | ~~`into-wet`'s code and passage, if built~~ *the round dab's code and passage (D)*; `FRONT_PAGE_WORDS` ~~lowered~~ *left at 6,700, with why (step 9)* |
+| `scripts/probe_bell_session.py` (new), `probe_cohort_session.py`, `check_guide_blocks.py` | the benches, *and `--answers`, the painter's step-2 answers measured again; `--built` (step 4) and `--declared` (step 5), each step's lines as the engine says them; `--thumbnailed` (step 6), the engine's thumbnail against the prototype; `--recipes` (step 7); `--landed` (step 8), the dab's cliff a quarter of a pixel apart and the fact and the line as built; `--written` (step 9), the floor, the units, the recipes over seeds, the card's calls, the documents' sizes and the boxes line over the corpus; the corpus probe's `a mass once`, a candidate gate for the graded rule; and the guide check naming every recommended block that pays for a mark that lays nothing*; the corpus entry, in its rebuild order (a `Painting.order` field, since a pass runs twice); ~~exercise 4 marked as saying `into-wet`, if built~~ *not built* |
 | `tests/test_requests.py`, `test_reference.py`, `test_guide.py`, `test_notices.py`, `test_mcp.py` | one test per row, named for the finding; the budget; the reference rows |
 | `paintings/Claude/bell_warden/` | filed in step 1, with `reports.txt`, `versions/` and `evidence/`; its answers filed beside it as they come; `questions-step2/`, step 2's blind package and its builder |
 | `paintings/Claude/wenna_brask/` | filed the same way, in a PR on top of step 1's; its answers filed beside it as they come |
 | `src/easel/regions.py`, `session.py`, `cli.py`, `checklist.py` | *for the second verdict*: `s.px()` and a group (A5); a finding's marks (H1); the prelude-name fact (H2); `--scale` read as a factor under `1` (H3); `lightest:` read by the named light's brightest part (E4) |
 | `src/easel/history.py`, `notices.py` | *step 4*: the log line's colour by its palette name (H1); `prelude-rebind` registered (H2) |
 | `.gitignore` | `paintings/**/looks/`, where this painting's passes write their looks (step 1) |
-| `PAINTER.md`, `RECIPES.md`, `PAINTING.md`, `REFERENCE.md` | F1 to F3; the two recipes and exercise 10; `union()`; `feather=` said for what it is; the tables |
+| `PAINTER.md`, `RECIPES.md`, `PAINTING.md`, `REFERENCE.md` | F1 to F3; the two recipes and exercise 10; `union()`; `feather=` said for what it is; the tables. *Step 9 also: `DIAGNOSIS.md`, four rows pointing at the round's recipes; `examples/exercises.py`, exercise 7's shape and exercise 10; `src/easel/session.py`, the closing question's size; `palette.py` and `checklist.py`, the floor in their docstrings* |
 | `CALIBRATION.md`, `LESSONS.md`, `SUGGESTIONS.md`, `PAINTINGS.md`, `CHANGELOG.md`, `README.md`, `llms.txt` | the round's numbers, the moved text, the record, and the cut |

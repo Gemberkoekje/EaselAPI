@@ -109,8 +109,8 @@ s.palette.value_of(s.sample(mass, rendered=True))   # the view of it
 A list of 0–255 integers is not one of the forms: it **raises**, and names both
 fixes — the same numbers divided by 255, and the hex they spell. It used to clamp, so
 `[13, 12, 16]` gave you white in silence. Reach for a supplied colour when a reference
-genuinely goes below the palette's floor of `0.14` (*What the box reaches* in
-[`CALIBRATION.md`](CALIBRATION.md#what-the-box-reaches)), and not otherwise.
+genuinely goes below the palette's floor — burnt umber alone, at `0.128` (*What the box
+reaches* in [`CALIBRATION.md`](CALIBRATION.md#what-the-box-reaches)) — and not otherwise.
 
 ---
 
@@ -229,11 +229,11 @@ Python it is `s.scratch()`, the same throwaway copy, and several scripts rehears
 together onto one copy so a pass that lands on another is judged on it — or, with
 `--alternatives`, each onto a copy of its own, their looks side by side in one sheet, so
 two versions of one pass are judged against each other (`s.rehearse_each()` from
-Python). `look`, `preview`, `rehearse`, `cost` and `compare` leave nothing behind;
-`pencil`, `dry` and `erase` are free but logged, and a mark's texture is seeded from its
-place in the log, so adding or removing one shifts the texture of every mark after it —
-deterministic, and a painting still rebuilds from its scripts (*The log, undo, and the
-stream* in [`CALIBRATION.md`](CALIBRATION.md#the-log-undo-and-the-stream)).
+Python). `look`, `thumbnail`, `preview`, `rehearse`, `cost` and `compare` leave nothing
+behind; `pencil`, `dry` and `erase` are free but logged, and a mark's texture is seeded
+from its place in the log, so adding or removing one shifts the texture of every mark
+after it — deterministic, and a painting still rebuilds from its scripts (*The log,
+undo, and the stream* in [`CALIBRATION.md`](CALIBRATION.md#the-log-undo-and-the-stream)).
 
 ---
 
@@ -637,6 +637,7 @@ s.pencil(points, pressure=0.55)                    # graphite; not a stroke
 s.erase(region=None)                               # rub out both drawings
 s.sketch_lines()                                   # every line drawn, as points
 s.mark(name, x, y)   s.pt(name)   s.unmark(name)   # named landmarks
+s.thumbnail({place: value})                        # the arrangement, flat and small
 s.preview(strokes, reference=, region=, grid=)     # where a mark would go
 s.rehearse(strokes, reference=, region=)           # what it would look like
 s.cost(strokes)                                    # what it would charge
@@ -661,17 +662,19 @@ tip for one, give it `pressure="even"` or it will show its passes at their ends.
 
 **What counts against the budget:** `stroke`, `dab`, `block_in`, `sweep`, `scumble` and
 `cover` per pass, and also **`smudge` and `glaze`**. What is free: `pencil`, `erase`,
-`mark`, `look`, `preview`, `rehearse`, `cost` and `compare`. Do not discover the first
-list with three strokes left.
+`mark`, `look`, `thumbnail`, `preview`, `rehearse`, `cost` and `compare`. Do not
+discover the first list with three strokes left.
 
 **After every pass, `easel run` prints a check**, and `s.report(since=n)` is the same
 lines in Python: the guide's standing warnings read off the log rather than repeated —
 one brush at one size for a whole pass, a stack of passes at one angle, a graded
-passage laid too narrow, a starved comb, small marks before the masses, a pressure list
-on a chisel, and the subject's share so far. The rules and their thresholds are listed
-under `report()` in [`REFERENCE.md`](REFERENCE.md#looking-planning-measuring). Every
-one of them was once a paragraph in the guide, and a line printed after the pass that
-did it is worth more than the paragraph.
+passage laid too narrow, a small comb laid loaded, small marks before the masses, a
+pressure list on a chisel — and under them what it measures: the marks that landed
+nothing, the subject's share so far, the values, the edges and the ground. The ten rules
+and the standing lines, with their thresholds, are two tables under `report()` in
+[`REFERENCE.md`](REFERENCE.md#looking-planning-measuring). Every one of the rules was
+once a paragraph in the guide, and a line printed after the pass that did it is worth
+more than the paragraph.
 
 ---
 
@@ -813,6 +816,14 @@ cell back out of tolerance. **Finish the value work early and deliberately**, ch
 `compare()` comes back clean, and then stop measuring. The last ten strokes may not be
 value corrections: a painter that has to spend its last marks on the score has already
 lost the picture.
+
+**And when the closing checklist is answered, look at the two side by side one last
+time**, before the signature:
+
+```python
+s.look(reference="ref.jpg")
+s.look(reference="ref.jpg", values=True)   # compare value structure, not colour
+```
 
 ### Letting the reference be cut up for you (optional)
 

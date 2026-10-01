@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from easel import Region, Session, blob, cell, region
+from easel import Region, Session, blob, cell, ellipse, polygon, region, ribbon, union
 
 OUT = Path("out")
 
@@ -141,13 +141,14 @@ def draw_try_paint() -> None:
     Three verified points, a drawing hung on them, two rehearsals that cost nothing,
     and one stroke spent on the better of them. Afterwards the graphite is gone
     exactly where the paint landed and still there beside it, which is what an
-    underdrawing is for.
+    underdrawing is for. The drawing is handed over as a shape, so the pencil draws
+    its outline with the corners kept; a list of points is splined, and rounds them.
     """
     s = Session(900, 600, ground="toned_grey", seed=7, timelapse=False, out_dir=OUT)
     s.mark("a", *cell("C3").point(0.5, 0.5))
     s.mark("b", *cell("F3").point(0.5, 0.5))
     s.mark("c", *cell("D6").point(0.5, 0.5))
-    s.pencil([s.pt("a"), s.pt("b"), s.pt("c"), s.pt("a")], pressure=0.7)
+    s.pencil(polygon([s.pt("a"), s.pt("b"), s.pt("c")]), pressure=0.7)
     s.look(path=OUT / "ex7_drawing.png")
 
     plan = [{"points": [s.pt("a"), s.pt("c")], "brush": "bristle", "size": 0.09,
@@ -197,11 +198,32 @@ def swatch_strip() -> None:
     s.export(OUT / "ex9_swatches.png")
 
 
+def three_silhouettes() -> None:
+    """10. One set of parts laid three ways, each thumbnailed: flat, small and free.
+
+    Matching parts either side of an upright axis, then one part turned to overlap
+    another, then a member that swells and narrows. Write down what each will read as
+    before looking: the thumbnail is where a silhouette reads or does not, and it is
+    judged before a mark of it is paid for.
+    """
+    s = Session(900, 600, ground="toned_grey", seed=10, timelapse=False, out_dir=OUT)
+    big, top = ellipse((0.5, 0.6), 0.16, 0.13), ellipse((0.5, 0.44), 0.06, 0.08)
+    members = [ribbon([(x, 0.64), (x, 0.9)], 0.03) for x in (0.42, 0.58)]
+    turned = [top.shifted(-0.13, 0.04), members[0].shifted(-0.03, 0),
+              members[1].shifted(0.05, 0)]
+    swell = ribbon([(0.40, 0.68), (0.35, 0.80), (0.37, 0.93)], 0.07, end_width=0.02)
+    arrangements = {"matching": [big, top, *members], "turned": [big, *turned],
+                    "swelling": [big, turned[0], swell, turned[2]]}
+    for name, parts in arrangements.items():
+        s.thumbnail({union(*parts): "burnt_umber"}, path=OUT / f"ex10_{name}.png")
+    print(f"  three thumbnails, and {s.stroke_count} strokes spent on them")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for fn in (value_scale, pressure_profiles, paint_running_out,
                wet_versus_dry, edge_study, draw_try_paint, a_box_and_a_shape,
-               swatch_strip):
+               swatch_strip, three_silhouettes):
         print(f"{fn.__name__} ...")
         fn()
     print("mixing:")
