@@ -14,7 +14,8 @@ Bell-Warden's notes, its prelude and six of its passes before painting. Then it 
 `RECIPES.md` whole and `REFERENCE.md` to line 500: about 20,500 words of the guide, which it
 counted as *over 2,000 lines*. It never opened `PAINTING.md`, `CALIBRATION.md` or
 `DIAGNOSIS.md`, or the repository. What it says about 0.7.0 is read in
-[`PLAN-0.8.0.md`](../../../PLAN-0.8.0.md), beside the Bell-Warden's.
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as
+tagged at `v0.8.0`, beside the Bell-Warden's.
 
 **To understand this, start by reading [`prelude.py`](prelude.py)** — the mixtures, the
 drawing in pixels through `P()` and `T()`, and the `s.plan(...)` — then `p02_setting.py` to

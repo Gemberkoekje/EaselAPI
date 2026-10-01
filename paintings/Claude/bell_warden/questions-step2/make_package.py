@@ -13,7 +13,14 @@ shuffles still give the letters `KEY.md` records.
 
 The probe takes about half an hour for those four; this, a few seconds. It writes
 `out/painter-questions-bell-step2/` and a zip beside it. `numbers/` is the repository's
-as it stands when this runs.
+as it stands when this runs, so it is not what the painter read if the round has moved on
+since -- and `PLAN-0.8.0.md` and `NOTES-step2.md` left the repository with 0.8.0's claim,
+so after it `numbers/` carries neither.
+
+**To rebuild the package as the painter read it, check out `da02328`** (#91), the commit
+it was built at and sent from on 2026-09-27. The pictures are laid by the engine
+installed, and `numbers/` and `scripts/` are copied as they stand, so a later checkout
+builds a package the painter never saw.
 """
 
 from __future__ import annotations

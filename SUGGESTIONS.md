@@ -127,7 +127,7 @@ figure on a plinth that *has to pass for a statue*, as sample art for a content 
 another of the owner's projects, **280 of 300 strokes**. A row's right-hand column was
 filled in when its PR landed, and not before. The candidate answers, the decisions taken
 on them and the measurements that decided which survived are in
-[`PLAN-0.8.0.md`](PLAN-0.8.0.md), with the second painter's beside them; what the round
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as tagged, with the second painter's beside them; what the round
 left open is at the end of that painter's section, below.
 
 **It is the first fresh session to paint against 0.7.0**, and it answers two of the three
@@ -259,7 +259,7 @@ documentation items, from a second `claude-opus-5-5` session at max effort, whic
 *a mother who has not slept* by a lantern at dusk for the same pack the morning after the
 Bell-Warden, **262 of 300 strokes**, and gave its verdict when the owner asked. The owner
 folded this verdict into the same round, so the candidates are in
-[`PLAN-0.8.0.md`](PLAN-0.8.0.md) beside the first painter's, and a row was filled in when
+[`PLAN-0.8.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/v0.8.0/PLAN-0.8.0.md), as tagged, beside the first painter's, and a row was filled in when
 its PR landed; what the round left open, for both painters, is at the end of this
 section.
 **It is not an independent painter** — it began from the first painter's memory of the
