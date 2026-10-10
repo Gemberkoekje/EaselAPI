@@ -4413,8 +4413,8 @@ day it shipped and painted four bandits in vampire costume at cards under a carv
 sunrise, in 410 of 450 strokes, as a handout for the owner's own campaign. Acting on its
 verdict is [`PLAN-0.9.0.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PLAN-0.9.0.md).
 What follows was measured while filing it, on 2026-10-01, on the checkout whose engine is
-`v0.8.0`'s, from the painter's session file, scripts and transcript. The round's own
-probe, step 2, is to come.
+`v0.8.0`'s, from the painter's session file, scripts and transcript. Step 2's probe,
+`scripts/probe_uktarl_session.py`, measured the rest on 2026-10-10, from *Step 2* below.
 
 ### The painting, rebuilt
 
@@ -4532,3 +4532,112 @@ the ten exercises, 26 rehearsals and `easel check` twice. It never ran `cost()`,
 The six documents the package ships are 90,369 words: `CALIBRATION.md` 51,788,
 `REFERENCE.md` 11,242, `RECIPES.md` 10,822, `PAINTING.md` 7,644, `PAINTER.md` 6,680 and
 `DIAGNOSIS.md` 2,193.
+
+### Step 2: the candidates, benched
+
+Measured on 2026-10-10 by `scripts/probe_uktarl_session.py`, on the checkout whose engine is
+`v0.8.0`'s, after the painter's answers (`answers.md`). Every candidate was patched in for
+one bench and taken out again. The corpus is the 25 committed paintings replayed through
+the corpus probe's harness: 392 passes, 354 of them laying paint without an error (pears'
+`p9_rehearse_pear.py` fails as it did in 0.8.0's replay), and 450 shaped masses.
+
+**Paint held outside a shape.** The backlight's eight calls laid once with `clip=wall` and
+Uktarl's seven prelude shapes excluded, against the three regions typed round him (44
+points). *Seam* is the painter's own measure in its answer A: at y = 460, 490, 520 and 550,
+the pixels between the light and his left edge that read 0.17 to 0.40.
+
+| laid | pixels wholly on him | seam |
+|---|---|---|
+| committed, three regions | 15: the glare on the wig, where `glow_above` misses the hair | 6, 3, 2, 1 |
+| exclusion cut on the line | 0 | 4, 1, 1, 0 |
+| exclusion broken into the light, as a hold's default breaks | 0 | 6, 3, 2, 1 |
+| exclusion broken onto him | 523 | 3, 0, 1, 0 |
+
+Cut on the line, the only pixels it lays on him are his outline's antialiased rim, in
+proportion to the wall they share. Broken into the light, it is the committed seam exactly.
+
+**A soft hold.** Each edge of the painter's answer B, its hold softened alone, by B1 (a
+smooth ramp inward), B2 (that ramp broken against the tooth) and B3 (a smooth ramp centred
+on the outline), at the width the painter asked. *Step* is the `edges:` line's measure
+taken along the line: the value range within the asked width either side, over the
+steepest gradient across it, every 2 px; the median.
+
+| edge | asked | as painted | B1 | B2 | B3 |
+|---|---|---|---|---|---|
+| her terminator | 8 px | 2.6 | 4.3 | 2.7 | 4.8 |
+| its terminator | 8 px | 2.3 | 2.8 | 2.2 | 3.9 |
+| Uktarl's far cheek | 8 px | 1.7 | 1.7 | 1.9 | 1.8 |
+| her far side | 11 px | 1.8 | 2.3 | 2.3 | 2.2 |
+| her wig | 3 px | 1.3 | 1.7 | 1.4 | 1.8 |
+| its far side | 9 px | 1.3 | 3.2 | 1.7 | 3.2 |
+| the near bandit | 7 px | 1.8 | 2.1 | 2.0 | 1.9 |
+| the blanket heap | 2.5 px | 1.6 | 1.4 | 1.4 | 1.4 |
+
+No candidate costs measurable time: within half a second of the pass as painted. **The step
+widens less than asked** wherever later marks are laid over the edge: the join stroke along
+each terminator, the rims, the hair over the body, the two smudges. Uktarl's terminator
+lies under the wig, as the painter's answer I says. With all eight softened, the `edges:`
+line reads 59% under 2.5 px as painted, 57% for B1, 59% for B2 and 58% for B3: eight edges
+are a small share of the picture's edge length. **A hold softens its whole outline**: the
+doppelganger's body, softened for its far side, is soft against the cape too.
+
+**The join on skin, as painted.** The same step across each face's terminator: the lady
+2.1 px, the doppelganger 1.7, Uktarl 1.4, on faces 44 to 48 px across, a sixth of which is
+7 to 8 px. A join at `size=0.006` is 6.1 px wide on this canvas. Across the lady's
+terminator the value falls 0.60, 0.49, 0.34 in three pixels.
+
+**The three rules, over the corpus's 354 passes**, each as the engine asks it pass by pass
+(the bars rule without its decay), and the candidates:
+
+| rule | candidate | passes it fires on |
+|---|---|---|
+| disc | the engine | 30 |
+| disc | marks with a pressure list or three points left out | 15 |
+| disc | near-copies, three or more: width ±8%, length ±12%, direction ±8°, value ±0.04 | 8 |
+| disc | near-copies, looser: ±12%, ±20%, ±12°, ±0.06 | 10 |
+| bars | the engine | 53 |
+| bars | the stack's marks touching, footprint to footprint | 27 |
+| graded | the engine | 8 |
+| graded | a mass's passes counted as one mark | 3 |
+
+The near-copies candidate drops every face in this painting and in Wenna Brask's, and also
+the greenhouse's pots, the sonnet's stairs and lamp, the pier's highlights, the heron's
+lamp and the lanterns: 22 of the engine's passes. The rule's own measurement is the
+silhouette (*The round tips repeat themselves*, above): two plain round dabs share 97% of
+their outline at any size or colour, which a test on size and value cannot see. Touching
+drops 26 of the bars passes, among them the pier's, the heron's and GPT's water, whose bars
+are separate by being bars; on this painting it keeps the mountain and the lady and drops
+only the laps. Counting a mass as one mark drops the near bandit, and the pier's two, the
+sonnet's beam and the car wash's form with it.
+
+**The standing lines** printed after each committed pass repeat the line the pass before
+printed, word for word, in 627 of 1,560 (40%) over the corpus, 10% to 54% by painting; in
+this painting's 46 saved reports, rehearsals and commits together, 150 of 246 (61%).
+
+**Shares of the budget**, under the split the painter says it would have planned
+(Uktarl 25%, the doppelganger 11, the lady 11, the near bandit 10, the relief 25, the
+table 8, the floor 5), each call given to a part by its pass and line: the floor passes
+its 22 at the first pass that lays it, Uktarl his 112 at the card game, and at the end the
+near bandit stands at 22 of 45 with 40 strokes in hand. After the head's pass Uktarl had
+102: 48% of the 212 laid, 23% of the budget.
+
+**A direction's price.** Of the corpus's 197 shaped masses given one direction, one costs
+more than 2.5× its axis: the greenhouse's glass, 8 against 2. The ratio's median is 1.00,
+its 90th percentile 1.56. The mountain's first version: all ten facets, 2.7× to 5.0×.
+**Passes in pieces**: 27 of the 450 masses, in 16 paintings, lay a third or more of their
+passes in two or more pieces, 290 strokes between them; the black V of the body's first
+version lays 14 passes in 22. **Passes wholly outside a clip**: 12 mass passes over the
+corpus laid no paint under a hold, 11 of them the Bell-Warden's, in 3 committed passes.
+
+**A light named beside *no clear light*.** The line says *no clear light* on a pass of 11
+paintings, none with a key declared. A light is named in the plan on three: the
+Bell-Warden's, Wenna Brask's and this one. Where the light stands 0.10 or more clear of
+the rest, the candidate H2 names it: on 4 of the Bell-Warden's 6 passes, 9 of Wenna's 11,
+and 11 of this painting's 16, from the head's pass on. It says nothing on the other eight.
+
+**The reading path.** `PAINTER.md` 6,680 words, `RECIPES.md` 10,822, `REFERENCE.md`
+11,242: 28,744. By section, the largest are `REFERENCE.md`'s *Looking, planning,
+measuring* (2,797) and `PAINTER.md`'s *The workflow* (1,763). The share of a section's
+runs of six words that a string in the engine also holds is 38% for *What the tool will
+tell you*, 18% for *Looking, planning, measuring*, and under 10% for every recipe but
+lettering's (11%).

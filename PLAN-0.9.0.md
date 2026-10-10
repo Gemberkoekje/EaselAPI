@@ -15,9 +15,11 @@ tagged, is the round before this one._
 Step 1 is done in this PR: the painting is filed, the verdict is checked (section 3), the
 round is open at the top of `SUGGESTIONS.md`, and the first questions for the painter are
 written (`paintings/Claude/uktarl_krannoc/questions-step1.md`). Nothing under `src/`
-changes. 2026-10-10: the painter's answers are filed (section 6), and step 2 has begun on
-branch `measure-uktarls-room`: `scripts/probe_uktarl_session.py`, with `--claims`,
-`--clip-out` and `--answers` so far (`NOTES-step2.md`).**
+changes. 2026-10-10: the painter's answers are filed (section 6), and **step 2 is done**
+on branch `measure-uktarls-room`: `scripts/probe_uktarl_session.py` benched every
+candidate (`CALIBRATION.md`, the round's *Step 2*; `NOTES-step2.md`), and batch 2 is
+written (`paintings/Claude/uktarl_krannoc/questions-step2/`). Next: the owner sends batch
+2; steps 3 and 6 can start meanwhile.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -419,10 +421,29 @@ in `evidence/`. What each answer decides, rule first; every **M** in it re-measu
 | P8 | the rules it used, in one line each; what the card holds; four cuts from *The first hour*; and one sentence: *read every line the check prints after a pass; do not filter it* | 4I |
 | P9 | at 1:1 the join reads as a **facet** on all three faces; a join twice as wide at the halfway value, or the lit plane's edge held soft over about 8 px | B's first row; the recipe's join width, measured in step 2 |
 
+### After the bench (step 2)
+
+What each benched candidate showed against the answers above; the numbers are in
+`CALIBRATION.md`, the round's *Step 2*.
+
+| | Benched | So |
+|---|---|---|
+| 4A | the exclusion **cut on the line** closes the seam (0 to 1 px at the painter's rows against 1 to 3) and lays nothing wholly on him; broken into the light it is the seam exactly | as the painter chose: `clip_out=` at `feather=0` by default. Step 3 |
+| 4B | a soft hold per hold costs no time; the step widens less than asked wherever a later mark crosses the edge, and a hold softens its whole outline, near side too | the look is the painter's, blind (batch 2, 1a and 1b), and the far side's crisp near side (2b) |
+| 4C | near-copies keeps 8 of the disc rule's 30 passes, touching 27 of the bars rule's 53, a mass as one 3 of the graded rule's 8; each drops passes the rule was right on, by the bench's eye. The disc rule measures the silhouette, which size and value do not see | none narrowed until the painter reads the crops (batch 2, 3 and 4); the per-place declaration (C4) stands either way |
+| C5 | 40% of the corpus's standing lines repeat the pass before; 61% of this painting's, rehearsals included | the form (batch 2, 7) |
+| 4F | under the painter's split, the line names the near bandit at 22 of 45 with 40 in hand | as chosen. Step 6 |
+| G1 | a direction given over 2.5× its axis: 1 of 197 masses in the corpus, all 10 facets | a notice is cheap in noise; batch 2, 5a |
+| G2 | (a), a third of a mass's passes in pieces: 27 of 450 masses, and the V; (b) not built | batch 2, 5b |
+| G3 | 12 strokes over the corpus | batch 2, 6 |
+| 4H | H2 speaks on the three paintings that name a light, from the pass that paints it, and nowhere else | as chosen, H1 and H2. Step 7 |
+| P9 | the steps across the terminators are 2.1, 1.7 and 1.4 px, against a sixth of a face, 7 to 8 | the join's recipe width, in step 8, after 4B's answer |
+
 ### For the painter, batch 2, after step 2
 
-The soft edge's candidates, blind, on its own picture; the disc rule's candidates on the
-corpus's crops where they disagree; and anything step 2 finds that turns on the eye.
+Written: [`questions-step2/`](paintings/Claude/uktarl_krannoc/questions-step2/README.md).
+The soft hold blind on its own eight edges and the whole picture; the three rules'
+candidates on the corpus's crops; G1, G2, G3 and the standing lines' form.
 
 ---
 
