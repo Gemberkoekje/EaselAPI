@@ -15,7 +15,9 @@ tagged, is the round before this one._
 Step 1 is done in this PR: the painting is filed, the verdict is checked (section 3), the
 round is open at the top of `SUGGESTIONS.md`, and the first questions for the painter are
 written (`paintings/Claude/uktarl_krannoc/questions-step1.md`). Nothing under `src/`
-changes. Next: the owner pastes the questions into the painting session; then step 2.**
+changes. 2026-10-10: the painter's answers are filed (section 6), and step 2 has begun on
+branch `measure-uktarls-room`: `scripts/probe_uktarl_session.py`, with `--claims`,
+`--clip-out` and `--answers` so far (`NOTES-step2.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -399,6 +401,23 @@ All three have 0.8.0's precedent, so they are taken as answered that way. Say if
 | P9 | the join along the faces' terminators: skin or facets, at 1:1 | 0.8.0's open question |
 
 The row for G1 and G2 is not asked yet: step 2's counts come first.
+
+**Answered 2026-10-10**, filed verbatim as
+[`answers.md`](paintings/Claude/uktarl_krannoc/answers.md), with the three pictures it cites
+in `evidence/`. What each answer decides, rule first; every **M** in it re-measured by
+`scripts/probe_uktarl_session.py --answers` and `--clip-out`, and held:
+
+| | The painter chose | Changes the plan |
+|---|---|---|
+| P1 | `clip_out=` alone for paint; `intersection()` not wanted (`clip=` with a list is one). `difference()` only for places that are read (`plan`, `sample`, `thumbnail`, `compare`), where a hole does no harm; the mass verbs keep the refusal. **The exclusion's edge is cut on the line**, or broken onto the excluded shape, never into the paint it holds | 4A: no `intersection()`; the exclusion's default is `feather=0`. Measured: the default feather breaking into the light leaves the seam the painter found, 1 to 3 px of unlit wall at 0.22 to 0.24 between light at 0.44 and him at 0.14 |
+| P2 | a soft **hold**, not a `lose()` verb; **a softness per hold**, because every edge it would soften belongs to a call with a second hold that stays crisp; **in the long side's fraction**, written `soft=s.px_size(8)`; eight edges listed with widths, 2 to 12 px | 4B: B4 dropped; the bench's cases are the answer's table |
+| P3 | the disc rule: **near-copies, three or more, measured on what landed**; a pair is not a print run. Declared **per place**, not per painting: the three faces and the fan of cards. No bars habit. **New:** print a standing line only when it changes, and the findings above the standing lines | 4C: C1's candidate is the painter's; a new C5 |
+| P4 | `s.frame(centre, rx, ry, tilt=)` with `.at()` and `.polygon()`, and **`.arc(t0, t1, n)`**; **rotation and tilt turn in pixels** whatever unit they are handed. Measured: a square turned 30° in fractions on a 4:3 canvas comes back at 23.4°, a 104° corner | 4E |
+| P5 | shares **of the budget**; the split it would have planned, by part (Uktarl 25%, the near bandit 10%, ...) | 4F; the bench's case |
+| P6 | skip a pass wholly outside its clip **only if the random stream is kept**, so nothing after it moves; otherwise not. Still named under `landed nothing:`, *skipped, not charged* | G3 |
+| P7 | **H1 and H2**, not H3 | 4H |
+| P8 | the rules it used, in one line each; what the card holds; four cuts from *The first hour*; and one sentence: *read every line the check prints after a pass; do not filter it* | 4I |
+| P9 | at 1:1 the join reads as a **facet** on all three faces; a join twice as wide at the halfway value, or the lit plane's edge held soft over about 8 px | B's first row; the recipe's join width, measured in step 2 |
 
 ### For the painter, batch 2, after step 2
 
