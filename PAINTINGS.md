@@ -39,7 +39,9 @@ arrived at their convention on its own.
   not before it had read the Bell-Warden's notes. Uktarl's Room is the Bell-Warden's case
   again: the owner set the subject, the rooms of one character in a published adventure,
   and the painter chose the room and the moment from the campaign's notes before it opened
-  the guide. The heron's second attempt is the
+  the guide. The Curator's nine pieces are that case taken to its end: each is a slot in
+  the owner's game, its size and its subject set by the game's layout, and the painter
+  chose only how to paint it. The heron's second attempt is the
   one deliberate exception: the subject was chosen under the rule the first time and then
   repainted on purpose, by the same painter, to find out what reading the rest of the
   files was worth. Two painters have since chosen *near* neighbours independently — a
@@ -92,7 +94,11 @@ arrived at their convention on its own.
   Room's painter, the first against 0.8.0, began from both of theirs: its own memory note
   from them, and, after `PAINTER.md`, their notes. It read `PAINTER.md`, `RECIPES.md` and
   `REFERENCE.md` whole, and 0.8.0's changelog entry from the repository's checkout, about
-  33,600 words of the documents, and did the ten exercises. So where they
+  33,600 words of the documents, and did the ten exercises. The Curator's painter, the
+  second against 0.8.0, read the card and most of `PAINTER.md` through `easel guide
+  --full`, five stretches of `RECIPES.md` and `REFERENCE.md` for *direction* only, in a
+  cloud session of the game with no checkout and no earlier painting, and never rehearsed
+  a pass. So where they
   agree, that is several painters finding the same thing with increasing context — and
   where they disagree, it may be the context talking. Each painting's notes say which
   it was.
@@ -103,7 +109,7 @@ arrived at their convention on its own.
   measured against afterwards.
 - Every mark went through the API. The pass scripts beside each painting are the
   painting — **but whether they rebuild it byte for byte is a claim each one makes for
-  itself**, in its own `Reproducible` row below, and seven of the twenty-five do not make
+  itself**, in its own `Reproducible` row below, and seven of the thirty-four do not make
   it. What holds everywhere is that a *saved* painting opens as it was painted, because
   the file holds the canvas, and that its log rebuilds the same strokes: a stroke's
   randomness comes from `(seed, stroke index)`, and golden-image tests hold that. A
@@ -1054,6 +1060,58 @@ silhouettes with masks for faces, a relief more regular than carved, the first f
 allowed to eat the budget, and a picture dark enough to go muddy on a projector. What is
 being done about it, in 0.9.0, is in [`SUGGESTIONS.md`](SUGGESTIONS.md) under *Uktarl's
 Room*, and the plan is [`PLAN-0.9.0.md`](PLAN-0.9.0.md).
+
+## Nine pieces of interim art for a game
+
+![Nine painted pieces on a grey ground: a dark plastered wall with a stone arch cut out of
+it, the pale stone room beyond, a long pale wooden desk top, a narrower counter top, two
+bookcases of many-coloured spines in dark oak, a locked case of dark books behind an iron
+grille with a brass lock, a dark hooded figure seen from behind, and a tall white candle in
+a brass dish](paintings/Claude/the_curator/set.png)
+
+The second painting against 0.8.0, by `claude-opus-5-5` at max effort, in a cloud session
+of the owner's own game, *The Curator*: nine pieces of interim art that stand in until the
+designer's photographed oils arrive. Each is a slot in the game's layout — a wall with an
+arch cut through it, the room beyond, a desk, a counter, two bookcases, a locked case, a
+patron and a candle — painted by one script per piece at the slot's own size, from 120×300
+to 1920×720. The patron and the candle are cut out as sprites, and the arch out of the
+wall, by scripts the painter wrote, along the outlines it painted. *A wall of old books,
+every spine its own, oak shelves catching the window's light* is one of the nine sentences
+it wrote into `s.plan(why=...)`.
+
+| | |
+|---|---|
+| Canvas | nine, from 120×300 to 1920×720, each its slot's size; linen, seeded per piece |
+| Spent | 1,700 strokes of 2,190 budgeted over the nine, from 47 of 110 (the candle) to 410 of 460 (the left bookcase) |
+| Rehearsed and thrown away | nothing rehearsed: each script was re-run whole, by stage, and its stage images read; four pieces were repainted after a review. The versions in between were edited in place and do not survive |
+| Reproducible | Every script rebuilds its PNG to the pixel on the machine it was painted on, the painter says; re-run on another, every piece within one level, in 12 to 2,508 pixels |
+| Files | [`paintings/Claude/the_curator/`](paintings/Claude/the_curator) — [the painter's README](paintings/Claude/the_curator/README.md), [how it was filed](paintings/Claude/the_curator/FILING.md), [verdict](paintings/Claude/the_curator/verdict.md), [checklists](paintings/Claude/the_curator/reports.txt); one folder per piece, below |
+
+Each piece is a painting of its own here, one canvas and one script, and the corpus replays
+each. Its time-lapse was recorded by the filer's re-run, since the painter's runs kept none.
+
+| piece | canvas | spent | |
+|---|---|---|---|
+| the doorway wall, the arch cut out | 1920×720 | 245 of 320 | [painting](paintings/Claude/the_curator/wall/painting.png), [time-lapse](paintings/Claude/the_curator/wall/painting.gif), [notes](paintings/Claude/the_curator/wall/NOTES.md) |
+| the room beyond | 560×600 | 123 of 150 | [painting](paintings/Claude/the_curator/beyond/painting.png), [time-lapse](paintings/Claude/the_curator/beyond/painting.gif), [notes](paintings/Claude/the_curator/beyond/NOTES.md) |
+| the desk | 1920×720 | 103 of 170 | [painting](paintings/Claude/the_curator/desk/painting.png), [time-lapse](paintings/Claude/the_curator/desk/painting.gif), [notes](paintings/Claude/the_curator/desk/NOTES.md) |
+| the counter | 1920×360 | 78 of 120 | [painting](paintings/Claude/the_curator/counter/painting.png), [time-lapse](paintings/Claude/the_curator/counter/painting.gif), [notes](paintings/Claude/the_curator/counter/NOTES.md) |
+| the left bookcase | 640×720 | 410 of 460 | [painting](paintings/Claude/the_curator/shelf_left/painting.png), [time-lapse](paintings/Claude/the_curator/shelf_left/painting.gif), [notes](paintings/Claude/the_curator/shelf_left/NOTES.md) |
+| the right bookcase | 640×720 | 388 of 460 | [painting](paintings/Claude/the_curator/shelf_right/painting.png), [time-lapse](paintings/Claude/the_curator/shelf_right/painting.gif), [notes](paintings/Claude/the_curator/shelf_right/NOTES.md) |
+| the locked case | 300×460 | 211 of 240 | [painting](paintings/Claude/the_curator/locked_shelf/painting.png), [time-lapse](paintings/Claude/the_curator/locked_shelf/painting.gif), [notes](paintings/Claude/the_curator/locked_shelf/NOTES.md) |
+| the patron, cut out | 400×620 | 95 of 160 | [painting](paintings/Claude/the_curator/patron/painting.png), [time-lapse](paintings/Claude/the_curator/patron/painting.gif), [notes](paintings/Claude/the_curator/patron/NOTES.md) |
+| the candle, cut out | 120×300 | 47 of 110 | [painting](paintings/Claude/the_curator/candle/painting.png), [time-lapse](paintings/Claude/the_curator/candle/painting.gif), [notes](paintings/Claude/the_curator/candle/NOTES.md) |
+
+The [verdict](paintings/Claude/the_curator/verdict.md) is the painter's own, as the owner
+pasted it; its session's transcript was not handed over. For the tool: determinism, which
+let it commit the scripts as the art's source; the error messages, *the best I've seen in a
+library*; the method's order; `at_value`. Against it: no transparency, paint that lands
+less than asked, umber and ultramarine turning lavender, a checklist that cannot know a
+piece is one layer of a scene, geometric subjects that fight the method, polygons in 0-1
+on wide canvases, and documents strong on method and thin as a reference. Against itself:
+*honest interim quality* — flat stones, stiff bars. What is being done about it, in
+0.9.0, is in [`SUGGESTIONS.md`](SUGGESTIONS.md) under *The Curator*, and the plan is
+[`PLAN-0.9.0.md`](PLAN-0.9.0.md), section 3b.
 
 ## The log
 

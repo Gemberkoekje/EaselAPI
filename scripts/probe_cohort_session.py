@@ -124,6 +124,7 @@ class Painting:
     first: tuple[str, ...] = ()     # pass scripts that come before the numbering
     order: tuple[str, ...] = ()     # every pass as it was run, where that is not the numbering
     driver: str = ""                # a painting written as one script, not as passes
+    argv: tuple[str, ...] = ()      # what that script reads from sys.argv, as its painter ran it
     spent: int = 0                  # what PAINTINGS.md says it cost
     rebuilds: bool = True           # whether that page claims the scripts rebuild it
     cohort: bool = False            # one of the seven 0.5.0 verdicts this round is about
@@ -221,6 +222,28 @@ CORPUS = [
     Painting("uktarl", "Claude/uktarl_krannoc", spent=410,
              session=dict(width=1024, height=768, texture="linen",
                           ground="#54443a", seed=31, budget=450)),
+    # The second painter against 0.8.0: nine pieces of interim art for the owner's game,
+    # each one script that builds its own canvas at its slot's size and reads its stage
+    # (and the bookcase its side) from the command line. Run at stage 99, as its README
+    # runs them, each rebuilds the export within one level on another machine.
+    Painting("curator_wall", "Claude/the_curator/wall", spent=245,
+             driver="doorway_wall.py", argv=("99",)),
+    Painting("curator_beyond", "Claude/the_curator/beyond", spent=123,
+             driver="beyond_doorway.py", argv=("99",)),
+    Painting("curator_desk", "Claude/the_curator/desk", spent=103,
+             driver="desk.py", argv=("99",)),
+    Painting("curator_counter", "Claude/the_curator/counter", spent=78,
+             driver="counter.py", argv=("99",)),
+    Painting("curator_shelf_left", "Claude/the_curator/shelf_left", spent=410,
+             driver="shelves.py", argv=("left", "99")),
+    Painting("curator_shelf_right", "Claude/the_curator/shelf_right", spent=388,
+             driver="shelves.py", argv=("right", "99")),
+    Painting("curator_locked", "Claude/the_curator/locked_shelf", spent=211,
+             driver="locked_shelf.py", argv=("99",)),
+    Painting("curator_patron", "Claude/the_curator/patron", spent=95,
+             driver="patron_default.py", argv=("99",)),
+    Painting("curator_candle", "Claude/the_curator/candle", spent=47,
+             driver="candle.py", argv=("99",)),
     # The 0.5.0 cohort. Three of the seven wrote one script rather than passes.
     Painting("bigpickle", "BigPickle_blind/sunset_landscape", cohort=True, spent=50,
              driver="sunset_paint.py"),
@@ -747,11 +770,16 @@ def _replay_driver(entry: Painting, work: Path, watcher: Watcher) -> None:
 
     watcher.sections = _sections(source)
     ns = {"__name__": "__easel_script__", "__file__": str(path)}
-    with warnings.catch_warnings(record=True) as loose:
-        warnings.simplefilter("always")
-        exec(compile(source, str(path), "exec"), ns)                     # noqa: S102
-        if entry.name == "gemini":
-            ns["paint"]()
+    argv = sys.argv
+    sys.argv = [str(path), *entry.argv]
+    try:
+        with warnings.catch_warnings(record=True) as loose:
+            warnings.simplefilter("always")
+            exec(compile(source, str(path), "exec"), ns)                 # noqa: S102
+            if entry.name == "gemini":
+                ns["paint"]()
+    finally:
+        sys.argv = argv
     if watcher.current is not None:
         watcher.current.notices.extend(_said(loose))
 

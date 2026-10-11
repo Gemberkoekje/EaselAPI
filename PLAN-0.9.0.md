@@ -18,8 +18,14 @@ written (`paintings/Claude/uktarl_krannoc/questions-step1.md`). Nothing under `s
 changes. 2026-10-10: the painter's answers are filed (section 6), and **step 2 is done**
 on branch `measure-uktarls-room`: `scripts/probe_uktarl_session.py` benched every
 candidate (`CALIBRATION.md`, the round's *Step 2*; `NOTES-step2.md`), and batch 2 is
-written (`paintings/Claude/uktarl_krannoc/questions-step2/`). Next: the owner sends batch
-2; steps 3 and 6 can start meanwhile.**
+written (`paintings/Claude/uktarl_krannoc/questions-step2/`). 2026-10-11: batch 2 is
+answered (`answers-step2.md`, section 6's *Answered after the bench*), and every question
+of the first painter has its answer. Later on 2026-10-11 **a second painter joined the
+round**: The Curator, nine pieces of game art against 0.8.0, filed with its verdict checked
+(section 3b), four workstreams added (K to N) and its questions written
+(`paintings/Claude/the_curator/questions-step1.md`; `NOTES-step1b.md`). Next: its answers,
+then step 2b; steps 3 to 9 go on meanwhile where they do not touch K to N. Its answers are
+filed the same day (section 6), and add workstream O.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -28,7 +34,9 @@ first, then the number, then the history if it is needed.
 
 ## 1. What this round is
 
-**One painter, painting against 0.8.0 the day it shipped.** `claude-opus-5-5`, at max
+**Two painters against 0.8.0; the second joined on 2026-10-11, and is in section 3b.**
+
+**The first, painting against 0.8.0 the day it shipped.** `claude-opus-5-5`, at max
 effort, in a session of the owner's own tabletop-campaign project, was asked to *look up
 what the rooms of Uktarl Krannoc look like* and paint *an appropriate painting* with 0.8.0.
 It painted four bandits in vampire costume at a card table, their leader standing inside
@@ -154,6 +162,43 @@ paint; `at_value` and a swatch strip, which caught grey faces before they were p
 clip-held flat stroke as a stencil, thirteen rays in thirteen strokes; `RECIPES.md`, three
 entries landing first time (the light's pool, the projection, the terminator join);
 `REFERENCE.md`'s tables; `PAINTER.md`'s order of work.
+
+---
+
+## 3b. The second painter: The Curator, checked
+
+**Nine pieces of interim art for the owner's own game**, painted against 0.8.0 on
+2026-10-11 by `claude-opus-5-5` at max effort in a cloud session of the game's repository,
+as stand-ins until the designer's photographed oils arrive. One script per piece, seeded,
+with a stage argument; three pieces cut out afterwards by scripts the painter wrote. Filed
+as `paintings/Claude/the_curator/`, with its verdict as the owner pasted it. **It joins this
+round**, on the owner's ruling of 2026-10-11, as the Bell-Warden and Wenna Brask shared
+0.8.0's.
+
+**It is a different kind of painter from every other in the corpus.** It never called
+`s.report()`, `cost()`, `easel run` or `easel check`: it re-ran each script and read the
+stage images, and called `s.checklist()` once, at the end. It read the card and most of
+`PAINTER.md`, a fifth of `RECIPES.md`, and `REFERENCE.md` for *direction* only. **Its
+transcript was not handed over**, so its claims are checked against its scripts, its
+manifest and its exports, and nothing is recovered from its words.
+
+Measured on 2026-10-11 on the checkout at `8f6fa77`, whose engine is `v0.8.0`'s
+([`FILING.md`](paintings/Claude/the_curator/FILING.md)):
+
+| # | What the painter said | Kind | What checking found | Goes to |
+|---|---|---|---|---|
+| 15 | **Determinism**: a seeded script re-ran to a pixel-identical PNG every time | O | **On one machine, yes; across machines, to one level.** Every piece re-run here comes back within one level of its shipped PNG, in 12 to 2,508 pixels per piece. The painter's machine was Linux, this one Windows; `tests/test_golden.py` already allows a numpy build's ±1, and no painter-facing document says so | **4I** |
+| 16 | **Paint deposit is hard to predict**: `density=1.0` left gaps and needed `solid=True`; shading strokes at opacity 0.6 moved the candle a few levels, so it went to 0.9, twice | O | **The candle is a canvas-size fault, not an opacity one.** The candle was painted at its sprite size, 120×300, where `size=0.009` is 2.7 px, under the 6.5 px a round tip needs to land in one touch. One wax-light stroke there moves its pixels a mean 6 levels at 0.6 and 14 at 0.9 laid twice; at four times the canvas, 17 at 0.6 once. The gaps are the comb's (`CALIBRATION.md`, *The holes a solid comb leaves*); `REFERENCE.md` says *spacing, not coverage* for `density`, which it never read. Nothing says how the three combine in one place | **4M** |
+| 17 | **Colour drift**: umber and ultramarine lightened with white kept turning lavender; the stones and boards came out purple twice | O | **Confirmed, and narrow.** Burnt umber is hue 17°; with 10 to 18% ultramarine the mix is a red-brown, at 25% a neutral leaning magenta, at 35% violet (276° to 320°). The warm grey it wanted lies in a band a few points wide. `at_value` re-solves the value whatever white went in first, so the white changed nothing. Its fix, in the committed stones: yellow ochre, and 4 to 6% ultramarine | **4L** |
+| 18 | **No transparency**: exports are flat RGB; the arch, the patron and the candle needed `cut_outline.py`, cutting along the outlines it had painted. *For sprites this is the biggest missing feature* | O | **Confirmed.** `export()` takes a path, `impasto` and `sketch`. The cut scripts rebuild the painter's polygons from a JSON file the painting script writes, draw them at 4×, scale down and blur 0.8 px | **4K** |
+| 19 | **The checklist assumes a standalone painting**: *no clear light* on shelves kept dark to sit behind the archway; *it can't know a piece is one layer of a scene* | O | **Six of the nine say *no clear light*.** Each names a light, none declares a key. None has a light standing clear (-0.01 to +0.07), so H2 would stay silent; all six keep their top twentieth under `0.54`, so `key="low"` would have said *low-key, as the plan says* — H1's missing sentence again. **And the cut-outs are read whole**: the candle's checklist reports 67% bare ground and *detail before the masses*, on the canvas the cut throws away; the patron's, 25% | **4H**, **4N** |
+| 20 | **Geometric subjects fight the method**: shelves, bars and joints are ruled lines and combs, which the guidance warns against | R | Recorded. `RECIPES.md`'s *The one ruled line* is the one recipe for it, and it read five stretches of that file, none of them this. The bookcases declared `bands="subject"`, which is that warning's answer, and their checklists count the crossings instead | **4I**, asked |
+| 21 | **Polygons in 0-1 on wide canvases**: a pixel helper in every script; `s.px` exists but polygons do not take pixels | O | **Confirmed, for half of it.** Four of its eight scripts — the locked case, the wall, the patron and the candle — define `n(x, y)`, pixels to fractions, and build their shapes through it; the desk and the counter, the widest canvases, are drawn in fractions. Three of the last four painters drew in pixels through a helper (Wenna Brask's `P()`, Uktarl's `poly_px`, this `n()`) | **4E** |
+| 22 | **The guide is method, not reference**: signatures read from the code — `ribbon`'s width, the pressure profiles, `press` on one point; *a one-page table of brushes, parameters and units*; *never says how opacity, density and `solid` combine* | O | **The reference exists, and nothing sent it there.** `REFERENCE.md` gives `ribbon()`'s width (line 24), the profiles (203), `density` (126), `solid` (127), `opacity` (135) and a brush table (183), and `easel guide --reference` prints it. The card names `REFERENCE.md` once, for the plan. How the three combine is not in it | **4I**, **4M** |
+| 23 | **Messages**: the floor with a hex and a hue; a brush too small, with the width and the fix; `press` misused, with three alternatives | O | The engine's (`palette.py`, the landing notices, `press`'s docstring). What a script that is never rehearsed hears at the call: on this set, a chisel pressure fact, two spills and a solid comb, as warnings on every run; six pieces heard nothing | — |
+
+**What it defended, and nothing here touches:** determinism as a pipeline; the messages;
+the method's order; `at_value`.
 
 ---
 
@@ -353,6 +398,88 @@ it says *no clear light*.
 - **I5, a painter's lines atop each release entry.** Ten lines saying what a painter will
   meet, before the entry's account. From 0.9.0, and written for 0.8.0's entry too.
 
+### K. A painting with a transparent surround
+
+**Proposal.** `s.export(path, alpha=place)`: the alpha channel is the coverage of a place
+or a list of places — the shapes the painter laid the thing in — antialiased as a hold's
+mask is. `easel export --alpha` takes the plan's named places. Nothing else about the
+export changes, and the canvas never holds an alpha.
+
+- **Against the painter's own cut.** `cut_outline.py` draws the polygons at 4×, scales
+  down and blurs 0.8 px. Step 2b lays both on the patron and the candle: the pixels that
+  differ, the edge's width, and the sheet at 1:1 over two backgrounds.
+- **The hole.** The arch is a hole in the wall: `alpha=` takes `difference()` (4A), which
+  P1's answer already allows for a place that is read, not painted.
+- **To the painter:** the form (Q1).
+
+### L. A grey that stays warm
+
+**Proposal, not yet chosen.** The trap is a narrow band: two pigments that cross neutral
+into a third hue as one is added. Candidates: **L1** a fact at `mix` when the mixture lies
+within a few degrees of neutral and the hue has turned more than 90° from both parents,
+naming the share where it turns; **L2** a recipe, *A warm grey*, with the band measured;
+**L3** a named mixture on the palette, `p.grey(value, warmth=)`. Step 2b measures L1 over
+every corpus palette's mixtures: how often it would speak, and on what.
+
+- **The white.** `at_value` re-solves the value whatever white went in, so mixing white
+  first changes nothing. One sentence where `at_value` is introduced.
+- **To the painter (Q2).**
+
+### M. How a mark deposits, in one place
+
+**Proposal.** One table, rule first, of what `opacity`, `density`, `solid`, `press` and the
+brush's pixel width each do to what lands, and how they combine, in `REFERENCE.md` beside
+the arguments, linked from the card. And **the canvas's size**: `size` is a share of the
+long side, so a sprite painted at its own size puts every small brush under its landing
+width — the candle's 2.7 px strokes. Candidates beside the sentence: **M1** paint at
+two to four times and export at the size wanted, `s.export(path, size=(w, h))`; **M2** a
+fact at the call when a round tip is under its one-touch landing width and laid with a
+pressure list or `opacity` under 1 (today the line after the pass says what landed
+nothing, which a script that is never rehearsed does not print).
+
+- **Measured in step 2b:** the candle at 1×, 2× and 4× and exported at its size; the share
+  of the corpus's hand-laid marks under their landing width, by canvas size.
+- **To the painter (Q3).**
+
+### N. A piece that is one layer of a scene
+
+**Proposal.** Let the plan say what of the canvas ships. Under `plan(cut=place)` — the
+same places `alpha=` takes (4K) — the standing lines read inside the cut only: the ground
+line, `boxes:`, the values line's percentiles, and the closing audit's discs. And `key=`
+said plainly where the plan is introduced (H1), since every dark layer of this set was
+low-key by the check's own test.
+
+- **Measured in step 2b:** the nine checklists with `key="low"` on the six dark pieces and
+  `cut=` on the three cut-outs: what each line says then.
+- **To the painter (Q4)**, and whether the scene should be declared at all: a layer that
+  sits behind an archway is judged against the room it sits in, which no single canvas
+  has.
+
+### The second painter's other rows
+
+- **Determinism across machines** (row 15): one sentence where the README promises a
+  rebuild, *to the pixel on one machine, within one level on another* (4I).
+- **Polygons in pixels** (row 21): E's frame takes pixels; whether `polygon()` should too
+  is asked (Q5).
+- **The reference** (row 22): the one-page card's *where to go next* names `easel guide
+  --reference` for signatures, units and defaults (I1); M's table is the combination it
+  asked for.
+- **Geometric subjects** (row 20): asked (Q6) whether *The one ruled line* answers it, or a
+  recipe for a ruled thing seen as paint — a shelf, a bar, a joint.
+- **A painter who never rehearses** (row 23): recorded. The post-pass check reaches only
+  `easel run`; a script driven from Python hears the call-time notices and the closing
+  checklist. Asked (Q7) whether it knew of `s.report()`.
+
+### O. The check where a script already stops
+
+**Proposal, from Q7.** A painter who drives Python directly re-runs its script whole and
+reads `s.look()`; it never meets the check after a pass, and the documents saying so three
+times did not move it. Candidates: **O1** `s.look()` prints the check over the marks since
+the last look, with `dearest:` and `landed nothing:`; **O2** `easel run` accepts a script
+that builds its own `Session`; **O3** a notice for a faint mark — one that moved the canvas
+by a few levels where its colour was far from what it landed on — which no path has.
+Step 2b measures O3 over the corpus and on the candle, the patron's rim and the lock.
+
 ### J. Recorded and not built
 
 - **The painting** (row 13): what the check cannot see. The stencilled look is row 2's.
@@ -445,6 +572,61 @@ Written: [`questions-step2/`](paintings/Claude/uktarl_krannoc/questions-step2/RE
 The soft hold blind on its own eight edges and the whole picture; the three rules'
 candidates on the corpus's crops; G1, G2, G3 and the standing lines' form.
 
+**Answered after the bench, 2026-10-11**, filed verbatim as
+[`answers-step2.md`](paintings/Claude/uktarl_krannoc/answers-step2.md); its **M** claims
+re-measured by `scripts/probe_uktarl_session.py --answers2`. The painter's blind picks
+matched the key letter for letter; it read Part 2's text, which names no letters, before
+the blind sheets, and says so.
+
+| | The painter chose | So the round builds |
+|---|---|---|
+| 4B | **B1**, a smooth ramp inward, the edge meant on every sheet it could tell; B3 read as a blur, B2 as damage. **A softness per hold and per stretch**: a lit plane wants its whole outline soft; a far side wants a run of the shape's own points (`soft=[(dp_body.closed[4:8], s.px_size(9))]`), tapering back to the hold's edge at each end | step 4: B1, per hold and per stretch. Re-measured: B1 on Uktarl's lit plane darkens 24% of it by over 0.05, median 0.14, and widens the step across its outline from 1.5 to 3.1 px; the bench's *barely changes* read his terminator, under the wig, and was wrong |
+| 4C, disc | **near-copies withdrawn**: of the crops it dropped, the sonnet's stairs, the fable's berries and the heron's lamp and specks are one disc printed. The rule as it is, with the per-place declaration (C4) for faces | step 5: C4 only. **New:** the pass rule counts the signature (`p17_finish.py`, records 425 to 428), which the closing audit leaves out; leave it out of the pass rule too |
+| 4C, bars and graded | **the rules as they are**: touching keeps what reads as one flat colour and drops what reads as bars; a mass as one spares one false finding for four true. A test on the canvas instead -- the value alternating at the stack's spacing by over 0.03, or climbing in plateaus -- as a later candidate | nothing this round; the canvas test to `SUGGESTIONS.md` as a candidate to bench. Re-measured: across the laps' rows, the largest departure from each row's slope is 0.015 and 0.003 |
+| C5 | **findings first, a standing line only when it changes**, a rehearsal compared against the painting as committed, the lines left out named on one line (*unchanged: values, edges, ground*); the closing checklist prints every line | step 5 |
+| G1 | **a notice, both prices** | step 7 |
+| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a) |
+| G3 | **leave it named; do not build it** -- a change of the step-1 answer, on the bench's 12 strokes | nothing |
+
+---
+
+### For the second painter, batch 1 (`the_curator/questions-step1.md`)
+
+| | Question | Decides |
+|---|---|---|
+| Q1 | transparency: `export(alpha=place)`, a cut on the plan, or both; how the edge should fall (as a hold's, or softened as its own cut was) | 4K |
+| Q2 | the warm grey: a fact at the mix, a recipe, or a named grey; and what it saw that told it the stones had gone purple | 4L |
+| Q3 | deposit: which calls it fought, with what it tried; whether painting at two to four times and exporting at size would have served; and what the table must say | 4M |
+| Q4 | a layer: `key="low"`, a cut on the plan, or a declared scene; which of the checklist's lines it would have wanted kept on a cut-out | 4N |
+| Q5 | polygons in pixels: E's frame, a pixel form of `polygon()`, or a canvas made with pixel coordinates | 4E |
+| Q6 | geometric subjects: whether *The one ruled line* would have served, and the shelf, bar and joint it would have wanted a recipe for | 4I |
+| Q7 | rehearsal and the check after a pass: whether it knew of them, and why it ran the scripts whole | recorded |
+| Q8 | the reference: whether it saw `easel guide --reference`, and what would have sent it there | 4I |
+
+**Answered 2026-10-11**, filed verbatim as
+[`the_curator/answers.md`](paintings/Claude/the_curator/answers.md) with the scripts behind
+its measurements in `measurements/`. Its **M** claims re-measured here and held: the
+patron's planned light 0.16 inside the cut against 0.54 over the cell, 10 rim pixels over
+0.40; the cabinet's lock no brighter than 0.46 against 0.6 planned; the candle painted at 4×
+and reduced, 0.92 at its light's brightest twentieth against 0.87, *2 of 2 places*; and
+plain `easel guide` is `PAINTER.md` lines 28 to 146, which leaves out line 15's table, the
+one line that says `REFERENCE.md` holds units and defaults.
+
+| | The painter chose | Changes the plan |
+|---|---|---|
+| Q1 | **both, from one declaration**: `s.plan(cut=place)`, which the checklist reads inside and `s.export()` writes its alpha from, unless `alpha=` names another place. A place of its own, because it laid the masses past the outline on purpose. **The edge falls as a held edge's, 0.8 to 0.9 px**; softening is an option, in pixels (`soften=2.5`): its 0.8 px blur made a 2.5 px edge | 4K and 4N are one: `cut=` on the plan, `alpha=` on the export |
+| Q2 | **`p.grey(value, warmth=)`**, with the fact at `mix()` as a backstop. The stage images showed the purple; it printed value and chroma, never hue, and its swatch is where it chose the 25% mix | 4L: L3, and L1 behind it |
+| Q3 | **painting at two to four times and exporting at size** serves the small pieces, **if the export keeps the canvas's weave at the exported scale**: reduced from 4×, the linen all but disappears. The table in pixels, per brush, with the cliff drawn across it. **And a word at the call** for a mark under its cliff: nothing said one. Two more lights were lost the same way, the patron's rim and the cabinet's lock, both laid under 4 px | 4M: M1 with the weave kept, M2 built, the table in pixels |
+| Q4 | **`key="low"` said plainly, and the cut in the plan; not the scene**, which the game composes in code and no canvas holds. On a cut-out, every line measured inside the cut, and one more for the cut's own edge against the picture's median. The patron's *no clear light* was reading the ground the cut throws away | 4N with Q1's `cut=`, and a cut-edge line |
+| Q5 | **a canvas in pixel coordinates throughout, sizes included**: `s.frame` would not have retired `n()`, and `s.px` existed and did not; `size=2.7`, not `0.009`, would have shown the candle's fault as it was typed | 4E gains a candidate: a session in pixels |
+| Q6 | it never opened *The one ruled line*, which answers the opposite question; it read *A scene with straight edges* and did not carry it to flat-on subjects. **A recipe for a shelf, a bar and a joint as paint**, in pixels, and a line naming long edges laid with under half a pixel of wander | 4I gains the recipe; the line is a candidate to bench |
+| Q7 | **it had read that rehearsal and `s.report()` exist, and did not use them. Make the tool meet the script**: `s.look()` prints the check on the marks since the last look; `easel run` takes a script that builds its own `Session`; and a notice for faint marks, which no path has | a new workstream, O: the check where a script already stops |
+| Q8 | **neither seen. The five-file table atop what `easel guide` prints by default**; then a line in `Session`'s, `block_in`'s and `stroke`'s docstrings, *units and defaults: `easel guide --reference`*; then the flags on `easel --help` | 4I1: the card opens with the table |
+
+**Its two offers for the game's repository** — rewording the README's *pixel for pixel*,
+and repainting the patron's rim and the cabinet's lock — are the owner's to take or leave,
+and touch nothing here.
+
 ---
 
 ## 7. Order of work
@@ -452,7 +634,9 @@ candidates on the corpus's crops; G1, G2, G3 and the standing lines' form.
 | Step | What | Leaves |
 |---|---|---|
 | 1 | **The record.** The painting filed, the verdict checked, the round opened, the questions written | this PR, `NOTES-step1.md` |
+| 1b | **The second painter.** The Curator filed, its verdict checked (section 3b), workstreams K to N written, its questions | `NOTES-step1b.md` |
 | 2 | **Measure.** `scripts/probe_uktarl_session.py`: the rebuild, and a flag per workstream: `--clip-out`, `--soft` (sheets), `--rules` (the corpus replayed with each candidate), `--direction`, `--key`, `--shares`, `--reading` (the documents' inventory). The corpus replay cached as 0.8.0's was, and copied out before a later flag writes over it | `NOTES-step2.md`, `CALIBRATION.md`'s round, batch 2 |
+| 2b | **Measure the second painter's.** `scripts/probe_curator_session.py`: the nine pieces rebuilt; `--alpha` (K, against its cut), `--grey` (L1 over the corpus's mixtures), `--deposit` (M: the candle at 1×, 2×, 4×; the corpus's marks under their landing width), `--layer` (N: the nine checklists under `key=` and `cut=`), `--faint` (O3: faint marks over the corpus, the candle, the patron's rim and the lock) | `NOTES-step2b.md`, `CALIBRATION.md` |
 | 3 | **A and D.** `clip_out=`, `intersection()`, `difference()`; the record refused by 0.8.0; the rehearsal look's flags | `NOTES-step3.md` |
 | 4 | **B.** The soft hold, as the painter chooses | `NOTES-step4.md` |
 | 5 | **C.** The three rules narrowed as the corpus allows; `habits=` | `NOTES-step5.md` |
@@ -486,6 +670,8 @@ inventory.
 | File | Steps |
 |---|---|
 | `paintings/Claude/uktarl_krannoc/` | 1, and the painter's answers |
+| `paintings/Claude/the_curator/` | 1b, and the second painter's answers |
+| `scripts/probe_curator_session.py` | 2b |
 | `src/easel/session.py` | 3 (`clip_out`, the record), 4 (the soft hold), 5 (rules, `habits`), 6 (`shares` line), 7 (direction notices, key line) |
 | `src/easel/regions.py` | 3 (`intersection`, `difference`), 6 (`rotated`, the frame) |
 | `src/easel/plan.py`, `src/easel/checklist.py` | 5 (`habits`), 6 (`shares`), 7 (the `values:` line) |

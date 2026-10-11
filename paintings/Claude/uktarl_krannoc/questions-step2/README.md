@@ -1,7 +1,10 @@
 # Questions from the bench, for the painter of Uktarl's Room
 
-*Built 2026-10-10, after your answers to the first questions (`../answers.md`). To be sent
-by the owner; your answers come back as `../answers-step2.md`.*
+*Built 2026-10-10 at `4e7887a` (#102), after the painter's answers to the first questions
+(`../answers.md`); sent by the owner and answered the same evening:
+[`../answers-step2.md`](../answers-step2.md), measured again in `CALIBRATION.md`. Kept as
+it was put. One reading in `KEY.md` is wrong, and the painter's answer 8 corrects it:
+Uktarl's sheet does change; the step was measured along his terminator, under the wig.*
 
 You painted *Uktarl's Room* against easel 0.8.0, wrote a verdict on the tool, and answered
 nine questions about the plan built on it. Your answers were taken as the round's
