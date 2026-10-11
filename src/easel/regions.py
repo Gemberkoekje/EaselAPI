@@ -28,7 +28,7 @@ __all__ = ["Region", "region", "cell", "span", "thirds", "golden", "horizon", "b
            "above", "left_of", "right_of", "between", "REGION_NAMES", "GRID_COLS",
            "GRID_ROWS", "as_region", "as_place",
            "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen",
-           "terminator", "Group", "group"]
+           "terminator", "Group", "group", "union", "difference", "Difference"]
 
 #: Columns of the ``look(grid=True)`` overlay, left to right.
 GRID_COLS = "ABCDEFGH"
@@ -1034,6 +1034,116 @@ def union(*shapes, resolution: int = 1024, name: str = "") -> Polygon:
             "thinner than the grid it was traced on. Raise resolution=."
         )
     return Polygon(tuple(points), name=name or "+".join(p.name for p in polys if p.name))
+
+
+@dataclass(frozen=True)
+class Difference(Polygon):
+    """A place with others taken out of it: read, never painted. See :func:`difference`.
+
+    The outline is the first place's; ``holes`` are the places taken out, kept as they
+    were given rather than traced, so a hole is exactly the shape it was drawn as.
+    :meth:`inside`, and so :meth:`mask` and :meth:`coverage`, leave them out: anything
+    that reads a place pixel by pixel -- a plan, :meth:`~easel.session.Session.sample`,
+    a thumbnail, ``compare`` -- reads what is left. Its box is the first place's.
+    """
+
+    holes: tuple = ()
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        # Outlines only: a hole's name and provenance are the place's, not its own,
+        # and a plan read back from the file has to compare equal to the one written.
+        object.__setattr__(self, "holes",
+                           tuple(Polygon(polygon(one).points) for one in self.holes))
+
+    @property
+    def area(self) -> float:
+        """Share of the canvas what is left covers, 0..1, measured on a 1024 grid."""
+        return float(self.mask(1024, 1024).mean())
+
+    def inside(self, xs, ys) -> np.ndarray:
+        """Which of these points are inside the first place and in none of the holes."""
+        result = super().inside(xs, ys)
+        for one in self.holes:
+            result &= ~one.inside(xs, ys)
+        return result
+
+    def scaled(self, factor: float, about=None) -> Difference:
+        """Grow or shrink the lot about the first place's centroid, holes included."""
+        about = self.center if about is None else _point_of(about)
+        return Difference(Polygon(self.points).scaled(factor, about).points,
+                          name=self.name, traced=self.traced,
+                          holes=tuple(one.scaled(factor, about) for one in self.holes))
+
+    def shifted(self, dx: float = 0.0, dy: float = 0.0) -> Difference:
+        """Move the lot without changing it."""
+        return Difference(Polygon(self.points).shifted(dx, dy).points,
+                          name=self.name, traced=self.traced,
+                          holes=tuple(one.shifted(dx, dy) for one in self.holes))
+
+    def renamed(self, name: str) -> Difference:
+        """The same place under another name."""
+        return Difference(self.points, name=str(name), traced=self.traced,
+                          holes=self.holes)
+
+    def inset(self, amount: float, frame: bool = True) -> Polygon:
+        raise ValueError(
+            "A difference() is not inset or smoothed: shape the places first, then "
+            "take one from the other.")
+
+    def smooth(self, iterations: int = 2) -> Polygon:
+        return self.inset(0.0)
+
+    def __repr__(self) -> str:
+        x0, y0, x1, y1 = self.bounds
+        tag = f" {self.name!r}" if self.name else ""
+        return (f"Difference({len(self.points)} points less {len(self.holes)}, "
+                f"{x0:.3f}, {y0:.3f}, {x1:.3f}, {y1:.3f}{tag})")
+
+
+def difference(place, *taken, name: str = "") -> Difference:
+    """A place with one or more others taken out of it, **for reading, not painting**.
+
+    The wall round a figure standing in front of it, or the room seen through an arch,
+    is a place with a hole in it. Anything that reads a place takes one -- a plan's
+    values and ``lightest=``, :meth:`~easel.session.Session.sample`,
+    :meth:`~easel.session.Session.thumbnail`, ``compare`` -- and reads only what is
+    left::
+
+        wall_seen = difference(wall, uktarl, name="wall")
+        s.plan(values={wall_seen: 0.30})
+
+    **Paint is held out with ``clip_out=`` instead**, on the call that lays it:
+    ``s.stroke(path, ..., clip=wall, clip_out=uktarl)``. A mass verb handed a
+    difference refuses it and says so, because a mass is filled pass by pass across
+    its outline, and a hole in that outline is a second decision.
+
+    Args:
+        place: the place to take from -- a shape, a region, a name or a 4-tuple.
+        *taken: the places taken out of it, one or more; a single list is taken too.
+            They need not lie wholly inside it.
+        name: shows up wherever the place is named. Left off, the first place's.
+
+    Returns:
+        A :class:`Difference`: the first place's outline, and the others as holes.
+    """
+    if len(taken) == 1 and isinstance(taken[0], (list, tuple)) \
+            and not _looks_like_bounds(taken[0]) \
+            and not all(_looks_like_point(one) for one in taken[0]):
+        taken = tuple(taken[0])
+    if not taken:
+        raise ValueError(
+            "difference() needs a place and at least one place to take out of it: "
+            "difference(wall, figure).")
+    base = polygon(place)
+    holes = tuple(polygon(one) for one in taken)
+    made = Difference(base.points, name=name or base.name, traced=base.traced,
+                      holes=holes)
+    if not made.mask(1024, 1024).any():
+        raise ValueError(
+            "difference() took everything: the places taken out cover the whole of "
+            f"{base.name or 'the first place'}, so nothing is left to read.")
+    return made
 
 
 def ribbon(places, width: float, end_width: float | None = None,

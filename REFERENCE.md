@@ -117,6 +117,16 @@ break reaches a quarter of its width and no further, so a thin shape keeps its b
 side lying on the canvas frame is not an edge and never breaks, and a saved mark replays
 at the feather it was laid with — one saved before 0.7.0 at `0`.
 
+**`clip_out=` keeps the paint out of a place** (0.9.0): one place or a list, and none of
+the call's paint lands inside any of them. Every verb that takes `clip=` takes it, beside
+`clip=` and `edge="hard"`, so `s.stroke(path, ..., clip=wall, clip_out=figure)` lights a
+wall round a figure already painted, with no region typed round him. Its edge is cut on
+the line whatever `feather=` is: broken into the paint, it leaves a seam of ground
+between the light and the figure. A mark saved with one is refused by 0.8.0 rather than
+replayed through the figure. To **read** a place with a hole in it — the wall round him
+in a plan, a sample, a thumbnail — `difference(wall, figure)`; a verb that lays paint
+refuses one.
+
 ---
 
 ## The arguments that mean something particular
@@ -280,6 +290,7 @@ ribbon(places, width, end_width=None, smooth=True, name="")   # a mass along a l
 roughen(shape, amp=0.006, step=0.008, seed=0, calm=None, aspect=None, name="")
                                        # an outline walked off its own line
 union(a, b, ..., resolution=1024, name="")     # one silhouette round overlapping shapes
+difference(place, b, ..., name="")     # a place with others taken out: read, not painted
 terminator(outline, inside, margin=0.004, step=0.002, least=0.02, aspect=None)
                                        # the runs of one outline inside another: paths
 letter_paths(text, place, cap=0.04, slant=0, seed=None, aspect=None)
@@ -684,6 +695,7 @@ s.save(path)       Session.load(path)
 ```bash
 easel new p.easel --size 1024x768 --texture linen --ground toned_grey --seed 7 --budget 300 [--frame-px 720] [--no-prelude]
 easel run p.easel pass.py [p3.py p4.py ...] [--rehearse] [--count] [--alternatives] [--thumbnail] [--prelude other.py] [--no-prelude] [--check]
+                   [--region D4] [--scale 512] [--no-sketch] [--no-marks]   # the rehearsal's look
 easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.jpg] [--diff]
                    [--no-sketch] [--no-marks] [--scale 512]
 easel mark p.easel top_l 0.335 0.315
@@ -716,6 +728,9 @@ Binding the same thing again, `p = s.palette` in every pass, says nothing.
 Several scripts run in the order given, each in its own scope with the prelude in front
 of it — the same painting as running them one at a time, and with `--rehearse` they go
 on **one** copy, so a pass that lands on top of another pass is judged on it.
+`--region`, `--scale`, `--no-sketch` and `--no-marks` shape a rehearsal's look, and each
+panel of an `--alternatives` sheet, as they shape `easel look`'s; a run that writes no
+look refuses them.
 
 **With `--alternatives` they are versions of one pass instead**, and each goes on a copy
 of its own: each is checked and keeps its report on its own, and their looks are laid

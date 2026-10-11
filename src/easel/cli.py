@@ -179,6 +179,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--check", action="store_true",
                        help="run the post-pass check over the whole painting rather "
                             "than over this pass alone")
+    # The rehearsal's look, shaped as `easel look` shapes one: the four flags a
+    # painter otherwise wrote a look script for, once per rehearsal (0.9.0, D).
+    p_run.add_argument("--region", default=None,
+                       help="crop the rehearsal's look, or each panel of the "
+                            "--alternatives sheet, to " + _REGION_HELP)
+    p_run.add_argument("--scale", type=float, default=None, metavar="PX",
+                       help="the rehearsal's look, or each panel of the sheet: "
+                            + _SCALE_HELP + " -- 0 for the canvas's own size")
+    p_run.add_argument("--no-sketch", action="store_true",
+                       help="the rehearsal's look without the drawing: the pencil the "
+                            "paint has not covered, and the guides")
+    p_run.add_argument("--no-marks", action="store_true",
+                       help="the rehearsal's look without the landmarks, whose labels "
+                            "sit over the details they name")
 
     p_look = sub.add_parser("look", help="render a view of the canvas")
     p_look.add_argument("session", type=Path)
@@ -1148,7 +1162,8 @@ class Alternatives:
 
 def run_alternatives(session: Session, scripts, prelude: str = "",
                      prelude_name: str = "prelude.py", count_only: bool = False,
-                     whole: bool = False, thumbnail: bool = False) -> Alternatives:
+                     whole: bool = False, thumbnail: bool = False,
+                     view: dict | None = None) -> Alternatives:
     """Rehearse versions of one pass, each on a copy of its own, and lay them side by side.
 
     ``scripts`` is a sequence of ``(source, name)`` pairs, as :func:`run_scripts` takes
@@ -1172,6 +1187,11 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
     would lay, flat over the painting's, side by side at the thumbnail's own size --
     three arrangements of one subject judged against each other in a second each,
     before any of them is rehearsed.
+
+    ``view`` shapes each painted panel as :meth:`Session.look` takes it -- ``region``,
+    ``sketch``, ``marks``, and ``scale``, the panel's long side in place of the sheet's
+    own (``None`` for the canvas's size) -- so a sheet of faces is a sheet of faces,
+    without the guides' labels on them. A counted sheet has no look to shape.
 
     Nothing is written but the sheet: the caller saves ``session``, whose reports have
     grown by one for every version that ran.
@@ -1222,7 +1242,8 @@ def run_alternatives(session: Session, scripts, prelude: str = "",
         else:
             head = f"Rehearsed {which}: {cost}. Nothing committed."
             # The view a rehearsal's own look is, at the size one panel of the sheet has.
-            panel = target.look_image(scale=px)
+            shaped = dict(view or {})
+            panel = target.look_image(scale=shaped.pop("scale", px), **shaped)
         session._keep_report(target, label, before, block)
         tried.append(Alternative(label, 0, "\n".join(p for p in (head, block) if p),
                                  laid, panel))
@@ -1254,6 +1275,40 @@ def _resolve_prelude(args) -> tuple[str, str]:
     return "", ""
 
 
+def _run_view(args, session: Session) -> dict:
+    """``easel run``'s look flags, as :meth:`Session.look` takes them.
+
+    Refused where the run writes no look -- a committed pass, a counted one, a sheet of
+    thumbnails -- since a flag that changes nothing and says nothing is the one thing
+    worse than no flag.
+    """
+    view: dict = {}
+    if args.region is not None:
+        view["region"] = args.region
+    if args.no_sketch:
+        view["sketch"] = False
+    if args.no_marks:
+        view["marks"] = False
+    if args.scale is not None:
+        px = _scale_px(args.scale, session)
+        view["scale"] = None if px == 0 else px
+    if not view:
+        return view
+    looks = ((args.rehearse and not args.count) if not args.alternatives
+             else not (args.count or args.thumbnail))
+    if not looks:
+        given = ", ".join(flag for flag, key in (("--region", "region"),
+                                                 ("--scale", "scale"),
+                                                 ("--no-sketch", "sketch"),
+                                                 ("--no-marks", "marks")) if key in view)
+        raise ValueError(
+            f"{given} shape{'s' if ',' not in given else ''} the look a rehearsal "
+            f"writes, and this run writes none: give --rehearse, or --alternatives "
+            f"without --count or --thumbnail. A committed pass is looked at with "
+            f"`easel look`, which takes the same flags.")
+    return view
+
+
 def _cmd_run(session: Session, args) -> int:
     """Execute one or more painting scripts with the session and API in scope."""
     scripts = [Path(s) for s in args.script]
@@ -1264,6 +1319,7 @@ def _cmd_run(session: Session, args) -> int:
         raise FileNotFoundError(
             "Script not found: " + ", ".join(str(s) for s in missing))
 
+    view = _run_view(args, session)
     prelude, prelude_name = _resolve_prelude(args)
     if prelude and args.prelude is None:
         print(f"Prelude: {prelude_name}")
@@ -1277,6 +1333,7 @@ def _cmd_run(session: Session, args) -> int:
                 session, [(s.read_text(encoding="utf-8-sig"), str(s)) for s in scripts],
                 prelude=prelude, prelude_name=prelude_name or "prelude.py",
                 count_only=args.count, whole=args.check, thumbnail=args.thumbnail,
+                view=view,
             )
         for one in tried.tried:
             # Flushed, so a version that raised is said in its place among the others.
@@ -1358,7 +1415,7 @@ def _cmd_run(session: Session, args) -> int:
             else:
                 print(f"Rehearsed {names}: {cost}. Nothing committed.")
                 print(block)
-                print(target.look(path=None))
+                print(target.look(path=None, **view))
             if args.thumbnail:
                 # The arrangement the pass would leave, flat: its masses over the
                 # painting's, drawn from what the copy's log says each call filled.

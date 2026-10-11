@@ -668,7 +668,9 @@ def build_server() -> MCPServer:
             rehearse: bool = False, count: bool = False, prelude: str = "",
             prelude_path: str = "",
             alternatives: list[str] | dict[str, str] | None = None,
-            thumbnail: bool = False) -> list:
+            thumbnail: bool = False, region: Place | None = None,
+            scale: int | None = None, sketch: bool = True,
+            marks: bool = True) -> list:
         """Paint: run a Python script against the session.
 
         This is where every mark is made. The script has `s` (the session),
@@ -729,12 +731,35 @@ def build_server() -> MCPServer:
                 no places, as the painting would stand after this pass. With
                 `alternatives`, each version is counted and the sheet is their
                 thumbnails.
+            region: crop the rehearsal's look, or each panel of the alternatives'
+                sheet, to a place, as `look` crops: a name, a cell, a span or a shape.
+            scale: the rehearsal's look, or each panel, at this long side in pixels;
+                0 for full resolution.
+            sketch: false hides the drawing on the rehearsal's look, as on `look`.
+            marks: false hides the landmarks and their labels on the rehearsal's look,
+                as on `look`.
         """
         if prelude and prelude_path:
             raise ValueError(
                 "run takes either prelude (the Python itself) or prelude_path (a "
                 "file), not both."
             )
+        # The rehearsal's look, shaped as `look` shapes one (0.9.0, D).
+        view: dict = {}
+        if region is not None:
+            view["region"] = _place(region)
+        if scale is not None:
+            view["scale"] = None if int(scale) == 0 else int(scale)
+        if not sketch:
+            view["sketch"] = False
+        if not marks:
+            view["marks"] = False
+        if view and not ((rehearse and not count) if not alternatives
+                         else not (count or thumbnail)):
+            raise ValueError(
+                "region, scale, sketch and marks shape the look a rehearsal writes, and "
+                "this run writes none: set rehearse, or send alternatives without count "
+                "or thumbnail. A committed pass is looked at with `look`.")
         pre_name = prelude_path or "<prelude>"
         pre = (Path(prelude_path).read_text(encoding="utf-8-sig") if prelude_path
                else prelude)
@@ -751,7 +776,7 @@ def build_server() -> MCPServer:
             tried = run_alternatives(
                 s, [(str(text), str(label)) for label, text in versions],
                 prelude=pre, prelude_name=pre_name, count_only=count,
-                thumbnail=thumbnail)
+                thumbnail=thumbnail, view=view)
             # What each version's check said is kept, as a rehearsal's is.
             if any(one.code == 0 for one in tried.tried):
                 s.save(session)
@@ -800,7 +825,7 @@ def build_server() -> MCPServer:
                 # The look is what a rehearsal is for, and a path is no use to a client
                 # that cannot open a file: the picture comes back beside the text, as
                 # the looking tools hand theirs back, and the path stays in the text.
-                looked = target.look()
+                looked = target.look(**view)
                 answer = [f"Rehearsed {short}: {cost}. Nothing committed.\n"
                           f"{block}\n{looked}", Image(path=str(looked))]
             if thumbnail:

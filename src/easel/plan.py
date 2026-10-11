@@ -53,7 +53,7 @@ from dataclasses import dataclass, replace
 import numpy as np
 
 from easel.measure import VALUE_THRESHOLD
-from easel.regions import Polygon, as_place, polygon
+from easel.regions import Difference, Polygon, as_place, polygon
 
 __all__ = ["Plan", "Planned", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
            "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place", "planned",
@@ -175,6 +175,11 @@ class Planned:
             # and the plan is compared against the one registered in the session.
             "points": [[float(x), float(y)] for x, y in self.outline.points],
             "value": None if self.value is None else float(self.value),
+            # A difference()'s holes, beside its outline. A build before 0.9.0 reads
+            # the outline alone, which misreads the place and lays no paint by it.
+            **({"holes": [[[float(x), float(y)] for x, y in one.points]
+                          for one in self.outline.holes]}
+               if isinstance(self.outline, Difference) else {}),
         }
 
     @classmethod
@@ -182,7 +187,11 @@ class Planned:
         name = str(data.get("name", ""))
         points = [(float(x), float(y)) for x, y in data.get("points", ())]
         value = data.get("value")
-        return cls(name=name, outline=polygon(points, name=name),
+        outline = polygon(points, name=name)
+        if data.get("holes"):
+            outline = Difference(outline.points, name=name, holes=tuple(
+                polygon([(float(x), float(y)) for x, y in one]) for one in data["holes"]))
+        return cls(name=name, outline=outline,
                    value=None if value is None else float(value))
 
 

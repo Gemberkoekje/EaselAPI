@@ -66,6 +66,7 @@ from easel.plan import build as build_plan
 from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
+    Difference,
     Group,
     Polygon,
     Region,
@@ -400,6 +401,7 @@ class Session:
         solid: bool = False,
         note: str = "",
         feather: float | None = None,
+        clip_out=None,
         **brush_overrides,
     ) -> StrokeRecord:
         """Paint one stroke and log it.
@@ -445,6 +447,15 @@ class Session:
                 thing wants. A saved mark replays at the feather it was laid with.
                 Only a held mark has an edge to break: given without ``clip=``, it
                 is refused.
+            clip_out: a place -- or a list of places -- **none** of this stroke's
+                paint may land inside: the other way round from ``clip=``, and beside
+                it, so ``clip=wall, clip_out=figure`` lights the wall round a figure
+                already painted, with no region typed round him. Its edge is **cut on
+                the line**, whatever ``feather`` is: broken into the paint it holds,
+                it leaves a seam of the ground between the paint and the figure.
+                Given alone it holds nothing in, and ``feather`` is refused. A saved
+                mark that carries one is refused by a build before 0.9.0, rather than
+                replayed through the figure.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
         Returns:
@@ -457,10 +468,11 @@ class Session:
         stamps = int(press)
         if stamps < 1:
             raise ValueError(f"press must be at least 1, got {press}.")
-        holds = _as_outlines(clip)
+        holds = tuple(_paintable(one, "stroke", "clip") for one in _as_outlines(clip))
+        outs = _as_exclusions(clip_out, "stroke")
         feather = _held_feather(feather, bool(holds), "stroke")
-        cover = (None if not holds or self._counting
-                 else self._clip_cover(holds, feather))
+        cover = (None if not (holds or outs) or self._counting
+                 else self._clip_cover(holds, feather, outs))
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         # A count-only copy has nothing to undo to and nothing to undo, and copying
@@ -523,8 +535,8 @@ class Session:
                     note=note,
                     params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps,
                                          rng=self._stream_state(),
-                                         **({"clip": _clip_params(holds)}
-                                            if holds else {}),
+                                         **({"clip": _clip_params(holds, outs)}
+                                            if holds or outs else {}),
                                          # Beside the clip, and only where the edge
                                          # was broken: a record without it replays
                                          # cut on the line, as every clip before
@@ -850,6 +862,7 @@ class Session:
         dry_first: bool = False,
         note: str = "",
         feather: float | None = None,
+        clip_out=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Fill a place with overlapping strokes, the way a painter blocks in a mass.
@@ -1035,11 +1048,15 @@ class Session:
                 ``edge="hard"``, and on ``clip=`` -- as on :meth:`stroke`: **0.002**
                 left off, ``0`` for an edge cut on the line. Only a held mass has an
                 edge to break, so a ragged or clean one without ``clip=`` refuses it.
+            clip_out: a place, or a list of places, none of this mass's paint may
+                land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
+                and ``edge="hard"``.
 
         Returns:
             The records for every stroke laid down.
         """
-        place = as_place(region)
+        place = _paintable(as_place(region), "block_in")
+        outs = _as_exclusions(clip_out, "block_in")
         # `solid` is a pair of defaults, not an override: a painter who says
         # `load=0.3` beside it is asking for a starved brush on purpose, and gets one.
         if solid:
@@ -1117,6 +1134,7 @@ class Session:
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                         clip=held,
                         feather=feather,
+                        clip_out=outs or None,
                         note=note or (f"block-in "
                                       f"{place.name or ('shape' if shaped else 'region')} "
                                       f"{pass_dir}{traced}"),
@@ -1127,7 +1145,7 @@ class Session:
                     fill, b, color, pressure,
                     note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
                              f"{traced}"),
-                    clip=held, feather=feather,
+                    clip=held, feather=feather, clip_out=outs,
                 ))
         # The same test `_check_solid_comb` asks, and for the same reason: what
         # matters is what the paint did, not which keyword was typed. `cover()` lays
@@ -1139,7 +1157,7 @@ class Session:
         return records
 
     def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
-                       clip=None, feather: float = 0.0) -> list[StrokeRecord]:
+                       clip=None, feather: float = 0.0, clip_out=()) -> list[StrokeRecord]:
         """The one pass ``edge="clean"`` lays along the inset outline.
 
         Along the *inset* outline, not the drawn one, so that the outer half of the
@@ -1169,6 +1187,7 @@ class Session:
                 path, brush=b, color=color,
                 pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                 clip=clip, feather=feather if clip else None,
+                clip_out=clip_out or None,
                 note=note,
             ))
         return out
@@ -1366,6 +1385,7 @@ class Session:
         clip=None,
         note: str = "",
         feather: float | None = None,
+        clip_out=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Lay a mass that has a silhouette: passes swept along its edge, stepped inward.
@@ -1443,12 +1463,19 @@ class Session:
             note: recorded in the log.
             feather: how far inside ``clip``'s outline its edge breaks, as on
                 :meth:`stroke`: **0.002** left off, ``0`` for an edge cut on the line.
+            clip_out: a place, or a list of places, none of this mass's paint may
+                land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
+                and ``edge="hard"``.
 
         Returns:
             The records for every stroke laid down.
         """
-        feather = _held_feather(feather, bool(_as_outlines(clip)), "sweep")
+        feather = _held_feather(
+            feather, bool([_paintable(one, "sweep", "clip") for one in _as_outlines(clip)]),
+            "sweep")
+        outs = _as_exclusions(clip_out, "sweep")
         if isinstance(edge, Polygon):
+            _paintable(edge, "sweep")
             # A shape *is* a boundary that comes back on itself, which is what a
             # closed sweep wants. Its outline repeats the first point, so `closed`
             # infers itself, and the traced-copy question follows the shape here the
@@ -1475,6 +1502,7 @@ class Session:
                         pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                         clip=clip,
                         feather=feather,
+                        clip_out=outs or None,
                         note=note or kind,
                     )
                 )
@@ -1601,6 +1629,7 @@ class Session:
         clip=None,
         note: str = "",
         feather: float | None = None,
+        clip_out=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Bury a mistake, with every clause of the burying recipe already set.
@@ -1683,12 +1712,16 @@ class Session:
                 where the tooth is high and lets the passage show where it is low,
                 rather than standing as a cut rectangle; ``0`` for an edge cut on
                 the line, the burial before 0.7.0.
+            clip_out: a place, or a list of places, none of this burial's paint may
+                land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
+                and ``edge="hard"``.
 
         Returns:
             The records for every stroke laid down, the ``dry`` not among them --
             drying is free and is not a mark.
         """
-        target = as_place(place)
+        target = _paintable(as_place(place), "cover")
+        _as_exclusions(clip_out, "cover")
         # Asked before anything is laid: the dry below is a record too.
         _held_feather(feather, bool(_mass_hold(target, edge, clip)), "cover")
         reach = _cover_overhang(edge, overhang)
@@ -1711,7 +1744,7 @@ class Session:
             return self.block_in(
                 target, brush=b, color=color, direction=direction, density=density,
                 pressure="even", overhang=reach, edge=edge, clip=clip, feather=feather,
-                note=note or f"cover {target.name or 'area'}",
+                clip_out=clip_out, note=note or f"cover {target.name or 'area'}",
             )
 
     def scumble(
@@ -1731,6 +1764,7 @@ class Session:
         clip=None,
         note: str = "",
         feather: float | None = None,
+        clip_out=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """A soft passage: ``n`` overlapping passes stepping from one value to another.
@@ -1882,6 +1916,9 @@ class Session:
             feather: how far inside a held band its edge breaks, as on
                 :meth:`stroke`: **0.002** left off, ``0`` for an edge cut on the line
                 -- a horizon ruled on purpose, say.
+            clip_out: a place, or a list of places, none of this passage's paint may
+                land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
+                and ``edge="hard"``.
 
         Returns:
             The records for every pass laid down.
@@ -1898,9 +1935,10 @@ class Session:
                 f"so no paint lands outside it. 'clean' is block_in's: it draws a "
                 f"contour along the outline, and a passage has none to draw."
             )
-        place = as_place(band)
+        place = _paintable(as_place(band), "scumble")
         n = int(n)
         held = _mass_hold(place, edge, clip)
+        outs = _as_exclusions(clip_out, "scumble")
         feather = _held_feather(feather, bool(held), "scumble")
         if solid:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
@@ -1909,7 +1947,8 @@ class Session:
                                                held=held)
         if inward:
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
-                                        paths, clip=held, feather=feather)
+                                        paths, clip=held, feather=feather,
+                                        clip_out=outs)
 
         records: list[StrokeRecord] = []
         laid = 0
@@ -1920,7 +1959,7 @@ class Session:
                 records.append(self.stroke(
                     path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    clip=held, feather=feather,
+                    clip=held, feather=feather, clip_out=outs or None,
                     note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
                 ))
                 laid += 1
@@ -2003,7 +2042,7 @@ class Session:
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
                         pressure, note: str, paths, clip=None,
-                        feather: float = 0.0) -> list[StrokeRecord]:
+                        feather: float = 0.0, clip_out=()) -> list[StrokeRecord]:
         """A centred fall-off: ``n`` rings stepping in from the boundary.
 
         The band version grades edge to edge, which is what a band wants and is not a
@@ -2030,6 +2069,7 @@ class Session:
                     color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                     clip=clip, feather=feather if clip else None,
+                    clip_out=clip_out or None,
                     note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
                 ))
         return records
@@ -2296,6 +2336,11 @@ class Session:
         as well as the graphite, which is the call to reach for when the whole
         arrangement is being redrawn; this one is for taking back one labelled part
         of it and leaving the rest.
+
+        **Neither takes a landmark.** A drawing pass redrawn without one of its old
+        :meth:`mark` calls leaves that landmark labelled on every look -- one painter
+        found a ``sun`` from its first drawing sitting on a face 48 px wide -- until
+        :meth:`unmark` takes it back.
         """
         before = len(self.guides)
         if note is None:
@@ -2816,8 +2861,12 @@ class Session:
                 unplaced += 1
                 continue
             clip = r.params.get("clip")
-            layers.append((polygon([(float(x), float(y)) for x, y in kept["place"]]),
-                           float(kept["value"]),
+            outline = polygon([(float(x), float(y)) for x, y in kept["place"]])
+            outs = _outs_from_params(clip) if clip else ()
+            if outs:
+                # Held out of a figure already laid: the thumbnail fills round him.
+                outline = Difference(outline.points, name=outline.name, holes=outs)
+            layers.append((outline, float(kept["value"]),
                            _clips_from_params(clip) if clip else ()))
             if since is not None and i >= own + since:
                 fresh += 1
@@ -3619,7 +3668,7 @@ class Session:
             spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
             {k: v for k, v in spec.items()
              if k not in ("points", "brush", "size", "opacity", "color", "pressure",
-                          "glaze", "smooth", "press", "clip", "feather", "solid",
+                          "glaze", "smooth", "press", "clip", "clip_out", "feather", "solid",
                           "note", "label")},
         )
         # The band stands for how wide the mark will be, and on a round tip that now
@@ -5611,7 +5660,8 @@ class Session:
                 glaze = bool(params.pop("glaze", False))
                 smooth = bool(params.pop("smooth", True))
                 held = params.pop("clip", None)
-                clip = None if held is None else _clips_from_params(held)
+                clip = None if held is None else (_clips_from_params(held) or None)
+                clip_out = None if held is None else (_outs_from_params(held) or None)
                 # A clip laid before 0.7.0 has no feather on its record and was cut on
                 # the line, so it replays cut on the line: the default moved for new
                 # marks, and never reaches a saved one.
@@ -5630,6 +5680,7 @@ class Session:
                     press=press,
                     clip=clip,
                     feather=feather if clip else None,
+                    clip_out=clip_out,
                     note=record.note,
                 )
             # The record's own account of the stream and of the call that laid it,
@@ -5736,7 +5787,8 @@ class Session:
         self._uncounted.append(what)
         self._notify("count-only", f"scratch(count_only=True): {what}", stacklevel=4)
 
-    def _clip_cover(self, holds: tuple[Polygon, ...], feather: float = 0.0) -> np.ndarray:
+    def _clip_cover(self, holds: tuple[Polygon, ...], feather: float = 0.0,
+                    outs: tuple[Polygon, ...] = ()) -> np.ndarray:
         """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
 
         ``block_in(edge="hard")`` hands every one of its passes the same outline, and
@@ -5758,9 +5810,16 @@ class Session:
         (``Polygon._edge_depth``). It is in the key beside the outlines, because
         anything a mask is computed from has to be in its cache key (``LESSONS.md``,
         trap 5): the same outline at two feathers in one session is two masks.
+
+        ``outs`` are the places held **out** (``clip_out=``): the mask is multiplied by
+        one minus each one's coverage, cut on the line and never feathered, because an
+        exclusion's edge broken into the paint it holds is a seam of bare ground
+        between the paint and the shape (``CALIBRATION.md``, *Uktarl's Room's round*,
+        *Step 2*). In the key beside the holds, for the same reason the feather is.
         """
         width, height = self.canvas.width, self.canvas.height
-        key = (tuple(one.points for one in holds), width, height, float(feather))
+        key = (tuple(one.points for one in holds), width, height, float(feather),
+               tuple(one.points for one in outs))
         if self._clip_memo is not None and self._clip_memo[0] == key:
             return self._clip_memo[1]
         px = float(feather) * self.canvas.long_side
@@ -5774,6 +5833,11 @@ class Session:
                         mask[rows, cols],
                         self.canvas.broken_edge(rows, cols, depth, full))
             cover = mask if cover is None else cover * mask
+        if outs:
+            if cover is None:
+                cover = np.ones((height, width), dtype=np.float32)
+            for one in outs:
+                cover = cover * (1.0 - one.coverage(width, height))
         self._clip_memo = (key, cover)
         return cover
 
@@ -8008,6 +8072,8 @@ def _nothing_cause(r: StrokeRecord, canvas) -> tuple[str, object]:
         inside = np.ones(len(pts), dtype=bool)
         for hold in _clips_from_params(held):
             inside &= hold.inside(pts[:, 0], pts[:, 1])
+        for out in _outs_from_params(held):
+            inside &= ~out.inside(pts[:, 0], pts[:, 1])
         if float(inside.mean()) <= 0.5:
             return ("clip", None)
     tip = str(params.get("tip", ""))
@@ -9305,7 +9371,7 @@ def _as_outlines(clip) -> tuple[Polygon, ...]:
     return (_as_outline(clip),)
 
 
-def _clip_params(holds: tuple[Polygon, ...]):
+def _clip_params(holds: tuple[Polygon, ...], outs: tuple[Polygon, ...] = ()):
     """The outlines a held stroke was clipped to, as the log carries them.
 
     One hold is **one outline**, exactly as every clipped stroke has been logged
@@ -9313,16 +9379,52 @@ def _clip_params(holds: tuple[Polygon, ...]):
     places replays unchanged, and one made now still loads in a build that only
     knows about one. Two or more are a list of outlines, which such a build refuses
     to read rather than reading as a single outline and painting something else.
+
+    A mark held **out** of a place as well (``clip_out=``, 0.9.0) is a mapping,
+    ``{"in": [outline, ...], "out": [outline, ...]}``. A new key beside ``clip``
+    would not do: 0.8.0 drops what it does not know and would replay the mark
+    through the figure it was kept off. 0.8.0 reads a mapping as an outline and
+    fails at its first point, so it refuses the mark instead.
     """
     outlines = [[[float(x), float(y)] for x, y in one.points] for one in holds]
+    if outs:
+        return {"in": outlines,
+                "out": [[[float(x), float(y)] for x, y in one.points] for one in outs]}
     return outlines[0] if len(outlines) == 1 else outlines
 
 
 def _clips_from_params(held) -> tuple[Polygon, ...]:
     """The other way round: what :func:`_clip_params` wrote, back as outlines."""
+    if isinstance(held, dict):
+        return tuple(polygon([(float(x), float(y)) for x, y in one])
+                     for one in held.get("in", ()))
     many = bool(held) and not _looks_like_point(held[0])
     return tuple(polygon([(float(x), float(y)) for x, y in one])
                  for one in (held if many else [held]))
+
+
+def _outs_from_params(held) -> tuple[Polygon, ...]:
+    """The places a record was held out of, back as outlines: none before 0.9.0."""
+    if not isinstance(held, dict):
+        return ()
+    return tuple(polygon([(float(x), float(y)) for x, y in one])
+                 for one in held.get("out", ()))
+
+
+def _as_exclusions(clip_out, verb: str) -> tuple[Polygon, ...]:
+    """Whatever a painter hands ``clip_out=``, as every outline the paint stays off.
+
+    Read as ``clip=`` is read -- one place, or a list of places -- but a list here is
+    **any** of them, not all: the paint stays off each.
+    """
+    try:
+        outs = _as_outlines(clip_out)
+    except (KeyError, ValueError, TypeError) as exc:
+        raise ValueError(
+            f"{verb}(clip_out={clip_out!r}) is a place, or a list of places, the paint "
+            f"may not land inside -- a shape, a region, a name, a run of points."
+        ) from exc
+    return tuple(_paintable(one, verb, "clip_out") for one in outs)
 
 
 def _mass_hold(place, edge: str, clip):
@@ -9333,10 +9435,27 @@ def _mass_hold(place, edge: str, clip):
     because :meth:`Session.block_in`, :meth:`Session.cover` and
     :meth:`Session.scumble` all have to answer the same question the same way.
     """
-    holds = _as_outlines(clip)
+    holds = tuple(_paintable(one, "a mass", "clip") for one in _as_outlines(clip))
     if edge == "hard":
         holds = (_as_outline(place),) + holds
     return holds or None
+
+
+def _paintable(place, verb: str, arg: str = ""):
+    """The place handed back, unless it is a :func:`~easel.regions.difference`.
+
+    A difference is for reading: a mass is filled pass by pass across its outline, and
+    a hole in that outline is a second decision. Painting round a shape is what
+    ``clip_out=`` is for, on the call that lays the paint.
+    """
+    if isinstance(place, Difference):
+        where = f"{verb}({arg}=...)" if arg else f"{verb}()"
+        raise ValueError(
+            f"{where} was handed a difference(), which is a place to read -- a plan, "
+            f"sample, thumbnail, compare -- and not one to paint. To keep paint off a "
+            f"shape, hold it out on the call: clip=<the place>, clip_out=<the shape "
+            f"taken out of it>.")
+    return place
 
 
 #: How far inside a held outline its edge breaks when ``feather=`` is left off, as a
