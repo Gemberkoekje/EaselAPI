@@ -4716,3 +4716,138 @@ at its brightest twentieth. `easel guide` with no flags prints `PAINTER.md` line
 exactly; the table naming `REFERENCE.md` for *units, defaults, what each argument does* is
 line 15.
 
+
+### Step 2b: the second painter's candidates, benched
+
+Measured on 2026-10-11 by `scripts/probe_curator_session.py`, on Linux, on the checkout whose
+engine is `v0.8.0`'s, after the painter's answers. Every candidate was patched in for one
+bench and taken out again. The corpus is the 34 committed paintings replayed through the
+corpus probe's harness with the canvas kept round every hand-laid mark: 3,381 hand-laid
+marks, signatures left out, and 8,360 two-colour mixtures typed (pears'
+`p9_rehearse_pear.py` and heron 1's `pass1_draw.py` fail as before; both spend their
+recorded strokes).
+
+**The rebuild, on the painter's own platform.** All nine pieces re-run at stage 99 come
+back **to the pixel** against their shipped PNGs, at their recorded spend. The one-level
+differences of the filing were Windows against Linux, as the painter said. The engine spoke
+at the call 14 times on three pieces: the room beyond 9 (seven pressure lists on a bristle,
+a spill, a smudge), the desk and the counter one spill each, the patron 3 (a planned pair,
+two solid combs). The other six heard nothing.
+
+**An alpha from the places (K).** The candidate is the coverage of the places the painter
+cut along (its own `outline.json`, and the arch as `cut_arch.py` types it, the wall's alpha
+one minus the arch's), at the hold's two samples a side, and at four. The painter's cut
+rebuilt from its own scripts matches every shipped alpha to within a level. *Band* is the
+painter's `edges.py`: pixels between 10% and 90% alpha over the outline's length.
+
+| piece | the painter's cut | as a hold, 2×2 | 4×4 | softened to 2.5 px |
+|---|---|---|---|---|
+| the doorway wall (no blur) | 0.73 | 0.39 | 0.47 | 2.47, sigma 0.91 |
+| the patron (blur 0.8) | 2.27 | 0.63 | 0.78 | 2.34, sigma 0.80 |
+| the candle (blur 0.8) | 2.52 | 0.26 | 0.31 | 2.61, sigma 0.91 |
+
+Every candidate keeps the same share of the canvas as the painter's cut, within 0.2%. **A
+hold's coverage is harder than the painter's held paint edge** (0.81 to 0.87 px, its
+`held.py`): the candle's outline runs on whole pixels, so most of it is one step. At 2×2
+the patron's diagonal shoulder is visibly stepped at 4× over a light ground; 4×4 is the
+smaller change. The painter's own *soften=2.5* is a Gaussian of sigma 0.8 to 0.9 px on
+every piece, which is what its 0.8 px blur was. Sheet: `out/curator/alpha.png`.
+
+**The candle at one, two and four times (M).** The `Session` line alone changed, reduced to
+120×300:
+
+| painted at | run | spent | wax top mean | 95th | under the cliff | `plan:` |
+|---|---|---|---|---|---|---|
+| 1× | 2.0 s | 47 | 0.78 | 0.87 | 12 of 16 hand marks | 1 of 2, D1:E2 -0.13 |
+| 2× | 4.7 s | 47 | 0.80 | 0.90 | 7 of 16 | 2 of 2 |
+| 4× | 11.7 s | 47 | 0.81 | 0.92 | 0 of 16 | 2 of 2 |
+
+Lanczos on the sRGB and a box mean in linear light agree within 0.01. **What the painter
+called the weave is not the canvas's tooth.** The 1× painting's finest texture, high-passed
+at 0.7 and 2 px, correlates with neither the height map nor the field that gates deposition
+(|r| at most 0.05 on the wax and the brass). Reduced from 4×, the brass base's 0.7 px texture
+falls from 3.2 levels to 1.4, and the wax's texture down its length at periods of 2.6 to
+4.3 px to a quarter or less; the wax body's 0.7 px texture is unchanged (1.6 and 1.7). So a
+candidate that lays the exported size's tooth back over a reduced export would add a
+texture the 1× painting does not show; it is not built. The texture that goes is the marks'
+own, at the pixel scale of their passes. Sheet: `out/curator/deposit.png`.
+
+**Marks under their one-touch width, over the corpus (M).** A hand-laid mark under its
+tip's one-touch landing width (6.5 px `round_hard` and `liner`, 7.5 `round_soft`, 4 px a
+chisel), by the canvas's long side:
+
+| long side | paintings | hand marks | under | share | M2 would speak |
+|---|---|---|---|---|---|
+| up to 400 | 1 | 16 | 12 | 75% | 11 |
+| 401 to 800 | 5 | 111 | 71 | 64% | 70 |
+| 801 to 1200 | 24 | 3,012 | 668 | 22% | 660 |
+| over 1200 | 4 | 242 | 66 | 27% | 66 |
+
+**M2** (a round tip under the width, with a pressure list or opacity under 1) would speak
+on 807 marks in 31 of the 34 paintings; 798 of them are under opacity 1, 392 carry a
+pressure list. 161 of the 807 are faint by O3 below.
+
+**A faint mark (O3).** A hand-laid mark whose colour lay 0.15 or more from the median value
+under its path, and which moved the pixels under its path less than a quarter of the way
+there (the 90th percentile of *(after - before) / (colour - before)*):
+
+| colour at least | moved under | marks | paintings | of them at opacity under 0.35 |
+|---|---|---|---|---|
+| 0.10 | 0.25 | 445 | 29 | 59 |
+| 0.15 | 0.15 | 240 | 24 | 36 |
+| **0.15** | **0.25** | **327** | **28** | **38** |
+| 0.15 | 0.35 | 399 | 31 | 44 |
+| 0.25 | 0.25 | 215 | 25 | 22 |
+
+At 0.15 and 0.25 the largest shares are the pier's (51 of 200 hand marks), Gemini's (46 of
+645), and the two bookcases' (32 of 42 and 19 of 27, their 2.2 px liners). **On the three
+lights the painter lost:** the patron's three rim strokes fire, reaching 0.09 to 0.12 of
+the way; the lock's bright edge (`locked_shelf.py:64`, a 1.8 px liner at 0.72 over 0.38)
+fires at 0.11, and the grille's four liners with it. **The candle's wax-light strokes do
+not**: they reach 0.32 to 0.40, moving the pixels 9 to 22 levels at their 90th percentile;
+one shade stroke at line 58 fires. M2 speaks on all of them, the candle's included, and
+before they land.
+
+**A fact at `mix()` (L1).** In Oklab, burnt umber is hue 39° at chroma 0.020 and
+ultramarine 268° at 0.085; their mixture's hue runs 33° at 10% ultramarine, 20° at 18%,
+356° at 25%, 331° at 30%, 307° at 35%, with chroma 0.008 to 0.009 between 25% and 35%.
+**L1 as the plan words it cannot fire on this trap**: the mixture's hue travels the arc
+between the two parents, so it is never more than about 90° from the one it travels toward.
+Over the corpus it fires on 6 calls in 5 paintings, none of them umber with ultramarine.
+Measured instead from the parent with the larger share:
+
+| chroma under | turned over | calls | paintings | distinct mixtures |
+|---|---|---|---|---|
+| 0.03 | 60° | 1,035 | 29 | 112 |
+| 0.03 | 90° | 762 | 25 | 76 |
+
+At 0.03 and 60° that catches the Curator's shelves' and counter's `shadow` and `seam`
+(30%), the wall's `joint` (35%) and the locked case's 40%, and not the room beyond's
+`stone` and the wall's `plaster_dark` at 25% (hue 356°, 43° from umber's). It speaks in
+29 of 34 paintings, most often on umber with 30% to 55% ultramarine, a dark the pears,
+dusk, the sonnet, Opus, the herons and the pool all mix; whether each of those painters
+wanted the violet is not measured here. Said at every such call, it would be the commonest
+fact the engine prints.
+
+**A piece that is one layer (N).** The six dark pieces under `plan(key="low")`: every one
+says *low-key, as the plan says*, and every named light *does not stand clear*, from 0.01
+under (the left bookcase) to 0.07 over (the locked case). The three cut-outs with the
+standing lines read inside the candidate's alpha, against the checklist as shipped:
+
+| line | the wall (80% kept) | the patron (67%) | the candle (31%) |
+|---|---|---|---|
+| ground | 7.27% to 5.31% | 25.28% to 0.00%, *under 0.5%* | 67.14% to 0.23%, *under 0.5%* |
+| values | 0.18-0.40 to 0.18-0.39, *no clear light* | 0.09-0.54 to 0.08-0.12, *no clear light* | 0.37-0.80 to 0.33-0.80, *clear* |
+| the light, inside the cut | 0.41 against 0.39 | 0.14 against 0.12 (0.16 where the alpha is full, the painter's) | 0.86 against 0.80 |
+| edges, under 2.5 px | 48% to 44%, median 2.7 | 33% to 49%, median 2.5 | 42% to 39%, median 3.1 |
+| the cut's own edge | 0.4 px | 0.6 px | 0.3 px |
+
+Read inside the cut, the patron's values line says what its painter found: nothing in the
+figure above 0.12, the rim lost. **The ground line turns over on two of the three**: the
+patron's cut is 0.00% bare and the candle's 0.23%, both under the 0.5% floor, so on a
+cut-out painted solid to its outline the line asks for ground the piece never meant to
+show. The patron's edges inside the cut are 327 ridge pixels, few enough that its share
+moves with a handful. Of the closing audit's findings, none moves: the
+candle's *one disc printed 5 times* is its drips' beads, inside the cut, and the
+*detail before the masses* finding counts marks, not pixels. 2 of the wall's 12 hand-laid
+marks and none of the others lie mostly outside the cut.
