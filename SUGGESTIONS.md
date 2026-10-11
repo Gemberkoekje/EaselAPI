@@ -249,6 +249,13 @@ or `easel check`: it re-ran each script whole, by stage, read the stage images, 
 over**, so every *what checking found* below is from its scripts, its manifest and its
 exports, measured on 2026-10-11 on the checkout whose engine is `v0.8.0`'s.
 
+**The decisions are the painter's**, and it has made them:
+[`answers.md`](paintings/Claude/the_curator/answers.md), with its measurements beside it,
+the plan's section 6 recording what each decides. Two lights it planned did not land, for
+the candle's reason: the patron's rim (10 pixels) and the cabinet's lock (0.46 against
+0.6), both laid under 4 px. And it asks for **the check where a script already stops** --
+`s.look()` — since it had read that rehearsal and `s.report()` exist and did not use them.
+
 ### The engine
 
 | What was wrong | Kind | What was done |

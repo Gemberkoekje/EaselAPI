@@ -79,3 +79,25 @@ The owner pastes `paintings/Claude/the_curator/questions-step1.md` into the pain
 session; its answers come back as `answers.md`, filed verbatim and re-measured. Then step 2b,
 `scripts/probe_curator_session.py`. Steps 3 to 9 go on meanwhile where they do not touch K
 to N; step 3's `difference()` is also 4K's arch.
+
+---
+
+## Answered, 2026-10-11
+
+[`the_curator/answers.md`](paintings/Claude/the_curator/answers.md) is filed verbatim, with
+`measurements/`, the scripts and two images behind its **M** lines; each re-measured here
+held (`CALIBRATION.md`). The plan's section 6 has its table.
+
+- **One declaration for the cut**, `s.plan(cut=place)`, which the export's alpha and the
+  checklist both read: K and N become one piece of work. The edge as a held edge's.
+- **`p.grey()`**, with the fact at `mix()` behind it.
+- **Paint larger and export at size, keeping the weave**; a word at the call under the cliff;
+  the table in pixels. Two more lights were lost to thin strokes.
+- **A session in pixels throughout**, sizes included: a new candidate under E.
+- **A recipe for a shelf, a bar and a joint as paint.**
+- **The check at `s.look()`**: a new workstream, O.
+- **The five-file table atop the default `easel guide`.**
+- **Its two offers for the game** (the README's wording, a repaint) are the owner's.
+
+Next: step 2b, `scripts/probe_curator_session.py`, then K/N, L, M and O in the build steps.
+

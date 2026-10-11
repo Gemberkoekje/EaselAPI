@@ -24,7 +24,8 @@ of the first painter has its answer. Later on 2026-10-11 **a second painter join
 round**: The Curator, nine pieces of game art against 0.8.0, filed with its verdict checked
 (section 3b), four workstreams added (K to N) and its questions written
 (`paintings/Claude/the_curator/questions-step1.md`; `NOTES-step1b.md`). Next: its answers,
-then step 2b; steps 3 to 9 go on meanwhile where they do not touch K to N.**
+then step 2b; steps 3 to 9 go on meanwhile where they do not touch K to N. Its answers are
+filed the same day (section 6), and add workstream O.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -469,6 +470,16 @@ low-key by the check's own test.
   `easel run`; a script driven from Python hears the call-time notices and the closing
   checklist. Asked (Q7) whether it knew of `s.report()`.
 
+### O. The check where a script already stops
+
+**Proposal, from Q7.** A painter who drives Python directly re-runs its script whole and
+reads `s.look()`; it never meets the check after a pass, and the documents saying so three
+times did not move it. Candidates: **O1** `s.look()` prints the check over the marks since
+the last look, with `dearest:` and `landed nothing:`; **O2** `easel run` accepts a script
+that builds its own `Session`; **O3** a notice for a faint mark — one that moved the canvas
+by a few levels where its colour was far from what it landed on — which no path has.
+Step 2b measures O3 over the corpus and on the candle, the patron's rim and the lock.
+
 ### J. Recorded and not built
 
 - **The painting** (row 13): what the check cannot see. The stencilled look is row 2's.
@@ -592,6 +603,30 @@ the blind sheets, and says so.
 | Q7 | rehearsal and the check after a pass: whether it knew of them, and why it ran the scripts whole | recorded |
 | Q8 | the reference: whether it saw `easel guide --reference`, and what would have sent it there | 4I |
 
+**Answered 2026-10-11**, filed verbatim as
+[`the_curator/answers.md`](paintings/Claude/the_curator/answers.md) with the scripts behind
+its measurements in `measurements/`. Its **M** claims re-measured here and held: the
+patron's planned light 0.16 inside the cut against 0.54 over the cell, 10 rim pixels over
+0.40; the cabinet's lock no brighter than 0.46 against 0.6 planned; the candle painted at 4×
+and reduced, 0.92 at its light's brightest twentieth against 0.87, *2 of 2 places*; and
+plain `easel guide` is `PAINTER.md` lines 28 to 146, which leaves out line 15's table, the
+one line that says `REFERENCE.md` holds units and defaults.
+
+| | The painter chose | Changes the plan |
+|---|---|---|
+| Q1 | **both, from one declaration**: `s.plan(cut=place)`, which the checklist reads inside and `s.export()` writes its alpha from, unless `alpha=` names another place. A place of its own, because it laid the masses past the outline on purpose. **The edge falls as a held edge's, 0.8 to 0.9 px**; softening is an option, in pixels (`soften=2.5`): its 0.8 px blur made a 2.5 px edge | 4K and 4N are one: `cut=` on the plan, `alpha=` on the export |
+| Q2 | **`p.grey(value, warmth=)`**, with the fact at `mix()` as a backstop. The stage images showed the purple; it printed value and chroma, never hue, and its swatch is where it chose the 25% mix | 4L: L3, and L1 behind it |
+| Q3 | **painting at two to four times and exporting at size** serves the small pieces, **if the export keeps the canvas's weave at the exported scale**: reduced from 4×, the linen all but disappears. The table in pixels, per brush, with the cliff drawn across it. **And a word at the call** for a mark under its cliff: nothing said one. Two more lights were lost the same way, the patron's rim and the cabinet's lock, both laid under 4 px | 4M: M1 with the weave kept, M2 built, the table in pixels |
+| Q4 | **`key="low"` said plainly, and the cut in the plan; not the scene**, which the game composes in code and no canvas holds. On a cut-out, every line measured inside the cut, and one more for the cut's own edge against the picture's median. The patron's *no clear light* was reading the ground the cut throws away | 4N with Q1's `cut=`, and a cut-edge line |
+| Q5 | **a canvas in pixel coordinates throughout, sizes included**: `s.frame` would not have retired `n()`, and `s.px` existed and did not; `size=2.7`, not `0.009`, would have shown the candle's fault as it was typed | 4E gains a candidate: a session in pixels |
+| Q6 | it never opened *The one ruled line*, which answers the opposite question; it read *A scene with straight edges* and did not carry it to flat-on subjects. **A recipe for a shelf, a bar and a joint as paint**, in pixels, and a line naming long edges laid with under half a pixel of wander | 4I gains the recipe; the line is a candidate to bench |
+| Q7 | **it had read that rehearsal and `s.report()` exist, and did not use them. Make the tool meet the script**: `s.look()` prints the check on the marks since the last look; `easel run` takes a script that builds its own `Session`; and a notice for faint marks, which no path has | a new workstream, O: the check where a script already stops |
+| Q8 | **neither seen. The five-file table atop what `easel guide` prints by default**; then a line in `Session`'s, `block_in`'s and `stroke`'s docstrings, *units and defaults: `easel guide --reference`*; then the flags on `easel --help` | 4I1: the card opens with the table |
+
+**Its two offers for the game's repository** — rewording the README's *pixel for pixel*,
+and repainting the patron's rim and the cabinet's lock — are the owner's to take or leave,
+and touch nothing here.
+
 ---
 
 ## 7. Order of work
@@ -601,7 +636,7 @@ the blind sheets, and says so.
 | 1 | **The record.** The painting filed, the verdict checked, the round opened, the questions written | this PR, `NOTES-step1.md` |
 | 1b | **The second painter.** The Curator filed, its verdict checked (section 3b), workstreams K to N written, its questions | `NOTES-step1b.md` |
 | 2 | **Measure.** `scripts/probe_uktarl_session.py`: the rebuild, and a flag per workstream: `--clip-out`, `--soft` (sheets), `--rules` (the corpus replayed with each candidate), `--direction`, `--key`, `--shares`, `--reading` (the documents' inventory). The corpus replay cached as 0.8.0's was, and copied out before a later flag writes over it | `NOTES-step2.md`, `CALIBRATION.md`'s round, batch 2 |
-| 2b | **Measure the second painter's.** `scripts/probe_curator_session.py`: the nine pieces rebuilt; `--alpha` (K, against its cut), `--grey` (L1 over the corpus's mixtures), `--deposit` (M: the candle at 1×, 2×, 4×; the corpus's marks under their landing width), `--layer` (N: the nine checklists under `key=` and `cut=`) | `NOTES-step2b.md`, `CALIBRATION.md` |
+| 2b | **Measure the second painter's.** `scripts/probe_curator_session.py`: the nine pieces rebuilt; `--alpha` (K, against its cut), `--grey` (L1 over the corpus's mixtures), `--deposit` (M: the candle at 1×, 2×, 4×; the corpus's marks under their landing width), `--layer` (N: the nine checklists under `key=` and `cut=`), `--faint` (O3: faint marks over the corpus, the candle, the patron's rim and the lock) | `NOTES-step2b.md`, `CALIBRATION.md` |
 | 3 | **A and D.** `clip_out=`, `intersection()`, `difference()`; the record refused by 0.8.0; the rehearsal look's flags | `NOTES-step3.md` |
 | 4 | **B.** The soft hold, as the painter chooses | `NOTES-step4.md` |
 | 5 | **C.** The three rules narrowed as the corpus allows; `habits=` | `NOTES-step5.md` |

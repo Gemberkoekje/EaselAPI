@@ -4705,3 +4705,14 @@ Each keeps its top twentieth at or under `0.54`, the box's middle. The candle's 
 reports 67.14% of its canvas bare ground, the patron's 25.28%: the surround the cut
 removes.
 
+**The second painter's answers, re-measured** (2026-10-11, from its own scripts in
+`the_curator/measurements/`, against the filed exports). The patron's planned light, D1:E3,
+at its brightest twentieth: 0.54 over the whole cell, 0.16 inside the cut; the cut-away's
+median value 0.53; 10 pixels inside the silhouette over 0.40, its rim. The cabinet's lock,
+D4:E5, planned at 0.6: no pixel over 0.46. The candle painted at 480×1200, its `Session` line
+alone changed, and reduced to 120×300: the wax top's mean 0.81 against 0.78 and its 95th
+percentile 0.92 against 0.87; its checklist *2 of 2 places inside 0.10* and its light 0.92
+at its brightest twentieth. `easel guide` with no flags prints `PAINTER.md` lines 28 to 146
+exactly; the table naming `REFERENCE.md` for *units, defaults, what each argument does* is
+line 15.
+
