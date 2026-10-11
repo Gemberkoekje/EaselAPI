@@ -4650,3 +4650,58 @@ under the wig. Across the rows of the laps' interiors, the largest departure fro
 row's own slope is a median 0.015 on hers and 0.003 on the doppelganger's, under the 0.03
 the painter's canvas test would set. The pass check's disc rule counted the signature on
 `p17_finish.py` (records 425 to 428), which the closing audit leaves out.
+
+### The second painter: The Curator
+
+Nine pieces of interim art for the owner's own game, painted against 0.8.0 on 2026-10-11
+by `claude-opus-5-5` at max effort in a cloud session, one seeded script per piece at the
+slot's own size ([`the_curator/FILING.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/the_curator/FILING.md)).
+Its transcript was not handed over. Measured on 2026-10-11 on the checkout whose engine is
+`v0.8.0`'s, on Windows; the painter's machine was Linux.
+
+**The rebuild across machines.** Every script re-run at stage 99 against its shipped PNG:
+
+| piece | canvas | pixels that differ | by |
+|---|---|---|---|
+| the candle | 120×300 | 12 | 1 level |
+| the room beyond | 560×600 | 164 | 1 |
+| the locked case | 300×460 | 1,241 | 1 |
+| the patron | 400×620 | 1,221 | 1 |
+| the counter | 1920×360 | 1,708 | 1 |
+| the left bookcase | 640×720 | 1,803 | 1 |
+| the desk | 1920×720 | 1,853 | 1 |
+| the right bookcase | 640×720 | 2,043 | 1 |
+| the doorway wall | 1920×720 | 2,508 | 1 |
+
+**A round stroke at a sprite's own size.** The candle's wax-light stroke, `round_hard`,
+three points, `pressure="taper"`, over the candle's wax at `0.82`, its colour at `0.93`;
+the mean change of the pixels it moved, in 8-bit levels:
+
+| canvas | `size=0.009` | at 0.6 | at 0.9 | at 0.9, twice |
+|---|---|---|---|---|
+| 120×300 | 2.7 px | 6.0 | 8.5 | 13.9 |
+| 480×1200 | 10.8 px | 17.4 | 20.3 | 23.7 |
+
+At `size=0.012` the same: 3.6 px, 9.8, 13.0 and 18.0; 14.4 px, 21.2, 23.3 and 25.7.
+
+**Umber and ultramarine** through `p.at_value(p.mix("burnt_umber", "ultramarine", t), v)`,
+read as an sRGB hue: burnt umber alone 17°; `t` = 0.10, 12° to 17°; 0.18, 6° to 13°; 0.25,
+343° to 0°; 0.35, 276° to 320°, at values 0.20 to 0.50, the saturation falling from 0.25
+to 0.05. Mixed with titanium white at 0.2 or 0.4 before `at_value`, the same hex.
+
+**The checklists.** Six of the nine say *no clear light*. The named light against the rest
+of the canvas, each at its brightest twentieth, off the shipped PNGs:
+
+| piece | light | rest | clear by |
+|---|---|---|---|
+| the left bookcase | 0.33 | 0.34 | -0.01 |
+| the right bookcase | 0.32 | 0.32 | 0.00 |
+| the locked case | 0.39 | 0.31 | +0.07 |
+| the doorway wall | 0.41 | 0.40 | +0.01 |
+| the counter | 0.42 | 0.41 | +0.01 |
+| the patron | 0.53 | 0.53 | 0.00 |
+
+Each keeps its top twentieth at or under `0.54`, the box's middle. The candle's checklist
+reports 67.14% of its canvas bare ground, the patron's 25.28%: the surround the cut
+removes.
+

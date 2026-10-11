@@ -1,15 +1,17 @@
 # What the painters asked for, and what was done
 
-Twenty-four sessions painted a picture from the guide and then wrote down what the engine
-and the documentation had cost them — twenty-five paintings, because the ninth painted its
-subject twice — a synthesis pass gathered the points more than one of them raised, and
-the repository's owner put two further questions to the third painter. The winter
+Twenty-five sessions painted a picture from the guide and then wrote down what the engine
+and the documentation had cost them — thirty-four paintings, because the ninth painted its
+subject twice and the twenty-fifth painted nine pieces of a game — a synthesis pass
+gathered the points more than one of them raised, and the repository's owner put two
+further questions to the third painter. The winter
 greenhouse was painted before the fogged glass and filed after it, in its own section
 below, so [`paintings/`](paintings) and this register count the same pictures again.
 This file is the register: **what was wrong, and what was done about it.**
 
-**One round is open: Uktarl's Room, at the top** — one painter against 0.8.0, **8 engine
-items and 4 documentation items**, none of them acted on yet. It is written where every
+**One round is open: two painters against 0.8.0, at the top** — Uktarl's Room, **8 engine
+items and 4 documentation items**, and The Curator, nine pieces of game art, **6 engine
+items and 1 documentation item**, none of them acted on yet. It is written where every
 open round before it has been written, and will be folded in where it stands once it is
 acted on. Below it is the bell-warden's round — two painters
 against 0.7.0: the Bell-Warden, **9 engine items and 4 documentation items**, and Wenna
@@ -68,6 +70,7 @@ changed rather than that it worked.
 | The Bell-Warden — a stone figure on a plinth, 280 of 300, `paintings/Claude/bell_warden/`, the first painting against 0.7.0, from the package, as sample art for another of the owner's projects | 9 | 4 |
 | Wenna Brask — a woman by a lantern at dusk, 262 of 300, `paintings/Claude/wenna_brask/`, the second against 0.7.0, for the same pack, by a second session that began from the first painter's notes | 11 | 8 |
 | Uktarl's Room — four figures in vampire costume at cards under a carved sunrise, 410 of 450, `paintings/Claude/uktarl_krannoc/`, the first against 0.8.0, as a handout for the owner's own campaign, by a session that began from the two earlier painters' notes | 8 | 4 |
+| The Curator — nine pieces of interim art for the owner's own game, 1,700 of 2,190, `paintings/Claude/the_curator/`, the second against 0.8.0, from the package in a cloud session, its transcript not handed over | 6 | 1 |
 
 **How much each painter had read is the first thing to check before trusting any
 agreement between them.** Only the first session is a clean measurement of the guide on
@@ -126,6 +129,10 @@ disagree, it may be the context talking.
   It is the most-read painter against the split documents, and the fourth in four
   rounds to say they are too long. Its agreement with the two before it is not
   independent either.
+- **The Curator's painter** began from nothing of theirs that its manifest shows. It read
+  the card and most of `PAINTER.md` through `easel guide --full`, five stretches of
+  `RECIPES.md`, and `REFERENCE.md` for *direction*; it never rehearsed, and painted
+  without the check after a pass.
 
 ---
 
@@ -221,6 +228,65 @@ order of work. `boxes:` read 0 of 44.
   rebuild from the final scripts has no `sun` at all.
 - **The disc rule groups across passes and subjects**: the left bandit's group of five
   holds a ridge laid on the relief eight passes earlier, linked to her eye 56 px away.
+
+---
+
+## The Curator: a second painter against 0.8.0
+
+**OPEN, in the same round.** Six engine items and one documentation item, from a second
+painter — `claude-opus-5-5`, at max effort, in a cloud session of the owner's own game --
+which installed `easel-paint` 0.8.0 into the game's tools and painted **nine pieces of
+interim art** for it: a doorway wall with its arch cut out, the room beyond, a desk, a
+counter, two bookcases, a locked case, a hooded patron and a candle, the last two cut out
+as sprites, **1,700 strokes of 2,190**. The right-hand column is empty because nothing has
+been done yet; the plan is [`PLAN-0.9.0.md`](PLAN-0.9.0.md), section 3b and workstreams K
+to N.
+
+**It painted unlike any painter here.** It never called `s.report()`, `cost()`, `easel run`
+or `easel check`: it re-ran each script whole, by stage, read the stage images, and called
+`s.checklist()` once at the end. It read the card and most of `PAINTER.md`, a fifth of
+`RECIPES.md`, and `REFERENCE.md` for *direction* only. **Its transcript was not handed
+over**, so every *what checking found* below is from its scripts, its manifest and its
+exports, measured on 2026-10-11 on the checkout whose engine is `v0.8.0`'s.
+
+### The engine
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **No transparency**: exports are flat RGB, so the arch, the patron and the candle each needed a cut script along the outlines it had painted — *for sprites, the biggest missing feature*. Confirmed: `export()` takes a path, `impasto` and `sketch`. Its cut draws the polygons at 4×, scales down and blurs 0.8 px. | O | |
+| **Paint deposit is hard to predict**: `density=1.0` left gaps and needed `solid=True`; shading at opacity 0.6 moved the candle a few levels, so it went to 0.9, twice. ~~*Opacity*~~ **The candle's brush was under its landing width**: painted at the sprite's own 120×300, `size=0.009` is 2.7 px; one stroke moves its pixels a mean 6 levels at 0.6, 14 at 0.9 laid twice, and on a canvas four times larger, 17 at 0.6 once. The gaps are the comb's. | O | |
+| **Colour drift**: umber and ultramarine lightened with white kept turning lavender; the stones and boards came out purple twice. Confirmed and narrow: burnt umber is hue 17°, with 10 to 18% ultramarine a red-brown, at 25% neutral leaning magenta, at 35% violet. `at_value` re-solves the value whatever white went in, so the white changed nothing. Its fix: yellow ochre, and 4 to 6% ultramarine. | O | |
+| **The checklist assumes a standalone painting**: *no clear light* on shelves kept dark to sit behind an archway. Six of the nine say it; each names a light and none declares a key. None has a light standing clear, so the light-naming line this round plans would stay silent, but all six keep their top twentieth under `0.54`, so `key="low"` would have said *low-key, as the plan says*. **And the cut-outs are read whole**: the candle's checklist reports 67% bare ground on the canvas the cut throws away. | O | |
+| **Geometric subjects fight the method**: shelves, bars and joints are ruled lines and combs, which the guidance warns against, and those pieces look the stiffest. *The one ruled line* in `RECIPES.md` is the one recipe for it; it read five other stretches of that file. | R | |
+| **Polygons are given in 0-1**: a pixel helper in every script, and `s.px` does not reach polygons. Four of its eight scripts define `n(x, y)`; the desk and the counter, the widest, are drawn in fractions. The third of the last four painters to draw through a pixel helper. | O | |
+
+### The documentation
+
+| What was wrong | Kind | What was done |
+|---|---|---|
+| **Method, not reference**: signatures read from the code — `ribbon`'s width, the pressure profiles, `press` on one point; it asked for a one-page table of brushes, parameters and units, and how opacity, density and `solid` combine. ~~*Thin as an API reference*~~ **The reference exists, and nothing sent it there**: `REFERENCE.md` gives the width (line 24), the profiles (203), `density` (126), `solid` (127), `opacity` (135) and a brush table (183), and `easel guide --reference` prints it; the card names `REFERENCE.md` once, for the plan. How the three combine is in no file. | O | |
+
+### What worked, recorded because a finding is still true afterwards
+
+**Determinism** as a pipeline: the scripts committed as the source of the art, four pieces
+repainted after a review. On its machine, to the pixel; re-run on another, every piece
+within one level, in 12 to 2,508 pixels — which no document a painter reads says. **The
+messages**: the floor with a hex and a hue, a brush too small with the width and the fix,
+`press` with three alternatives. **The method's order**, and *what you are bad at*, which
+described its first mistakes. **`at_value`**.
+
+### The painting, and what the painter owns
+
+- *Honest interim quality*: it reads as painted and holds together as a set; flat stones and
+  stiff bars; *a more practised hand would get more from it*.
+
+### Found while filing, not by the painter
+
+- **Its run logs never reached the evidence**: the game's repository ignores `*.log`. The
+  checklists in [`reports.txt`](paintings/Claude/the_curator/reports.txt) are re-run.
+- **The engine spoke at the call on three pieces**: a pressure list on a bristle, two
+  masses spilling 40% and 62% of their paint outside their places, a planned pair reading
+  as one, and a solid comb twice. Six pieces ran with nothing said.
 
 ---
 

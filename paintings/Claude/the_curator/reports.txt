@@ -1,0 +1,195 @@
+What s.checklist() prints at stage 99 for each of the nine pieces, re-run on 2026-10-11
+on the checkout whose engine is v0.8.0's (Windows), from the committed scripts as the
+README runs them. The painter's own logs of these runs were gitignored in its repository
+and never reached the evidence branch; the scripts are seeded, so these are the same lines
+but for the one-level rounding the export differs by between machines (NOTES.md).
+
+== beyond_doorway
+<sys>:0: EaselWarning: pressure=[1, 0.55, 0] on a bristle tip changes the paint, not the width: a chisel keeps the width it was given, so this mark comes back a rectangle with a lighter end rather than a taper. A mark that tapers wants round_hard or liner, whose width follows pressure; a flat or knife wants a length.
+C:\git\projects\the-curator\tools\easel\beyond_doorway.py:55: EaselWarning: block_in on this shape lays about 1.6x the place it was handed, 39% of the paint outside it: a 'flat' at size=0.05 is 63% of the place's shorter side (0.079), and a brush hangs half its width past every pass it lays. Inset the place by half the brush (place.inset(0.025)), or take a brush under a fifth of it (size=0.0158); edge="hard" holds the paint to the outline, its edge broken by the tooth rather than cut.
+  s.block_in(stone, "flat", colour, density=0.9, size=0.05, direction="horizontal", opacity=0.75)
+C:\git\projects\the-curator\tools\easel\beyond_doorway.py:68: EaselWarning: smudge runs 0.20 of the canvas along a boundary, a step of 0.10 across it: its strip is about a brush tall at any length and lands halfway between the two, so over this length it reads as a third band -- dark, mid, light, two edges where there was one. Smudge the stretch you mean to lose, under about 0.10, and lay paint across the rest.
+  s.smudge([(0.70, 0.787), (0.86, 0.783), (0.98, 0.781)])
+123 of 150 strokes spent, 27 left
+checklist for this painting -- 123 of 150 marks spent
+  - bands declared as the subject: 98 long marks run within 6 degrees of horizontal, and nothing crosses them yet.
+    laid at beyond_doorway.py:23, :24, :29 (7 calls), :35 (7 calls), :41 (3 calls), :55 (12 calls) and 4 more -- records 0-45, 48-51, 53-64, 67, 71-80, 85-87, 91, 92, 94-100 and 13 more
+  - 7 short marks with a pressure list on a bristle tip: pressure changes a chisel's paint, not its width, so these are rectangles with a lighter end. A mark that tapers wants round_hard or liner.
+    laid at beyond_doorway.py:35 (7 calls) -- records 19-25
+  plan: 3 of 3 places inside 0.10
+  lightest: A3:B6 reads 0.65 as a place, 0.68 at its brightest twentieth, the lightest of the 3 places planned
+  subject: 1 of 123 marks so far (1%), against 20% planned -- behind, if the subject is finished
+  values: 0.26-0.66 of a box that reaches 0.13-0.96, clusters at 0.32, 0.44, 0.63; a clear light, mid and dark
+  edges: 29% of edges are under 2.5 px wide, median 3.3 px
+  ground: 5.61% of the canvas is still bare ground
+  boxes: 0 of 23 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 27 of 150 unspent (18%)
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'the wall beyond the arch, brightening toward a window out of sight on the left'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== desk
+C:\git\projects\the-curator\tools\easel\desk.py:44: EaselWarning: block_in on this shape lays about 1.7x the place it was handed, 40% of the paint outside it: a 'bristle' at size=0.12 is 60% of the place's shorter side (0.201), and a brush hangs half its width past every pass it lays. Inset the place by half the brush (place.inset(0.06)), or take a brush under a fifth of it (size=0.0403); edge="hard" holds the paint to the outline, its edge broken by the tooth rather than cut.
+  s.block_in(blob((0.48, 0.55), 0.34, 0.30, wobble=0.3, seed=5), "bristle", "oak_light", density=0.45, size=0.12, direction="horizontal", opacity=0.28)
+103 of 170 strokes spent, 67 left
+checklist for this painting -- 103 of 170 marks spent
+  - bands declared as the subject: 104 long marks run within 6 degrees of horizontal, and nothing crosses them yet.
+    laid at desk.py:24, :28 (5 calls), :30 (5 calls), :40 (10 calls), :44, :46 (2 calls) and 8 more -- records 0-103
+  plan: 3 of 3 places inside 0.10
+  lightest: C3:F5 reads 0.57 as a place, 0.60 at its brightest twentieth, the lightest of the 3 places planned
+  subject: 3 of 103 marks so far (3%), against 15% planned -- behind, if the subject is finished
+  values: 0.25-0.60 of a box that reaches 0.13-0.96, clusters at 0.26, 0.44, 0.55; a clear light, mid and dark
+  edges: 34% of edges are under 2.5 px wide, median 3.2 px
+  ground: 0.00% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+  boxes: 0 of 12 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 67 of 170 unspent (39%) -- name the weakest passage and spend them there
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: "the curator's desk, oak worn pale where the work is done, under the documents". Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== counter
+C:\git\projects\the-curator\tools\easel\counter.py:36: EaselWarning: block_in on this shape lays about 2.6x the place it was handed, 62% of the paint outside it: a 'bristle' at size=0.08 is 159% of the place's shorter side (0.050), and a brush hangs half its width past every pass it lays. Inset the place by half the brush (place.inset(0.04)), or take a brush under a fifth of it (size=0.01); edge="hard" holds the paint to the outline, its edge broken by the tooth rather than cut.
+  s.block_in(blob((0.5, 0.25), 0.36, 0.12, wobble=0.3, seed=3), "bristle", "oak_lit", density=0.45, size=0.08, direction="horizontal", opacity=0.25)
+78 of 120 strokes spent, 42 left
+checklist for this painting -- 78 of 120 marks spent
+  - bands declared as the subject: 79 long marks run within 6 degrees of horizontal, and nothing crosses them yet.
+    laid at counter.py:22, :23, :26 (2 calls), :27 (2 calls), :34 (6 calls), :36 and 3 more -- records 0-78
+  plan: 2 of 3 places inside 0.10; A1:H1 -0.14
+  lightest: C3:F4 reads 0.37 and A1:H1, the plan's own light, 0.30 as a place, 0.42 at its brightest twentieth -- 0.07 under
+  subject: 1 of 78 marks so far (1%), against 15% planned -- behind, if the subject is finished
+  values: 0.18-0.41 of a box that reaches 0.13-0.96, clusters at 0.21, 0.29, 0.38; no clear light -- nothing above 0.41, and the box's own middle is 0.54
+  edges: 36% of edges are under 2.5 px wide, median 3.1 px
+  ground: 5.32% of the canvas is still bare ground
+  boxes: 0 of 7 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 42 of 120 unspent (35%) -- name the weakest passage and spend them there
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'the counter between the curator and the patron: dark oak, its far lip worn pale by elbows'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== shelf_left
+410 of 460 strokes spent, 50 left
+checklist for this painting -- 410 of 460 marks spent
+  - bands declared as the subject: 329 long marks run within 6 degrees of vertical, and 82 long marks in the picture cross them at 30 degrees or more.
+    laid at shelves.py:62 (81 calls), :69 (3 calls) -- records 18-336, 352-361
+  plan: 1 of 2 places inside 0.10; A1:H1 -0.14
+  lightest: A1:H1 reads 0.26 as a place, 0.33 at its brightest twentieth, the lightest of the 2 places planned
+  values: 0.15-0.34 of a box that reaches 0.13-0.96, clusters at 0.16, 0.24, 0.31; no clear light -- nothing above 0.34, and the box's own middle is 0.54
+  edges: 43% of edges are under 2.5 px wide, median 2.7 px
+  ground: 0.10% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+  boxes: 0 of 91 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 50 of 460 unspent (11%)
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: "a wall of old books, every spine its own, oak shelves catching the window's light". Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== shelf_right
+388 of 460 strokes spent, 72 left
+checklist for this painting -- 388 of 460 marks spent
+  - bands declared as the subject: 321 long marks run within 6 degrees of vertical, and 67 long marks in the picture cross them at 30 degrees or more.
+    laid at shelves.py:62 (75 calls), :69 (3 calls) -- records 18-215, 217-329, 345-354
+  plan: 1 of 2 places inside 0.10; A1:H1 -0.16
+  lightest: A1:H1 reads 0.24 as a place, 0.32 at its brightest twentieth, the lightest of the 2 places planned
+  values: 0.15-0.32 of a box that reaches 0.13-0.96, clusters at 0.16, 0.23, 0.29; no clear light -- nothing above 0.32, and the box's own middle is 0.54
+  edges: 45% of edges are under 2.5 px wide, median 2.7 px
+  ground: 0.00% of the canvas is still bare ground -- under 0.5%, and the checklist asks for some
+  boxes: 0 of 85 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 72 of 460 unspent (16%)
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: "a wall of old books, every spine its own, oak shelves catching the window's light". Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== locked_shelf
+211 of 240 strokes spent, 29 left
+checklist for this painting -- 211 of 240 marks spent
+  - bands declared as the subject: 204 long marks run within 6 degrees of vertical, and 8 long marks in the picture cross them at 30 degrees or more.
+    laid at locked_shelf.py:33, :34, :45 (27 calls), :51 (6 calls), :56, :59 (4 calls) and 3 more -- records 0-51, 54-116, 119-189, 192, 194-210
+  plan: 1 of 2 places inside 0.10; D4:E5 -0.49
+  lightest: B2:G7 reads 0.12 and D4:E5, the plan's own light, 0.11 as a place, 0.39 at its brightest twentieth -- 0.01 under
+  subject: 1 of 211 marks so far (0%), against 25% planned -- behind, if the subject is finished
+  values: 0.08-0.31 of a box that reaches 0.13-0.96, clusters at 0.11, 0.21, 0.36; no clear light -- nothing above 0.31, and the box's own middle is 0.54
+  edges: 48% of edges are under 2.5 px wide, median 2.6 px
+  ground: 1.61% of the canvas is still bare ground
+  boxes: 0 of 32 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 29 of 240 unspent (12%)
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'a locked case, the grille catching a little light, the brass lock its one bright note'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+
+== doorway_wall
+245 of 320 strokes spent, 75 left
+checklist for this painting -- 245 of 320 marks spent
+  - bands declared as the subject: 163 long marks run within 6 degrees of horizontal, and 82 long marks in the picture cross them at 30 degrees or more.
+    laid at doorway_wall.py:28, :34 (4 calls), :38 (2 calls), :71 (8 calls), :77, :82 and 1 more -- records 0-35, 117-241, 244, 245
+  plan: 1 of 2 places inside 0.10; D1:E2 -0.21 (26% of it lighter by more than 0.15)
+  lightest: A1:B3 reads 0.23 and D1:E2, the plan's own light, 0.19 as a place (26% of it lighter by more than 0.15), 0.41 at its brightest twentieth -- 0.04 under
+  values: 0.18-0.40 of a box that reaches 0.13-0.96, clusters at 0.19, 0.28, 0.39; no clear light -- nothing above 0.40, and the box's own middle is 0.54
+  edges: 48% of edges are under 2.5 px wide, median 2.6 px
+  ground: 7.27% of the canvas is still bare ground
+  boxes: 0 of 20 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 75 of 320 unspent (23%)
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'the arch stones catch the light coming through from the room beyond; the wall round them sinks into shade'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+doorway_wall.png (1920, 720)
+
+== patron
+C:\git\projects\the-curator\tools\easel\patron_default.py:53: EaselWarning: 1 planned pair read as one where they meet: D1:E3 and B4:G6 0.00 apart. Two values closer than 0.10 read as one mass, and these places touch -- so separate them in the plan now, or decide that the join is where the edge goes.
+  s.plan(why="a figure against the bright doorway: all shadow, with the light behind just catching hood and shoulders",
+C:\git\projects\the-curator\tools\easel\patron_default.py:58: EaselWarning: block_in(solid=True) with a bristle ('bristle'): solid= sets load=1.0 and load_falloff=0.0, which closes the gaps along each pass and not the ones the comb leaves across it. Measured at size=0.04, density=0.8, a shaped mass comes back 0.16% bare in 47 blobs on a mid ground -- and 3.16% in 373 blobs, the largest 2270 px, on a dark one, because a hole is a contrast rather than a gap. density=1.2 closes them, at about a fifth more passes; a 'flat' or 'knife' closes them at this density for the same money; crossed passes for twice it.
+  s.block_in(polygon([n(x, y) for x, y in grown(CLOAK, 8)]), "bristle", "cloak", density=1.0, size=0.06, direction="vertical", solid=True)
+C:\git\projects\the-curator\tools\easel\patron_default.py:60: EaselWarning: block_in(solid=True) with a bristle ('bristle'): solid= sets load=1.0 and load_falloff=0.0, which closes the gaps along each pass and not the ones the comb leaves across it. Measured at size=0.04, density=0.8, a shaped mass comes back 0.16% bare in 47 blobs on a mid ground -- and 3.16% in 373 blobs, the largest 2270 px, on a dark one, because a hole is a contrast rather than a gap. density=1.2 closes them, at about a fifth more passes; a 'flat' or 'knife' closes them at this density for the same money; crossed passes for twice it.
+  s.block_in(polygon([n(x, y) for x, y in grown(HOOD, 8)]), "bristle", "hood", density=1.0, size=0.05, direction="vertical", solid=True)
+95 of 160 strokes spent, 65 left
+checklist for this painting -- 95 of 160 marks spent
+  - bands declared as the subject: 67 long marks run within 6 degrees of vertical, and 27 long marks in the picture cross them at 30 degrees or more.
+    laid at patron_default.py:58, :60, :64, :67 (3 calls) -- records 0-29, 53-88, 91
+  plan: 2 of 2 places inside 0.10
+  lightest: D1:E3 reads 0.11 as a place (11% of it lighter by more than 0.15), 0.53 at its brightest twentieth, the lightest of the 2 places planned
+  values: 0.09-0.54 of a box that reaches 0.13-0.96, clusters at 0.09, 0.28, 0.53; no clear light -- nothing above 0.54, and the box's own middle is 0.54
+  edges: 33% of edges are under 2.5 px wide, median 3.3 px
+  ground: 25.28% of the canvas is still bare ground
+  boxes: 0 of 4 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 65 of 160 unspent (41%) -- name the weakest passage and spend them there
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'a figure against the bright doorway: all shadow, with the light behind just catching hood and shoulders'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+patron_default.png (400, 620)
+
+== candle
+47 of 110 strokes spent, 63 left
+checklist for this painting -- 47 of 110 marks spent
+  - bands declared as the subject: 28 long marks run within 6 degrees of vertical, and 16 long marks in the picture cross them at 30 degrees or more.
+    laid at candle.py:41, :45 (2 calls), :46 (2 calls), :47, :52 (3 calls), :56 -- records 12-35, 37, 39, 41, 43
+  - 13 marks under size=0.02 inside the painting's first 60: detail before the masses are down. A good painting is mostly big statements.
+    laid at candle.py:47, :48, :52 (3 calls), :53 (3 calls), :56, :57 and 3 more -- records 35-47
+  - 5 small marks with a round tip at tip_wobble=0 sit together around (0.54, 0.12): that is one disc printed 5 times. Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a brush set down once and 0.7 a clot, redrawn per mark the way a bristle's comb is. Or give the mark a length -- a round tip reads as a capsule under 7 times its own width.
+    laid at candle.py:52 (2 calls), :53 (2 calls), :56 -- records 39-43
+  plan: 1 of 2 places inside 0.10; D1:E2 -0.13 (32% of it darker by more than 0.15)
+  lightest: D1:E2 reads 0.77 as a place (32% of it darker by more than 0.15), 0.86 at its brightest twentieth, the lightest of the 2 places planned
+  values: 0.37-0.80 of a box that reaches 0.13-0.96, clusters at 0.35, 0.54, 0.78; a clear light, mid and dark
+  edges: 42% of edges are under 2.5 px wide, median 3.0 px
+  ground: 67.14% of the canvas is still bare ground
+  boxes: 0 of 3 masses were laid in a rectangle (0%) -- check the background hardest
+  unspent: 63 of 110 unspent (57%) -- name the weakest passage and spend them there
+
+three this cannot answer, and they are the ones to answer slowly:
+  - Cover the thing you measured most carefully. Is it still attached to the picture -- and is the lightest mass the one you planned to be?
+  - Which passage would you apologise for? That is the one the marks left are for, not the one you have most recently been enjoying.
+  - You wrote: 'a tallow candle in a brass dish, lit from its own flame above, the wax brightest near the top'. Is that reason still in the picture, looked at small -- s.look(scale=256)?
+candle.png (120, 300)
