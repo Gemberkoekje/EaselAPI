@@ -70,3 +70,28 @@ The owner sends batch 2: run `python scripts/probe_uktarl_session.py --soft --ru
 `python paintings/Claude/uktarl_krannoc/questions-step2/make_package.py`, and send
 `out/painter-questions-uktarl-step2.zip`. Steps 3 (A and D) and 6 (E and F) need nothing
 from it and can start now.
+
+---
+
+## Closed, 2026-10-11: batch 2 answered
+
+On branch `file-uktarl-answers-step2`, off `main` at `bfd0107` (#102 merged).
+[`answers-step2.md`](paintings/Claude/uktarl_krannoc/answers-step2.md) is filed verbatim;
+`--answers2` re-measures its claims; the plan's section 6 has *Answered after the bench*,
+`CALIBRATION.md` the re-measurement, `SUGGESTIONS.md` the canvas test as a later
+candidate, and `questions-step2/README.md` a line saying when it was sent and what in
+`KEY.md` was wrong.
+
+- **The painter's blind picks matched the key** letter for letter: B1 the edge meant, B3 a
+  blur, B2 damage. It read Part 2's text first and says so; Part 2 names no letters.
+- **Every question of the round is answered.** What changed from the bench's reading:
+  near-copies withdrawn (the rule stays, with C4); bars and graded unchanged; G3 not built
+  (a change of the step-1 answer); a softness **per stretch** as well as per hold.
+- **The bench was wrong once**: *Uktarl's sheet barely changes* measured along his
+  terminator, under the wig. Measured over the lit plane, B1 darkens 24% of it, median 0.14.
+- **New from the answers**: the pass check's disc rule counts the signature; step 5 leaves
+  it out, as the closing audit does.
+
+**Next: steps 3 to 9.** Step 3 (`clip_out=` at `feather=0`, `difference()` for read places,
+the rehearsal look's flags) starts from `PLAN-0.9.0.md` section 4A and 4D and this file.
+

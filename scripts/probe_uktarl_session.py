@@ -25,6 +25,7 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --direction  # 4G: what a direction costs
     python scripts/probe_uktarl_session.py --key        # 4H: the line beside a named light
     python scripts/probe_uktarl_session.py --reading    # 4I: the reading path's inventory
+    python scripts/probe_uktarl_session.py --answers2   # the second answers, re-measured
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -758,6 +759,50 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.casefold()).strip("_")
 
 
+def probe_answers2(rb: bell.Rebuilt) -> None:
+    """The second answers' measured claims: Uktarl's lit plane under B1, and the laps."""
+    heading("answers-step2, 8: Uktarl's lit plane, softened by B1")
+    scope = bell.scope_of("uktarl")
+    label = "p07_uktarl_head.py"
+    lit = scope["uk_face_lit"]
+    laid = {}
+    for kind in ("as painted", "B1"):
+        s = rb.opened(label)
+        soft = {} if kind == "as painted" else {tuple(lit.points): 8.0}
+        with softening(soft, kind):
+            bell.run_pass(s, UKTARL / label, UKTARL / "prelude.py")
+        laid[kind] = bell.values(s)
+    w, h = rb.session.canvas.width, rb.session.canvas.height
+    inside = lit.coverage(w, h) > 0.5
+    darker = (laid["as painted"] - laid["B1"])[inside]
+    moved = darker[darker > 0.05]
+    print(f"  {int(inside.sum())} pixels of the lit plane; B1 darkens {moved.size} of them "
+          f"({moved.size / inside.sum():.0%}) by more than 0.05, median "
+          f"{float(np.median(moved)) if moved.size else 0.0:.2f}")
+    outline = [[(float(x), float(y)) for x, y in lit.closed]]
+    for kind, view in laid.items():
+        widths = step_widths(view, outline, reach=8.0)
+        print(f"  {kind:<11} the step across the lit plane's whole outline: median "
+              f"{bell.pct(widths, 50):.1f} px over {len(widths)} samples")
+
+    heading("answers-step2, 4a: the value across the laps' passes, as painted")
+    view = bell.values(rb.session)
+    for name in ("a_lower", "d_lower"):
+        shape = scope[name]
+        mask = shape.coverage(w, h) > 0.99
+        ripples = []
+        for y in np.nonzero(mask.any(axis=1))[0]:
+            row = view[y, mask[y]]
+            if row.size > 12:
+                core = row[3:-3]
+                trend = np.polyval(np.polyfit(np.arange(core.size), core, 1),
+                                   np.arange(core.size))
+                ripples.append(float(np.abs(core - trend).max()))
+        print(f"  {shape.name}: across each row inside it, the largest departure from the "
+              f"row's own slope -- median {bell.pct(ripples, 50):.3f}, "
+              f"p90 {bell.pct(ripples, 90):.3f}, over {len(ripples)} rows")
+
+
 def probe_join(rb: bell.Rebuilt) -> None:
     """P9: how wide the step across each face's terminator is, as painted."""
     heading("P9: the join across each face's terminator, as painted")
@@ -1308,8 +1353,9 @@ BENCHES = (
     ("direction", "4G: G1, G2 and G3 over the corpus"),
     ("key", "4H: H2 over the corpus's plans with a named light"),
     ("reading", "4I: the reading path's inventory"),
+    ("answers2", "the second answers' measured claims, re-measured"),
 )
-_NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "join", "shares"}
+_NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "join", "shares", "answers2"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
 
 
@@ -1343,6 +1389,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_soft(rb)
     if "join" in run:
         probe_join(rb)
+    if "answers2" in run:
+        probe_answers2(rb)
     if "shares" in run:
         probe_shares(rb)
     kept = corpus() if run & _NEEDS_CORPUS else None

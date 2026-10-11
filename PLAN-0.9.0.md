@@ -18,8 +18,9 @@ written (`paintings/Claude/uktarl_krannoc/questions-step1.md`). Nothing under `s
 changes. 2026-10-10: the painter's answers are filed (section 6), and **step 2 is done**
 on branch `measure-uktarls-room`: `scripts/probe_uktarl_session.py` benched every
 candidate (`CALIBRATION.md`, the round's *Step 2*; `NOTES-step2.md`), and batch 2 is
-written (`paintings/Claude/uktarl_krannoc/questions-step2/`). Next: the owner sends batch
-2; steps 3 and 6 can start meanwhile.**
+written (`paintings/Claude/uktarl_krannoc/questions-step2/`). 2026-10-11: batch 2 is
+answered (`answers-step2.md`, section 6's *Answered after the bench*), and every question
+of the round has its answer. Next: steps 3 to 9, in order.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -444,6 +445,22 @@ What each benched candidate showed against the answers above; the numbers are in
 Written: [`questions-step2/`](paintings/Claude/uktarl_krannoc/questions-step2/README.md).
 The soft hold blind on its own eight edges and the whole picture; the three rules'
 candidates on the corpus's crops; G1, G2, G3 and the standing lines' form.
+
+**Answered after the bench, 2026-10-11**, filed verbatim as
+[`answers-step2.md`](paintings/Claude/uktarl_krannoc/answers-step2.md); its **M** claims
+re-measured by `scripts/probe_uktarl_session.py --answers2`. The painter's blind picks
+matched the key letter for letter; it read Part 2's text, which names no letters, before
+the blind sheets, and says so.
+
+| | The painter chose | So the round builds |
+|---|---|---|
+| 4B | **B1**, a smooth ramp inward, the edge meant on every sheet it could tell; B3 read as a blur, B2 as damage. **A softness per hold and per stretch**: a lit plane wants its whole outline soft; a far side wants a run of the shape's own points (`soft=[(dp_body.closed[4:8], s.px_size(9))]`), tapering back to the hold's edge at each end | step 4: B1, per hold and per stretch. Re-measured: B1 on Uktarl's lit plane darkens 24% of it by over 0.05, median 0.14, and widens the step across its outline from 1.5 to 3.1 px; the bench's *barely changes* read his terminator, under the wig, and was wrong |
+| 4C, disc | **near-copies withdrawn**: of the crops it dropped, the sonnet's stairs, the fable's berries and the heron's lamp and specks are one disc printed. The rule as it is, with the per-place declaration (C4) for faces | step 5: C4 only. **New:** the pass rule counts the signature (`p17_finish.py`, records 425 to 428), which the closing audit leaves out; leave it out of the pass rule too |
+| 4C, bars and graded | **the rules as they are**: touching keeps what reads as one flat colour and drops what reads as bars; a mass as one spares one false finding for four true. A test on the canvas instead -- the value alternating at the stack's spacing by over 0.03, or climbing in plateaus -- as a later candidate | nothing this round; the canvas test to `SUGGESTIONS.md` as a candidate to bench. Re-measured: across the laps' rows, the largest departure from each row's slope is 0.015 and 0.003 |
+| C5 | **findings first, a standing line only when it changes**, a rehearsal compared against the painting as committed, the lines left out named on one line (*unchanged: values, edges, ground*); the closing checklist prints every line | step 5 |
+| G1 | **a notice, both prices** | step 7 |
+| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a) |
+| G3 | **leave it named; do not build it** -- a change of the step-1 answer, on the bench's 12 strokes | nothing |
 
 ---
 

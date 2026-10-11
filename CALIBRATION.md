@@ -4641,3 +4641,12 @@ measuring* (2,797) and `PAINTER.md`'s *The workflow* (1,763). The share of a sec
 runs of six words that a string in the engine also holds is 38% for *What the tool will
 tell you*, 18% for *Looking, planning, measuring*, and under 10% for every recipe but
 lettering's (11%).
+
+**The second answers, re-measured** (2026-10-11, `--answers2`). B1 at 8 px on Uktarl's lit
+plane, alone: 384 of its 1,573 pixels (24%) darker by more than 0.05, median 0.14 (the
+painter, on the sheet at twice the size: 29%, 0.14); the step across the plane's whole
+outline 1.5 px as painted, 3.1 with B1. The table above read his terminator, which lies
+under the wig. Across the rows of the laps' interiors, the largest departure from each
+row's own slope is a median 0.015 on hers and 0.003 on the doppelganger's, under the 0.03
+the painter's canvas test would set. The pass check's disc rule counted the signature on
+`p17_finish.py` (records 425 to 428), which the closing audit leaves out.

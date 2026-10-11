@@ -155,9 +155,13 @@ was measured on 2026-10-01 on the checkout whose engine is `v0.8.0`'s. **Three c
 changed shape under that checking**: the 21 discs, the mountain's 129 strokes, and the
 light a dark picture cannot satisfy, whose remedy already exists.
 
-**The decisions are the painter's**, by the owner's ruling since 0.7.0: the plan's first
-questions go to it through the owner, in
-[`questions-step1.md`](paintings/Claude/uktarl_krannoc/questions-step1.md).
+**The decisions are the painter's**, by the owner's ruling since 0.7.0, and it has made
+them: [`answers.md`](paintings/Claude/uktarl_krannoc/answers.md) to the plan's first
+questions, and [`answers-step2.md`](paintings/Claude/uktarl_krannoc/answers-step2.md) after
+the bench, the plan's section 6 recording what each decides. **One candidate it raised is
+for a later round**: the bars and graded rules asked of the canvas rather than the marks --
+the value across a stack alternating at its own spacing by over `0.03`, or climbing in
+plateaus -- which no bench has measured yet.
 
 ### The engine
 
