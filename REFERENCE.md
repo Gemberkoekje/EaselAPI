@@ -127,6 +127,18 @@ replayed through the figure. To **read** a place with a hole in it — the wall 
 in a plan, a sample, a thumbnail — `difference(wall, figure)`; a verb that lays paint
 refuses one.
 
+**`soft=` loses a held edge** (0.9.0): the paint fades inward from the outline over the
+width given, a fraction of the long side like `size` — `soft=s.px_size(8)` — nothing on
+the line and all of it that far in, at no extra stroke. Every verb that takes `clip=`
+takes it. A number loses the call's own edge: the mass's outline under `edge="hard"`,
+while `clip=` keeps its edge, or the one `clip=` of a call with no other. A list names
+each: `soft=[(shape, width)]` for a hold's whole outline,
+`soft=[(shape.closed[i:j], width)]` for a stretch of it, a run of the shape's own points,
+which tapers back to the held edge over its width past each end. On what it softens it
+replaces `feather=`'s broken edge with a smooth ramp; `clip_out=` is never softened. On
+a narrow shape it reaches full paint at a quarter of the width, as the feather does. A
+mark saved with one is refused by 0.8.0 rather than replayed hard.
+
 ---
 
 ## The arguments that mean something particular
@@ -157,7 +169,8 @@ refuses one.
 | `passes` (sweep) | `None` | pin the count instead of letting the brush decide |
 | `closed` (sweep) | inferred | treat the edge as a loop. Inferred when the last point is the first; say it when the loop is nearly closed and you meant it to be |
 | `clip` (every verb that lays paint) | `None` | a place — a shape, a region, a name, a run of points — outside which none of the call's paint lands. A **list** of places holds it inside all of them at once: the paint lands where they agree. `block_in(edge="hard")` is this same clip pointed at the mass's own outline |
-| `feather` (wherever `clip` or `edge="hard"` holds the paint) | `0.002` held, nothing otherwise | how far inside the outline the held edge breaks, as a fraction of the long side: two pixels at 1024, three at 1440, where it bites at the export's own pixels as it does at 1024, measured. Between the line and that depth the tooth decides; past the line nothing lands. `0` cuts it on the line. **It breaks an edge against the tooth; it does not soften one** — every hold of the call, the silhouette's included, and wider than the default the break reads as fur: to soften a terminator, lay a join along it (`terminator()`). Refused on a call that holds nothing — a ragged edge is broken by its brush — except `0`, so a helper can pass it on every mark |
+| `feather` (wherever `clip` or `edge="hard"` holds the paint) | `0.002` held, nothing otherwise | how far inside the outline the held edge breaks, as a fraction of the long side: two pixels at 1024, three at 1440, where it bites at the export's own pixels as it does at 1024, measured. Between the line and that depth the tooth decides; past the line nothing lands. `0` cuts it on the line. **It breaks an edge against the tooth; it does not soften one** — every hold of the call, the silhouette's included, and wider than the default the break reads as fur: to lose an edge, `soft=`. Refused on a call that holds nothing — a ragged edge is broken by its brush — except `0`, so a helper can pass it on every mark |
+| `soft` (wherever `clip` or `edge="hard"` holds the paint) | `None` | how far inside the outline a held edge **fades**, as a fraction of the long side: `s.px_size(8)`. A smooth ramp, nothing on the line, in place of the broken edge on what it softens, at no extra stroke. A number is the mass's own outline under `edge="hard"` (`clip=` kept) or a call's one `clip=`; `[(shape, w)]` names a hold, `[(shape.closed[i:j], w)]` a stretch of one. Refused on a call that holds nothing, except `0` |
 | `dry_first` (`cover`) | `True` | dry the area before covering it. Free, and part of the burying recipe: wet paint mixes with what you are trying to lose |
 | `share` (cost) | `0.25` | how much of the remaining budget one plan may take before it warns. `0` never warns |
 | `note` | `""` | a line in the log, for your own benefit |
