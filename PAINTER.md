@@ -231,6 +231,8 @@ s.unguide("bench")                                    # or s.erase(), which take
 
 `erase()` rubs out both drawings, the graphite and the overlay, which is what redrawing
 an arrangement wants; `unguide(note)` takes back one labelled part and leaves the rest.
+**Neither takes a landmark**: an old `mark()` stays labelled on every look until
+`s.unmark(name)`.
 
 The two passages you do not draw are the two that will come out weakest. Draw the small
 things too — a lid, a handle, what stands in a thing — before the pass that paints them.

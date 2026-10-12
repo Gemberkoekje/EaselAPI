@@ -16,7 +16,8 @@ is patched in for the length of one bench and never into the engine.
 
     python scripts/probe_uktarl_session.py              # every flag below
     python scripts/probe_uktarl_session.py --claims     # the rebuild, against the export
-    python scripts/probe_uktarl_session.py --clip-out   # 4A: the backlight, held outside him
+    python scripts/probe_uktarl_session.py --clip-out   # 4A: the backlight, held outside him;
+                                                        # from step 3, as built beside it
     python scripts/probe_uktarl_session.py --answers    # the painter's answers, re-measured
     python scripts/probe_uktarl_session.py --soft       # 4B: the soft hold; blind sheets
     python scripts/probe_uktarl_session.py --join       # P9: the step across the terminators
@@ -125,8 +126,8 @@ def excluding(shapes: list[Polygon], side: str = "line", feather: float = 0.002)
     """
     original = Session._clip_cover
 
-    def patched(self, holds, feather_=0.0):
-        cover = original(self, holds, feather_).copy()
+    def patched(self, holds, feather_=0.0, outs=()):
+        cover = original(self, holds, feather_, outs).copy()
         w, h = self.canvas.width, self.canvas.height
         px = float(feather) * self.canvas.long_side
         for one in shapes:
@@ -220,6 +221,19 @@ def probe_clip_out(rb: bell.Rebuilt) -> None:
             bell.run_source(out, BACKLIGHT_OUT, BACKLIGHT, prelude=prelude)
         laid[label] = out
         print(f"  {label}: laid in {time.time() - started:.1f} s")
+    # Step 3: the same pass through the engine's own clip_out=, no patch. It has to lay
+    # what the bench's cut-on-the-line candidate laid, pixel for pixel.
+    if "clip_out" in Session.stroke.__code__.co_varnames:
+        built = rb.opened(BACKLIGHT)
+        started = time.time()
+        bell.run_source(built, BACKLIGHT_OUT.replace(
+            "clip=wall)", f"clip=wall, clip_out=[{', '.join(UKTARL_PARTS)}])"),
+            BACKLIGHT, prelude=prelude)
+        laid["clip_out, as built (step 3)"] = built
+        same = np.array_equal(built.canvas.rgb, laid["clip_out, cut on the line"].canvas.rgb)
+        print(f"  clip_out, as built: laid in {time.time() - started:.1f} s; "
+              f"{'the same pixels as' if same else 'NOT the same pixels as'} the bench's "
+              f"cut on the line")
 
     base = bell.values(committed)
     h, w = base.shape

@@ -580,6 +580,28 @@ def test_run_hands_back_the_post_pass_check(call, painting):
     assert f"Counted <script>: {laid} strokes" in counted.text
 
 
+def test_a_rehearsals_look_takes_looks_arguments(call, painting):
+    """0.9.0, D: thirteen of one painter's twenty-six rehearsals carried a look script
+    written to crop the look and take a label off a face. The look `run` hands back
+    takes `look`'s own region, scale, sketch and marks; a run that writes no look
+    refuses them."""
+    script = "s.mark('sun', 0.5, 0.5)\ns.block_in('D5', 'flat', 'ochre', size=0.04)"
+    shaped = call("run", session=painting, rehearse=True, script=script,
+                  region="C3:F6", scale=100, sketch=False, marks=False)
+    looked = call("look", session=painting, region="C3:F6", scale=100, sketch=False,
+                  marks=False)
+    assert shaped.picture.size == looked.picture.size
+    plain = call("run", session=painting, rehearse=True, script=script)
+    assert plain.picture.size != shaped.picture.size
+    sheet = call("run", session=painting, alternatives=[script, script],
+                 region="C3:F6", scale=80)
+    assert sheet.picture.size[1] < plain.picture.size[1]
+    with pytest.raises(ToolError, match="writes none"):
+        call("run", session=painting, script=script, region="C3:F6")
+    with pytest.raises(ToolError, match="writes none"):
+        call("run", session=painting, count=True, script=script, marks=False)
+
+
 # -- what the calls themselves said ----------------------------------------------------
 #
 # The half of the post-pass check that never arrived here. Every call-time warning was a

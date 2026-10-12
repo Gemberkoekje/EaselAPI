@@ -4851,3 +4851,24 @@ moves with a handful. Of the closing audit's findings, none moves: the
 candle's *one disc printed 5 times* is its drips' beads, inside the cut, and the
 *detail before the masses* finding counts marks, not pixels. 2 of the wall's 12 hand-laid
 marks and none of the others lie mostly outside the cut.
+
+### Paint held outside a shape, as built
+
+*Step 3, `probe_uktarl_session.py --clip-out`, on the branch that builds it.* **The
+backlight laid through the engine's own `clip_out=`** — `clip=wall, clip_out=[` Uktarl's
+seven prelude shapes `]`, every path, brush and colour the committed pass's — **lays the
+bench's *exclusion cut on the line* pixel for pixel**: 8 records, 0 pixels wholly on him,
+the seam at the painter's four rows 4, 1, 1, 0 against the committed 6, 3, 2, 1, in 0.9 s.
+
+**An exclusion is not a hold with its pixels moved elsewhere.** Beside `edge="hard"` alone
+on the same wall, a mass held out of a figure leaves different paint well past the
+figure: a pass that crosses him lays nothing there, so it carries its load and its wet
+pickup on along the rest of its length. What does hold is the edge: on a 320×240 test, the
+paint within 3 px outside the figure reads `0.787` against `0.799` 6 to 24 px out, with the
+ground at `0.534` — no seam (`tests/test_clip_out.py`).
+
+**0.8.0 refuses the record.** A mark held out is logged as `{"in": [...], "out": [...]}`
+under `clip`. A session saved with one by this branch, opened by `v0.8.0` built from `git
+archive`: the file loads, since loading never repaints, and `replay()` — what `undo` and
+every rebuild go through — raises `KeyError: 0` on the first such mark rather than laying
+it through the figure.
