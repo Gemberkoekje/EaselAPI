@@ -20,6 +20,7 @@ is patched in for the length of one bench and never into the engine.
                                                         # from step 3, as built beside it
     python scripts/probe_uktarl_session.py --answers    # the painter's answers, re-measured
     python scripts/probe_uktarl_session.py --soft       # 4B: the soft hold; blind sheets
+    python scripts/probe_uktarl_session.py --soft-built # 4B as built (step 4): against B1
     python scripts/probe_uktarl_session.py --join       # P9: the step across the terminators
     python scripts/probe_uktarl_session.py --shares     # 4F: the shares line, pass by pass
     python scripts/probe_uktarl_session.py --rules      # 4C: three rules' candidates, and C5
@@ -126,8 +127,8 @@ def excluding(shapes: list[Polygon], side: str = "line", feather: float = 0.002)
     """
     original = Session._clip_cover
 
-    def patched(self, holds, feather_=0.0, outs=()):
-        cover = original(self, holds, feather_, outs).copy()
+    def patched(self, holds, feather_=0.0, outs=(), soft=()):
+        cover = original(self, holds, feather_, outs, soft).copy()
         w, h = self.canvas.width, self.canvas.height
         px = float(feather) * self.canvas.long_side
         for one in shapes:
@@ -586,12 +587,16 @@ def softening(soft: dict[tuple, float], kind: str):
     Per hold, as the painter's answer B asks: a call held by its own outline and by a
     second shape softens the one and keeps the other as it was, since the masks
     multiply. Every other hold is built as ``Session._clip_cover`` builds it.
+
+    The bench as the painter saw it: from step 3 the patch takes ``_clip_cover``'s
+    exclusions, and from step 4 its softnesses, and hands them on where it softens
+    nothing. A pass it softens lays neither.
     """
     original = Session._clip_cover
 
-    def patched(self, holds, feather=0.0):
+    def patched(self, holds, feather=0.0, outs=(), soft_=()):
         if not any(tuple(one.points) in soft for one in holds):
-            return original(self, holds, feather)
+            return original(self, holds, feather, outs, soft_)
         w, h = self.canvas.width, self.canvas.height
         cover = None
         for one in holds:
@@ -771,6 +776,103 @@ def probe_soft(rb: bell.Rebuilt) -> None:
 
 def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.casefold()).strip("_")
+
+
+def _with_soft(source: str, shape_name: str, soft: str) -> tuple[str, str]:
+    """The pass with ``soft=`` added to the one ``block_in`` that fills ``shape_name``,
+    and the name of the ``clip=`` beside it, if the call has one."""
+    calls = [node for node in ast.walk(ast.parse(source))
+             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+             and node.func.attr == "block_in" and node.args
+             and isinstance(node.args[0], ast.Name) and node.args[0].id == shape_name]
+    if len(calls) != 1:
+        raise ValueError(f"{len(calls)} calls fill {shape_name}; the bench needs one")
+    call = calls[0]
+    clip = next((k.value.id for k in call.keywords
+                 if k.arg == "clip" and isinstance(k.value, ast.Name)), "")
+    lines = source.splitlines(keepends=True)
+    row, col = call.end_lineno - 1, call.end_col_offset - 1      # its closing bracket
+    lines[row] = lines[row][:col] + f", soft={soft}" + lines[row][col:]
+    return "".join(lines), clip
+
+
+#: The painter's own form for a far side (``answers-step2.md``, 2b): the doppelganger's
+#: right side, points 4 to 7, softened alone; the near side, against the lamplit
+#: relief, is points 8 round to 3. The two segments joining them are left out of both,
+#: since the stretch tapers over them.
+FAR_SIDE = ("p09_doppelganger.py", "dp_body", 9, "dp_body.closed[4:8]")
+
+
+def probe_soft_built(rb: bell.Rebuilt) -> None:
+    """Step 4: ``soft=`` as built, against the bench's B1, and a far side as a stretch."""
+    heading("Step 4: the soft hold as built, against the bench's B1")
+    if "soft" not in Session.stroke.__code__.co_varnames:
+        print("  this engine has no soft= -- step 4 is not built here")
+        return
+    scope = bell.scope_of("uktarl")
+    prelude = (UKTARL / "prelude.py").read_text(encoding="utf-8-sig")
+    w, h = rb.session.canvas.width, rb.session.canvas.height
+    rows = []
+    for name, label, shape_name, px, _ in SOFT_CASES:
+        shape = scope[shape_name]
+        bench = rb.opened(label)
+        started = time.time()
+        with softening({tuple(shape.points): float(px)}, "B1"):
+            bell.run_pass(bench, UKTARL / label, UKTARL / "prelude.py")
+        bench_s = time.time() - started
+        source, clip = _with_soft((UKTARL / label).read_text(encoding="utf-8-sig"),
+                                  shape_name, f"s.px_size({px:g})")
+        built = rb.opened(label)
+        started = time.time()
+        bell.run_source(built, source, label, prelude=prelude)
+        built_s = time.time() - started
+        a = built.canvas.to_srgb8(impasto=True, sketch=False).astype(int)
+        b = bench.canvas.to_srgb8(impasto=True, sketch=False).astype(int)
+        apart = np.abs(a - b).max(axis=2)
+        # The call's mask, both ways: its own outline and the clip beside it.
+        holds = (shape, scope[clip]) if clip else (shape,)
+        mask = built._clip_cover(holds, 0.002, (),
+                                (session_module._Soft(0, built.px_size(px)),))
+        with softening({tuple(shape.points): float(px)}, "B1"):
+            bench_mask = bench._clip_cover(holds, 0.002)
+        off = np.abs(mask - bench_mask) > 1e-7
+        where = "--"
+        if off.any():
+            # The bench broke a second hold's edge on its inside pixels only, and left
+            # the antialiased rim outside the line at its coverage; the engine lets
+            # nothing past the line, as 0.8.0 did. Where the two differ is that rim.
+            ys, xs = np.nonzero(off)
+            outside = ~scope[clip].inside((xs + 0.5) / w, (ys + 0.5) / h) if clip else ()
+            where = f"{int(np.sum(outside))} outside {clip}'s line"
+        rows.append([name, f"{px:g}", clip or "--", int(off.sum()), where,
+                     int((apart > 0).sum()), int(apart.max()), f"{built_s - bench_s:+.1f}"])
+    print(table(rows, ["edge", "px", "beside", "mask px apart", "where", "export px apart",
+                       "most, levels", "seconds over the bench"]))
+    print("  (the bench's B1 patched in, against soft= as built: the call's mask, and the "
+          "export after the pass in any channel)")
+
+    label, shape_name, px, run = FAR_SIDE
+    shape = scope[shape_name]
+    source = (UKTARL / label).read_text(encoding="utf-8-sig")
+    laid = {"as painted": rb.opened(label)}
+    bell.run_pass(laid["as painted"], UKTARL / label, UKTARL / "prelude.py")
+    for kind, soft in (("whole outline", f"s.px_size({px})"),
+                       ("far side, a stretch", f"[({run}, s.px_size({px}))]")):
+        laid[kind] = rb.opened(label)
+        bell.run_source(laid[kind], _with_soft(source, shape_name, soft)[0], label,
+                        prelude=prelude)
+    pts = [(float(x), float(y)) for x, y in shape.closed]
+    far, near = [pts[4:8]], [pts[8:] + pts[1:4]]
+    out = []
+    for kind, s in laid.items():
+        view = bell.values(s)
+        out.append([kind, f"{bell.pct(step_widths(view, far, reach=float(px)), 50):.1f}",
+                    f"{bell.pct(step_widths(view, near, reach=float(px)), 50):.1f}"])
+    print(f"  {shape.name}, {label}: {run} softened over {px} px")
+    print(table(out, ["laid", "far side, step px", "near side, step px"]))
+    box = _box_round(shape, w, h)
+    panels = [(kind, bell.crop(s, box, zoom=2)) for kind, s in laid.items()]
+    print(f"  sheet: {save_sheet(panels, 'soft_built.png', columns=3)}")
 
 
 def probe_answers2(rb: bell.Rebuilt) -> None:
@@ -1361,6 +1463,7 @@ BENCHES = (
     ("clip-out", "4A: the backlight laid with an exclusion, against the three regions"),
     ("answers", "the painter's measured answers, re-measured"),
     ("soft", "4B: the soft hold on the edges of answer B, per hold; blind sheets"),
+    ("soft-built", "4B as built (step 4): soft= against the bench's B1, and a stretch"),
     ("join", "P9: the step across each face's terminator, as painted"),
     ("shares", "4F: the shares line, pass by pass, under the painter's split"),
     ("rules", "4C: the disc, bars and graded candidates, and C5, over the corpus"),
@@ -1369,7 +1472,8 @@ BENCHES = (
     ("reading", "4I: the reading path's inventory"),
     ("answers2", "the second answers' measured claims, re-measured"),
 )
-_NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "join", "shares", "answers2"}
+_NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
+                  "answers2"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
 
 
@@ -1401,6 +1505,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_spent(rb)
     if "soft" in run:
         probe_soft(rb)
+    if "soft_built" in run:
+        probe_soft_built(rb)
     if "join" in run:
         probe_join(rb)
     if "answers2" in run:

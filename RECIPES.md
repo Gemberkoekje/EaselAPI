@@ -1127,6 +1127,16 @@ came out as another letter.
 A lost edge is one where two masses meet with **no boundary at all** for a stretch.
 Not a soft edge; an absent one, and the thing most often done by halves.
 
+**Lose it as the mass is laid.** `soft=` beside `edge="hard"` fades the mass's own
+outline inward over the width you name, at no extra stroke, and `clip=` keeps its edge:
+`soft=s.px_size(8)` on a lit plane held to a face loses the terminator and keeps the
+face crisp. `soft=[(shape.closed[4:8], s.px_size(9))]` loses that stretch of the outline
+alone, tapering back to the held edge past each end: a far side going into the dark,
+while the near side, against the light, stays crisp. Skin turns over about a sixth of a
+face; cloth into shadow, 8 to 12 px at 1024.
+
+**An edge already painted** takes a smudge along it, then paint across it:
+
 ```python
 s.smudge([(0.30, 0.40), (0.34, 0.415), (0.38, 0.43)])  # the stretch you mean to lose
 s.smudge(mass.closed[3:5])                             # or a stretch of the mass's outline

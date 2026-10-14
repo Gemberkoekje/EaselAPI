@@ -402,6 +402,7 @@ class Session:
         note: str = "",
         feather: float | None = None,
         clip_out=None,
+        soft=None,
         **brush_overrides,
     ) -> StrokeRecord:
         """Paint one stroke and log it.
@@ -456,6 +457,18 @@ class Session:
                 Given alone it holds nothing in, and ``feather`` is refused. A saved
                 mark that carries one is refused by a build before 0.9.0, rather than
                 replayed through the figure.
+            soft: **lose a held edge**: the paint fades inward from the outline over
+                this width, a fraction of the long side like ``size`` --
+                ``soft=s.px_size(8)`` -- instead of stopping at the line. A smooth
+                ramp, nothing at the line and all of it that far in, in place of
+                ``feather``'s broken edge, at no extra stroke. A number softens the
+                call's one hold; a list names each one: ``soft=[(shape, width)]`` for
+                a hold's whole outline, ``soft=[(shape.closed[i:j], width)]`` for a
+                stretch of it -- a run of the shape's own points -- which tapers back
+                to the hold's own edge over its width past each end, so a far side
+                fades and the near side stays crisp. ``clip_out=`` is cut on the line
+                and is not softened. A saved mark that carries one is refused by a
+                build before 0.9.0.
             **brush_overrides: any other :class:`~easel.brush.Brush` field.
 
         Returns:
@@ -470,9 +483,10 @@ class Session:
             raise ValueError(f"press must be at least 1, got {press}.")
         holds = tuple(_paintable(one, "stroke", "clip") for one in _as_outlines(clip))
         outs = _as_exclusions(clip_out, "stroke")
+        softs = _as_softness(soft, holds, "stroke", outs=outs)
         feather = _held_feather(feather, bool(holds), "stroke")
         cover = (None if not (holds or outs) or self._counting
-                 else self._clip_cover(holds, feather, outs))
+                 else self._clip_cover(holds, feather, outs, softs))
 
         # Snapshot before the mark, so undo lands on the state before this stroke.
         # A count-only copy has nothing to undo to and nothing to undo, and copying
@@ -535,7 +549,7 @@ class Session:
                     note=note,
                     params=_brush_params(b, col, glaze=glaze, smooth=smooth, press=stamps,
                                          rng=self._stream_state(),
-                                         **({"clip": _clip_params(holds, outs)}
+                                         **({"clip": _clip_params(holds, outs, softs)}
                                             if holds or outs else {}),
                                          # Beside the clip, and only where the edge
                                          # was broken: a record without it replays
@@ -863,6 +877,7 @@ class Session:
         note: str = "",
         feather: float | None = None,
         clip_out=None,
+        soft=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Fill a place with overlapping strokes, the way a painter blocks in a mass.
@@ -1051,6 +1066,13 @@ class Session:
             clip_out: a place, or a list of places, none of this mass's paint may
                 land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
                 and ``edge="hard"``.
+            soft: **lose the mass's own edge**: under ``edge="hard"`` its paint fades
+                inward from the outline over this width -- ``soft=s.px_size(8)`` --
+                and ``clip=`` keeps its edge, so a lit plane held to a face is soft at
+                the terminator and the face stays crisp. A stretch of the outline
+                alone, so a far side fades and the near side stays crisp:
+                ``soft=[(shape.closed[i:j], s.px_size(9))]``. As on :meth:`stroke`,
+                at no extra stroke.
 
         Returns:
             The records for every stroke laid down.
@@ -1086,8 +1108,9 @@ class Session:
         # and the contour pass below draws it.
         fill = _clean_fill(place, b.size * 0.5) if edge == "clean" else place
         held = _mass_hold(place, edge, clip)
-        feather = _held_feather(feather, bool(held),
-                                "cover" if self._call_verb == "cover" else "block_in")
+        verb = "cover" if self._call_verb == "cover" else "block_in"
+        softs = _as_softness(soft, held or (), verb, own=edge == "hard", outs=outs)
+        feather = _held_feather(feather, bool(held), verb)
         _check_solid_comb(self, b, density, solid, stacklevel=3)
         if edge == "clean" and b.tip == "bristle":
             self._notify(
@@ -1135,6 +1158,7 @@ class Session:
                         clip=held,
                         feather=feather,
                         clip_out=outs or None,
+                        soft=softs or None,
                         note=note or (f"block-in "
                                       f"{place.name or ('shape' if shaped else 'region')} "
                                       f"{pass_dir}{traced}"),
@@ -1145,7 +1169,7 @@ class Session:
                     fill, b, color, pressure,
                     note or (f"clean edge {place.name or ('shape' if shaped else 'region')}"
                              f"{traced}"),
-                    clip=held, feather=feather, clip_out=outs,
+                    clip=held, feather=feather, clip_out=outs, soft=softs,
                 ))
         # The same test `_check_solid_comb` asks, and for the same reason: what
         # matters is what the paint did, not which keyword was typed. `cover()` lays
@@ -1157,7 +1181,8 @@ class Session:
         return records
 
     def _clean_contour(self, fill, b: Brush, color, pressure, note: str,
-                       clip=None, feather: float = 0.0, clip_out=()) -> list[StrokeRecord]:
+                       clip=None, feather: float = 0.0, clip_out=(),
+                       soft=()) -> list[StrokeRecord]:
         """The one pass ``edge="clean"`` lays along the inset outline.
 
         Along the *inset* outline, not the drawn one, so that the outer half of the
@@ -1187,7 +1212,7 @@ class Session:
                 path, brush=b, color=color,
                 pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                 clip=clip, feather=feather if clip else None,
-                clip_out=clip_out or None,
+                clip_out=clip_out or None, soft=soft or None,
                 note=note,
             ))
         return out
@@ -1386,6 +1411,7 @@ class Session:
         note: str = "",
         feather: float | None = None,
         clip_out=None,
+        soft=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Lay a mass that has a silhouette: passes swept along its edge, stepped inward.
@@ -1466,14 +1492,16 @@ class Session:
             clip_out: a place, or a list of places, none of this mass's paint may
                 land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
                 and ``edge="hard"``.
+            soft: ``clip=``'s edge lost, its paint fading inward over this width --
+                the whole outline, or a stretch of it -- as on :meth:`stroke`.
 
         Returns:
             The records for every stroke laid down.
         """
-        feather = _held_feather(
-            feather, bool([_paintable(one, "sweep", "clip") for one in _as_outlines(clip)]),
-            "sweep")
+        holds = tuple(_paintable(one, "sweep", "clip") for one in _as_outlines(clip))
+        feather = _held_feather(feather, bool(holds), "sweep")
         outs = _as_exclusions(clip_out, "sweep")
+        softs = _as_softness(soft, holds, "sweep", outs=outs)
         if isinstance(edge, Polygon):
             _paintable(edge, "sweep")
             # A shape *is* a boundary that comes back on itself, which is what a
@@ -1503,6 +1531,7 @@ class Session:
                         clip=clip,
                         feather=feather,
                         clip_out=outs or None,
+                        soft=softs or None,
                         note=note or kind,
                     )
                 )
@@ -1630,6 +1659,7 @@ class Session:
         note: str = "",
         feather: float | None = None,
         clip_out=None,
+        soft=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Bury a mistake, with every clause of the burying recipe already set.
@@ -1715,15 +1745,21 @@ class Session:
             clip_out: a place, or a list of places, none of this burial's paint may
                 land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
                 and ``edge="hard"``.
+            soft: the burial's own edge lost, fading inward over this width, so the
+                repair melts into the passage round it rather than standing as a
+                patch -- the whole outline, or a stretch of it, as on
+                :meth:`block_in`.
 
         Returns:
             The records for every stroke laid down, the ``dry`` not among them --
             drying is free and is not a mark.
         """
         target = _paintable(as_place(place), "cover")
-        _as_exclusions(clip_out, "cover")
+        outs = _as_exclusions(clip_out, "cover")
         # Asked before anything is laid: the dry below is a record too.
-        _held_feather(feather, bool(_mass_hold(target, edge, clip)), "cover")
+        held = _mass_hold(target, edge, clip)
+        _held_feather(feather, bool(held), "cover")
+        _as_softness(soft, held or (), "cover", own=edge == "hard", outs=outs)
         reach = _cover_overhang(edge, overhang)
         b = self._resolve_brush(
             brush, size, None,
@@ -1744,7 +1780,7 @@ class Session:
             return self.block_in(
                 target, brush=b, color=color, direction=direction, density=density,
                 pressure="even", overhang=reach, edge=edge, clip=clip, feather=feather,
-                clip_out=clip_out, note=note or f"cover {target.name or 'area'}",
+                clip_out=clip_out, soft=soft, note=note or f"cover {target.name or 'area'}",
             )
 
     def scumble(
@@ -1765,6 +1801,7 @@ class Session:
         note: str = "",
         feather: float | None = None,
         clip_out=None,
+        soft=None,
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """A soft passage: ``n`` overlapping passes stepping from one value to another.
@@ -1919,6 +1956,9 @@ class Session:
             clip_out: a place, or a list of places, none of this passage's paint may
                 land inside, as on :meth:`stroke`: cut on the line, beside ``clip=``
                 and ``edge="hard"``.
+            soft: under ``edge="hard"``, the band's own edge lost, fading inward over
+                this width -- the whole outline, or a stretch of it -- as on
+                :meth:`block_in`.
 
         Returns:
             The records for every pass laid down.
@@ -1939,6 +1979,7 @@ class Session:
         n = int(n)
         held = _mass_hold(place, edge, clip)
         outs = _as_exclusions(clip_out, "scumble")
+        softs = _as_softness(soft, held or (), "scumble", own=edge == "hard", outs=outs)
         feather = _held_feather(feather, bool(held), "scumble")
         if solid:
             brush_overrides = {"load": 1.0, "load_falloff": 0.0, **brush_overrides}
@@ -1948,7 +1989,7 @@ class Session:
         if inward:
             return self._scumble_inward(place, color_a, color_b, n, b, pressure, note,
                                         paths, clip=held, feather=feather,
-                                        clip_out=outs)
+                                        clip_out=outs, soft=softs)
 
         records: list[StrokeRecord] = []
         laid = 0
@@ -1959,7 +2000,7 @@ class Session:
                 records.append(self.stroke(
                     path, brush=b, color=self.palette.mix(color_a, color_b, min(t, 1.0)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
-                    clip=held, feather=feather, clip_out=outs or None,
+                    clip=held, feather=feather, clip_out=outs or None, soft=softs or None,
                     note=note or f"scumble {place.name or 'band'} {laid + 1}/{n}",
                 ))
                 laid += 1
@@ -2042,7 +2083,8 @@ class Session:
 
     def _scumble_inward(self, place, color_a, color_b, n: int, b: Brush,
                         pressure, note: str, paths, clip=None,
-                        feather: float = 0.0, clip_out=()) -> list[StrokeRecord]:
+                        feather: float = 0.0, clip_out=(),
+                        soft=()) -> list[StrokeRecord]:
         """A centred fall-off: ``n`` rings stepping in from the boundary.
 
         The band version grades edge to edge, which is what a band wants and is not a
@@ -2069,7 +2111,7 @@ class Session:
                     color=self.palette.mix(color_a, color_b, k / max(n - 1, 1)),
                     pressure=_canvas_order_pressure(pressure) if flipped else pressure,
                     clip=clip, feather=feather if clip else None,
-                    clip_out=clip_out or None,
+                    clip_out=clip_out or None, soft=soft or None,
                     note=note or f"scumble inward {place.name or 'patch'} {k + 1}/{n}",
                 ))
         return records
@@ -3668,8 +3710,8 @@ class Session:
             spec.get("brush", "bristle"), spec.get("size"), spec.get("opacity"),
             {k: v for k, v in spec.items()
              if k not in ("points", "brush", "size", "opacity", "color", "pressure",
-                          "glaze", "smooth", "press", "clip", "clip_out", "feather", "solid",
-                          "note", "label")},
+                          "glaze", "smooth", "press", "clip", "clip_out", "feather", "soft",
+                          "solid", "note", "label")},
         )
         # The band stands for how wide the mark will be, and on a round tip that now
         # depends on the pressure it is planned with -- a lone stamp most of all.
@@ -5662,6 +5704,7 @@ class Session:
                 held = params.pop("clip", None)
                 clip = None if held is None else (_clips_from_params(held) or None)
                 clip_out = None if held is None else (_outs_from_params(held) or None)
+                soft = None if held is None else (_softs_from_params(held) or None)
                 # A clip laid before 0.7.0 has no feather on its record and was cut on
                 # the line, so it replays cut on the line: the default moved for new
                 # marks, and never reaches a saved one.
@@ -5681,6 +5724,7 @@ class Session:
                     clip=clip,
                     feather=feather if clip else None,
                     clip_out=clip_out,
+                    soft=soft,
                     note=record.note,
                 )
             # The record's own account of the stream and of the call that laid it,
@@ -5788,7 +5832,8 @@ class Session:
         self._notify("count-only", f"scratch(count_only=True): {what}", stacklevel=4)
 
     def _clip_cover(self, holds: tuple[Polygon, ...], feather: float = 0.0,
-                    outs: tuple[Polygon, ...] = ()) -> np.ndarray:
+                    outs: tuple[Polygon, ...] = (), soft: tuple[_Soft, ...] = ()
+                    ) -> np.ndarray:
         """The coverage mask a clipped stroke is multiplied by, remembered for a mass.
 
         ``block_in(edge="hard")`` hands every one of its passes the same outline, and
@@ -5816,23 +5861,32 @@ class Session:
         exclusion's edge broken into the paint it holds is a seam of bare ground
         between the paint and the shape (``CALIBRATION.md``, *Uktarl's Room's round*,
         *Step 2*). In the key beside the holds, for the same reason the feather is.
+
+        ``soft`` loses a hold's edge, or a stretch of it (``soft=``): see
+        :meth:`_soft_hold`. In the key too.
         """
         width, height = self.canvas.width, self.canvas.height
         key = (tuple(one.points for one in holds), width, height, float(feather),
-               tuple(one.points for one in outs))
+               tuple(one.points for one in outs), tuple(soft))
         if self._clip_memo is not None and self._clip_memo[0] == key:
             return self._clip_memo[1]
         px = float(feather) * self.canvas.long_side
         cover = None
-        for one in holds:
+        for i, one in enumerate(holds):
             mask = one.coverage(width, height)
-            if px > 0.0:
+            mine = tuple(entry for entry in soft if entry.hold == i)
+            # A hold lost whole is the ramp all round, and no feather breaks any of it.
+            whole = any(entry.run is None for entry in mine)
+            edge = mask.copy() if mine else mask
+            if px > 0.0 and not whole:
                 rows, cols, depth, full = one._edge_depth(width, height, px, mask)
                 if len(rows):
-                    mask[rows, cols] = np.minimum(
-                        mask[rows, cols],
+                    edge[rows, cols] = np.minimum(
+                        edge[rows, cols],
                         self.canvas.broken_edge(rows, cols, depth, full))
-            cover = mask if cover is None else cover * mask
+            if mine:
+                edge = self._soft_hold(one, mask, edge, mine)
+            cover = edge if cover is None else cover * edge
         if outs:
             if cover is None:
                 cover = np.ones((height, width), dtype=np.float32)
@@ -5840,6 +5894,52 @@ class Session:
                 cover = cover * (1.0 - one.coverage(width, height))
         self._clip_memo = (key, cover)
         return cover
+
+    def _soft_hold(self, one: Polygon, cover: np.ndarray, edge: np.ndarray,
+                   soft: tuple[_Soft, ...]) -> np.ndarray:
+        """One hold's mask with its edge lost (``soft=``, 0.9.0): a smooth ramp inward.
+
+        Nothing on the drawn line, all the paint ``width`` in from it, and a smoothstep
+        between, measured from the outline as a feather is (``Polygon._edge_depth``) and
+        reaching full paint at a quarter of the shape's own width where it is narrower,
+        so a thin one keeps its body. Inward only, and smooth: centred on the line, the
+        figure spilled into whatever it stood against and read as a blur; broken against
+        the tooth, it read as damage. The painter chose this one blind on every sheet it
+        could tell (``answers-step2.md``; ``CALIBRATION.md``, *Uktarl's Room's round*,
+        *Step 2*), and it is the bench's B1 to the pixel.
+
+        ``cover`` is the hold's coverage, and ``edge`` its own edge as the call cuts it
+        -- broken over the feather, or on the line. A hold lost whole is the ramp all
+        round. **A stretch** is the ramp where the nearest outline to a pixel is the
+        stretch, the hold's own edge where it is not, and a blend of the two by how much
+        further the stretch lies from the pixel than the outline does: so past each end
+        the softness tapers back to the hold's edge over its own width, along the
+        outline and round a corner alike, and the join between soft and crisp is not an
+        edge of its own.
+        """
+        width, height = self.canvas.width, self.canvas.height
+        long = self.canvas.long_side
+        base = edge
+        stretches = []
+        for entry in soft:
+            reach = float(entry.width) * long
+            rows, cols, depth, full = one._edge_depth(width, height, reach, cover)
+            if not len(rows):
+                continue
+            d = np.maximum(depth, 0.0).astype(np.float32)
+            f = np.minimum(full, reach).astype(np.float32)
+            ramp = _smoothstep(d / np.maximum(f, 1e-6))
+            if entry.run is None:
+                base[rows, cols] = np.minimum(base[rows, cols], ramp)
+            else:
+                stretches.append((rows, cols, np.minimum(cover[rows, cols], ramp),
+                                  _taper(rows, cols, depth, entry.run, reach,
+                                         width, height)))
+        out = base.copy() if stretches else base
+        for rows, cols, ramp, tau in stretches:
+            out[rows, cols] = np.minimum(out[rows, cols],
+                                         (1.0 - tau) * base[rows, cols] + tau * ramp)
+        return out
 
     def _snapshot(self, box: tuple[int, int, int, int] | None = None) -> None:
         """Push the canvas onto the undo stack, unless this session lays no paint.
@@ -9371,7 +9471,8 @@ def _as_outlines(clip) -> tuple[Polygon, ...]:
     return (_as_outline(clip),)
 
 
-def _clip_params(holds: tuple[Polygon, ...], outs: tuple[Polygon, ...] = ()):
+def _clip_params(holds: tuple[Polygon, ...], outs: tuple[Polygon, ...] = (),
+                 soft: tuple[_Soft, ...] = ()):
     """The outlines a held stroke was clipped to, as the log carries them.
 
     One hold is **one outline**, exactly as every clipped stroke has been logged
@@ -9385,11 +9486,24 @@ def _clip_params(holds: tuple[Polygon, ...], outs: tuple[Polygon, ...] = ()):
     would not do: 0.8.0 drops what it does not know and would replay the mark
     through the figure it was kept off. 0.8.0 reads a mapping as an outline and
     fails at its first point, so it refuses the mark instead.
+
+    A mark whose edge is **lost** (``soft=``, 0.9.0) is the same mapping with
+    ``"soft"``: one entry per softness, the hold it softens by its place in ``"in"``,
+    its width, and the stretch's own points where it is a stretch. A key beside
+    ``clip`` would replay in 0.8.0 with the edge held hard; in the mapping, it is
+    refused.
     """
     outlines = [[[float(x), float(y)] for x, y in one.points] for one in holds]
-    if outs:
-        return {"in": outlines,
-                "out": [[[float(x), float(y)] for x, y in one.points] for one in outs]}
+    if outs or soft:
+        held = {"in": outlines}
+        if outs:
+            held["out"] = [[[float(x), float(y)] for x, y in one.points] for one in outs]
+        if soft:
+            held["soft"] = [{"hold": int(entry.hold), "width": float(entry.width),
+                             **({"run": [[float(x), float(y)] for x, y in entry.run]}
+                                if entry.run is not None else {})}
+                            for entry in soft]
+        return held
     return outlines[0] if len(outlines) == 1 else outlines
 
 
@@ -9409,6 +9523,238 @@ def _outs_from_params(held) -> tuple[Polygon, ...]:
         return ()
     return tuple(polygon([(float(x), float(y)) for x, y in one])
                  for one in held.get("out", ()))
+
+
+def _softs_from_params(held) -> tuple[_Soft, ...]:
+    """The edges a record lost, back as softnesses: none before 0.9.0."""
+    if not isinstance(held, dict):
+        return ()
+    return tuple(_Soft(int(one["hold"]), float(one["width"]),
+                       tuple((float(x), float(y)) for x, y in one["run"])
+                       if one.get("run") is not None else None)
+                 for one in held.get("soft", ()))
+
+
+class _Soft(NamedTuple):
+    """One softness on one hold of a call (``soft=``, 0.9.0), as the engine carries it.
+
+    ``hold`` is the hold's place among the call's holds -- the mass's own outline
+    first under ``edge="hard"``, then ``clip=`` in order -- and ``width`` how far in
+    the edge fades, a fraction of the long side. ``run`` is ``None`` for the whole
+    outline, or the stretch's own points, a run of the hold's points in order.
+    """
+
+    hold: int
+    width: float
+    run: tuple[tuple[float, float], ...] | None = None
+
+
+#: Past this a ``soft=`` fades most of a small place -- and is far likelier a count of
+#: pixels typed into a unit that is not one. The painter's own widths were 2 to 12 px at
+#: 1024, ``0.002`` to ``0.012``; the same ceiling as ``feather=``'s ``_FEATHER_MAX``.
+_SOFT_MAX = 0.05
+
+_SOFT_FORMS = ("soft= is a width, a fraction of the long side like size -- s.px_size(8) "
+               "-- or a list of (place, width) pairs naming what it softens: "
+               "soft=[(shape, s.px_size(8))] for a hold's whole outline, "
+               "soft=[(shape.closed[i:j], s.px_size(8))] for a stretch of it, a run of "
+               "the shape's own points.")
+
+
+def _smoothstep(t: np.ndarray) -> np.ndarray:
+    t = np.clip(t, 0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
+def _soft_width(value, verb: str) -> float:
+    """One softness's width, from what the painter passed: a share of the long side."""
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{verb}(soft={value!r}): {_SOFT_FORMS}") from None
+    if isinstance(value, bool) or not math.isfinite(f) or f < 0.0:
+        raise ValueError(f"{verb}(soft={value!r}) is how far inside the outline the edge "
+                         f"fades, and is zero or more: s.px_size(8) for eight pixels.")
+    if f > _SOFT_MAX:
+        raise ValueError(
+            f"{verb}(soft={value!r}) is a fraction of the canvas's long side, like size "
+            f"-- s.px_size(8) is eight pixels -- so this fades the edge over {f:.0%} of "
+            f"the canvas. Up to {_SOFT_MAX} is taken.")
+    return f
+
+
+def _as_softness(soft, holds: tuple[Polygon, ...], verb: str, own: bool = False,
+                 outs: tuple[Polygon, ...] = ()) -> tuple[_Soft, ...]:
+    """What a painter hands ``soft=``, as one :class:`_Soft` for each edge it loses.
+
+    **A number** softens the call's own edge: the mass's outline under
+    ``edge="hard"`` (``own``), where ``clip=`` keeps its edge -- a lit plane soft at
+    its terminator inside a face held crisp, which is how the painter who asked for
+    it laid every edge it would soften -- or else the call's one hold. A call held
+    by several places and none its own has to name the one. **A list** names each
+    edge: ``(place, width)`` for a hold's whole outline, ``(points, width)`` for a
+    stretch, a run of a hold's own points in order (``shape.closed[i:j]``). A width
+    of ``0`` loses nothing, so a helper that passes one on every mark is not refused
+    on the marks it does not hold. ``clip_out=`` is cut on the line (the painter's
+    answer P1) and is never softened.
+    """
+    if soft is None:
+        return ()
+    if isinstance(soft, (int, float, np.floating, np.integer)):
+        width = _soft_width(soft, verb)
+        if width == 0.0:
+            return ()
+        if not holds:
+            raise ValueError(
+                f"{verb}(soft={soft!r}) loses an edge the paint is held to, and this "
+                f"call holds it to none: edge='hard' on a call that fills a place, or "
+                f"clip=. A ragged edge is broken by the brush already.")
+        if not own and len(holds) > 1:
+            raise ValueError(
+                f"{verb}(soft={soft!r}) is one width, and this call is held by "
+                f"{len(holds)} places, none of them its own: {_hold_names(holds)}. Name "
+                f"the one to lose -- soft=[(shape, width)], or a stretch of it, "
+                f"soft=[(shape.closed[i:j], width)].")
+        return (_Soft(0, width),)
+    items = list(soft) if isinstance(soft, (list, tuple)) else None
+    if items is None:
+        raise ValueError(f"{verb}(soft={soft!r}): {_SOFT_FORMS}")
+    if len(items) == 2 and not isinstance(items[0], _Soft) and _is_width(items[1]) \
+            and not _is_width(items[0]):
+        items = [items]                  # one pair, handed on its own
+    entries: list[_Soft] = []
+    for item in items:
+        if isinstance(item, _Soft):
+            entry = _Soft(int(item.hold), _soft_width(item.width, verb), item.run)
+            if not 0 <= entry.hold < len(holds) or (
+                    entry.run is not None and not _run_on(holds[entry.hold], entry.run)):
+                raise ValueError(f"{verb}(): a softness names hold {entry.hold}, and the "
+                                 f"call is held by {_hold_names(holds) or 'nothing'}.")
+        else:
+            try:
+                what, width = item
+            except (TypeError, ValueError):
+                raise ValueError(f"{verb}(soft=...) was handed {item!r}: "
+                                 f"{_SOFT_FORMS}") from None
+            width = _soft_width(width, verb)
+            if width == 0.0:
+                continue
+            entry = _soft_entry(what, width, holds, verb, outs)
+        if entry.run is None and any(e.hold == entry.hold and e.run is None
+                                     for e in entries):
+            raise ValueError(f"{verb}(soft=...) loses {_hold_names(holds[entry.hold:][:1])}"
+                             f" whole twice: give it one width.")
+        entries.append(entry)
+    return tuple(entries)
+
+
+def _is_width(value) -> bool:
+    return isinstance(value, (int, float, np.floating, np.integer)) \
+        and not isinstance(value, bool)
+
+
+def _hold_names(holds) -> str:
+    return ", ".join(one.name or f"a shape of {len(one.points)} points" for one in holds)
+
+
+def _soft_entry(what, width: float, holds: tuple[Polygon, ...], verb: str,
+                outs: tuple[Polygon, ...]) -> _Soft:
+    """One ``(place, width)`` pair: which hold it names, and whether whole or a stretch."""
+    if (isinstance(what, (list, tuple)) and len(what) >= 2
+            and all(_looks_like_point(one) for one in what)):
+        run = tuple((float(x), float(y)) for x, y in what)
+        for i, one in enumerate(holds):
+            if _run_on(one, run):
+                # All the way round -- the outline closed, or the very points the hold
+                # was handed as -- is the whole outline, not a stretch with two ends.
+                whole = ((len(run) == len(one.points) + 1 and _same_point(run[0], run[-1]))
+                         or (len(run) == len(one.points)
+                             and all(_same_point(p, q)
+                                     for p, q in zip(one.points, run, strict=True))))
+                return _Soft(i, width, None if whole else run)
+        if any(_run_on(one, run) for one in outs):
+            raise _soft_on_exclusion(verb)
+        raise ValueError(
+            f"{verb}(soft=...): these {len(run)} points are not a run of the own points "
+            f"of any outline this call holds its paint to ({_hold_names(holds) or 'none'})"
+            f". Name a stretch as shape.closed[i:j]: the shape's own points, in order.")
+    try:
+        outline = _as_outline(what)
+    except (KeyError, ValueError, TypeError) as exc:
+        raise ValueError(f"{verb}(soft=...) was handed {what!r}: {_SOFT_FORMS}") from exc
+    for i, one in enumerate(holds):
+        if _same_outline(one, outline):
+            return _Soft(i, width)
+    if any(_same_outline(one, outline) for one in outs):
+        raise _soft_on_exclusion(verb)
+    raise ValueError(
+        f"{verb}(soft=...) names {outline.name or 'a shape'}, which is not an outline "
+        f"this call holds its paint to ({_hold_names(holds) or 'none'}): the place "
+        f"itself under edge='hard', or one handed to clip=.")
+
+
+def _soft_on_exclusion(verb: str) -> ValueError:
+    return ValueError(
+        f"{verb}(soft=...) names a place held out with clip_out=, whose edge is cut on "
+        f"the line: lost, it would fade the paint before it reaches the shape, which is "
+        f"the seam clip_out= is there to close.")
+
+
+def _same_point(a, b, tol: float = 1e-9) -> bool:
+    return abs(float(a[0]) - float(b[0])) <= tol and abs(float(a[1]) - float(b[1])) <= tol
+
+
+def _same_outline(a: Polygon, b: Polygon) -> bool:
+    return len(a.points) == len(b.points) and all(
+        _same_point(p, q) for p, q in zip(a.points, b.points, strict=True))
+
+
+def _run_on(one: Polygon, run) -> bool:
+    """Whether ``run`` is a run of ``one``'s own points in order, either way round."""
+    pts = one.points
+    n, k = len(pts), len(run)
+    if k < 2 or k > n + 1:
+        return False
+    for i, p in enumerate(pts):
+        if not _same_point(p, run[0]):
+            continue
+        for step in (1, -1):
+            if all(_same_point(pts[(i + step * j) % n], run[j]) for j in range(k)):
+                return True
+    return False
+
+
+def _taper(rows: np.ndarray, cols: np.ndarray, depth: np.ndarray, run, reach: float,
+           width: int, height: int) -> np.ndarray:
+    """How much of a stretch's softness each pixel takes, ``0..1``.
+
+    One where the outline nearest the pixel is the stretch; falling to nothing as the
+    stretch lies further from the pixel than the outline does, over ``reach``. On the
+    line past an end of the stretch that is the distance back to the end, so the
+    softness tapers back to the hold's own edge over its width; a pixel ``d`` in
+    tapers over the width and ``d`` more, which rounds a corner where a taper counted
+    along the outline would crease it. A side lying on the canvas frame has no edge
+    to lose, as :meth:`Polygon._edge_depth` leaves it.
+    """
+    pts = np.asarray(run, dtype=np.float64)
+    a, b = pts[:-1], pts[1:]
+    on_frame = (((a[:, 0] <= 0.0) & (b[:, 0] <= 0.0)) | ((a[:, 0] >= 1.0) & (b[:, 0] >= 1.0))
+                | ((a[:, 1] <= 0.0) & (b[:, 1] <= 0.0)) | ((a[:, 1] >= 1.0) & (b[:, 1] >= 1.0)))
+    a = a[~on_frame] * (width, height)
+    b = b[~on_frame] * (width, height)
+    if not len(a):
+        return np.zeros(len(rows), dtype=np.float32)
+    cx = cols.astype(np.float64) + 0.5
+    cy = rows.astype(np.float64) + 0.5
+    near = np.full(len(rows), np.inf)
+    for (ax, ay), (bx, by) in zip(a, b, strict=True):
+        dx, dy = bx - ax, by - ay
+        t = np.clip(((cx - ax) * dx + (cy - ay) * dy) / max(dx * dx + dy * dy, 1e-12),
+                    0.0, 1.0)
+        ex, ey = cx - ax - t * dx, cy - ay - t * dy
+        np.minimum(near, ex * ex + ey * ey, out=near)
+    past = np.sqrt(near) - np.abs(depth.astype(np.float64))
+    return _smoothstep(1.0 - past / reach).astype(np.float32)
 
 
 def _as_exclusions(clip_out, verb: str) -> tuple[Polygon, ...]:

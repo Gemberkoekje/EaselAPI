@@ -30,7 +30,10 @@ filed the same day (section 6), and add workstream O. **Step 2b is done** on bra
 N and O3 (`CALIBRATION.md`, the round's *Step 2b*; `NOTES-step2b.md`), and section 6 has
 *After the bench (step 2b)*. **Step 3 is done** on branch `ccr-6544d06d-6o24n7`: `clip_out=`
 on every verb that takes `clip=`, cut on the line, in a record 0.8.0 refuses;
-`difference()` for places that are read; the rehearsal's look flags (`NOTES-step3.md`).**
+`difference()` for places that are read; the rehearsal's look flags (`NOTES-step3.md`).
+**Step 4 is done** on branch `ccr-65d1dbee-863bmi`: `soft=` on every verb that takes
+`clip=`, B1 as the painter chose it, per hold and per stretch, in a record 0.8.0 refuses
+(`NOTES-step4.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -657,7 +660,7 @@ and touch nothing here.
 | 2 | **Measure.** `scripts/probe_uktarl_session.py`: the rebuild, and a flag per workstream: `--clip-out`, `--soft` (sheets), `--rules` (the corpus replayed with each candidate), `--direction`, `--key`, `--shares`, `--reading` (the documents' inventory). The corpus replay cached as 0.8.0's was, and copied out before a later flag writes over it | `NOTES-step2.md`, `CALIBRATION.md`'s round, batch 2 |
 | 2b | **Measure the second painter's.** `scripts/probe_curator_session.py`: the nine pieces rebuilt; `--alpha` (K, against its cut), `--grey` (L1 over the corpus's mixtures), `--deposit` (M: the candle at 1×, 2×, 4×; the corpus's marks under their landing width), `--layer` (N: the nine checklists under `key=` and `cut=`), `--faint` (O3: faint marks over the corpus, the candle, the patron's rim and the lock) | `NOTES-step2b.md`, `CALIBRATION.md` |
 | 3 | **A and D.** `clip_out=` and `difference()` (no `intersection()`, P1); the record refused by 0.8.0; the rehearsal look's flags. Done | `NOTES-step3.md` |
-| 4 | **B.** The soft hold, as the painter chooses | `NOTES-step4.md` |
+| 4 | **B.** The soft hold, as the painter chose: B1, per hold and per stretch (answers 2a, 2b). Done | `NOTES-step4.md` |
 | 5 | **C.** The three rules narrowed as the corpus allows; `habits=` | `NOTES-step5.md` |
 | 6 | **E and F.** `.rotated()`, the frame; `shares=` and its line | `NOTES-step6.md` |
 | 7 | **G and H.** The direction notices as measured; the low key said, and the line without one | `NOTES-step7.md` |

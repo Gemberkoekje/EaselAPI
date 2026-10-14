@@ -4872,3 +4872,52 @@ under `clip`. A session saved with one by this branch, opened by `v0.8.0` built 
 archive`: the file loads, since loading never repaints, and `replay()` — what `undo` and
 every rebuild go through — raises `KeyError: 0` on the first such mark rather than laying
 it through the figure.
+
+### A soft hold, as built
+
+*Step 4, `probe_uktarl_session.py --soft-built`, on the branch that builds it.* **The
+built `soft=` lays the bench's B1**, the ramp the painter chose blind: each edge of its
+answer B laid once with B1 patched in as the bench patched it and once through
+`soft=s.px_size(N)` on the call, against the call's mask and the export after the pass.
+
+| edge | px | beside it | mask pixels apart | export pixels apart | most, levels |
+|---|---|---|---|---|---|
+| her terminator | 8 | `a_face` | 0 | 0 | 0 |
+| its terminator | 8 | `dp_head` | 6, all outside its line | 1 | 1 |
+| Uktarl's far cheek | 8 | `uk_head_poly` | 3, all outside its line | 0 | 0 |
+| her far side | 11 | -- | 0 | 0 | 0 |
+| her wig | 3 | -- | 0 | 0 | 0 |
+| its far side | 9 | -- | 0 | 0 | 0 |
+| the near bandit | 7 | -- | 0 | 0 | 0 |
+| the blanket heap | 2.5 | `tub_far_wall` | 174, all outside its line | 451 | 23 |
+
+The softened edge is the bench's on every row. **Where the two differ is the crisp hold
+beside it**: the bench broke a second hold's edge on its inside pixels only and left the
+antialiased rim outside its line at its coverage, `0.5`, where the engine lets nothing
+past the line, as 0.8.0 does. On the blanket heap, whose far wall cuts it along the rim,
+that rim's paint is carried on along the passes into 451 pixels. Neither costs time:
+within a second of the bench, either way.
+
+**A stretch keeps the near side.** The doppelganger's body, `p09_doppelganger.py`, with
+the painter's own form, `soft=[(dp_body.closed[4:8], s.px_size(9))]`: the step across the
+far side, points 4 to 7, and across the near side against the lamplit relief, points 8
+round to 3, in pixels as the bench measured them:
+
+| laid | far side | near side |
+|---|---|---|
+| as painted | 1.3 | 1.3 |
+| `soft=s.px_size(9)`, the whole outline | 4.2 | 2.5 |
+| the far side as a stretch | 4.0 | 1.3 |
+
+The near side is the step as painted; the far side takes 95% of the whole hold's width.
+Past each end the softness tapers back to the held edge over its own width on the line,
+and over its width and its depth inside, which rounds a corner rather than creasing it
+(`tests/test_soft_hold.py`).
+
+**The solid-mass `holes` line is not tripped by a soft edge.** A solid `flat` at
+`size=0.02` on a 640×480 white canvas, whose interior the line measures from 7.7 px in,
+softened over 8, 16 and 24 px, reads 0.02% bare, as it does held hard: where the ramp
+lets a quarter of the paint through, the pixel is already far from bare ground. **0.8.0 refuses the record**, as step 3's: a softened mark
+is logged in the clip's mapping, `{"in": [...], "soft": [{"hold", "width", "run"}]}`, and
+a session saved with one, opened by `v0.8.0` built from `git archive`, loads and raises
+`KeyError: 0` on `replay()` rather than laying the edge hard.

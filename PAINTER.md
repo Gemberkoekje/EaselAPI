@@ -343,14 +343,17 @@ one (*A graded field that is most of the picture* in
 
 ### 6. Edges: lost and found
 
-The step most painters so far have skipped. Decide where you want attention and lose
-every other edge — two masses merging with no boundary at all in places. Lose one edge
-completely rather than four partly. The check counts what you did: `edges:` is the share
-of the picture's boundaries under `2.5` px wide, and a picture whose every edge is crisp
-says so as a number (*The `edges:` row, measured twice* in
+Decide where you want attention and lose every other edge — two masses merging with no
+boundary at all in places. Lose one edge completely rather than four partly. The check
+counts what you did: `edges:` is the share of the picture's boundaries under `2.5` px
+wide (*The `edges:` row, measured twice* in
 [`CALIBRATION.md`](CALIBRATION.md#the-edges-row-measured-twice)).
 
-`smudge` softens a *stretch* of a boundary, once. Hand it the stretch you mean to lose —
+**Lose an edge as its mass is laid**: beside `edge="hard"`, `soft=s.px_size(8)` fades the
+mass's own outline inward over 8 px at no extra stroke, and `clip=` keeps its edge;
+`soft=[(shape.closed[4:8], s.px_size(9))]` loses that stretch alone.
+
+`smudge` softens a *stretch* of an edge already painted, once. Hand it the stretch —
 under a tenth of the canvas, along the boundary's own shape — and leave `size` off:
 
 ```python
@@ -358,11 +361,10 @@ s.smudge([(0.30, 0.40), (0.34, 0.415), (0.38, 0.43)])  # a curve's own points
 s.smudge(mass.closed[3:5])                             # or a stretch of a shape's outline
 ```
 
-The call says when a path crosses a boundary instead of following it (`smudge-across`),
-runs long enough to leave a band of its own (`smudge-long`), or is wider than one pass
-can use (`smudge-wide`). One pass, not three. If the boundary is still there afterwards,
-the answer is paint laid across it, not another smudge (*An edge that is actually lost*
-in [`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
+The call says when a path crosses the boundary (`smudge-across`), runs long
+(`smudge-long`) or runs wide (`smudge-wide`). One pass, not three. If the boundary is
+still there afterwards, the answer is paint laid across it, not another smudge (*An edge
+that is actually lost* in [`RECIPES.md`](RECIPES.md#an-edge-that-is-actually-lost)).
 
 ### 7. Highlights last, smallest brush, fewest strokes
 
