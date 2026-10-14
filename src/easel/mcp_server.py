@@ -805,9 +805,14 @@ def build_server() -> MCPServer:
         # second half reached nobody through this server: the warnings went to the
         # process's stderr, which a painter working through a client never sees, so
         # "the tool warns you" was false here for everything except this check.
+        seen = target._standing
         check = target.report(since=before)
         said = target.notices(since=told)
         block = pass_block(target, before, said, check)
+        if result.code != 0:
+            # No check is returned for a pass that raised, so its lines were never
+            # read: the next pass is compared against the last ones that were.
+            target._standing = seen
         short = Path(name).name
         # Every answer is a list, because a rehearsal's look and a sheet of alternatives
         # come back as pictures: a tool the SDK is told answers in text has its answer
@@ -1264,14 +1269,16 @@ def build_server() -> MCPServer:
     def plan(session: str, why: str = "", values: dict[str, float] | None = None,
              lightest: str = "", subject_share: float | None = None,
              bands: str = "", ground: str = "", key: str = "",
+             habits: dict[str, dict[str, str]] | None = None,
              clear: bool = False) -> str:
         """Declare what this painting is for, and what the check should hold it to.
 
         Not to be confused with the `plan` **argument** of `cost`, `preview` and
         `rehearse`, which is a list of marks to be priced. This is the painter's plan
         for the *picture*: the four things the guide asks to be settled before the
-        first mark, plus the two standing warnings a picture can declare its way out
-        of. `Session(budget=)` was the first of these declarations; these are the rest.
+        first mark, plus the warnings a picture can declare its way out of: its bands,
+        its ground, its key and a habit in a place. `Session(budget=)` was the first of
+        these declarations; these are the rest.
 
         Every one of them changes what the post-pass check says after each pass, so
         declaring them is how the check stops being generic advice. Called with only a
@@ -1304,6 +1311,11 @@ def build_server() -> MCPServer:
                 kept its key instead of *no clear light*, and prints its clusters
                 without judging them; under "low" it asks whether the lightest place
                 stands clear of everything else.
+            habits: `{"disc": {place: reason}}` -- the places where small round
+                marks at tip_wobble=0 are meant, each with its reason:
+                `{"disc": {"C3:D4": "the features of a face"}}`. Inside them the disc
+                rule counts the marks and quotes the reason instead of warning;
+                everywhere else it warns as before. `{}` takes them back.
             clear: start from nothing rather than from what is already declared.
         """
         s = _load(session)
@@ -1316,6 +1328,7 @@ def build_server() -> MCPServer:
             bands=bands or None,
             ground=ground or None,
             key=key or None,
+            habits=habits,
             clear=clear,
         )
         s.save(session)

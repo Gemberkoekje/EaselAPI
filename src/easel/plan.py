@@ -33,6 +33,10 @@ and :class:`Plan` is the rest of them.
 * ``key="low"`` -- or ``"high"`` -- does it for the ``values:`` line's *no clear
   light*, which one low-key picture was told on 25 of its 27 reports. Declared, the
   line asks instead whether the picture has kept its key.
+* ``habits={"disc": {face: "the features of three faces"}}`` does it for the disc
+  rule, in a place: a face's eyes and mouth are small round marks at
+  ``tip_wobble=0`` on purpose. Inside a declared place the rule counts them and
+  quotes the reason instead of warning; everywhere else it warns as before.
 * ``why`` is the sentence the painting is for. Nothing measures it;
   :meth:`~easel.session.Session.checklist` quotes it back.
 
@@ -55,9 +59,9 @@ import numpy as np
 from easel.measure import VALUE_THRESHOLD
 from easel.regions import Difference, Polygon, as_place, polygon
 
-__all__ = ["Plan", "Planned", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
-           "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place", "planned",
-           "read_place"]
+__all__ = ["Plan", "Planned", "Habit", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
+           "HABIT_WORDS", "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place",
+           "planned", "read_place"]
 
 #: What ``bands=`` accepts. ``"subject"`` declares that the picture's own subject runs
 #: in one direction, which is what the stack-of-bars warning concedes it cannot know.
@@ -72,6 +76,13 @@ GROUND_WORDS = ("", "showing", "buried")
 #: purpose and ``"high"`` over it, so the ``values:`` line stops saying *no clear
 #: light* (or *dark*) and asks whether the picture has kept the key it declared.
 KEY_WORDS = ("", "low", "high")
+
+#: The habits ``habits=`` can declare in a place. ``"disc"`` is the one rule whose
+#: finding is a picture's own subject in some places and a fault in others: three
+#: faces' features, which are small round marks on purpose, beside a candle and a
+#: relief, where a disc printed over and over is the risk. The painter of Uktarl's
+#: Room chose it alone, per place; the bars rule has ``bands=``.
+HABIT_WORDS = ("disc",)
 
 #: A place reads as **split** when this share of it or more lies further than
 #: :data:`SPLIT_STEP` from its own median -- a planned plane with something else in
@@ -195,6 +206,36 @@ class Planned:
                    value=None if value is None else float(value))
 
 
+@dataclass(frozen=True)
+class Habit:
+    """One habit a plan declares in one place, and the painter's reason for it.
+
+    ``habit`` is one of :data:`HABIT_WORDS`; ``place`` is where, as the plan holds every
+    place it names; ``reason`` is the painter's sentence, which the check quotes back
+    each time it counts what the habit covers. A mark is in the place when the middle
+    of its path is: the point the closing audit already places a disc at.
+    """
+
+    habit: str
+    place: Planned
+    reason: str
+
+    def to_json(self) -> dict:
+        return {"habit": self.habit, "reason": self.reason, "place": self.place.to_json()}
+
+    @classmethod
+    def from_json(cls, data) -> Habit | None:
+        """One declared habit, or ``None`` for one this build cannot read or name."""
+        if (not isinstance(data, dict) or data.get("habit") not in HABIT_WORDS
+                or not isinstance(data.get("place"), dict)):
+            return None
+        try:
+            place = Planned.from_json(data["place"])
+        except (TypeError, ValueError):
+            return None
+        return cls(str(data["habit"]), place, str(data.get("reason", "")))
+
+
 def read_place(pixels: np.ndarray) -> PlaceReading:
     """A place's pixels as the plan reads them: its median, brightest twentieth and split.
 
@@ -286,13 +327,18 @@ class Plan:
     bands: str = ""
     ground: str = ""
     key: str = ""
+    habits: tuple[Habit, ...] = ()
 
     @property
     def declared(self) -> bool:
         """Whether anything at all was declared. An empty plan is no plan."""
         return bool(self.why or self.values or self.lightest is not None
                     or self.subject_share is not None or self.bands or self.ground
-                    or self.key)
+                    or self.key or self.habits)
+
+    def habit_places(self, habit: str) -> tuple[Habit, ...]:
+        """The places the plan declares ``habit`` in, in the order it names them."""
+        return tuple(one for one in self.habits if one.habit == habit)
 
     def as_dict(self) -> dict:
         """The values as ``{place: value}``, which is what ``compare()`` takes.
@@ -458,6 +504,9 @@ class Plan:
             "bands": self.bands,
             "ground": self.ground,
             "key": self.key,
+            # New in 0.9.0. A build before it reads the plan without the key, and its
+            # disc rule warns in the places this one counts: a line, never a mark.
+            "habits": [one.to_json() for one in self.habits],
         }
 
     @classmethod
@@ -484,6 +533,10 @@ class Plan:
             # A word this build does not know is dropped, as an unknown field is: a
             # key it cannot name would otherwise be read as one it can.
             key=str(data.get("key", "")) if data.get("key", "") in KEY_WORDS else "",
+            # A habit this build cannot name is dropped with it, for the same reason.
+            habits=tuple(one for one in (Habit.from_json(entry) for entry in (
+                data.get("habits") if isinstance(data.get("habits"), list) else []))
+                if one is not None),
         )
 
     def __str__(self) -> str:
@@ -505,17 +558,64 @@ class Plan:
             out.append(f"ground: {self.ground}")
         if self.key:
             out.append(f"key: {self.key}")
+        for one in self.habits:
+            out.append(f"habit: {one.habit} in {one.place.name} -- {one.reason!r}")
         return "\n".join(out)
 
 
+def declared_habits(habits) -> tuple[Habit, ...]:
+    """``habits=`` as the plan holds it: each place a habit is declared in, with its reason.
+
+    ``{"disc": {face: "the features of three faces", cards: "the fan of cards"}}`` --
+    the habit, then its places as a value plan writes them, each with the sentence it
+    is meant for. ``{}`` declares none.
+    """
+    if not isinstance(habits, dict):
+        raise TypeError(
+            f"plan(habits={habits!r}) is a dict of habits, each a dict of places and "
+            f"the reason the habit is meant there: habits={{'disc': {{face: 'the "
+            f"features of three faces'}}}}."
+        )
+    out: list[Habit] = []
+    for habit, places in habits.items():
+        if habit not in HABIT_WORDS:
+            raise ValueError(
+                f"plan(habits=) declares {habit!r}, and the habit a place can declare "
+                f"is {', '.join(repr(w) for w in HABIT_WORDS)}: small round marks at "
+                f"tip_wobble=0 that are the place's own subject, a face's features. A "
+                f"stack of bars is declared with bands='subject', a buried ground "
+                f"with ground='buried'."
+            )
+        if not isinstance(places, dict) or not places:
+            raise ValueError(
+                f"plan(habits={{{habit!r}: ...}}) takes the places the habit is meant "
+                f"in, each with its reason: {{{habit!r}: {{face: 'the features of three "
+                f"faces'}}}}. Per place, so the rule still warns everywhere else."
+            )
+        for i, (where, reason) in enumerate(places.items()):
+            name, poly = named_place(where, i)
+            said = str(reason or "").strip()
+            if not said:
+                raise ValueError(
+                    f"plan(habits=) declares {habit!r} in {name!r} with no reason. The "
+                    f"reason is what the check quotes back each time it counts the "
+                    f"marks instead of warning: {{{habit!r}: {{{name!r}: 'the features "
+                    f"of three faces'}}}}."
+                )
+            out.append(Habit(str(habit), Planned(name=name, outline=poly), said))
+    return tuple(out)
+
+
 def build(why=None, values=None, lightest=None, subject_share=None,
-          bands=None, ground=None, key=None, onto: Plan | None = None) -> Plan:
+          bands=None, ground=None, key=None, habits=None,
+          onto: Plan | None = None) -> Plan:
     """A checked :class:`Plan`, or the one already registered with these fields changed.
 
     Every argument left off -- which is ``None``, not the empty version of itself --
     keeps what ``onto`` already declared, so a painter can add the lightest place to a
     plan written in a ``prelude.py`` without retyping its values. Passing the empty
-    version *clears* that field: ``values={}``, ``bands=""``, ``lightest=""``.
+    version *clears* that field: ``values={}``, ``bands=""``, ``lightest=""``,
+    ``habits={}``.
     """
     base = onto if onto is not None else Plan()
     fields = {}
@@ -561,4 +661,6 @@ def build(why=None, values=None, lightest=None, subject_share=None,
                 f"clear light, or no clear dark."
             )
         fields["key"] = str(key)
+    if habits is not None:
+        fields["habits"] = declared_habits(habits)
     return replace(base, **fields) if fields else base

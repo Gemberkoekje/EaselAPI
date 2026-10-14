@@ -33,7 +33,10 @@ on every verb that takes `clip=`, cut on the line, in a record 0.8.0 refuses;
 `difference()` for places that are read; the rehearsal's look flags (`NOTES-step3.md`).
 **Step 4 is done** on branch `ccr-65d1dbee-863bmi`: `soft=` on every verb that takes
 `clip=`, B1 as the painter chose it, per hold and per stretch, in a record 0.8.0 refuses
-(`NOTES-step4.md`).**
+(`NOTES-step4.md`). **Step 5 is done** on branch `ccr-41356652-bm55is`: the three rules
+as they are; `habits={"disc": {place: reason}}` per place; the pass rule leaving the
+signature out; a standing line printed only when it changed from the painting as
+committed (`NOTES-step5.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -661,7 +664,7 @@ and touch nothing here.
 | 2b | **Measure the second painter's.** `scripts/probe_curator_session.py`: the nine pieces rebuilt; `--alpha` (K, against its cut), `--grey` (L1 over the corpus's mixtures), `--deposit` (M: the candle at 1×, 2×, 4×; the corpus's marks under their landing width), `--layer` (N: the nine checklists under `key=` and `cut=`), `--faint` (O3: faint marks over the corpus, the candle, the patron's rim and the lock) | `NOTES-step2b.md`, `CALIBRATION.md` |
 | 3 | **A and D.** `clip_out=` and `difference()` (no `intersection()`, P1); the record refused by 0.8.0; the rehearsal look's flags. Done | `NOTES-step3.md` |
 | 4 | **B.** The soft hold, as the painter chose: B1, per hold and per stretch (answers 2a, 2b). Done | `NOTES-step4.md` |
-| 5 | **C.** The three rules narrowed as the corpus allows; `habits=` | `NOTES-step5.md` |
+| 5 | **C.** The rules as they are, as the painter chose after the bench (3b, 4a); `habits=` per place; the signature left out of the pass rule; standing lines on change (C5). Done | `NOTES-step5.md` |
 | 6 | **E and F.** `.rotated()`, the frame; `shares=` and its line | `NOTES-step6.md` |
 | 7 | **G and H.** The direction notices as measured; the low key said, and the line without one | `NOTES-step7.md` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog | `NOTES-step8.md` |

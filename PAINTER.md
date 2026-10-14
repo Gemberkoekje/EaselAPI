@@ -106,10 +106,10 @@ inside a mass is the same fault one scale down, and the band count is the instru
 for both. **What is this thing's foreshortening?** Draw the view, not the object; no
 brush repairs the difference. **Write down what you decided, where the engine can see
 it** — `s.plan(values=..., lightest=..., subject_share=..., ground=..., key=...,
-why=...)`. The three values, the place meant to be lightest, the share of the budget
-the subject gets, and whether this picture is low in key or buries its ground are yours
-to choose, and declaring them is what makes the check answer to your picture rather
-than to a default (*What the plan changes* in
+habits=..., why=...)`. The three values, the place meant to be lightest, the subject's
+share of the budget, whether this picture is low in key or buries its ground, and where
+small round marks are meant, a face's features, are yours to choose, and declaring them
+makes the check answer to your picture, not to a default (*What the plan changes* in
 [`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)). `s.checklist()` quotes your
 sentence back at the end, and nothing else can ask for it.
 
@@ -439,9 +439,8 @@ s.stroke([(-0.05, 0.55), (1.05, 0.58)], "flat", "corrected_colour",
 A `bristle` does not bury — its comb leaves the old paint showing between the streaks.
 **`cover` lands the size of the place you hand it** and not a brush past it. On a worked
 passage that is a crisp patch, which can read as cut out, and it is the smaller fault:
-run a brush past the place, as it was before 0.6.0, a repair left four times the place
-visibly repainted, the neighbouring marks with it (*A burial and the place it was
-handed* in [`CALIBRATION.md`](CALIBRATION.md#a-burial-and-the-place-it-was-handed-060-the-default-moved)). Or
+a brush run past the place left a repair four times its size visibly repainted, the
+neighbouring marks with it (*A burial and the place it was handed* in [`CALIBRATION.md`](CALIBRATION.md#a-burial-and-the-place-it-was-handed-060-the-default-moved)). Or
 bury it by hand with marks shaped like the passage. `undo(n)` exists; treat it as
 scraping the canvas, and remember that `n` counts log entries rather than marks you
 paid for.
@@ -765,7 +764,8 @@ pass. **The habit here is: rehearse every pass with `--rehearse`, look, and only
 run it without.** Name several scripts at once and they run in order; rehearsed
 together they share one copy, so each is judged on the pass before it. After
 every pass `run` prints the budget line, the pass's dearest calls by the line that made
-them, and a check of the pass against the standing warnings, whose rules are a table
-under `report()` in [`REFERENCE.md`](REFERENCE.md#looking-planning-measuring); read it
-before the next pass. The full command list is in
+them, and a check of the pass: its findings first, then each standing line that changed
+from the painting as committed. Its rules are a table under `report()` in
+[`REFERENCE.md`](REFERENCE.md#looking-planning-measuring); read it before the next
+pass. The full command list is in
 [`REFERENCE.md`](REFERENCE.md#the-session-and-the-shell).

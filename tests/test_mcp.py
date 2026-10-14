@@ -868,3 +868,12 @@ def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, 
     # A key, as the other routes declare it (0.8.0 E1).
     assert "key: low" in call("plan", session=painting, key="low").text
     assert Session.load(painting).plan().key == "low"
+
+    # A habit in a place, with its reason (0.9.0 C4), and taken back with `{}`.
+    said = call("plan", session=painting,
+                habits={"disc": {"C3:D4": "the features of a face"}}).text
+    assert "habit: disc in C3:D4 -- 'the features of a face'" in said
+    held = Session.load(painting).plan()
+    assert held.key == "low" and held.habits[0].reason == "the features of a face"
+    call("plan", session=painting, habits={})
+    assert not Session.load(painting).plan().habits

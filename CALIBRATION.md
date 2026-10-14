@@ -4921,3 +4921,48 @@ lets a quarter of the paint through, the pixel is already far from bare ground. 
 is logged in the clip's mapping, `{"in": [...], "soft": [{"hold", "width", "run"}]}`, and
 a session saved with one, opened by `v0.8.0` built from `git archive`, loads and raises
 `KeyError: 0` on `replay()` rather than laying the edge hard.
+
+### The check, as built
+
+*Step 5, `probe_uktarl_session.py --check-built` and `--check-corpus`, on the branch that
+builds it.* **Declared on its three faces and the fan of cards, the disc rule on this
+painting speaks on 2 committed passes where 0.8.0 spoke on 7**: the candle and the crags,
+which the painter named as the places where printed marks are the real risk. The
+painting rebuilt through the built check, as built and with
+`habits={"disc": {...}}` on the prelude's own outlines of the three faces —
+`uk_head_poly`, `dp_head`, `a_face` — and an ellipse round the hand and the cards' tips,
+against what 0.8.0 printed after each committed pass, from the painter's saved reports:
+
+| pass | findings, 0.8.0 / built / declared | disc, 0.8.0 | built | declared | standing lines, 0.8.0 | printed |
+|---|---|---|---|---|---|---|
+| `p07_uktarl_head.py` | 1 / 1 / 0 | 10 | 10 | -- | 6 | 6 |
+| `p09_doppelganger.py` | 1 / 1 / 0 | 6 | 6 | -- | 6 | 3 |
+| `p11_left_bandit.py` | 2 / 2 / 1 | 4 | 4 | -- | 6 | 4 |
+| `p12_card_game.py` | 2 / 2 / 2 | 5 | 5 | 4 | 6 | 6 |
+| `p14_relief_details.py` | 1 / 1 / 1 | 4 | 4 | 4 | 6 | 3 |
+| `p16_hand_and_crags.py` | 2 / 2 / 1 | 4 | 4 | -- | 6 | 3 |
+| `p17_finish.py` | 1 / 0 / 0 | 4 | -- | -- | 6 | 3 |
+| all 17 committed passes | 13 / 12 / 8 | | | | 92 | 71 |
+
+*Printed* counts the `unchanged:` line; the standing lines 0.8.0 printed are, pass by
+pass, the lines the built check measured. **The one finding the build drops undeclared is
+the signature** on `p17_finish.py`, records 425 to 428. Declared, every face mark the
+0.8.0 audit named lies inside its head but two — the doppelganger's ear light, laid in its
+ear, and the left bandit's neck shade — and each is left under the rule's three. The
+closing audit's *33 small marks ... in 6 places* becomes *7 ... in 2 places*, the candle's
+4 and the crags' 3, with *discs declared: 10 in Uktarl's head, 5 in the doppelganger's
+head, 3 in her face, 5 in the fan of cards*, each with its reason. Its group of five round
+the left bandit, which held a ridge of the relief 56 px from her eye, is gone: the ridge
+and the neck shade are two.
+
+**A standing line printed only when it changed**, over the corpus: the 34 committed
+paintings replayed through the built check, each committed pass reported in order as
+`easel run` reports it, so each is compared against the pass before it. Of 412 passes
+that laid a record and ran clean, **1,783 standing lines were measured and 1,364 printed, 23%
+fewer**, the `unchanged:` line counted wherever one printed — 0% to 33% by painting:
+`gpt`'s 206 to 137, the pool's 148 to 115, this painting's 92 to 71, `curator_wall`'s 20
+to 20. Step 2 counted 40% of them repeated word for word over its 25 paintings; a pass
+names those on one line now. The disc rule speaks on 32 of the 412 passes, no
+painting in the corpus declaring a habit. A rehearsal is compared against the painting as
+committed, so the same rehearsal run twice says the same thing twice, and the pass
+committed after it is compared against the same reading (`tests/test_habits.py`).

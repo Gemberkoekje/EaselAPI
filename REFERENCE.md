@@ -441,7 +441,8 @@ s.compare("ref.jpg", region=, threshold=0.10, near=0.01, path=)
 s.compare({place: value, ...})                  # ...against your own value plan, and
                                                 # the pairs it puts within 0.10: do they touch?
 s.compare(s.plan())                             # ...against the plan this session holds
-s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=, clear=False)
+s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=, habits=,
+       clear=False)
                                                 # what you decided before painting, where
                                                 # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
@@ -517,8 +518,12 @@ left off. Pass `path=` to name a file yourself.
 
 `report()` is the check `easel run` prints beside the budget line after every pass:
 **ten rules** read off the log and the canvas, and under them the **standing lines**,
-which are measurements rather than findings. A *long* mark is at least twice as long as
-its brush is wide, and a mark is *laid by hand* when no mass verb laid it.
+which are measurements rather than findings. **Over a pass, a standing line prints only
+when it changed from the painting as committed**, and the rest are named on one line,
+`unchanged: plan, edges, ground`; a rehearsal is compared against the painting, never
+the rehearsal before. `--check` and the closing checklist print every line. A *long*
+mark is at least twice as long as its brush is wide, and a mark is *laid by hand* when
+no mass verb laid it.
 
 | It says | when |
 |---|---|
@@ -528,7 +533,7 @@ its brush is wide, and a mark is *laid by hand* when no mass verb laid it.
 | *a comb that small is four streaks with gaps, not a brush* | `3` or more marks are laid with a `bristle` under `size=0.025` **at a load over `0.6`**, because below that the comb's gaps are the mark. A pass's rule: over a whole painting it says nothing, since what it asks for is a brush for the next marks |
 | *detail before the masses are down* | `8` or more marks under `size=0.02` fall inside the painting's first `60` |
 | *pressure changes a chisel's paint, not its width* | a mark laid by hand with a `flat`, a `bristle` or a `knife` is given a pressure list and is no more than `4` times as long as it is wide |
-| *that is one disc printed 5 times* | `3` or more round-tip marks are laid by hand under `size=0.02` at `tip_wobble=0`, each no more than `7` times as long as it is wide: the tip's silhouette rather than a line. Over a whole painting, only where `3` or more sit within `0.06` of one another, a signature left out, with where each group is |
+| *that is one disc printed 5 times* | `3` or more round-tip marks are laid by hand under `size=0.02` at `tip_wobble=0`, each no more than `7` times as long as it is wide: the tip's silhouette rather than a line. A signature is left out, and so is a place `habits=` declares. Over a whole painting, only where `3` or more sit within `0.06` of one another, with where each group is |
 | *a daisy, or a wagon wheel* | `5` or more long marks laid by hand leave one point with no gap wider than `90` degrees in the circle of their directions |
 | *a loop's signature* | `6` or more consecutive marks laid by hand, of one brush at one length or a strict ramp of lengths, are evenly spaced on a line and further apart than their own width |
 | *this pass took 4 earlier details out of sight* | `3` or more earlier small or `subject` marks, showing as the pass opened, are left at under half their contrast by a glaze or a mass's passes. It reads the canvas as the pass opened, which `easel run` keeps, and so does the `report()` before it in a script that reports after every pass |
@@ -541,6 +546,7 @@ script.
 
 | Line | Measures | Said |
 |---|---|---|
+| `discs declared:` | the round-tip marks the disc rule leaves to each place `habits=` declares, by the middle of each mark's path, with the reason quoted | a pass: each place it laid one in. `--check` and the checklist: every place |
 | `landed nothing:` | the marks that carried under one unit of paint — *NO PAINT LANDED* in `easel log` — each by the line that laid it, a mass call's by how many of its passes, with the cause its record shows: half its path or more outside its clip, a round dab under the size its press lands from, an oriented tip under four pixels, a bristle loaded under `0.5` | only when a pass laid one: *landed nothing: the dab at p06.py:39 (a round tip under its cliff at press=1); 6 passes of the block_in at p05.py:12 (outside its clip)* |
 | `plan:`, `lightest:` | the canvas against what the plan declared: *What the plan changes*, below | once a plan declares values, or a lightest place |
 | `subject:` | the subject's share of the marks so far, against `subject_share` if given | wherever a mark is noted `subject` |
@@ -567,18 +573,19 @@ with a soft silhouette, which is what a round tip is for.
 
 `s.plan(...)` is what a painter is told to settle before the first mark, written where
 the engine can see it. `Session(budget=)` was the first of these declarations; these are
-the rest. Every one of them changes a line of the check, and two of them **replace a
-standing warning with a number** — which is the point: a rule that concedes *unless the
-subject runs that way* cannot tell whether the subject does, and the painter can.
+the rest. Every one of them changes a line of the check, and three **replace a
+warning with a number**: a rule that concedes *unless the subject runs that way* cannot
+tell whether the subject does, and the painter can.
 
 | Declared | What the check does with it |
 |---|---|
 | `values={place: 0.70, ...}` | at registration, on the empty canvas, `plan-pairs` names the pairs planned within `0.10` **that meet**. After every pass: `plan: 5 of 6 places inside 0.10; halo +0.14`, the sign being the canvas minus the plan. A place reads by its **median** — what most of it reads, so an eye inside a planned plane does not move what the plane reads — and a place the line names that has a tenth of itself or more over `0.15` from that median says so: `halo +0.14 (18% of it lighter by more than 0.15)`. `compare(s.plan())` reads places the same way |
 | `lightest=place` | `lightest: lamp reads 0.49 as a place, 0.59 at its brightest twentieth, the lightest of the 4 places planned` — or which place took the light instead, and by how much. A place the line names that is split says so in brackets, as on `plan:`: `lantern reads 0.51 as a place (10% of it darker by more than 0.15)`. The places are ranked by their medians; the named light is also read at its 95th percentile, because a light is often a small bright part of a place that is mostly something else. Where the two numbers are far apart, plan the lit part as a place of its own, at the value that place will read — not the value its mixture was mixed at |
-| `subject_share=0.40` | the `subject:` line always carries *against 40% planned*, with no `report(subject_share=)` to remember. It is the one declaration that was reachable before and unreachable from a shell |
+| `subject_share=0.40` | the `subject:` line always carries *against 40% planned*, with no `report(subject_share=)` to remember |
 | `bands="subject"` | the stack-of-bars line stops warning and counts: *bands declared as the subject: 14 long marks run within 6 degrees of horizontal, and nothing crosses them yet* |
 | `ground="buried"` | the ground line prints its number and says *buried, as the plan says* instead of asking for some back |
 | `key="low"` or `"high"` | the `values:` line stops saying *no clear light* (or *no clear dark*) and says `low-key, as the plan says -- nothing above 0.35, under the box's middle 0.54` — or, once the top twentieth rises past the middle, by how much the picture has left its key. Its clusters are printed and not judged: a key compresses the range, and no gap has been measured for one yet. Under `"low"`, with `lightest=` named, it asks whether that light stands clear of everything else — the canvas outside its place: `lantern stands clear -- 0.59 at its brightest twentieth against 0.40 for everything else, 0.19 over`, or that it does not, under `0.10`. A high-key picture's light has no room above the rest to stand clear in, so there it is not asked |
+| `habits={"disc": {face: "the features of a face"}}` | **inside each place, small round marks are counted with the reason, not warned about**: *discs declared: 10 in the face ('the features of a face')*. Everywhere else the disc rule warns as before. `"disc"` is the one habit; from a shell, `--habit disc C3:D4 "the features of a face"` |
 | `why="..."` | nothing measures it. It is quoted back at the end, which is the moment it is worth reading again |
 | nothing | nothing is said at the first stroke, and no line nags for a plan. What a declaration buys is the lines above; what it costs is writing it down |
 
@@ -592,8 +599,7 @@ whose places are names rather than shapes, and `easel new` writes a `prelude.py`
 holding the call.
 
 The plan is saved in the `.easel` file, and lives beside `history.records` and never in
-it, for the reason the notices do — see *What the tool will tell you* below. A 0.5.0 file
-has no plan and opens with none.
+it, for the reason the notices do — see *What the tool will tell you* below.
 
 ---
 

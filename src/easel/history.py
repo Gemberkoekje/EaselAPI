@@ -117,9 +117,9 @@ class History:
         """Whether a mark was noted as part of the painter's signature.
 
         One definition for the two places that set a signature apart: the budget, which
-        waives the first :data:`SIGNATURE_ALLOWANCE` of them, and the closing audit's
-        disc count, which leaves every one of them out -- a signature is lettering, and
-        a dotted *i* is not one disc printed over and over.
+        waives the first :data:`SIGNATURE_ALLOWANCE` of them, and the disc rule, which
+        leaves every one of them out, over a pass as over a painting -- a signature is
+        lettering, and a dotted *i* is not one disc printed over and over.
 
         Args:
             record: any log record.
