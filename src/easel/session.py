@@ -292,6 +292,11 @@ class Session:
         # rehearsals included. Beside the log for the notices' reason. See
         # :meth:`reports`.
         self._reports: list[PassReport] = []
+        # What the last report on this painting measured, line by line, and the record
+        # it was read at: what the next pass's standing lines are compared against, so
+        # only those that changed are printed. Beside the log, and saved: a painting
+        # worked from the shell is loaded once a pass. See :meth:`_standing_said`.
+        self._standing: tuple[int, dict[str, str]] | None = None
         # What the painter wrote down before painting: the values, the place meant to
         # be lightest, the subject's share, and the two standing warnings this picture
         # has declared its way out of. Beside the log for the same reason the notices
@@ -3538,6 +3543,10 @@ class Session:
         # And no reports: what a rehearsal was told is kept on the painting, by the
         # shell or the server that ran it. See :meth:`_keep_report`.
         trial._reports = []
+        # What the painting as committed last measured, so a rehearsal's standing lines
+        # say what it would change on the painting rather than on the rehearsal before.
+        # A tuple, never written through: the copy keeps its own from here.
+        trial._standing = self._standing
         # The plan itself is carried, because a rehearsal is meant to say what the paid
         # pass will say and every line the plan adds to the check is one of those. It
         # is immutable, so a trial that re-declares its own plan leaves the painting's
@@ -4367,9 +4376,13 @@ class Session:
           nobody has to ask for. The closing checklist's *is any small mark a disc, a
           capsule or a rectangle* is this rule's own question, and **over a whole
           painting it counts only the discs seen together** -- three or more, each
-          within ``0.06`` of another -- leaves a signature out, and says where they
-          are: a lamp, a moon and a glint laid in three passes are three marks, and
-          were being counted as one disc printed three times;
+          within ``0.06`` of another -- and says where they are: a lamp, a moon and a
+          glint laid in three passes are three marks, and were being counted as one
+          disc printed three times. **A signature is left out**, over a pass as over a
+          painting, and so is **a place the plan declares the habit in**
+          (``plan(habits=)``): a face's features are small round marks on purpose, and
+          what lands there is counted under the findings with the painter's reason,
+          *discs declared: 10 in the face ('the features of a face')*;
         - **a daisy** -- five or more hand-laid marks, each at least twice as long as
           its brush is wide, leaving one point in every direction: no gap in the circle
           of their directions wider than ninety degrees. The point is where consecutive
@@ -4420,11 +4433,17 @@ class Session:
           canvas can answer: where the picture's values sit against what the palette
           reaches (or, under ``plan(key=)``, whether the picture has kept its key), how its edge length divides between hard and soft, and how much
           graphite still shows. Each is a number with its threshold said out loud,
-          and :mod:`easel.checklist` holds each one's evidence. Printed after every
-          pass like the ground line, and like it left off a counted copy. The noise
-          budget counts findings and call-time notices, and these are neither: four
-          lines that print on every pass are the design, and whether a longer block
-          gets skimmed is for a painter's run to show.
+          and :mod:`easel.checklist` holds each one's evidence. Measured after every
+          pass like the ground line, and like it left off a counted copy.
+
+        **Over a pass, a standing line prints only when it changed** from the painting
+        as committed, and the ones left out are named on one line -- *unchanged: plan,
+        edges, ground* (:meth:`_standing_said`). The noise budget counts findings and
+        call-time notices, and these are neither, so whether a longer block gets
+        skimmed was left for a painter's run to show; Uktarl's Room's showed it: 61% of
+        its standing lines were the line before, and 29 of its 30 runs were filtered
+        down to the lines it named. With ``since`` left off every line prints, as the
+        closing checklist prints them.
 
         **A finding that counts marks names them**, on a line under it: the script lines
         they were laid from and their records in the log (:meth:`_marks_named`). A
@@ -4503,6 +4522,7 @@ class Session:
             marks, earlier, self.canvas,
             banding=None if since is None else self._banding_wanted(paid),
             bands=self._plan.bands, whole=since is None, named=self._marks_named,
+            habits=self._plan.habit_places("disc"),
         )
         # One reading of the canvas for everything below that looks at it. A counted
         # copy has laid no paint on the canvas it borrowed, so it takes none.
@@ -4525,14 +4545,24 @@ class Session:
         else:
             head += "nothing to report"
         lines = [head] + [f"  - {line}" for line in findings]
-        # The marks that laid no paint, first of the standing lines: read off the log and
-        # exact, and about strokes already paid for. Over the painting, the painting behind
-        # a rehearsal copy as well. A counted copy's marks carry no paint, so it says none.
+        # What a declared habit laid, in the rule's place: a count with the painter's
+        # reason, under the findings and not among them. Over the painting, every place
+        # the plan declares, as the closing checklist says it.
+        habit = self._habit_line(marks, every=since is None)
+        if habit:
+            lines.append(f"  {habit}")
+        # The marks that laid no paint, first of the lines under the findings: read off
+        # the log and exact, and about strokes already paid for. Over the painting, the
+        # painting behind a rehearsal copy as well. A counted copy's marks carry no
+        # paint, so it says none. About this pass alone, so never a standing line.
         if not self._counting:
             laid = records[start:] if since is not None else list(self._prior) + list(records)
             nothing = self._landed_nothing_line(laid)
             if nothing:
                 lines.append(f"  {nothing}")
+        # The standing lines, gathered and then printed as `_standing_said` decides:
+        # over a pass, only those that changed from the painting as committed.
+        standing: list[str] = []
         # The lines the plan itself asked for, before the two standing ones: they are
         # measurements of what the painter said they would do, so they read first. Gated
         # exactly as the ground line below is -- they read the canvas, so a counted copy
@@ -4548,19 +4578,68 @@ class Session:
             for line in (self._plan.value_line(plan_view),
                          self._plan.lightest_line(plan_view)):
                 if line:
-                    lines.append(f"  {line}")
+                    standing.append(line)
         subject = self._subject_line(paid, subject_share)
         if subject:
-            lines.append(f"  {subject}")
+            standing.append(subject)
         if without is not None:
             # A count-only copy has laid no paint on the canvas it borrowed, so the
             # honest answer is the one it started with and the useful one does not
             # exist. Every other line here comes off the log and is exact.
-            lines += [f"  {one}" for one in self._canvas_lines(without, plan_view)]
+            standing += self._canvas_lines(without, plan_view)
             # And the canvas as it stands is the one the next pass opens on, for a
             # painter who runs passes in one script and calls this after each.
             self._opened = (len(records), view)
+        lines += [f"  {one}" for one in self._standing_said(
+            standing, None if since is None else self._index_base + start)]
         return "\n".join(lines)
+
+    def _habit_line(self, marks: list[StrokeRecord], every: bool = False) -> str:
+        """What the places the plan declares the disc habit in hold of ``marks``.
+
+        The count :func:`_declared_line` prints, with each place's reason. ``""`` for a
+        plan that declares no habit, or a pass that laid nothing in its places.
+        """
+        habits = self._plan.habit_places("disc")
+        if not habits:
+            return ""
+        discs = [r for r in _discs(marks, self.canvas) if not History.is_signature(r)]
+        return _declared_line(_declared_discs(discs, habits)[1], every=every)
+
+    def _standing_said(self, standing: list[str], opened: int | None) -> list[str]:
+        """The standing lines a report prints: over a pass, those that changed.
+
+        Uktarl's Room's painter filtered 29 of its 30 runs down to the lines it named,
+        because 150 of the 246 standing lines it was printed were the line before, word
+        for word -- 40% over the corpus -- and the findings were a few lines among six
+        that repeat. Its answer (batch 2, 7a and 7b): **print a standing line only when
+        it changes, and name the ones left out on one line**, so a missing line never
+        reads as one that was not measured::
+
+            values: 0.15-0.52 of a box that reaches ...
+            unchanged: plan, lightest, edges, ground
+
+        **Changed from the painting as committed**: every report on this session keeps
+        what it measured -- each line by its label, at the record it was read at -- and
+        a rehearsal copy starts from the painting's. So the third rehearsal of a pass
+        says what it would change on the painting, not what changed since the second,
+        which was thrown away. ``opened`` is the record the pass opened at, in the
+        painting's own numbering; a reading taken anywhere else -- before an undo, or a
+        pass that was never reported -- is not the painting the pass opened on, and
+        every line prints. ``None`` is an audit over the whole painting, which prints
+        every line, as the closing checklist does.
+        """
+        here = self._index_base + len(self.history.records)
+        read = [(line.split(":", 1)[0], line) for line in standing]
+        before = self._standing
+        self._standing = (here, dict(read))
+        if opened is None or before is None or before[0] != opened:
+            return list(standing)
+        said = [line for label, line in read if before[1].get(label) != line]
+        same = [label for label, line in read if before[1].get(label) == line]
+        if same:
+            said.append(f"unchanged: {', '.join(same)}")
+        return said
 
     def _open_pass(self) -> int:
         """Keep the canvas as a pass opens, and return the log index the pass starts at.
@@ -4854,8 +4933,14 @@ class Session:
         # rules about a pass from adding the painting up (finding 12).
         findings = _pass_findings(marks, 0, self.canvas, banding=None,
                                   bands=self._plan.bands, whole=True,
-                                  named=self._marks_named)
+                                  named=self._marks_named,
+                                  habits=self._plan.habit_places("disc"))
         lines += [f"  - {line}" for line in findings]
+        # Every place the plan declares a habit in, with its count and its reason
+        # quoted back, as `why` is below -- a place nothing fell in included.
+        habit = self._habit_line(marks, every=True)
+        if habit:
+            lines.append(f"  {habit}")
         # Every mark of the painting that laid no paint, as `report()` says it over the
         # painting: the same line, so the two never disagree about one mark.
         if not self._counting:
@@ -5163,7 +5248,8 @@ class Session:
 
     # -- what the painter says before painting -----------------------------------
     def plan(self, why=None, values=None, lightest=None, subject_share=None,
-             bands=None, ground=None, key=None, clear: bool = False) -> Plan:
+             bands=None, ground=None, key=None, habits=None,
+             clear: bool = False) -> Plan:
         """Write the plan down where the engine can see it. Returns it; print it.
 
         The guide has always asked a painter to settle these before the first mark,
@@ -5178,7 +5264,8 @@ class Session:
                    subject_share=0.40,
                    bands="subject",
                    ground="buried",
-                   key="low")
+                   key="low",
+                   habits={"disc": {face: "the features of a face"}})
 
         Args:
             why: what the picture is for, in a sentence. Nothing measures it;
@@ -5218,6 +5305,12 @@ class Session:
                 kept its key, and by how much it has left it; it prints its clusters
                 without judging their gaps. Under ``"low"`` it also asks whether the
                 ``lightest`` place, if one is named, stands clear of everything else.
+            habits: ``{"disc": {place: reason}}`` -- the places where small round marks
+                at ``tip_wobble=0`` are meant, each with the reason. A face's eyes and
+                mouth are that on purpose. Inside a declared place the disc rule counts
+                them and quotes the reason instead of warning; everywhere else it warns
+                as before, and :meth:`checklist` quotes every reason back. ``"disc"``
+                is the one habit a place declares: the bars rule has ``bands=``.
 
             clear: start from nothing rather than from the plan already declared, so
                 this call is the whole of it.
@@ -5238,12 +5331,13 @@ class Session:
         """
         wanted = build_plan(why=why, values=values, lightest=lightest,
                             subject_share=subject_share, bands=bands, ground=ground,
-                            key=key, onto=None if clear else self._plan)
+                            key=key, habits=habits, onto=None if clear else self._plan)
         # Here rather than in `easel.plan`, because whether a place is anywhere on the
         # painting is a question about this canvas. `compare()` asks it of the same dict
         # and says the same thing; without it the check would print a `nan` after every
         # pass and the plan would be the only thing that could have said why.
-        for place in [*wanted.values, wanted.lightest]:
+        for place in [*wanted.values, wanted.lightest,
+                      *(one.place for one in wanted.habits)]:
             if place is not None and not place.outline.mask(*self.size).any():
                 raise ValueError(
                     f"The planned place {place.name!r} covers no pixels of the canvas. "
@@ -5386,6 +5480,12 @@ class Session:
             # New in 0.7.0, beside the log for the same reason, and read with `.get`:
             # a 0.6.0 Easel opens a file this one wrote and never sees the key.
             "reports": [r.to_json() for r in self._reports],
+            # What the last report measured, line by line, and where: the standing
+            # lines a later pass is compared against (`_standing_said`). New in 0.9.0
+            # and read with `.get`; an older build never sees it, and prints them all.
+            "standing": (None if self._standing is None
+                         else {"at": int(self._standing[0]),
+                               "lines": dict(self._standing[1])}),
             # What the painter wrote down before painting. Also a new key read with
             # `.get`, and beside the log for the same reason: a painting worked from
             # the shell is loaded and saved once a pass, so without this the plan
@@ -5490,6 +5590,7 @@ class Session:
                 # New in 0.6.0, read with `.get` and forgiving about its own contents:
                 # a 0.5.0 file has no plan and opens with none. See `easel.plan`.
                 s._plan = Plan.from_json(meta.get("plan"))
+                s._standing = _standing_from_json(meta.get("standing"))
                 s.seed = int(meta["seed"])
                 s.rng = _decode_rng(meta["rng_state"])
                 s.out_dir = Path(meta["out_dir"])
@@ -8936,17 +9037,9 @@ def _disc_group_marks(discs: list[StrokeRecord], canvas,
     """:func:`_disc_groups` with each group's own marks: ``(count, (x, y), marks)``,
     which is what a finding names when it says where the discs sit together."""
     long = float(canvas.long_side)
-    middles = []
-    placed = []
-    for r in discs:
-        pts = np.asarray(r.points, dtype=np.float64).reshape(-1, 2)
-        if len(pts):
-            middles.append((0.5 * (pts[:, 0].min() + pts[:, 0].max()),
-                            0.5 * (pts[:, 1].min() + pts[:, 1].max())))
-            placed.append(r)
-    if not middles:
+    placed, at = _mark_middles(discs)
+    if not placed:
         return []
-    at = np.asarray(middles, dtype=np.float64)
     units = at * np.array([canvas.width / long, canvas.height / long])
     root = list(range(len(at)))
 
@@ -8970,9 +9063,76 @@ def _disc_group_marks(discs: list[StrokeRecord], canvas,
     return sorted(found, key=lambda one: -one[0])
 
 
+def _mark_middles(marks: list[StrokeRecord]) -> tuple[list[StrokeRecord], np.ndarray]:
+    """Each mark placed at the middle of its own path, as canvas fractions.
+
+    The point the disc rule places a mark at, over a painting (:func:`_disc_group_marks`)
+    and in a place a plan declares a habit in (:func:`_declared_discs`): one point, so
+    a mark is in one group and in one place, never half in each. A mark with no points
+    has no place and is left out.
+    """
+    placed, middles = [], []
+    for r in marks:
+        pts = np.asarray(r.points, dtype=np.float64).reshape(-1, 2)
+        if len(pts):
+            middles.append((0.5 * (pts[:, 0].min() + pts[:, 0].max()),
+                            0.5 * (pts[:, 1].min() + pts[:, 1].max())))
+            placed.append(r)
+    return placed, np.asarray(middles, dtype=np.float64).reshape(-1, 2)
+
+
+def _declared_discs(discs: list[StrokeRecord], habits=()) -> tuple[list[StrokeRecord],
+                                                                   list[tuple]]:
+    """The discs left for the rule to count, and those in a place the plan declares.
+
+    ``habits`` is the plan's declared disc places (:meth:`easel.plan.Plan.habit_places`).
+    A disc whose middle lies in one is the painter's on purpose -- a face's eyes and
+    mouth -- and is counted there instead of warned about; the first place that holds
+    it, in the plan's order, has it. Every other disc is counted as before.
+
+    Returns:
+        ``(counted, declared)``: the discs still the rule's, in log order, and
+        ``(habit, marks)`` for every declared place, in the plan's order, with the
+        discs in it (an empty list for a place none fell in).
+    """
+    if not habits:
+        return list(discs), []
+    placed, at = _mark_middles(discs)
+    taken = np.zeros(len(placed), dtype=bool)
+    declared = []
+    for habit in habits:
+        inside = (habit.place.outline.inside(at[:, 0], at[:, 1]) & ~taken
+                  if len(placed) else np.zeros(0, dtype=bool))
+        taken |= inside
+        declared.append((habit, [r for r, yes in zip(placed, inside, strict=True) if yes]))
+    kept = {id(r) for r, yes in zip(placed, taken, strict=True) if yes}
+    return [r for r in discs if id(r) not in kept], declared
+
+
+def _declared_line(declared: list[tuple], every: bool = False) -> str:
+    """The line a declared disc habit prints in the rule's place: a count, and the reason.
+
+    ``declared`` is :func:`_declared_discs`' second half. Over a pass, only the places
+    that hold a disc of it are said; ``every`` -- the closing checklist -- says each
+    place the plan declares, a place nothing fell in included, so every reason is quoted
+    back once at the end as ``why`` is::
+
+        discs declared: 10 in uktarl's face ('the features of three faces'), 4 in the
+          cards ('the fan of cards') -- counted, not warned about, as the plan says
+
+    ``""`` when there is nothing to say.
+    """
+    shown = [(habit, marks) for habit, marks in declared if marks or every]
+    if not shown:
+        return ""
+    parts = ", ".join(f"{len(marks)} in {habit.place.name} ({habit.reason!r})"
+                      for habit, marks in shown)
+    return f"discs declared: {parts} -- counted, not warned about, as the plan says"
+
+
 def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
                    banding=None, bands: str = "", whole: bool = False,
-                   named=None) -> list[str]:
+                   named=None, habits=()) -> list[str]:
     """The lines :meth:`Session.report` prints, one per rule that fired.
 
     ``banding`` decides whether the stack-of-bars line is worth printing this time,
@@ -8995,15 +9155,19 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
     marks with a bristle*, *one disc printed 176 times*). The small-comb rule says
     nothing there: it is a choice of brush for the marks about to be laid, which a
     finished painting has none of, and a pass that laid a habit's worth said so when it
-    was laid. The disc rule counts only the discs a painting shows together, leaves a
-    signature out, and says where they are: a lamp, a moon and a glint laid in three
-    passes are three marks, not one disc printed three times. Every other rule reads the
-    whole painting as it always has.
+    was laid. The disc rule counts only the discs a painting shows together, and says
+    where they are: a lamp, a moon and a glint laid in three passes are three marks, not
+    one disc printed three times. Every other rule reads the whole painting as it always
+    has.
 
     ``named`` names the marks a finding counted -- :meth:`Session._marks_named`, whose
     line goes under the finding's own. Every rule that counts marks hands it the marks
     it counted; the one that counts every mark of the pass, one brush at one size, has
     nothing to point at that the pass is not. Left off, a finding is its line alone.
+
+    ``habits`` is the places the plan declares the disc habit in. The disc rule leaves
+    their discs out, as it leaves a signature out, over a pass as over a painting: what
+    they lay is counted by :func:`_declared_line`, under the findings.
     """
     out: list[str] = []
     if not marks:
@@ -9112,17 +9276,20 @@ def _pass_findings(marks: list[StrokeRecord], earlier: int, canvas,
             small,
         )
 
-    # A round tip printing its own outline, over and over.
-    discs = _discs(marks, canvas)
+    # A round tip printing its own outline, over and over. A signature is lettering,
+    # which the budget waives as well, over a pass as over a painting: a dotted *i* is
+    # not one disc printed over and over. And a place the plan declares the habit in
+    # is the painter's on purpose, and counted under the findings instead.
+    discs, _ = _declared_discs([r for r in _discs(marks, canvas)
+                                if not History.is_signature(r)], habits)
     remedy = (f"Two plain round dabs share 97% of their silhouette; tip_wobble=0.35 is a "
               f"brush set down once and 0.7 a clot, redrawn per mark the way a bristle's "
               f"comb is. Or give the mark a length -- a round tip reads as a capsule "
               f"under {_ROUND_CAPSULE_WIDTHS:.0f} times its own width.")
     if whole:
         # Over a painting only the discs seen together are one disc printed over and
-        # over, and a signature is lettering, which the budget waives as well.
-        groups = _disc_group_marks([r for r in discs if not History.is_signature(r)],
-                                   canvas)
+        # over.
+        groups = _disc_group_marks(discs, canvas)
         if len(groups) == 1:
             (count, (x, y), members), = groups
             found(
@@ -10394,6 +10561,21 @@ def _brush_from_params(params: dict) -> Brush:
 def _encode_rng(rng: np.random.Generator) -> dict:
     state = rng.bit_generator.state
     return json.loads(json.dumps(state, default=str))
+
+
+def _standing_from_json(data) -> tuple[int, dict[str, str]] | None:
+    """What the last report measured, as a session file kept it; ``None`` if it did not.
+
+    Forgiving, as the plan's reader is: a file that kept none, or kept it damaged, opens
+    with none, and the next pass prints every standing line.
+    """
+    if not isinstance(data, dict) or not isinstance(data.get("lines"), dict):
+        return None
+    try:
+        at = int(data.get("at"))
+    except (TypeError, ValueError):
+        return None
+    return at, {str(k): str(v) for k, v in data["lines"].items()}
 
 
 def _stream_of(rng: np.random.Generator) -> dict:

@@ -305,6 +305,13 @@ def build_parser() -> argparse.ArgumentParser:
                              "purpose, 'high' over it: the values line then says whether "
                              "the picture has kept its key instead of 'no clear light'. "
                              "'' takes the declaration back")
+    p_plan.add_argument("--habit", action="append", nargs=3, default=None,
+                        metavar=("HABIT", "PLACE", "REASON"),
+                        help="a habit meant in a place, and why: --habit disc C3:D4 "
+                             "'the features of a face'. Inside the place the disc rule "
+                             "counts small round marks and quotes the reason instead of "
+                             "warning. Repeatable, and the whole set replaces any "
+                             "declared before")
     p_plan.add_argument("--clear", action="store_true",
                         help="forget the plan entirely and start again")
 
@@ -680,6 +687,7 @@ whole painting rather than once per pass.
 #     # bands="subject",           # this picture's subject really does run one way
 #     # ground="buried",           # and it covers its ground on purpose
 #     # key="low",                 # and it lives under the box's middle on purpose
+#     # habits={"disc": {face: "the features of a face"}},  # small round marks, meant
 # )
 '''
 
@@ -734,6 +742,11 @@ def _cmd_plan(session: Session, args) -> int:
     """
     values = (dict(_parse_value(one) for one in args.value)
               if args.value is not None else None)
+    habits = None
+    if args.habit is not None:
+        habits = {}
+        for habit, place, reason in args.habit:
+            habits.setdefault(habit, {})[place] = reason
     # The pairs notice is filtered here and printed below as the table it came from:
     # this command's whole output is the plan, the stderr copy would arrive above it
     # pointing at a line of this file, and the table says the same thing in full. It is
@@ -742,7 +755,8 @@ def _cmd_plan(session: Session, args) -> int:
         warnings.filterwarnings("ignore", category=EaselWarning)
         plan = session.plan(why=args.why, values=values, lightest=args.lightest,
                             subject_share=args.subject_share, bands=args.bands,
-                            ground=args.ground, key=args.key, clear=args.clear)
+                            ground=args.ground, key=args.key, habits=habits,
+                            clear=args.clear)
     # Always, as every other command here does. `easel plan p.easel` with nothing to
     # declare is a read and writes the file back unchanged; a declaration that was not
     # saved is the thing this whole command exists to stop.
@@ -1381,9 +1395,15 @@ def _cmd_run(session: Session, args) -> int:
     # warned about, read off the log. Over the pass alone unless asked for the whole
     # painting -- and a rehearsal is checked too, because that is where a pass gets
     # changed for free.
+    seen = target._standing
     check = target.report() if args.check else target.report(since=before)
     said = target.notices(since=told)
     block = pass_block(target, before, said, check)
+    if result.code != 0:
+        # A pass that raised prints no check, so what it measured was never read: the
+        # next pass is compared against the last lines the painter did read, and, the
+        # painting having moved since, prints them all (`Session._standing_said`).
+        target._standing = seen
 
     def failed() -> None:
         """A pass that raised still laid marks and still said things.

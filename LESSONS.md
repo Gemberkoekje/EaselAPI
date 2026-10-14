@@ -75,6 +75,13 @@ What the painter asked for was a procedure — a join laid along each terminator
 that is a recipe now, which is the section below this one arriving from the other side:
 a default is worth more than a warning, and neither is a method.
 
+**And a line that repeats costs the lines beside it.** A measurement printed after every
+pass, moved or not, buries the findings printed with it. Uktarl's Room's painter was
+printed 246 standing lines, 150 of them the line before word for word, and from the
+body's second rehearsal on filtered 29 of its 30 runs down to the lines it named: 27 of
+the 29 findings those runs printed went unread. Since 0.9.0 a standing line prints only
+when it changed from the painting as committed, and the rest are named on one line.
+
 ### A separate file of warnings is the fourth copy, and it does not work either
 
 Asked directly whether the warnings should be gathered into their own file for a painter

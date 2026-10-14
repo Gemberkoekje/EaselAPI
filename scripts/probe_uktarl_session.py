@@ -28,6 +28,9 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --key        # 4H: the line beside a named light
     python scripts/probe_uktarl_session.py --reading    # 4I: the reading path's inventory
     python scripts/probe_uktarl_session.py --answers2   # the second answers, re-measured
+    python scripts/probe_uktarl_session.py --check-built  # 4C as built (step 5): the
+                                                        # painting, its places declared
+    python scripts/probe_uktarl_session.py --check-corpus # step 5 over the corpus, replayed
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -1456,6 +1459,203 @@ def probe_reading() -> None:
         print(f"  '{sentence}': {'present' if sentence in painter else 'absent'} in PAINTER.md")
 
 
+# -- step 5: the check, as built --------------------------------------------------------
+
+#: The places the painter would have declared the disc habit in (answer C): the three
+#: faces, from the prelude's own outlines, and the fan of cards in Uktarl's hand, which
+#: the prelude never drew as a shape -- an ellipse round the hand and the cards' tips,
+#: laid from (486, 476) up to 34 px (``p16_hand_and_crags.py``).
+HABIT_PLACES = (("uk_head_poly", "the features of three faces"),
+                ("dp_head", "the features of three faces"),
+                ("a_face", "the features of three faces"),
+                ("the fan of cards", "the fan of cards"))
+
+
+def _habits(scope: dict) -> dict:
+    places = {}
+    for name, reason in HABIT_PLACES:
+        place = (scope[name] if name in scope
+                 else scope["ell_px"](486, 456, 36, 32, name=name))
+        places[place] = reason
+    return {"disc": places}
+
+
+@contextlib.contextmanager
+def declaring(habits: dict):
+    """Every ``s.plan(...)`` the prelude makes also declares ``habits``."""
+    original = Session.plan
+
+    def patched(self, *args, **kw):
+        if kw.get("habits") is None and (args or kw):
+            kw["habits"] = habits
+        return original(self, *args, **kw)
+
+    Session.plan = patched
+    try:
+        yield
+    finally:
+        Session.plan = original
+
+
+@contextlib.contextmanager
+def counting_lines(kept: list):
+    """What each report measured and what it printed of it: ``(standing, said)`` counts."""
+    original = Session._standing_said
+
+    def patched(self, standing, opened):
+        said = original(self, standing, opened)
+        kept.append((len(standing), len(said)))
+        return said
+
+    Session._standing_said = patched
+    try:
+        yield
+    finally:
+        Session._standing_said = original
+
+
+def _painted_08() -> dict[str, list[str]]:
+    """What 0.8.0 printed after each committed pass, from the painter's saved reports.
+
+    A report of several scripts run together -- ``p01_draw.py, p02_wall.py`` -- is the
+    last of them that is a pass of the painting's order: a drawing and a look lay no
+    paint, and the rebuild reports them apart.
+    """
+    order = set(_ENTRY.passes)
+    out: dict[str, list[str]] = {}
+    for head, lines in saved_reports():
+        if head.startswith("painted "):
+            names = [n for n in head[len("painted "):].split(", from record")[0].split(", ")
+                     if n in order]
+            if names:
+                out[names[-1]] = lines
+    return out
+
+
+def _check_counts(lines: list[str]) -> tuple[int, int, int]:
+    """``(findings, standing lines, 'unchanged:' lines)`` under one report's check.
+
+    Under its ``check over`` line: a saved report prints what was said at the calls
+    above it, in the same ``- `` form a finding takes.
+    """
+    said = [ln.strip() for ln in lines]
+    heads = [i for i, ln in enumerate(said) if ln.startswith("check over")]
+    said = said[heads[0] + 1:] if heads else said
+    return (sum(1 for ln in said if ln.startswith("- ")),
+            sum(1 for ln in said if ln.split(" ", 1)[0] in STANDING),
+            sum(1 for ln in said if ln.startswith("unchanged:")))
+
+
+def probe_check_built() -> None:
+    """Step 5: the pass rule without the signature, the habit declared, lines on change."""
+    heading("Step 5: the check as built, on the painting, against 0.8.0's reports")
+    if "habits" not in Session.plan.__code__.co_varnames:
+        print("  this engine has no habits= -- step 5 is not built here")
+        return
+    habits = _habits(bell.scope_of("uktarl"))
+    runs = {}
+    for kind in ("as built", "places declared"):
+        counts: list = []
+        with counting_lines(counts), (declaring(habits) if kind == "places declared"
+                                      else contextlib.nullcontext()):
+            rb = bell.rebuild("uktarl", keep=False, watch=False)
+            closing = rb.session.checklist()
+        runs[kind] = (rb, counts, closing)
+    old = _painted_08()
+    rows = []
+    totals = {"0.8.0": [0, 0], "as built": [0, 0], "places declared": [0, 0]}
+    if any(_check_counts(old.get(label, []))[1] != counts[i][0]
+           for i, label in enumerate(runs["as built"][0].labels)):
+        print("  (a pass measured other standing lines than 0.8.0 printed: the rebuild "
+              "is not the painter's, and the comparison below is off)")
+
+    def disc(lines) -> str:
+        found = [ln for ln in lines if "one disc printed" in ln]
+        return re.search(r"one disc printed (\d+)", found[0]).group(1) if found else "--"
+
+    built, counts, _ = runs["as built"]
+    declared, _, _ = runs["places declared"]
+    if len(counts) != len(built.labels):
+        print(f"  ({len(counts)} reports for {len(built.labels)} passes: a pass reported "
+              f"itself, and the counts below are off by it)")
+    for i, label in enumerate(built.labels):
+        name = label.split(" ")[0]
+        before = old.get(name, [])
+        a = built.said[label]
+        b = declared.said[label]
+        full, said = counts[i]
+        rows.append([label, "/".join(str(_check_counts(x)[0]) for x in (before, a, b)),
+                     disc(before), disc(a), disc(b),
+                     sum(1 for ln in b if ln.strip().startswith("discs declared")),
+                     _check_counts(before)[1], full, said])
+        for kind, lines in (("0.8.0", before), ("as built", a), ("places declared", b)):
+            findings, standing, unchanged = _check_counts(lines)
+            totals[kind][0] += findings
+            totals[kind][1] += standing + unchanged
+    print(table(rows, ["pass", "findings", "disc 0.8.0", "built", "declared",
+                       "declared line", "standing 0.8.0", "measured", "printed"]))
+    print("  (findings: 0.8.0's, as built, with the places declared; disc: the count the "
+          "pass rule's finding says, '--' for none; standing: the "
+          "lines 0.8.0 printed under the check, the built check measured, and printed, "
+          "the 'unchanged:' line included)")
+    for kind, (findings, lines) in totals.items():
+        print(f"  {kind}: {findings} findings and {lines} standing lines over the "
+              f"{len(built.labels)} committed passes")
+    for kind, (_, _, closing) in runs.items():
+        said = [ln.strip() for ln in closing.splitlines()
+                if "one disc printed" in ln or ln.strip().startswith("discs declared")]
+        print(f"  closing checklist, {kind}:")
+        for line in said:
+            print(f"    {line[:150]}{'...' if len(line) > 150 else ''}")
+
+
+def probe_check_corpus() -> None:
+    """Step 5 over the corpus: the disc rule's passes, and the standing lines on change."""
+    heading("Step 5: the check as built, over the corpus (about twenty minutes)")
+    kept: dict[str, list[dict]] = {}
+
+    def hook(done, session: Session) -> None:
+        kept.setdefault(_PAINTING[0], []).append({
+            "pass": done.name, "start": done.start, "end": done.end,
+            "error": done.error, "findings": list(done.findings),
+            "standing": session._standing})
+
+    cohort.PASS_HOOKS.append(hook)
+    try:
+        for entry in cohort.CORPUS:
+            _PAINTING[0] = entry.name
+            started = time.time()
+            rep = cohort.replay(entry, keep_canvas=False)
+            print(f"  {entry.name:<12} {len(rep.passes):3d} passes, "
+                  f"{time.time() - started:5.0f} s", flush=True)
+    finally:
+        cohort.PASS_HOOKS.remove(hook)
+    rows = []
+    total = [0, 0, 0, 0]
+    for painting, passes in kept.items():
+        done = [p for p in passes if p["end"] > p["start"] and not p["error"]]
+        disc = sum(1 for p in done if any("one disc printed" in f for f in p["findings"]))
+        full = printed = 0
+        last = None
+        for p in passes:
+            lines = p["standing"][1] if p["standing"] else {}
+            if p in done:
+                full += len(lines)
+                if last is not None and last[0] == p["start"]:
+                    changed = sum(1 for k, v in lines.items() if last[1].get(k) != v)
+                    printed += changed + (changed < len(lines))
+                else:
+                    printed += len(lines)
+            last = p["standing"]
+        rows.append([painting, len(done), disc, full, printed])
+        total = [total[0] + len(done), total[1] + disc, total[2] + full, total[3] + printed]
+    print(table(rows, ["painting", "passes", "disc passes", "standing measured",
+                       "printed"]))
+    print(f"  over the corpus: {total[0]} committed passes, the disc rule on {total[1]}; "
+          f"{total[2]} standing lines measured, {total[3]} printed "
+          f"({1 - total[3] / max(total[2], 1):.0%} fewer), 'unchanged:' lines included")
+
+
 # -- the run ----------------------------------------------------------------------------
 
 BENCHES = (
@@ -1471,6 +1671,8 @@ BENCHES = (
     ("key", "4H: H2 over the corpus's plans with a named light"),
     ("reading", "4I: the reading path's inventory"),
     ("answers2", "the second answers' measured claims, re-measured"),
+    ("check-built", "4C as built (step 5): the painting, without and with its places"),
+    ("check-corpus", "4C as built (step 5): the corpus replayed, about twenty minutes"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
                   "answers2"}
@@ -1524,6 +1726,10 @@ def main(argv: list[str] | None = None) -> int:
         probe_key(kept)
     if "reading" in run:
         probe_reading()
+    if "check_built" in run:
+        probe_check_built()
+    if "check_corpus" in run:
+        probe_check_corpus()
     return 0
 
 
