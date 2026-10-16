@@ -312,6 +312,13 @@ def build_parser() -> argparse.ArgumentParser:
                              "counts small round marks and quotes the reason instead of "
                              "warning. Repeatable, and the whole set replaces any "
                              "declared before")
+    p_plan.add_argument("--share", action="append", nargs=2, default=None,
+                        metavar=("PART", "SHARE"),
+                        help="a part of the picture and its share of the budget, 0..1: "
+                             "--share 'the figure' 0.30. A part is the marks whose "
+                             "note= holds its name; the shares line then prints each "
+                             "part's strokes against its share. Repeatable, and the "
+                             "whole set replaces any declared before")
     p_plan.add_argument("--clear", action="store_true",
                         help="forget the plan entirely and start again")
 
@@ -688,6 +695,7 @@ whole painting rather than once per pass.
 #     # ground="buried",           # and it covers its ground on purpose
 #     # key="low",                 # and it lives under the box's middle on purpose
 #     # habits={"disc": {face: "the features of a face"}},  # small round marks, meant
+#     # shares={"the figure": 0.30, "the wall": 0.25},  # of the budget, by note=
 # )
 '''
 
@@ -747,6 +755,16 @@ def _cmd_plan(session: Session, args) -> int:
         habits = {}
         for habit, place, reason in args.habit:
             habits.setdefault(habit, {})[place] = reason
+    shares = None
+    if args.share is not None:
+        shares = {}
+        for part, share in args.share:
+            try:
+                shares[part] = float(share)
+            except ValueError:
+                raise ValueError(
+                    f"--share {part!r} {share!r} gives a share that is not a number. A "
+                    f"share is 0..1 of the budget: --share {part!r} 0.30.") from None
     # The pairs notice is filtered here and printed below as the table it came from:
     # this command's whole output is the plan, the stderr copy would arrive above it
     # pointing at a line of this file, and the table says the same thing in full. It is
@@ -756,7 +774,7 @@ def _cmd_plan(session: Session, args) -> int:
         plan = session.plan(why=args.why, values=values, lightest=args.lightest,
                             subject_share=args.subject_share, bands=args.bands,
                             ground=args.ground, key=args.key, habits=habits,
-                            clear=args.clear)
+                            shares=shares, clear=args.clear)
     # Always, as every other command here does. `easel plan p.easel` with nothing to
     # declare is a read and writes the file back unchanged; a declaration that was not
     # saved is the thing this whole command exists to stop.

@@ -37,6 +37,10 @@ and :class:`Plan` is the rest of them.
   rule, in a place: a face's eyes and mouth are small round marks at
   ``tip_wobble=0`` on purpose. Inside a declared place the rule counts them and
   quotes the reason instead of warning; everywhere else it warns as before.
+* ``shares={"the figure": 0.25, "the wall": 0.25, ...}`` splits the budget by part,
+  each part the marks whose ``note=`` names it. A share of the marks laid so far
+  measures the order a painting was laid in; a share of the budget says which part
+  will be starved while there are strokes left to send it.
 * ``why`` is the sentence the painting is for. Nothing measures it;
   :meth:`~easel.session.Session.checklist` quotes it back.
 
@@ -61,7 +65,7 @@ from easel.regions import Difference, Polygon, as_place, polygon
 
 __all__ = ["Plan", "Planned", "Habit", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
            "HABIT_WORDS", "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place",
-           "planned", "read_place"]
+           "planned", "read_place", "declared_shares"]
 
 #: What ``bands=`` accepts. ``"subject"`` declares that the picture's own subject runs
 #: in one direction, which is what the stack-of-bars warning concedes it cannot know.
@@ -328,17 +332,36 @@ class Plan:
     ground: str = ""
     key: str = ""
     habits: tuple[Habit, ...] = ()
+    shares: tuple[tuple[str, float], ...] = ()
 
     @property
     def declared(self) -> bool:
         """Whether anything at all was declared. An empty plan is no plan."""
         return bool(self.why or self.values or self.lightest is not None
                     or self.subject_share is not None or self.bands or self.ground
-                    or self.key or self.habits)
+                    or self.key or self.habits or self.shares)
 
     def habit_places(self, habit: str) -> tuple[Habit, ...]:
         """The places the plan declares ``habit`` in, in the order it names them."""
         return tuple(one for one in self.habits if one.habit == habit)
+
+    def part_of(self, note) -> str | None:
+        """The part of ``shares=`` a mark with this ``note`` belongs to, or ``None``.
+
+        The part whose name the note holds, in any case -- as the ``subject:`` line
+        reads ``subject`` -- so ``note="uktarl: the wig"`` and a block-in's own note,
+        *block-in Uktarl's body*, are both Uktarl's. Where two names are in the note,
+        the longer is the part, so a mark is in one part and never two: *the near
+        bandit's hood* is the near bandit's and not the bandit's.
+        """
+        said = str(note or "").lower()
+        if not said:
+            return None
+        best = None
+        for name, _ in self.shares:
+            if name.lower() in said and (best is None or len(name) > len(best)):
+                best = name
+        return best
 
     def as_dict(self) -> dict:
         """The values as ``{place: value}``, which is what ``compare()`` takes.
@@ -507,6 +530,8 @@ class Plan:
             # New in 0.9.0. A build before it reads the plan without the key, and its
             # disc rule warns in the places this one counts: a line, never a mark.
             "habits": [one.to_json() for one in self.habits],
+            # New in 0.9.0 too, and a line too: 0.8.0 opens the plan without it.
+            "shares": [[name, share] for name, share in self.shares],
         }
 
     @classmethod
@@ -537,6 +562,7 @@ class Plan:
             habits=tuple(one for one in (Habit.from_json(entry) for entry in (
                 data.get("habits") if isinstance(data.get("habits"), list) else []))
                 if one is not None),
+            shares=_shares_from_json(data.get("shares")),
         )
 
     def __str__(self) -> str:
@@ -560,7 +586,66 @@ class Plan:
             out.append(f"key: {self.key}")
         for one in self.habits:
             out.append(f"habit: {one.habit} in {one.place.name} -- {one.reason!r}")
+        if self.shares:
+            out.append("shares of the budget: " + ", ".join(
+                f"{name} {share:.0%}" for name, share in self.shares))
         return "\n".join(out)
+
+
+def _shares_from_json(data) -> tuple[tuple[str, float], ...]:
+    """``shares`` as a session file holds it, a malformed entry dropped as a key is."""
+    out: list[tuple[str, float]] = []
+    for entry in data if isinstance(data, list) else []:
+        try:
+            name, share = entry
+            out.append((str(name), float(share)))
+        except (TypeError, ValueError):
+            continue
+    return tuple(out)
+
+
+def declared_shares(shares) -> tuple[tuple[str, float], ...]:
+    """``shares=`` as the plan holds it: each part's name, and its share of the budget.
+
+    ``{"uktarl": 0.25, "the near bandit": 0.10}`` -- a part is the marks whose ``note=``
+    holds its name (:meth:`Plan.part_of`), and its share is of the **budget**, 0..1, so
+    the shares add to 1 or less and the rest is in hand. ``{}`` declares none.
+    """
+    if not isinstance(shares, dict):
+        raise TypeError(
+            f"plan(shares={shares!r}) is a dict of parts and their shares of the "
+            f"budget: shares={{'the figure': 0.30, 'the wall': 0.25}}. A part is the "
+            f"marks whose note= names it.")
+    out: list[tuple[str, float]] = []
+    seen: dict[str, str] = {}
+    for name, share in shares.items():
+        part = str(name or "").strip()
+        if not part:
+            raise ValueError(
+                "plan(shares=) names a part with no name. A part is the marks whose "
+                "note= holds its name, so it needs one: {'the figure': 0.30}.")
+        if part.lower() in seen:
+            raise ValueError(
+                f"plan(shares=) names {seen[part.lower()]!r} and {part!r}, which a note "
+                f"cannot tell apart: a part is read from note= in any case.")
+        seen[part.lower()] = part
+        try:
+            number = float(share)
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"plan(shares=) gives {part!r} the share {share!r}, and a share is a "
+                f"number 0..1 of the budget: 0.25, not '25%'.") from None
+        if not 0.0 <= number <= 1.0:
+            raise ValueError(
+                f"plan(shares=) gives {part!r} {share!r} of the budget, and a share "
+                f"runs 0..1 -- 0.25 for a quarter, not 25.")
+        out.append((part, number))
+    total = sum(share for _, share in out)
+    if total > 1.0 + 1e-9:
+        raise ValueError(
+            f"plan(shares=) adds up to {total:.0%} of the budget. A share is of the "
+            f"budget, so they add up to all of it or less, and the rest is in hand.")
+    return tuple(out)
 
 
 def declared_habits(habits) -> tuple[Habit, ...]:
@@ -607,7 +692,7 @@ def declared_habits(habits) -> tuple[Habit, ...]:
 
 
 def build(why=None, values=None, lightest=None, subject_share=None,
-          bands=None, ground=None, key=None, habits=None,
+          bands=None, ground=None, key=None, habits=None, shares=None,
           onto: Plan | None = None) -> Plan:
     """A checked :class:`Plan`, or the one already registered with these fields changed.
 
@@ -615,7 +700,7 @@ def build(why=None, values=None, lightest=None, subject_share=None,
     keeps what ``onto`` already declared, so a painter can add the lightest place to a
     plan written in a ``prelude.py`` without retyping its values. Passing the empty
     version *clears* that field: ``values={}``, ``bands=""``, ``lightest=""``,
-    ``habits={}``.
+    ``habits={}``, ``shares={}``.
     """
     base = onto if onto is not None else Plan()
     fields = {}
@@ -663,4 +748,6 @@ def build(why=None, values=None, lightest=None, subject_share=None,
         fields["key"] = str(key)
     if habits is not None:
         fields["habits"] = declared_habits(habits)
+    if shares is not None:
+        fields["shares"] = declared_shares(shares)
     return replace(base, **fields) if fields else base

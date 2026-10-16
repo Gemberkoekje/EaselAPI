@@ -1270,6 +1270,7 @@ def build_server() -> MCPServer:
              lightest: str = "", subject_share: float | None = None,
              bands: str = "", ground: str = "", key: str = "",
              habits: dict[str, dict[str, str]] | None = None,
+             shares: dict[str, float] | None = None,
              clear: bool = False) -> str:
         """Declare what this painting is for, and what the check should hold it to.
 
@@ -1316,6 +1317,11 @@ def build_server() -> MCPServer:
                 `{"disc": {"C3:D4": "the features of a face"}}`. Inside them the disc
                 rule counts the marks and quotes the reason instead of warning;
                 everywhere else it warns as before. `{}` takes them back.
+            shares: `{part: share}` -- each part of the picture and its share of the
+                budget, 0..1: `{"the figure": 0.30, "the wall": 0.25}`. A part is the
+                marks whose `note` holds its name, in any case. The shares line then
+                prints each part's strokes against its share, and says when one has
+                passed it. `{}` takes them back.
             clear: start from nothing rather than from what is already declared.
         """
         s = _load(session)
@@ -1329,6 +1335,7 @@ def build_server() -> MCPServer:
             ground=ground or None,
             key=key or None,
             habits=habits,
+            shares=shares,
             clear=clear,
         )
         s.save(session)

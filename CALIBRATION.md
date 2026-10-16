@@ -4966,3 +4966,51 @@ names those on one line now. The disc rule speaks on 32 of the 412 passes, no
 painting in the corpus declaring a habit. A rehearsal is compared against the painting as
 committed, so the same rehearsal run twice says the same thing twice, and the pass
 committed after it is compared against the same reading (`tests/test_habits.py`).
+
+### A frame, a turn and a share of the budget, as built
+
+*Step 6, `probe_uktarl_session.py --frame-built` and `--shares-built`, on the branch that
+builds it.* **`s.frame()` is the painter's `hp()`, `dp()` and `ah()` point for point**:
+each head built as the painter would have written it, `s.frame(s.px(512, 344), *s.px(24,
+34), tilt=-6)`, against the prelude's own helper through `s.px`, in pixels of the
+1024×768 canvas:
+
+| head | the prelude's | points | largest gap | arcs | largest gap | outlines | largest gap |
+|---|---|---|---|---|---|---|---|
+| Uktarl | `hp()`, `head_arc()` | 1,225 | 1.1e-13 px | 4 | 1.1e-13 px | `uk_head_poly`, `uk_face_lit` | 1.1e-13 px |
+| the doppelganger | `dp()`, `dp_arc()` | 1,225 | 1.7e-13 px | 3 | 1.1e-13 px | `dp_head`, `dp_lit` | 1.1e-13 px |
+| the lady | `ah()`, `ah_arc()` | 1,225 | 1.7e-13 px | 2 | 8.5e-14 px | `a_face`, `a_lit` | 8.5e-14 px |
+
+*Points* is a grid of head units from `-1.7` to `1.7` by `0.1`, through the helper against
+`frame.at()`; *arcs*, every arc the prelude draws from each outline function, the
+painter's own warp — the chin's taper, the dome — applied to `frame.arc()`'s points in
+head units; *outlines*, the head and its lit plane built as the prelude builds them, the
+arc and the terminator's points meeting in head units. The same holds with the frame
+built in fractions typed as fractions (`tests/test_frame.py`).
+
+**A turn in pixels keeps its angle**: the painter's 100 px square on 1024×768, turned in
+fractions as if the canvas were square and through `.rotated(aspect=s.aspect)`:
+
+| asked | turned | top edge at | corner | top, side px |
+|---|---|---|---|---|
+| 6° | in fractions | 4.5° | 93.5° | 100, 100 |
+| 6° | `rotated(aspect=s.aspect)` | 6.0° | 90.0° | 100, 100 |
+| 30° | in fractions | 23.4° | 104.2° | 94, 109 |
+| 30° | `rotated(aspect=s.aspect)` | 30.0° | 90.0° | 100, 100 |
+
+`rotate=` on `ellipse()` and `blob()` still turns in fractions: it is in seven calls in
+the preludes of three committed paintings, the Bell-Warden's, the hands' and this one's,
+all on 1024×768, and turning it in pixels would move every one of them.
+
+**The `shares:` line is the step-2 bench's word for word on all 17 committed passes**,
+under the painter's split (answer E), each mark noted as the part the bench gives its
+call. At the head's pass it says *uktarl 102 of 112* where the `subject:` line beside it
+says *102 of 212 marks so far (48%), against 30% planned*; from the card game on, Uktarl
+is over his share; and from the near bandit's pass to the end, *near bandit 22 of 45*,
+with 40 strokes in hand. **The bench's table of calls named `p16`'s and `p17`'s by lines
+39 and 71 past the scripts' own**, so their 15 strokes fell to the table; keyed by the
+scripts' lines, the parts at the end are Uktarl 124, the doppelganger 53, the lady 47,
+the near bandit 22, the relief 101, the table 34 and the floor 29. The painter's own
+count gives Uktarl 117 and the relief 108: the 7 strokes of the cards in Uktarl's hand,
+in `p16_hand_and_crags.py`, which it counted by pass. Nothing step 2 said of the line
+moves.

@@ -28,7 +28,7 @@ __all__ = ["Region", "region", "cell", "span", "thirds", "golden", "horizon", "b
            "above", "left_of", "right_of", "between", "REGION_NAMES", "GRID_COLS",
            "GRID_ROWS", "as_region", "as_place",
            "Polygon", "polygon", "ellipse", "blob", "hull", "ribbon", "roughen",
-           "terminator", "Group", "group", "union", "difference", "Difference"]
+           "terminator", "Group", "group", "union", "difference", "Difference", "Frame"]
 
 #: Columns of the ``look(grid=True)`` overlay, left to right.
 GRID_COLS = "ABCDEFGH"
@@ -172,6 +172,15 @@ class Region:
         """Move the region without changing its size."""
         return Region(_c(self.x0 + dx), _c(self.y0 + dy), _c(self.x1 + dx), _c(self.y1 + dy),
                       self.name)
+
+    def rotated(self, degrees: float, about=None, *, aspect: float | None = None) -> Polygon:
+        """The rectangle turned ``degrees`` clockwise, in pixels: a :class:`Polygon`.
+
+        A turned rectangle is no longer a rectangle, so what comes back is its four
+        corners as a shape. ``about`` and ``aspect`` as :meth:`Polygon.rotated` takes
+        them; left off, ``about`` is the middle.
+        """
+        return polygon(self).rotated(degrees, about, aspect=aspect)
 
     def split_h(self, n: int = 2) -> list[Region]:
         """Split into ``n`` columns, left to right."""
@@ -832,6 +841,27 @@ class Polygon:
         made = _try_polygon(np.asarray(pts, dtype=np.float64), self.name, self.traced)
         return made if made is not None else self._sliver()
 
+    def rotated(self, degrees: float, about=None, *, aspect: float | None = None) -> Polygon:
+        """Turn the shape ``degrees`` clockwise about its centroid, **in pixels**.
+
+        ``aspect`` is the canvas's width over its height, ``s.aspect``, and it is not
+        optional: a shape does not know its canvas, and turned in coordinates on one
+        that is not square it comes back skewed -- a square turned 30 degrees on a 4:3
+        canvas comes back at 23.4, with a 104-degree corner::
+
+            lid = lid.rotated(-12, about=s.px(400, 210), aspect=s.aspect)
+
+        ``about`` is the point that stays put -- a point, or a place whose middle it is
+        -- as :meth:`scaled` takes it. Clockwise, as ``rotate=`` is on :func:`ellipse`;
+        that ``rotate=`` turns in coordinates, as it always has, so every painting
+        drawn with it rebuilds as it was.
+        """
+        a = _aspect_needed(aspect)
+        centre = self.center if about is None else _point_of(about)
+        made = _try_polygon(_turned(self.points, degrees, centre, a), self.name,
+                            self.traced)
+        return made if made is not None else self._sliver()
+
     def renamed(self, name: str) -> Polygon:
         """The same shape under another name. Names show up in the log."""
         return Polygon(self.points, name=str(name), traced=self.traced)
@@ -895,7 +925,10 @@ def ellipse(place, rx: float | None = None, ry: float | None = None,
             default to half the place's width and height. ``rx`` is a fraction of
             the width and ``ry`` of the height, as a point's two numbers are, so two
             radii in pixels are ``*s.px(rx, ry)``.
-        rotate: degrees, clockwise.
+        rotate: degrees, clockwise, turned in coordinates -- on a canvas that is
+            not square that is not the angle in pixels, and it is kept so that every
+            painting drawn with it rebuilds. ``ellipse(p, rx, ry).rotated(deg,
+            aspect=s.aspect)`` turns in pixels.
         steps: how many points the outline gets.
         name: shows up in the log.
         aspect: the canvas's width over its height. Given, one radius is a shape
@@ -1080,6 +1113,15 @@ class Difference(Polygon):
         return Difference(Polygon(self.points).shifted(dx, dy).points,
                           name=self.name, traced=self.traced,
                           holes=tuple(one.shifted(dx, dy) for one in self.holes))
+
+    def rotated(self, degrees: float, about=None, *,
+                aspect: float | None = None) -> Difference:
+        """Turn the lot in pixels about the first place's centroid, holes included."""
+        about = self.center if about is None else _point_of(about)
+        return Difference(Polygon(self.points).rotated(degrees, about, aspect=aspect).points,
+                          name=self.name, traced=self.traced,
+                          holes=tuple(one.rotated(degrees, about, aspect=aspect)
+                                      for one in self.holes))
 
     def renamed(self, name: str) -> Difference:
         """The same place under another name."""
@@ -1476,9 +1518,9 @@ class Group:
     """Several shapes moved as one: shifted together, or scaled about one point.
 
     A drawing made of parts is redrawn by moving the parts, and a part moved on its own
-    leaves its neighbours where they were. Build one with :func:`group`. ``shifted()``
-    and ``scaled()`` move every part the same way and hand back a group, and a group
-    unpacks into its parts, in the order they were given::
+    leaves its neighbours where they were. Build one with :func:`group`. ``shifted()``,
+    ``scaled()`` and ``rotated()`` move every part the same way and hand back a group,
+    and a group unpacks into its parts, in the order they were given::
 
         head, jaw, eye = group(head, jaw, eye).scaled(1.3, about=s.px(300, 266))
 
@@ -1521,6 +1563,20 @@ class Group:
                            if _looks_like_point(p) else p.scaled(factor, about=(ax, ay))
                            for p in self.shapes))
 
+    def rotated(self, degrees: float, about=None, *, aspect: float | None = None) -> Group:
+        """Turn every part ``degrees`` clockwise about one point, in pixels.
+
+        ``about`` is a point or a place, as :meth:`scaled` takes it, and left off it is
+        the group's middle; ``aspect`` is ``s.aspect``, as :meth:`Polygon.rotated` needs
+        it. A point among the parts turns with them, and a region comes back a shape.
+        """
+        a = _aspect_needed(aspect)
+        ax, ay = self.center if about is None else _point_of(about)
+        return Group(tuple(tuple(float(v) for v in _turned([p], degrees, (ax, ay), a)[0])
+                           if _looks_like_point(p)
+                           else p.rotated(degrees, about=(ax, ay), aspect=a)
+                           for p in self.shapes))
+
     def __iter__(self):
         return iter(self.shapes)
 
@@ -1554,7 +1610,132 @@ def group(*shapes) -> Group:
                        for p in shapes))
 
 
+# -- a thing's own coordinates ----------------------------------------------------------
+@dataclass(frozen=True)
+class Frame:
+    """A thing's own coordinates: a centre, two radii and a tilt. Build one with ``s.frame``.
+
+    A head is drawn in head units -- the eye a little left of the middle and a tenth of
+    the way up, the brow a third of the way up -- and placed, sized and tilted once. The
+    painter of Uktarl's Room wrote that as the same four lines three times, ``hp()``,
+    ``dp()`` and ``ah()``, a centre, two radii and a tilt each; this is those lines::
+
+        head = s.frame(s.px(512, 344), *s.px(24, 34), tilt=-6)
+        eye = head.at(-0.42, -0.10)                              # a place on the canvas
+        lit = head.polygon(head.arc(-26, 168, 20) + [(0.50, -0.33), (0.0, -0.28)])
+
+    ``u`` runs along ``rx`` and ``v`` along ``ry``, **downward**, as a canvas's ``y``
+    does, so ``(0, 0)`` is the centre and ``(0, -1)`` the top of the head before it is
+    tilted. The radii are fractions as an ellipse's are, ``rx`` of the width and ``ry``
+    of the height, so two in pixels are ``*s.px(rx, ry)``; ``tilt`` is degrees
+    clockwise, and **turns in pixels**, so a frame tilted on a canvas that is not square
+    keeps its right angles. ``aspect`` is the canvas's width over its height, which is
+    why a frame comes from the session.
+    """
+
+    centre: tuple[float, float]
+    rx: float
+    ry: float
+    tilt: float = 0.0
+    aspect: float | None = None
+
+    def __post_init__(self) -> None:
+        cx, cy = _point_of(self.centre)
+        rx, ry, tilt = float(self.rx), float(self.ry), float(self.tilt)
+        if not all(math.isfinite(v) for v in (cx, cy, rx, ry, tilt)):
+            raise ValueError(f"A frame needs real numbers, got centre ({cx}, {cy}), "
+                             f"radii {rx} and {ry}, tilt {tilt}.")
+        if rx <= 0.0 or ry <= 0.0:
+            raise ValueError(f"A frame's radii are above zero, got {rx} and {ry}.")
+        if rx > 1.0 or ry > 1.0:
+            raise ValueError(
+                f"A frame's radii are fractions, rx of the width and ry of the height, "
+                f"as an ellipse's are, and {max(rx, ry):g} is more than the whole "
+                f"canvas. Radii in pixels go through s.px: s.frame(centre, "
+                f"*s.px({rx:g}, {ry:g}), tilt={tilt:g}).")
+        object.__setattr__(self, "centre", (cx, cy))
+        object.__setattr__(self, "rx", rx)
+        object.__setattr__(self, "ry", ry)
+        object.__setattr__(self, "tilt", tilt)
+        object.__setattr__(self, "aspect", _aspect_needed(self.aspect))
+
+    def at(self, u, v=None) -> tuple[float, float]:
+        """The canvas place of ``(u, v)`` in this frame's own radii. A pair is taken too.
+
+        Not held to the canvas: a point past the frame of the picture is still a point,
+        and a shape built through it is clipped to the canvas as any shape is.
+        """
+        if v is None:
+            u, v = u
+        a = self.aspect
+        t = math.radians(self.tilt)
+        cos_t, sin_t = math.cos(t), math.sin(t)
+        # Across in the height's units, so the turn is a turn in pixels.
+        du, dv = float(u) * self.rx * a, float(v) * self.ry
+        return (self.centre[0] + (du * cos_t - dv * sin_t) / a,
+                self.centre[1] + du * sin_t + dv * cos_t)
+
+    def polygon(self, points, name: str = "") -> Polygon:
+        """A shape from points in this frame's own radii: a plane of the head."""
+        return Polygon(tuple(self.at(u, v) for u, v in points), name=name)
+
+    def arc(self, t0: float, t1: float, n: int) -> list[tuple[float, float]]:
+        """The frame's own outline from ``t0`` to ``t1`` degrees, in its own radii.
+
+        ``n`` steps, so ``n + 1`` points, both ends included; ``0`` is the right of the
+        frame and ``90`` its bottom, clockwise as the tilt is. In the frame's units, so
+        an arc and a terminator typed in them meet without retyping, and a warp of the
+        outline -- a chin's taper -- is a list comprehension over them::
+
+            chin = [(u * (1 - 0.3 * max(0, v) ** 1.5), v) for u, v in head.arc(0, 360, 40)]
+            head_shape = head.polygon(chin[:-1], name="the head")
+        """
+        steps = int(n)
+        if steps < 1:
+            raise ValueError(f"arc() takes one step or more, got n={n!r}.")
+        out = []
+        for i in range(steps + 1):
+            t = math.radians(float(t0) + (float(t1) - float(t0)) * i / steps)
+            out.append((math.cos(t), math.sin(t)))
+        return out
+
+    def __repr__(self) -> str:
+        return (f"Frame(({self.centre[0]:.3f}, {self.centre[1]:.3f}), {self.rx:.4f}, "
+                f"{self.ry:.4f}, tilt={self.tilt:g})")
+
+
 # -- shape internals ---------------------------------------------------------------
+def _aspect_needed(aspect) -> float:
+    """The canvas's width over its height, for a turn made in pixels, or an error."""
+    if aspect is None:
+        raise TypeError(
+            "A shape turns in pixels, and it does not know its canvas: hand it the "
+            "canvas's width over its height, shape.rotated(30, aspect=s.aspect). Turned "
+            "in coordinates on a canvas that is not square it comes back skewed -- a "
+            "square turned 30 degrees on a 4:3 canvas comes back at 23.4, with a "
+            "104-degree corner.")
+    a = float(aspect)
+    if not math.isfinite(a) or a <= 0.0:
+        raise ValueError(f"aspect= is the canvas's width over its height, s.aspect, "
+                         f"and is above zero; got {aspect!r}.")
+    return a
+
+
+def _turned(points, degrees: float, about, aspect: float) -> np.ndarray:
+    """``points`` turned ``degrees`` clockwise about ``about``, in pixels.
+
+    Across is measured in the height's units -- ``x * aspect`` -- for the turn, and
+    back, so on a 4:3 canvas a right angle stays one.
+    """
+    pts = np.asarray(points, dtype=np.float64).reshape(-1, 2)
+    t = math.radians(float(degrees))
+    cos_t, sin_t = math.cos(t), math.sin(t)
+    ax, ay = float(about[0]), float(about[1])
+    dx, dy = (pts[:, 0] - ax) * aspect, pts[:, 1] - ay
+    return np.stack([ax + (dx * cos_t - dy * sin_t) / aspect,
+                     ay + dx * sin_t + dy * cos_t], axis=1)
+
+
 def _point_of(value) -> tuple[float, float]:
     """A point, or the middle of a place or a group: what a shape is scaled about."""
     if _looks_like_point(value):

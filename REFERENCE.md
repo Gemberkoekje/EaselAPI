@@ -255,6 +255,7 @@ below(r, 0.15)   above(r, 0.15)   left_of(r, 0.15)   right_of(r, 0.15)
 between(a, b)            # the gap between two places
 thirds()   golden()      # the x and y lines, to hang a composition on
 r.point(u, v)  r.inset(a)  r.scaled(f, about=None)  r.shifted(dx, dy)  r.split_h(n)  r.split_v(n)
+r.rotated(deg, about=None, aspect=s.aspect)   # a shape: a turned rectangle is not one
 ```
 
 **What each name actually covers.** `top`, `bottom`, `left`, `right` and `center` are
@@ -312,11 +313,15 @@ s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="", px=
                                        # round in *pixels* on any canvas; px= is its
                                        # radius in pixels, in place of r
 shape.inset(a)  shape.smooth(2)  shape.scaled(f, about=None)  shape.shifted(dx, dy)
+shape.rotated(deg, about=None, aspect=s.aspect)   # clockwise, turned in pixels
 shape.box  shape.area  shape.axis  shape.center  shape.closed
 shape.contains(x, y)                   # is this mark inside the mass?
 shape.inside(xs, ys)                   # ...and the same question for many at once
 group(a, b, ...)                       # shapes, regions and points, moved as one
-g.shifted(dx, dy)  g.scaled(f, about=None)  g.shapes  g.bounds  g.center
+g.shifted(dx, dy)  g.scaled(f, about=None)  g.rotated(deg, about=None, aspect=s.aspect)
+g.shapes  g.bounds  g.center
+s.frame(centre, rx, ry=None, tilt=0)   # a thing's own coordinates, tilted in pixels:
+frame.at(u, v)  frame.polygon(points, name="")  frame.arc(t0, t1, n)
 ```
 
 `roughen()` is for an outline nobody ruled — rock, a shore, a torn edge. It cuts every
@@ -351,6 +356,20 @@ a group unpacks into its parts, points coming back as points:
 `head, jaw, eye = group(head, jaw, eye).scaled(1.3, about=s.px(300, 266))`.
 `shape.scaled(f, about=)` is the same for one shape. A group is not a place: block in,
 hold and draw its parts one at a time.
+
+**A turn is in pixels, so `aspect=s.aspect` is required**, and left off it raises: turned
+in coordinates on a 4:3 canvas, a square asked for 30 degrees came back at 23.4 with a
+104-degree corner. A region turned is a shape; a group turns every part about one point,
+its middle unless `about` names one. `rotate=` on `ellipse()` and `blob()` still turns in
+coordinates, so every drawing made with it rebuilds.
+
+**A frame** is a head drawn in head units and placed once:
+`head = s.frame(s.px(512, 344), *s.px(24, 34), tilt=-6)`, the radii an ellipse's and the
+tilt clockwise, in pixels. `head.at(u, v)` is a place, `v` **downward**;
+`head.polygon(points)` a shape; `head.arc(t0, t1, n)` the outline's `n + 1` points, `0`
+degrees its right and `90` its bottom, **in head units** — so a plane is
+`head.polygon(head.arc(-26, 168, 20) + terminator)`, and a chin's taper is a list
+comprehension over the arc.
 
 A shape goes anywhere a region goes. `shape.box` is the rectangle a mass is *priced*
 on — worth looking at before blocking in anything long and curved. It is a `Region`,
@@ -442,7 +461,7 @@ s.compare({place: value, ...})                  # ...against your own value plan
                                                 # the pairs it puts within 0.10: do they touch?
 s.compare(s.plan())                             # ...against the plan this session holds
 s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=, habits=,
-       clear=False)
+       shares=, clear=False)
                                                 # what you decided before painting, where
                                                 # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
@@ -550,6 +569,7 @@ script.
 | `landed nothing:` | the marks that carried under one unit of paint — *NO PAINT LANDED* in `easel log` — each by the line that laid it, a mass call's by how many of its passes, with the cause its record shows: half its path or more outside its clip, a round dab under the size its press lands from, an oriented tip under four pixels, a bristle loaded under `0.5` | only when a pass laid one: *landed nothing: the dab at p06.py:39 (a round tip under its cliff at press=1); 6 passes of the block_in at p05.py:12 (outside its clip)* |
 | `plan:`, `lightest:` | the canvas against what the plan declared: *What the plan changes*, below | once a plan declares values, or a lightest place |
 | `subject:` | the subject's share of the marks so far, against `subject_share` if given | wherever a mark is noted `subject` |
+| `shares:` | each part's strokes against its share of the **budget**: *What the plan changes*, below | once a plan declares `shares=` |
 | `values:` | the 5th to 95th percentile of the values view against what the palette reaches, and the three clusters it splits into | after every pass; it says so when the range stays on one side of the box's middle or two clusters sit under `0.10` apart — or, under a declared `key=`, whether the picture has kept it |
 | `edges:` | the share of the picture's edges under `2.5` px wide | after every pass |
 | `ground:` | the share of the canvas that is **still bare ground** | after every pass; it says so under `0.5%` |
@@ -582,6 +602,7 @@ tell whether the subject does, and the painter can.
 | `values={place: 0.70, ...}` | at registration, on the empty canvas, `plan-pairs` names the pairs planned within `0.10` **that meet**. After every pass: `plan: 5 of 6 places inside 0.10; halo +0.14`, the sign being the canvas minus the plan. A place reads by its **median** — what most of it reads, so an eye inside a planned plane does not move what the plane reads — and a place the line names that has a tenth of itself or more over `0.15` from that median says so: `halo +0.14 (18% of it lighter by more than 0.15)`. `compare(s.plan())` reads places the same way |
 | `lightest=place` | `lightest: lamp reads 0.49 as a place, 0.59 at its brightest twentieth, the lightest of the 4 places planned` — or which place took the light instead, and by how much. A place the line names that is split says so in brackets, as on `plan:`: `lantern reads 0.51 as a place (10% of it darker by more than 0.15)`. The places are ranked by their medians; the named light is also read at its 95th percentile, because a light is often a small bright part of a place that is mostly something else. Where the two numbers are far apart, plan the lit part as a place of its own, at the value that place will read — not the value its mixture was mixed at |
 | `subject_share=0.40` | the `subject:` line always carries *against 40% planned*, with no `report(subject_share=)` to remember |
+| `shares={"uktarl": 0.25, "the near bandit": 0.10}` | **each part against its share of the budget**, not of the marks so far: `shares: uktarl 102 of 112, the near bandit 0 of 45; 12 in no part`, *(over)* once one passes it. A part is the marks whose `note=` holds its name, in any case, the longer name where two do. They add up to `1` or less; with no budget, refused. From a shell, `--share "the near bandit" 0.10` |
 | `bands="subject"` | the stack-of-bars line stops warning and counts: *bands declared as the subject: 14 long marks run within 6 degrees of horizontal, and nothing crosses them yet* |
 | `ground="buried"` | the ground line prints its number and says *buried, as the plan says* instead of asking for some back |
 | `key="low"` or `"high"` | the `values:` line stops saying *no clear light* (or *no clear dark*) and says `low-key, as the plan says -- nothing above 0.35, under the box's middle 0.54` — or, once the top twentieth rises past the middle, by how much the picture has left its key. Its clusters are printed and not judged: a key compresses the range, and no gap has been measured for one yet. Under `"low"`, with `lightest=` named, it asks whether that light stands clear of everything else — the canvas outside its place: `lantern stands clear -- 0.59 at its brightest twentieth against 0.40 for everything else, 0.19 over`, or that it does not, under `0.10`. A high-key picture's light has no room above the rest to stand clear in, so there it is not asked |
@@ -698,6 +719,7 @@ Session(width=1024, height=768, texture="linen", ground="white", seed=0,
                    # The frames stay in memory: the .easel file keeps none
 s.size   s.aspect   s.ground   s.stroke_count   s.spent   s.remaining   s.budget_line()
 s.px(x, y)   s.px_size(r)          # a pixel as a place; a length in pixels as a size
+s.frame(centre, rx, ry=None, tilt=0)   # a thing's own coordinates (Shapes, above)
 s.marks  s.mark(name, x, y)   s.pt(name)   s.unmark(name)
 s.guides s.guide(points, note="")        s.unguide(note=None)
                    # points, or a shape drawn as its outline; drawn on the view as a
@@ -719,7 +741,8 @@ easel look p.easel [--grid] [--fine] [--values] [--region D4] [--reference ref.j
                    [--no-sketch] [--no-marks] [--scale 512]
 easel mark p.easel top_l 0.335 0.315
 easel plan p.easel [--why "..."] [--value 'A1:H3=0.70' ...] [--lightest A1:H3]
-                   [--subject-share 0.4] [--bands subject] [--ground buried] [--clear]
+                   [--subject-share 0.4] [--bands subject] [--ground buried]
+                   [--habit disc C3:D4 "why"] [--share "the figure" 0.3] [--clear]
 easel compare p.easel ref.jpg [--region D4]
 easel prepare p.easel ref.jpg [--level coarse]
 easel undo p.easel 3

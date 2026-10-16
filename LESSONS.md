@@ -354,6 +354,14 @@ greyscale view showed sRGB, and the first attempt to measure a halftone screen m
 the height map's autocorrelation rather than the paint that landed. Before trusting a
 number, check it against the picture the painter actually sees.
 
+**A bench's table is an instrument too, and a key that misses falls silently to the
+default.** 0.9.0's shares bench gave each of the painter's calls to a part by its script
+and line, and every call it did not list to the table. Two scripts were keyed by lines 39
+and 71 past their own, so their 15 strokes were the table's, and nothing failed: the line
+it was benching read the same at the pass the question was about. Step 6 found it by
+checking the parts at the end against the painter's own count. Where a bench assigns by a
+key, count what fell to the default, and say whose those strokes were.
+
 ### A measurement is only as general as what it was taken over
 
 Two of the eight failures above were neither observed nor guessed: they were *measured*,

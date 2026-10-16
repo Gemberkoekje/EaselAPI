@@ -105,9 +105,9 @@ three, and find a viewpoint or a thing that crosses them while it is still graph
 inside a mass is the same fault one scale down, and the band count is the instrument
 for both. **What is this thing's foreshortening?** Draw the view, not the object; no
 brush repairs the difference. **Write down what you decided, where the engine can see
-it** — `s.plan(values=..., lightest=..., subject_share=..., ground=..., key=...,
-habits=..., why=...)`. The three values, the place meant to be lightest, the subject's
-share of the budget, whether this picture is low in key or buries its ground, and where
+it** — `s.plan(values=..., lightest=..., shares=..., ground=..., key=..., habits=...,
+why=...)`. The three values, the place meant to be lightest, each part's share of the
+budget by its `note=`, whether this picture is low in key or buries its ground, and where
 small round marks are meant, a face's features, are yours to choose, and declaring them
 makes the check answer to your picture, not to a default (*What the plan changes* in
 [`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)). `s.checklist()` quotes your
@@ -157,7 +157,7 @@ s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7)
 
 Coordinates are always `0.0` to `1.0`, origin **top-left**. `(0.5, 0.5)` is the
 centre, `(0.9, 0.1)` the top right. Where a drawing wants pixels, `s.px(x, y)` is a
-pixel's place.
+pixel's place, and `s.frame()` a thing's own coordinates, tilted in pixels.
 
 **Both axes run 0–1, so on a canvas that is not square the same number is a different
 distance in each.** Brush sizes are a fraction of the canvas's **long side**, so a
@@ -372,7 +372,7 @@ Every highlight you add makes the others count for less. **Anything the size of 
 or smaller has taken three marks so far — the dark, the light, and the edge between
 them** — laid dark first, and looked at through a `region=` crop before the light goes
 on. That is a habit and not a measurement: the number that is yours is the budget's
-split, which `s.plan(subject_share=)` holds the check to. `size` is the *feature's*
+split, which `s.plan(shares=)` holds the check to. `size` is the *feature's*
 fraction of the canvas, not the mass's.
 
 ---
@@ -702,12 +702,11 @@ competently painted.
   which is the whole of what an instrument can do for it. If the reason is gone and
   strokes are left, that is what they are for.
 
-One of the measured lines is worth knowing the shape of before you read it. **The
-subject's share** is counted off the log, so say which marks they are — and after the
-number is taken it is *meant* to fall, because the last third of the budget goes on
-what surrounds the subject: a well-built feature in an unfinished picture reads as a
-detail come loose, and a rough one in a picture that holds together reads as the
-thing itself.
+**Each part's share** is counted off the log, so name its marks with `note=`. It is
+of the budget; `subject:` is of the marks so far, and *meant* to fall, because the last
+third of the budget goes on what surrounds the subject: a well-built feature in an
+unfinished picture reads as a detail come loose, and a rough one in a picture that
+holds together reads as the thing itself.
 
 ```python
 s.stroke([(0.30, 0.40), (0.45, 0.44)], "round_hard", "light",

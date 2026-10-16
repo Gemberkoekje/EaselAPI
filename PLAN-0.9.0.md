@@ -36,7 +36,11 @@ on every verb that takes `clip=`, cut on the line, in a record 0.8.0 refuses;
 (`NOTES-step4.md`). **Step 5 is done** on branch `ccr-41356652-bm55is`: the three rules
 as they are; `habits={"disc": {place: reason}}` per place; the pass rule leaving the
 signature out; a standing line printed only when it changed from the painting as
-committed (`NOTES-step5.md`).**
+committed (`NOTES-step5.md`). **Step 6 is done** on branch `ccr-9c669476-nor0aj`:
+`.rotated(deg, about=, aspect=)` on every shape and group, turned in pixels, `aspect=`
+required; `s.frame()` with `.at()`, `.polygon()` and `.arc()`; `shares=` and its line, a
+part named in the note. A session in pixels throughout (Q5) is not built, on the owner's
+word (`NOTES-step6.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -629,7 +633,7 @@ one line that says `REFERENCE.md` holds units and defaults.
 | Q2 | **`p.grey(value, warmth=)`**, with the fact at `mix()` as a backstop. The stage images showed the purple; it printed value and chroma, never hue, and its swatch is where it chose the 25% mix | 4L: L3, and L1 behind it |
 | Q3 | **painting at two to four times and exporting at size** serves the small pieces, **if the export keeps the canvas's weave at the exported scale**: reduced from 4×, the linen all but disappears. The table in pixels, per brush, with the cliff drawn across it. **And a word at the call** for a mark under its cliff: nothing said one. Two more lights were lost the same way, the patron's rim and the cabinet's lock, both laid under 4 px | 4M: M1 with the weave kept, M2 built, the table in pixels |
 | Q4 | **`key="low"` said plainly, and the cut in the plan; not the scene**, which the game composes in code and no canvas holds. On a cut-out, every line measured inside the cut, and one more for the cut's own edge against the picture's median. The patron's *no clear light* was reading the ground the cut throws away | 4N with Q1's `cut=`, and a cut-edge line |
-| Q5 | **a canvas in pixel coordinates throughout, sizes included**: `s.frame` would not have retired `n()`, and `s.px` existed and did not; `size=2.7`, not `0.009`, would have shown the candle's fault as it was typed | 4E gains a candidate: a session in pixels |
+| Q5 | **a canvas in pixel coordinates throughout, sizes included**: `s.frame` would not have retired `n()`, and `s.px` existed and did not; `size=2.7`, not `0.009`, would have shown the candle's fault as it was typed | 4E gains a candidate: a session in pixels. Not built in step 6, on the owner's word: Wenna Brask agreed in 0.8.0's round that it should not be, and no bench has measured it |
 | Q6 | it never opened *The one ruled line*, which answers the opposite question; it read *A scene with straight edges* and did not carry it to flat-on subjects. **A recipe for a shelf, a bar and a joint as paint**, in pixels, and a line naming long edges laid with under half a pixel of wander | 4I gains the recipe; the line is a candidate to bench |
 | Q7 | **it had read that rehearsal and `s.report()` exist, and did not use them. Make the tool meet the script**: `s.look()` prints the check on the marks since the last look; `easel run` takes a script that builds its own `Session`; and a notice for faint marks, which no path has | a new workstream, O: the check where a script already stops |
 | Q8 | **neither seen. The five-file table atop what `easel guide` prints by default**; then a line in `Session`'s, `block_in`'s and `stroke`'s docstrings, *units and defaults: `easel guide --reference`*; then the flags on `easel --help` | 4I1: the card opens with the table |
@@ -665,7 +669,7 @@ and touch nothing here.
 | 3 | **A and D.** `clip_out=` and `difference()` (no `intersection()`, P1); the record refused by 0.8.0; the rehearsal look's flags. Done | `NOTES-step3.md` |
 | 4 | **B.** The soft hold, as the painter chose: B1, per hold and per stretch (answers 2a, 2b). Done | `NOTES-step4.md` |
 | 5 | **C.** The rules as they are, as the painter chose after the bench (3b, 4a); `habits=` per place; the signature left out of the pass rule; standing lines on change (C5). Done | `NOTES-step5.md` |
-| 6 | **E and F.** `.rotated()`, the frame; `shares=` and its line | `NOTES-step6.md` |
+| 6 | **E and F.** `.rotated()` in pixels, `aspect=` required; the frame with `.arc()` (P4); `shares=` and its line, a part by the name in its note (P5). Not a session in pixels (Q5). Done | `NOTES-step6.md` |
 | 7 | **G and H.** The direction notices as measured; the low key said, and the line without one | `NOTES-step7.md` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted | `NOTES-step9.md` |
