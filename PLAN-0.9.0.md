@@ -516,6 +516,7 @@ Step 2b measures O3 over the corpus and on the candle, the patron's rim and the 
 |---|---|---|
 | 0.7.0: every held edge breaks against the tooth by default; a Gaussian soft edge declined because it reads as blur | a softness chosen per call (4B) | the default stays; the decline was about every edge, and this is for the edges a painter loses |
 | 0.8.0: `feather=` breaks and does not soften; *a soft brush held hard is held hard* | the same, with a soft hold beside it | `feather=` keeps its meaning |
+| 0.6.0: the default-direction notice speaks when `direction=` is left off, and is quiet on a direction chosen | a direction given says its own price when it costs over 2.5x the axis (4G, G1) | the default's notice is unchanged; a chosen direction is still the painter's to pay for, and the new line is a fact, both prices, nothing more |
 | 0.6.0, the owner: standing warnings are declared in the plan, not dismissed after the fact | `habits=` in the plan (4C) | kept: the declaration is up front |
 | 0.8.0: `key=` is a declaration that buys a question, not a switch that buys silence | H2 names the light and the key without a declaration | kept, unless the painter chooses H3 |
 | 0.8.0: no second page; the card is the first page | a one-page card (4I) | revisited on the fourth painter's evidence; the budget test stays |
