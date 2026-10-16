@@ -7115,9 +7115,10 @@ def test_under_a_low_key_the_line_asks_whether_the_named_light_stands_clear(tmp_
     lit[mask] = 0.70
     name, bright, rest = plan.light_reading(lit)
     assert (name, bright, rest) == ("A1:D4", pytest.approx(0.70), pytest.approx(0.20))
-    # Only under "low": a high-key light has no room above the rest to stand clear in.
+    # Not under "high": a high-key light has no room above the rest to stand clear in.
+    # With no key it is read since 0.9.0, for the line beside *no clear light*.
     assert build(lightest=lantern, key="high").light_reading(lit) is None
-    assert build(lightest=lantern).light_reading(lit) is None
+    assert build(lightest=lantern).light_reading(lit) == (name, bright, rest)
 
 
 def test_the_light_on_the_values_line_is_the_light_on_the_lightest_line(tmp_path):

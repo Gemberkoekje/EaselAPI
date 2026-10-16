@@ -48,6 +48,7 @@ their own sessions rather than measurements of the engine.
 | A held edge breaks inward over `0.002` of the long side; a thin shape keeps its body; two masses held to one line leave the ground between them | *A held edge, broken (0.7.0: the default moved)* |
 | A shaped mass with `direction` left off can cost many times its axis | *A shaped mass with `direction` left off* |
 | A sequence of directions is priced as the sum | *`direction` given a sequence* |
+| One direction given can cost many times its axis, and a concave shape is charged a stroke per piece | *What a mass was charged for its direction* |
 | A sweep follows an edge; crossing closes it | *`sweep`* |
 | A smudge buys nothing past `0.02`, removes about half a join once, and works along not across | *`smudge`* |
 | A glaze far from its ground has no usable opacity | *`glaze`* |

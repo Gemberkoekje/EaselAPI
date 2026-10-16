@@ -107,11 +107,13 @@ for both. **What is this thing's foreshortening?** Draw the view, not the object
 brush repairs the difference. **Write down what you decided, where the engine can see
 it** — `s.plan(values=..., lightest=..., shares=..., ground=..., key=..., habits=...,
 why=...)`. The three values, the place meant to be lightest, each part's share of the
-budget by its `note=`, whether this picture is low in key or buries its ground, and where
-small round marks are meant, a face's features, are yours to choose, and declaring them
-makes the check answer to your picture, not to a default (*What the plan changes* in
+budget by its `note=`, whether it is low in key or buries its ground, and where small
+round marks are meant, a face's features, are yours to choose, and declaring them makes
+the check answer to your picture, not to a default (*What the plan changes* in
 [`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)). `s.checklist()` quotes your
-sentence back at the end, and nothing else can ask for it.
+sentence back at the end, and nothing else can ask for it. **A picture is low-key while
+its top twentieth stays under the box's middle**, `0.54` by default: declare `key="low"`
+when only a small light rises above it.
 
 **The six things you will get wrong**, with the fix on the same row as the mistake.
 
@@ -140,10 +142,8 @@ picture rather than a score, and the reason you chose the subject is still in it
 start.
 
 **And before you lay a passage you have not laid before — a form that turns, a graded
-field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** One
-painter finished a whole picture without opening any of the other four files, and its
-two worst passages were both recipes three keystrokes away. The moment to go looking is
-*before* the pass, not after the rehearsal shows it failing.
+field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** The
+moment to go looking is *before* the pass, not after the rehearsal shows it failing.
 
 ---
 

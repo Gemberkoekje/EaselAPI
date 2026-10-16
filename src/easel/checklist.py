@@ -136,7 +136,11 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
     brightest twentieth of the canvas outside it, by
     :data:`~easel.measure.VALUE_THRESHOLD`. On both plans of the 0.8.0 round the named
     light clears it by ``0.14`` to ``0.28`` from the pass that paints it on, and not
-    before.
+    before. **With no key declared**, a line that says *no clear light* names a
+    planned light that stands clear by the same test, and the declaration that would
+    ask it: Uktarl's Room met *no clear light* on all 43 of its reports with paint in
+    them, a picture planned dark around one face, with the key there to declare, and
+    took the example in the key's row for the rule.
 
     Args:
         view: the canvas as values, ``0..1``, graphite excluded.
@@ -144,9 +148,10 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
             that reaches* clause. Omitted, the clause is left off, and so is a key's.
         key: the plan's ``key``, ``""``, ``"low"`` or ``"high"``. Any other word is
             no key.
-        light: the named light under ``key="low"``, as ``(name, its brightest
-            twentieth, the brightest twentieth of everything else)`` --
-            :meth:`easel.plan.Plan.light_reading`.
+        light: the plan's named light, as ``(name, its brightest twentieth, the
+            brightest twentieth of everything else)`` --
+            :meth:`easel.plan.Plan.light_reading`. Read under ``key="low"``, and with
+            no key beside *no clear light*; under ``"high"`` it is not asked.
 
     Returns:
         The line, e.g. ``values: 0.15-0.35 of a box that reaches 0.13-0.96, clusters
@@ -176,6 +181,8 @@ def values_line(view: np.ndarray, reach: tuple[float, float] | None = None,
                    else ("no clear light" if unlit else "no clear dark"))
         side = (f"nothing above {high:.2f}" if unlit else f"nothing below {low:.2f}")
         line += f"; {missing} -- {side}, and the box's own middle is {middle:.2f}"
+        if unlit:
+            line += _named_light_clause(light)
     elif float(min(gaps)) < VALUE_THRESHOLD:
         # Which pair, because the two send a painter to opposite ends of the
         # picture. The closest pair alone -- all the prototype printed -- says
@@ -223,6 +230,28 @@ def _light_clause(light: tuple[str, float, float] | None) -> str:
         return (f"; {name} does not stand clear -- {said}, {clear:.2f} over, under "
                 f"{VALUE_THRESHOLD:.2f}")
     return f"; {name} does not stand clear -- {said}, {-clear:.2f} under"
+
+
+def _named_light_clause(light: tuple[str, float, float] | None) -> str:
+    """With no key declared, a planned light that stands clear, beside *no clear light*.
+
+    The picture is dark and its one light is where the plan put it: that is a low key,
+    and the line says so and names the declaration, which then asks the light's own
+    question on every pass. The key stays a declaration (0.8.0's ruling): nothing
+    here is silenced. A light that does not stand clear adds nothing, because then
+    *no clear light* is the whole of it. Over the corpus, measured before it was
+    built, it speaks on the three paintings that name a light from the pass that
+    paints it -- 4 of the Bell-Warden's 6 *no clear light* passes, 9 of Wenna Brask's
+    11 and 11 of Uktarl's Room's 16 -- and nowhere else.
+    """
+    if light is None:
+        return ""
+    name, bright, rest = light
+    if bright - rest < VALUE_THRESHOLD:
+        return ""
+    return (f"; {name} stands clear -- {bright:.2f} at its brightest twentieth against "
+            f"{rest:.2f} for everything else, {bright - rest:.2f} over: say "
+            f"s.plan(key='low') if the picture is dark on purpose")
 
 
 def edges_line(view: np.ndarray) -> str:
