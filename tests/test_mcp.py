@@ -877,3 +877,19 @@ def test_the_plan_tool_declares_what_the_check_then_holds_the_painting_to(call, 
     assert held.key == "low" and held.habits[0].reason == "the features of a face"
     call("plan", session=painting, habits={})
     assert not Session.load(painting).plan().habits
+
+
+def test_the_plan_tool_splits_the_budget_by_part(call, tmp_path):
+    """`shares=` (0.9.0 F): each part by the note its marks carry, against its share of
+    the budget, on the line the `run` tool hands back."""
+    path = str(tmp_path / "budgeted.easel")
+    call("new", session=path, size="480x360", seed=11, out_dir=str(tmp_path / "out"),
+         budget=40)
+    said = call("plan", session=path, shares={"the figure": 0.25, "the wall": 0.5}).text
+    assert "shares of the budget: the figure 25%, the wall 50%" in said
+    ran = call("run", session=path,
+               script="s.stroke([(0.1, 0.2), (0.8, 0.3)], 'bristle', 'ochre',\n"
+                      "         note='the figure')\n")
+    assert "shares: the figure 1 of 10, the wall 0 of 20" in ran.text
+    call("plan", session=path, shares={})
+    assert not Session.load(path).plan().shares

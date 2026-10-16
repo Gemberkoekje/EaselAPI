@@ -31,6 +31,9 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --check-built  # 4C as built (step 5): the
                                                         # painting, its places declared
     python scripts/probe_uktarl_session.py --check-corpus # step 5 over the corpus, replayed
+    python scripts/probe_uktarl_session.py --frame-built  # 4E as built (step 6): the
+                                                        # three heads through s.frame()
+    python scripts/probe_uktarl_session.py --shares-built # 4F as built (step 6), by pass
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -46,6 +49,7 @@ from __future__ import annotations
 import argparse
 import ast
 import contextlib
+import dataclasses
 import math
 import pickle
 import re
@@ -68,6 +72,7 @@ import probe_cohort_session as cohort  # noqa: E402
 import easel  # noqa: E402
 import easel.session as session_module  # noqa: E402
 from easel import Session, checklist  # noqa: E402
+from easel.history import History  # noqa: E402
 from easel.plan import read_place  # noqa: E402
 from easel.regions import Polygon  # noqa: E402
 
@@ -955,9 +960,12 @@ _PASS_PART = {"p02": "relief", "p03": "relief", "p04": "relief", "p14": "relief"
 _LINE_PART = {("p12", 10): "lady", ("p12", 11): "doppelganger", ("p12", 43): "uktarl",
               ("p12", 47): "doppelganger", ("p15", 9): "relief", ("p15", 13): "uktarl",
               ("p15", 20): "uktarl", ("p15", 23): "uktarl", ("p15", 25): "lady",
-              ("p15", 28): "doppelganger", ("p15", 38): "uktarl", ("p16", 55): "uktarl",
-              ("p16", 58): "uktarl", ("p16", 61): "uktarl", ("p16", 70): "relief",
-              ("p17", 82): "lady", ("p17", 83): "doppelganger"}
+              ("p15", 28): "doppelganger", ("p15", 38): "uktarl", ("p16", 16): "uktarl",
+              ("p16", 19): "uktarl", ("p16", 22): "uktarl", ("p16", 31): "relief",
+              ("p17", 11): "lady", ("p17", 12): "doppelganger"}
+#: ``p16`` and ``p17`` were keyed until step 6 by lines 39 and 71 past the scripts' own --
+#: 55 to 70, 82 and 83 -- so their 15 strokes fell to the table; nothing step 2 printed
+#: of the line moved, the near bandit's 22 of 45 and the 40 in hand included.
 
 
 def parts_of(calls: list) -> list[tuple[str, str, int]]:
@@ -968,6 +976,11 @@ def parts_of(calls: list) -> list[tuple[str, str, int]]:
     after line 47. Every other call of the card game, and of the light's pass, not
     listed is the table's.
     """
+    return [(c.run, part, c.paid) for c, part in _part_calls(calls)]
+
+
+def _part_calls(calls: list) -> list[tuple[object, str]]:
+    """Each paid call with the part :func:`parts_of` gives it, the call itself kept."""
     out = []
     after = "uktarl"
     for c in calls:
@@ -984,7 +997,7 @@ def parts_of(calls: list) -> list[tuple[str, str, int]]:
                     after = "lady"
                 elif (prefix, c.line) == ("p12", 47):
                     after = "doppelganger"
-        out.append((c.run, part, c.paid))
+        out.append((c, part))
     return out
 
 
@@ -1656,6 +1669,133 @@ def probe_check_corpus() -> None:
           f"({1 - total[3] / max(total[2], 1):.0%} fewer), 'unchanged:' lines included")
 
 
+# -- step 6, as built: the frame, the turn, and the shares line ----------------------------
+
+#: Each head of the prelude: its point helper and outline function, the helper's centre,
+#: radii and tilt in pixels, the warp its outline function lays on a circle -- *the chin's
+#: taper and the doppelganger's dome were my own warps, and I would keep them mine*
+#: (answer D) -- and its lit plane, the terminator's points in head units as the prelude
+#: types them, and whether the prelude reverses them and drops their ends.
+_HEADS = {
+    "Uktarl": ("hp", "head_arc", (512, 344), 24, 34, -6,
+               lambda u, v: (u * (1 - 0.30 * max(0.0, v) ** 1.5),
+                             v * (1 + 0.06 * max(0.0, v))),
+               "uk_head_poly", 40, "uk_face_lit", (-26, 168, 20), True,
+               [(0.96, -0.46), (0.50, -0.33), (0.0, -0.28), (-0.50, -0.25), (-0.97, -0.20)]),
+    "the doppelganger": ("dp", "dp_arc", (752, 482), 22, 33, -8,
+                         lambda u, v: (u * (1 - 0.38 * max(0.0, v) ** 1.4
+                                            + 0.06 * max(0.0, -v)),
+                                       v * (1 + 0.04 * max(0.0, v))),
+                         "dp_head", 40, "dp_lit", (110, 252, 18), False,
+                         [(0.30, -0.98), (0.38, -0.50), (0.30, -0.05), (0.38, 0.40),
+                          (0.20, 0.86)]),
+    "the lady": ("ah", "ah_arc", (188, 496), 22, 31, 7,
+                 lambda u, v: (u * (1 - 0.28 * max(0.0, v) ** 1.5), v),
+                 "a_face", 36, "a_lit", (-96, 104, 20), True,
+                 [(-0.12, -0.98), (-0.30, -0.55), (-0.40, -0.05), (-0.40, 0.42),
+                  (-0.30, 0.86)]),
+}
+#: Every arc the prelude draws from each outline function.
+_ARCS = {"head_arc": [(0, 360, 40), (-26, 168, 20), (100, 172, 10), (-160, -15, 12)],
+         "dp_arc": [(0, 360, 40), (-108, 116, 22), (110, 252, 18)],
+         "ah_arc": [(0, 360, 36), (-96, 104, 20)]}
+
+
+def probe_frame_built() -> None:
+    """4E as built (step 6): the three heads through ``s.frame``, against the prelude's."""
+    heading("4E as built (step 6): the prelude's three heads, drawn through s.frame()")
+    if not hasattr(Session, "frame"):
+        print("  this engine has no s.frame() -- step 6 is not built here")
+        return
+    scope = bell.scope_of("uktarl")
+    s = scope["s"]
+    size = np.array([s.canvas.width, s.canvas.height], dtype=float)
+    grid = [(u / 10, v / 10) for u in range(-17, 18) for v in range(-17, 18)]
+    rows = []
+    for name, (helper, arc_fn, centre, rx, ry, tilt, warp, head_name, steps, lit_name,
+               lit_arc, flip, term) in _HEADS.items():
+        frame = s.frame(s.px(*centre), *s.px(rx, ry), tilt=tilt)
+        at, arc = scope[helper], scope[arc_fn]
+
+        def off(a, b):
+            return float(np.abs((np.asarray(a) - np.asarray(b)) * size).max())
+
+        points = max(off(frame.at(u, v), s.px(*at(u, v))) for u, v in grid)
+        arcs = max(off([frame.at(*warp(*q)) for q in frame.arc(*spec)],
+                       [s.px(*q) for q in arc(*spec)]) for spec in _ARCS[arc_fn])
+        head = frame.polygon([warp(*q) for q in frame.arc(0, 360, steps)][:-1])
+        edge = term[::-1][1:-1] if flip else term
+        lit = frame.polygon([warp(*q) for q in frame.arc(*lit_arc)] + edge)
+        shapes = max(off(head.points, scope[head_name].points),
+                     off(lit.points, scope[lit_name].points))
+        rows.append([name, f"{helper}(), {arc_fn}()", len(grid), f"{points:.1e}",
+                     len(_ARCS[arc_fn]), f"{arcs:.1e}", f"{head_name}, {lit_name}",
+                     f"{shapes:.1e}"])
+    print(table(rows, ["head", "the prelude's", "points", "largest gap px", "arcs",
+                       "largest gap px", "outlines", "largest gap px"]))
+    print("  (points: a grid of head units from -1.7 to 1.7 by 0.1, through the helper and "
+          "s.px against frame.at(); arcs: every arc the prelude draws, its warp applied to "
+          "frame.arc(); outlines: the head and its lit plane, built as the prelude builds "
+          "them)")
+
+    heading("4E as built (step 6): a 100 px square turned on a 1024x768 canvas, read in px")
+    w, h = s.canvas.width, s.canvas.height
+    square = Polygon(tuple(s.px(x, y) for x, y in
+                           ((462, 334), (562, 334), (562, 434), (462, 434))))
+    rows = []
+    for degrees in (6, 30):
+        for how, pts in (("in fractions, as if square", _turned(
+                             np.asarray(square.points), degrees)),
+                         ("rotated(aspect=s.aspect)",
+                          np.asarray(square.rotated(degrees, aspect=s.aspect).points))):
+            back = pts * [w, h]
+            top, side = back[1] - back[0], back[3] - back[0]
+            angle = np.degrees(np.arctan2(top[1], top[0]))
+            corner = np.degrees(np.arccos(np.dot(top, side) / np.linalg.norm(top)
+                                          / np.linalg.norm(side)))
+            rows.append([f"{degrees} deg", how, f"{angle:.1f} deg", f"{corner:.1f} deg",
+                         f"{np.linalg.norm(top):.0f}", f"{np.linalg.norm(side):.0f}"])
+    print(table(rows, ["asked", "turned", "top edge at", "corner", "top px", "side px"]))
+
+
+def probe_shares_built(rb: bell.Rebuilt) -> None:
+    """4F as built (step 6): the line the engine prints, under the painter's split."""
+    heading("4F as built (step 6): the shares line as the engine prints it, pass by pass")
+    if "shares" not in Session.plan.__code__.co_varnames:
+        print("  this engine has no shares= -- step 6 is not built here")
+        return
+    s = rb.session
+    records = s.history.records
+    part_at = {}
+    for c, part in _part_calls(rb.calls):
+        for i in range(c.index, c.index + c.count):
+            part_at[i] = part
+    # Each mark noted as the part the bench gives its call: the note the painter would
+    # have written had it declared the split.
+    noted = [dataclasses.replace(r, note=part_at.get(r.index, r.note)) for r in records]
+    judge = Session(64, 48, seed=0, out_dir=OUT, timelapse=False, budget=s.budget)
+    judge.plan(shares=SHARES)
+    ends = [rb.starts[k] for k in rb.labels[1:]] + [len(records)]
+    budget = s.budget
+    same = 0
+    shown = 0
+    for label, end in zip(rb.labels, ends, strict=True):
+        line = judge._shares_line(History.paid_marks(noted[:end]))
+        spent: dict[str, int] = {}
+        for c, part in _part_calls(rb.calls):
+            if c.index < end:
+                spent[part] = spent.get(part, 0) + c.paid
+        bench = shares_line(spent, budget)
+        same += line == bench
+        shown += 1
+        print(f"  {label:<22} {line}" + ("" if line == bench else f"\n{'':<24}bench: {bench}"))
+        if label == "p07_uktarl_head.py":
+            print(f"  {'':<22} beside it: {s._subject_line(History.paid_marks(records[:end]))}")
+    print(f"  the built line is the bench's, word for word, on {same} of {shown} passes")
+    left = budget - len(History.paid_marks(records))
+    print(f"  at the end: {left} of {budget} strokes left in hand")
+
+
 # -- the run ----------------------------------------------------------------------------
 
 BENCHES = (
@@ -1673,9 +1813,11 @@ BENCHES = (
     ("answers2", "the second answers' measured claims, re-measured"),
     ("check-built", "4C as built (step 5): the painting, without and with its places"),
     ("check-corpus", "4C as built (step 5): the corpus replayed, about twenty minutes"),
+    ("frame-built", "4E as built (step 6): the three heads through s.frame(), the turn"),
+    ("shares-built", "4F as built (step 6): the shares line, pass by pass"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
-                  "answers2"}
+                  "answers2", "shares_built"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
 
 
@@ -1730,6 +1872,10 @@ def main(argv: list[str] | None = None) -> int:
         probe_check_built()
     if "check_corpus" in run:
         probe_check_corpus()
+    if "frame_built" in run:
+        probe_frame_built()
+    if "shares_built" in run:
+        probe_shares_built(rb)
     return 0
 
 

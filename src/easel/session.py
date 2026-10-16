@@ -67,6 +67,7 @@ from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
 from easel.regions import (
     Difference,
+    Frame,
     Group,
     Polygon,
     Region,
@@ -2504,6 +2505,34 @@ class Session:
         return ellipse(place, r, rotate=rotate, steps=steps, name=name,
                        aspect=self.aspect)
 
+    def frame(self, centre, rx: float, ry: float | None = None,
+              tilt: float = 0.0) -> Frame:
+        """A thing's own coordinates on this canvas: a centre, two radii and a tilt.
+
+        A head is drawn in head units and placed once; the painter of Uktarl's Room
+        wrote the same four lines for each of three heads, and asked for this::
+
+            head = s.frame(s.px(512, 344), *s.px(24, 34), tilt=-6)
+            eye = head.at(-0.42, -0.10)                 # a place, for a dab or a stroke
+            lit = head.polygon(head.arc(-26, 168, 20) + [(0.50, -0.33), (0.0, -0.28)])
+
+        Args:
+            centre: a point, or a place whose middle it is.
+            rx, ry: the radii, as an ellipse's are -- ``rx`` a fraction of the width,
+                ``ry`` of the height -- so two in pixels are ``*s.px(rx, ry)``. ``ry``
+                left off is round in pixels, as :meth:`circle` is.
+            tilt: degrees, clockwise, **turned in pixels**, so a frame tilted on a
+                canvas that is not square keeps its right angles.
+
+        Returns:
+            A :class:`~easel.regions.Frame`: ``at(u, v)`` for a place, ``polygon(points)``
+            for a shape and ``arc(t0, t1, n)`` for the outline's own points, all in the
+            frame's radii, ``v`` downward.
+        """
+        if ry is None:
+            ry = float(rx) * self.aspect
+        return Frame(centre, rx, ry, tilt=tilt, aspect=self.aspect)
+
     def dry(self, amount: float = 1.0, region=None) -> StrokeRecord:
         """Dry the canvas so the next paint covers instead of mixing.
 
@@ -4418,6 +4447,11 @@ class Session:
           share to measure at the moment the subject is finished, and meant to fall
           afterwards. A measurement, not a rule: it is printed under the findings and
           not counted among them;
+        - **each part's share of the budget**, for a plan that declares ``shares=``:
+          the strokes of the marks whose note names a part, against that part's share
+          of the budget, and the marks in no part (:meth:`_shares_line`). Of the budget
+          and not of the marks so far, because it is the number that says the last
+          part will be starved while there are strokes in hand to send it;
         - **how much ground is still showing**, once anything has been painted:
           :meth:`~easel.canvas.Canvas.ground_showing` against a bare canvas at this
           session's own ground, texture and seed. The closing checklist asks *is
@@ -4582,6 +4616,9 @@ class Session:
         subject = self._subject_line(paid, subject_share)
         if subject:
             standing.append(subject)
+        shares = self._shares_line(paid)
+        if shares:
+            standing.append(shares)
         if without is not None:
             # A count-only copy has laid no paint on the canvas it borrowed, so the
             # honest answer is the one it started with and the useful one does not
@@ -4958,6 +4995,9 @@ class Session:
         subject = self._subject_line(paid, subject_share)
         if subject:
             lines.append(f"  {subject}")
+        shares = self._shares_line(paid)
+        if shares:
+            lines.append(f"  {shares}")
         if paid and not self._counting:
             lines += [f"  {one}" for one in self._canvas_lines(plan_view=plan_view)]
         lines.append(f"  {checklist.boxes_line(*checklist.mass_counts(records))}")
@@ -5024,6 +5064,45 @@ class Session:
             line += f", against {planned:.0%} planned"
             if share < planned - 0.005:
                 line += " -- behind, if the subject is finished"
+        return line
+
+    def _shares_line(self, paid: list[StrokeRecord]) -> str:
+        """Each part's strokes against its share of the budget, for ``plan(shares=)``.
+
+            shares: uktarl 117 of 112 (over), the near bandit 22 of 45; 12 in no part
+
+        A part is the marks whose note names it (:meth:`Plan.part_of`); a signature is
+        in none and is not counted, as the disc rule leaves it out. The marks noted for
+        no part are counted at the end, so a part at 0 is told apart from a pass whose
+        notes never named it. Of the **budget**, rounded to a stroke: the painter of
+        Uktarl's Room was told its subject had 48% of the marks laid while it had 23%
+        of the budget, and the last of four figures was painted at half its share with
+        40 strokes in hand. ``""`` without shares, or without a budget to divide.
+
+        Args:
+            paid: the marks charged against the budget, the painting's own included.
+        """
+        shares = self._plan.shares
+        if not shares or self.budget is None:
+            return ""
+        spent = dict.fromkeys((name for name, _ in shares), 0)
+        loose = 0
+        for r in paid:
+            if History.is_signature(r):
+                continue
+            part = self._plan.part_of(r.note)
+            if part is None:
+                loose += 1
+            else:
+                spent[part] += 1
+        said = []
+        for name, share in shares:
+            planned = int(round(share * self.budget))
+            said.append(f"{name} {spent[name]} of {planned}"
+                        + (" (over)" if spent[name] > planned else ""))
+        line = "shares: " + ", ".join(said)
+        if loose:
+            line += f"; {loose} in no part"
         return line
 
     def _ground_line(self) -> str:
@@ -5248,7 +5327,7 @@ class Session:
 
     # -- what the painter says before painting -----------------------------------
     def plan(self, why=None, values=None, lightest=None, subject_share=None,
-             bands=None, ground=None, key=None, habits=None,
+             bands=None, ground=None, key=None, habits=None, shares=None,
              clear: bool = False) -> Plan:
         """Write the plan down where the engine can see it. Returns it; print it.
 
@@ -5265,7 +5344,8 @@ class Session:
                    bands="subject",
                    ground="buried",
                    key="low",
-                   habits={"disc": {face: "the features of a face"}})
+                   habits={"disc": {face: "the features of a face"}},
+                   shares={"the pier": 0.30, "the water": 0.25})
 
         Args:
             why: what the picture is for, in a sentence. Nothing measures it;
@@ -5311,6 +5391,14 @@ class Session:
                 them and quotes the reason instead of warning; everywhere else it warns
                 as before, and :meth:`checklist` quotes every reason back. ``"disc"``
                 is the one habit a place declares: the bars rule has ``bands=``.
+            shares: ``{part: share}`` -- each part of the picture and its share of the
+                **budget**, 0..1, adding up to 1 or less. A part is the marks whose
+                ``note=`` holds its name, in any case, the longer name winning where
+                two do; the ``shares:`` line then prints each part's strokes against
+                its share, *the near bandit 22 of 45*, and says *(over)* when one has
+                passed it. Of the budget, not of the marks so far: one painter's
+                subject read 48% of the marks laid while it held 23% of the budget,
+                and its last figure got half its share.
 
             clear: start from nothing rather than from the plan already declared, so
                 this call is the whole of it.
@@ -5331,7 +5419,13 @@ class Session:
         """
         wanted = build_plan(why=why, values=values, lightest=lightest,
                             subject_share=subject_share, bands=bands, ground=ground,
-                            key=key, habits=habits, onto=None if clear else self._plan)
+                            key=key, habits=habits, shares=shares,
+                            onto=None if clear else self._plan)
+        if wanted.shares and self.budget is None:
+            raise ValueError(
+                "plan(shares=) divides the budget, and this painting has none. Give it "
+                "one -- Session(budget=450), or easel new --budget 450 -- and the "
+                "shares line says each part's strokes against its share of it.")
         # Here rather than in `easel.plan`, because whether a place is anywhere on the
         # painting is a question about this canvas. `compare()` asks it of the same dict
         # and says the same thing; without it the check would print a `nan` after every

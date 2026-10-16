@@ -52,6 +52,7 @@ from easel.regions import (
     GRID_COLS,
     GRID_ROWS,
     REGION_NAMES,
+    Frame,
     Group,
     Polygon,
     Region,
@@ -147,6 +148,7 @@ __all__ = [
     "difference",
     "Group",
     "group",
+    "Frame",
     "letter_paths",
     "LETTERS",
     # looking, measuring and reading the reference
