@@ -5089,5 +5089,5 @@ clear -- 0.69 at its brightest twentieth against 0.50 for everything else, 0.19 
 s.plan(key='low') if the picture is dark on purpose*. **The rule is said where the key is
 introduced** (H1): the card and `REFERENCE.md`'s `key=` row open with *a picture is low-key
 while its top twentieth stays under the box's middle*; the card's 26 words are paid for by
-the anecdote under its sentence about `RECIPES.md`, the cut the painter proposed (P8), so
-`PAINTER.md` stays at 6,700 words and the card at 1,377.
+the anecdote under its sentence about `RECIPES.md`, the cut the painter proposed (P8), and
+a word outside the card, so `PAINTER.md` stays at 6,700 words and the card is 1,378.

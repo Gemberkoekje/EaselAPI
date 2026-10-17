@@ -21,7 +21,7 @@ Branch: `ccr-52e9ee7b-rddn15`, off `main` at `be4c863` (#109, step 6, merged).
 | **`src/easel/plan.py`** | `Plan.light_reading` reads the light with no key, `None` only under `"high"`; `KEY_WORDS`' comment and the refusal say the rule |
 | **`src/easel/notices.py`** | `direction-given`, a fact, measured under *What a mass was charged for its direction* |
 | **`src/easel/cli.py`**, **`src/easel/mcp_server.py`** | `--key`'s help, the prelude scaffold's comment and the server's `plan(key=)` say the rule first |
-| **`PAINTER.md`** | the card's plan step says the rule, H1; paid for by the painter's own cut (P8), the anecdote under the sentence about `RECIPES.md`. 6,700 words, as before; the card 1,377 |
+| **`PAINTER.md`** | the card's plan step says the rule, H1; paid for by the painter's own cut (P8), the anecdote under the sentence about `RECIPES.md`, and a *then* in step 1's story. 6,700 words, as before; the card 1,378 |
 | **`REFERENCE.md`** | the `key=` row opens with the rule, and says what the line says undeclared; the `values:` row; `direction`'s row and the rules that fire at the call; a row of *What the tool will tell you* |
 | **`README.md`**, **`llms.txt`** | thirty-three notices |
 | **`scripts/probe_uktarl_session.py`** | `--direction-built` and `--key-built`, the corpus replayed through the built engine and kept in `out/uktarl/built.pkl`, and the two versions; `--pieces-sheet`, every pass of the V and the guide's shapes drawn |

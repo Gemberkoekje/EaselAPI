@@ -585,8 +585,8 @@ no paint of its own.
 off, the whole painting, which is also what `s.checklist()` and `easel check` read. Two
 more rules need the shape and fire at the call: a shaped `block_in` whose direction,
 left off or given, costs over 2.5× its axis (or a sequence costing over 2.5× its own
-dearest angle), and a round tip blocking in a **feature** — a shape under a tenth of the canvas across —
-that is less than four of its brushes wide. Over that width the same brush is a mass
+dearest angle), and a round tip blocking in a **feature** — a shape under a tenth of the
+canvas across — that is less than four of its brushes wide. Over that width the same brush is a mass
 with a soft silhouette, which is what a round tip is for.
 
 ### What the plan changes
