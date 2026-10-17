@@ -937,11 +937,7 @@ class Session:
                 2.5x what ``"axis"`` would, and names the number -- and so does one
                 direction given, with both prices: a mountain's ten facets laid
                 along the line from each peak to its dip cost 88 against 31 along
-                their own axes. **A concave shape cuts a pass that crosses it twice
-                into pieces**, and each piece is a stroke: when a third or more of
-                the passes come back cut, the call says so with its counts. A V laid
-                as one mass was 14 passes in 22 pieces, and its two flaps, each along
-                its own length, 3 and 4.
+                their own axes.
 
                 **A sequence is one whole pass per angle and is charged the sum.**
                 Not one stack sized for the steepest -- every angle is paid for in
@@ -1141,8 +1137,6 @@ class Session:
             _check_direction_sequence(self, fill, b, direction, density, overhang,
                                       stacklevel=3)
             _check_direction_given(self, fill, b, direction, density, stacklevel=3)
-        if shaped:
-            _check_pieces(self, fill, b, direction, density, stacklevel=3)
         if edge == "clean":
             # Regions too: cover() is handed one far more often than a shape.
             _check_clean_size(self, place, b, self.canvas, stacklevel=3,
@@ -3415,7 +3409,6 @@ class Session:
                                           spec.get("overhang"), stacklevel=5)
                 _check_direction_given(trial, fill, b, direction, density,
                                        stacklevel=5)
-            _check_pieces(trial, fill, b, direction, density, stacklevel=5)
             self._adopt_notices(trial)
             return (laid + int(edge == "clean"),
                     _mass_reason(fill, b, direction, density, laid))
@@ -7253,40 +7246,6 @@ def _check_direction_given(session, place, b: Brush, direction, density: float,
     )
 
 
-#: How many of a shaped mass's passes, as a share of them, the outline may cut in
-#: two before the call says so. Measured over the corpus's 450 shaped masses: 27,
-#: in 16 paintings, pass it -- among them the black V of Uktarl's collar, 14 passes
-#: in 22 pieces, which cost 3 and 4 laid as its two flaps.
-_PIECES_SHARE = 1.0 / 3.0
-
-
-def _check_pieces(session, place, b: Brush, direction, density: float,
-                  stacklevel: int = 2) -> None:
-    """Say so when a third or more of a shaped mass's passes come back in pieces.
-
-    A concave shape cuts every pass that crosses it twice into the pieces really
-    inside it, and each piece is a stroke. Uktarl's collar was a V laid as one mass:
-    **8 of its 14 passes in two pieces, 22 strokes**, and 17 to 22 at any single
-    direction, where its two flaps, each laid along its own length, cost 3 and 4.
-    No direction makes a V cheap; cutting it at the notch does. The painter's
-    sentence is the notice -- *14 passes in 22 pieces: lay each part along its own
-    length* -- said now, with its counts, and without a price for the parts, which
-    the engine does not yet have.
-    """
-    if not isinstance(place, Polygon):
-        return
-    passes, pieces, cut = _pass_pieces(place, b.size, direction, density)
-    if not passes or pieces - passes < _PIECES_SHARE * passes:
-        return
-    session._notify(
-        "pieces",
-        f"block_in of {place.name or 'this shape'} lays {passes} passes in {pieces} "
-        f"pieces: {cut} of them cross the shape more than once and come back cut. Lay "
-        f"each part along its own length, as a mass of its own.",
-        stacklevel=stacklevel,
-    )
-
-
 #: The tips whose pass end is a straight line across the pass, and so stacks into a
 #: step. Narrower than :data:`_CHISEL_TIPS`, which is about width following pressure
 #: and counts the comb among them: a comb's end is broken into bristles and a disc's
@@ -9665,7 +9624,7 @@ def _shape_lines(poly: Polygon, d, band: float):
     ``(i, origin, kept)`` per line, in the order :meth:`Session._shape_paths` lays
     them: ``kept`` is each ``(t0, t1)`` span of the line inside the outline long
     enough to be a stroke, and is empty where the line only grazes a tip. One
-    place, so the passes a mass lays and the pieces :func:`_pass_pieces` counts
+    place, so the passes a mass lays and the strokes :func:`_pass_pieces` counts
     cannot drift apart. It draws nothing from the stream: the pass wander is
     :meth:`~Session._shape_paths`' own, drawn per piece after this has cut it.
     """
@@ -9688,9 +9647,12 @@ def _pass_pieces(place: Polygon, size: float, direction, density: float):
     """``(passes, pieces, cut)``: what a shaped mass lays at ``direction``, counted.
 
     *Passes* are the lines that lay anything, *pieces* the strokes they come back as
-    -- which is what the mass is charged -- and *cut* the passes the outline cuts in
-    two or more, because the line crosses the shape more than once. Off the
-    geometry alone, so it costs no trial copy and no draw from the stream.
+    -- which is what the mass is charged, and what ``direction-given`` quotes -- and
+    *cut* the passes the outline cuts in two or more, because the line crosses the
+    shape more than once. Off the geometry alone, so it costs no trial copy and no
+    draw from the stream. A notice on the pieces (G2 of 0.9.0's plan) was built and
+    held back: at a third more pieces than passes it spoke on three of the guide's
+    own recipes, and is with the painter.
     """
     band = _pass_step(size, density)
     passes = pieces = cut = 0

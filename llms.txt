@@ -38,7 +38,7 @@ What to know before reading further:
   commonest failure and the smallest fix, and quotes what the tool said about each --
   and `easel demo mistakes` paints the six failures a painter meets most, on one sheet,
   which is where the guide sends a reader after the card and before the exercises.
-- **The tool says what it sees, and says it twice.** At the call, thirty-four notices,
+- **The tool says what it sees, and says it twice.** At the call, thirty-three notices,
   each with a code and a measurement behind it: paint about to land outside the place
   it was handed, a direction that costs far more than the mass's own axis, pass ends
   about to step down a slope, a film past what a film is for,

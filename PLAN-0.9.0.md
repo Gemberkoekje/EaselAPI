@@ -41,11 +41,12 @@ committed (`NOTES-step5.md`). **Step 6 is done** on branch `ccr-9c669476-nor0aj`
 required; `s.frame()` with `.at()`, `.polygon()` and `.arc()`; `shares=` and its line, a
 part named in the note. A session in pixels throughout (Q5) is not built, on the owner's
 word (`NOTES-step6.md`). **Step 7 is done** on branch `ccr-52e9ee7b-rddn15`:
-`direction-given`, one direction given and both prices, and `pieces`, a shape's passes
-cut by its outline, with its counts, at the call and from `cost()`; the low key said
-rule first on the card and in `REFERENCE.md`'s row; with no key, the `values:` line
-naming a planned light that stands clear beside *no clear light* (`NOTES-step7.md`).
-4N's `cut=` waits for the second painter's batch 2.**
+`direction-given`, one direction given and both prices, at the call and from `cost()`;
+the low key said rule first on the card and in `REFERENCE.md`'s row; with no key, the
+`values:` line naming a planned light that stands clear beside *no clear light*. The
+notice for passes in pieces (G2 (a)) was built, spoke on three recipes, and is held, on
+the owner's word: asked back (`questions-step7/`; `NOTES-step7.md`). 4N's `cut=` waits
+for the second painter's batch 2.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -606,8 +607,19 @@ the blind sheets, and says so.
 | 4C, bars and graded | **the rules as they are**: touching keeps what reads as one flat colour and drops what reads as bars; a mass as one spares one false finding for four true. A test on the canvas instead -- the value alternating at the stack's spacing by over 0.03, or climbing in plateaus -- as a later candidate | nothing this round; the canvas test to `SUGGESTIONS.md` as a candidate to bench. Re-measured: across the laps' rows, the largest departure from each row's slope is 0.015 and 0.003 |
 | C5 | **findings first, a standing line only when it changes**, a rehearsal compared against the painting as committed, the lines left out named on one line (*unchanged: values, edges, ground*); the closing checklist prints every line | step 5 |
 | G1 | **a notice, both prices** | step 7 |
-| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a) |
+| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a): built, and held — at that count it spoke at the calls of three recipes. Asked back, below |
 | G3 | **leave it named; do not build it** -- a change of the step-1 answer, on the bench's 12 strokes | nothing |
+
+### Asked back after step 7 (`questions-step7/`)
+
+Built as chosen, the pieces notice spoke on three of `RECIPES.md`'s recipes — a grip's
+clean fill, a silhouette's shade, a half-tone band, at 1.33 to 1.43 pieces a pass —
+against the V's 1.57, and on `PAINTING.md`'s ribbon round a bend. No count separates
+them; a price for the parts (G2 (b)) does, 22 against 7 on the V. Held on the owner's word
+(2026-10-17), and asked: which shapes on the sheet it would have told to lay each part
+along its own length; (a) the notice held for a price of the parts, (b) a count of 1.55,
+(c) its count with no remedy in the sentence, or (d) else; and, for (a), how much cheaper
+the parts must be. Not answered yet.
 
 ---
 
@@ -676,7 +688,7 @@ and touch nothing here.
 | 4 | **B.** The soft hold, as the painter chose: B1, per hold and per stretch (answers 2a, 2b). Done | `NOTES-step4.md` |
 | 5 | **C.** The rules as they are, as the painter chose after the bench (3b, 4a); `habits=` per place; the signature left out of the pass rule; standing lines on change (C5). Done | `NOTES-step5.md` |
 | 6 | **E and F.** `.rotated()` in pixels, `aspect=` required; the frame with `.arc()` (P4); `shares=` and its line, a part by the name in its note (P5). Not a session in pixels (Q5). Done | `NOTES-step6.md` |
-| 7 | **G and H.** The direction notices as measured (G1, G2 (a)); the low key said, and the line without one (H1, H2). Done | `NOTES-step7.md` |
+| 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted | `NOTES-step9.md` |
 | 10 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
