@@ -34,6 +34,10 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --frame-built  # 4E as built (step 6): the
                                                         # three heads through s.frame()
     python scripts/probe_uktarl_session.py --shares-built # 4F as built (step 6), by pass
+    python scripts/probe_uktarl_session.py --direction-built  # 4G as built (step 7): G1,
+                                                        # and G2's count, held
+    python scripts/probe_uktarl_session.py --key-built  # 4H as built (step 7): H2
+    python scripts/probe_uktarl_session.py --pieces-sheet  # G2, held: the shapes it read
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -1796,6 +1800,256 @@ def probe_shares_built(rb: bell.Rebuilt) -> None:
     print(f"  at the end: {left} of {budget} strokes left in hand")
 
 
+# -- step 7, as built: the direction notices, and the line beside a named light ----------
+
+_GIVEN = re.compile(r"costs (\d+) strokes; along the mass's own axis it costs (\d+)")
+_NAMED = "s.plan(key='low') if the picture is dark on purpose"
+
+
+@contextlib.contextmanager
+def weighing(masses: list):
+    """Every shaped mass the built direction checks are handed, with what each counted.
+
+    Patched where ``pricing()`` patches for the bench, so the corpus's masses are the
+    bench's counted the same way: once at the call, and once more where ``cost()``
+    priced a plan before laying it. ``direction-default`` is asked of a shape with the
+    direction left off and ``direction-given`` of one with a direction, so between them
+    they see every shaped mass; the pieces are G2's count, which is held (step 7).
+    """
+    saved = (session_module._check_default_direction,
+             session_module._check_direction_given)
+
+    def weigh(place, b, direction, density) -> None:
+        passes, count, cut = session_module._pass_pieces(place, b.size, direction, density)
+        masses.append({"painting": _PAINTING[0], "check": "pieces", "place": place.name,
+                       "passes": passes, "pieces": count, "cut": cut})
+
+    def default(session, place, b, density, overhang, stacklevel=2):
+        if isinstance(place, Polygon):
+            weigh(place, b, None, density)
+        return saved[0](session, place, b, density, overhang, stacklevel=stacklevel + 1)
+
+    def given(session, place, b, direction, density, stacklevel=2):
+        if isinstance(place, Polygon):
+            weigh(place, b, direction, density)
+            dirs = session_module._pass_directions(direction)
+            if len(dirs) == 1 and direction != "axis" and dirs[0] != "axis":
+                _, laid, _ = session_module._pass_pieces(place, b.size, direction, density)
+                _, along, _ = session_module._pass_pieces(place, b.size, "axis", density)
+                masses.append({"painting": _PAINTING[0], "check": "given",
+                               "place": place.name, "given": laid, "axis": along})
+        return saved[1](session, place, b, direction, density, stacklevel=stacklevel + 1)
+
+    session_module._check_default_direction = default
+    session_module._check_direction_given = given
+    try:
+        yield
+    finally:
+        (session_module._check_default_direction,
+         session_module._check_direction_given) = saved
+
+
+BUILT = OUT / "built.pkl"
+
+
+def replay_built() -> tuple[list[dict], list[dict]]:
+    """The corpus through the built engine: each pass's notices and values line, and
+    every shaped mass the built checks counted. About twenty-five minutes, kept in
+    ``out/uktarl/built.pkl`` for a later look; every run replays afresh, because the
+    built engine is what is being measured."""
+    passes: list[dict] = []
+    masses: list[dict] = []
+
+    def hook(done, session: Session) -> None:
+        standing = session._standing[1] if session._standing else {}
+        passes.append({"painting": _PAINTING[0], "pass": done.name, "start": done.start,
+                       "end": done.end, "error": done.error,
+                       "notices": list(done.notices), "values": standing.get("values", ""),
+                       "key": session._plan.key,
+                       "light": getattr(session._plan.lightest, "name", None)})
+
+    cohort.PASS_HOOKS.append(hook)
+    try:
+        with weighing(masses):
+            for entry in cohort.CORPUS:
+                _PAINTING[0] = entry.name
+                started = time.time()
+                rep = cohort.replay(entry, keep_canvas=False)
+                print(f"  {entry.name:<12} {len(rep.passes):3d} passes, "
+                      f"{time.time() - started:5.0f} s", flush=True)
+    finally:
+        cohort.PASS_HOOKS.remove(hook)
+    OUT.mkdir(parents=True, exist_ok=True)
+    with BUILT.open("wb") as handle:
+        pickle.dump({"passes": [{k: v for k, v in p.items()} for p in passes],
+                     "masses": masses}, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    return passes, masses
+
+
+def probe_direction_built(passes: list[dict], masses: list[dict],
+                          rb: bell.Rebuilt) -> None:
+    """G1 as built (step 7), and G2 (a) held: over the corpus, and on the versions."""
+    heading("G1 as built (step 7): one direction given, against the mass's own axis")
+    if not hasattr(session_module, "_check_direction_given"):
+        print("  this engine has no direction-given -- step 7 is not built here")
+        return
+    done = [p for p in passes if p["end"] > p["start"] and not p["error"]]
+    given = [m for m in masses if m["check"] == "given"]
+    over = [m for m in given if m["given"] > 2.5 * max(m["axis"], 1)]
+    print(f"  {len(given)} shaped masses given one direction; {len(over)} over 2.5x their "
+          f"axis (the bench: 1 of 197, the greenhouse's glass, 8 against 2)")
+    print(table([[m["painting"], m["place"] or "-", m["given"], m["axis"]] for m in over],
+                ["painting", "place", "given", "axis"]))
+    said = [(p, n) for p in done for n in p["notices"] if _GIVEN.search(n)]
+    print(f"  direction-given said {len(said)} times, in "
+          f"{len({p['painting'] for p, _ in said})} paintings' committed passes")
+
+    heading("G2 (a), held (step 7): the masses whose passes come back in pieces")
+    weighed = [m for m in masses if m["check"] == "pieces"]
+    extra = [m for m in weighed
+             if m["passes"] and m["pieces"] - m["passes"] >= m["passes"] / 3]
+    share = [m for m in weighed if m["passes"] and m["cut"] >= m["passes"] / 3]
+    print(f"  {len(weighed)} shaped masses (the bench: 450). A third more pieces than "
+          f"passes: {len(extra)}, in {len({m['painting'] for m in extra})} paintings "
+          f"(the bench: 27, in 16); a third of the passes cut: {len(share)}, in "
+          f"{len({m['painting'] for m in share})}")
+    apart = [m for m in extra + share if (m in extra) != (m in share)]
+    if apart:
+        print(table([[m["painting"], m["place"] or "-", m["passes"], m["pieces"], m["cut"]]
+                     for m in apart], ["the two apart", "place", "passes", "pieces", "cut"]))
+    print(f"  {sum(m['pieces'] for m in extra)} strokes in the masses at a third more")
+    rows = [[m["painting"], m["place"] or "-", m["passes"], m["pieces"], m["cut"],
+             f"{m['pieces'] / m['passes']:.2f}"]
+            for m in sorted(extra, key=lambda m: -m["pieces"] / m["passes"])]
+    print(table(rows, ["painting", "place", "passes", "pieces", "cut", "per pass"]))
+    for share in (1 / 3, 0.4, 0.5, 0.6):
+        over = [m for m in weighed if m["passes"]
+                and m["pieces"] - m["passes"] >= share * m["passes"]]
+        print(f"  pieces at {1 + share:.2f} a pass or more: {len(over)} masses, in "
+              f"{len({m['painting'] for m in over})} paintings")
+
+    heading("G1 as built, and G2's count, on the two recovered versions")
+    prelude = UKTARL / "prelude.py"
+    for label, version in (("p03_mountain.py", "p03_v1_facets.py"),
+                           ("p06_uktarl_body.py", "p06_v1_collar.py")):
+        s = rb.opened(label)
+        told = len(s.notices())
+        weighed: list = []
+        with weighing(weighed):
+            bell.run_pass(s, UKTARL / "versions" / version, prelude)
+        new = [n for n in s.notices(since=told) if n.code == "direction-given"]
+        print(f"  {version}: {len(new)} said")
+        for n in new:
+            print(f"    {n.code}: {n.text}")
+        for m in weighed:
+            if m["check"] == "pieces" and m["pieces"] - m["passes"] >= m["passes"] / 3:
+                print(f"    G2's count, held: {m['place'] or 'a shape'}, {m['passes']} "
+                      f"passes in {m['pieces']} pieces, {m['cut']} cut")
+
+
+def _passes_panel(place: Polygon, size: float, direction, w: int, h: int,
+                  scale: float = 1.0) -> Image.Image:
+    """A shape on white, every pass it lays drawn as a line: cut passes red, whole black."""
+    from PIL import ImageDraw
+
+    out = Image.new("RGB", (int(w * scale), int(h * scale)), "white")
+    draw = ImageDraw.Draw(out)
+
+    def px(x, y):
+        return (x * w * scale, y * h * scale)
+
+    draw.polygon([px(x, y) for x, y in place.points], fill=(222, 222, 222),
+                 outline=(120, 120, 120))
+    band = session_module._pass_step(size, 1.0)
+    for d in session_module._pass_directions("horizontal" if direction is None
+                                             else direction):
+        theta = math.radians(session_module._angle_of(place.axis if d == "axis" else d))
+        dx, dy = math.cos(theta), math.sin(theta)
+        for _i, (ox, oy), kept in session_module._shape_lines(place, (dx, dy), band):
+            colour = (200, 30, 30) if len(kept) > 1 else (30, 30, 30)
+            for t0, t1 in kept:
+                draw.line([px(ox + dx * t0, oy + dy * t0), px(ox + dx * t1, oy + dy * t1)],
+                          fill=colour, width=2)
+    return out
+
+
+def probe_pieces_sheet() -> None:
+    """G2, held (step 7): the shapes its count read, for the painter, with their passes."""
+    heading("G2, held: the collar's V and the guide's own shapes, their passes drawn")
+    from easel import ellipse, polygon, ribbon, union
+
+    scope = bell.scope_of("uktarl")
+    w, h = scope["s"].canvas.width, scope["s"].canvas.height
+    grip = union(ellipse((0.50, 0.56), 0.10, 0.09, rotate=-10),
+                 ellipse((0.40, 0.60), 0.06, 0.07), ellipse((0.60, 0.52), 0.05, 0.06))
+    body = union(ellipse((0.50, 0.56), 0.17, 0.21), ellipse((0.33, 0.36), 0.075, 0.09),
+                 ribbon([(0.58, 0.66), (0.66, 0.80), (0.70, 0.95)], 0.05, end_width=0.025),
+                 ribbon([(0.40, 0.70), (0.36, 0.82), (0.37, 0.95)], 0.045, end_width=0.03))
+    turn = [(0.40, 0.20), (0.37, 0.34), (0.36, 0.50), (0.36, 0.66)]
+    # Each the call the guide check found the count on, as its recipe lays it: the grip's
+    # fill inset half a brush for its clean edge, the silhouette's shade copy at 20
+    # degrees, and the half-tone band along its terminator.
+    cases = [
+        ("the collar's V, as one mass", scope["uk_collar"], 0.014, "axis"),
+        ("its left flap", scope["uk_collar_l"], 0.014, [(446, 330), (497, 392)]),
+        ("its right flap", scope["uk_collar_r"], 0.014, [(588, 320), (540, 394)]),
+        ("A small cluster of like parts gripping an edge: the grip",
+         session_module._clean_fill(grip, 0.015), 0.03, "axis"),
+        ("A silhouette lit from one side: its shade",
+         body.shifted(0.028, 0.038), 0.035, 20),
+        ("A form turned toward the light: the half-tone band",
+         polygon(turn + [(0.345, 0.58), (0.335, 0.44), (0.35, 0.30)]), 0.012,
+         [turn[0], turn[-1]]),
+        ("PAINTING.md: a ribbon round a bend",
+         ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029), 0.015, None),
+    ]
+    panels = []
+    for label, place, size, direction in cases:
+        if isinstance(direction, list) and direction[0][0] > 1:
+            direction = [scope["s"].px(*pt) for pt in direction]
+        passes, pieces, cut = session_module._pass_pieces(place, size, direction, 1.0)
+        said = (f"{label}: {passes} passes in {pieces} pieces, {cut} cut, "
+                f"{pieces / max(passes, 1):.2f} a pass")
+        print(f"  {said}")
+        full = _passes_panel(place, size, direction, w, h, scale=2.0)
+        xs = [x * w * 2 for x, _ in place.points]
+        ys = [y * h * 2 for _, y in place.points]
+        pad = 40
+        box = (max(0, int(min(xs)) - pad), max(0, int(min(ys)) - pad),
+               min(full.width, int(max(xs)) + pad), min(full.height, int(max(ys)) + pad))
+        crop = full.crop(box)
+        crop.thumbnail((440, 330), Image.LANCZOS)
+        panels.append((said, crop))
+    path = save_sheet(panels, "pieces.png", columns=3)
+    print(f"  {path}")
+
+
+def probe_key_built(passes: list[dict]) -> None:
+    """H2 as built (step 7): the line beside a named light, over the corpus."""
+    heading("H2 as built (step 7): a named light beside 'no clear light', with no key")
+    if "dark on purpose" not in Path(checklist.__file__).read_text(encoding="utf-8"):
+        print("  this engine's values line names no light -- step 7 is not built here")
+        return
+    rows = []
+    for painting in sorted({p["painting"] for p in passes}):
+        done = [p for p in passes if p["painting"] == painting and p["end"] > p["start"]
+                and not p["error"] and p["values"]]
+        unlit = [p for p in done if "no clear light" in p["values"]]
+        named = [p for p in unlit if _NAMED in p["values"]]
+        if unlit:
+            first = named[0]["pass"] if named else "-"
+            rows.append([painting, len(done), len(unlit), unlit[0]["light"] or "-",
+                         len(named), first])
+    print(table(rows, ["painting", "passes", "no clear light", "light named", "H2 names it",
+                       "first"]))
+    print("  (the bench: the Bell-Warden 4 of 6, Wenna Brask 9 of 11, this painting 11 of "
+          "16, nowhere else)")
+    for p in passes:
+        if p["painting"] == "uktarl" and _NAMED in p["values"]:
+            print(f"  {p['pass']}: ...{p['values'].split('no clear light', 1)[1]}")
+            break
+
+
 # -- the run ----------------------------------------------------------------------------
 
 BENCHES = (
@@ -1815,10 +2069,15 @@ BENCHES = (
     ("check-corpus", "4C as built (step 5): the corpus replayed, about twenty minutes"),
     ("frame-built", "4E as built (step 6): the three heads through s.frame(), the turn"),
     ("shares-built", "4F as built (step 6): the shares line, pass by pass"),
+    ("direction-built", "4G as built (step 7): G1 over the corpus and the versions, "
+     "and G2's count, held"),
+    ("key-built", "4H as built (step 7): H2 over the corpus"),
+    ("pieces-sheet", "G2, held (step 7): the V and the guide's own shapes, passes drawn"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
                   "answers2", "shares_built"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
+_NEEDS_BUILT = {"direction_built", "key_built"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1876,6 +2135,15 @@ def main(argv: list[str] | None = None) -> int:
         probe_frame_built()
     if "shares_built" in run:
         probe_shares_built(rb)
+    if "pieces_sheet" in run:
+        probe_pieces_sheet()
+    if run & _NEEDS_BUILT:
+        heading("the corpus, replayed through the built engine (about twenty-five minutes)")
+        passes, masses = replay_built()
+        if "direction_built" in run:
+            probe_direction_built(passes, masses, rb or bell.rebuild("uktarl"))
+        if "key_built" in run:
+            probe_key_built(passes)
     return 0
 
 

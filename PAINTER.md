@@ -111,7 +111,9 @@ budget by its `note=`, whether this picture is low in key or buries its ground, 
 small round marks are meant, a face's features, are yours to choose, and declaring them
 makes the check answer to your picture, not to a default (*What the plan changes* in
 [`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)). `s.checklist()` quotes your
-sentence back at the end, and nothing else can ask for it.
+sentence back at the end, and nothing else can ask for it. **A picture is low-key while
+its top twentieth stays under the box's middle**, `0.54` by default: declare `key="low"`
+when only a small light rises above it.
 
 **The six things you will get wrong**, with the fix on the same row as the mistake.
 
@@ -140,10 +142,8 @@ picture rather than a score, and the reason you chose the subject is still in it
 start.
 
 **And before you lay a passage you have not laid before — a form that turns, a graded
-field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** One
-painter finished a whole picture without opening any of the other four files, and its
-two worst passages were both recipes three keystrokes away. The moment to go looking is
-*before* the pass, not after the rehearsal shows it failing.
+field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** The
+moment to go looking is *before* the pass, not after the rehearsal shows it failing.
 
 ---
 
@@ -190,7 +190,7 @@ A rehearsal shows you one answer; a pencil shows you six at once.
 **Write down why this subject and not another, in a sentence, before the first mark.**
 Not what it is — why you chose it over the others. One painter chose the underside of a
 pier because there the light arrives from *below*, bounced off the water, so every form
-is lit backwards; it then painted a competent dark structure lit from the ordinary
+is lit backwards; it painted a competent dark structure lit from the ordinary
 direction, and passed every line of the closing checklist on the way. The sentence is
 free, and it is the only thing that can be checked at the end.
 

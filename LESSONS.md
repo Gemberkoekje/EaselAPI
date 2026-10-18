@@ -379,6 +379,14 @@ an afternoon of compute and no judgement at all. And ask what the rule would say
 painter *doing the right thing*, because a rule that fires hardest on the remedy it names
 is worse than no rule.
 
+**The guide's own blocks are part of what it is taken over.** 0.9.0's bench counted a
+notice for passes in pieces over the corpus — 27 masses in 16 paintings — and its painter
+chose it on that count, without either of them seeing what the 27 were. Built, it spoke on
+three recipes, at the calls they teach, and the V it was for sat 1.57 pieces a pass
+against their 1.33 to 1.43. `scripts/check_guide_blocks.py` found it, after the build. A
+candidate that will speak at the call is run over the guide's blocks on the bench, and
+its painter is shown what its count fires on, not only how often.
+
 ### A measure that can be satisfied by damage is not measuring the thing
 
 `compare()` averages a cell, so a bar of dark improves the cell it lands in whatever it

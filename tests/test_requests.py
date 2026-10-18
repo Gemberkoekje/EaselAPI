@@ -1418,7 +1418,8 @@ def test_a_shaped_block_in_with_direction_left_off_says_when_the_axis_is_cheaper
     the default steps down the whole height. The default does not move -- that would
     move every painting ever made -- but the price walk, which has the number, says
     it, from ``cost`` and from the call alike, and stays quiet on a mass wider than
-    it is tall and on a direction the painter chose."""
+    it is tall. A direction the painter chose is not *left off*: since 0.9.0 it says
+    its own price instead, ``direction-given``, with both numbers."""
     s = Session(560, 430, texture="linen", ground="toned_warm_grey", seed=41,
                 out_dir=tmp_path, timelapse=False)
     plan = {"shape": _lit_band(), "brush": "flat", "size": 0.022}
@@ -1428,9 +1429,13 @@ def test_a_shaped_block_in_with_direction_left_off_says_when_the_axis_is_cheaper
     assert left_off > 2.5 * along
     with pytest.warns(UserWarning, match="direction= left off"):
         s.block_in(_lit_band(), "flat", "burnt_umber", size=0.022)
+    told = len(s.notices())
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        s.cost(dict(plan, direction="horizontal"), share=0)          # chosen, not left off
+    assert [n.code for n in s.notices(since=told)] == ["direction-given"]
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        s.cost(dict(plan, direction="horizontal"), share=0)          # chosen, not left off
         s.cost({"shape": polygon([(0.19, 0.13), (0.32, 0.13), (0.32, 0.22), (0.19, 0.22)]),
                 "brush": "flat", "size": 0.03}, share=0)               # wider than tall
 
@@ -7115,9 +7120,10 @@ def test_under_a_low_key_the_line_asks_whether_the_named_light_stands_clear(tmp_
     lit[mask] = 0.70
     name, bright, rest = plan.light_reading(lit)
     assert (name, bright, rest) == ("A1:D4", pytest.approx(0.70), pytest.approx(0.20))
-    # Only under "low": a high-key light has no room above the rest to stand clear in.
+    # Not under "high": a high-key light has no room above the rest to stand clear in.
+    # With no key it is read since 0.9.0, for the line beside *no clear light*.
     assert build(lightest=lantern, key="high").light_reading(lit) is None
-    assert build(lightest=lantern).light_reading(lit) is None
+    assert build(lightest=lantern).light_reading(lit) == (name, bright, rest)
 
 
 def test_the_light_on_the_values_line_is_the_light_on_the_lightest_line(tmp_path):

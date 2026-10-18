@@ -76,9 +76,10 @@ BAND_WORDS = ("", "subject")
 #: on purpose, which is what a graded field edge to edge does.
 GROUND_WORDS = ("", "showing", "buried")
 
-#: What ``key=`` accepts. ``"low"`` says the picture lives under the box's middle on
-#: purpose and ``"high"`` over it, so the ``values:`` line stops saying *no clear
-#: light* (or *dark*) and asks whether the picture has kept the key it declared.
+#: What ``key=`` accepts. ``"low"`` says the picture's top twentieth stays under the
+#: box's middle on purpose and ``"high"`` its bottom twentieth over it, so the
+#: ``values:`` line stops saying *no clear light* (or *dark*) and asks whether the
+#: picture has kept the key it declared.
 KEY_WORDS = ("", "low", "high")
 
 #: The habits ``habits=`` can declare in a place. ``"disc"`` is the one rule whose
@@ -458,16 +459,18 @@ class Plan:
 
         ``(name, its brightest twentieth, the brightest twentieth of the canvas outside
         it)``, read off the same view as :meth:`lightest_line`, so the light's number is
-        the one that line prints beside it. Only under ``key="low"``, where the
-        ``values:`` line asks whether the light stands clear of the rest -- the question
-        a low-key picture with a small light is really asking. A high-key picture's
-        light has no room above the rest to stand clear in, so there the question would
-        be answered *no* on every pass. ``None`` otherwise, or with no light named.
+        the one that line prints beside it. Under ``key="low"`` the ``values:`` line
+        asks whether the light stands clear of the rest -- the question a low-key
+        picture with a small light is really asking -- and with no key declared it
+        names a light that does beside *no clear light*, with the key that would ask
+        it. A high-key picture's light has no room above the rest to stand clear in,
+        so there the question would be answered *no* on every pass. ``None`` under
+        ``key="high"``, or with no light named.
 
         *The rest* is the canvas outside the light's place, so a light large enough to
         be its own top twentieth is not measured against itself.
         """
-        if self.key != "low" or self.lightest is None:
+        if self.key == "high" or self.lightest is None:
             return None
         h, w = value_view.shape[:2]
         mask = self.lightest.outline.mask(w, h)
@@ -740,8 +743,9 @@ def build(why=None, values=None, lightest=None, subject_share=None,
     if key is not None:
         if key not in KEY_WORDS:
             raise ValueError(
-                f"plan(key={key!r}) is 'low' -- the picture lives under the box's "
-                f"middle on purpose -- or 'high', over it. The values: line then asks "
+                f"plan(key={key!r}) is 'low' -- the picture's top twentieth stays "
+                f"under the box's middle on purpose -- or 'high', its bottom twentieth "
+                f"over it. The values: line then asks "
                 f"whether the picture has kept its key instead of saying it has no "
                 f"clear light, or no clear dark."
             )

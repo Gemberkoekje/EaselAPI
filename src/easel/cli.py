@@ -301,10 +301,11 @@ def build_parser() -> argparse.ArgumentParser:
                              "is the default expectation, and '' takes the declaration "
                              "back, as it does for --bands")
     p_plan.add_argument("--key", choices=["low", "high", ""], default=None,
-                        help="'low' says this picture lives under the box's middle on "
-                             "purpose, 'high' over it: the values line then says whether "
-                             "the picture has kept its key instead of 'no clear light'. "
-                             "'' takes the declaration back")
+                        help="'low' says this picture's top twentieth stays under the "
+                             "box's middle on purpose, as a dark picture around one small "
+                             "light does, 'high' its bottom twentieth over it: the values "
+                             "line then says whether the picture has kept its key instead "
+                             "of 'no clear light'. '' takes the declaration back")
     p_plan.add_argument("--habit", action="append", nargs=3, default=None,
                         metavar=("HABIT", "PLACE", "REASON"),
                         help="a habit meant in a place, and why: --habit disc C3:D4 "
@@ -693,7 +694,7 @@ whole painting rather than once per pass.
 #     subject_share=0.40,          # the share of the budget the subject gets
 #     # bands="subject",           # this picture's subject really does run one way
 #     # ground="buried",           # and it covers its ground on purpose
-#     # key="low",                 # and it lives under the box's middle on purpose
+#     # key="low",                 # its top twentieth stays under the box's middle
 #     # habits={"disc": {face: "the features of a face"}},  # small round marks, meant
 #     # shares={"the figure": 0.30, "the wall": 0.25},  # of the budget, by note=
 # )

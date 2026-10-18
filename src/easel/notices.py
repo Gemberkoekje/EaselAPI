@@ -390,6 +390,12 @@ NOTICES: dict[str, NoticeSpec] = {
             "calibration", "### `direction` given a sequence",
         ),
         _spec(
+            "direction-given", "fact",
+            "a shaped `block_in` given one direction that costs far more than its own "
+            "axis, with both prices",
+            "calibration", "### What a mass was charged for its direction",
+        ),
+        _spec(
             "chisel-staircase", "fact",
             "a chisel filling a mass along a straight side it runs nearly along: the "
             "pass ends step down that side instead of drawing it",

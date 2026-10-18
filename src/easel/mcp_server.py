@@ -1307,11 +1307,13 @@ def build_server() -> MCPServer:
             ground: "showing", the default expectation, or "buried" -- this picture
                 covers its ground on purpose, as a graded field edge to edge does, so
                 the ground line stops asking for some back.
-            key: "low" -- this picture lives under the box's middle on purpose -- or
-                "high", over it. The values line then says whether the picture has
-                kept its key instead of *no clear light*, and prints its clusters
-                without judging them; under "low" it asks whether the lightest place
-                stands clear of everything else.
+            key: "low" -- this picture's top twentieth stays under the box's middle
+                on purpose, as a dark picture around one small light does -- or
+                "high", its bottom twentieth over it. The values line then says
+                whether the picture has kept its key instead of *no clear light*, and
+                prints its clusters without judging them; under "low" it asks whether
+                the lightest place stands clear of everything else. Left off, a line
+                that says *no clear light* names a lightest place that stands clear.
             habits: `{"disc": {place: reason}}` -- the places where small round
                 marks at tip_wobble=0 are meant, each with its reason:
                 `{"disc": {"C3:D4": "the features of a face"}}`. Inside them the disc

@@ -48,6 +48,7 @@ their own sessions rather than measurements of the engine.
 | A held edge breaks inward over `0.002` of the long side; a thin shape keeps its body; two masses held to one line leave the ground between them | *A held edge, broken (0.7.0: the default moved)* |
 | A shaped mass with `direction` left off can cost many times its axis | *A shaped mass with `direction` left off* |
 | A sequence of directions is priced as the sum | *`direction` given a sequence* |
+| One direction given can cost many times its axis, and a concave shape is charged a stroke per piece | *What a mass was charged for its direction* |
 | A sweep follows an edge; crossing closes it | *`sweep`* |
 | A smudge buys nothing past `0.02`, removes about half a join once, and works along not across | *`smudge`* |
 | A glaze far from its ground has no usable opacity | *`glaze`* |
@@ -5014,3 +5015,79 @@ the near bandit 22, the relief 101, the table 34 and the floor 29. The painter's
 count gives Uktarl 117 and the relief 108: the 7 strokes of the cards in Uktarl's hand,
 in `p16_hand_and_crags.py`, which it counted by pass. Nothing step 2 said of the line
 moves.
+
+### What a direction costs, and a dark picture's light, as built
+
+*Step 7, `probe_uktarl_session.py --direction-built`, `--key-built` and `--pieces-sheet`,
+on the branch that builds it.* The corpus is the 34 committed paintings replayed through
+the built engine, each shaped mass counted at the call and again where `cost()` priced a
+plan, as step 2's bench counted them.
+
+**A direction given that costs over 2.5× its axis says both prices**, `direction-given`,
+on all ten facets of the mountain's first version (`versions/p03_v1_facets.py`), at
+`size=0.016` on 1024×768:
+
+| facet | given | axis | | facet | given | axis |
+|---|---|---|---|---|---|---|
+| left 0 | 8 | 3 | | right 0 | 8 | 2 |
+| left 1 | 8 | 2 | | right 1 | 6 | 2 |
+| left 2 | 9 | 2 | | right 2 | 7 | 2 |
+| left 3 | 9 | 3 | | right 3 | 9 | 2 |
+| left 4 | 5 | 1 | | right 4 | 9 | 2 |
+
+78 against 21: the notice quotes the fill's passes, and `edge="clean"` adds its one contour
+pass to each facet, which is the 88 and 31 above. **Over the corpus** 474 shaped masses are
+given one direction and 5 pass 2.5×: the greenhouse's glass, 8 against 2, the bench's one,
+and four of the eleven arch stones of The Curator's wall, a painting step 2 did not replay —
+every stone laid `direction="vertical"`, and the four near the springing, where a stone
+runs across, at 16 and 19 against 6. It is said 5 times in 2 paintings' committed passes,
+and by no block of the guide. The tower's lit band that `direction-default` was built on,
+chosen `"horizontal"` instead of left off, now says *55 strokes; along the mass's own
+axis it costs 5*, where 0.6.0's test held it silent.
+
+**A notice for passes in pieces was built and held back** (G2 (a)). At the painter's
+threshold, pieces a third more than passes, it says *14 passes in 22 pieces* of the
+collar's V, and over the corpus speaks on 27 of 727 shaped masses in 16 paintings — the
+bench's 27, and the same 27 counted as a third of the passes cut. **`scripts/check_guide_blocks.py`
+then found it in seven calls of recommended blocks and one demo**, at the calls the recipes
+make:
+
+| laid | passes | pieces | cut | a pass |
+|---|---|---|---|---|
+| the collar's V, as one mass, `size=0.014` along its axis | 14 | 22 | 8 | 1.57 |
+| its two flaps, each along its own length | 3, 4 | 3, 4 | 0 | 1.00 |
+| *A small cluster of like parts gripping an edge*: the grip's fill, inset for `edge="clean"` | 9 | 12 | 3 | 1.33 |
+| *A silhouette lit from one side*: the shade, the body's copy at 20° (and its demo) | 33 | 47 | 14 | 1.42 |
+| *A form turned toward the light*: the half-tone band along the terminator | 7 | 10 | 3 | 1.43 |
+| `PAINTING.md`'s ribbon round a bend, at `0.015` and `0.03` | 42, 21 | 75, 38 | 33, 17 | 1.79, 1.81 |
+
+Over the corpus, by pieces a pass: 27 masses at 1.33 or more, 21 at 1.40, 17 at 1.50 —
+among them a face's mid-tone of Wenna Brask's and a brow's half-tone of this painting's —
+and 7 at 1.55 or 1.60. No count of pieces separates the V from the recipes, which cut
+where a head meets a body, between two legs, at a grip's bump or a band's thin ends: shapes
+joined on purpose. Its painter's other candidate does, a price for the shape cut at its
+notch: 22 as one mass against 7 as the flaps. On the owner's word (2026-10-17) the notice
+is taken out and the question is back with the painter
+([`questions-step7/`](https://github.com/Gemberkoekje/EaselAPI/blob/main/paintings/Claude/uktarl_krannoc/questions-step7/QUESTIONS.md),
+with the sheet of every pass). The count stays: `_pass_pieces` is the walk the mass lays,
+and `direction-given` prices with it.
+
+**A planned light beside *no clear light*, with no key** (H2), over the corpus, as built:
+
+| painting | passes saying *no clear light* | the light named | names it | from |
+|---|---|---|---|---|
+| the Bell-Warden | 7 | `head top` | 4 | `p04_gargoyle.py` |
+| Wenna Brask | 11 | `lantern` | 9 | `p04_lantern.py` |
+| Uktarl's Room | 16 | Uktarl's face | 11 | `p07_uktarl_head.py` |
+
+**The bench's counts exactly**, and nowhere else: 16 other paintings say *no clear light*
+on a pass — eight of The Curator's pieces, each naming a light and none with one standing
+clear, its row 19's reading, and eight naming none. The Bell-Warden's seventh is its drawing run again,
+one record and no paint, which the bench left out. On this painting, from the head's pass on: *no
+clear light -- nothing above 0.50, and the box's own middle is 0.54; Uktarl's face stands
+clear -- 0.69 at its brightest twentieth against 0.50 for everything else, 0.19 over: say
+s.plan(key='low') if the picture is dark on purpose*. **The rule is said where the key is
+introduced** (H1): the card and `REFERENCE.md`'s `key=` row open with *a picture is low-key
+while its top twentieth stays under the box's middle*; the card's 26 words are paid for by
+the anecdote under its sentence about `RECIPES.md`, the cut the painter proposed (P8), and
+a word outside the card, so `PAINTER.md` stays at 6,700 words and the card is 1,378.

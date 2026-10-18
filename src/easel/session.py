@@ -934,7 +934,10 @@ class Session:
                 height. A painter costed two planes at 9 and 9 with ``direction=90``,
                 wrote the calls without it, and the rehearsal charged 43 and 55. So a
                 shape laid with this left off says so when it costs more than about
-                2.5x what ``"axis"`` would, and names the number.
+                2.5x what ``"axis"`` would, and names the number -- and so does one
+                direction given, with both prices: a mountain's ten facets laid
+                along the line from each peak to its dip cost 88 against 31 along
+                their own axes.
 
                 **A sequence is one whole pass per angle and is charged the sum.**
                 Not one stack sized for the steepest -- every angle is paid for in
@@ -1133,6 +1136,7 @@ class Session:
         if direction is not None:
             _check_direction_sequence(self, fill, b, direction, density, overhang,
                                       stacklevel=3)
+            _check_direction_given(self, fill, b, direction, density, stacklevel=3)
         if edge == "clean":
             # Regions too: cover() is handed one far more often than a shape.
             _check_clean_size(self, place, b, self.canvas, stacklevel=3,
@@ -1259,18 +1263,8 @@ class Session:
         theta = math.radians(_angle_of(degrees))
         dx, dy = math.cos(theta), math.sin(theta)
         nx, ny = -dy, dx
-        pts = np.asarray(poly.points, dtype=np.float64)
-        cx, cy = poly.box.center
-        offs = (pts[:, 0] - cx) * nx + (pts[:, 1] - cy) * ny
-        lo_n, hi_n = float(offs.min()), float(offs.max())
-        n_passes = max(1, int(round((hi_n - lo_n) / band)))
-
-        for i in range(n_passes):
-            off = lo_n + (i + 0.5) * (hi_n - lo_n) / n_passes
-            ox, oy = cx + nx * off, cy + ny * off
-            for t0, t1 in _spans_inside(poly, (ox, oy), (dx, dy)):
-                if t1 - t0 < band * 0.35:
-                    continue        # a sliver at the tip of the shape, not a stroke
+        for i, (ox, oy), kept in _shape_lines(poly, (dx, dy), band):
+            for t0, t1 in kept:
                 a, z = t0 - over, t1 + over
                 wob = rng.normal(0.0, band * 0.3, size=3)
                 path = [
@@ -3413,6 +3407,8 @@ class Session:
             else:
                 _check_direction_sequence(trial, fill, b, direction, density,
                                           spec.get("overhang"), stacklevel=5)
+                _check_direction_given(trial, fill, b, direction, density,
+                                       stacklevel=5)
             self._adopt_notices(trial)
             return (laid + int(edge == "clean"),
                     _mass_reason(fill, b, direction, density, laid))
@@ -5150,15 +5146,16 @@ class Session:
         ``without`` is the values view without graphite when the caller already has
         it -- :meth:`report` does, for the rule that reads what a pass covered.
         ``plan_view`` is :meth:`_value_view` when the caller has read it for the plan's
-        lines: under ``plan(key="low")`` the ``values:`` line reads the named light off
-        it, so the light's number is the one the ``lightest:`` line printed above it.
+        lines: the ``values:`` line reads the named light off it -- under
+        ``plan(key="low")``, and with no key beside *no clear light* -- so the light's
+        number is the one the ``lightest:`` line printed above it.
         """
         if without is None:
             without = self.canvas.values(sketch=False)
         view = without.astype(np.float32) / 255.0
         reach = (self.palette.darkest_value, self.palette.lightest_value)
         light = None
-        if self._plan.key == "low" and self._plan.lightest is not None:
+        if self._plan.key != "high" and self._plan.lightest is not None:
             light = self._plan.light_reading(
                 plan_view if plan_view is not None else self._value_view())
         lines = [checklist.values_line(view, reach=reach, key=self._plan.key,
@@ -5379,12 +5376,16 @@ class Session:
                 picture covers its ground on purpose, which is what a graded field
                 edge to edge does. The ground line then prints its number without
                 asking for some back.
-            key: ``"low"`` -- this picture lives under the box's middle on purpose
-                -- or ``"high"``, over it. The ``values:`` line then stops saying *no
-                clear light* (or *dark*) and says instead whether the picture has
-                kept its key, and by how much it has left it; it prints its clusters
-                without judging their gaps. Under ``"low"`` it also asks whether the
-                ``lightest`` place, if one is named, stands clear of everything else.
+            key: ``"low"`` -- **a picture is low-key while its top twentieth stays
+                under the box's middle**, halfway between what the palette reaches,
+                so a dark picture around one small light is -- or ``"high"``, while
+                its bottom twentieth stays over it. The ``values:`` line then stops
+                saying *no clear light* (or *dark*) and says instead whether the
+                picture has kept its key, and by how much it has left it; it prints
+                its clusters without judging their gaps. Under ``"low"`` it also asks
+                whether the ``lightest`` place, if one is named, stands clear of
+                everything else. Left off, a line that says *no clear light* names a
+                ``lightest`` place that stands clear, and this.
             habits: ``{"disc": {place: reason}}`` -- the places where small round marks
                 at ``tip_wobble=0`` are meant, each with the reason. A face's eyes and
                 mouth are that on purpose. Inside a declared place the disc rule counts
@@ -7206,6 +7207,41 @@ def _check_direction_sequence(session, place, b: Brush, direction, density: floa
         f"stacked, it is {len(dirs)} passes. Two directions are what breaks a comb "
         f"and {len(dirs)} do not break it further: a cross at the mass's own angle, "
         f"direction=(\"axis\", {across:.0f}), is {pair} here.",
+        stacklevel=stacklevel,
+    )
+
+
+def _check_direction_given(session, place, b: Brush, direction, density: float,
+                           stacklevel: int = 2) -> None:
+    """Say both prices when one direction given costs far more than the mass's axis.
+
+    ``direction-default`` speaks only when ``direction=`` is left off and
+    ``direction-sequence`` only for a list, so a painter who chose one angle, and
+    chose the dear one, heard nothing. Uktarl's Room laid the ten facets of a
+    mountain along the line from each peak to its dip, which runs across each
+    facet's length: **88 strokes, against 31** along their own axes, 2.7x to 5.0x a
+    facet. Over the corpus's 197 shaped masses given one direction, one other passes
+    the same 2.5x: the median is 1.00, the 90th percentile 1.56. So it is a fact
+    that costs almost nothing in noise, and its painter asked for it with both
+    prices in it. A direction chosen for the marks' look is the painter's to pay
+    for; the line says what it costs and nothing else.
+    """
+    if not isinstance(place, Polygon) or direction is None or direction == "axis":
+        return
+    dirs = _pass_directions(direction)
+    if len(dirs) != 1 or dirs[0] == "axis":
+        return
+    _, laid, _ = _pass_pieces(place, b.size, direction, density)
+    _, along, _ = _pass_pieces(place, b.size, "axis", density)
+    if laid <= _DIRECTION_RATIO * max(along, 1):
+        return
+    given = (f"direction={direction!r}" if _line_angle(direction) is None
+             else f"the line given, {dirs[0]:.0f} degrees")
+    session._notify(
+        "direction-given",
+        f"block_in of {place.name or 'this shape'} at {given} costs {laid} strokes; "
+        f"along the mass's own axis it costs {along} (direction=\"axis\", or "
+        f"{place.axis:.0f} degrees). That is {laid / max(along, 1):.1f}x the price.",
         stacklevel=stacklevel,
     )
 
@@ -9580,6 +9616,55 @@ def _angle_of(direction) -> float:
         return _NAMED_ANGLES[direction]
     along = _line_angle(direction)
     return float(direction) if along is None else along
+
+
+def _shape_lines(poly: Polygon, d, band: float):
+    """Every line a shape is swept along, and the stretches of it a pass is laid on.
+
+    ``(i, origin, kept)`` per line, in the order :meth:`Session._shape_paths` lays
+    them: ``kept`` is each ``(t0, t1)`` span of the line inside the outline long
+    enough to be a stroke, and is empty where the line only grazes a tip. One
+    place, so the passes a mass lays and the strokes :func:`_pass_pieces` counts
+    cannot drift apart. It draws nothing from the stream: the pass wander is
+    :meth:`~Session._shape_paths`' own, drawn per piece after this has cut it.
+    """
+    dx, dy = d
+    nx, ny = -dy, dx
+    pts = np.asarray(poly.points, dtype=np.float64)
+    cx, cy = poly.box.center
+    offs = (pts[:, 0] - cx) * nx + (pts[:, 1] - cy) * ny
+    lo_n, hi_n = float(offs.min()), float(offs.max())
+    n_passes = max(1, int(round((hi_n - lo_n) / band)))
+    for i in range(n_passes):
+        off = lo_n + (i + 0.5) * (hi_n - lo_n) / n_passes
+        ox, oy = cx + nx * off, cy + ny * off
+        # A sliver at the tip of the shape is not a stroke.
+        yield i, (ox, oy), [(t0, t1) for t0, t1 in _spans_inside(poly, (ox, oy), (dx, dy))
+                            if t1 - t0 >= band * 0.35]
+
+
+def _pass_pieces(place: Polygon, size: float, direction, density: float):
+    """``(passes, pieces, cut)``: what a shaped mass lays at ``direction``, counted.
+
+    *Passes* are the lines that lay anything, *pieces* the strokes they come back as
+    -- which is what the mass is charged, and what ``direction-given`` quotes -- and
+    *cut* the passes the outline cuts in two or more, because the line crosses the
+    shape more than once. Off the geometry alone, so it costs no trial copy and no
+    draw from the stream. A notice on the pieces (G2 of 0.9.0's plan) was built and
+    held back: at a third more pieces than passes it spoke on three of the guide's
+    own recipes, and is with the painter.
+    """
+    band = _pass_step(size, density)
+    passes = pieces = cut = 0
+    for d in _pass_directions("horizontal" if direction is None else direction):
+        theta = math.radians(_angle_of(place.axis if d == "axis" else d))
+        for _i, _origin, kept in _shape_lines(place, (math.cos(theta), math.sin(theta)),
+                                              band):
+            if kept:
+                passes += 1
+                pieces += len(kept)
+                cut += len(kept) > 1
+    return passes, pieces, cut
 
 
 def _spans_inside(poly: Polygon, origin, d) -> list[tuple[float, float]]:

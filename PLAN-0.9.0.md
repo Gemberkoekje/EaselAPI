@@ -40,7 +40,13 @@ committed (`NOTES-step5.md`). **Step 6 is done** on branch `ccr-9c669476-nor0aj`
 `.rotated(deg, about=, aspect=)` on every shape and group, turned in pixels, `aspect=`
 required; `s.frame()` with `.at()`, `.polygon()` and `.arc()`; `shares=` and its line, a
 part named in the note. A session in pixels throughout (Q5) is not built, on the owner's
-word (`NOTES-step6.md`).**
+word (`NOTES-step6.md`). **Step 7 is done** on branch `ccr-52e9ee7b-rddn15`:
+`direction-given`, one direction given and both prices, at the call and from `cost()`;
+the low key said rule first on the card and in `REFERENCE.md`'s row; with no key, the
+`values:` line naming a planned light that stands clear beside *no clear light*. The
+notice for passes in pieces (G2 (a)) was built, spoke on three recipes, and is held, on
+the owner's word: asked back (`questions-step7/`; `NOTES-step7.md`). 4N's `cut=` waits
+for the second painter's batch 2.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -511,6 +517,7 @@ Step 2b measures O3 over the corpus and on the candle, the patron's rim and the 
 |---|---|---|
 | 0.7.0: every held edge breaks against the tooth by default; a Gaussian soft edge declined because it reads as blur | a softness chosen per call (4B) | the default stays; the decline was about every edge, and this is for the edges a painter loses |
 | 0.8.0: `feather=` breaks and does not soften; *a soft brush held hard is held hard* | the same, with a soft hold beside it | `feather=` keeps its meaning |
+| 0.6.0: the default-direction notice speaks when `direction=` is left off, and is quiet on a direction chosen | a direction given says its own price when it costs over 2.5x the axis (4G, G1) | the default's notice is unchanged; a chosen direction is still the painter's to pay for, and the new line is a fact, both prices, nothing more |
 | 0.6.0, the owner: standing warnings are declared in the plan, not dismissed after the fact | `habits=` in the plan (4C) | kept: the declaration is up front |
 | 0.8.0: `key=` is a declaration that buys a question, not a switch that buys silence | H2 names the light and the key without a declaration | kept, unless the painter chooses H3 |
 | 0.8.0: no second page; the card is the first page | a one-page card (4I) | revisited on the fourth painter's evidence; the budget test stays |
@@ -600,8 +607,19 @@ the blind sheets, and says so.
 | 4C, bars and graded | **the rules as they are**: touching keeps what reads as one flat colour and drops what reads as bars; a mass as one spares one false finding for four true. A test on the canvas instead -- the value alternating at the stack's spacing by over 0.03, or climbing in plateaus -- as a later candidate | nothing this round; the canvas test to `SUGGESTIONS.md` as a candidate to bench. Re-measured: across the laps' rows, the largest departure from each row's slope is 0.015 and 0.003 |
 | C5 | **findings first, a standing line only when it changes**, a rehearsal compared against the painting as committed, the lines left out named on one line (*unchanged: values, edges, ground*); the closing checklist prints every line | step 5 |
 | G1 | **a notice, both prices** | step 7 |
-| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a) |
+| G2 | **a notice now, with its counts**: *14 passes in 22 pieces: lay each part along its own length*; a price when one exists | step 7, (a): built, and held — at that count it spoke at the calls of three recipes. Asked back, below |
 | G3 | **leave it named; do not build it** -- a change of the step-1 answer, on the bench's 12 strokes | nothing |
+
+### Asked back after step 7 (`questions-step7/`)
+
+Built as chosen, the pieces notice spoke on three of `RECIPES.md`'s recipes — a grip's
+clean fill, a silhouette's shade, a half-tone band, at 1.33 to 1.43 pieces a pass —
+against the V's 1.57, and on `PAINTING.md`'s ribbon round a bend. No count separates
+them; a price for the parts (G2 (b)) does, 22 against 7 on the V. Held on the owner's word
+(2026-10-17), and asked: which shapes on the sheet it would have told to lay each part
+along its own length; (a) the notice held for a price of the parts, (b) a count of 1.55,
+(c) its count with no remedy in the sentence, or (d) else; and, for (a), how much cheaper
+the parts must be. Not answered yet.
 
 ---
 
@@ -648,7 +666,7 @@ in `CALIBRATION.md`, the round's *Step 2b*.
 | rebuild | all nine pieces to the pixel on Linux, the painter's platform, at their recorded spend; the filing's one level was Windows | row 15's sentence stands as written (4I) |
 | 4K | the places' coverage as a hold's is **harder than the painter's held paint edge**: 0.3 to 0.6 px over the outline's length against 0.8 to 0.9, a visible step on the patron's diagonal at 2×2 samples; its *soften=2.5* is a Gaussian of sigma 0.8 to 0.9 px on all three | asked back (Q1 again): the held edge it chose measures 0.3 to 0.6 px as an alpha, not the 0.8 to 0.9 its paint edge does. Proposed: four samples a side, and `soften=` as the 10-90% width in pixels, solved to a sigma. Step 3, beside `difference()` for the wall's hole |
 | 4M | the candle at 4× reads 0.92 at its light and *2 of 2 places*, in 11.7 s against 2.0; **the weave it loses is the marks' own texture, not the canvas's tooth** (\|r\| at most 0.05), so laying the tooth back would not restore it | asked: whether a reduced export that loses the marks' finest texture still serves, from `deposit.png`; no weave candidate is proposed. M2's reach is wide, 807 marks in 31 of 34 paintings, 22% to 75% of hand marks by canvas size |
-| 4N | under `key="low"` all six dark pieces say *low-key, as the plan says*; read inside the cut, the patron's values line reads 0.08 to 0.12, its lost rim; **the ground line asks for ground on two cut-outs** painted solid to the outline (0.00% and 0.23%) | `cut=` as answered; asked: whether the ground line inside a cut keeps its floor. The audit's findings do not move. Step 7 |
+| 4N | under `key="low"` all six dark pieces say *low-key, as the plan says*; read inside the cut, the patron's values line reads 0.08 to 0.12, its lost rim; **the ground line asks for ground on two cut-outs** painted solid to the outline (0.00% and 0.23%) | `cut=` as answered; asked: whether the ground line inside a cut keeps its floor. The audit's findings do not move. After batch 2, with 4K's `alpha=`, since Q1 makes them one declaration: not built in step 7 |
 | L1 | **as worded it cannot fire on the trap**: a mixture's hue travels the arc between its parents. From the larger parent, at chroma 0.03 and 60°, it catches four of the painter's six turned mixtures and speaks in 29 of 34 paintings, mostly on umber with 30 to 55% ultramarine mixed as a dark | L3, `p.grey()`, as chosen. L1 as a backstop at every call would be the commonest fact printed; asked whether the painter still wants it, and in what form |
 | O3 | at 0.15 from what it landed on and under a quarter of the way: 327 marks in 28 paintings; it fires on the patron's rim and the lock, **not on the candle's wax-light strokes** (0.32 to 0.40 of the way), which M2 catches before they land | asked: O3, M2 or both, and at which thresholds, from these tables |
 
@@ -670,7 +688,7 @@ and touch nothing here.
 | 4 | **B.** The soft hold, as the painter chose: B1, per hold and per stretch (answers 2a, 2b). Done | `NOTES-step4.md` |
 | 5 | **C.** The rules as they are, as the painter chose after the bench (3b, 4a); `habits=` per place; the signature left out of the pass rule; standing lines on change (C5). Done | `NOTES-step5.md` |
 | 6 | **E and F.** `.rotated()` in pixels, `aspect=` required; the frame with `.arc()` (P4); `shares=` and its line, a part by the name in its note (P5). Not a session in pixels (Q5). Done | `NOTES-step6.md` |
-| 7 | **G and H.** The direction notices as measured; the low key said, and the line without one | `NOTES-step7.md` |
+| 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted | `NOTES-step9.md` |
 | 10 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
