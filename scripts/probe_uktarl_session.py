@@ -38,6 +38,8 @@ is patched in for the length of one bench and never into the engine.
                                                         # and G2's count, held
     python scripts/probe_uktarl_session.py --key-built  # 4H as built (step 7): H2
     python scripts/probe_uktarl_session.py --pieces-sheet  # G2, held: the shapes it read
+    python scripts/probe_uktarl_session.py --recipes-built # step 8: the numbers the
+                                                        # round's recipes quote
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -2050,6 +2052,241 @@ def probe_key_built(passes: list[dict]) -> None:
             break
 
 
+# -- step 8: the recipes' numbers -------------------------------------------------------
+
+#: Each face as the painter laid it: its pass, its lit plane, the face that holds it, its
+#: terminator in the prelude, and where that terminator runs in the lit plane's outline --
+#: the arc's last point, the terminator's inner points, and the arc's first, so the
+#: stretch ``closed[i:j]`` is the terminator the painter typed and no more.
+_FACES = (
+    ("the lady", "p11_left_bandit.py", "a_lit", "a_face", "A_TERM", (20, 25)),
+    ("the doppelganger", "p09_doppelganger.py", "dp_lit", "dp_head", "DP_TERM", (19, 24)),
+    ("Uktarl", "p07_uktarl_head.py", "uk_face_lit", "uk_head_poly", "UK_TERM", (20, 25)),
+)
+
+
+def _with_join(source: str, term: str, size: float | None) -> str:
+    """The pass with its join -- the stroke along ``px_pts(term)`` -- at ``size``, or left
+    out when ``size`` is None."""
+    calls = [node for node in ast.walk(ast.parse(source))
+             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+             and node.func.attr == "stroke" and node.args
+             and isinstance(node.args[0], ast.Call)
+             and getattr(node.args[0].func, "id", "") == "px_pts"
+             and isinstance(node.args[0].args[0], ast.Name)
+             and node.args[0].args[0].id == term]
+    if len(calls) != 1:
+        raise ValueError(f"{len(calls)} strokes run along {term}; the bench needs one")
+    call = calls[0]
+    lines = source.splitlines(keepends=True)
+    if size is None:
+        del lines[call.lineno - 1:call.end_lineno]
+        return "".join(lines)
+    keyword = next(k for k in call.keywords if k.arg == "size")
+    row = keyword.value.lineno - 1
+    text = lines[row]
+    lines[row] = (text[:keyword.value.col_offset] + repr(size)
+                  + text[keyword.value.end_col_offset:])
+    return "".join(lines)
+
+
+def mean_profile(view: np.ndarray, runs, offsets: tuple[float, ...],
+                 every: float = 2.0) -> list[float]:
+    """The value across a line at each offset, averaged along the whole line.
+
+    ``step_widths`` is the ``edges:`` line's measure, the range over the steepest
+    gradient, and on a ramp laid by a flat brush the steepest gradient is the brush's own
+    grain, so a ramp of twenty pixels reads two or three. Averaged along the line, the
+    grain cancels and the ramp is what is left. Offsets are pixels along the line's left
+    normal; the profile is turned so it reads from the darker side.
+    """
+    h, w = view.shape
+    rows = []
+    for run in runs:
+        pts = np.asarray(run, dtype=np.float64) * [w, h]
+        for a, b in zip(pts[:-1], pts[1:], strict=True):
+            length = float(np.hypot(*(b - a)))
+            if length < 1e-6:
+                continue
+            along = (b - a) / length
+            n = np.array([-along[1], along[0]])
+            for d in np.arange(every / 2.0, length, every):
+                q = a + along * d
+                rows.append([float(bell._bilinear(view, np.array([q[0] + o * n[0]]),
+                                                  np.array([q[1] + o * n[1]]))[0])
+                             for o in offsets])
+    profile = np.mean(rows, axis=0)
+    return list(profile if profile[0] <= profile[-1] else profile[::-1])
+
+
+def _profile(values_: list[float]) -> str:
+    return " ".join(f"{v:.2f}" for v in values_)
+
+
+def _darkened(before: np.ndarray, after: np.ndarray, shape: Polygon) -> str:
+    """The share of a shape's pixels ``after`` darkens by over 0.05, and by how much."""
+    h, w = before.shape
+    inside = shape.coverage(w, h) > 0.5
+    drop = (before - after)[inside]
+    moved = drop[drop > 0.05]
+    median = float(np.median(moved)) if moved.size else 0.0
+    return f"{moved.size / max(int(inside.sum()), 1):.0%}, {median:.2f}"
+
+
+def probe_recipes_built(rb: bell.Rebuilt) -> None:
+    """Step 8: the numbers the round's recipes quote.
+
+    P9's two remedies for a terminator that reads as a facet -- a join twice as wide, or
+    the lit plane's edge held soft over about 8 px -- laid on the three faces the painter
+    named, beside the soft hold in both forms it chose (2b): the terminator alone as a
+    stretch, and the lit plane's whole outline inside the face's crisp hold. Then the
+    recipe's own form, which is what a painter copies, at the guide check's size and a
+    painting's; the share of each head its lit plane covers, which a light from below
+    sets; and how wide a lit side must be to land on a dark bar, for *Straight members
+    seen flat-on*, whose painter lost two lights laid under 4 px.
+    """
+    heading("Step 8: the join on skin, each face's terminator lost with soft=")
+    if "soft" not in Session.stroke.__code__.co_varnames:
+        print("  this engine has no soft= -- step 4 is not built here")
+        return
+    scope = bell.scope_of("uktarl")
+    prelude = (UKTARL / "prelude.py").read_text(encoding="utf-8-sig")
+    w, h = rb.session.canvas.width, rb.session.canvas.height
+    rows, sheets = [], []
+    for name, label, lit_name, face_name, term, (i, j) in _FACES:
+        lit = scope[lit_name]
+        source = (UKTARL / label).read_text(encoding="utf-8-sig")
+        stretch = f"[({lit_name}.closed[{i}:{j}], s.px_size(8))]"
+        variants = {
+            "as painted": source,
+            "the join twice as wide": _with_join(source, term, 0.012),
+            "terminator lost over 8 px": _with_soft(source, lit_name, stretch)[0],
+            "...and no join": _with_join(_with_soft(source, lit_name, stretch)[0], term,
+                                         None),
+            "whole lit plane soft, 8 px": _with_soft(source, lit_name, "s.px_size(8)")[0],
+        }
+        runs = [scope["px_pts"](scope[term])]
+        rim = [[(float(x), float(y)) for x, y in lit.closed[:i + 1]]]
+        views, laid = {}, {}
+        for kind, text in variants.items():
+            s = rb.opened(label)
+            bell.run_source(s, text, label, prelude=prelude)
+            views[kind], laid[kind] = bell.values(s), s
+        pts = np.asarray(scope[face_name].points) * [w, h]
+        across = float(pts[:, 0].max() - pts[:, 0].min())
+        for kind, view in views.items():
+            turn = step_widths(view, runs, reach=8.0)
+            edge = step_widths(view, rim, reach=8.0)
+            rows.append([name, f"{across:.0f}", kind, f"{bell.pct(turn, 50):.1f}",
+                         _profile(mean_profile(view, runs, (-6, -3, 0, 3, 6))),
+                         f"{bell.pct(edge, 50):.1f}",
+                         "--" if kind == "as painted"
+                         else _darkened(views["as painted"], view, lit)])
+        box = _box_round(scope[face_name], w, h, margin=10)
+        panels = [(kind, bell.crop(s, box, zoom=4)) for kind, s in laid.items()]
+        sheets.append(save_sheet(panels, f"join_{_slug(name)}.png", columns=5))
+    print(table(rows, ["face", "across px", "laid", "terminator step px",
+                       "across it at -6 -3 0 3 6 px", "lit outline step px",
+                       "lit plane darker by 0.05, median"]))
+    print("  (step: the range within 8 px either side over the steepest gradient across "
+          "it, every 2 px, median -- along the prelude's terminator, and along the lit "
+          "plane's outline where it is the face's own; across it: the value at each offset, "
+          "averaged along the whole terminator; a join at size=0.006 is "
+          f"{0.006 * rb.session.canvas.long_side:.1f} px wide here)")
+    for path in sheets:
+        print(f"  sheet: {path}")
+
+    heading("Step 8: the recipe's own form, A form turned toward the light")
+    from easel import demo
+    form_src = next(r for r in demo.recipes()
+                    if r.slug == "a-form-turned-toward-the-light").recipe
+    # The recipe's own geometry and shadow mass; the band and the lit plane as each case
+    # lays them, and the form mark left off, since it sits on the lit plane.
+    keep = form_src.split("s.block_in(band,")[0]
+    ratio = 'p.mix("shadow", "light", 0.5)'
+    halfway = ('p.at_value(p.mix("shadow", "light", 0.5), (p.value_of("shadow") '
+               '+ p.value_of("light")) / 2)')
+    band_call = ('s.block_in(band, "flat", {}, size=0.012, solid=True, '
+                 'direction=[turn[0], turn[-1]], edge="hard", opacity=1.0, pressure="even")\n')
+    lit_call = ('s.block_in(lit, "flat", "light", size=0.03, solid=True, direction=110, '
+                'edge="hard", opacity=1.0, pressure="even"{})\n')
+    lost = ", soft=[(lit.closed[5:], 0.05)]"
+    cases = {"as written, the band mixed half and half": (ratio, ""),
+             "the band at the halfway value": (halfway, ""),
+             "...and the terminator lost over a sixth": (halfway, lost),
+             "the terminator lost, and no band": (None, lost),
+             "the whole lit plane soft, and no band": (None, ", soft=0.05, clip=form")}
+    for w, h in ((400, 300), (1024, 768)):
+        k = w / 400
+        offsets = tuple(int(round(o * k)) for o in (-15, -10, -5, 0, 5, 10, 15, 20))
+        rows, panels = [], []
+        for kind, (band, extra) in cases.items():
+            scope2: dict = {}
+            source = (demo.preamble(OUT / "scratch", timelapse=False)
+                      .replace("Session(400, 300", f"Session({w}, {h}")
+                      + keep + (band_call.format(band) if band else "")
+                      + lit_call.format(extra))
+            exec(compile(source, kind, "exec"), scope2)
+            s, p = scope2["s"], scope2["p"]
+            view = bell.values(s)
+            form, lit, turn = scope2["form"], scope2["lit"], scope2["turn"]
+            if not rows:
+                print(f"  {w}x{h}: shadow {p.value_of('shadow'):.2f}, light "
+                      f"{p.value_of('light'):.2f}; the band mixed half and half "
+                      f"{p.value_of(eval(ratio, scope2)):.2f}, at the halfway value "
+                      f"{p.value_of(eval(halfway, scope2)):.2f}; the form "
+                      f"{(form.box.x1 - form.box.x0) * w:.0f} px across, a sixth of it "
+                      f"{0.05 * s.canvas.long_side:.0f} px (soft=0.05); the band's brush "
+                      f"{0.012 * s.canvas.long_side:.1f} px")
+            inside = scope2["band"].coverage(w, h) > 0.99
+            shade = ((form.coverage(w, h) > 0.99) & ~inside
+                     & (scope2["band"].coverage(w, h) < 0.01) & (lit.coverage(w, h) < 0.01))
+            rows.append([kind, f"{float(np.median(view[shade])):.2f}",
+                         f"{float(np.median(view[inside])):.2f}" if band else "--",
+                         _profile(mean_profile(view, [turn], offsets)),
+                         f"{bell.pct(step_widths(view, [list(lit.closed[:6])], reach=8 * k), 50):.1f}",
+                         ", ".join(n.code for n in s.notices()) or "nothing"])
+            panels.append((kind, bell.crop(s, (0.25, 0.15, 0.66, 0.79), zoom=2 if w < 1000 else 1)))
+        print(table(rows, ["laid", "shadow reads", "band reads",
+                           "across the terminator at " + " ".join(f"{o:+d}" for o in offsets)
+                           + " px", "lit outline step px", "said at the call"]))
+        print(f"  sheet: {save_sheet(panels, f'join_recipe_{w}.png', columns=5)}")
+
+    heading("Step 8: how much of each head its lit plane covers, and where it turns")
+    rows = []
+    for name, _, lit_name, face_name, _, _ in _FACES:
+        share = scope[lit_name].area / scope[face_name].area
+        rows.append([name, f"{share:.0%}"])
+    print(table(rows, ["face", "lit plane, of the head's area"]))
+    print("  Uktarl, lit from below, in head units (v downward, -1 the crown): the "
+          "terminator at v = -0.20 to -0.46; the brows -0.24 to -0.50; the eyes -0.10 "
+          "and -0.15 (prelude.py, UK_TERM, uk_brows, uk_eyes)")
+
+    heading("Step 8: a lit side on a dark bar, by its width (the guide check's canvas)")
+    rows = []
+    for brush, px in (("liner", 1.5), ("liner", 2.5), ("liner", 3.5), ("round_hard", 2.5),
+                      ("round_hard", 3.5), ("round_hard", 4.5)):
+        scope3: dict = {}
+        exec(compile(demo.preamble(OUT / "scratch", timelapse=False) + (
+            'p["behind"] = p.at_value("dark", 0.24)\n'
+            'p["glint"] = p.at_value("light", 0.62)\n'
+            's.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "behind", size=0.1, solid=True, '
+            'edge="hard")\n'
+            's.stroke([s.px(100, -4), s.px(100, 146)], "round_hard", "dark", '
+            'size=s.px_size(7), opacity=0.95, pressure=[0.3, 1.0, 1.0, 0.4])\n'), "bar",
+            "exec"), scope3)
+        s = scope3["s"]
+        before = bell.values(s)
+        s.stroke([s.px(98, 30), s.px(98, 110)], brush, "glint", size=s.px_size(px),
+                 opacity=0.8, pressure="taper")
+        lift = (bell.values(s) - before)[40:100, 94:103]
+        rows.append([brush, f"{px:g}", f"{float(lift.max()):.2f}",
+                     int((lift.max(axis=0) > 0.1).sum())])
+    print(table(rows, ["lit side", "px", "most the bar's value rose", "columns over 0.10"]))
+    print("  (a bar 7 px wide at 0.14 on a surface at 0.24; the lit side 2 px off its middle, "
+          "at 0.62 and opacity 0.8, along 80 of its 150 px)")
+
+
 # -- the run ----------------------------------------------------------------------------
 
 BENCHES = (
@@ -2073,9 +2310,11 @@ BENCHES = (
      "and G2's count, held"),
     ("key-built", "4H as built (step 7): H2 over the corpus"),
     ("pieces-sheet", "G2, held (step 7): the V and the guide's own shapes, passes drawn"),
+    ("recipes-built", "step 8: the join on skin with soft=, the form recipe, a light from "
+     "below, a lit side on a bar"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
-                  "answers2", "shares_built"}
+                  "answers2", "shares_built", "recipes_built"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
 _NEEDS_BUILT = {"direction_built", "key_built"}
 
@@ -2137,6 +2376,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_shares_built(rb)
     if "pieces_sheet" in run:
         probe_pieces_sheet()
+    if "recipes_built" in run:
+        probe_recipes_built(rb)
     if run & _NEEDS_BUILT:
         heading("the corpus, replayed through the built engine (about twenty-five minutes)")
         passes, masses = replay_built()

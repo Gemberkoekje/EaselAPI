@@ -41,9 +41,8 @@ s.palette["light"] = s.palette.at_value("yellow_ochre", 0.78)            # to a 
 ```
 
 Coordinates run `0..1` from the top-left. A place is `cell("D5")`, `span("C3", "F6")`,
-`region("lower-half")` or a shape. Say a place; do not compute a coordinate. **The
-`budget=300` is this example's**: set yours from the picture, more for one subject
-worked closely than for a few big masses.
+`region("lower-half")` or a shape. **The `budget=300` is this example's**: set yours
+from the picture, more for one subject worked closely than for a few big masses.
 
 **The loop.** **Look every 5 to 15 strokes.** `s.look()` writes a PNG and returns the
 path; open it. `s.look(values=True)` is greyscale, and it is the one that tells you the
@@ -180,8 +179,6 @@ A picture whose masses all sit below the presets wants a ground of its own:
 ---
 
 ## The workflow
-
-The seven steps of the card again, each with the mechanism behind it.
 
 ### 1. Draw the arrangement in graphite
 
@@ -379,18 +376,15 @@ fraction of the canvas, not the mass's.
 
 ## What you are bad at, and what to do instead
 
-Be honest about these. They are specific to what you are, and the fix is beside each.
+They are specific to what you are, and the fix is beside each.
 
-**You cannot reason in pixels.** You will misjudge absolute positions and you are
-reliable at *relationships*. Look with the grid on, say "the dark mass sits around D5
-to F6", then paint into `cell("D5")`:
-
-```python
-s.look(grid=True)                    # labelled A–H across, 1–8 down
-s.block_in(cell("D6"), ...)          # then target what you saw
-s.block_in(region("upper-left"), ...)
-s.stroke([below(region("center"), 0.1).point(0.5, 0.5), ...])
-```
+**You will misjudge where a thing lands in a picture you cannot see.** Absolute
+placement is what fails, not pixels: you are reliable about a thing's own proportions
+and unreliable about where it falls on the canvas. So draw each thing in its own frame
+or in pixels (`s.frame()`, `s.px()`, above), place it whole, and thumbnail the
+arrangement before any paint (*A thing drawn in its own frame* in
+[`RECIPES.md`](RECIPES.md#a-thing-drawn-in-its-own-frame)). Placing by eye, place what
+you saw: `s.look(grid=True)`, "the dark mass sits around D5 to F6", then `cell("D5")`.
 
 **You will draw outlines and fill them.** That is how you make colouring books. Paint
 the mass directly with a brush wide enough to cover it in a few strokes, and let the
@@ -599,9 +593,9 @@ s.stroke(**plan[0])                             # spend the stroke on the better
 s.look(region="C3:F6")     # the pencil is gone under the paint and still there beside it
 ```
 
-The two rehearsals cost nothing and neither appears in `s.log()`. The drawing did not
-count against `s.stroke_count`. The graphite has vanished exactly where the paint
-landed and survived everywhere else, which is what an underdrawing is for.
+The two rehearsals cost nothing and neither appears in `s.log()`. The graphite has
+vanished exactly where the paint landed and survived everywhere else, which is what an
+underdrawing is for.
 
 **8. A box and a shape.** The same mass twice, so you can see the difference before you
 have to judge it in a painting.

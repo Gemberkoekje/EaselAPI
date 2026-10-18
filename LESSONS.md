@@ -983,6 +983,17 @@ painters' rows. What would is the handover painter's instruction, still untried:
 from what the notices already say at the call, and cut what they have made redundant,
 with a measurement behind each cut.
 
+**And a rule is said first: the rule, then the number, then the history, if the history
+is needed at all.** Uktarl's Room's painter, the fourth in four rounds to call the
+documents long, named a second fault beside the length — *the instruction comes last*,
+under qualifications, measurement history and cross-references — and it was true of the
+row that painter needed. `REFERENCE.md`'s `key=` row opened with what the `values:` line
+stops saying and never said when a picture counts as low-key, so the painter took the
+row's example, *nothing above 0.35*, for its rule, and never declared the key its
+picture was planned for. A sentence that leads with its history is read for its
+history. Every row 0.9.0 writes is in that order, and a row is not finished until its
+first clause is the thing to do.
+
 ## The milestones, as a key
 
 Source comments, test docstrings and `CALIBRATION.md` date things by milestone — *"before
@@ -1018,7 +1029,7 @@ pytest                                 # 1746 passed with the mcp extra installe
                                        # takes the summary line away)
 ruff check src tests scripts examples mcpb
 python scripts/check_guide_blocks.py   # every python block in the guide's three
-                                       # files runs (79 ok, 10 pseudo-code), the
+                                       # files runs (84 ok, 10 pseudo-code), the
                                        # 22 demos fail as they say, and PAINTER.md
                                        # is inside its word budget
 python scripts/make_brush_sampler.py   # then LOOK at samples/brushes.png

@@ -277,7 +277,10 @@ for a painter you would hand a shell to.
 ## Determinism
 
 Every session takes a seed, and the same script with the same seed produces the same
-PNG. Each stroke draws its randomness from a generator derived from
+PNG: **to the pixel on one machine, and within one level of 255 on another**, since a
+numpy build can round a few pixels differently. Nine pieces painted on Linux rebuilt to
+the pixel there, and on Windows within one level, in 12 to 2,508 pixels a piece. Each
+stroke draws its randomness from a generator derived from
 `(seed, stroke index)` rather than from one running stream, so a stroke's jitter
 depends only on which stroke it is — not on how much randomness earlier calls
 happened to consume.

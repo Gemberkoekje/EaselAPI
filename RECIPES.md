@@ -23,10 +23,10 @@ recipe itself, the smallest fix. `easel demo <recipe>` paints them side by side.
 
 | | |
 |---|---|
-| **Before the first stroke** | [a scene with straight edges](#a-scene-with-straight-edges) · [a subject that is one thing against a ground](#a-subject-that-is-one-thing-against-a-ground) · [a picture with an empty half](#a-picture-with-an-empty-half) · [a silhouette built from parts](#a-silhouette-built-from-parts) · [a small cluster of like parts gripping an edge](#a-small-cluster-of-like-parts-gripping-an-edge) |
+| **Before the first stroke** | [a scene with straight edges](#a-scene-with-straight-edges) · [a subject that is one thing against a ground](#a-subject-that-is-one-thing-against-a-ground) · [a picture with an empty half](#a-picture-with-an-empty-half) · [a silhouette built from parts](#a-silhouette-built-from-parts) · [a thing drawn in its own frame](#a-thing-drawn-in-its-own-frame) · [a small cluster of like parts gripping an edge](#a-small-cluster-of-like-parts-gripping-an-edge) · [several figures in one picture](#several-figures-in-one-picture) |
 | **Surfaces** | [a plane that is a plane](#a-plane-that-is-a-plane) · [a form that turns](#a-form-that-turns) · [a silhouette lit from one side](#a-silhouette-lit-from-one-side) · [a mass built of planes](#a-mass-built-of-planes) · [a form turned toward the light](#a-form-turned-toward-the-light) |
-| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) — *on a surface* · [a light's pool on a surface](#a-lights-pool-on-a-surface) — *on a dark one* · [a volume of lit air](#a-volume-of-lit-air) — *in a medium* · [a light broken down a surface toward the viewer](#a-light-broken-down-a-surface-toward-the-viewer) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a graded field that is most of the picture](#a-graded-field-that-is-most-of-the-picture) · [a quiet gradient](#a-quiet-gradient) |
-| **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a small container with something spilling from it](#a-small-container-with-something-spilling-from-it) · [a tapered arc](#a-tapered-arc) · [the one ruled line](#the-one-ruled-line) · [a line of lettering](#a-line-of-lettering) |
+| **Light** | [a passage light in the middle](#a-passage-light-in-the-middle) — *on a surface* · [a light's pool on a surface](#a-lights-pool-on-a-surface) — *on a dark one* · [a light behind a silhouette](#a-light-behind-a-silhouette) — *round a shape* · [a volume of lit air](#a-volume-of-lit-air) — *in a medium* · [a light broken down a surface toward the viewer](#a-light-broken-down-a-surface-toward-the-viewer) · [a passage brightening toward one side](#a-passage-brightening-toward-one-side) · [a graded field that is most of the picture](#a-graded-field-that-is-most-of-the-picture) · [a quiet gradient](#a-quiet-gradient) |
+| **Marks** | [a small irregular bright mark](#a-small-irregular-bright-mark) · [a small round thing](#a-small-round-thing) · [a small container with something spilling from it](#a-small-container-with-something-spilling-from-it) · [a tapered arc](#a-tapered-arc) · [straight members seen flat-on](#straight-members-seen-flat-on) · [the one ruled line](#the-one-ruled-line) · [a line of lettering](#a-line-of-lettering) |
 | **Edges** | [an edge that is actually lost](#an-edge-that-is-actually-lost) · [a mark that crosses a boundary](#a-mark-that-crosses-a-boundary) |
 | **Order** | [a hollow thing](#a-hollow-thing) · [a repair under things that are standing on it](#a-repair-under-things-that-are-standing-on-it) |
 
@@ -235,6 +235,60 @@ s.block_in(union(big, *peaks, *stems), "flat", "dark", size=0.04, solid=True,
 
 ---
 
+## A thing drawn in its own frame
+
+A thing whose parts are placed by where they sit on it — marks on a form, the planes of
+something turned — drawn once in its own coordinates and placed on the canvas whole.
+**Drawn in its own frame, its parts are right by construction**, and the frame is the
+one placement left to judge, which a thumbnail checks before paint — placement in a
+picture you cannot see being what fails
+([`PAINTER.md`](PAINTER.md#what-you-are-bad-at-and-what-to-do-instead)).
+
+```python
+thing = s.frame(s.px(200, 140), *s.px(30, 42), tilt=-8)    # a centre, two radii, a tilt
+top, foot = thing.arc(-110, 110, 1)                         # where the turn meets the outline
+turn = [top, (-0.52, -0.50), (-0.60, 0.05), (-0.50, 0.55), foot]   # in its own units
+outline = thing.polygon(thing.arc(0, 360, 36)[:-1])
+lit = thing.polygon(thing.arc(-110, 110, 16) + turn[::-1][1:-1])   # an arc of it, and the turn
+spot = thing.at(0.36, -0.16)                                # a place on it, v downward
+print(s.thumbnail({outline: "dark", lit: "light"}))         # placed right? free to look
+
+s.block_in(outline, "flat", "shadow", size=s.px_size(12), solid=True, direction="axis",
+           edge="clean")
+s.dry()
+s.block_in(lit, "flat", "light", size=s.px_size(8), solid=True, direction=95, edge="hard",
+           clip=outline, soft=[(lit.closed[16:], s.px_size(10))])   # the turn, lost
+```
+
+**A frame is a centre, two radii and a tilt**, the radii an ellipse's and the tilt
+clockwise, turned in pixels. Inside it `(0, 0)` is the centre, `u` reaches `1` at the
+outline's right and `v` reaches `1` at its bottom: `thing.at(u, v)` is a place,
+`thing.polygon(points)` a shape, and `thing.arc(t0, t1, n)` the outline's own points from
+one angle to another, `0` at its right and `90` at its bottom. **Build a plane from the
+outline's own points and the line it turns on**, as `lit` is: typed twice, a shared edge
+never quite meets, and built from the arc it is the outline exactly — so the turn is a
+stretch of the plane's own outline to lose ([a form turned toward the
+light](#a-form-turned-toward-the-light)). A shape that is not an ellipse is the arc's
+points warped before the polygon; a taper toward one end is a list comprehension over
+them.
+
+**Draw in pixels where the numbers came in pixels** — `s.px(x, y)` a pixel's place,
+`s.px_size(r)` a length as a size — and **look at the arrangement small before paint**,
+`s.thumbnail()`: a thing right in its own frame can still sit wrong on the canvas. One
+painter's face, drawn this way, matched the glow behind it until the thumbnail showed it.
+To turn a thing already drawn, `group(a, b, ...).rotated(deg, aspect=s.aspect)` turns
+every part about one point, in pixels.
+
+**Goes wrong as:** the frame written as a helper again and again with other constants —
+one painter wrote three, each a centre, two radii and a tilt, and `s.frame` reproduces
+them point for point; or a thing turned in fractions on a canvas that is not square,
+which skews it: a square asked for 30 degrees on 4:3 came back at 23.4, with a
+104-degree corner.
+
+*Taken from one painter's prelude, whose three helpers it replaces.*
+
+---
+
 ## A small cluster of like parts gripping an edge
 
 A few parts of one kind closed round something that crosses them. The instinct is to
@@ -265,6 +319,55 @@ equal members side by side is a row, and a row reads as a row whatever it is.
 
 **Goes wrong as:** a row of equal members laid side by side and parallel, each with its
 own outline — the cluster drawn as the object, from its side, rather than as the view.
+
+---
+
+## Several figures in one picture
+
+Three or four figures, each a subject of its own. **The first one painted eats the
+budget**, so the split is decided before the first stroke: one painter's first figure
+had 102 marks after its head's pass, and the one painted last got 22 of the 45 the
+painter would have planned it, with 40 strokes left in hand.
+
+```python
+s = Session(1024, 768, ground="toned_grey", seed=7, budget=450)
+s.plan(shares={"standing": 0.25, "hunched": 0.12, "near": 0.10})   # of the budget, by note=
+standing = union(ellipse(s.px(512, 300), *s.px(24, 32)),            # upright, one arm out
+                 polygon([s.px(478, 324), s.px(546, 324), s.px(596, 640), s.px(432, 640)]),
+                 polygon([s.px(548, 350), s.px(640, 300), s.px(652, 316), s.px(560, 384)]))
+hunched = union(ellipse(s.px(826, 452), *s.px(22, 28)),             # its head out ahead
+                blob(s.px(760, 540), *s.px(62, 96), rotate=28, seed=3))
+near = union(blob(s.px(290, 760), *s.px(180, 110), seed=5),         # its back to us, cut off,
+             ellipse(s.px(340, 620), *s.px(44, 52), rotate=-10))    # the head turned aside
+print(s.thumbnail({standing: 0.2, hunched: 0.2, near: 0.2}))        # alike, flat? change one
+s.block_in(standing, "flat", "burnt_umber", size=0.02, solid=True, direction="axis",
+           edge="clean", note="standing")                          # each part's marks, named
+```
+
+**A share each, of the budget.** `shares=` names each part by the `note=` its marks
+carry, and after every pass the `shares:` line says how many strokes each has of its
+share, and which has passed it. A share of the marks laid so far measures the order the
+picture was laid in instead: that first figure was 48% of the marks laid, and had 23% of
+the budget.
+
+**Vary them by silhouette before costume.** Thumbnail them together, flat: what reads
+there is what reads at the size the picture is seen, and two figures alike flat are one
+figure printed twice, whatever they wear. Change a pose, a height, a lean, which way one
+turns, an overlap — each one drawn as [a silhouette built from
+parts](#a-silhouette-built-from-parts) is.
+
+**One light, and every lit plane turned to it.** Decide where the light is, then give each
+figure the side that faces it: one left of the light is lit on its right, one right of it
+on its left, one above it from below, where the terminator crosses high ([a form turned
+toward the light](#a-form-turned-toward-the-light)). Several faces lit by one source are
+one decision made several times.
+
+**Goes wrong as:** the first figure finished before the last is begun, and the last
+starved; figures told apart by costume and alike in silhouette, which flat and small read
+as one shape repeated; or each figure lit from the side that suits it, which is several
+lights.
+
+*From a painting of four figures, whose painter's verdict named all three.*
 
 ---
 
@@ -496,9 +599,11 @@ form = polygon([(0.40, 0.20), (0.52, 0.22), (0.60, 0.40), (0.57, 0.60), (0.46, 0
 turn = [(0.40, 0.20), (0.37, 0.34), (0.36, 0.50), (0.36, 0.66)]   # the terminator, set well back
 lit = polygon(form.closed[0:6] + turn[-2:0:-1])                   # the outline's lit side, and it
 band = polygon(turn + [(0.345, 0.58), (0.335, 0.44), (0.35, 0.30)])  # the half-tone beside it
+half = p.at_value(p.mix("shadow", "light", 0.5),                     # at the halfway *value*
+                  (p.value_of("shadow") + p.value_of("light")) / 2)
 
 s.block_in(form, "flat", "shadow", size=0.03, solid=True, direction="axis", edge="clean")
-s.block_in(band, "flat", p.mix("shadow", "light", 0.5), size=0.012, solid=True,
+s.block_in(band, "flat", half, size=0.012, solid=True,
            direction=[turn[0], turn[-1]], edge="hard", opacity=1.0, pressure="even")
 s.block_in(lit, "flat", "light", size=0.03, solid=True, direction=110, edge="hard",
            opacity=1.0, pressure="even")
@@ -511,19 +616,39 @@ share one edge, the terminator**. Take the shared edge from the outline itself: 
 plane is a slice of `form.closed` — the run of the outline on the light's side — closed
 by the terminator's own points, and the band is the terminator and a line a little
 further back. Typed by hand, that shared edge is dozens of points and never quite meets.
+**The band is at the halfway value**, not mixed half and half: these two, mixed half and
+half, read `0.29` between `0.14` and `0.76`, and laid at a painting's size the band read
+`0.25` against the shadow's `0.16`, as one with it — at the halfway value, `0.36`.
 
 **A form turned toward the light lights its whole front plane — about three quarters
 of what is seen of it**, four fifths of a row across it. So the terminator runs well
 back from the leading edge, near the far side of the form, not beside the near one; the
-plane that worked lit 74% of the form, and the two that failed 24% and 35%. Marks
-that say form inside the lit plane — a hollow, a cast shadow — go on at about a fifth of
-their colour's strength (`opacity=0.22`); at `0.45` to `0.65` they read as a smear and a
-bruise.
+plane that worked lit 74% of the form, and the two that failed 24% and 35%. **Lit from
+below**, the lit plane is the form's lower part and the terminator crosses it high: on a
+head, among the brows and above both eyes, so the eyes sit in the light — set through
+them, they read as a band across a mask. One painter's head, lit from below that way,
+had 64% of it in the light. Marks that say form inside the lit plane — a hollow, a cast
+shadow — go on at about a fifth of their colour's strength (`opacity=0.22`); at `0.45`
+to `0.65` they read as a smear and a bruise.
+
+**On a form that turns smoothly — skin, cloth — lose the terminator as the lit plane is
+laid, and leave the band out.** `soft=[(lit.closed[5:], 0.05)]` names the terminator's own
+points in the lit plane's outline and fades the light into the shadow mass over `0.05`,
+a sixth of this form, which is about how far skin turns; the ramp is the half-tone.
+Across this form at 1024×768 the value climbs `0.16`, `0.36`, `0.64`, `0.70` over that
+sixth, where the band and the plane held hard step from `0.35` to `0.71` inside 13 px.
+Keep the band as well and the ramp's foot shows the shadow mass beside it, a dark line
+along the turn. `soft=0.05, clip=form` softens the whole lit plane and keeps the form's
+own edge: the light falls away all round as well, as on a form lit from straight in
+front, and on three faces 44 to 48 px across it darkened a quarter to a third of the lit
+plane. A join stroke twice as wide, the other remedy, lifted the shade beside those
+terminators and did not widen the step into the light.
 
 **Goes wrong as:** a strip of light down the leading edge with the terminator beside it
 — a quarter of the form lit, where three quarters is; the shifted copies of [a
 silhouette lit from one side](#a-silhouette-lit-from-one-side), which stack the form's
-profiles inside it like cut paper; or form marks laid strong.
+profiles inside it like cut paper; form marks laid strong; or, on skin, the turn held
+hard, which at the size it is seen reads as a facet and close up as a paper mask.
 
 ---
 
@@ -614,6 +739,51 @@ s.block_in(Region(0.0, 0.0, 1.0, 1.0), "flat", "wall", size=0.1, solid=True, edg
 # goes wrong: nothing says so
 s.scumble(ellipse((0.58, 0.40), 0.20, 0.22), "wall", "light", 12, direction="inward")
 ```
+
+---
+
+## A light behind a silhouette
+
+A light between a dark shape and the surface behind it, so the surface is brightest
+nearest the shape's edge. **Planned, it is back to front like everything else**: the
+surface, the light on it, then the shape laid over both, its held edge cutting the light
+on the line. **Once the shape is painted, hold the light out of it**:
+
+```python
+shape = union(ellipse((0.50, 0.30), 0.045, 0.08),
+              polygon([(0.43, 0.38), (0.57, 0.38), (0.62, 1.02), (0.38, 1.02)]))
+field = s.sample(ellipse((0.25, 0.50), 0.06))      # the surface beside it, as painted
+v = p.value_of(field)
+s.dry()
+for size, lift, opacity in ((0.24, 0.10, 0.40), (0.10, 0.17, 0.55), (0.04, 0.24, 0.60)):
+    glow = p.at_value(p.mix("light", field, 0.5), v + lift)
+    for side in (-1, 1):                     # along its own edge, so the nearest is brightest
+        edge = [(0.5 + side * dx, y) for dx, y in ((0.045, 0.26), (0.07, 0.40),
+                                                   (0.095, 0.70), (0.12, 1.0))]
+        s.stroke(edge, "round_soft", glow, size=size, opacity=opacity,
+                 pressure=[0.5, 1.0, 0.8, 0.3], clip_out=shape)
+```
+
+**`clip_out=` keeps every mark off the shape, cut on its outline**, so the light runs up to
+the edge and stops there. Run the strokes along the shape's own edge, half of each held
+out, each smaller and lighter than the last: the narrowest and lightest is then the one
+nearest the shape. Mix them as [a light's pool](#a-lights-pool-on-a-surface) is mixed,
+from the surface they lie on and aimed at a value — its own plus a tenth, a sixth, a
+quarter. Where the light is strongest, `pressure=` puts it.
+
+**Nothing may hold the light off the line.** The surface left as it was between the light
+and the shape is a dark ring, which reads as the shape cut out and laid on. One painter
+typed three regions round a figure, 44 points sharing its outline, held at a hold's
+default feather: the light stopped 6, 3, 2 and 1 px short of the figure at four rows, and
+in its first version two regions ended inside a soft stroke's reach and drew a vertical
+seam each side. Held out with `clip_out=`, the same light stopped 4, 1, 1 and 0 px short,
+from one argument.
+
+**Goes wrong as:** a dark ring round the shape — the light held off it, by a feather,
+`soft=`, or a region that does not quite meet it; or the light laid over the shape's
+edge, a halo on the shape itself.
+
+*Taken from one painter's backlight, and its seam.*
 
 ---
 
@@ -1048,6 +1218,67 @@ s.dab(0.70, 0.20, "round_hard", "dark", size=0.095, press=3)     # ...bitten out
 
 ---
 
+## Straight members seen flat-on
+
+A ledge, a row of bars, stones in courses: straight things facing you, which the
+projection of [a scene with straight edges](#a-scene-with-straight-edges) does not reach
+and [the one ruled line](#the-one-ruled-line) answers the opposite of. **Each is values,
+not a line, and each is a pixel or two off true** — in pixels, at the size it is seen.
+
+```python
+import random
+r = random.Random(4)                                      # each a pixel or two off true
+p["under"], p["glint"] = p.at_value("dark", 0.20), p.at_value("light", 0.62)
+s.stroke([s.px(20, 168), s.px(200, 170), s.px(380, 167)], "round_soft", "under",
+         size=s.px_size(16), opacity=0.7, pressure="even")         # the shadow under: wide, soft
+s.block_in(polygon([s.px(22, 150), s.px(378, 148), s.px(378, 160), s.px(22, 162)]), "flat",
+           "mid", size=s.px_size(7), solid=True, direction="axis", edge="hard")   # its front
+s.stroke([s.px(22, 150), s.px(140, 149), s.px(300, 149)], "round_hard", "glint",
+         size=s.px_size(3.5), opacity=0.8, pressure=[1.0, 0.6, 0.0])   # its top: found, then lost
+for i in range(5):                                        # bars, each its own
+    x = 70 + 64 * i + r.uniform(-2, 2)
+    s.stroke([s.px(x, -4), s.px(x + r.uniform(-1, 1), 146)], "round_hard", "dark",
+             size=s.px_size(r.uniform(6, 8)), opacity=0.95, pressure=[0.3, 1.0, 1.0, 0.4])
+    s.stroke([s.px(x - 2, 20 + r.uniform(0, 30)), s.px(x - 2, 80 + r.uniform(0, 40))],
+             "round_hard", "glint", size=s.px_size(3.5), opacity=0.8, pressure="taper")
+```
+
+**A ledge is three values**: its top edge, thin, found where the light is and lost away
+from it; its front; and the shadow under it, darker, wider and softer than the ledge.
+Its ends sink into whatever stands at them. **A bar is a dark with one lit side**, toward
+the light and along part of its length; its ends are lost into what holds it rather than
+stopped on a line, and its spacing and its angle are a pixel or two off. **A lit side
+needs about 3 px to land on a dark**: on these bars a lit side laid with a 1.5 px liner
+raised the bar's value `0.06`, which reads as nothing, and one laid 3.5 px wide `0.22`.
+
+```python
+import random
+r = random.Random(4)
+for top, bottom in ((196, 238), (241, 286)):              # two courses
+    x = 18 + (top > 200) * 26
+    while x < 382:                                        # stones, the joint left between
+        w = r.uniform(46, 70)
+        s.block_in(polygon([s.px(x, top + r.uniform(-1, 1)), s.px(x + w, top + r.uniform(-1, 1)),
+                            s.px(x + w, bottom), s.px(x, bottom)]), "flat",
+                   p.at_value("light", r.uniform(0.44, 0.52)), size=s.px_size(r.uniform(12, 16)),
+                   solid=True, direction=r.choice((0, 90)), edge="hard")   # each a step off
+        x += w + r.uniform(2, 4)                          # 2 to 4 px of what is behind
+```
+
+**A joint is the darker value left between masses, not a line drawn over them**: each
+stone a mass of its own, a step off its neighbours in value and in the way its passes
+run, with a few pixels of what is behind left between — uneven, darkest where the stones
+turn into shade, nearly gone where the light is strongest.
+
+**Goes wrong as:** a diagram — every bar a two-point stroke of one weight at even pressure,
+every ledge one line, every joint ruled over the stones; or a lit edge under its landing
+width, which lands as nothing: one painter's grille glints and a lock's lit edge, both
+laid under 4 px.
+
+*From a painter's answer about the pieces it found stiffest, and its scripts.*
+
+---
+
 ## The one ruled line
 
 Almost nothing in a painting should be perfectly straight, and the checklist asks you
@@ -1129,11 +1360,12 @@ Not a soft edge; an absent one, and the thing most often done by halves.
 
 **Lose it as the mass is laid.** `soft=` beside `edge="hard"` fades the mass's own
 outline inward over the width you name, at no extra stroke, and `clip=` keeps its edge:
-`soft=s.px_size(8)` on a lit plane held to a face loses the terminator and keeps the
-face crisp. `soft=[(shape.closed[4:8], s.px_size(9))]` loses that stretch of the outline
-alone, tapering back to the held edge past each end: a far side going into the dark,
-while the near side, against the light, stays crisp. Skin turns over about a sixth of a
-face; cloth into shadow, 8 to 12 px at 1024.
+`soft=s.px_size(8)` on a lit plane held to a face loses the plane's whole outline and
+keeps the face's own edge crisp. `soft=[(shape.closed[4:8], s.px_size(9))]` loses that
+stretch of the outline alone, tapering back to the held edge past each end: a far side
+going into the dark, while the near side, against the light, stays crisp — or a
+terminator alone ([a form turned toward the light](#a-form-turned-toward-the-light)).
+Skin turns over about a sixth of a face; cloth into shadow, 8 to 12 px at 1024.
 
 **An edge already painted** takes a smudge along it, then paint across it:
 
@@ -1210,7 +1442,9 @@ s.stroke([(0.165, 0.74), (0.23, 0.78), (0.31, 0.79)], "round_hard", "pale",
 
 **One broken catch-light along the near edge is what makes a hollow thing read as
 hollow**, and it should be the only mark on it. Partial, off-centre, and let the rest of
-the near edge stay lost into whatever is behind it.
+the near edge stay lost into whatever is behind it. **Seen from low**, the near edge hides
+the inside's floor: the far inner wall fills the whole opening, and what stands inside
+shows only where it rises past the near edge, held to the opening with `clip=`.
 
 **Goes wrong as:** a ring — the catch-light carried all the way round, which outlines
 the opening instead of lighting its edge; or the inside laid last, with nothing for it
