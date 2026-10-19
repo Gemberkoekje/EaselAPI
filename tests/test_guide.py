@@ -153,6 +153,17 @@ def test_the_card_names_the_calls_two_painters_leaned_on(call: str) -> None:
     )
 
 
+def test_the_pixel_advice_says_one_thing() -> None:
+    """*You cannot reason in pixels* stood in `PAINTER.md` for a release after `s.px()`
+    shipped beside it, and two of the three painters before 0.9.0 drew every figure in
+    pixels through a helper and placed it where they meant. What failed was placement
+    seen whole, and the page says that now; this keeps the old sentence from coming back
+    beside it."""
+    page = " ".join(guide.read("guide").split())
+    assert "cannot reason in pixels" not in page
+    assert "Absolute placement is what fails, not pixels" in page
+
+
 def test_the_essay_is_where_the_length_went() -> None:
     """The split was a move, not a cut. If `PAINTING.md` ever becomes a stub, the
     front page's budget has stopped being paid for and started being a deletion."""
@@ -351,3 +362,41 @@ def test_llms_txt_states_each_documents_size_within_a_tenth() -> None:
     off = {key: (said, sizes[key]) for key, said in stated.items()
            if abs(said - sizes[key]) > 0.1 * sizes[key]}
     assert not off, f"llms.txt states a size more than a tenth off: {off}"
+
+
+# -- what a painter meets, atop each release ---------------------------------------------
+#
+# Uktarl's Room's painter read 0.8.0's changelog entry from the checkout before its first
+# exercise: 5,058 words, of which it needed the calls and the lines it would meet. It
+# asked for ten lines at the top of each release; 0.8.0's were written after the fact,
+# and every release from 0.9.0 on is cut with its own.
+
+#: The first release that opens with them, and how long a line may be: one line of the
+#: file, as the rest of it is wrapped, so ten of them are ten lines.
+PAINTER_LINES_FROM = (0, 8, 0)
+PAINTER_LINE_WIDTH = 92
+
+
+def test_each_release_opens_with_what_a_painter_will_meet() -> None:
+    text = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    sections = re.split(r"^## \[([^\]]+)\][^\n]*\n", text, flags=re.M)
+    checked = 0
+    for heading, body in zip(sections[1::2], sections[2::2], strict=True):
+        if not re.fullmatch(r"\d+\.\d+\.\d+", heading):
+            continue
+        if tuple(int(n) for n in heading.split(".")) < PAINTER_LINES_FROM:
+            continue
+        lines = body.strip().splitlines()
+        assert lines and lines[0] == "**For a painter, in ten lines:**", (
+            f"[{heading}] does not open with **For a painter, in ten lines:**"
+        )
+        items = []
+        for line in lines[2:]:
+            if not line.startswith("- "):
+                break
+            items.append(line)
+        assert 1 <= len(items) <= 10, f"[{heading}] has {len(items)} painter's lines"
+        long = [line for line in items if len(line) > PAINTER_LINE_WIDTH]
+        assert not long, f"[{heading}]: a painter's line is one line of the file: {long}"
+        checked += 1
+    assert checked, "no release from 0.8.0 on was found to check"

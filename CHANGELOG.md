@@ -5,6 +5,10 @@ it, and why. PyPI links this file from the project sidebar (the `Changelog` entr
 `[project.urls]` in `pyproject.toml`), so this is the page a painter lands on from the
 package page.
 
+**Each release opens with what a painter will meet in it, in ten lines or fewer** — the
+calls, the lines the tool now prints, what moved — before its account. A painter reads
+the entry for the release it installed, and 0.8.0's ran to five thousand words.
+
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project uses [semantic versioning](https://semver.org/spec/v2.0.0.html). Before 1.0.0 a
 minor bump is where behaviour is allowed to move, and this is what it may move. **A
@@ -40,6 +44,19 @@ what was done about them in [`SUGGESTIONS.md`](SUGGESTIONS.md), and the method i
 Nothing yet.
 
 ## [0.8.0] — 2026-10-01
+
+**For a painter, in ten lines:**
+
+- `s.thumbnail({shape: value})`, or `easel run --thumbnail`: masses flat and small, free.
+- A guide reads over any paint, and `guide()` and `pencil()` draw a shape, corners kept.
+- Pixels: `s.px(x, y)`, `s.px_size(r)`, `s.circle(p, px=r)`; `group()` moves parts as one.
+- `s.plan(key="low")` for a picture dark on purpose; a planned place reads its median.
+- After each pass, `dearest:` names the calls that spent its strokes, by script line.
+- `landed nothing:` names every mark that laid no paint, and a dab says so as it lands.
+- `terminator()`, the line a lit form turns on; `letter_paths()`, lettering as paths.
+- Six recipes, among them a silhouette built from parts and a form turned to the light.
+- The box's floor is `0.128`; the check's rules are tables in `REFERENCE.md`.
+- No default moved, and a painting saved by 0.7.0 rebuilds to the same pixels.
 
 **Released.** Shipped as `v0.8.0`: `easel-paint` 0.8.0 on PyPI, the GitHub release with
 `easel.mcpb` attached, and `io.github.Gemberkoekje/easel` 0.8.0 in the MCP registry.

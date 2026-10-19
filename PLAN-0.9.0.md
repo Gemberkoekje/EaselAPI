@@ -46,7 +46,14 @@ the low key said rule first on the card and in `REFERENCE.md`'s row; with no key
 `values:` line naming a planned light that stands clear beside *no clear light*. The
 notice for passes in pieces (G2 (a)) was built, spoke on three recipes, and is held, on
 the owner's word: asked back (`questions-step7/`; `NOTES-step7.md`). 4N's `cut=` waits
-for the second painter's batch 2.**
+for the second painter's batch 2. **Step 8 is done** on branch `ccr-23576cbd-k50d3x`: the
+four missing recipes as two recipes and two sentences, *A thing drawn in its own frame*,
+and The Curator's *Straight members seen flat-on* (Q6); the join on skin benched on the
+painter's three faces and written into the form recipe (P9); the pixel paragraph in the
+painter's words (I3); *rule, number, history* in `LESSONS.md` (I2); ten lines for a
+painter atop 0.8.0's changelog entry, and a test for every release from it on (I5); the
+README's sentence on determinism across machines (row 15). The reading path is longer by
+2,291 words, which step 9 pays (`NOTES-step8.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -689,7 +696,7 @@ and touch nothing here.
 | 5 | **C.** The rules as they are, as the painter chose after the bench (3b, 4a); `habits=` per place; the signature left out of the pass rule; standing lines on change (C5). Done | `NOTES-step5.md` |
 | 6 | **E and F.** `.rotated()` in pixels, `aspect=` required; the frame with `.arc()` (P4); `shares=` and its line, a part by the name in its note (P5). Not a session in pixels (Q5). Done | `NOTES-step6.md` |
 | 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
-| 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog | `NOTES-step8.md` |
+| 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog. Done, with Q6's recipe and row 15's sentence | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted | `NOTES-step9.md` |
 | 10 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
 

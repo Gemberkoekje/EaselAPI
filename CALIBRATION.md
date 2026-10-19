@@ -49,6 +49,7 @@ their own sessions rather than measurements of the engine.
 | A shaped mass with `direction` left off can cost many times its axis | *A shaped mass with `direction` left off* |
 | A sequence of directions is priced as the sum | *`direction` given a sequence* |
 | One direction given can cost many times its axis, and a concave shape is charged a stroke per piece | *What a mass was charged for its direction* |
+| On skin, lose the terminator over a sixth of the form with no band; a band is at the halfway value; a lit side needs about 3 px to land on a dark | *The recipes and sentences, as built* |
 | A sweep follows an edge; crossing closes it | *`sweep`* |
 | A smudge buys nothing past `0.02`, removes about half a join once, and works along not across | *`smudge`* |
 | A glaze far from its ground has no usable opacity | *`glaze`* |
@@ -5091,3 +5092,109 @@ introduced** (H1): the card and `REFERENCE.md`'s `key=` row open with *a picture
 while its top twentieth stays under the box's middle*; the card's 26 words are paid for by
 the anecdote under its sentence about `RECIPES.md`, the cut the painter proposed (P8), and
 a word outside the card, so `PAINTER.md` stays at 6,700 words and the card is 1,378.
+
+### The recipes and sentences, as built
+
+*Step 8, `probe_uktarl_session.py --recipes-built`, on the branch that builds it.* The
+numbers the round's recipes quote, each measured on the painting its rule came from or on
+the guide's own block.
+
+**On skin, lose the terminator; a join twice as wide does not widen it.** The painter's
+answer P9 named two remedies for a terminator that reads as a facet: a join twice as
+wide, or the lit plane's edge held soft over about 8 px. Each laid on its three faces —
+the head pass re-run on the canvas it opened on, at 1024×768 — beside the soft hold in
+both forms it chose (answer 2b): the terminator alone, as a stretch of the lit plane's
+outline, and the lit plane's whole outline inside the face's crisp hold. *Step* is the
+bench's measure, the `edges:` line's; *across it*, the value at -6, -3, 0, +3 and +6 px
+from the prelude's terminator, averaged along the whole of it, shade side first.
+
+| face, across | laid | step px | across it | lit outline step px | lit plane darker by 0.05 |
+|---|---|---|---|---|---|
+| the lady, 44 px | as painted | 2.6 | 0.25 0.30 0.39 0.55 0.59 | 1.4 | -- |
+| | the join twice as wide | 3.1 | 0.32 0.36 0.43 0.56 0.59 | 1.4 | 0% |
+| | the terminator lost over 8 px | 4.3 | 0.25 0.30 0.35 0.43 0.58 | 1.5 | 18%, median 0.13 |
+| | ...and no join | 4.1 | 0.25 0.26 0.30 0.43 0.59 | 1.4 | 21%, 0.14 |
+| | the whole lit plane soft over 8 px | 4.3 | 0.25 0.30 0.35 0.43 0.58 | 2.7 | 35%, 0.15 |
+| the doppelganger, 44 px | as painted | 2.3 | 0.26 0.26 0.28 0.39 0.42 | 1.7 | -- |
+| | the join twice as wide | 3.0 | 0.26 0.29 0.30 0.37 0.40 | 1.7 | 1%, 0.05 |
+| | the terminator lost over 8 px | 3.0 | 0.26 0.26 0.28 0.32 0.41 | 1.7 | 11%, 0.07 |
+| | ...and no join | 3.2 | 0.26 0.26 0.26 0.31 0.41 | 1.7 | 13%, 0.08 |
+| | the whole lit plane soft over 8 px | 2.8 | 0.26 0.26 0.28 0.32 0.40 | 2.2 | 27%, 0.08 |
+| Uktarl, 48 px | as painted | 1.7 | 0.16 0.17 0.24 0.24 0.36 | 1.4 | -- |
+| | the join twice as wide | 1.5 | 0.16 0.17 0.26 0.25 0.36 | 1.4 | 0% |
+| | the terminator lost over 8 px | 1.7 | 0.16 0.17 0.23 0.23 0.35 | 1.5 | 5%, 0.11 |
+| | ...and no join | 1.9 | 0.16 0.17 0.22 0.24 0.36 | 1.5 | 7%, 0.10 |
+| | the whole lit plane soft over 8 px | 1.7 | 0.16 0.17 0.23 0.22 0.35 | 3.2 | 24%, 0.14 |
+
+The join twice as wide lifts the shade beside the terminator — the lady's 0.25 to 0.32 at
+-6 px — and leaves the light where it was, 0.55 to 0.56 at +3. Lost over 8 px, the ramp
+reaches into the light, 0.55 to 0.43 on the lady and 0.39 to 0.32 on the doppelganger,
+and the lit outline stays as painted. The whole lit plane soft does the same at the
+terminator and softens the face's lit edge as well, 1.4 to 2.7 px and 1.4 to 3.2,
+darkening a quarter to a third of the plane where the stretch darkened a twentieth to a
+fifth. Uktarl's terminator lies under the wig, as step 2 found, and barely moves. **The
+step measure under-reads a ramp laid by a flat brush**: the steepest gradient across it is
+the brush's grain, so a ramp of twenty pixels reads two or three. Averaged along the line,
+the grain cancels; a 10-to-90% rise was tried and read the half-tone band and the hair
+beside the faces as part of the turn.
+
+**The recipe's own form**, *A form turned toward the light*'s block with its form mark left
+off, its band and lit plane laid as each row says. The two colours are the guide check's,
+`0.14` and `0.76`; mixed half and half they read `0.29`, and the halfway value is `0.45`.
+At 1024×768 the form is 297 px across and `soft=0.05`, a sixth of it, is 51 px; *across
+the terminator* is at -38, -26, -13, 0, +13, +26, +38 and +51 px:
+
+| laid | shadow reads | band reads | across the terminator | lit outline step px |
+|---|---|---|---|---|
+| as written, the band mixed half and half | 0.16 | 0.25 | 0.46 0.34 0.30 0.29 0.35 0.71 0.68 0.68 | 1.2 |
+| the band at the halfway value | 0.16 | 0.36 | 0.46 0.34 0.32 0.37 0.35 0.71 0.68 0.68 | 1.2 |
+| ...and the terminator lost over a sixth | 0.16 | 0.36 | 0.46 0.34 0.32 0.37 0.16 0.38 0.61 0.67 | 1.2 |
+| the terminator lost, and no band | 0.16 | -- | 0.46 0.34 0.28 0.21 0.16 0.36 0.64 0.70 | 1.2 |
+| the whole lit plane soft, and no band | 0.16 | -- | 0.46 0.34 0.28 0.21 0.16 0.35 0.63 0.68 | 1.6 |
+
+**Mixed half and half, the band reads as one with the shadow**, 0.09 over it; at the
+halfway value it is a step of its own, 0.20 over. **Kept beside a terminator that is lost,
+the band leaves a trough**: the ramp's foot shows the shadow mass, 0.16 at the line
+between the band's 0.37 and the light. With no band the value climbs 0.16, 0.36, 0.64,
+0.70 across the sixth, where the band and the plane held hard step from 0.35 to 0.71
+inside 13 px. Nothing is said at the call in any row. At the guide check's 400×300 the
+band's brush is 4.8 px and the band reads 0.20 and 0.22 over a shadow of 0.19 whichever
+way it is mixed — a brush under its landing width at that size, workstream M's case — so
+the guide's own run cannot show the band; a painting's size can.
+
+**A light from below crosses the form high.** The share of each head its lit plane covers:
+the lady 71% and the doppelganger 69%, each lit from beside it, and Uktarl 64%, lit from
+below. In his head's own units, `v` downward, the terminator runs at `v` = -0.20 to
+-0.46, the brows at -0.24 to -0.50 and the eyes at -0.10 and -0.15: among the brows and
+above both eyes.
+
+**A lit side needs about 3 px to land on a dark bar.** On the guide check's canvas, a bar 7
+px wide at 0.14 on a surface at 0.24, and a lit side at 0.62 and `opacity=0.8` laid 2 px
+off its middle along 80 of its 150 px:
+
+| lit side | px | the most the bar's value rose | columns over 0.10 |
+|---|---|---|---|
+| `liner` | 1.5 | 0.06 | 0 |
+| `liner` | 2.5 | 0.10 | 0 |
+| `liner` | 3.5 | 0.20 | 2 |
+| `round_hard` | 2.5 | 0.12 | 1 |
+| `round_hard` | 3.5 | 0.22 | 2 |
+| `round_hard` | 4.5 | 0.25 | 4 |
+
+The second painter's grille glints were liners at 1.8 px, and its lock's lit edge and the
+patron's rim were laid under 4 px; *Straight members seen flat-on* lays its lit sides at
+3.5.
+
+**The guide's own blocks, with the five new ones.** `scripts/check_guide_blocks.py` runs 84
+recommended blocks where it ran 79 — *A thing drawn in its own frame*, *Several figures in
+one picture*, *A light behind a silhouette* and the two of *Straight members seen flat-on*
+— and none trips a notice or lays a mark of nothing; the 22 demos fail as they say. Two of
+the new blocks were changed by what the check said before they went in: the ledge's top
+edge laid with a `flat` at 3 px said `chisel-blank`, and stones laid each at its own tilt
+said `direction-given`, one at 11 strokes against 4 along its axis; laid along or across
+their courses, the joints' block is 97 strokes.
+
+**The reading path is longer by 2,291 words**, as the painter read it: `PAINTER.md` 6,700 to
+6,699 — the pixel paragraph paid for inside the file, the card 1,378 to 1,370 —
+`RECIPES.md` 10,934 to 13,226, `REFERENCE.md` 12,257 as it was; 29,891 to 32,182. Step 9
+is the cut.

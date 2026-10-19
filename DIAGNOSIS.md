@@ -32,7 +32,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | A staircase along a boundary that is not parallel to the passes | `CALIBRATION.md` -> *The chisel staircase*; `PAINTING.md` -> *The shape each tool leaves behind* |
 | A clean edge that came back stringy, or that ate the corners | `CALIBRATION.md` -> *The contour of a clean edge*; `CALIBRATION.md` -> *A clean edge on a narrow mass* |
 | Slabs stuck on a smooth shape, or a woven surface where planes should be | `RECIPES.md` -> *A mass built of planes* |
-| Two flat stripes where a round form should have turned, or a lit form that reads as cut paper | `RECIPES.md` -> *A form that turns*; `RECIPES.md` -> *A silhouette lit from one side* |
+| Two flat stripes where a round form should have turned, a lit form that reads as cut paper, or a face that reads as a mask | `RECIPES.md` -> *A form that turns*; `RECIPES.md` -> *A silhouette lit from one side*; `RECIPES.md` -> *A form turned toward the light* |
 | A bare strip of ground along the canvas frame | `CALIBRATION.md` -> *`block_in`* |
 | A small mass that came back the colour of whatever it was laid over, or a solid mass that will not reach the value you mixed | `CALIBRATION.md` -> *What a solid mass actually lands at* |
 | A mass that shows its passes because you laid it with a round tip | `CALIBRATION.md` -> *`block_in`* |
@@ -64,7 +64,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | Every edge equally sharp; the picture reads as clip-art | `PAINTER.md` -> *6. Edges: lost and found* |
 | Two edges *nearly* lost, reading as neither | `RECIPES.md` -> *An edge that is actually lost* |
 | A drawn line running round a painted shape | `PAINTER.md` -> *What you are bad at* |
-| A mechanical straight line in a picture that has none | `RECIPES.md` -> *The one ruled line* |
+| A mechanical straight line in a picture that has none, or bars, a ledge and joints that read as a diagram | `RECIPES.md` -> *The one ruled line*; `RECIPES.md` -> *Straight members seen flat-on* |
 | A long edge that came out scalloped, or a thin member beaded into a chain of separate blocks | `RECIPES.md` -> *The one ruled line*; `CALIBRATION.md` -> *`scumble`* |
 | A silhouette you cannot sharpen without drawing along it | `PAINTER.md` -> *What you are bad at* |
 
@@ -117,7 +117,7 @@ its passage, because a dead one is now a command that answers with an apology.
 | A scene of straight edges that reads as a diagram, every line the same weight and nothing lost | `RECIPES.md` -> *A scene with straight edges* |
 | A surface's grain laid as thirty strokes all running one way | `PAINTING.md` -> *The angle of the mark* |
 | A well-built feature in a picture that has not come up with it | `PAINTING.md` -> *When to stop measuring* |
-| A third of the budget in hand and nothing you can name to spend it on | `PAINTER.md` -> *A checklist before you call it finished* |
+| A third of the budget in hand and nothing you can name to spend it on, or the last figure painted starved of it | `PAINTER.md` -> *A checklist before you call it finished*; `RECIPES.md` -> *Several figures in one picture* |
 
 ## What it cost
 
