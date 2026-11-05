@@ -2059,9 +2059,19 @@ def probe_pieces_sheet() -> None:
                  ribbon([(0.58, 0.66), (0.66, 0.80), (0.70, 0.95)], 0.05, end_width=0.025),
                  ribbon([(0.40, 0.70), (0.36, 0.82), (0.37, 0.95)], 0.045, end_width=0.03))
     turn = [(0.40, 0.20), (0.37, 0.34), (0.36, 0.50), (0.36, 0.66)]
+    # Step 8's *Several figures in one picture*, on its own 1024x768 canvas: the standing
+    # figure, head, body and the arm out, laid as one mass along its axis.
+
+    def px(x: float, y: float) -> tuple[float, float]:
+        return x / 1024, y / 768
+
+    standing = union(ellipse(px(512, 300), *px(24, 32)),
+                     polygon([px(478, 324), px(546, 324), px(596, 640), px(432, 640)]),
+                     polygon([px(548, 350), px(640, 300), px(652, 316), px(560, 384)]))
     # Each the call the guide check found the count on, as its recipe lays it: the grip's
     # fill inset half a brush for its clean edge, the silhouette's shade copy at 20
-    # degrees, and the half-tone band along its terminator.
+    # degrees, the half-tone band along its terminator, and the standing figure's clean
+    # fill, which step 8 added and the sheet gained before it was sent.
     cases = [
         ("the collar's V, as one mass", scope["uk_collar"], 0.014, "axis"),
         ("its left flap", scope["uk_collar_l"], 0.014, [(446, 330), (497, 392)]),
@@ -2073,6 +2083,8 @@ def probe_pieces_sheet() -> None:
         ("A form turned toward the light: the half-tone band",
          polygon(turn + [(0.345, 0.58), (0.335, 0.44), (0.35, 0.30)]), 0.012,
          [turn[0], turn[-1]]),
+        ("Several figures in one picture: the standing figure",
+         session_module._clean_fill(standing, 0.01), 0.02, "axis"),
         ("PAINTING.md: a ribbon round a bend",
          ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029), 0.015, None),
     ]

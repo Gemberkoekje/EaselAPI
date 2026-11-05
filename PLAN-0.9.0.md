@@ -60,7 +60,16 @@ five-file table (Q8), 1,370 words to 985 under a budget of 1,000; `Session`, `bl
 The cut the handover painter asked for was measured first: what a pass prints repeats
 about 1% of `PAINTER.md` and `RECIPES.md`, so the path is shorter by the card alone,
 32,190 words to 31,840 (`CALIBRATION.md`, *The card and the reading path, as built*;
-`NOTES-step9.md`). Step 10 waits for G2's answer and the second painter's batch 2.**
+`NOTES-step9.md`). Step 10 waits for G2's answer and the second painter's batch 2.
+2026-11-05: neither had gone out. The second painter's batch 2 is written
+(`paintings/Claude/the_curator/questions-step2/`, five questions with the step-2b sheets
+re-made), and the question back to the first is brought up to date against steps 8 and 9
+(section 6); both go to the painters through the owner. **Both are answered the same day**
+and filed, every **M** re-measured on `main` and held (section 6): the first painter chose
+a price for the parts before any notice (G2 (b)); the second, the cut softened to a held
+paint edge's 0.85 px, `export(size=)`, O3 alone at `s.look()` and after a pass, the
+unpainted share inside a cut, and `p.grey()` with the hue on the swatch. Every question of
+both painters has its answer. Steps 10 to 12 build them; the cut is step 13.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -633,7 +642,44 @@ them; a price for the parts (G2 (b)) does, 22 against 7 on the V. Held on the ow
 (2026-10-17), and asked: which shapes on the sheet it would have told to lay each part
 along its own length; (a) the notice held for a price of the parts, (b) a count of 1.55,
 (c) its count with no remedy in the sentence, or (d) else; and, for (a), how much cheaper
-the parts must be. Not answered yet.
+the parts must be. **It was not sent until 2026-11-05**, when it was brought up to date
+against the guide as steps 8 and 9 left it: the count, run over every block and demo,
+speaks on a fourth recipe, step 8's *Several figures in one picture*, whose standing
+figure along its axis is 15 passes in 22 pieces (1.47); it is in the sheet's table and on
+`pieces.png`, and the sheet says what steps 8 and 9 built of this painter's answers.
+
+**Answered the same day**, filed verbatim as
+[`answers-step7.md`](paintings/Claude/uktarl_krannoc/answers-step7.md), priced with the
+0.8.0 it has installed. **The sheet was wrong in one sentence**, and the answer says so
+first: *every pass is a stroke*. A pass the outline cuts is charged once per piece, so the
+V's 14 passes cost 22 and the ribbon's 42 cost 75; the table's *pieces* column was the
+price, and `pieces.png`'s red passes are two strokes or more. **Every price it gives was
+re-made here on `main` through `s.cost()` and holds to the stroke**, and the standing
+figure, which its 0.8.0 does not have, was priced here:
+
+| shape | as one mass | as its parts, each along its own axis | the painter would tell it |
+|---|---|---|---|
+| the collar's V | 22 | 7 (3 + 4), 3.1× cheaper | yes |
+| `PAINTING.md`'s ribbon round a bend | 75 | 8 (its two arms, 4 + 4), 9.4× cheaper | yes |
+| the grip, clean edge | 13 | 21 (its lobes, 10 + 6 + 5), dearer | no: one shape on purpose |
+| the silhouette's shade, at 20° | 47 | 33 (18 + 8 + 3 + 4), 1.4× cheaper | no: its 20° grain is the recipe's defence against a stack of bars |
+| the half-tone band | -- | no parts: a thin outline that wanders | no |
+| the standing figure, clean edge | 23 | 20 (head 3, body 14, arm 3), or 18 with head and body as one: 1.3× at best | no: meant as one silhouette |
+
+| | The painter chose | So the round builds |
+|---|---|---|
+| 1 | **the V and the ribbon round a bend**, none of the four recipes | the notice's test is the price of the parts, not the count |
+| 2 | **(a)**: the notice waits for a price of the parts. Not (b), a threshold tuned on its own painting, its step-2 near-copies again; not (c), a line with no remedy, which teaches a painter to read past notices, *what I did with the check in this painting, in 29 runs of 30* | G2 (b), then the notice |
+| 3 | **speak when the parts cost under the mass's price by more than 2.5×, the direction notice's line, and save at least five strokes**; say both prices, where the cut runs and which way each part runs; better, **hand back the parts as shapes** (`shape.parts()` or the like), since typing coordinates is where both its rounds made their drawing errors | the notice in its words, with the cut's points and each part's angle; the parts as shapes, if the cut can be found well enough to hand back |
+
+**What the build has to settle.** The painter's parts were its own: the prelude's two flaps,
+the ribbon's two arms, a union's members. The engine has to find the cut itself, at the
+shape's deepest notch, and the shade and the grip are the tests that it does not cut what a
+recipe joins on purpose: under the painter's 2.5× both stay silent, the shade at 1.4×, the
+grip dearer. And **`PAINTING.md`'s ribbon round a bend will then trip the notice** at 9.4×,
+which the painter wants (*the example would then show a notice it means to show*): the block
+is the guide's, so it becomes a block that says what it trips, as a demo does, or the check's
+rule that a recommended block is notice-clean is asked about it.
 
 ---
 
@@ -688,6 +734,50 @@ in `CALIBRATION.md`, the round's *Step 2b*.
 and repainting the patron's rim and the cabinet's lock — are the owner's to take or leave,
 and touch nothing here.
 
+### For the second painter, batch 2 (`the_curator/questions-step2/`)
+
+Written 2026-11-05, after step 9, from the table above:
+[`questions-step2/`](paintings/Claude/the_curator/questions-step2/QUESTIONS.md), with
+`alpha.png` and `deposit.png` re-made on `main` at `4617424` (every band and value of the
+step-2b bench came back the same on Windows). It opens with what is built of the painter's
+first answers (Q4's key, Q6's recipe, Q8's table, row 15's sentence) and what is not
+(Q5's canvas in pixels, on the owner's word; K, L, M, N and O).
+
+| | Asked | Decides |
+|---|---|---|
+| 1 | the cut's edge: the places at 4×4 samples, 0.3 to 0.8 px, with `soften=` as a 10–90% width in pixels; or a default matched to its held paint edge, 0.85 px | 4K, and so 4N's `cut=` |
+| 2 | from `deposit.png`: `s.export(size=)` as it is, with a sentence that the marks' finest texture reduces with the picture, or not built | M1 |
+| 3 | M2 at the call, O3 after, both, or narrower (M2 where O3 also fires, 161 marks; once per brush and size); O3's distance and reach; where O3 is read | M2, O3, and O1's check |
+| 4 | inside a cut, the ground line without its floor, or with it; whether the cut-edge line says more than its two numbers | 4N |
+| 5 | `p.grey()` alone; the fact once per mixture; the fact on the swatch only; or else | L1 behind L3 |
+
+**Answered the same day**, in the session that painted the pieces, filed verbatim as
+[`the_curator/answers-step2.md`](paintings/Claude/the_curator/answers-step2.md) with its
+scripts and images in `measurements-step2/`. **Its M claims were re-measured here on
+`main`, on Windows, with step 2b's own rebuild of the pieces**, and every one holds: the
+176 hand-laid strokes, 19 of them meant to read and lost, and each row of its tally to the
+stroke; the candle's texture on a smooth canvas, 4.00 and 1.52 levels against 3.95 and
+1.52 on linen, and 1.68 and 0.87 at 2×; the planned light inside the cut, 0.79 at 1×, 0.81
+at 2× and 4×; the canvas with nothing laid inside the cuts, 0.28%, 0.00% and 0.01%; the
+sigmas for a 0.85 px edge, 0.49, 0.38 and 0.49 on a true Gaussian. Its hues at value 0.14
+and 0.44 come back within 2 to 5 degrees, the rounding of a hex at chroma under 0.01.
+
+The owner also pasted a **second reading of the same five questions** by a session that did
+not paint the pieces, labelled O and R only, filed apart as
+[`questions-step2/second-reader.md`](paintings/Claude/the_curator/questions-step2/second-reader.md).
+It agrees on 1, 2, 4 and 5. Where it differs, on 3, the painter's answer decides.
+
+| | The painter chose | Found on the way | So the round builds |
+|---|---|---|---|
+| 1 | **(b), from (a)'s parts**: the places' coverage at 4×4 samples, **softened by default to 0.85 px**, a held paint edge's width; `soften=` the 10–90% width in pixels, the sigma solved by the engine; `soften=0` the raw coverage; and the alpha built at the size that ships | at 8×, 4×4 coverage still steps on the patron's shoulder and the candle's corner; at 0.85 px the steps are gone (`alpha_085_close.png`). **Re-measured with a caveat**: on an outline that runs along whole pixels, the jamb and the candle's sides, the 10–90% band counted in pixels jumps from 0.5 to 1.7–2.0 at sigma 0.49, so no sigma gives 0.85 by that count | 4K: the default as chosen, with the width defined across the edge's profile rather than by counting pixels, so a soften in pixels can be solved on any outline |
+| 2 | **(a), `s.export(size=)`**, with a sentence saying how much the marks' finest texture smooths (the base's falls to under half at 2×) and that **the smallest factor that lands the marks is the one to use**; the faint mark's word names that factor; **the plan should know the size that ships**, so lines in pixels read at it | **its first-round weave was not the canvas's**: on a smooth canvas the candle's texture is the same. At 2× the candle lands its light (plan 2 of 2, 0.90) in 3.9 s against 2.1; the wax keeps more texture at 2× than at 4×. A wider tip is no fix for marks the subject sets thin: the grille's 1.8 px glint at 6.5 px would be nearly as wide as its 7.4 px bar | M1, with the sentence; the shipped size as a candidate on the plan |
+| 3 | **(b), O3 alone, at 0.15 and 0.25, leaving out marks noted as a signature**; read **both at `s.look()`**, over the marks since the last look, **and after a pass** in `easel run`; one line per script line; under the one-touch width, M2's numbers are the reason and question 2's factor the fix. **Not M2 at the call**, at every call or once per size | on its nine pieces O3 at 0.15 and 0.25 speaks on all 19 lost marks and on no mark that landed; its one false alarm is the signature. M2 speaks on all 19 too, and on all 53 gilt strokes and 24 more; once per brush and width it finds 7 of the 19. **The bench's *one shade stroke at line 58* is a light**: the candle base's shoulder catching the flame, a fourth lost light | O3 as chosen, at both places, by script line; O1's look-time check carries it. The second reader chose M2 once per size and no finding at `s.look()`, and a `note=` that opts a mark out (*grain* as well as *signature*): the opt-out by note is in the painter's answer for the signature, and *grain* is a candidate |
+| 4 | **no floor inside a cut, but not on (a)'s premise**: count **canvas with nothing laid on it**, not paint the colour of the ground, and say how much lies within 2 px of the cut's edge. **The cut's edge line as meant**, with the picture's hardest tenth beside its median, and a word only when the cut is harder than that | **the ground line reads colour, not bareness**: `ground_showing` counts every pixel within its tolerance of the ground's colour. Inside the wall's cut that is 5.31%, of which 0.28% has nothing laid; along the arch, 31% against 0.26%: the stones and joints sit within the tolerance of the umber wash | 4N: inside a cut, the unpainted share and its 2 px fringe; the whole picture's ground line unchanged; the cut-edge line with the hardest tenth |
+| 5 | **(a) and (c)**: `p.grey()`, and the **hue printed beside value and chroma** wherever the palette prints colour numbers, the turn said there. **No fact at `mix()`.** Name `p.grey()` where the guide first mixes a colour; a backstop, if ever, on `at_value` at mid and light values, benched first | **the violet shows at mid values, where the turn measured as hue is smallest, and hides in the darks**: at value 0.44 the 25% mixture has turned 22 to 24° from umber and reads mauve; at 0.14 it has turned 42 to 43° and reads near-black. So either wording of the fact speaks where the violet hides | L3 with the hue on the swatch; L1 not built |
+
+**Every question of both painters now has its answer.** What they decide is in section 7's
+steps 10 to 12; the cut moves to step 13.
+
 ---
 
 ## 7. Order of work
@@ -705,10 +795,14 @@ and touch nothing here.
 | 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog. Done, with Q6's recipe and row 15's sentence | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted. Done: the card as P8 and Q8 asked, the notices measured at 1% of the prose, the path shorter by the card alone | `NOTES-step9.md` |
-| 10 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
+| 10 | **G2 (b), and its notice** (`answers-step7.md`). A price for a shape cut at its deepest notch, each part along its own axis; the notice when the parts are over 2.5× cheaper and save five strokes, with both prices, the cut's points and each part's angle; the parts handed back as shapes if the cut is found well enough. Silent on the shade and the grip; `PAINTING.md`'s ribbon round a bend says what it trips | `NOTES-step10.md` |
+| 11 | **K, N and M1** (the second painter's 1, 2 and 4, and its first answers 1 and 4). `s.plan(cut=)`, which the checklist reads inside and `s.export()` takes its alpha from, `alpha=` naming another place; the edge softened to 0.85 px by default, `soften=` in pixels across the edge's profile; `s.export(size=)` and its sentence; inside a cut, the unpainted share and its 2 px fringe in place of the ground line, the cut-edge line with the hardest tenth. The shipped size on the plan, as a candidate | `NOTES-step11.md` |
+| 12 | **O, L3 and M's table** (its 3 and 5, and its first answers 2, 3 and 7). O3 at 0.15 and 0.25, the signature left out, at `s.look()` over the marks since the last look (O1) and after a pass, one line per script line, the one-touch width as its reason and the factor as its fix; `easel run` taking a script that builds its own `Session` (O2); `p.grey(value, warmth=)` and the hue on the swatch, named where the guide first mixes; the white sentence at `at_value`; the deposit table in pixels in `REFERENCE.md` | `NOTES-step12.md` |
+| 13 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
 
 Steps 3 to 8 can move once their questions are answered; step 9 waits for P8 and the
-inventory.
+inventory. Steps 10 to 12 touch different files but for `session.py` and the
+documents, and can go in any order.
 
 ---
 

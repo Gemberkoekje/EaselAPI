@@ -3,7 +3,10 @@
 *Written 2026-10-17, when step 7 of `PLAN-0.9.0.md` was built, to be pasted into the
 painting session by the owner with [`pieces.png`](pieces.png) beside it. The answer is
 filed as `../answers-step7.md`, verbatim. The numbers are re-made by
-`python scripts/probe_uktarl_session.py --pieces-sheet` and `--direction-built`.*
+`python scripts/probe_uktarl_session.py --pieces-sheet` and `--direction-built`.
+Brought up to date on 2026-11-05, before it was sent, against the guide as steps 8 and 9
+left it: step 8's *Several figures in one picture* is a fourth recipe the count speaks on,
+and it is in the table and on the sheet.*
 
 ---
 
@@ -20,11 +23,19 @@ declared, the `values:` line on your head's pass now ends *Uktarl's face stands 
 s.plan(key='low') if the picture is dark on purpose* (G2). Passes wholly outside a clip
 stay named and are not skipped (6).
 
+**Built since, in steps 8 and 9.** *The first hour* is the one-page card you described
+(P8): the loop as you said it, with *read every line the check prints after a pass; do not
+filter it*, the seven steps one line each, the calls in one block, the numbers that bite in
+a table; 1,370 words to 985, under a budget of 1,000. The join on skin, benched on your
+three faces, is written into the form recipe (P9), the pixel paragraph is in your words
+(I3), and every release from 0.8.0 on opens its changelog entry with ten lines for a
+painter (I5).
+
 **Held: the notice for a shape whose passes come back in pieces (5b).** It was built as you
 chose: when the pieces come to a third more than the passes, *14 passes in 22 pieces: lay
 each part along its own length*. On your collar it says exactly that. But the guide holds
 itself to a rule that every worked example in it is notice-clean, because a worked example
-is an instruction, and at that count the notice speaks on three of the recipes, at the
+is an instruction, and at that count the notice speaks on four of the recipes, at the
 calls the recipes tell a painter to make:
 
 | shape, as its pass or recipe lays it | passes | pieces | passes cut | pieces a pass |
@@ -35,6 +46,7 @@ calls the recipes tell a painter to make:
 | *A small cluster of like parts gripping an edge*: the grip, filled for its clean edge | 9 | 12 | 3 | 1.33 |
 | *A silhouette lit from one side*: its shade, the body's copy laid at 20° | 33 | 47 | 14 | 1.42 |
 | *A form turned toward the light*: the half-tone band, along the terminator | 7 | 10 | 3 | 1.43 |
+| *Several figures in one picture*: the standing figure, head, body and the arm held out, along its axis | 15 | 22 | 7 | 1.47 |
 | `PAINTING.md`'s ribbon round a bend, the example of what a bend costs | 42 | 75 | 33 | 1.79 |
 
 `pieces.png` draws each of them with its passes: **red is a pass the outline cuts in two or
@@ -60,10 +72,10 @@ of any of them can be made if you want to look.
 
 **What the count cannot see.** Your V's cut passes cross a notch between two arms that are
 two masses. The recipes' cross a head on a body, a pair of legs, a bump on a grip, a
-band's thin ends: shapes the recipe joins on purpose and means as one mass, where *lay each
-part along its own length, as a mass of its own* is the opposite of what it teaches. No
-count of pieces separates them: the V is 1.57 and the recipes 1.33 to 1.43, a gap one
-shape wide. What does separate them is your other candidate, **G2 (b), a price for the
+band's thin ends, an arm held out from a figure: shapes the recipe joins on purpose and
+means as one mass, where *lay each part along its own length, as a mass of its own* is the
+opposite of what it teaches. No count of pieces separates them: the V is 1.57 and the
+recipes 1.33 to 1.47, a gap one shape wide. What does separate them is your other candidate, **G2 (b), a price for the
 shape cut at its deepest notch, each part along its own axis**: your V costs 22 as one
 mass and 7 as its two flaps, and the silhouette's shade has no notch whose parts are
 cheaper.
@@ -78,10 +90,10 @@ lay each part along its own length?
 - **(a)** hold the notice until the parts can be priced (G2 b), and say it only when the
   parts are much cheaper than the mass, with both prices;
 - **(b)** a higher count, 1.55 pieces a pass: it keeps your V and 7 masses of the corpus,
-  drops the three recipes, and still speaks on `PAINTING.md`'s ribbon round a bend, whose
+  drops the four recipes, and still speaks on `PAINTING.md`'s ribbon round a bend, whose
   example would then say that it does;
 - **(c)** the count as you chose it, with a sentence that says the counts and no remedy; the
-  three recipes would still trip it;
+  four recipes would still trip it;
 - **(d)** something else.
 
 **3.** If (a): how much cheaper should the parts be before it speaks, and should it name
