@@ -1,148 +1,110 @@
 # Painting with Easel
 
-You are about to paint. Not draw, not render — paint. This file is the method: the
-loop, the order of work, the mistakes you will make, ten exercises, and a checklist.
-Read *The first hour*, run `easel demo mistakes` and look at the sheet, paint the
-exercises at the end, and start. Come back here while you paint; open the other files
-when a situation calls for one, and when the tool says something you do not know the
-reason for, `easel explain <code>` prints it.
-
-| File | What it holds | When |
-|---|---|---|
-| **`PAINTER.md`** — this one | the method: the loop, the order, the mistakes, the exercises, the checklist | now, and open beside you while you paint |
-| [`RECIPES.md`](RECIPES.md) | one situation at a time: the calls in order, what it looks like when it goes wrong, and the number behind it | when you are about to lay one |
-| [`PAINTING.md`](PAINTING.md) | the reasons: how the paint, the brushes and the planning tools behave; copying a photograph, in its last chapter | when a notice points at it — `easel explain <code>` prints the passage — or when a rule's reason is the question; the last chapter only if you have a photograph |
-| [`REFERENCE.md`](REFERENCE.md) | every fact on one page: units, defaults, what each argument does | when you want to look something up |
-| [`CALIBRATION.md`](CALIBRATION.md) | the measurement behind every number quoted in the other four | when a number is the question |
-
-**One thing to settle before you read further: have you decided what to paint?** If
-you have, [`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings)
-is open to you — in the repository, since the package carries none of them — finished
-pictures with the pass scripts that built them, the prelude of mixtures and masses
-beside them, and the painter's own notes. They are the end-to-end worked example this
-file cannot be. **If you have not decided, do not open them.** They name their subjects,
-and a named subject chooses for you. Decide first, then look.
+You are about to paint. Not draw, not render — paint. This file is the method. Its first
+section is the card: the one page `easel guide` prints, and enough to start. The rest is
+the order of work at length, the mistakes you will make, ten exercises and a checklist;
+come back to it while you paint.
 
 ---
 
 ## The first hour
 
-**What this is.** Brushes carry a finite load of paint and run out. Paint lands wet and
-mixes with what is already there. The canvas has tooth. There are no layers, and undo
-is scraping the canvas rather than a free rewind: **when something is wrong, you paint
-over it.** You work in passes and you look between them.
+| File | What it holds | Open it |
+|---|---|---|
+| **`PAINTER.md`**, this one | the method: this card, the order of work, the mistakes, ten exercises, the checklist | now, and beside you while you paint |
+| [`RECIPES.md`](RECIPES.md) | one situation at a time: the calls in order, how it goes wrong, and why | before a passage you have not laid before: `easel guide --recipes` |
+| [`REFERENCE.md`](REFERENCE.md) | every fact: units, defaults, every argument, every line the check prints | to look anything up: `easel guide --reference` |
+| [`PAINTING.md`](PAINTING.md) | the reasons: how paint, brushes and the planning tools behave; copying a photograph | when a notice points at it: `easel explain <code>` prints the passage |
+| [`CALIBRATION.md`](CALIBRATION.md) | the measurement behind every number in the other four | when a number is the question |
+
+**Decide what to paint, and write down why, before anything else**: before you open
+[`paintings/`](https://github.com/Gemberkoekje/EaselAPI/tree/main/paintings), finished
+pictures with the scripts that built them, in the repository. They name their subjects,
+and a named subject chooses for you.
+
+**What this is.** Brushes carry a finite load and run out. Paint lands wet and mixes.
+There are no layers, and undo is scraping the canvas: **when something is wrong, you
+paint over it.** You work in passes and you look between them.
 
 ```python
-from easel import Session, cell, span, blob, region
+from easel import Session, cell, span, blob, ellipse, region
 
 s = Session(1024, 768, texture="linen", ground="toned_grey", seed=7, budget=300)
 s.palette["dark"]  = s.palette.mix("ultramarine", "burnt_umber", 0.45)   # to a ratio
 s.palette["light"] = s.palette.at_value("yellow_ochre", 0.78)            # to a value
 ```
 
-Coordinates run `0..1` from the top-left. A place is `cell("D5")`, `span("C3", "F6")`,
-`region("lower-half")` or a shape. **The `budget=300` is this example's**: set yours
-from the picture, more for one subject worked closely than for a few big masses.
+Coordinates run `0..1` from the top-left, and `size` is a fraction of the long side;
+`s.px()` and `s.px_size()` take pixels. A place is `cell("D5")`, `span("C3", "F6")`,
+`region("lower-half")` or a shape. **The `budget=300` is this example's**: set yours from
+the picture.
 
-**The loop.** **Look every 5 to 15 strokes.** `s.look()` writes a PNG and returns the
-path; open it. `s.look(values=True)` is greyscale, and it is the one that tells you the
-truth. A stroke you did not look at was a guess. **Rehearse every pass before you pay
-for it.** `s.rehearse(plan)` paints the plan on a copy and shows you the result; from
-the shell, `easel run pass.py --rehearse` does it for a whole script. A rehearsal costs
-a look and commits nothing, and what it shows is what will land. With `--alternatives`
-it rehearses versions of a pass side by side, and with `--count` it prices one in
-seconds.
-
-**What a mark costs.** `stroke`, `dab`, `smudge` and `glaze` are one each. `block_in`,
-`sweep`, `scumble` and `cover` are one *per pass* — ten to thirty for one call, and the
-number nobody can guess: `s.cost(plan)` says, and `s.cost_line(plan)` says why. Drawing,
-looking, drying and planning are free.
-
-```python
-plan = [{"shape": blob(cell("D5"), 0.12, seed=3), "brush": "bristle",
-         "color": "dark", "size": 0.09}]
-s.cost(plan)                  # what it charges
-s.preview(plan)               # where it would go
-s.rehearse(plan)              # what it would look like
-s.paint(plan)                 # the same plan, now paid for
-```
+**The loop, every pass: draw, thumbnail, rehearse, read the whole check, commit, look
+small.** **Look every 5 to 15 strokes**: `s.look(values=True)`, in greyscale, tells you
+the truth. **Rehearse every pass before you pay for it**: `easel run pass.py --rehearse`
+paints it on a copy, `--alternatives` lays versions side by side and `--count` prices
+one. **Read every line the check prints after a pass; do not filter it.** Its facts come
+first, and `dearest:` and `landed nothing:` say where the strokes went.
 
 **The order. It is the whole method, and it is not optional.**
 
-1. **Draw it first, in graphite.** `s.pencil()` is free. Put the arrangement down,
-   look, move it, and keep drawing until it is proportional and the way you want it.
-   Nothing you paint later fixes a composition you did not draw. `s.thumbnail({shape:
-   value})` shows it flat and small, where a silhouette reads or does not, and is free
-   too.
-2. **Big masses first, in the biggest brush you will use**, at `density` below 1 so the
-   ground breathes through. Two or three of them. Not outlines — masses.
-3. **Back to front.** The furthest thing goes down first and every nearer thing is
-   painted over it. Nothing is cut around.
-4. **Check the values before anything else.** In greyscale, a clear light, a clear mid
-   and a clear dark. Two masses closer than `0.10` in value read as one.
-5. **Then the mid-tones**, across the whole canvas, each mass along *its own* axis. A
-   soft passage is overlapping strokes at close values, not a smudge.
-6. **Edges last but one.** Hard edges pull the eye; soft and lost ones let it move on.
-7. **Highlights last, smallest brush, fewest strokes.** Ten deliberate marks.
+1. **Draw it first, in graphite**: three horizontal bands at most, in the biggest mass
+   too; the view, not the object; then `s.thumbnail()` it at the planned values.
+2. **Big masses first, in the biggest brush you will use**, `density` below 1. Not outlines.
+3. **Back to front.** Anything you can see into: far edge, then inside, then near edge.
+4. **Values before anything else**: a clear light, mid and dark, in greyscale.
+5. **Then the mid-tones**, each mass along *its own* axis; a soft passage is a `scumble`.
+6. **Edges last but one.** Lose one edge completely rather than four partly.
+7. **Highlights last, smallest brush, fewest strokes.**
+
+**The calls**, with the arguments that change what lands:
 
 ```python
-far  = blob(span("B2", "G4"), wobble=0.3, seed=1)
-s.block_in(far, "bristle", "dark", density=0.8, size=0.18, direction="axis")
-s.look(values=True)                                  # before anything goes on top
-s.block_in(span("A5", "H8"), "flat", "light", size=0.14, solid=True, direction=6)
+figure, floor = blob(span("C2", "E7"), wobble=0.3, seed=1), span("A5", "H8")
+s.pencil([(0.30, 0.40), (0.50, 0.55)])               # free, as look() and plan() are
+s.thumbnail({figure: 0.30, floor: 0.62})             # the arrangement, flat and small
+s.plan(values={figure: 0.30, floor: 0.62}, lightest=floor, why="a figure against the light")
+s.block_in(floor, "flat", "light", size=0.14, solid=True, direction=6, edge="hard")
+s.block_in(figure, "bristle", "dark", size=0.12, density=0.8, direction="axis")
 s.dry()                                              # so the next paint covers, not mixes
-s.stroke([(0.30, 0.62), (0.42, 0.58), (0.55, 0.60)], "round_hard", "dark", size=0.02,
-         pressure="taper", opacity=0.9, note="subject")   # a mark by hand, and counted
+s.stroke([(0.30, 0.42), (0.42, 0.38), (0.55, 0.40)], "round_hard", "light", size=0.02,
+         pressure="taper", opacity=0.9, clip=figure, note="subject")
+s.dab(0.62, 0.30, "round_hard", "light", size=0.012, press=3)
+s.scumble(ellipse((0.62, 0.32), 0.10, 0.08), "dark", "light", 8,
+          direction="inward")                        # a patch light in the middle
+s.smudge([(0.70, 0.60), (0.74, 0.62), (0.78, 0.63)]) # a stretch of an edge, once
+s.cover(cell("D5"), "dark")                          # a repair: bury it, do not undo it
+plan = [{"shape": blob(cell("D5"), 0.12, seed=3), "brush": "bristle",
+         "color": "dark", "size": 0.09}]
+s.cost(plan); s.rehearse(plan); s.paint(plan)        # its price, its look, then paid for
+print(s.checklist())                                 # at the end, and three questions
 ```
 
-**What holds the paint where you put it**: `edge="hard"` ends a mass on its own
-outline, and `clip=shape` holds any call inside another shape.
+`clip=` holds a call inside a shape and `clip_out=` outside one; `edge="hard"` ends a mass
+on its outline and `soft=s.px_size(8)` loses it over 8 px. `note=` names a part for
+`s.plan(shares=)`; `key=`, `habits=` and `ground=` are the rest of a plan (*What the
+plan changes* in [`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)).
 
-**Before the first stroke.** Count the horizontal bands in the drawing; more than
-three, and find a viewpoint or a thing that crosses them while it is still graphite.
-**Then count them inside the biggest mass, and count any row of like things**: a comb
-inside a mass is the same fault one scale down, and the band count is the instrument
-for both. **What is this thing's foreshortening?** Draw the view, not the object; no
-brush repairs the difference. **Write down what you decided, where the engine can see
-it** — `s.plan(values=..., lightest=..., shares=..., ground=..., key=..., habits=...,
-why=...)`. The three values, the place meant to be lightest, each part's share of the
-budget by its `note=`, whether this picture is low in key or buries its ground, and where
-small round marks are meant, a face's features, are yours to choose, and declaring them
-makes the check answer to your picture, not to a default (*What the plan changes* in
-[`REFERENCE.md`](REFERENCE.md#what-the-plan-changes)). `s.checklist()` quotes your
-sentence back at the end, and nothing else can ask for it. **A picture is low-key while
-its top twentieth stays under the box's middle**, `0.54` by default: declare `key="low"`
-when only a small light rises above it.
+**The numbers that bite.**
 
-**The six things you will get wrong**, with the fix on the same row as the mistake.
+| | |
+|---|---|
+| `0.10` | two masses closer in value read as one where they meet |
+| `0.128` | the floor, burnt umber alone; there is no black |
+| `0.54` | **a picture is low-key while its top twentieth stays under the box's middle**: declare `key="low"` when only a small light rises above it |
+| 6.5 px; 2.5 px | a round dab lands from 6.5 px at one touch, from 2.5 px at `press=3` |
+| 4 px; load `0.5` | an oriented tip narrower than 4 px lays nothing; nor does a small bristle under load `0.5` |
+| a stroke a pass | what `block_in`, `sweep`, `scumble` and `cover` charge, ten to thirty a call; drawing, looking and planning are free |
+| `opacity=0.22` | form marks, at a fifth of their colour; a form's half-tone is mixed at the halfway value |
+| +0.10, +0.17, +0.24 | a light's pool on a surface: three soft strokes, each smaller and lighter |
+| a tenth | of the canvas: the longest stretch one smudge loses |
+| five | signature marks, free with `note="signature"` |
 
-| The mistake | What it looks like | Do this instead | Where |
-|---|---|---|---|
-| **Outlines, filled in** | a coloured shape with a drawn edge; a thin dark line run along a silhouette to sharpen it | paint the mass with a brush wide enough to cover it in a few strokes; sharpen an edge by painting the mass on the *other* side of it | *What you are bad at*, below |
-| **Boxes** | rectangles, especially in the background, which nobody made you draw | `blob`, `ellipse`, `hull`, `ribbon`, `polygon`, `union`; check the background hardest | *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md#masses-that-are-not-rectangles) |
-| **Parallel marks** | hatching; a grain repeated thirty times; a soft passage laid as three hard bands | vary the direction; two directions break a comb; a soft passage is `s.scumble(...)` | *The angle of the mark* in [`PAINTING.md`](PAINTING.md#the-angle-of-the-mark); *A quiet gradient* in [`RECIPES.md`](RECIPES.md#a-quiet-gradient) |
-| **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake inside the place you gave it; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
-| **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped side | give a mark a length, or `tip_wobble=0.7`. The tool says the rest: `chisel-staircase` at the call, and `report()` counts the discs | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
-| **Repainting a passage that has failed twice** | a third treatment of one passage, and a fourth, each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | *What you are bad at*, below |
-
-**And six failures, painted**, because a failure you have seen is worth more than one
-you have read: `easel demo mistakes` puts them on one sheet. Each is a recipe's own
-*Goes wrong as* in [`RECIPES.md`](RECIPES.md), each is something the tool says at the
-call or after the pass, and `easel demo <words of its heading>` paints any of them
-beside the call that does not make it.
-
-**When you think it is finished**, run `s.checklist()`. It answers every line that
-has a number behind it, and leaves you three that nothing can measure — they are at
-the end of this file, and they are about finishing rather than about faults: the last
-third of the budget goes on what surrounds the subject, the last marks are about the
-picture rather than a score, and the reason you chose the subject is still in it.
-
-**Now run `easel demo mistakes`, paint the ten exercises** at the end of this file, and
-start.
-
-**And before you lay a passage you have not laid before — a form that turns, a graded
-field, a hollow thing, lit air — open [`RECIPES.md`](RECIPES.md) and find it.** The
-moment to go looking is *before* the pass, not after the rehearsal shows it failing.
+**Now run `easel demo mistakes`**: six failures on one sheet, each a recipe's *Goes wrong
+as* and each something the tool says. **Paint the ten exercises** at the end of this
+file, and start. **Before a passage you have not laid before** — a form that turns, a
+graded field, a hollow thing, lit air — **find it in [`RECIPES.md`](RECIPES.md)**, and
+when the tool says a code you do not know, `easel explain <code>`.
 
 ---
 
@@ -376,7 +338,17 @@ fraction of the canvas, not the mass's.
 
 ## What you are bad at, and what to do instead
 
-They are specific to what you are, and the fix is beside each.
+They are specific to what you are. The six you will make first, with the fix on the same
+row as the mistake:
+
+| The mistake | What it looks like | Do this instead | Where |
+|---|---|---|---|
+| **Outlines, filled in** | a coloured shape with a drawn edge; a thin dark line run along a silhouette to sharpen it | paint the mass with a brush wide enough to cover it in a few strokes; sharpen an edge by painting the mass on the *other* side of it | below |
+| **Boxes** | rectangles, especially in the background, which nobody made you draw | `blob`, `ellipse`, `hull`, `ribbon`, `polygon`, `union`; check the background hardest | *Masses that are not rectangles* in [`PAINTING.md`](PAINTING.md#masses-that-are-not-rectangles) |
+| **Parallel marks** | hatching; a grain repeated thirty times; a soft passage laid as three hard bands | vary the direction; two directions break a comb; a soft passage is `s.scumble(...)` | *The angle of the mark* in [`PAINTING.md`](PAINTING.md#the-angle-of-the-mark); *A quiet gradient* in [`RECIPES.md`](RECIPES.md#a-quiet-gradient) |
+| **Reaching for `undo`** | a scraped canvas and a stream of marks put back one at a time | `s.cover(place, colour)` buries a mistake inside the place you gave it; keep each mass in a named function and re-run the stack | *A repair under things that are standing on it* in [`RECIPES.md`](RECIPES.md#a-repair-under-things-that-are-standing-on-it) |
+| **The tool's own shape** | floating discs; capsules; a rectangle with chisel ends; a staircase down a sloped side | give a mark a length, or `tip_wobble=0.7`. The tool says the rest: `chisel-staircase` at the call, and `report()` counts the discs | *The shape each tool leaves behind* in [`PAINTING.md`](PAINTING.md#the-shape-each-tool-leaves-behind) |
+| **Repainting a passage that has failed twice** | a third treatment of one passage, and a fourth, each more expensive than the last | **if a passage has failed twice, the fault is upstream of the brush.** Go back to the drawing: it is still free, and it is the only thing that is | below |
 
 **You will misjudge where a thing lands in a picture you cannot see.** Absolute
 placement is what fails, not pixels: you are reliable about a thing's own proportions

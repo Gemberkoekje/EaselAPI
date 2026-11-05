@@ -1156,7 +1156,7 @@ def build_server() -> MCPServer:
         use it, the workflow matters more than the tool list, and a client that
         reached the engine over MCP has no repository to go and read.
 
-        The default is *The first hour*: the whole workflow in about 1,400
+        The default is *The first hour*: the whole workflow in about 1,000
         words, written to be read on its own and enough to start from.
 
         Args:

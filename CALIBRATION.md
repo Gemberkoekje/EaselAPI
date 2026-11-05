@@ -5198,3 +5198,53 @@ their courses, the joints' block is 97 strokes.
 6,699 — the pixel paragraph paid for inside the file, the card 1,378 to 1,370 —
 `RECIPES.md` 10,934 to 13,226, `REFERENCE.md` 12,257 as it was; 29,891 to 32,182. Step 9
 is the cut.
+
+### The card and the reading path, as built
+
+*Step 9, `probe_uktarl_session.py --reading` and `--reading-printed`, on the branch that
+builds it.* The card the painter's answer described (P8), and the cut the handover
+painter asked for, measured before it was made.
+
+**What a pass prints repeats about one run of six words in a hundred of the guide.**
+Every string constant in `src/easel/`, docstrings left out — what a notice, a finding or a
+standing line can say — against each file's prose, its code blocks left out:
+
+| file | words | runs of six printed too | runs of five |
+|---|---|---|---|
+| `PAINTER.md` | 6,349 | 1.0% | 1.8% |
+| `RECIPES.md` | 13,234 | 0.9% | 1.5% |
+| `REFERENCE.md` | 12,257 | 7.5% | 9.5% |
+
+The reference's share is its notice table, 1,099 words of which 59% of the runs of five are
+the notices' own: `tests/test_notices.py` holds every code to one row of it. The
+reference's next paragraph reads 23%, and no paragraph of the other two files reads over
+19%, the opening of `RECIPES.md`. **Step 2's 38% for *What the tool will tell you* and
+18% for *Looking, planning, measuring* counted the docstrings**, which `help()` prints and
+no pass does, and which the reference is written beside on purpose. So the notices have not
+made the guide's paragraphs redundant: each says a sentence and points at the passage, and
+the passage is what a reader of the guide reads. A shorter path is not there by that route.
+
+**The card holds what the answer said it must**, and opens with the five-file table (Q8):
+
+| | before | after |
+|---|---|---|
+| *The first hour*, words | 1,370 | 985, under a budget of 1,000 (was 1,400) |
+| `PAINTER.md`, words | 6,699 | 6,349, under 6,400 (was 6,700) |
+| the three files the painter read whole | 32,190 | 31,840 |
+| `s.` calls in the card's code | 15, 8 of them in its blocks | 17, 14 in one block that runs notice-clean under the guide check |
+| the numbers that bite (P8's list) | 3 of 11 | 11 of 11, the pool's steps and the join among them |
+| lines of the default `easel guide` naming `REFERENCE.md` | 1, for the plan | the table's row, with `easel guide --reference` |
+
+Counted by `str.split()`, as the tests count. **The card's block was run before it went in**,
+as every recommended block is: laid first as a wall across the top half, its passes and
+the floor's and the repair's ran within six degrees of one another and the closing check
+called them *a stack of bars*; the mass is a figure standing on the floor now, its passes
+along its own height, and the check says nothing of it. A smudge along the figure's
+outline ran past a tenth of the canvas (`smudge-long`) and is a short stretch of three
+points. The pool's steps are recipe numbers the painter asked to see on the card, and the
+card points at the recipe rather than restating it.
+
+**The path is shorter for the first time, by the card alone**: 350 words, against the
+2,291 step 8 added. The stories `PAINTER.md` keeps — the pier, the four treatments of one
+failing passage — were kept on 0.8.0's painter's word (`LESSONS.md`, *One home per rule*),
+and were not reopened.

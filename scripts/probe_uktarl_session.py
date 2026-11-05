@@ -40,6 +40,9 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --pieces-sheet  # G2, held: the shapes it read
     python scripts/probe_uktarl_session.py --recipes-built # step 8: the numbers the
                                                         # round's recipes quote
+    python scripts/probe_uktarl_session.py --reading-printed  # step 9: the reading
+                                                        # path against what a pass
+                                                        # prints, and the card
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -1449,6 +1452,74 @@ def _engine_shingles(n: int = 6) -> set[tuple[str, ...]]:
     return said
 
 
+def _printed_shingles(n: int = 6) -> set[tuple[str, ...]]:
+    """Every run of ``n`` words the engine can print at a call: its strings, docstrings
+    left out. `_engine_shingles` counts the docstrings too, which `help()` prints but no
+    pass does, and `REFERENCE.md` is written beside them on purpose -- so what it reads as
+    *said by the engine too* is mostly the reference agreeing with the docstrings."""
+    said = set()
+    for path in (ROOT / "src" / "easel").glob("*.py"):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        docstrings = set()
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                first = node.body[0] if node.body else None
+                if (isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant)
+                        and isinstance(first.value.value, str)):
+                    docstrings.add(id(first.value))
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Constant) and isinstance(node.value, str)
+                    and id(node) not in docstrings):
+                words = re.findall(r"[a-z0-9']+", node.value.casefold())
+                said.update(tuple(words[i:i + n]) for i in range(len(words) - n + 1))
+    return said
+
+
+def probe_reading_printed() -> None:
+    """Step 9: the reading path against what a pass prints, and the card as it stands.
+
+    The handover painter's instruction -- cut what the notices already say -- asked of the
+    prose of each file (its code blocks left out), by runs of six words and of five, and
+    then paragraph by paragraph, largest share first. Tables are counted with the rest:
+    `REFERENCE.md`'s notice table is held to the registry by `tests/test_notices.py`."""
+    from easel import docs
+
+    heading("step 9: the reading path against what a pass prints")
+    for n in (6, 5):
+        said = _printed_shingles(n)
+        rows = []
+        for name in READING:
+            prose = re.sub(r"```.*?```", "", (ROOT / name).read_text(encoding="utf-8"),
+                           flags=re.S)
+            w = re.findall(r"[a-z0-9']+", prose.casefold())
+            runs = [tuple(w[i:i + n]) for i in range(len(w) - n + 1)]
+            rows.append([name, _words((ROOT / name).read_text(encoding="utf-8")),
+                         f"{sum(r in said for r in runs) / max(len(runs), 1):.1%}"])
+        print(f"  runs of {n} words, docstrings left out:")
+        print(table(rows, ["file", "words", "printed by the engine too"], indent="    "))
+    said = _printed_shingles(5)
+    paras = []
+    for name in READING:
+        prose = re.sub(r"```.*?```", "", (ROOT / name).read_text(encoding="utf-8"), flags=re.S)
+        title = "(top)"
+        for para in re.split(r"\n\s*\n", prose):
+            if para.startswith("#"):
+                title = para.strip("# \n")
+                continue
+            w = re.findall(r"[a-z0-9']+", para.casefold())
+            if len(w) < 25:
+                continue
+            runs = [tuple(w[i:i + 5]) for i in range(len(w) - 4)]
+            share = sum(r in said for r in runs) / len(runs)
+            paras.append([f"{share:.0%}", len(para.split()), name, title[:40]])
+    paras.sort(key=lambda r: (-int(r[0][:-1]), -r[1]))
+    print("  the paragraphs with the largest share, by runs of five:")
+    print(table(paras[:12], ["share", "words", "file", "section"], indent="    "))
+    card = docs.front_page()
+    print(f"  the card: {len(card.split())} words of {docs.CARD_WORDS}; PAINTER.md "
+          f"{len(docs.read('guide').split())} of {docs.FRONT_PAGE_WORDS}")
+
+
 def probe_reading() -> None:
     """4I: the three files the painter read, section by section, against the notices."""
     heading("4I: the reading path, section by section")
@@ -2312,6 +2383,7 @@ BENCHES = (
     ("pieces-sheet", "G2, held (step 7): the V and the guide's own shapes, passes drawn"),
     ("recipes-built", "step 8: the join on skin with soft=, the form recipe, a light from "
      "below, a lit side on a bar"),
+    ("reading-printed", "step 9: the reading path against what a pass prints, and the card"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
                   "answers2", "shares_built", "recipes_built"}
@@ -2366,6 +2438,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_key(kept)
     if "reading" in run:
         probe_reading()
+    if "reading_printed" in run:
+        probe_reading_printed()
     if "check_built" in run:
         probe_check_built()
     if "check_corpus" in run:

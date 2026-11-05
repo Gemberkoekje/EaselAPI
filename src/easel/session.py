@@ -168,6 +168,8 @@ _PLAN_TOUCH = 0.01
 class Session:
     """A painting in progress.
 
+    Units and defaults: ``easel guide --reference``.
+
     Args:
         width: canvas width in pixels.
         height: canvas height in pixels.
@@ -412,6 +414,8 @@ class Session:
         **brush_overrides,
     ) -> StrokeRecord:
         """Paint one stroke and log it.
+
+        Units and defaults: ``easel guide --reference``.
 
         Args:
             points: normalised (x, y) points, origin top-left. A single point makes
@@ -887,6 +891,8 @@ class Session:
         **brush_overrides,
     ) -> list[StrokeRecord]:
         """Fill a place with overlapping strokes, the way a painter blocks in a mass.
+
+        Units and defaults: ``easel guide --reference``.
 
         This emits real strokes, not a fill: the brushwork stays visible, the edges
         stay ragged, and the paint runs out along each pass. That is the point --

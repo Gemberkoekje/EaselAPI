@@ -53,7 +53,14 @@ painter's three faces and written into the form recipe (P9); the pixel paragraph
 painter's words (I3); *rule, number, history* in `LESSONS.md` (I2); ten lines for a
 painter atop 0.8.0's changelog entry, and a test for every release from it on (I5); the
 README's sentence on determinism across machines (row 15). The reading path is longer by
-2,291 words, which step 9 pays (`NOTES-step8.md`).**
+2,291 words, which step 9 pays (`NOTES-step8.md`). **Step 9 is done** on branch
+`step-9-card`: *The first hour* is the one-page card P8 described, opening with the
+five-file table (Q8), 1,370 words to 985 under a budget of 1,000; `Session`, `block_in` and
+`stroke` point at `easel guide --reference`, and `easel --help` names the guide's flags.
+The cut the handover painter asked for was measured first: what a pass prints repeats
+about 1% of `PAINTER.md` and `RECIPES.md`, so the path is shorter by the card alone,
+32,190 words to 31,840 (`CALIBRATION.md`, *The card and the reading path, as built*;
+`NOTES-step9.md`). Step 10 waits for G2's answer and the second painter's batch 2.**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -697,7 +704,7 @@ and touch nothing here.
 | 6 | **E and F.** `.rotated()` in pixels, `aspect=` required; the frame with `.arc()` (P4); `shares=` and its line, a part by the name in its note (P5). Not a session in pixels (Q5). Done | `NOTES-step6.md` |
 | 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog. Done, with Q6's recipe and row 15's sentence | `NOTES-step8.md` |
-| 9 | **I1.** The one-page card and the measured cuts; the reading path counted | `NOTES-step9.md` |
+| 9 | **I1.** The one-page card and the measured cuts; the reading path counted. Done: the card as P8 and Q8 asked, the notices measured at 1% of the prose, the path shorter by the card alone | `NOTES-step9.md` |
 | 10 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |
 
 Steps 3 to 8 can move once their questions are answered; step 9 waits for P8 and the
