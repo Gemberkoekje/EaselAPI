@@ -5248,3 +5248,60 @@ card points at the recipe rather than restating it.
 2,291 step 8 added. The stories `PAINTER.md` keeps — the pier, the four treatments of one
 failing passage — were kept on 0.8.0's painter's word (`LESSONS.md`, *One home per rule*),
 and were not reopened.
+
+### A shape cut at its notch
+
+*Step 10, `probe_uktarl_session.py --parts-built`, on the branch that builds it, and the
+corpus's 727 shaped masses kept from one replay and priced again.* **A shaped block-in
+that costs over twice what its two parts would, cut at its deepest notch and each laid
+along its own length, says both prices**, `parts-cheaper`, when the cut saves five strokes
+or more. The parts are `Polygon.split()`'s, each priced as the call would lay it (inset
+half a brush for a clean edge) along its own axis or its narrowest, whichever is cheaper,
+and the whole at the cheaper of the direction given and its own axis, so the notice speaks
+for the cut and not for a direction. On the shapes the question back drew, at the sizes
+and directions their paintings and recipes lay them on 1024×768:
+
+| shape | as laid | its axis | its two parts | the whole over the parts | |
+|---|---|---|---|---|---|
+| Uktarl's Room's collar, the V | 22 | 22 | 5 + 4 | 2.44× | says it |
+| the grip, *A small cluster of like parts*, clean | 12 | 12 | 10 + 1 | 1.09× | silent |
+| the shade, *A silhouette lit from one side*, at 20° | 47 | 27 | 21 + 7 | 0.96× | silent |
+| the half-tone band, *A form turned toward the light* | 10 | 9 | 3 + 6 | 1.00× | silent |
+| the standing figure, *Several figures in one picture*, clean | 22 | 22 | 2 + 15 | 1.29× | silent |
+| `PAINTING.md`'s ribbon round a bend, at `0.015` | 75 | 75 | 10 + 10 | 3.75× | says it |
+| the same, at `0.03` | 38 | 37 | 4 + 4 | 4.62× | says it |
+
+**Twice, not the painter's 2.5×**, because the engine's cut is not its painter's. Cut at
+its notch, (0.500, 0.495) to (0.500, 0.518), where the painter put it, the collar's two
+halves keep the V's middle, which the painter's own two flaps left out: 5 and 4 along their
+lengths against the flaps' 3 and 4, so 2.44× where the painter priced 3.1×. Its answer
+named 2× as serving as well. At either line the guide's recipes are silent, at 1.29× and
+under. The V is dearest along its own axis, 22; at 0°, 45° or 90° it costs 21, 19 and 18,
+and at 18 against 9 it is twice its parts exactly and silent.
+
+**The cut is the narrowest parts, not the shortest line.** From each of the three deepest
+notches -- the points of the outline furthest in from its convex hull, at a tenth of the
+shape's least width or deeper -- a cut runs to the nearest point of every other side; of
+those that stay inside and leave each part a twentieth of the shape or more, the one whose
+two parts are narrowest across is taken. On a V whose base lies far below its notch the
+shortest cut runs across one arm, 17 + 9 against 36 for the whole; the narrowest runs down
+to the base, 9 + 9. The cut depends on the outline alone, so the parts a notice prices
+are the parts `split()` hands back, and laid along the angles it quotes, the collar's
+halves cost 5 and 4.
+
+**Over the corpus it says nothing.** The 34 committed paintings, replayed through this
+engine with every shaped mass kept: 727, 663 of them distinct. 31 are laid with a sequence
+of directions and left to `direction-sequence`; 26 are cut by their own outline at the
+direction laid and cost 7 strokes or more, which is what a five-stroke saving needs; a
+notch is found on 23. **None comes to twice its parts.** The dearest are Uktarl's Room's
+wig, 15 against 6 + 3, 1.67×, and Wenna Brask's face's mid-tone, 9 against 4 + 2, 1.50×.
+The collar is not among them: the painting as committed lays it as two flaps, the change a
+rehearsal told its painter to make. **On the pass that rehearsal was of**, the recovered first version of
+the body pass (`versions/p06_v1_collar.py`) replayed on the painting as it stood, it
+speaks once, on the black V, in the words the tests hold it to; the red V, laid at 90°
+at `0.010`, is silent. The mountain's first version (`p03_v1_facets.py`) hears the ten
+`direction-given` lines it heard in step 7, and nothing more: its facets are convex. In the guide, of 71 distinct shaped masses, 16 are
+searched and the ribbon round a bend is the only shape that speaks, in its two blocks,
+which say so (`scripts/check_guide_blocks.py` holds a block to the codes its comments name,
+`# says parts-cheaper`). The search costs 12 ms on a mass it looks at and nothing on the
+rest: 0.3 s over the whole corpus, on Windows.

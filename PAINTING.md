@@ -190,7 +190,7 @@ straight = ribbon([(0.20, 0.50), (0.78, 0.50)], 0.029)
 s.cost({"shape": straight, "size": 0.015})                  # 4
 
 bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)   # same width
-s.cost({"shape": bent, "size": 0.015})                      # 75 -- round a bend
+s.cost({"shape": bent, "size": 0.015})                      # 75 -- and says parts-cheaper
 s.cost({"shape": bent, "size": 0.03})                       # 38 -- a wider brush
 
 # and the price is on the preview, beside each mass and sweep, without asking
@@ -200,6 +200,11 @@ s.preview({"shape": bent, "size": 0.015, "label": "mass"})  # reads "mass  75 st
 Nineteen times the price for the same width of paint, because the box a bend sweeps
 out is ten times the band's own width, and a pass line crosses a curve twice. If the
 number is more than you want to pay, a wider brush or a thinner `density` is the lever.
+**Or cut it: a bend is two arms**, and the call says so when the parts would cost
+under half the whole and save five strokes -- *cut at its notch ... its two parts cost
+10 and 10, laid along 55 and -42 degrees* (`parts-cheaper`). `bent.split()` hands the
+two arms back, cut at the deepest notch, and laid apart they are 20 strokes where the
+bend was 75.
 **`cost_line` says *why* the number is what it is**: the passes crossed a second
 direction, they stepped across a bounding box much bigger than the mass, or a concave
 outline cut each one into pieces — and each names its own lever.
@@ -208,6 +213,7 @@ outline cut each one into pieces — and each names its own lever.
 print(s.cost_line({"shape": bent, "size": 0.015}))
 # 75 strokes -- 25% of the 300 left of a 300-stroke budget
 #   75  42 passes stepping across 0.34 of the canvas, each cut into 1.8 pieces by the outline
+# and the call says parts-cheaper, as above
 ```
 
 **And there is a fourth verb, which paints the plan you just checked.** `cost`,
