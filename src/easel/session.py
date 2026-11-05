@@ -73,6 +73,8 @@ from easel.regions import (
     Region,
     _looks_like_bounds,
     _looks_like_point,
+    _narrowest,
+    _notch_cut,
     as_place,
     as_region,
     blob,
@@ -1143,6 +1145,8 @@ class Session:
             _check_direction_sequence(self, fill, b, direction, density, overhang,
                                       stacklevel=3)
             _check_direction_given(self, fill, b, direction, density, stacklevel=3)
+        if shaped:
+            _check_parts(self, place, fill, b, direction, density, edge, stacklevel=3)
         if edge == "clean":
             # Regions too: cover() is handed one far more often than a shape.
             _check_clean_size(self, place, b, self.canvas, stacklevel=3,
@@ -3415,6 +3419,7 @@ class Session:
                                           spec.get("overhang"), stacklevel=5)
                 _check_direction_given(trial, fill, b, direction, density,
                                        stacklevel=5)
+            _check_parts(trial, place, fill, b, direction, density, edge, stacklevel=5)
             self._adopt_notices(trial)
             return (laid + int(edge == "clean"),
                     _mass_reason(fill, b, direction, density, laid))
@@ -7252,6 +7257,85 @@ def _check_direction_given(session, place, b: Brush, direction, density: float,
     )
 
 
+#: How many times what its two parts cost a shaped block-in has to cost before
+#: ``parts-cheaper`` says so, and how many strokes the cut has to save. The painter of
+#: Uktarl's Room set 2.5x, the direction notice's line, and five strokes, and said 2x
+#: would serve as well; its collar, cut where the engine cuts it, is 22 against 9,
+#: 2.4x, where its own two flaps were 7 (``CALIBRATION.md``, *A shape cut at its
+#: notch*).
+_PARTS_RATIO = 2.0
+_PARTS_SAVED = 5
+
+
+def _cheapest_way(part: Polygon, size: float, density: float) -> tuple[int, float]:
+    """``(strokes, degrees)``: a part laid along its own axis or along its narrowest,
+    whichever costs less -- the axis when they cost the same."""
+    along = _pass_pieces(part, size, "axis", density)[1]
+    angle = _narrowest(part.points)[1]
+    narrow = _pass_pieces(part, size, angle, density)[1]
+    return (narrow, angle) if narrow < along else (along, part.axis)
+
+
+def _check_parts(session, place, fill, b: Brush, direction, density: float, edge: str,
+                 stacklevel: int = 2) -> None:
+    """Say so when a shape cut at its deepest notch costs far less as its two parts.
+
+    A block-in lays passes across the whole shape and pays for every piece a pass is
+    cut into, so a V, a ribbon round a bend or two masses joined at a waist can cost
+    several times what its parts cost laid apart. Uktarl's Room's collar was 22 strokes
+    as one mass and 7 as the two flaps its painter laid after a rehearsal said so. A
+    count of pieces could not tell that V from the guide's own recipes, which join
+    parts on purpose -- a head on a body, a grip's lobes -- so the notice was held
+    (0.9.0's G2), and its painter chose a price instead: speak when the parts cost
+    under the mass by more than :data:`_PARTS_RATIO` and save :data:`_PARTS_SAVED`
+    strokes, with both prices, where the cut runs and which way each part runs.
+
+    The mass's price is the cheaper of the direction it is laid at and its own axis,
+    so this speaks for the cut and not for a direction ``direction-given`` or
+    ``direction-default`` already prices. The parts are :meth:`Polygon.split`'s, each
+    laid as this call would lay it -- inset half a brush for a clean edge -- along its
+    own axis or its narrowest, whichever is cheaper. Off the geometry alone: it draws
+    nothing from the stream.
+    """
+    if not isinstance(place, Polygon) or isinstance(place, Difference):
+        return
+    if len(_pass_directions("horizontal" if direction is None else direction)) != 1:
+        return
+    _, laid, cut = _pass_pieces(fill, b.size, direction, density)
+    if not cut:
+        return
+    along = _pass_pieces(fill, b.size, "axis", density)[1]
+    whole = min(laid, along)
+    if whole < _PARTS_SAVED + 2:
+        return
+    found = _notch_cut(place.points)
+    if found is None:
+        return
+    one, two, (notch, far) = found
+    parts = []
+    for points in (one, two):
+        try:
+            part = Polygon(points)
+        except ValueError:
+            return
+        parts.append(_clean_fill(part, b.size * 0.5) if edge == "clean" else part)
+    (first, first_at), (second, second_at) = (_cheapest_way(p, b.size, density)
+                                              for p in parts)
+    if whole <= _PARTS_RATIO * (first + second) or whole - first - second < _PARTS_SAVED:
+        return
+    name = place.name or "this shape"
+    priced = (f"costs {laid} strokes" if laid <= along else
+              f"costs {laid} strokes, {along} along its own axis")
+    session._notify(
+        "parts-cheaper",
+        f"block_in of {name} {priced}; cut at its notch, ({notch[0]:.3f}, "
+        f"{notch[1]:.3f}) to ({far[0]:.3f}, {far[1]:.3f}), its two parts cost {first} "
+        f"and {second}, laid along {first_at:.0f} and {second_at:.0f} degrees: lay each "
+        f"part along its own length. The shape's .split() hands the two parts back.",
+        stacklevel=stacklevel,
+    )
+
+
 #: The tips whose pass end is a straight line across the pass, and so stacks into a
 #: step. Narrower than :data:`_CHISEL_TIPS`, which is about width following pressure
 #: and counts the comb among them: a comb's end is broken into bristles and a disc's
@@ -9658,7 +9742,8 @@ def _pass_pieces(place: Polygon, size: float, direction, density: float):
     shape more than once. Off the geometry alone, so it costs no trial copy and no
     draw from the stream. A notice on the pieces (G2 of 0.9.0's plan) was built and
     held back: at a third more pieces than passes it spoke on three of the guide's
-    own recipes, and is with the painter.
+    own recipes. Its painter chose a price for the parts instead, which is
+    ``parts-cheaper`` (:func:`_check_parts`).
     """
     band = _pass_step(size, density)
     passes = pieces = cut = 0

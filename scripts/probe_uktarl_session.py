@@ -43,6 +43,8 @@ is patched in for the length of one bench and never into the engine.
     python scripts/probe_uktarl_session.py --reading-printed  # step 9: the reading
                                                         # path against what a pass
                                                         # prints, and the card
+    python scripts/probe_uktarl_session.py --parts-built  # G2 (b) as built (step 10):
+                                                        # a shape cut at its notch
     python scripts/probe_uktarl_session.py --corpus     # the corpus replay alone, kept
 
 ``--rules``, ``--direction`` and ``--key`` read one replay of every committed painting,
@@ -2109,6 +2111,81 @@ def probe_pieces_sheet() -> None:
     print(f"  {path}")
 
 
+_PARTS = re.compile(r"block_in of (?P<name>.+?) costs (?P<laid>\d+) strokes.*?its two parts "
+                    r"cost (?P<one>\d+) and (?P<two>\d+)")
+
+
+def probe_parts_built(passes: list[dict]) -> None:
+    """G2 (b) as built (step 10): the sheet's shapes cut at their notch, and the corpus."""
+    heading("G2 (b) as built (step 10): a shape cut at its notch, priced as its two parts")
+    from easel import ellipse, polygon, ribbon, union
+
+    scope = bell.scope_of("uktarl")
+    grip = union(ellipse((0.50, 0.56), 0.10, 0.09, rotate=-10),
+                 ellipse((0.40, 0.60), 0.06, 0.07), ellipse((0.60, 0.52), 0.05, 0.06))
+    body = union(ellipse((0.50, 0.56), 0.17, 0.21), ellipse((0.33, 0.36), 0.075, 0.09),
+                 ribbon([(0.58, 0.66), (0.66, 0.80), (0.70, 0.95)], 0.05, end_width=0.025),
+                 ribbon([(0.40, 0.70), (0.36, 0.82), (0.37, 0.95)], 0.045, end_width=0.03))
+    turn = [(0.40, 0.20), (0.37, 0.34), (0.36, 0.50), (0.36, 0.66)]
+    band = polygon(turn + [(0.345, 0.58), (0.335, 0.44), (0.35, 0.30)])
+
+    def px(x: float, y: float) -> tuple[float, float]:
+        return x / 1024, y / 768
+
+    standing = union(ellipse(px(512, 300), *px(24, 32)),
+                     polygon([px(478, 324), px(546, 324), px(596, 640), px(432, 640)]),
+                     polygon([px(548, 350), px(640, 300), px(652, 316), px(560, 384)]))
+    bent = ribbon([(0.20, 0.30), (0.45, 0.62), (0.78, 0.34)], 0.029)
+    # Each laid as its painting or recipe lays it, the edge given rather than inset here,
+    # so the parts are priced as the call would lay them.
+    cases = [
+        ("the collar's V", scope["uk_collar"], 0.014, "axis", "ragged"),
+        ("the grip, A small cluster of like parts", grip, 0.03, "axis", "clean"),
+        ("the shade, A silhouette lit from one side", body.shifted(0.028, 0.038), 0.035, 20,
+         "ragged"),
+        ("the half-tone band, A form turned toward the light", band, 0.012,
+         [turn[0], turn[-1]], "ragged"),
+        ("the standing figure, Several figures in one picture", standing, 0.02, "axis",
+         "clean"),
+        ("PAINTING.md's ribbon round a bend", bent, 0.015, None, "ragged"),
+        ("the same, at the wider brush", bent, 0.03, None, "ragged"),
+    ]
+    rows = []
+    for label, shape, size, direction, edge in cases:
+        s = Session(1024, 768, ground="toned_grey", seed=1, timelapse=False)
+        b = s._resolve_brush("flat", size, None, {})
+        fill = session_module._clean_fill(shape, size * 0.5) if edge == "clean" else shape
+        _, laid, _ = session_module._pass_pieces(fill, size, direction, 1.0)
+        along = session_module._pass_pieces(fill, size, "axis", 1.0)[1]
+        try:
+            parts = shape.split()
+        except ValueError:
+            rows.append([label, laid, along, "-", "-", "no notch"])
+            continue
+        priced = [session_module._cheapest_way(
+            session_module._clean_fill(p, size * 0.5) if edge == "clean" else p, size, 1.0)[0]
+            for p in parts]
+        told = len(s.notices())
+        session_module._check_parts(s, shape, fill, b, direction, 1.0, edge)
+        said = [n for n in s.notices(since=told) if n.code == "parts-cheaper"]
+        rows.append([label, laid, along, f"{priced[0]} + {priced[1]}",
+                     f"{min(laid, along) / max(sum(priced), 1):.2f}x",
+                     "says it" if said else "silent"])
+        for n in said:
+            print(f"  {label}: {n.text}")
+    print(table(rows, ["shape", "as laid", "its axis", "its two parts", "the whole over the "
+                       "parts", "parts-cheaper"]))
+
+    done = [p for p in passes if p["end"] > p["start"] and not p["error"]]
+    said = [(p, m) for p in done for n in p["notices"] if (m := _PARTS.search(n))]
+    print(f"  over the corpus's committed passes: parts-cheaper said {len(said)} times, in "
+          f"{len({p['painting'] for p, _ in said})} paintings")
+    rows = [[p["painting"], p["pass"], m["name"], m["laid"], f"{m['one']} + {m['two']}"]
+            for p, m in said]
+    if rows:
+        print(table(rows, ["painting", "pass", "shape", "as laid", "its two parts"]))
+
+
 def probe_key_built(passes: list[dict]) -> None:
     """H2 as built (step 7): the line beside a named light, over the corpus."""
     heading("H2 as built (step 7): a named light beside 'no clear light', with no key")
@@ -2396,11 +2473,13 @@ BENCHES = (
     ("recipes-built", "step 8: the join on skin with soft=, the form recipe, a light from "
      "below, a lit side on a bar"),
     ("reading-printed", "step 9: the reading path against what a pass prints, and the card"),
+    ("parts-built", "G2 (b) as built (step 10): the sheet's shapes cut at their notch, and "
+     "the corpus replayed"),
 )
 _NEEDS_REBUILD = {"claims", "clip_out", "answers", "soft", "soft_built", "join", "shares",
                   "answers2", "shares_built", "recipes_built"}
 _NEEDS_CORPUS = {"rules", "direction", "key"}
-_NEEDS_BUILT = {"direction_built", "key_built"}
+_NEEDS_BUILT = {"direction_built", "key_built", "parts_built"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -2471,6 +2550,8 @@ def main(argv: list[str] | None = None) -> int:
             probe_direction_built(passes, masses, rb or bell.rebuild("uktarl"))
         if "key_built" in run:
             probe_key_built(passes)
+        if "parts_built" in run:
+            probe_parts_built(passes)
     return 0
 
 

@@ -69,7 +69,13 @@ and filed, every **M** re-measured on `main` and held (section 6): the first pai
 a price for the parts before any notice (G2 (b)); the second, the cut softened to a held
 paint edge's 0.85 px, `export(size=)`, O3 alone at `s.look()` and after a pass, the
 unpainted share inside a cut, and `p.grey()` with the hue on the swatch. Every question of
-both painters has its answer. Steps 10 to 12 build them; the cut is step 13.**
+both painters has its answer. Steps 10 to 12 build them; the cut is step 13. **Step 10 is done** on branch `step-10-parts-price`:
+`Polygon.split()` cuts a shape at its deepest notch, and `parts-cheaper` says both
+prices when the whole costs over twice its two parts and the cut saves five strokes:
+twice, not the painter's 2.5x, since the engine's halves of the collar keep the V's
+middle (22 against 9, 2.44x). It speaks on the collar's first version and on
+`PAINTING.md`'s ribbon round a bend, whose blocks now say so, and on nothing in the
+corpus or the recipes (`NOTES-step10.md`).**
 
 This plan is written the way its own documentation item asks: the rule or the finding
 first, then the number, then the history if it is needed.
@@ -795,7 +801,7 @@ steps 10 to 12; the cut moves to step 13.
 | 7 | **G and H.** The direction notice as measured (G1); the low key said, and the line without one (H1, H2). Done. G2 (a) built and held, asked back | `NOTES-step7.md`, `questions-step7/` |
 | 8 | **I2 to I5.** The recipes and sentences, the pixel paragraph, the painter's lines in the changelog. Done, with Q6's recipe and row 15's sentence | `NOTES-step8.md` |
 | 9 | **I1.** The one-page card and the measured cuts; the reading path counted. Done: the card as P8 and Q8 asked, the notices measured at 1% of the prose, the path shorter by the card alone | `NOTES-step9.md` |
-| 10 | **G2 (b), and its notice** (`answers-step7.md`). A price for a shape cut at its deepest notch, each part along its own axis; the notice when the parts are over 2.5× cheaper and save five strokes, with both prices, the cut's points and each part's angle; the parts handed back as shapes if the cut is found well enough. Silent on the shade and the grip; `PAINTING.md`'s ribbon round a bend says what it trips | `NOTES-step10.md` |
+| 10 | **G2 (b), and its notice** (`answers-step7.md`). A price for a shape cut at its deepest notch, each part along its own axis; the notice when the parts are over 2.5× cheaper and save five strokes, with both prices, the cut's points and each part's angle; the parts handed back as shapes if the cut is found well enough. Silent on the shade and the grip; `PAINTING.md`'s ribbon round a bend says what it trips. Done, at twice the parts rather than 2.5x, since the engine's cut keeps the V's middle | `NOTES-step10.md` |
 | 11 | **K, N and M1** (the second painter's 1, 2 and 4, and its first answers 1 and 4). `s.plan(cut=)`, which the checklist reads inside and `s.export()` takes its alpha from, `alpha=` naming another place; the edge softened to 0.85 px by default, `soften=` in pixels across the edge's profile; `s.export(size=)` and its sentence; inside a cut, the unpainted share and its 2 px fringe in place of the ground line, the cut-edge line with the hardest tenth. The shipped size on the plan, as a candidate | `NOTES-step11.md` |
 | 12 | **O, L3 and M's table** (its 3 and 5, and its first answers 2, 3 and 7). O3 at 0.15 and 0.25, the signature left out, at `s.look()` over the marks since the last look (O1) and after a pass, one line per script line, the one-touch width as its reason and the factor as its fix; `easel run` taking a script that builds its own `Session` (O2); `p.grey(value, warmth=)` and the hue on the swatch, named where the guide first mixes; the white sentence at `at_value`; the deposit table in pixels in `REFERENCE.md` | `NOTES-step12.md` |
 | 13 | **The cut.** 0.9.0 without the claim; then, on the owner's word, the tag; then the claim | `CHANGELOG.md` |

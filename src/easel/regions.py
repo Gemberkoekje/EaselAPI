@@ -866,6 +866,40 @@ class Polygon:
         """The same shape under another name. Names show up in the log."""
         return Polygon(self.points, name=str(name), traced=self.traced)
 
+    def split(self) -> tuple[Polygon, Polygon]:
+        """The shape cut in two at its deepest notch: two parts that tile it exactly.
+
+        A V, a ribbon round a bend, two masses joined at a waist: a block-in lays
+        passes across the whole and pays for every piece a pass is cut into, and the
+        parts, each laid along its own length, can cost a third of it. Uktarl's Room's
+        collar was 22 strokes as one mass and 9 as the two parts this hands back::
+
+            left, right = collar.split()
+            s.block_in(left, "flat", "dark", size=0.014, direction="axis")
+
+        The cut is a straight line from the deepest notch, the point of the outline
+        furthest in from the convex hull, to the far side; of the cuts that stay inside
+        the shape and leave each part a twentieth of it or more, from the three deepest
+        notches, the one whose two parts are narrowest across. It depends on the
+        outline alone, so the parts a ``parts-cheaper`` notice prices are the parts this
+        returns. Each part is named after the whole, ``"collar, part 1"`` and ``"part
+        2"``.
+
+        Raises:
+            ValueError: if the shape has no notch deeper than a tenth of its own width
+                -- a convex shape, or one roughened at its edge -- to cut at.
+        """
+        cut = _notch_cut(self.points)
+        if cut is None:
+            raise ValueError(
+                f"{self.name or 'This shape'} has no notch to cut at: it is convex, or "
+                f"nothing in its outline goes in further than a tenth of its width. A "
+                f"shape with no notch is laid as one mass, along its own axis.")
+        one, two, _ = cut
+        names = [f"{self.name}, part {k}" if self.name else "" for k in (1, 2)]
+        return (Polygon(one, name=names[0], traced=self.traced),
+                Polygon(two, name=names[1], traced=self.traced))
+
     def _toward_centre(self, amount: float) -> Polygon:
         cx, cy = self.center
         radii = [math.hypot(x - cx, y - cy) for x, y in self.points]
@@ -1135,6 +1169,12 @@ class Difference(Polygon):
 
     def smooth(self, iterations: int = 2) -> Polygon:
         return self.inset(0.0)
+
+    def split(self) -> tuple[Polygon, Polygon]:
+        raise ValueError(
+            "A difference() is not split: it has holes, and a cut through its outline "
+            "would run through them. Split the place first, then take the holes out of "
+            "each part.")
 
     def __repr__(self) -> str:
         x0, y0, x1, y1 = self.bounds
@@ -1928,6 +1968,161 @@ def _convex_hull(points) -> list[tuple[float, float]]:
 
 def _cross(o, a, b) -> float:
     return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+
+def _narrowest(points) -> tuple[float, float]:
+    """``(width, degrees)``: how narrow an outline is across, at its narrowest, and the
+    direction that runs along it there -- the line of the convex hull's side with the
+    least width across it, in degrees clockwise from the horizontal, in ``(-90, 90]``.
+
+    A convex shape is cheapest to lay along that direction, since a block-in's passes
+    step across it; for a quadrilateral flap it is the long side, where the principal
+    axis, weighted by edge length, can lean toward the short ends.
+    """
+    hull = np.asarray(_convex_hull(points), dtype=np.float64)
+    if len(hull) < 3:
+        return 0.0, 0.0
+    sides = np.roll(hull, -1, axis=0) - hull
+    lengths = np.hypot(sides[:, 0], sides[:, 1])
+    keep = lengths > 1e-12
+    sides, lengths = sides[keep], lengths[keep]
+    normals = np.stack([-sides[:, 1], sides[:, 0]], axis=1) / lengths[:, None]
+    proj = hull @ normals.T
+    widths = proj.max(axis=0) - proj.min(axis=0)
+    k = int(np.argmin(widths))
+    degrees = math.degrees(math.atan2(sides[k, 1], sides[k, 0]))
+    while degrees > 90.0:
+        degrees -= 180.0
+    while degrees <= -90.0:
+        degrees += 180.0
+    return float(widths[k]), degrees
+
+
+#: A notch shallower than this share of the shape's least width is the outline's
+#: wander, not a place to cut: a roughened edge's pockets are a few percent of it.
+_NOTCH_DEPTH = 0.10
+#: The least share of the whole either part of a cut may keep.
+_PART_LEAST = 0.05
+#: How many of the deepest notches a cut is looked for at, and how many cuts from each.
+_NOTCHES = 3
+_CUTS_EACH = 48
+
+
+def _notch_cut(points):
+    """``(part_one, part_two, (notch, far))``: an outline cut in two at a notch, or None.
+
+    The notches are the deepest points of each pocket between the outline and its
+    convex hull. From each of the three deepest, a cut runs to the nearest point of
+    every other side of the outline; a cut counts if it stays inside the shape and
+    leaves each part a twentieth of the area or more. Of those, the one whose two parts
+    are narrowest across, summed, is taken -- the cut a painter would make, down the
+    middle of a V rather than across one of its arms. In the shape's own coordinates,
+    as the passes are laid, and off the outline alone.
+    """
+    pts = np.asarray(points, dtype=np.float64)
+    n = len(pts)
+    if n < 4:
+        return None
+    total = abs(_signed_area(points))
+    least_width = _narrowest(points)[0]
+    if total < 1e-12 or least_width < 1e-9:
+        return None
+    hull_at = _hull_indices(pts)
+    pockets = []
+    for k, a in enumerate(hull_at):
+        b = hull_at[(k + 1) % len(hull_at)]
+        span = (b - a) % n
+        if span <= 1:
+            continue
+        lid, lid_len = pts[b] - pts[a], math.hypot(*(pts[b] - pts[a]))
+        if lid_len < 1e-12:
+            continue
+        inner = [(a + s) % n for s in range(1, span)]
+        depths = np.abs(lid[0] * (pts[inner, 1] - pts[a, 1])
+                        - lid[1] * (pts[inner, 0] - pts[a, 0])) / lid_len
+        deepest = int(np.argmax(depths))
+        if depths[deepest] >= _NOTCH_DEPTH * least_width:
+            pockets.append((float(depths[deepest]), inner[deepest]))
+    pockets.sort(reverse=True)
+    starts, ends = pts, np.roll(pts, -1, axis=0)
+    best = None
+    for _, i in pockets[:_NOTCHES]:
+        found = 0
+        for dist, j, far in _nearest_on_sides(pts, i):
+            if found >= _CUTS_EACH:
+                break
+            if dist < 1e-9 or not _inside_point(pts, (pts[i] + far) / 2.0):
+                continue
+            if _cut_crosses(pts[i], far, starts, ends, skip=(i, (i - 1) % n, j)):
+                continue
+            one = np.vstack([pts[[(i + s) % n for s in range(((j - i) % n) + 1)]], far])
+            two = np.vstack([far, pts[[(j + 1 + s) % n for s in range(((i - j - 1) % n) + 1)]]])
+            if min(abs(_signed_area(one)), abs(_signed_area(two))) < _PART_LEAST * total:
+                continue
+            found += 1
+            score = (_narrowest(one)[0] + _narrowest(two)[0], dist)
+            if best is None or score < best[0]:
+                best = (score, one, two, (tuple(pts[i]), tuple(far)))
+    if best is None:
+        return None
+    _, one, two, cut = best
+    return (tuple(map(tuple, one)), tuple(map(tuple, two)),
+            (tuple(float(v) for v in cut[0]), tuple(float(v) for v in cut[1])))
+
+
+def _hull_indices(pts: np.ndarray) -> list[int]:
+    """The convex hull as indices into ``pts``, in the outline's own order."""
+    order = sorted(range(len(pts)), key=lambda k: (pts[k, 0], pts[k, 1]))
+
+    def half(seq):
+        out: list[int] = []
+        for k in seq:
+            while len(out) >= 2 and _cross(pts[out[-2]], pts[out[-1]], pts[k]) <= 0:
+                out.pop()
+            out.append(k)
+        return out[:-1]
+
+    return sorted(set(half(order) + half(reversed(order))))
+
+
+def _nearest_on_sides(pts: np.ndarray, i: int):
+    """``(distance, side, point)`` for the nearest point of every side but the two at
+    vertex ``i``, nearest first. Side ``j`` runs from point ``j`` to point ``j + 1``."""
+    n = len(pts)
+    a, b = pts, np.roll(pts, -1, axis=0)
+    ab = b - a
+    t = np.clip(((pts[i] - a) * ab).sum(axis=1) / np.maximum((ab * ab).sum(axis=1), 1e-18),
+                0.0, 1.0)
+    near = a + t[:, None] * ab
+    dist = np.hypot(*(near - pts[i]).T)
+    order = [j for j in np.argsort(dist, kind="stable") if j not in (i, (i - 1) % n)]
+    return [(float(dist[j]), int(j), near[j]) for j in order]
+
+
+def _inside_point(pts: np.ndarray, point) -> bool:
+    """Is one point inside the outline? Even-odd, as :meth:`Polygon.inside`."""
+    x, y = float(point[0]), float(point[1])
+    a, b = pts, np.roll(pts, -1, axis=0)
+    crosses = (a[:, 1] > y) != (b[:, 1] > y)
+    rise = np.where(crosses, b[:, 1] - a[:, 1], 1.0)
+    at = (b[:, 0] - a[:, 0]) * (y - a[:, 1]) / rise + a[:, 0]
+    return bool(np.count_nonzero(crosses & (x < at)) % 2)
+
+
+def _cut_crosses(p, q, starts: np.ndarray, ends: np.ndarray, skip) -> bool:
+    """Does the line from ``p`` to ``q`` cross a side of the outline, other than the
+    sides in ``skip``, anywhere but at its ends?"""
+    d = q - p
+    e = ends - starts
+    den = d[0] * e[:, 1] - d[1] * e[:, 0]
+    ok = np.abs(den) > 1e-15
+    safe = np.where(ok, den, 1.0)
+    w = starts - p
+    t = (w[:, 0] * e[:, 1] - w[:, 1] * e[:, 0]) / safe
+    u = (w[:, 0] * d[1] - w[:, 1] * d[0]) / safe
+    hit = ok & (t > 1e-9) & (t < 1.0 - 1e-9) & (u > 1e-9) & (u < 1.0 - 1e-9)
+    hit[list(skip)] = False
+    return bool(hit.any())
 
 
 def _looks_like_point(value) -> bool:
