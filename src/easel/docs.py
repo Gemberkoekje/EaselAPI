@@ -99,14 +99,30 @@ FRONT_PAGE = "## The first hour"
 #: scripts leaned on, the thumbnail, a tenth exercise. The file ended the size it
 #: began, so the ceiling is still a little over it, and it did its work on the way:
 #: nothing went in without something coming out.
-FRONT_PAGE_WORDS = 6_700
+#:
+#: **Lowered to 6,400 in 0.9.0**, the first time the file came out shorter than it went
+#: in: the card was written as one page and lost about 380 words, and the closing
+#: paragraph it shared with the checklist went with it. The step that did it measured the
+#: handover painter's instruction too -- cut what the notices already say -- and the
+#: engine prints about one run of six words in a hundred of this file and of
+#: `RECIPES.md`, so the rest of a shorter guide is not there to be had by that route.
+FRONT_PAGE_WORDS = 6_400
 
 #: The same, for the card -- `The first hour`, the section meant to be read alone and
 #: the one every painter reads. It had no ceiling until 0.6.0, and it is the page that
 #: most wants one: what a painter meets before the first mark is the thing the round
 #: measured as too long. `LESSONS.md`'s growth rule applies here twice over, since
 #: anything added to the card is added to the file as well.
-CARD_WORDS = 1_400
+#:
+#: **Lowered from 1,400 in 0.9.0**, when the card was written as one page. The fourth
+#: painter in four rounds said the documents were too long, listed the rules it used in
+#: one line each, and said what the card must hold: the loop, the order of work, about
+#: fifteen calls and the numbers that bite. The second painter of the round never saw
+#: `REFERENCE.md`, because the five-file table naming it sat above this section and
+#: `easel guide` printed from here down -- so the card opens with that table now. Both
+#: went in, and four passages came out (the six mistakes' table went to *What you are
+#: bad at*, the closing paragraph to the checklist's own section), at 985 words.
+CARD_WORDS = 1_000
 
 _PACKAGED = Path(__file__).resolve().parent / "docs"
 _CHECKOUT = Path(__file__).resolve().parents[2]

@@ -27,7 +27,7 @@ Vision is a requirement here, not a feature.
 **Read the guide before you paint.** The engine is only the brush;
 [`PAINTER.md`](https://github.com/Gemberkoekje/EaselAPI/blob/main/PAINTER.md) is the method, and six measured runs say the method
 is the half that matters. It ships inside the package, so there is nothing to go and
-find: **`easel guide`** prints its first page — the whole workflow, about 1,400
+find: **`easel guide`** prints its first page — the whole workflow, about 1,000
 words — and `easel guide --full` prints the rest.
 
 ```python
@@ -218,7 +218,7 @@ easel undo painting.easel 3
 easel export painting.easel painting.png
 easel timelapse painting.easel painting.gif --every 3 --scale 240
 easel brushes
-easel guide                                          # the method, in about 1,400 words
+easel guide                                          # the method, in about 1,000 words
 easel guide --full                                   # all of PAINTER.md
 easel guide --painting                               # the reasons under the rules
 easel guide --recipes                                # the calls, in order, for a thing

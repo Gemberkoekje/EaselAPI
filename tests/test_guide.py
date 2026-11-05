@@ -153,6 +153,51 @@ def test_the_card_names_the_calls_two_painters_leaned_on(call: str) -> None:
     )
 
 
+def test_the_card_opens_with_the_five_files() -> None:
+    """The second painter of 0.9.0 never saw `REFERENCE.md`'s units and defaults: the one
+    line naming the file was in the table above *The first hour*, and `easel guide`
+    printed from that heading down, so the table was the only part of the page it never
+    read. The card opens with the table now, each file with the command that prints it."""
+    page = guide.front_page()
+    lines = page.splitlines()
+    first = next(i for i, ln in enumerate(lines[1:], 1) if ln.strip())
+    table = []
+    for ln in lines[first:]:
+        if not ln.startswith("|"):
+            break
+        table.append(ln)
+    named = {f for f in guide.DOCUMENTS.values() for row in table if f"`{f}`" in row}
+    assert named == set(guide.DOCUMENTS.values()) - {"DIAGNOSIS.md"}, table
+    assert "easel guide --reference" in " ".join(table)
+
+
+def test_the_card_says_to_read_the_whole_check() -> None:
+    """Uktarl's Room's painter knew the rule from its own notes and still filtered the
+    check through `grep` on 29 of its last 30 runs. It asked for the sentence on the card,
+    and for nothing to be said about it but the rule."""
+    page = " ".join(guide.front_page().split())
+    assert "Read every line the check prints after a pass; do not filter it." in page
+
+
+@pytest.mark.parametrize("name", ["Session", "block_in", "stroke"])
+def test_where_a_painter_looked_for_units_it_is_sent_to_the_reference(name: str) -> None:
+    """The same painter went to `inspect.signature` and the docstrings for an argument's
+    units, not to a document; so the three it read there say where the units are."""
+    from easel import Session
+
+    target = Session if name == "Session" else getattr(Session, name)
+    assert "Units and defaults: ``easel guide --reference``." in (target.__doc__ or "")
+
+
+def test_the_shells_help_names_the_guides_flags() -> None:
+    """`easel --help` said only *print the painting guide*; `--reference` was one level
+    down, in `easel guide --help`, which nobody ran."""
+    sub = next(a for a in build_parser()._actions if hasattr(a, "choices") and a.choices)
+    line = next(a.help for a in sub._choices_actions if a.dest == "guide")
+    for flag in ("--reference", "--recipes", "--painting", "--calibration", "--full"):
+        assert flag in line
+
+
 def test_the_pixel_advice_says_one_thing() -> None:
     """*You cannot reason in pixels* stood in `PAINTER.md` for a release after `s.px()`
     shipped beside it, and two of the three painters before 0.9.0 drew every figure in
