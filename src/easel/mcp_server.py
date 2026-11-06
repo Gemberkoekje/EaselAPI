@@ -1056,17 +1056,29 @@ def build_server() -> MCPServer:
     @server.tool()
     @_tool
     def export(session: str, output: str, impasto: bool = True,
-               sketch: bool = True) -> str:
-        """Write the finished painting as a PNG, at full resolution.
+               sketch: bool = True, alpha: bool = True, soften: float | None = None,
+               size: int | None = None) -> str:
+        """Write the finished painting as a PNG: whole, or cut out along the plan's cut.
+
+        With a cut declared (the `plan` tool's `cut`), the PNG carries an alpha: the
+        cut opaque, the rest transparent, its edge softened as a held paint edge falls,
+        about 0.85 px.
 
         Args:
             session: the .easel file.
             output: where to write the PNG.
             impasto: shade paint height as relief.
             sketch: include whatever pencil the paint has not covered.
+            alpha: false writes no alpha even with a cut declared: the whole canvas.
+            soften: the cut edge's width in pixels, 0.85 when left off; 0 for the
+                coverage as it is, 2.5 for a soft edge.
+            size: the long side in pixels, smaller than the canvas. A small piece
+                painted at two to four times lands marks its own size cannot; the
+                marks' finest texture reduces with it.
         """
         s = _load(session)
-        return str(s.export(output, impasto=impasto, sketch=sketch))
+        return str(s.export(output, impasto=impasto, sketch=sketch,
+                            alpha=None if alpha else False, soften=soften, size=size))
 
     @server.tool()
     @_tool
@@ -1271,6 +1283,7 @@ def build_server() -> MCPServer:
              bands: str = "", ground: str = "", key: str = "",
              habits: dict[str, dict[str, str]] | None = None,
              shares: dict[str, float] | None = None,
+             cut: list[str] | None = None,
              clear: bool = False) -> str:
         """Declare what this painting is for, and what the check should hold it to.
 
@@ -1324,6 +1337,11 @@ def build_server() -> MCPServer:
                 marks whose `note` holds its name, in any case. The shares line then
                 prints each part's strokes against its share, and says when one has
                 passed it. `{}` takes them back.
+            cut: the places of the canvas that ship, by name -- a piece cut out for a
+                game. The check then reads inside them: its values, edges and plan on
+                the cut alone, the ground as canvas inside it with nothing laid, and a
+                line for the cut's own edge; `export` writes its alpha from them.
+                `[]` takes it back.
             clear: start from nothing rather than from what is already declared.
         """
         s = _load(session)
@@ -1338,6 +1356,7 @@ def build_server() -> MCPServer:
             key=key or None,
             habits=habits,
             shares=shares,
+            cut=cut,
             clear=clear,
         )
         s.save(session)

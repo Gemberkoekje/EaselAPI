@@ -20,6 +20,7 @@ harness, with checks of their own in place of its candidates.
     python scripts/probe_curator_session.py --layer      # N: the nine checklists, key= and cut=
     python scripts/probe_curator_session.py --grey       # L1: the fact at mix(), over the corpus
     python scripts/probe_curator_session.py --faint      # O3, M2: faint marks, under the cliff
+    python scripts/probe_curator_session.py --cut-built  # step 11: the cut, as built
     python scripts/probe_curator_session.py --corpus     # the corpus replay alone, kept
 
 ``--grey`` and ``--faint`` read one replay of every committed painting with the canvas
@@ -1154,8 +1155,106 @@ BENCHES = (
     ("layer", "N: the nine checklists, under key='low' and read inside the cut"),
     ("grey", "L1: the fact at mix(), over the corpus's mixtures"),
     ("faint", "O3 and M2: faint marks and marks under their cliff, over the corpus"),
+    ("cut-built", "K, N and M1 as built (step 11): the three cut-outs declared, checked "
+     "and exported, and the candle exported from 4x"),
 )
 _NEEDS_CORPUS = {"grey", "faint"}
+
+
+# -- step 11: the cut as built ------------------------------------------------------------
+
+def declared_cut(run: Run) -> list:
+    """The places a piece ships, as ``plan(cut=)`` takes them: the figure's outlines, or
+    the wall with its arch taken out."""
+    from easel import difference
+    from easel.regions import Region
+    places, keep = cut_places(run)
+    if keep:
+        return places
+    return [difference(Region(0.0, 0.0, 1.0, 1.0), places[0], name="the wall")]
+
+
+def probe_cut_built() -> None:
+    """K and N as built (step 11): the three cut-outs declared, checked and exported."""
+    heading("K and N as built (step 11): plan(cut=) on the three cut-outs")
+    import easel.session as built
+    rows = []
+    sheets = []
+    for folder in CUT_OUT:
+        run = rebuilt(folder)
+        s = run.session
+        w, h = s.canvas.width, s.canvas.height
+        whole = s.checklist()
+        s.plan(cut=declared_cut(run))
+        cut = s.checklist()
+        print(f"  {run.piece.name}: the cut keeps "
+              f"{float(s._plan.inside_cut(w, h).mean()):.1%} of the canvas")
+        for word in ("plan:", "lightest:", "values:", "edges:", "ground:", "pencil:",
+                     "cut:", "boxes:"):
+            before = next((ln.strip() for ln in whole.splitlines()
+                           if ln.strip().startswith(word)), "")
+            after = next((ln.strip() for ln in cut.splitlines()
+                          if ln.strip().startswith(word)), "")
+            if before or after:
+                print(f"    whole: {before or '-'}")
+                print(f"    cut:   {after or '-'}")
+        shipped = np.asarray(Image.open(run.piece.path / run.piece.cut).convert("RGBA"),
+                             dtype=np.float32)[..., 3] / 255.0
+        cover = s._plan.cut_coverage(w, h)
+        perimeter = _union_perimeter(cover)
+        for label, soften in (("coverage, 4x4", 0.0), ("soften=0.85, the default", 0.85),
+                              ("soften=2.5", 2.5)):
+            alpha = built._soft_edge(cover, soften)
+            band, rise = edge_width(alpha, None, perimeter)
+            rises = checklist.edge_rises(alpha)
+            rows.append([run.piece.name, label, f"{band:.2f}", f"{rise:.2f}",
+                         f"{float(np.median(rises)):.2f}" if rises.size else "-",
+                         f"{float((alpha > 0.5).mean()):.1%}",
+                         int((np.abs(alpha - shipped) * 255 > 25.5).sum())])
+        band, rise = edge_width(shipped, None, perimeter)
+        rises = checklist.edge_rises(shipped)
+        rows.append([run.piece.name, "the painter's own cut", f"{band:.2f}", f"{rise:.2f}",
+                     f"{float(np.median(rises)):.2f}", f"{float((shipped > 0.5).mean()):.1%}",
+                     0])
+        rgb = s.canvas.to_srgb8(impasto=True, sketch=True)
+        box = _sheet_box(folder, w, h)
+        for label, alpha in (("painter", shipped), ("coverage", cover),
+                             ("0.85", built._soft_edge(cover, 0.85))):
+            img = _over(rgb, alpha, GROUNDS["light"]).crop(box)
+            sheets.append((f"{folder} {label}", img.resize((img.width * 8, img.height * 8),
+                                                           Image.NEAREST)))
+        started = time.time()
+        out = OUT / f"cut_{folder}.png"
+        OUT.mkdir(parents=True, exist_ok=True)
+        s.export(out)
+        print(f"    export, RGBA from the plan's cut: {Image.open(out).mode}, "
+              f"{time.time() - started:.2f} s")
+    print(table(rows, ["piece", "alpha", "10-90% band / length", "across a side",
+                       "edges: rise, median", "kept", "px off the painter's by over 10%"]))
+    print("  *band / length* is the painter's edges.py; *across a side* reads rows, with "
+          "its 1.6 px floor; *edges: rise* is the checklist's own measure, whose floor "
+          "is a one-pixel step's 2.0")
+    print(f"  sheet: {save_sheet(sheets, 'cut_edges.png', columns=3)}")
+
+    heading("M1 as built (step 11): the candle painted at 4x, exported at 120x300")
+    big = run_piece(BY_FOLDER["candle"], scale=4)
+    small = rebuilt("candle")
+    s = big.session
+    s.plan(cut=[polygon(pts.points) for pts in declared_cut(small)])
+    out = OUT / "candle_4x_export.png"
+    started = time.time()
+    s.export(out, size=(120, 300))
+    took = time.time() - started
+    img = np.asarray(Image.open(out).convert("RGBA"))
+    v = _values(img[..., :3])
+    top = v[WAX_TOP][img[..., 3][WAX_TOP] > 127]
+    print(f"  export(size=(120, 300)) from 480x1200: {img.shape[1]}x{img.shape[0]} RGBA in "
+          f"{took:.2f} s; wax top mean {top.mean():.2f}, 95th {np.percentile(top, 95):.2f}; "
+          f"against the bench's Lanczos 0.81 and 0.92")
+    small_alpha = np.asarray(Image.open(OUT / "cut_candle.png"))[..., 3]
+    print(f"  its alpha against the 1x export's: "
+          f"{int((np.abs(img[..., 3].astype(int) - small_alpha.astype(int)) > 1).sum())} "
+          f"pixels differ by over one level")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1183,6 +1282,8 @@ def main(argv: list[str] | None = None) -> int:
         probe_deposit()
     if "layer" in run:
         probe_layer()
+    if "cut_built" in run:
+        probe_cut_built()
     kept = corpus() if run & _NEEDS_CORPUS else None
     if "grey" in run:
         probe_grey(kept)

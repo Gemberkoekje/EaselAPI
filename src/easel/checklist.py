@@ -38,8 +38,9 @@ import numpy as np
 
 from easel.measure import VALUE_THRESHOLD
 
-__all__ = ["values_line", "edges_line", "pencil_line", "boxes_line", "unspent_line",
-           "clusters", "mass_counts", "HARD_EDGE_PX", "PENCIL_STEP", "UNSPENT_SHARE"]
+__all__ = ["values_line", "edges_line", "edge_rises", "pencil_line", "boxes_line",
+           "unspent_line", "cut_line", "cut_ground_line", "clusters", "mass_counts",
+           "HARD_EDGE_PX", "PENCIL_STEP", "UNSPENT_SHARE", "CUT_FRINGE_PX"]
 
 #: An edge narrower than this reads as hard. **Not two pixels**, which is where the
 #: plan's prototype put it and is the one number in workstream E that had to move:
@@ -72,6 +73,12 @@ PENCIL_STEP = 2
 #: 0.5.0 cohort stopped under 45% spent, at a median of 42%; **none of the thirteen
 #: budgeted paintings before them did**, at a median of 86%.
 UNSPENT_SHARE = 0.33
+
+#: How far in from a cut's edge the ``ground:`` line looks for canvas with nothing laid
+#: on it, in pixels: where it would show as a fringe of the ground's colour round a
+#: sprite. The painter of The Curator's interim art asked for it, of a margin it had
+#: painted past the outline and could only guess at.
+CUT_FRINGE_PX = 2
 
 
 def clusters(flat: np.ndarray, k: int = 3, rounds: int = 25) -> np.ndarray:
@@ -254,7 +261,51 @@ def _named_light_clause(light: tuple[str, float, float] | None) -> str:
             f"s.plan(key='low') if the picture is dark on purpose")
 
 
-def edges_line(view: np.ndarray) -> str:
+def edge_rises(view: np.ndarray, inside: np.ndarray | None = None) -> np.ndarray:
+    """The rise widths, in pixels, of every edge :func:`edges_line` counts.
+
+    Under a cut (``inside``), only the edges whose whole walk across them stays inside
+    it: the picture's own edges, and not the cut's, which the ``cut:`` line measures.
+    Empty when nothing has an edge yet.
+    """
+    view = np.asarray(view, dtype=np.float32)
+    dy, dx = np.gradient(view)
+    grad = np.hypot(dx, dy)
+    height, width = view.shape
+    ux, uy = dx / np.maximum(grad, 1e-6), dy / np.maximum(grad, 1e-6)
+    rows, cols = np.mgrid[0:height, 0:width]
+
+    def along(field: np.ndarray, t: float, r=None, c=None):
+        """``field``, sampled ``t`` pixels along each pixel's own gradient.
+
+        Over the whole canvas, or over the ``(r, c)`` pixels alone. The ridge is
+        found over the whole canvas -- two gathers -- and the nine-sample walk that
+        measures the rise then runs over the ridge only, which is a few percent of
+        the pixels. Walking the whole canvas nine times costs about 200 ms on a
+        1024x768 canvas and this costs about 20.
+        """
+        gr, gc = (rows, cols) if r is None else (r, c)
+        uyt, uxt = (uy, ux) if r is None else (uy[r, c], ux[r, c])
+        return field[np.clip((gr + uyt * t).astype(int), 0, height - 1),
+                     np.clip((gc + uxt * t).astype(int), 0, width - 1)]
+
+    ridge = (grad >= along(grad, 1.0)) & (grad >= along(grad, -1.0)) & (grad > 1e-4)
+    r, c = np.nonzero(ridge)
+    if inside is not None and len(r):
+        held = np.stack([along(inside.astype(np.float32), float(t), r, c)
+                         for t in np.arange(-4, 5)]).min(axis=0) > 0.5
+        r, c = r[held], c[held]
+    if not len(r):
+        return np.zeros(0, dtype=np.float32)
+    samples = np.stack([along(view, float(t), r, c) for t in np.arange(-4, 5)])
+    step = samples.max(axis=0) - samples.min(axis=0)
+    keep = step >= VALUE_THRESHOLD
+    if not keep.any():
+        return np.zeros(0, dtype=np.float32)
+    return np.clip(step[keep] / np.maximum(grad[r, c][keep], 1e-6), 0.5, 12.0)
+
+
+def edges_line(view: np.ndarray, inside: np.ndarray | None = None) -> str:
     """How the picture's edge length divides between hard and soft.
 
     The checklist asks *are the edges varied -- some hard, some soft, at least one
@@ -295,38 +346,11 @@ def edges_line(view: np.ndarray) -> str:
 
     Args:
         view: the canvas as values, ``0..1``, graphite excluded.
+        inside: the plan's cut, when it declares one: only the edges inside it count.
     """
-    view = np.asarray(view, dtype=np.float32)
-    dy, dx = np.gradient(view)
-    grad = np.hypot(dx, dy)
-    height, width = view.shape
-    ux, uy = dx / np.maximum(grad, 1e-6), dy / np.maximum(grad, 1e-6)
-    rows, cols = np.mgrid[0:height, 0:width]
-
-    def along(field: np.ndarray, t: float, r=None, c=None):
-        """``field``, sampled ``t`` pixels along each pixel's own gradient.
-
-        Over the whole canvas, or over the ``(r, c)`` pixels alone. The ridge is
-        found over the whole canvas -- two gathers -- and the nine-sample walk that
-        measures the rise then runs over the ridge only, which is a few percent of
-        the pixels. Walking the whole canvas nine times costs about 200 ms on a
-        1024x768 canvas and this costs about 20.
-        """
-        gr, gc = (rows, cols) if r is None else (r, c)
-        uyt, uxt = (uy, ux) if r is None else (uy[r, c], ux[r, c])
-        return field[np.clip((gr + uyt * t).astype(int), 0, height - 1),
-                     np.clip((gc + uxt * t).astype(int), 0, width - 1)]
-
-    ridge = (grad >= along(grad, 1.0)) & (grad >= along(grad, -1.0)) & (grad > 1e-4)
-    r, c = np.nonzero(ridge)
-    if not len(r):
+    rise = edge_rises(view, inside)
+    if not rise.size:
         return "edges: nothing with an edge yet"
-    samples = np.stack([along(view, float(t), r, c) for t in np.arange(-4, 5)])
-    step = samples.max(axis=0) - samples.min(axis=0)
-    keep = step >= VALUE_THRESHOLD
-    if not keep.any():
-        return "edges: nothing with an edge yet"
-    rise = np.clip(step[keep] / np.maximum(grad[r, c][keep], 1e-6), 0.5, 12.0)
     share = float((rise < HARD_EDGE_PX).mean())
     return (f"edges: {share:.0%} of edges are under {HARD_EDGE_PX:.1f} px wide, "
             f"median {float(np.median(rise)):.1f} px")
@@ -395,7 +419,7 @@ def mass_counts(records) -> tuple[int, int]:
     return boxed, masses
 
 
-def boxes_line(boxed: int, masses: int) -> str:
+def boxes_line(boxed: int, masses: int, background: bool = True) -> str:
     """The share of the masses laid in a rectangle rather than in a shape.
 
     The checklist asks *is any mass a rectangle that should have been a shape? Check
@@ -407,11 +431,14 @@ def boxes_line(boxed: int, masses: int) -> str:
     Args:
         boxed: how many mass calls were handed a region rather than a shape.
         masses: how many mass calls there were.
+        background: whether the picture has one. A piece cut out of its canvas has
+            none to check, so under a cut the line counts and stops there.
     """
     if not masses:
         return "boxes: no masses laid yet"
-    return (f"boxes: {boxed} of {masses} masses were laid in a rectangle "
-            f"({boxed / masses:.0%}) -- check the background hardest")
+    line = (f"boxes: {boxed} of {masses} masses were laid in a rectangle "
+            f"({boxed / masses:.0%})")
+    return line + " -- check the background hardest" if background else line
 
 
 def unspent_line(spent: int, budget: int | None) -> str:
@@ -438,4 +465,69 @@ def unspent_line(spent: int, budget: int | None) -> str:
     line = f"unspent: {left} of {budget} unspent ({left / budget:.0%})"
     if left / budget >= UNSPENT_SHARE:
         line += " -- name the weakest passage and spend them there"
+    return line
+
+
+def cut_ground_line(thickness: np.ndarray, inside: np.ndarray) -> str:
+    """Canvas with nothing laid on it inside a cut, and in the fringe along its edge.
+
+    In place of the ``ground:`` line under ``plan(cut=)``. That line counts every pixel
+    within its tolerance of the ground's colour, painted or not, and asks for a little
+    of it back -- the right question of a whole picture, whose ground is meant to
+    breathe. Inside a cut it is the wrong one twice over: a piece painted solid to its
+    outline was told to show some ground, and a wall's stones and joints the colour of
+    its umber wash read as ground where nothing was bare (5.31% of the wall's cut by
+    colour, 0.28% with nothing laid). So inside a cut this counts canvas with **nothing
+    laid on it**, and says how much of that lies within :data:`CUT_FRINGE_PX` of the
+    cut's edge, where it shows as a fringe round the piece. No floor: inside a cut,
+    bare canvas is only ever a hole.
+
+    Args:
+        thickness: the canvas's paint thickness, ``0`` where nothing was laid.
+        inside: the pixels the cut keeps.
+    """
+    bare = np.asarray(thickness) <= 0.0
+    kept = inside.copy()
+    for _ in range(CUT_FRINGE_PX):
+        kept = (kept & np.roll(kept, 1, 0) & np.roll(kept, -1, 0)
+                & np.roll(kept, 1, 1) & np.roll(kept, -1, 1))
+    fringe = inside & ~kept
+    share = float(bare[inside].mean()) if inside.any() else 0.0
+    edge = float(bare[fringe].mean()) if fringe.any() else 0.0
+    return (f"ground: {share:.2%} of the cut has nothing laid on it, {edge:.2%} of the "
+            f"{CUT_FRINGE_PX} px along its edge")
+
+
+def cut_line(alpha: np.ndarray, picture: np.ndarray) -> str:
+    """The cut's own edge, against the edges the paint made inside it.
+
+    The silhouette is the edge every player sees, so the painter of The Curator's
+    interim art asked for its width beside the picture's: the median, and the
+    **hardest tenth**, because the median takes in edges meant to be soft and a cut
+    always reads hard against it. A word only when the cut is harder than the hardest
+    tenth -- then the silhouette is harder than any edge the paint made, and reads
+    as cut paper.
+
+    Both widths are :func:`edge_rises`' measure, the cut's off the alpha the export
+    writes by default. That measure reads a step made in one pixel as ``2.0``, and a
+    cut and the hardest painted edges both sit there, so the two are compared as the
+    line prints them, to a tenth of a pixel: a cut at ``2.0`` against a hardest tenth
+    of ``2.0`` is level with it, not harder.
+
+    Args:
+        alpha: the cut as :meth:`~easel.session.Session.export` writes it, ``0..1``.
+        picture: the rise widths of the picture's own edges inside the cut.
+    """
+    own = edge_rises(alpha)
+    if not own.size:
+        return "cut: its edge has no width to measure"
+    width = float(np.median(own))
+    if not picture.size:
+        return f"cut: its edge is {width:.1f} px; nothing inside it has an edge yet"
+    median = float(np.median(picture))
+    hardest = float(np.percentile(picture, 10))
+    line = (f"cut: its edge is {width:.1f} px, against the picture's median "
+            f"{median:.1f} px and its hardest tenth {hardest:.1f} px")
+    if round(width, 1) < round(hardest, 1):
+        line += " -- harder than any edge the paint made: soften= on the export"
     return line

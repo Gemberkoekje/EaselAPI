@@ -463,7 +463,7 @@ s.compare({place: value, ...})                  # ...against your own value plan
                                                 # the pairs it puts within 0.10: do they touch?
 s.compare(s.plan())                             # ...against the plan this session holds
 s.plan(why=, values=, lightest=, subject_share=, bands=, ground=, key=, habits=,
-       shares=, clear=False)
+       shares=, cut=, clear=False)
                                                 # what you decided before painting, where
                                                 # the check can hold you to it
 s.sample(place=None, rendered=False)            # the colour already there, to paint with
@@ -483,12 +483,23 @@ s.log(last=10)                                  # last=10_000 for the whole reco
                                                 # pencil line is one and is free. A
                                                 # colour is named as the palette names
                                                 # it -- your slot, or the pigment
-s.export("painting.png", impasto=True, sketch=True)
+s.export("painting.png", impasto=True, sketch=True, alpha=None, soften=None,
+         size=None)                             # cut out along the plan's cut= if it
+                                                # declares one; size= smaller, never larger
 s.timelapse_gif("p.gif", fps=8.0, every=1, scale=None, from_log=False)
                                                 # from_log rebuilds the frames by
                                                 # replaying, at any size
 s.contact_sheet("sheet.png", columns=6)
 ```
+
+**A small piece is painted large and exported small**, `s.export(path, size=300)`. A
+round tip needs 6.5 px to land in one touch, so a sprite painted at its own size lays its
+fine marks under that; painted at two to four times, they land -- a candle at 120x300 read
+`0.92` at its light from 4x, where it planned `0.90`, against `0.86` painted at size. **The
+marks' finest texture reduces with the picture**: the candle's brass kept 1.68 of its 3.95
+levels of fine texture at 2x, and 1.50 at 4x. So use the smallest factor that lands the
+marks, and paint the pieces of one scene at one. A cut's alpha is built at the size that
+ships.
 
 A **plan** is one object all four planning verbs read: a list whose entries are a path,
 a dict of `stroke` arguments, a dict with `shape=` and any `block_in` argument, a dict
@@ -574,8 +585,9 @@ script.
 | `shares:` | each part's strokes against its share of the **budget**: *What the plan changes*, below | once a plan declares `shares=` |
 | `values:` | the 5th to 95th percentile of the values view against what the palette reaches, and the three clusters it splits into | after every pass; it says so when the range stays on one side of the box's middle or two clusters sit under `0.10` apart — or, under a declared `key=`, whether the picture has kept it. Beside *no clear light* with no key, it names a planned light that stands clear |
 | `edges:` | the share of the picture's edges under `2.5` px wide | after every pass |
-| `ground:` | the share of the canvas that is **still bare ground** | after every pass; it says so under `0.5%` |
+| `ground:` | the share of the canvas that is **still bare ground** -- under `cut=`, the share of the cut with **nothing laid on it**, and of the 2 px along its edge | after every pass; it says so under `0.5%`, and never inside a cut |
 | `pencil:` | graphite still showing | left off once there is none |
+| `cut:` | the cut's own edge against the edges the paint made inside it: their median and their hardest tenth, `edges:`'s measure | under `cut=`, after every pass; a word only when the cut is harder than the hardest tenth |
 | `boxes:`, `unspent:` | the masses laid in a rectangle, and what is left of the budget | in the closing checklist only |
 
 Their thresholds are under *The measurement lines, on the finished canvases* in
@@ -609,6 +621,7 @@ tell whether the subject does, and the painter can.
 | `ground="buried"` | the ground line prints its number and says *buried, as the plan says* instead of asking for some back |
 | `key="low"` or `"high"` | **a picture is low-key while its top twentieth stays under the box's middle** — halfway between what the palette reaches, `0.54` by default — and high-key while its bottom twentieth stays over it, so a dark picture around one small light is low-key. Declared, the `values:` line stops saying *no clear light* (or *no clear dark*) and says `low-key, as the plan says -- nothing above 0.35, under the box's middle 0.54` — or, once the top twentieth rises past the middle, by how much the picture has left its key. Its clusters are printed and not judged: a key compresses the range, and no gap has been measured for one yet. Under `"low"`, with `lightest=` named, it asks whether that light stands clear of everything else — the canvas outside its place: `lantern stands clear -- 0.59 at its brightest twentieth against 0.40 for everything else, 0.19 over`, or that it does not, under `0.10`. A high-key picture's light has no room above the rest to stand clear in, so there it is not asked. **Not declared**, a line that says *no clear light* names a planned light that stands clear, and the key: `Uktarl's face stands clear -- 0.69 at its brightest twentieth against 0.50 for everything else, 0.19 over: say s.plan(key='low') if the picture is dark on purpose` |
 | `habits={"disc": {face: "the features of a face"}}` | **inside each place, small round marks are counted with the reason, not warned about**: *discs declared: 10 in the face ('the features of a face')*. Everywhere else the disc rule warns as before. `"disc"` is the one habit; from a shell, `--habit disc C3:D4 "the features of a face"` |
+| `cut=place` | **what of the canvas ships**: a place, a list of places, or a `difference()` for a canvas with a hole taken out. The lines read inside it -- `plan:` and `lightest:` on each place where it lies inside (a place wholly outside is named and not counted), `values:` and `edges:` on its pixels, `ground:` as canvas inside it with nothing laid on it and the 2 px fringe along its edge, with no floor -- `boxes:` drops *check the background*, and `cut:` sets the cut's edge beside the picture's. `s.export()` then writes an RGBA PNG cut along it, its edge softened to `0.85` px (`soften=` in pixels; `0` the coverage as it is); `alpha=False` the whole canvas. From a shell, `--cut C2:F7`; `easel export --soften`, `--size`, `--no-alpha` |
 | `why="..."` | nothing measures it. It is quoted back at the end, which is the moment it is worth reading again |
 | nothing | nothing is said at the first stroke, and no line nags for a plan. What a declaration buys is the lines above; what it costs is writing it down |
 

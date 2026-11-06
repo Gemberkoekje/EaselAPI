@@ -11,6 +11,7 @@ jittered dab in every stroke is drawn from this one stream in the same order.
 
 from __future__ import annotations
 
+import functools
 import inspect
 import json
 import math
@@ -61,7 +62,7 @@ from easel.measure import (
 from easel.notices import NOTICES, EaselWarning, Notice, PassReport, rebuild_moves, version_key
 from easel.notices import explain as notice_text
 from easel.palette import Palette
-from easel.plan import Plan, named_place
+from easel.plan import Plan, declared_cut, named_place
 from easel.plan import build as build_plan
 from easel.plan import planned as planned_place
 from easel.prepare import Preparation, prepare_reference
@@ -4218,8 +4219,43 @@ class Session:
         return records
 
     # -- output -----------------------------------------------------------------
-    def export(self, path: str | Path, impasto: bool = True, sketch: bool = True) -> Path:
-        """Write the finished painting as a PNG at full resolution.
+    def export(self, path: str | Path, impasto: bool = True, sketch: bool = True,
+               alpha=None, soften: float | None = None, size=None) -> Path:
+        """Write the finished painting as a PNG: whole, or cut out, at its size or smaller.
+
+        **Cut out, from the plan.** With ``s.plan(cut=place)`` declared, the PNG carries
+        an alpha: the places of the cut opaque, the rest of the canvas transparent. One
+        declaration does both jobs -- the checklist reads inside the cut, and the export
+        writes it -- where one painter kept its outlines in a JSON file for a second
+        script to read back, and typed an arch's numbers twice::
+
+            s.plan(cut=[cloak, hood])                       # the figure, not its ground
+            s.export("patron.png")                          # RGBA, cut along them
+            s.plan(cut=difference(Region(0, 0, 1, 1), arch))   # a wall with a hole
+
+        The masses can run past the outline on purpose -- so the edge never shows bare
+        ground or a brush's end -- because the cut is the places named, not the paint.
+
+        **The cut's edge falls as a held paint edge does**, about ``0.85`` px across:
+        the places' coverage at four samples a side, softened until a straight edge at a
+        slant reads ``soften`` pixels between 10% and 90% alpha over its length -- the
+        measure its painter took of its own edges. It chose that edge over the coverage
+        alone, which steps on a slope seen close, and over its own 2.5 px blur, which
+        looked soft beside the marks inside it; ``soften=2.5`` is about that blur, and
+        ``soften=0`` the coverage as it is. **Under about 1.3 px the measure moves in
+        steps**: the coverage alone reads 0.77, and the first softening that moves a
+        pixel past 10% reads 1.0, so anything from 0.8 to 1.0 softens alike -- which is
+        the softening the painter looked at and chose.
+
+        **Painted large, exported small.** ``size=`` reduces the picture, Lanczos on
+        the colours, and builds the alpha at the size that ships, so its edge is
+        ``soften`` pixels there. A small piece painted at two or four times lands marks
+        its own size cannot -- a round tip needs 6.5 px to land in one touch, and a
+        candle at 120x300 laid its light with 2.7 px strokes; at 4x it read ``0.92``
+        where it planned ``0.90``, against ``0.86``. **The marks' finest texture reduces
+        with the picture**: the candle's brass kept 1.68 of its 3.95 levels of texture
+        at two times, and 1.50 at four. So the smallest factor that lands the marks is
+        the one to use, and the pieces of one scene are painted at one.
 
         Args:
             path: where to write.
@@ -4228,12 +4264,91 @@ class Session:
                 default because it is what is on the canvas -- an underdrawing that
                 still shows is a fact about the painting, not a rendering option.
                 ``sketch=False`` shows the paint alone.
+            alpha: what the PNG's alpha is cut along. Left off, the plan's cut, or no
+                alpha without one. ``False`` writes no alpha whatever the plan says;
+                a place, or a list of places, cuts along those instead.
+            soften: the cut edge's width in pixels at the exported size, as the band
+                between 10% and 90% alpha reads on a straight edge at a slant. Left off,
+                ``0.85``; ``0`` for the coverage as it is. Only with an alpha.
+            size: the long side in pixels, or ``(width, height)`` in the canvas's own
+                proportions. Smaller than the canvas, never larger: a picture is made
+                larger by painting it larger.
+
+        Raises:
+            ValueError: for a ``soften`` with no alpha to soften, ``alpha=True`` with no
+                cut declared, or a ``size`` larger than the canvas or in other
+                proportions.
         """
         p = Path(path)
+        width, height = self._export_size(size)
+        places = self._export_places(alpha)
+        if places is None and soften is not None:
+            raise ValueError(
+                "export(soften=) softens the alpha's edge, and this export writes no "
+                "alpha: declare the cut, s.plan(cut=place), or name it, alpha=place.")
+        edge = _CUT_SOFTEN if soften is None else float(soften)
+        if not math.isfinite(edge) or edge < 0.0:
+            raise ValueError(
+                f"export(soften={soften!r}) is the cut edge's width in pixels, 0 or more: "
+                f"0 for the coverage as it is, 0.85 the default, 2.5 a soft edge.")
+        image = Image.fromarray(self.canvas.to_srgb8(impasto=impasto, sketch=sketch),
+                                mode="RGB")
+        if (width, height) != (self.canvas.width, self.canvas.height):
+            image = image.resize((width, height), Image.LANCZOS)
+        if places is not None:
+            cover = np.zeros((height, width), dtype=np.float32)
+            for place in places:
+                cover = np.maximum(cover, place.coverage(width, height, samples=4))
+            soft = _soft_edge(cover, edge)
+            image.putalpha(Image.fromarray(
+                (np.clip(soft, 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8), mode="L"))
         p.parent.mkdir(parents=True, exist_ok=True)
-        Image.fromarray(self.canvas.to_srgb8(impasto=impasto, sketch=sketch),
-                        mode="RGB").save(p)
+        image.save(p)
         return p
+
+    def _export_size(self, size) -> tuple[int, int]:
+        """``size=`` as the pixels an export is written at: the canvas's, or fewer."""
+        w, h = self.canvas.width, self.canvas.height
+        if size is None:
+            return w, h
+        if isinstance(size, (int, float)) and not isinstance(size, bool):
+            long_side = float(size)
+            scale = long_side / max(w, h)
+            want = (max(1, int(round(w * scale))), max(1, int(round(h * scale))))
+        else:
+            try:
+                want = (int(size[0]), int(size[1]))
+            except (TypeError, ValueError, IndexError):
+                raise ValueError(
+                    f"export(size={size!r}) is the long side in pixels, size=300, or the "
+                    f"width and height, size=(120, 300).") from None
+            if abs(want[0] * h - want[1] * w) > max(w, h):
+                raise ValueError(
+                    f"export(size={size!r}) is not in the canvas's proportions, {w}x{h}: "
+                    f"an export is the painting reduced, not reshaped. The long side "
+                    f"alone, size={max(want)}, keeps them.")
+        if want[0] < 1 or want[1] < 1 or want[0] > w or want[1] > h:
+            raise ValueError(
+                f"export(size={size!r}) asks for {want[0]}x{want[1]} from a {w}x{h} "
+                f"canvas. An export can be smaller than the painting and not larger: a "
+                f"picture is made larger by painting it larger, Session({want[0]}, "
+                f"{want[1]}, ...).")
+        return want
+
+    def _export_places(self, alpha):
+        """The outlines an export's alpha is cut along, or ``None`` for no alpha."""
+        if alpha is False:
+            return None
+        if alpha is None or alpha is True:
+            if not self._plan.cut:
+                if alpha is True:
+                    raise ValueError(
+                        "export(alpha=True) cuts along the plan's cut, and the plan "
+                        "declares none: s.plan(cut=place), or name the places, "
+                        "alpha=place.")
+                return None
+            return [one.outline for one in self._plan.cut]
+        return [one.outline for one in declared_cut(alpha)]
 
     def timelapse_gif(self, path: str | Path, fps: float = 8.0, every: int = 1,
                       scale: int | None = None, from_log: bool = False) -> Path:
@@ -4613,11 +4728,12 @@ class Session:
         # without its graphite, and it is what the next pass's buried details are read
         # against.
         plan_view = None
+        inside = self._inside_cut()
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
             plan_view = self._value_view()
-            for line in (self._plan.value_line(plan_view),
-                         self._plan.lightest_line(plan_view)):
+            for line in (self._plan.value_line(plan_view, inside=inside),
+                         self._plan.lightest_line(plan_view, inside=inside)):
                 if line:
                     standing.append(line)
         subject = self._subject_line(paid, subject_share)
@@ -4992,11 +5108,12 @@ class Session:
             if nothing:
                 lines.append(f"  {nothing}")
         plan_view = None
+        inside = self._inside_cut()
         if paid and not self._counting and (self._plan.values
                                             or self._plan.lightest is not None):
             plan_view = self._value_view()
-            for line in (self._plan.value_line(plan_view),
-                         self._plan.lightest_line(plan_view)):
+            for line in (self._plan.value_line(plan_view, inside=inside),
+                         self._plan.lightest_line(plan_view, inside=inside)):
                 if line:
                     lines.append(f"  {line}")
         subject = self._subject_line(paid, subject_share)
@@ -5007,7 +5124,9 @@ class Session:
             lines.append(f"  {shares}")
         if paid and not self._counting:
             lines += [f"  {one}" for one in self._canvas_lines(plan_view=plan_view)]
-        lines.append(f"  {checklist.boxes_line(*checklist.mass_counts(records))}")
+        boxes = checklist.boxes_line(*checklist.mass_counts(records),
+                                     background=not self._plan.cut)
+        lines.append(f"  {boxes}")
         lines.append(f"  {checklist.unspent_line(self.spent, self.budget)}")
         lines.append("")
         lines.append("three this cannot answer, and they are the ones to answer slowly:")
@@ -5165,17 +5284,53 @@ class Session:
             without = self.canvas.values(sketch=False)
         view = without.astype(np.float32) / 255.0
         reach = (self.palette.darkest_value, self.palette.lightest_value)
+        inside = self._inside_cut()
         light = None
         if self._plan.key != "high" and self._plan.lightest is not None:
             light = self._plan.light_reading(
-                plan_view if plan_view is not None else self._value_view())
-        lines = [checklist.values_line(view, reach=reach, key=self._plan.key,
+                plan_view if plan_view is not None else self._value_view(), inside=inside)
+        if inside is None:
+            lines = [checklist.values_line(view, reach=reach, key=self._plan.key,
+                                           light=light),
+                     checklist.edges_line(view),
+                     self._ground_line()]
+            if self.canvas.has_sketch:
+                lines.append(checklist.pencil_line(self.canvas.values(sketch=True),
+                                                   without))
+            return lines
+        # Under a cut, every line reads what ships. Planned on The Curator's three
+        # cut-outs: the patron's values line, read inside, found the rim its painter had
+        # lost (nothing above 0.12) where read whole it was reading the bare canvas.
+        rises = checklist.edge_rises(view, inside)
+        lines = [checklist.values_line(view[inside], reach=reach, key=self._plan.key,
                                        light=light),
-                 checklist.edges_line(view),
-                 self._ground_line()]
+                 _edges_said(rises),
+                 checklist.cut_ground_line(self.canvas.thickness, inside)]
         if self.canvas.has_sketch:
-            lines.append(checklist.pencil_line(self.canvas.values(sketch=True), without))
+            lines.append(checklist.pencil_line(self.canvas.values(sketch=True)[inside],
+                                               without[inside]).replace(
+                "of the canvas", "of the cut"))
+        lines.append(checklist.cut_line(self._cut_read()[1], rises))
         return lines
+
+    def _cut_read(self) -> tuple[np.ndarray, np.ndarray] | None:
+        """The plan's cut at this canvas: its coverage, and its alpha as exported by
+        default. Kept until the cut changes, since sixteen samples a pixel over a
+        1920-wide canvas take a second or two, and a report reads it three times."""
+        if not self._plan.cut:
+            return None
+        key = (self._plan.cut, self.canvas.width, self.canvas.height)
+        kept = getattr(self, "_cut_kept", None)
+        if kept is None or kept[0] != key:
+            cover = self._plan.cut_coverage(self.canvas.width, self.canvas.height)
+            kept = (key, (cover, _soft_edge(cover, _CUT_SOFTEN)))
+            self._cut_kept = kept
+        return kept[1]
+
+    def _inside_cut(self) -> np.ndarray | None:
+        """The pixels the plan's cut keeps, or ``None`` when it declares none."""
+        read = self._cut_read()
+        return None if read is None else read[0] >= 0.5
 
     def _value_view(self) -> np.ndarray:
         """The whole canvas as values, 0..1, the way :func:`compare_plan` reads it.
@@ -5335,7 +5490,7 @@ class Session:
 
     # -- what the painter says before painting -----------------------------------
     def plan(self, why=None, values=None, lightest=None, subject_share=None,
-             bands=None, ground=None, key=None, habits=None, shares=None,
+             bands=None, ground=None, key=None, habits=None, shares=None, cut=None,
              clear: bool = False) -> Plan:
         """Write the plan down where the engine can see it. Returns it; print it.
 
@@ -5353,7 +5508,8 @@ class Session:
                    ground="buried",
                    key="low",
                    habits={"disc": {face: "the features of a face"}},
-                   shares={"the pier": 0.30, "the water": 0.25})
+                   shares={"the pier": 0.30, "the water": 0.25},
+                   cut=figure)
 
         Args:
             why: what the picture is for, in a sentence. Nothing measures it;
@@ -5411,6 +5567,15 @@ class Session:
                 passed it. Of the budget, not of the marks so far: one painter's
                 subject read 48% of the marks laid while it held 23% of the budget,
                 and its last figure got half its share.
+            cut: what of the canvas ships -- a place, or a list of places; a
+                ``difference()`` for a canvas with a hole taken out of it. The standing
+                lines then read **inside the cut**: ``plan:``, ``lightest:``, ``values:``,
+                ``edges:`` and ``pencil:`` on its pixels alone; ``ground:`` counts the
+                canvas inside it with nothing laid on it, and the fringe along its
+                edge, with no floor; ``boxes:`` stops asking for the background; and a
+                ``cut:`` line sets the cut's own edge beside the picture's.
+                :meth:`export` writes its alpha from it. One painter's figure was told
+                *no clear light* by the bare canvas round it, which its cut threw away.
 
             clear: start from nothing rather than from the plan already declared, so
                 this call is the whole of it.
@@ -5431,7 +5596,7 @@ class Session:
         """
         wanted = build_plan(why=why, values=values, lightest=lightest,
                             subject_share=subject_share, bands=bands, ground=ground,
-                            key=key, habits=habits, shares=shares,
+                            key=key, habits=habits, shares=shares, cut=cut,
                             onto=None if clear else self._plan)
         if wanted.shares and self.budget is None:
             raise ValueError(
@@ -5443,7 +5608,7 @@ class Session:
         # and says the same thing; without it the check would print a `nan` after every
         # pass and the plan would be the only thing that could have said why.
         for place in [*wanted.values, wanted.lightest,
-                      *(one.place for one in wanted.habits)]:
+                      *(one.place for one in wanted.habits), *wanted.cut]:
             if place is not None and not place.outline.mask(*self.size).any():
                 raise ValueError(
                     f"The planned place {place.name!r} covers no pixels of the canvas. "
@@ -7043,6 +7208,92 @@ def _check_dab_blank(session, record: StrokeRecord, b: Brush, press: int, pressu
 #: not, finished at **0.07%**. Raise or ignore it freely -- the number beside it is
 #: the instrument, and this is only what makes a painter look at the number.
 _GROUND_FLOOR = 0.005
+
+#: The cut edge's softening by default, in pixels as :func:`_soften_sigma` measures
+#: them, over the places' coverage at four samples a side. The painter of The Curator's
+#: interim art chose it after the bench, *the width of a held paint edge*, 0.81 to 0.87
+#: px in its own measure (``CALIBRATION.md``, *A piece cut out of its canvas*).
+_CUT_SOFTEN = 0.85
+
+def _blurred(cover: np.ndarray, sigma: float) -> np.ndarray:
+    """``cover`` blurred by a Gaussian of ``sigma`` pixels.
+
+    Separable, by summing shifted copies, so it needs nothing but numpy; the edge rows
+    are repeated past the canvas, so a cut that reaches the frame stays opaque there.
+    """
+    if sigma <= 0.0:
+        return cover
+    reach = max(1, int(math.ceil(4.0 * sigma)))
+    k = np.exp(-np.arange(-reach, reach + 1, dtype=np.float64) ** 2 / (2.0 * sigma * sigma))
+    k /= k.sum()
+    h, w = cover.shape
+    padded = np.pad(cover.astype(np.float64), reach, mode="edge")
+    across = sum(k[i] * padded[:, i:i + w] for i in range(len(k)))
+    down = sum(k[i] * across[i:i + h, :] for i in range(len(k)))
+    return down.astype(np.float32)
+
+
+#: The slant of the straight edge ``soften=`` is measured on, in degrees from the rows.
+#: An edge that runs along the pixel rows reads by whole pixels -- the band between 10%
+#: and 90% jumps from half a pixel to nearly two as the blur grows past one row -- so a
+#: width solved on the cut's own outline would have no answer on a jamb or a candle's
+#: side. At a slant, it is continuous.
+_SOFTEN_SLANT = 60.0
+
+
+def _band_width(alpha: np.ndarray, length: float) -> float:
+    """Pixels between 10% and 90% over an edge's length: The Curator's ``edges.py``."""
+    return float(((alpha >= 0.1) & (alpha <= 0.9)).sum()) / length
+
+
+@functools.lru_cache(maxsize=64)
+def _soften_sigma(soften: float) -> float:
+    """The Gaussian's sigma that makes a straight edge at :data:`_SOFTEN_SLANT` read
+    ``soften`` pixels across, by :func:`_band_width`, over four-sample coverage.
+
+    The painter's own measure, on an edge where it is continuous, so one ``soften`` is
+    one softening on every outline. Its 0.85 px comes out at a sigma of about 0.4, the
+    patron's 0.39 in its measurements, and its 2.5 px at about 0.9.
+    """
+    if soften <= 0.0:
+        return 0.0
+    n, k = 96, 4
+    slant = math.radians(_SOFTEN_SLANT)
+    sub = (np.arange(n * k, dtype=np.float64) + 0.5) / k
+    xs, ys = np.meshgrid(sub, sub)
+    cover = (ys > math.tan(slant) * (xs - n / 2) + n / 2).reshape(n, k, n, k).mean(
+        axis=(1, 3))
+    # Its 64 middle rows, which the edge crosses well inside the grid's sides, and the
+    # length of edge they hold.
+    rows = slice(16, n - 16)
+    length = (n - 32) / math.sin(slant)
+
+    def width(sigma: float) -> float:
+        return _band_width(_blurred(cover, sigma)[rows, :], length)
+
+    lo, hi = 0.0, 4.0
+    if width(hi) < soften:
+        return hi
+    for _ in range(40):
+        mid = (lo + hi) / 2.0
+        lo, hi = (mid, hi) if width(mid) < soften else (lo, mid)
+    return (lo + hi) / 2.0
+
+
+def _soft_edge(cover: np.ndarray, soften: float) -> np.ndarray:
+    """``cover`` with its edge softened to ``soften`` pixels, as :func:`_soften_sigma`
+    measures them; ``0`` leaves it as it is."""
+    return _blurred(cover, _soften_sigma(float(soften)))
+
+
+def _edges_said(rises: np.ndarray) -> str:
+    """The ``edges:`` line off rise widths already measured -- inside a cut, where the
+    ``cut:`` line reads the same widths."""
+    if not rises.size:
+        return "edges: nothing with an edge yet"
+    share = float((rises < checklist.HARD_EDGE_PX).mean())
+    return (f"edges: {share:.0%} of edges are under {checklist.HARD_EDGE_PX:.1f} px wide, "
+            f"median {float(np.median(rises)):.1f} px")
 
 #: A mark shorter than this many brush widths is a *shape* rather than a pass, and
 #: the one a painter reaches for a pressure list on expecting a taper. Longer than

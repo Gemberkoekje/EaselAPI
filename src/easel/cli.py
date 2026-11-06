@@ -248,6 +248,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.add_argument("--no-impasto", action="store_true")
     p_export.add_argument("--no-sketch", action="store_true",
                           help="the paint alone, without whatever pencil it has not covered")
+    p_export.add_argument("--no-alpha", action="store_true",
+                          help="no alpha, though the plan declares a cut: the whole canvas")
+    p_export.add_argument("--soften", type=float, default=None,
+                          help="the cut edge's width in pixels, 0.85 by default; 0 for "
+                               "the coverage as it is")
+    p_export.add_argument("--size", default=None,
+                          help="smaller than the canvas: the long side, 300, or the width "
+                               "and height, 120x300")
 
     p_tl = sub.add_parser(
         "timelapse", help="write the time-lapse",
@@ -320,6 +328,12 @@ def build_parser() -> argparse.ArgumentParser:
                              "note= holds its name; the shares line then prints each "
                              "part's strokes against its share. Repeatable, and the "
                              "whole set replaces any declared before")
+    p_plan.add_argument("--cut", action="append", default=None, metavar="PLACE",
+                        help="a place of the canvas that ships, a piece cut out for a "
+                             "game: --cut C2:F7. The check then reads inside the cut, "
+                             "and export writes its alpha from it. Repeatable, and the "
+                             "whole set replaces any declared before; --cut '' takes it "
+                             "back")
     p_plan.add_argument("--clear", action="store_true",
                         help="forget the plan entirely and start again")
 
@@ -628,8 +642,14 @@ def _dispatch(args) -> int:
         return 0
 
     if args.command == "export":
+        size = args.size
+        if size is not None:
+            size = (tuple(int(n) for n in size.lower().split("x"))
+                    if "x" in size.lower() else int(size))
         path = session.export(args.output, impasto=not args.no_impasto,
-                              sketch=not args.no_sketch)
+                              sketch=not args.no_sketch,
+                              alpha=False if args.no_alpha else None,
+                              soften=args.soften, size=size)
         print(path)
         return 0
 
@@ -700,6 +720,8 @@ whole painting rather than once per pass.
 #     # key="low",                 # its top twentieth stays under the box's middle
 #     # habits={"disc": {face: "the features of a face"}},  # small round marks, meant
 #     # shares={"the figure": 0.30, "the wall": 0.25},  # of the budget, by note=
+#     # cut=figure,                # a piece cut out: the check reads inside it, and
+#     #                            # s.export() writes its alpha from it
 # )
 '''
 
@@ -769,6 +791,9 @@ def _cmd_plan(session: Session, args) -> int:
                 raise ValueError(
                     f"--share {part!r} {share!r} gives a share that is not a number. A "
                     f"share is 0..1 of the budget: --share {part!r} 0.30.") from None
+    cut = None
+    if args.cut is not None:
+        cut = [place for place in args.cut if place]
     # The pairs notice is filtered here and printed below as the table it came from:
     # this command's whole output is the plan, the stderr copy would arrive above it
     # pointing at a line of this file, and the table says the same thing in full. It is
@@ -778,7 +803,7 @@ def _cmd_plan(session: Session, args) -> int:
         plan = session.plan(why=args.why, values=values, lightest=args.lightest,
                             subject_share=args.subject_share, bands=args.bands,
                             ground=args.ground, key=args.key, habits=habits,
-                            shares=shares, clear=args.clear)
+                            shares=shares, cut=cut, clear=args.clear)
     # Always, as every other command here does. `easel plan p.easel` with nothing to
     # declare is a read and writes the file back unchanged; a declaration that was not
     # saved is the thing this whole command exists to stop.

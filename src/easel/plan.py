@@ -41,6 +41,11 @@ and :class:`Plan` is the rest of them.
   each part the marks whose ``note=`` names it. A share of the marks laid so far
   measures the order a painting was laid in; a share of the budget says which part
   will be starved while there are strokes left to send it.
+* ``cut=place`` says what of the canvas ships: a piece cut out for a game, or a wall
+  with an arch taken out of it. The standing lines read inside the cut, so a cut-out's
+  checklist stops reading the ground the cut throws away -- one painter's figure was
+  told *no clear light* by the bare canvas round it -- and
+  :meth:`~easel.session.Session.export` writes its alpha from the same places.
 * ``why`` is the sentence the painting is for. Nothing measures it;
   :meth:`~easel.session.Session.checklist` quotes it back.
 
@@ -61,11 +66,18 @@ from dataclasses import dataclass, replace
 import numpy as np
 
 from easel.measure import VALUE_THRESHOLD
-from easel.regions import Difference, Polygon, as_place, polygon
+from easel.regions import (
+    Difference,
+    Polygon,
+    _looks_like_bounds,
+    _looks_like_point,
+    as_place,
+    polygon,
+)
 
 __all__ = ["Plan", "Planned", "Habit", "PlaceReading", "BAND_WORDS", "GROUND_WORDS",
            "HABIT_WORDS", "KEY_WORDS", "SPLIT_SHARE", "SPLIT_STEP", "named_place",
-           "planned", "read_place", "declared_shares"]
+           "planned", "read_place", "declared_shares", "declared_cut"]
 
 #: What ``bands=`` accepts. ``"subject"`` declares that the picture's own subject runs
 #: in one direction, which is what the stack-of-bars warning concedes it cannot know.
@@ -169,16 +181,21 @@ class Planned:
     outline: Polygon
     value: float | None = None
 
-    def reading(self, value_view: np.ndarray) -> PlaceReading:
+    def reading(self, value_view: np.ndarray, inside: np.ndarray | None = None
+                ) -> PlaceReading:
         """What this place actually reads, over the canvas as it now stands.
 
         ``value_view`` is the whole canvas as values, 0..1, the way
         :func:`easel.measure.compare_plan` computes it -- passed in rather than taken,
         because every place in a plan reads the same view and building it per place is
         the same arithmetic over and over. See :class:`PlaceReading` for why the median.
+        ``inside`` is the plan's cut, when it declares one: the place is read where it
+        lies inside the cut, since the rest does not ship.
         """
         h, w = value_view.shape[:2]
         mask = self.outline.mask(w, h)
+        if inside is not None:
+            mask = mask & inside
         if not mask.any():  # pragma: no cover - a place off-canvas raises at plan time
             return PlaceReading(float("nan"), float("nan"))
         return read_place(value_view[mask])
@@ -334,13 +351,33 @@ class Plan:
     key: str = ""
     habits: tuple[Habit, ...] = ()
     shares: tuple[tuple[str, float], ...] = ()
+    cut: tuple[Planned, ...] = ()
 
     @property
     def declared(self) -> bool:
         """Whether anything at all was declared. An empty plan is no plan."""
         return bool(self.why or self.values or self.lightest is not None
                     or self.subject_share is not None or self.bands or self.ground
-                    or self.key or self.habits or self.shares)
+                    or self.key or self.habits or self.shares or self.cut)
+
+    def cut_coverage(self, width: int, height: int) -> np.ndarray | None:
+        """How much of each pixel the cut covers, ``0..1``, or ``None`` with no cut.
+
+        Four samples a side, sixteen levels: the coverage the alpha is softened from,
+        and over half of it is what the standing lines read inside. The places' union,
+        by the greater coverage, so two places that overlap are one cut.
+        """
+        if not self.cut:
+            return None
+        out = np.zeros((int(height), int(width)), dtype=np.float32)
+        for place in self.cut:
+            out = np.maximum(out, place.outline.coverage(width, height, samples=4))
+        return out
+
+    def inside_cut(self, width: int, height: int) -> np.ndarray | None:
+        """The pixels the cut keeps, at over half their coverage, or ``None`` with no cut."""
+        cover = self.cut_coverage(width, height)
+        return None if cover is None else cover >= 0.5
 
     def habit_places(self, habit: str) -> tuple[Habit, ...]:
         """The places the plan declares ``habit`` in, in the order it names them."""
@@ -376,7 +413,8 @@ class Plan:
 
     # -- the lines the check prints ----------------------------------------------
     def value_line(self, value_view: np.ndarray,
-                   threshold: float = VALUE_THRESHOLD) -> str:
+                   threshold: float = VALUE_THRESHOLD,
+                   inside: np.ndarray | None = None) -> str:
         """One line: how many places are painted as promised, and which are not.
 
             plan: 5 of 6 places inside 0.10; halo +0.14 (18% of it lighter by more than 0.15)
@@ -387,13 +425,26 @@ class Plan:
         places is one nobody finishes reading. A place it names that is split says so
         in brackets -- a miss that is half one value and half another is a different
         repair from a miss that is all of one.
+
+        Under a cut (``inside``), each place is read where it lies inside it, and a place
+        wholly outside is named and not counted: it does not ship.
         """
         if not self.values:
             return ""
-        read = [(p, p.reading(value_view)) for p in self.values if p.value is not None]
+        outside = []
+        read = []
+        h, w = value_view.shape[:2]
+        for p in self.values:
+            if p.value is None:
+                continue
+            if inside is not None and not (p.outline.mask(w, h) & inside).any():
+                outside.append(p.name)
+                continue
+            read.append((p, p.reading(value_view, inside)))
         deltas = [(p, got.median - float(p.value), got) for p, got in read]
-        if not deltas:  # pragma: no cover - plan() refuses a values= entry with no value
-            return ""
+        if not deltas:
+            return (f"plan: every place planned lies outside the cut: {', '.join(outside)}"
+                    if outside else "")
         out = sorted((row for row in deltas if abs(row[1]) > threshold),
                      key=lambda row: -abs(row[1]))
         inside = len(deltas) - len(out)
@@ -403,9 +454,12 @@ class Plan:
                               for p, delta, got in out[:3])
             more = f"; and {len(out) - 3} more" if len(out) > 3 else ""
             line += f"; {shown}{more}"
+        if outside:
+            line += f"; outside the cut: {', '.join(outside)}"
         return line
 
-    def lightest_line(self, value_view: np.ndarray) -> str:
+    def lightest_line(self, value_view: np.ndarray,
+                      inside: np.ndarray | None = None) -> str:
         """One line: whether the place meant to be lightest is the lightest.
 
             lightest: lamp reads 0.78 as a place, 0.84 at its brightest twentieth, the lightest of the 4 places planned
@@ -431,17 +485,27 @@ class Plan:
         Bell-Warden's painter asked for exactly that: its plinth's top, split by the
         creature's feet, while the line named it the lightest place, and the head's
         top, split by the eye, after.
+
+        Under a cut (``inside``), the places are read inside it, and a place wholly
+        outside is not a candidate; with the light itself outside, there is no line.
         """
         if self.lightest is None:
             return ""
-        others = [p for p in self.values if p.name != self.lightest.name]
+        h, w = value_view.shape[:2]
+
+        def ships(p: Planned) -> bool:
+            return inside is None or bool((p.outline.mask(w, h) & inside).any())
+
+        if not ships(self.lightest):
+            return ""
+        others = [p for p in self.values if p.name != self.lightest.name and ships(p)]
         candidates = [self.lightest, *others]
         if len(candidates) < 2:
             # Nothing to rank it against. The declaration is still held -- checklist()
             # quotes it -- but a line saying one place reads what it reads is not a
             # measurement of anything.
             return ""
-        read = {p.name: p.reading(value_view) for p in candidates}
+        read = {p.name: p.reading(value_view, inside) for p in candidates}
         light = read[self.lightest.name]
         top = max(candidates, key=lambda p: read[p.name].median)
         both = (f"{light.said(f'{light.median:.2f} as a place')}, "
@@ -454,7 +518,8 @@ class Plan:
                 f"{self.lightest.name}, the plan's own light, {both} -- "
                 f"{other.median - light.median:.2f} under")
 
-    def light_reading(self, value_view: np.ndarray) -> tuple[str, float, float] | None:
+    def light_reading(self, value_view: np.ndarray, inside: np.ndarray | None = None
+                      ) -> tuple[str, float, float] | None:
         """The named light against everything else, for the ``values:`` line.
 
         ``(name, its brightest twentieth, the brightest twentieth of the canvas outside
@@ -468,13 +533,17 @@ class Plan:
         ``key="high"``, or with no light named.
 
         *The rest* is the canvas outside the light's place, so a light large enough to
-        be its own top twentieth is not measured against itself.
+        be its own top twentieth is not measured against itself. Under a cut
+        (``inside``), both are read inside it: the rest of the cut, not the canvas the
+        cut throws away.
         """
         if self.key == "high" or self.lightest is None:
             return None
         h, w = value_view.shape[:2]
         mask = self.lightest.outline.mask(w, h)
-        rest = value_view[~mask]
+        keep = np.ones((h, w), dtype=bool) if inside is None else inside
+        rest = value_view[keep & ~mask]
+        mask = mask & keep
         # A place off the canvas is refused at plan time; one that covers all of it
         # leaves nothing to stand clear of, and the question is not asked.
         if not mask.any() or not rest.size:
@@ -535,6 +604,8 @@ class Plan:
             "habits": [one.to_json() for one in self.habits],
             # New in 0.9.0 too, and a line too: 0.8.0 opens the plan without it.
             "shares": [[name, share] for name, share in self.shares],
+            # And the cut, the same: 0.8.0 reads the whole canvas, as it always did.
+            "cut": [one.to_json() for one in self.cut],
         }
 
     @classmethod
@@ -566,6 +637,9 @@ class Plan:
                 data.get("habits") if isinstance(data.get("habits"), list) else []))
                 if one is not None),
             shares=_shares_from_json(data.get("shares")),
+            cut=tuple(Planned.from_json(one) for one in (
+                data.get("cut") if isinstance(data.get("cut"), list) else [])
+                if isinstance(one, dict) and one.get("points")),
         )
 
     def __str__(self) -> str:
@@ -592,6 +666,8 @@ class Plan:
         if self.shares:
             out.append("shares of the budget: " + ", ".join(
                 f"{name} {share:.0%}" for name, share in self.shares))
+        if self.cut:
+            out.append("cut: " + ", ".join(one.name for one in self.cut))
         return "\n".join(out)
 
 
@@ -694,8 +770,23 @@ def declared_habits(habits) -> tuple[Habit, ...]:
     return tuple(out)
 
 
+def declared_cut(cut) -> tuple[Planned, ...]:
+    """``cut=`` as the plan holds it: the places of the canvas that ship, named.
+
+    One place -- a shape, a region, a name, a ``difference()`` for a canvas with a hole
+    taken out of it -- or a list of them, which are one cut together. ``[]`` declares
+    none.
+    """
+    if isinstance(cut, (list, tuple)) and not _looks_like_bounds(cut) \
+            and not all(_looks_like_point(one) for one in cut):
+        places = list(cut)
+    else:
+        places = [cut]
+    return tuple(_named_only(where) for where in places)
+
+
 def build(why=None, values=None, lightest=None, subject_share=None,
-          bands=None, ground=None, key=None, habits=None, shares=None,
+          bands=None, ground=None, key=None, habits=None, shares=None, cut=None,
           onto: Plan | None = None) -> Plan:
     """A checked :class:`Plan`, or the one already registered with these fields changed.
 
@@ -703,7 +794,7 @@ def build(why=None, values=None, lightest=None, subject_share=None,
     keeps what ``onto`` already declared, so a painter can add the lightest place to a
     plan written in a ``prelude.py`` without retyping its values. Passing the empty
     version *clears* that field: ``values={}``, ``bands=""``, ``lightest=""``,
-    ``habits={}``, ``shares={}``.
+    ``habits={}``, ``shares={}``, ``cut=[]``.
     """
     base = onto if onto is not None else Plan()
     fields = {}
@@ -754,4 +845,7 @@ def build(why=None, values=None, lightest=None, subject_share=None,
         fields["habits"] = declared_habits(habits)
     if shares is not None:
         fields["shares"] = declared_shares(shares)
+    if cut is not None:
+        cleared = isinstance(cut, (list, tuple, str)) and not cut
+        fields["cut"] = () if cleared else declared_cut(cut)
     return replace(base, **fields) if fields else base
