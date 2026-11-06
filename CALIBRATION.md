@@ -5305,3 +5305,53 @@ searched and the ribbon round a bend is the only shape that speaks, in its two b
 which say so (`scripts/check_guide_blocks.py` holds a block to the codes its comments name,
 `# says parts-cheaper`). The search costs 12 ms on a mass it looks at and nothing on the
 rest: 0.3 s over the whole corpus, on Windows.
+
+### A piece cut out of its canvas
+
+*Step 11, `probe_curator_session.py --cut-built`, on the branch that builds it, on The
+Curator's three cut-outs rebuilt from their scripts.* **Declared, `plan(cut=)` makes every
+standing line read what ships**: the figure's outlines for the patron and the candle, and
+for the wall the canvas with its arch taken out, a `difference()`:
+
+| line | the wall, whole / cut (80.3% kept) | the patron (66.6%) | the candle (31.2%) |
+|---|---|---|---|
+| `values:` | 0.18-0.40 / 0.18-0.39, *no clear light* | 0.09-0.54 / **0.08-0.12**, *no clear light* | 0.37-0.80 / 0.33-0.80, *clear* |
+| `lightest:`, the named light at its brightest twentieth | 0.41 / 0.41 | 0.53 / **0.14** | 0.86 / 0.86 |
+| `edges:`, under 2.5 px and the median | 48%, 2.6 / 44%, 2.7 | 33%, 3.3 / 49%, 2.5 | 42%, 3.0 / 39%, 3.1 |
+| `ground:` | 7.27% bare by colour / **0.28% with nothing laid**, 0.29% of the 2 px along the edge | 25.28% / **0.00%**, 0.00% | 67.14% / **0.16%**, 1.27% |
+| `cut:` | -- / 2.1 px against a median of 2.7 and a hardest tenth of 2.0 | -- / 2.1 against 2.5 and 1.9 | -- / 2.1 against 3.1 and 2.0 |
+
+Read inside the cut, the patron's lines say what its painter found by measuring: nothing
+in the figure above 0.12, the rim lost, where read whole they were reading the bare canvas
+round it. **The ground line counts canvas with nothing laid on it**, where read whole it
+counts paint the colour of the ground too: the wall's 5.31% inside its cut by colour was
+its stones and joints, 0.28% of the cut is bare. The candle's 1.27% along its edge is the
+fringe its painter could only guess at, a pixel or two where its 3 px margin ran short.
+**The `cut:` line is silent on all three**: the checklist's edge measure reads a step made
+in one pixel as `2.0`, so a cut sits level with the hardest painted edges, and the line
+compares the two as it prints them.
+
+**The cut's edge, softened to 0.85 px by default**, by the painter's own measure -- the
+band between 10% and 90% alpha over the edge's length -- taken on a straight edge at a
+slant, where the measure is continuous, so one softening serves every outline:
+
+| piece | the coverage, 4x4 | softened to 0.85, the default | to 2.5 | the painter's own cut |
+|---|---|---|---|---|
+| the doorway wall | 0.47 | 0.52 | 2.56 | 0.73 |
+| the patron | 0.78 | **0.84** | 2.63 | 2.27 |
+| the candle | 0.31 | 0.31 | 2.63 | 2.52 |
+
+On the patron's sloping outline the default reads the 0.85 the painter chose, at a sigma of
+0.383 against the 0.39 it solved there. **Under about 1.3 px the measure moves in steps**:
+at a slant the coverage alone reads 0.77 and the first softening that moves a pixel past
+10% reads 1.0, so 0.8 to 1.0 soften alike. On outlines that run along the pixel rows --
+the jamb, the candle's sides -- the same softening reads 0.52 and 0.31, below the step the
+painter's own sheet took there (a sigma of 0.49); one softening for every outline is the
+trade for a `soften=` with an answer on all of them.
+
+**Painted at four times and exported at its size**: the candle at 480×1200, its cut
+declared, `export(size=(120, 300))` in 0.06 s, reads 0.81 at its wax top and 0.92 at its
+brightest twentieth, the bench's numbers, and its alpha, built at 120×300, is the 1×
+export's to the level. **The cut costs once**: its coverage over the 1920×720 wall takes
+about two seconds and is kept until the cut changes; the checklist then takes 1.0 s with
+the cut and 0.95 s without.
