@@ -43,10 +43,15 @@ jobs:
           # that check. This is the run where the answer matters.
           fetch-tags: true
 
+      # pip's download cache, keyed on pyproject.toml -- where every extra installed in
+      # this file is declared -- so an unchanged dependency set installs from the cache
+      # rather than downloading it all from PyPI again. Same in the jobs below.
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install
         run: |
@@ -96,6 +101,8 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install with the MCP extra
         run: |
@@ -121,6 +128,8 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install with the mixbox extra
         run: |
@@ -148,6 +157,8 @@ jobs:
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.14"
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install
         run: |
