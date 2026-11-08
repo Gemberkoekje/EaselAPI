@@ -314,6 +314,8 @@ s.circle(place, r, wobble=0, points=15, seed=0, rotate=0, steps=48, name="", px=
                                        # radius in pixels, in place of r
 shape.inset(a)  shape.smooth(2)  shape.scaled(f, about=None)  shape.shifted(dx, dy)
 shape.rotated(deg, about=None, aspect=s.aspect)   # clockwise, turned in pixels
+a, b = shape.split()                   # cut in two at its deepest notch: the parts
+                                       # parts-cheaper prices, which tile the shape
 shape.box  shape.area  shape.axis  shape.center  shape.closed
 shape.contains(x, y)                   # is this mark inside the mass?
 shape.inside(xs, ys)                   # ...and the same question for many at once
@@ -657,6 +659,7 @@ painting broke the comb floor twenty-eight times and was right every time.
 | `direction-default` | fact | a shaped `block_in` with `direction` left off, costing far more than its own axis | `CALIBRATION.md`, *A shaped mass with `direction` left off* |
 | `direction-sequence` | fact | a sequence of directions is one whole pass per angle, and is charged the sum | `CALIBRATION.md`, *`direction` given a sequence* |
 | `direction-given` | fact | a shaped `block_in` given one direction that costs far more than its own axis, with both prices | `CALIBRATION.md`, *What a mass was charged for its direction* |
+| `parts-cheaper` | fact | a shaped `block_in` that costs over twice what its two parts would, cut at its deepest notch and each laid along its own length, with both prices | `CALIBRATION.md`, *A shape cut at its notch* |
 | `foreign-out-dir` | fact | a loaded session file writes its looks somewhere that is neither the working directory nor beside the file | `REFERENCE.md`, *The session, and the shell* |
 | `glaze-far` | fact | a film that moved the passage under it past what a film is for: a new mass in value, or a colour of its own in hue | `CALIBRATION.md`, *A film far from what it lands on* |
 | `glaze-nothing` | fact | a film aimed at a value the paint under it already reads solves to no opacity, and still costs a stroke | `CALIBRATION.md`, *Aiming a film at a value* |

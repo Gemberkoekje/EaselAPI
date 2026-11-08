@@ -120,6 +120,19 @@ def guide_blocks(echo: bool = True) -> list[tuple[str, str]]:
     return blocks
 
 
+#: A recommended block that shows a notice on purpose names it on a comment, ``# says
+#: <code>``, and is held to exactly the codes it names: `PAINTING.md`'s ribbon round a
+#: bend is the example of what a bend costs, and since 0.9.0 the call says what its two
+#: arms would cost apart, which is the point the example makes. Every other block stays
+#: notice-clean.
+SAYS = re.compile(r"#.*?\bsays (?P<code>[a-z]+(?:-[a-z]+)+)\b")
+
+
+def shown(block: str) -> set[str]:
+    """The notice codes a block says, on its comments, that it means to show."""
+    return {m.group("code") for m in SAYS.finditer(block)}
+
+
 def is_pseudo_code(block: str) -> bool:
     """Signature listings and elided pseudo-code, which are not meant to run."""
     return bool(
@@ -187,9 +200,18 @@ def main() -> int:
         # What the engine said at the calls the block made. The session is `s` by
         # the preamble's own construction, and a block that rebinds it answers for
         # whatever it left there -- which is the session a reader would be holding.
+        meant = shown(b)
+        heard: set[str] = set()
         for notice in getattr(scope.get("s"), "notices", list)():
+            if notice.code in meant:
+                heard.add(notice.code)
+                print(f"  {i:>3} {where} shows            {notice.code}, as it says")
+                continue
             noisy.append((i, doc, notice.code, str(notice)))
             print(f"  {i:>3} {where} SAYS             {notice.code}")
+        for code in sorted(meant - heard):
+            noisy.append((i, doc, code, "the block says it shows this, and nothing said it"))
+            print(f"  {i:>3} {where} SILENT           {code}, which it says it shows")
         # What the block paid for that laid no paint: the check's own standing line,
         # over the block as one pass. A note and not a failure, as a demo's own notes
         # are -- it is a measurement, and one recipe's copies reach past the shape

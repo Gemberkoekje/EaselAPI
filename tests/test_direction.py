@@ -11,7 +11,8 @@ from the stream.
 **G2 (a), a notice for a shape whose passes come back in pieces, is held**: built at the
 painter's threshold it spoke on three of ``RECIPES.md``'s own recipes, and the evidence is
 back with the painter (``questions-step7.md``). What stays is the count it read, which is
-the one G1 prices with.
+the one G1 prices with. Its painter chose a price for the parts instead (G2 (b)), built in
+step 10 as ``parts-cheaper``: ``tests/test_parts.py``.
 """
 
 from __future__ import annotations
