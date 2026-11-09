@@ -32,10 +32,15 @@ jobs:
           # claims with nothing to check them against and fails the publish.
           fetch-tags: true
 
+      # pip's download cache, as in ci.yml. A tag run cannot see caches saved by
+      # earlier tags, only the default branch's, so what this restores is the one
+      # ci.yml's 3.12 jobs keep up to date on main -- the key is the same.
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
 
       - name: Install
         run: |
